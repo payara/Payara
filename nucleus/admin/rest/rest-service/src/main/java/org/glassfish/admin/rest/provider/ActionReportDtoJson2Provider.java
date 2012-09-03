@@ -43,10 +43,11 @@ import com.sun.enterprise.v3.common.ActionReporter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -55,6 +56,8 @@ import javax.ws.rs.ext.Provider;
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
+import org.glassfish.admin.rest.composite.RestModel;
+import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.MessagePart;
 
@@ -87,7 +90,7 @@ public class ActionReportDtoJson2Provider extends BaseProvider<ActionReporter> {
             MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
         JsonGenerator out = factory.createJsonGenerator(entityStream, JsonEncoding.UTF8);
         out.writeStartObject();
-        writeJson("action-report", proxy, out);
+        writeJson(null, proxy, out);
         out.writeEndObject();
         out.flush();
     }
@@ -98,25 +101,42 @@ public class ActionReportDtoJson2Provider extends BaseProvider<ActionReporter> {
         }
         if (name != null) {
             out.writeObjectFieldStart(name);
-        } else {
-            out.writeStartObject();
         }
-        out.writeStringField("exit-code", ar.getActionExitCode().name());
-        out.writeStringField("description", ar.getActionDescription());
+        String combinedMessage = (ar instanceof RestActionReporter) ? ((RestActionReporter)ar).getCombinedMessage() : ar.getMessage();
+        out.writeStringField("message", combinedMessage); //Because of beckward compatibility - hmmmm
+        if (!combinedMessage.equals(ar.getTopMessagePart().getMessage())) {
+            out.writeStringField("top_message", ar.getTopMessagePart().getMessage());
+        }
+        out.writeStringField("command", ar.getActionDescription());
+        out.writeStringField("exit_code", ar.getActionExitCode().name());
         if (ar.getFailureCause() != null) {
-            out.writeStringField("failure-cause", ar.getFailureCause().getLocalizedMessage());
+            out.writeStringField("failure_cause", ar.getFailureCause().getLocalizedMessage());
         }
-        writeJson("extra-properties", ar.getExtraProperties(), out);
-        writeJson("message", ar.getTopMessagePart(), out);
+        if (ar.getTopMessagePart().getProps() != null) {
+            writeJson("properties", ar.getTopMessagePart().getProps(), out);
+        }
+        writeJson("extraProperties", ar.getExtraProperties(), out);
         List<ActionReporter> subReports = ar.getSubActionsReport();
         if (subReports != null && !subReports.isEmpty()) {
-            out.writeArrayFieldStart("action-reports");
+            out.writeArrayFieldStart("subReports");
             for (ActionReporter subReport : subReports) {
-                writeJson(null, subReport, null);
+                out.writeStartObject();
+                writeJson(null, subReport, out);
+                out.writeEndObject();
             }
             out.writeEndArray();
         }
-        out.writeEndObject();
+        List<MessagePart> children = ar.getTopMessagePart().getChildren();
+        if ((children != null) && (!children.isEmpty())) {
+            out.writeArrayFieldStart("children");
+            for (MessagePart child : children) {
+                writeJson(null, child, out);
+            }
+            out.writeEndArray();
+        }
+        if (name != null) {
+            out.writeEndObject();
+        }
     }
     
     public void writeJson(String name, ActionReport.MessagePart mp, JsonGenerator out) throws IOException {
@@ -128,12 +148,12 @@ public class ActionReportDtoJson2Provider extends BaseProvider<ActionReporter> {
         } else {
             out.writeStartObject();
         }
-        out.writeStringField("value", mp.getMessage());
-        out.writeStringField("children-type", mp.getChildrenType());
+        out.writeStringField("message", mp.getMessage());
+        //out.writeStringField("children-type", mp.getChildrenType());
         writeJson("properties", mp.getProps(), out);
         List<MessagePart> children = mp.getChildren();
         if (children != null && !children.isEmpty()) {
-            out.writeArrayFieldStart("messages");
+            out.writeArrayFieldStart("children");
             for (MessagePart messagePart : children) {
                 writeJson(null, messagePart, out);
             }
@@ -142,18 +162,72 @@ public class ActionReportDtoJson2Provider extends BaseProvider<ActionReporter> {
         out.writeEndObject();
     }
     
-    public void writeJson(String name, Properties props, JsonGenerator out) throws IOException {
-        if (props == null || props.isEmpty()) {
-            return;
+    public void writeJsonForObject(String name, Object obj, JsonGenerator out) throws IOException {
+        if (obj == null) {
+            if (name != null) {
+                out.writeNullField(name);
+            } else {
+                out.writeNull();
+            }
+        } else if (obj instanceof Collection) {
+            writeJson(name, (Collection) obj, out);
+        } else if (obj instanceof Map) {
+            writeJson(name, (Map) obj, out);
+        } else if (RestModel.class.isAssignableFrom(obj.getClass())) {
+            writeJson(name, (RestModel) obj, out);
+        } else {
+            if (name != null) {
+                out.writeStringField(name, String.valueOf(obj));
+            } else {
+                out.writeString(String.valueOf(obj));
+            }
         }
-        out.writeArrayFieldStart(name);
-        for (Map.Entry<Object, Object> entry : props.entrySet()) {
-            out.writeStartObject();
-            out.writeStringField("name", (String) entry.getKey());
-            out.writeStringField("value", (String) entry.getValue());
-            out.writeEndObject();
+    }
+    
+    public void writeJson(String name, Collection col, JsonGenerator out) throws IOException {
+        if (name != null) {
+            out.writeArrayFieldStart(name);
+        } else {
+            out.writeStartArray();
+        }
+        for (Object obj : col) {
+            writeJsonForObject(name, obj, out);
         }
         out.writeEndArray();
+    }
+    
+    
+    public void writeJson(String name, Map<?, ?> map, JsonGenerator out) throws IOException {
+        if (map == null || map.isEmpty()) {
+            return;
+        }
+        if (name != null) {
+            out.writeObjectFieldStart(name);
+        } else {
+            out.writeStartObject();
+        }
+        for (Map.Entry entry : map.entrySet()) {
+            writeJsonForObject(String.valueOf(entry.getKey()), entry.getValue(), out);
+        }
+        out.writeEndObject();
+    }
+    
+    public void writeJson(String name, RestModel model, JsonGenerator out) throws IOException {
+        if (name != null) {
+            out.writeObjectFieldStart(name);
+        } else {
+            out.writeStartObject();
+        }
+        for (Method m : model.getClass().getDeclaredMethods()) {
+            if (m.getName().startsWith("get")) { // && !m.getName().equals("getClass")) {
+                String propName = m.getName().substring(3);
+                propName = Character.toLowerCase(propName.charAt(0)) + propName.substring(1);
+                try {
+                    writeJsonForObject(propName, m.invoke(model), out);
+                } catch (Exception e) {}
+            }
+        }
+        out.writeEndObject();
     }
     
     

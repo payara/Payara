@@ -40,18 +40,13 @@
 package org.glassfish.admin.rest.provider;
 
 import com.sun.enterprise.v3.common.ActionReporter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
-import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.api.admin.AdminCommandState;
 
 /**
@@ -63,7 +58,7 @@ import org.glassfish.api.admin.AdminCommandState;
 public class AdminCommandStateJsonProvider extends BaseProvider<AdminCommandState> {
     
     private static final JsonFactory factory = new JsonFactory();
-    private static final ActionReportDtoJson2Provider actionReportJsonProvider = new ActionReportDtoJson2Provider();
+    private static final ActionReportJson2Provider actionReportJsonProvider = new ActionReportJson2Provider();
 
     public AdminCommandStateJsonProvider() {
         super(AdminCommandState.class, MediaType.APPLICATION_JSON_TYPE, new MediaType("application", "x-javascript"));
@@ -75,34 +70,52 @@ public class AdminCommandStateJsonProvider extends BaseProvider<AdminCommandStat
     }
     
     @Override
-    public void writeTo(AdminCommandState proxy, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
-            MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
-        JsonGenerator out = factory.createJsonGenerator(entityStream, JsonEncoding.UTF8);
-        out.writeStartObject();
-        writeJson("admin-command-state", proxy, out);
-        out.writeEndObject();
-        out.flush();
+    public String getContent(AdminCommandState proxy) {
+        try {
+            return processState(proxy).toString();
+        } catch (JSONException ex) {
+            throw new RuntimeException(ex);
+        }
     }
     
-    public void writeJson(String name, AdminCommandState state, JsonGenerator out) throws IOException {
-        if (state == null) {
-            return;
+//    @Override
+//    public void writeTo(AdminCommandState proxy, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
+//            MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
+//        JsonGenerator out = factory.createJsonGenerator(entityStream, JsonEncoding.UTF8);
+//        out.writeStartObject();
+//        writeJson("admin-command-state", proxy, out);
+//        out.writeEndObject();
+//        out.flush();
+//    }
+    
+    public JSONObject processState(AdminCommandState state) throws JSONException {
+        JSONObject result = new JSONObject();
+        result.put("state", state.getState().name());
+        result.put("id", state.getId());
+        result.put("empty-payload", state.isOutboundPayloadEmpty());
+        ActionReporter ar = (ActionReporter) state.getActionReport();
+        if (ar != null) {
+            result.put("action-report", actionReportJsonProvider.processReport((ActionReporter) state.getActionReport()));
         }
-        if (name != null) {
-            out.writeObjectFieldStart(name);
-        } else {
-            out.writeStartObject();
-        }
-        out.writeStringField("state", state.getState().name());
-        out.writeStringField("id", state.getId());
-        out.writeBooleanField("empty-payload", state.isOutboundPayloadEmpty());
-        actionReportJsonProvider.writeJson("action-report", (ActionReporter) state.getActionReport(), out);
-        out.writeEndObject();
+        return result;
     }
+    
+//    public void writeJson(String name, AdminCommandState state, JsonGenerator out) throws IOException {
+//        if (state == null) {
+//            return;
+//        }
+//        if (name != null) {
+//            out.writeObjectFieldStart(name);
+//        } else {
+//            out.writeStartObject();
+//        }
+//        out.writeStringField("state", state.getState().name());
+//        out.writeStringField("id", state.getId());
+//        out.writeBooleanField("empty-payload", state.isOutboundPayloadEmpty());
+//        actionReportJsonProvider.writeJson("action-report", (ActionReporter) state.getActionReport(), out);
+//        out.writeEndObject();
+//    }
 
-    @Override
-    public String getContent(AdminCommandState proxy) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+    
     
 }

@@ -101,9 +101,8 @@ public final class GfSseEventReceiver implements Closeable {
 
         try {
             int data = 0;
-            sbr.append("EVENT: ");
             while((data = inputStream.read()) != -1) {
-                //sbr.append((char) data); 
+                sbr.append((char) data); 
 
                 switch (currentState) {
 
@@ -114,7 +113,7 @@ public final class GfSseEventReceiver implements Closeable {
                             baos.write(data);
                             currentState = State.FIELD_NAME;
                         } else if(data == '\n') {
-                            //System.out.println(sbr);
+                            System.out.println(sbr);
                             if(!inboundEvent.isEmpty()) {
                                 return inboundEvent;
                             }

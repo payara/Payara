@@ -179,7 +179,7 @@ public class CommandResource {
     @POST
     @Path("/{command:.*}/")
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.APPLICATION_JSON, "actionreport/json"})
+    @Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
     public Response execCommandSimpInSimpOut(@PathParam("command") String command, 
                 @HeaderParam("X-Indent") String indent, 
                 @HeaderParam(RemoteAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
@@ -195,7 +195,7 @@ public class CommandResource {
     @POST
     @Path("/{command:.*}/")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces({MediaType.APPLICATION_JSON, "actionreport/json"})
+    @Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
     public Response execCommandMultInSimpOut(@PathParam("command") String command, 
                 @HeaderParam("X-Indent") String indent, 
                 @HeaderParam(RemoteAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
@@ -212,7 +212,7 @@ public class CommandResource {
     
     @POST
     @Path("/{command:.*}/")
-    @Produces({MediaType.APPLICATION_JSON, "actionreport/json"})
+    @Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
     public Response execCommandEmptyInSimpOut(@PathParam("command") String command, 
                 @HeaderParam("X-Indent") String indent,
                 @HeaderParam(RemoteAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
@@ -466,13 +466,13 @@ public class CommandResource {
         }
         if (supportsMultiparResult && outbound.size() > 0) {
             MultiPart mp = new MultiPart();
-            mp.bodyPart(ar, new MediaType("actionreport", "json"));
+            mp.bodyPart(ar, MediaType.APPLICATION_JSON_TYPE);
             if (outbound.size() > 0) {
                 outbound.addToMultipart(mp, logger);
             }
             rb.entity(mp);
         } else {
-            rb.type("actionreport/json");
+            rb.type(MediaType.APPLICATION_JSON_TYPE);
             rb.entity(ar);
         }
         if ( isSingleInstanceCommand(model)) {

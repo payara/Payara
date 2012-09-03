@@ -83,12 +83,11 @@ public class ActionReportJson2Reader implements MessageBodyReader<ActionReport> 
         JsonParser jp = factory.createJsonParser(entityStream);
         try {
             JsonToken token = jp.nextToken(); //sorounding object
-            jp.nextToken(); //Name action-report
+            //jp.nextToken(); //Name action-report
             JsonToken token2 = jp.nextToken();
             if (token != JsonToken.START_OBJECT || 
-                    token2 != JsonToken.START_OBJECT ||
-                    !"action-report".equals(jp.getCurrentName())) {
-                throw new IOException("Not expected type (action-report) but (" + jp.getCurrentName() + ")");
+                    token2 != JsonToken.START_OBJECT) {
+                throw new IOException("Not expected type");
             }
             CliActionReport result = new CliActionReport();
             fillActionReport(result, jp);
@@ -103,16 +102,16 @@ public class ActionReportJson2Reader implements MessageBodyReader<ActionReport> 
         while (jp.nextToken() != JsonToken.END_OBJECT) {
             String fieldname = jp.getCurrentName();
             jp.nextToken(); // move to value
-            if ("exit-code".equals(fieldname)) {
+            if ("exit_code".equals(fieldname)) {
                 ar.setActionExitCode(ActionReport.ExitCode.valueOf(jp.getText()));
-            } else if ("description".equals(fieldname)) {
+            } else if ("command".equals(fieldname)) {
                 ar.setActionDescription(jp.getText());
-            } else if ("failure-cause".equals(fieldname)) {
+            } else if ("failure_cause".equals(fieldname)) {
                 String failure = jp.getText();
                 if (failure != null && !failure.isEmpty()) {
                     ar.setFailureCause(new Exception(failure));
                 }
-            } else if ("extra-properties".equals(fieldname)) {
+            } else if ("extraProperties".equals(fieldname)) {
                 ar.setExtraProperties(readProperties(jp));
             } else if ("message".equals(fieldname)) {
                 fillMessage(ar.getTopMessagePart(), jp);

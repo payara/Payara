@@ -96,10 +96,11 @@ public class RestCommandAdapter extends RestAdapter {
         r.add(CommandResource.class);
         //ActionReport - providers
 //        r.add(ActionReportXmlProvider.class);
-        r.add(ActionReportJsonProvider.class);
+//        r.add(ActionReportJsonProvider.class);
+        r.add(ActionReportJson2Provider.class);
 //        r.add(ActionReportDtoStaxProvider.class);
 //        r.add(ActionReportDtoJsonProvider.class);
-        r.add(ActionReportDtoJson2Provider.class);
+//        r.add(ActionReportDtoJson2Provider.class);
         //CommandModel - providers
 //        r.add(CommandModelHtmlProvider.class);
 //        r.add(CommandModelTxtProvider.class);

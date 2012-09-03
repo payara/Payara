@@ -40,10 +40,15 @@
 package com.sun.enterprise.admin.remote.reader;
 
 import com.sun.enterprise.admin.remote.AdminCommandStateImpl;
+import com.sun.enterprise.util.io.FileUtils;
+import com.sun.logging.LogDomains;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -51,8 +56,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonToken;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.api.admin.AdminCommandState;
 
 /**
@@ -65,8 +70,8 @@ public class AdminCommandStateJsonReader implements MessageBodyReader<AdminComma
     
     private static final JsonFactory factory = new JsonFactory();
     
-//    private static final Logger logger =
-//            LogDomains.getLogger(AdminCommandStateJsonReader.class, LogDomains.ADMIN_LOGGER);
+    private static final Logger logger =
+            LogDomains.getLogger(AdminCommandStateJsonReader.class, LogDomains.ADMIN_LOGGER);
     
     @Override
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
@@ -77,41 +82,52 @@ public class AdminCommandStateJsonReader implements MessageBodyReader<AdminComma
     public AdminCommandState readFrom(Class<AdminCommandState> type, Type genericType, Annotation[] annotations, 
                     MediaType mediaType, MultivaluedMap<String, String> httpHeaders, 
                     InputStream entityStream) throws IOException, WebApplicationException {
-        JsonParser jp = factory.createJsonParser(entityStream);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        FileUtils.copy(entityStream, baos, 0);
+        String str = baos.toString("UTF-8");
         try {
-            JsonToken token = jp.nextToken(); //sorounding object
-            jp.nextToken(); //Name admin-command-state
-            JsonToken token2 = jp.nextToken();
-            if (token != JsonToken.START_OBJECT || 
-                    token2 != JsonToken.START_OBJECT ||
-                    !"admin-command-state".equals(jp.getCurrentName())) {
-                throw new IOException("Not expected type (admin-command-state) but (" + jp.getCurrentName() + ")");
-            }
-            return readAdminCommandState(jp);
-        } finally {
-            jp.close();
+            JSONObject json = new JSONObject(str);
+            return readAdminCommandState(json);
+        } catch (JSONException ex) {
+            logger.log(Level.SEVERE, null, ex);
+            throw new IOException(ex);
         }
     }
     
-    public static AdminCommandStateImpl readAdminCommandState(JsonParser jp) throws IOException {
-        AdminCommandState.State state = null;
-        boolean emptyPayload = true;
+    public static AdminCommandStateImpl readAdminCommandState(JSONObject json) throws JSONException {
+        String strState = json.optString("state");
+        AdminCommandState.State state = (strState == null) ? null : AdminCommandState.State.valueOf(strState);
+        boolean emptyPayload = json.optBoolean("empty-payload", true);
         CliActionReport ar = null;
-        String id = null;
-        while (jp.nextToken() != JsonToken.END_OBJECT) {
-            String fieldname = jp.getCurrentName();
-            jp.nextToken(); // move to value
-            if ("state".equals(fieldname)) {
-                state = AdminCommandState.State.valueOf(jp.getText());
-            } else if ("empty-payload".equals(fieldname)) {
-                emptyPayload = jp.getValueAsBoolean(true);
-            } else if ("id".equals(fieldname)) {
-                id = jp.getText();
-            } else if ("action-report".equals(fieldname)) {
-                ar = new CliActionReport();
-                ActionReportJson2Reader.fillActionReport(ar, jp);
-            }
+        JSONObject jsonReport = json.optJSONObject("action-report");
+        if (jsonReport != null) {
+            ar = new CliActionReport();
+            ActionReportJsonReader.fillActionReport(ar, jsonReport);
         }
+        String id = json.optString("id");
         return new AdminCommandStateImpl(state, ar, emptyPayload, id);
     }
+    
+//    public static AdminCommandStateImpl readAdminCommandState(JsonParser jp) throws IOException {
+//        AdminCommandState.State state = null;
+//        boolean emptyPayload = true;
+//        CliActionReport ar = null;
+//        String id = null;
+//        while (jp.nextToken() != JsonToken.END_OBJECT) {
+//            String fieldname = jp.getCurrentName();
+//            jp.nextToken(); // move to value
+//            if ("state".equals(fieldname)) {
+//                state = AdminCommandState.State.valueOf(jp.getText());
+//            } else if ("empty-payload".equals(fieldname)) {
+//                emptyPayload = jp.getValueAsBoolean(true);
+//            } else if ("id".equals(fieldname)) {
+//                id = jp.getText();
+//            } else if ("action-report".equals(fieldname)) {
+//                ar = new CliActionReport();
+//                ActionReportJsonReader.fillActionReport(ar, jp);
+//            }
+//        }
+//        return new AdminCommandStateImpl(state, ar, emptyPayload, id);
+//    }
+    
 }

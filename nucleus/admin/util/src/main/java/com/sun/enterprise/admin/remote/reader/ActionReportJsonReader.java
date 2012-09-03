@@ -44,6 +44,11 @@ import com.sun.logging.LogDomains;
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,14 +62,15 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.ActionReport.MessagePart;
 
-/** JAX-WS reader for ActionReport in JSON format. This is reader of format 
- * created by {@code ActionReportDtoJsonProvider}.
+/** JAX-RS reader for ActionReport in JSON format. This is reader of format 
+ * created by {@code ActionReportJson2Provider}.
  *
  * @author mmares
  */
 @Provider
-@Consumes({"actionreport/json"})
+@Consumes({MediaType.APPLICATION_JSON, "application/x-javascript"})
 public class ActionReportJsonReader implements MessageBodyReader<ActionReport> {
     
     private static final Logger logger =
@@ -82,9 +88,9 @@ public class ActionReportJsonReader implements MessageBodyReader<ActionReport> {
         String str = baos.toString("UTF-8");
         try {
             JSONObject json = new JSONObject(str);
-            JSONObject jsonObject = json.getJSONObject("action-report");
+            //JSONObject jsonObject = json.getJSONObject("action-report");
             CliActionReport result = new CliActionReport();
-            fillActionReport(result, jsonObject);
+            fillActionReport(result, json);
             return result;
         } catch (JSONException ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -92,62 +98,128 @@ public class ActionReportJsonReader implements MessageBodyReader<ActionReport> {
         }
     }
     
-    private void fillActionReport(final ActionReport ar, final JSONObject json) throws JSONException {
-        ar.setActionExitCode(ActionReport.ExitCode.valueOf(json.getString("exit-code")));
-        ar.setActionDescription(json.optString("description"));
-        String failure = json.optString("failure-cause");
+    public static void fillActionReport(final ActionReport ar, final JSONObject json) throws JSONException {
+        ar.setActionExitCode(ActionReport.ExitCode.valueOf(json.getString("exit_code")));
+        ar.setActionDescription(json.optString("command"));
+        String failure = json.optString("failure_cause");
         if (failure != null && !failure.isEmpty()) {
             ar.setFailureCause(new Exception(failure));
         }
-        ar.setExtraProperties(extractProperties("extra-properties", json));
-        JSONObject message = json.optJSONObject("message");
-        if (message != null) {
-            fillMessage(ar.getTopMessagePart(), message);
+        ar.setExtraProperties((Properties) extractMap(json.optJSONObject("extraProperties"), new Properties()));
+        ar.getTopMessagePart().setMessage(json.optString("top_message", json.optString("message")));
+        Properties props = (Properties) extractMap(json.optJSONObject("properties"), new Properties());
+        for (Map.Entry entry : props.entrySet()) {
+            ar.getTopMessagePart().addProperty(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
         }
-        //Sub actionm reports
-        JSONArray subJsons = extractArray("action-reports", json);
-        for (int i = 0; i < subJsons.length(); i++) {
-            JSONObject subJson = subJsons.getJSONObject(i);
-            fillActionReport(ar.addSubActionsReport(), subJson);
-        }
-    }
-    
-    private void fillMessage(ActionReport.MessagePart mp, JSONObject json) throws JSONException {
-        mp.setMessage(json.optString("value"));
-        mp.setChildrenType(json.optString("children-type"));
-        Properties props = extractProperties("properties", json);
-        for (String key : props.stringPropertyNames()) {
-            mp.addProperty(key, props.getProperty(key));
-        }
-        JSONArray subJsons = extractArray("messages", json);
-        for (int i = 0; i < subJsons.length(); i++) {
-            JSONObject subJson = subJsons.getJSONObject(i);
-            fillMessage(mp.addChild(), subJson);
+        //Sub messages
+        fillSubMessages(ar.getTopMessagePart(), json.optJSONArray("children"));
+        //Sub action reports
+        JSONArray subJsons = json.optJSONArray("subReports");
+        if (subJsons != null) {
+            for (int i = 0; i < subJsons.length(); i++) {
+                JSONObject subJson = subJsons.getJSONObject(i);
+                fillActionReport(ar.addSubActionsReport(), subJson);
+            }
         }
     }
     
-    private Properties extractProperties(final String key, final JSONObject json) throws JSONException {
-        Properties result = new Properties();
-        JSONArray array = extractArray(key, json);
-        for (int i = 0; i < array.length(); i++) {
-            JSONObject entry = array.getJSONObject(i);
-            result.put(entry.getString("name"), entry.getString("value"));
+    private static void fillSubMessages(final ActionReport.MessagePart mp, final JSONArray json) throws JSONException {
+        if (json == null) {
+            return;
         }
-        return result;
+        for (int i = 0; i < json.length(); i++) {
+            JSONObject subJson = json.getJSONObject(i);
+            MessagePart child = mp.addChild();
+            child.setMessage(subJson.optString("message"));
+            Properties props = (Properties) extractMap(subJson.optJSONObject("properties"), new Properties());
+            for (Map.Entry entry : props.entrySet()) {
+                child.addProperty(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
+            }
+            fillSubMessages(child, subJson.optJSONArray("children"));
+        }
     }
     
-    private JSONArray extractArray(final String key, final JSONObject json) {
-        Object res = json.opt(key);
-        if (res == null) {
-            return new JSONArray();
+//    private void fillMessage(ActionReport.MessagePart mp, JSONObject json) throws JSONException {
+//        mp.setMessage(json.optString("value"));
+//        mp.setChildrenType(json.optString("children-type"));
+//        Properties props = extractProperties("properties", json);
+//        for (String key : props.stringPropertyNames()) {
+//            mp.addProperty(key, props.getProperty(key));
+//        }
+//        JSONArray subJsons = extractArray("messages", json);
+//        for (int i = 0; i < subJsons.length(); i++) {
+//            JSONObject subJson = subJsons.getJSONObject(i);
+//            fillMessage(mp.addChild(), subJson);
+//        }
+//    }
+    
+    private static Object extractGeneral(final Object obj) throws JSONException {
+        if (obj == null) {
+            return null;
         }
-        if (res instanceof JSONArray) {
-            return (JSONArray) res;
+        if (obj instanceof JSONObject) {
+            return extractMap((JSONObject) obj, null);
+        } else if (obj instanceof JSONArray) {
+            return extractCollection((JSONArray) obj, null);
         } else {
-            JSONArray result = new JSONArray();
-            result.put(res);
-            return result;
+            return obj;
         }
     }
+    
+    private static Map extractMap(final JSONObject json, Map preferredResult) throws JSONException {
+        if (json == null) {
+            return preferredResult;
+        }
+        if (preferredResult == null) {
+            preferredResult = new HashMap();
+        }
+        Iterator keys = json.keys();
+        while (keys.hasNext()) {
+            String key = (String) keys.next();
+            preferredResult.put(key, extractGeneral(json.get(key)));
+        }
+        return preferredResult;
+    }
+    
+    private static Collection extractCollection(final JSONArray array, Collection preferredResult) throws JSONException {
+        if (array == null) {
+            return preferredResult;
+        }
+        if (preferredResult == null) {
+            preferredResult = new ArrayList(array.length());
+        }
+        for (int i = 0; i < array.length(); i++) {
+            preferredResult.add(extractGeneral(array.get(i)));
+        }
+        return preferredResult;
+    }
+    
+//    private Properties extractProperties(final String key, final JSONObject json) throws JSONException {
+//        Properties result = new Properties();
+//        JSONArray array = extractArray(key, json);
+//        for (int i = 0; i < array.length(); i++) {
+//            JSONObject entry = array.getJSONObject(i);
+//            Iterator keys = entry.keys();
+//            while (keys.hasNext()) {
+//                String inKey = (String) keys.next();
+//                result.put(inKey, entry.getString(key));
+//            }
+//        }
+//        return result;
+//    }
+//    
+//    private JSONArray extractArray(final String key, final JSONObject json) {
+//        Object res = json.opt(key);
+//        if (res == null) {
+//            return new JSONArray();
+//        }
+//        if (res instanceof JSONArray) {
+//            return (JSONArray) res;
+//        } else {
+//            JSONArray result = new JSONArray();
+//            result.put(res);
+//            return result;
+//        }
+//    }
     
 }

@@ -139,7 +139,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                                     "^[a-zA-Z_][-a-zA-Z0-9_]*$";
     private static final String READ_TIMEOUT = "AS_ADMIN_READTIMEOUT";
     public static final String COMMAND_MODEL_MATCH_HEADER = "X-If-Command-Model-Match";
-    private static final MediaType MEDIATYPE_ACTIONREPORT = new MediaType("actionreport", "json", 
+    private static final MediaType MEDIATYPE_ACTIONREPORT = new MediaType("application", "json", 
             new HashMap<String, String>(1) {{ put("q", "0.8"); }});
     private static final MediaType MEDIATYPE_MULTIPART = new MediaType("multipart", null,
             new HashMap<String, String>(1) {{ put("q", "0.9"); }});
@@ -153,8 +153,8 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         // client = ClientFactory.newClient(); - Move to this standard initialisation when people from Jersey will produce Multipart as a Feature not just module.
         client.configuration()
                 .register(new CsrfProtectionFilter("CLI"))
-                //.register(new ActionReportJsonReader())
-                .register(new ActionReportJson2Reader())
+                .register(new ActionReportJsonReader())
+                //.register(new ActionReportJson2Reader())
                 .register(new ParameterMapFormWriter())
                 .register(new PayloadPartProvider())
                 .register(new AdminCommandStateJsonReader())
