@@ -109,6 +109,10 @@ public class ConnectorsUtil {
 
     private static Collection<String> validSystemRARs = new HashSet<String>();
     private static Collection<String> validNonJdbcSystemRARs = new HashSet<String>();
+    /**
+     * Valid values that can be provided to the JNDI property.
+     */
+    private final static String[] JNDI_SUFFIX_VALUES = { ConnectorConstants.PM_JNDI_SUFFIX , ConnectorConstants.NON_TX_JNDI_SUFFIX };
 
     static{
         initializeSystemRars();
@@ -237,7 +241,7 @@ public class ConnectorsUtil {
      */
     public static String getValidSuffix(String name) {
         if (name != null) {
-            for (String validSuffix : ConnectorConstants.JNDI_SUFFIX_VALUES) {
+            for (String validSuffix : JNDI_SUFFIX_VALUES) {
                 if (name.endsWith(validSuffix)) {
                     return validSuffix;
                 }
@@ -255,7 +259,7 @@ public class ConnectorsUtil {
      */
     public static boolean isValidJndiSuffix(String suffix) {
         if (suffix != null) {
-            for (String validSuffix : ConnectorConstants.JNDI_SUFFIX_VALUES) {
+            for (String validSuffix : JNDI_SUFFIX_VALUES) {
                 if (validSuffix.equals(suffix)) {
                     return true;
                 }
@@ -597,20 +601,6 @@ public class ConnectorsUtil {
         return getReservePrefixedJNDINameForConnectorResourceDefinitionPool(compId, poolName);
     }
 
-    private static String escapeJavaName(String name) {
-        if (name != null) {
-            //replace all 'delimiter' to double delimiter
-            name = name.replace("-", "--");
-            //replace '/' to 'delimiter'
-            name = name.replace("/", "-");
-            if (name.contains("java:") || name.contains(":")) {
-                name = name.replace(":", "-");
-            } else {
-                name = "java-" + name;
-            }
-        }
-        return name;
-    }
 
     public static Map<String,String> convertPropertiesToMap(Properties properties){
         if(properties == null){
@@ -876,40 +866,50 @@ public class ConnectorsUtil {
     private static void extractJar(File jarFile, String destDir) throws IOException {
         java.util.jar.JarFile jar = new java.util.jar.JarFile(jarFile);
         java.util.Enumeration enum1 = jar.entries();
-        while (enum1.hasMoreElements()) {
-            java.util.jar.JarEntry file = (java.util.jar.JarEntry) enum1.nextElement();
-            java.io.File f = new java.io.File(destDir + java.io.File.separator + file.getName());
-            if (file.isDirectory()) {
-                f.mkdir();
-                continue;
-            }
-            InputStream is = null;
-            FileOutputStream fos = null;
-            try {
-                is = jar.getInputStream(file);
-                fos = new FileOutputStream(f);
-                while (is.available() > 0) {
-                    fos.write(is.read());
+        try{
+            while (enum1.hasMoreElements()) {
+                java.util.jar.JarEntry file = (java.util.jar.JarEntry) enum1.nextElement();
+                java.io.File f = new java.io.File(destDir + java.io.File.separator + file.getName());
+                if (file.isDirectory()) {
+                    f.mkdir();
+                    continue;
                 }
-            } finally {
+                InputStream is = null;
+                FileOutputStream fos = null;
                 try {
-                    if (fos != null) {
-                        fos.close();
+                    is = jar.getInputStream(file);
+                    fos = new FileOutputStream(f);
+                    while (is.available() > 0) {
+                        fos.write(is.read());
                     }
-                } catch (Exception e) {
-                    if (_logger.isLoggable(Level.FINEST)) {
-                        _logger.log(Level.FINEST, "exception while closing archive [ " + f.getName() + " ]", e);
+                } finally {
+                    try {
+                        if (fos != null) {
+                            fos.close();
+                        }
+                    } catch (Exception e) {
+                        if (_logger.isLoggable(Level.FINEST)) {
+                            _logger.log(Level.FINEST, "exception while closing archive [ " + f.getName() + " ]", e);
+                        }
                     }
-                }
 
-                try {
-                    if (is != null) {
-                        is.close();
+                    try {
+                        if (is != null) {
+                            is.close();
+                        }
+                    } catch (Exception e) {
+                        if (_logger.isLoggable(Level.FINEST)) {
+                            _logger.log(Level.FINEST, "exception while closing archive [ " + file.getName() + " ]", e);
+                        }
                     }
-                } catch (Exception e) {
-                    if (_logger.isLoggable(Level.FINEST)) {
-                        _logger.log(Level.FINEST, "exception while closing archive [ " + file.getName() + " ]", e);
-                    }
+                }
+            }
+        }finally{
+            try {
+                jar.close();
+            } catch (Exception e) {
+                if (_logger.isLoggable(Level.FINEST)) {
+                    _logger.log(Level.FINEST, "exception while closing archive [ " + jar.getName() + " ]", e);
                 }
             }
         }

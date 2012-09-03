@@ -72,7 +72,7 @@ public class ConnectorClassLoaderServiceImpl implements ConnectorClassLoaderServ
      * class loader for all applications. In other words, we make every
      * standalone RARs available to all applications.
      */
-    private DelegatingClassLoader globalConnectorCL;
+    private volatile DelegatingClassLoader globalConnectorCL;
 
     @Inject
     private AppSpecificConnectorClassLoaderUtil appsSpecificCCLUtil;

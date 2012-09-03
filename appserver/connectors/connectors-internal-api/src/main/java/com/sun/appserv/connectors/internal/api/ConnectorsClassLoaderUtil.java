@@ -95,7 +95,7 @@ public class ConnectorsClassLoaderUtil {
     Events events;
 
 
-    private boolean rarsInitializedInEmbeddedServerMode;
+    private volatile boolean rarsInitializedInEmbeddedServerMode;
 
     public ConnectorClassFinder createRARClassLoader(String moduleDir, ClassLoader deploymentParent,
                                                      String moduleName, List<URI> appLibs)

@@ -188,15 +188,12 @@ public class ConnectorResourceManagerLifecycleListener implements ResourceManage
     }
 
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
-            return ConfigSupport.sortAndDispatch(events, new ConfigChangeHandler(events), logger);
+            return ConfigSupport.sortAndDispatch(events, new ConfigChangeHandler(), logger);
     }
 
     class ConfigChangeHandler implements Changed {
 
-        PropertyChangeEvent[] events;
-
-        private ConfigChangeHandler(PropertyChangeEvent[] events) {
-            this.events = events;
+        private ConfigChangeHandler() {
         }
 
         /**
