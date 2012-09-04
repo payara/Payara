@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,9 +48,11 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.component.Injectable;
 
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.glassfish.api.admin.config.PropertiesDesc;
+import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 
@@ -238,4 +240,30 @@ public interface DiagnosticService extends ConfigBeanProxy, Injectable, Property
     @PropertiesDesc(props={})
     @Element
     List<Property> getProperty();
+    
+    @Element("*")
+    List<DiagnosticServiceExtension> getExtensions();
+
+    /*
+     * Get an extension of the specified type. If there is more than one, it is
+     * undefined as to which one is returned.
+     */
+    @DuckTyped
+    <T extends DiagnosticServiceExtension> T getExtensionByType(Class<T> type);
+
+    class Duck {
+
+        public static <T extends DiagnosticServiceExtension> T getExtensionByType(DiagnosticService s, Class<T> type) {
+            for (DiagnosticServiceExtension extension : s.getExtensions()) {
+                try {
+                    return type.cast(extension);
+                } catch (Exception e) {
+                    // ignore, not the right type.
+                }
+            }
+            return null;
+        }
+
+    }
+
 }
