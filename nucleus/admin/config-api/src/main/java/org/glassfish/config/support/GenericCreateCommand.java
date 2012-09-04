@@ -91,7 +91,7 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
         try {
             model = new GenericCommandModel(targetType, true, create.cluster(), create.i18n(),
                     new LocalStringManagerImpl(targetType),
-                    habitat.getComponent(DomDocument.class),
+                    habitat.<DomDocument>getService(DomDocument.class),
                     commandName, false, create.resolver(), create.decorator());
             if (logger.isLoggable(level)) {
                 for (String paramName : model.getParametersNames()) {
@@ -165,7 +165,7 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
 
                     // check that such instance does not exist yet...
                     if (name!=null) {
-                        Object cbp = habitat.getComponent(targetType.getName(), name);
+                        Object cbp = habitat.getService(targetType, name);
                         if (cbp!=null) {
                             String msg = localStrings.getLocalString(GenericCrudCommand.class,
                                     "GenericCreateCommand.already_existing_instance",
@@ -199,7 +199,7 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
                     
                     CreationDecorator<ConfigBeanProxy> decorator = null;
                     if (create != null) {
-                        decorator = habitat.getComponent(create.decorator());
+                        decorator = habitat.getService(create.decorator());
                     }
                     if (decorator==null) {
                         String msg = localStrings.getLocalString(GenericCrudCommand.class,

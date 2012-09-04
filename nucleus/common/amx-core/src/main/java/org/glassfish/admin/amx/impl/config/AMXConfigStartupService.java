@@ -123,7 +123,7 @@ public final class AMXConfigStartupService
     }
 
     public Domain getDomain() {
-    	return InjectedValues.getInstance().getHabitat().getComponent(Domain.class);
+    	return InjectedValues.getInstance().getHabitat().getService(Domain.class);
     }
 
     public AMXProxy getDomainConfigProxy() {

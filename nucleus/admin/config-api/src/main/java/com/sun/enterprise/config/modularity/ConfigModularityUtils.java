@@ -257,11 +257,11 @@ public final class ConfigModularityUtils {
             StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
             //something directly inside the domain itself as we know one token is domain for sure
             if (tokenizer.countTokens() == 1) {
-                return habitat.getComponent(Domain.class);
+                return habitat.getService(Domain.class);
             }
             location = location.substring(location.indexOf("/", "domain".length()) + 1);
             tokenizer = new StringTokenizer(location, "/", false);
-            ConfigBeanProxy parent = habitat.getComponent(Domain.class);
+            ConfigBeanProxy parent = habitat.getService(Domain.class);
 
             //skipping the domain itself as a token, we know it and took it away.
             String parentElement = "domain";
@@ -290,14 +290,14 @@ public final class ConfigModularityUtils {
             //something directly inside the config itself
             if (tokenizer.countTokens() == 3) {
                 String configName = resolveExpression(location.substring(location.lastIndexOf("[") + 1,location.length()-1));
-                return habitat.getComponent(Domain.class).getConfigNamed(configName);
+                return habitat.<Domain>getService(Domain.class).getConfigNamed(configName);
             }
 
             location = location.substring(location.indexOf("/", "domain/configs".length()) + 1);
             tokenizer = new StringTokenizer(location, "/", false);
             String curLevel = tokenizer.nextToken();
             String configName = resolveExpression(curLevel.substring(curLevel.lastIndexOf("[") + 1,curLevel.length()));
-            ConfigBeanProxy parent = habitat.getComponent(Domain.class).getConfigNamed(configName);
+            ConfigBeanProxy parent = habitat.<Domain>getService(Domain.class).getConfigNamed(configName);
 
             String childElement;
             String parentElement = "Config";
@@ -454,7 +454,7 @@ public final class ConfigModularityUtils {
                     return new GlassFishConfigBean(habitat, this, dom, configModel, xmlStreamReader);
                 }
             };
-            Domain domain = habitat.getComponent(Domain.class);
+            Domain domain = habitat.getService(Domain.class);
             ConfigurationPopulator populator = new ConfigurationPopulator(defaultValue.getXmlConfiguration(), doc, domain);
             populator.run(configParser);
             ConfigBeanProxy configBean = doc.getRoot().createProxy(configBeanClass);
@@ -552,7 +552,7 @@ public final class ConfigModularityUtils {
 
     public static Class getClassFor(String serviceName, Habitat habitat) {
         serviceName = getServiceTypeNameIfNamedComponent(serviceName);
-        ConfigInjector injector = habitat.getComponent(ConfigInjector.class, serviceName);
+        ConfigInjector injector = habitat.getService(ConfigInjector.class, serviceName);
 
         if (injector != null) {
             String clzName = injector.getClass().getName().substring(0, injector.getClass().getName().length() - 8);
@@ -588,7 +588,7 @@ public final class ConfigModularityUtils {
     }
 
     private static ConfigBeanProxy getConfigBeanInstanceFor(Class configBeanType, Habitat habitat) {
-        return (ConfigBeanProxy) habitat.getComponent(configBeanType);
+        return (ConfigBeanProxy) habitat.getService(configBeanType);
     }
 
     public static String serializeConfigBean(ConfigBeanProxy configBean) {
@@ -686,7 +686,7 @@ public final class ConfigModularityUtils {
 
     public static boolean isConfigElementPresent(String serviceName, Habitat habitat, String target) {
         Class configBeanType = getClassFor(serviceName, habitat);
-        Domain domain = habitat.getComponent(Domain.class);
+        Domain domain = habitat.getService(Domain.class);
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
             Config c = domain.getConfigNamed(target);
             if (c.checkIfExtensionExists(configBeanType)) {
@@ -703,7 +703,7 @@ public final class ConfigModularityUtils {
 
     public static void addBeanToDomainXml(String serviceName, String target, Habitat habitat) {
         Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, habitat);
-        Domain domain = habitat.getComponent(Domain.class);
+        Domain domain = habitat.getService(Domain.class);
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
             Config c = domain.getConfigNamed(target);
             c.getExtensionByType(configBeanType);

@@ -120,7 +120,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
         // inject resolver with command parameters...
         manager = new InjectionManager();
 
-        resolver = habitat.getComponent(resolverType);
+        resolver = habitat.getService(resolverType);
 
         paramResolver = getInjectionResolver();
 

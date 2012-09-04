@@ -136,7 +136,7 @@ public interface Nodes extends ConfigBeanProxy, Injectable {
                 return null;
             }
             Dom serverDom = Dom.unwrap(nodes);
-            Domain domain = serverDom.getHabitat().getComponent(Domain.class);
+            Domain domain = serverDom.getHabitat().getService(Domain.class);
             for (Node node : nodes.getNode()) {
                 if (node.getName().equals("localhost-"+domain.getName())) {
                     return node;

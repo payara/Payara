@@ -98,7 +98,7 @@ public class Globals implements Init {
     }
 
     public static <T> T get(Class<T> type) {
-        return defaultHabitat.getComponent(type);
+        return defaultHabitat.getService(type);
     }
 
     public static void setDefaultHabitat(final Habitat habitat) {

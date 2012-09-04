@@ -116,7 +116,7 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
 
     @GET
     public ActionReportResult get() {
-        domain = habitat.getComponent(Domain.class);
+        domain = habitat.getService(Domain.class);
 
         ParameterMap data = new ParameterMap();
         processCommandParams(data);

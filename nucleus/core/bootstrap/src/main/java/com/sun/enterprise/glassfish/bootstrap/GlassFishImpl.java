@@ -118,8 +118,6 @@ public class GlassFishImpl implements GlassFish {
             throw new IllegalArgumentException("Server is not started yet. It is in " + status + "state");
         }
 
-        // Habitat.getComponent(Class) searches both contract and type maps, but
-        // getComponent(Class, String) only searches contract map.
         return serviceName != null ? habitat.<T>getService(serviceType, serviceName) :
                 habitat.<T>getService(serviceType);
     }

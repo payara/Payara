@@ -89,7 +89,7 @@ class ConfigurationParser<C extends ConfigLoader> {
         //TODO requires rework to put all the changes that a service may introduce into one transaction
         //the solution is to put the loop into the apply method...  But it would be some fine amount of work
         for (final ConfigBeanDefaultValue configBeanDefaultValue : values) {
-            Domain domain = habitat.getComponent(Domain.class);
+            Domain domain = habitat.getService(Domain.class);
             ConfigurationPopulator populator = new ConfigurationPopulator(configBeanDefaultValue.getXmlConfiguration(), doc, domain);
             populator.run(configParser);
             final ConfigBeanProxy parent;

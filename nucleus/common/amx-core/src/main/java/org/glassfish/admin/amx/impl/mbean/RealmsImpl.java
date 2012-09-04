@@ -93,7 +93,7 @@ public final class RealmsImpl extends AMXImplBase
     public static RealmsManager
     getRealmsManager()
     {
-        final RealmsManager mgr = Globals.getDefaultHabitat().getComponent(RealmsManager.class);
+        final RealmsManager mgr = Globals.getDefaultHabitat().getService(RealmsManager.class);
         return mgr;
     }
     
@@ -101,7 +101,7 @@ public final class RealmsImpl extends AMXImplBase
     
     private SecurityService getSecurityService()
     {   
-    	return InjectedValues.getInstance().getHabitat().getComponent(SecurityService.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+    	return InjectedValues.getInstance().getHabitat().getService(SecurityService.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
     }
 
     private List<AuthRealm>  getAuthRealms()
@@ -376,7 +376,7 @@ public final class RealmsImpl extends AMXImplBase
             
 
      public String getAnonymousUser() {
-        final Domain domain = InjectedValues.getInstance().getHabitat().getComponent(Domain.class);
+        final Domain domain = InjectedValues.getInstance().getHabitat().getService(Domain.class);
         final List<Config> configs = domain.getConfigs().getConfig();
         
         // find the ADMIN_REALM
@@ -424,7 +424,7 @@ public final class RealmsImpl extends AMXImplBase
         {
             try
             {
-                InjectedValues.getInstance().getHabitat().getByType(com.sun.enterprise.security.SecurityLifecycle.class);
+                InjectedValues.getInstance().getHabitat().getService(com.sun.enterprise.security.SecurityLifecycle.class);
                 LoginContextDriver.login( usernames[0], new char[0], ADMIN_REALM);
                 user = usernames[0];
             }

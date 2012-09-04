@@ -386,7 +386,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             logger.log(Level.SEVERE, "logging.set.formatter ", e);
         }
 
-        Collection<Handler> handlers = habitat.getAllByContract(Handler.class);
+        Collection<Handler> handlers = habitat.getAllServices(Handler.class);
         if (handlers != null && handlers.size() > 0) {
             // Need to lock Logger.class first before locking LogManager to avoid deadlock.
             // See GLASSFISH-7274 for more details.
@@ -418,7 +418,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
             String filterClassName = map.get(LoggingXMLNames.xmltoPropsMap.get("log-filter"));
             if (filterClassName != null) {
-                Filter filterClass = habitat.getComponent(java.util.logging.Filter.class, filterClassName);
+                Filter filterClass = habitat.getService(Filter.class, filterClassName);
                 Logger rootLogger = Logger.global.getParent();
                 if (rootLogger != null) {
                     rootLogger.setFilter(filterClass);

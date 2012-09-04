@@ -126,7 +126,7 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
     protected int executeCommand()
             throws CommandException {
 
-        SSHLauncher sshL = habitat.getComponent(SSHLauncher.class);
+        SSHLauncher sshL = habitat.getService(SSHLauncher.class);
 
         String previousPassword = null;
         boolean status = false;

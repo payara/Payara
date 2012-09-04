@@ -301,7 +301,7 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
 
         public static boolean isDefaultLocalNode(Node node) {
             Dom serverDom = Dom.unwrap(node);
-            Domain domain = serverDom.getHabitat().getComponent(Domain.class);
+            Domain domain = serverDom.getHabitat().getService(Domain.class);
             if (node.getName().equals("localhost-" + domain.getName())) {
                 return true;
             }
@@ -311,7 +311,7 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
         public static boolean isLocal(Node node) {
             // Short circuit common case for efficiency
             Dom serverDom = Dom.unwrap(node);
-            Domain domain = serverDom.getHabitat().getComponent(Domain.class);
+            Domain domain = serverDom.getHabitat().getService(Domain.class);
             if (node.getName().equals("localhost-" + domain.getName())) {
                 return true;
             }
@@ -326,7 +326,7 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
             //check if node is referenced by an instance
             String nodeName = node.getName();
             Dom serverDom = Dom.unwrap(node);
-            Servers servers = serverDom.getHabitat().getComponent(Servers.class);
+            Servers servers = serverDom.getHabitat().getService(Servers.class);
             List<Server> serverList = servers.getServer();
             if (serverList != null) {
                 for (Server server : serverList) {

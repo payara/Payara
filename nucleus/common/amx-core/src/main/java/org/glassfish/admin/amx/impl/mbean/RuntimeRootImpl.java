@@ -160,7 +160,7 @@ public final class RuntimeRootImpl extends AMXImplBase
 
     private NetworkConfig networkConfig()
     {
-        final NetworkConfig config = InjectedValues.getInstance().getHabitat().getComponent(
+        final NetworkConfig config = InjectedValues.getInstance().getHabitat().getService(
         		NetworkConfig.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         return config;
     }

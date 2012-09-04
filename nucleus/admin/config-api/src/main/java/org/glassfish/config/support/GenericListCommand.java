@@ -85,7 +85,7 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
 	    // the target type are not used for the List method parameters.
             model = new GenericCommandModel(targetType, false, null, listing.i18n(),
                     new LocalStringManagerImpl(targetType),
-                    habitat.getComponent(DomDocument.class), commandName, false, listing.resolver(), null);
+                    habitat.<DomDocument>getService(DomDocument.class), commandName, false, listing.resolver(), null);
             if (logger.isLoggable(level)) {
                 for (String paramName : model.getParametersNames()) {
                     CommandModel.ParamModel param = model.getModelFor(paramName);

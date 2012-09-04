@@ -106,10 +106,10 @@ public class ServerHelper {
         }
 
         Dom serverDom = Dom.unwrap(server);
-        Domain domain = serverDom.getHabitat().getComponent(Domain.class);
-        Nodes nodes = serverDom.getHabitat().getComponent(Nodes.class);
+        Domain domain = serverDom.getHabitat().getService(Domain.class);
+        Nodes nodes = serverDom.getHabitat().getService(Nodes.class);
         ServerEnvironment env =
-                serverDom.getHabitat().getComponent(ServerEnvironment.class);
+                serverDom.getHabitat().getService(ServerEnvironment.class);
 
         if (server.isDas()) {
             if (env.isDas()) {
@@ -195,7 +195,7 @@ public class ServerHelper {
 
         try {
             Dom serverDom = Dom.unwrap(server);
-            Domain domain = serverDom.getHabitat().getComponent(Domain.class);
+            Domain domain = serverDom.getHabitat().getService(Domain.class);
 
             adminListenerRaw = GlassFishConfigBean.getRawView(adminListener);
             portString = adminListenerRaw.getPort();

@@ -325,7 +325,7 @@ public interface Server extends ConfigBeanProxy, Injectable, PropertyBag, Named,
 
         public static Cluster getCluster(Server server) {
             Dom serverDom = Dom.unwrap(server);
-            Clusters clusters = serverDom.getHabitat().getComponent(Clusters.class);
+            Clusters clusters = serverDom.getHabitat().getService(Clusters.class);
             if (clusters != null) {
                 for (Cluster cluster : clusters.getCluster()) {
                     for (ServerRef serverRef : cluster.getServerRef()) {
@@ -400,7 +400,7 @@ public interface Server extends ConfigBeanProxy, Injectable, PropertyBag, Named,
                     return null;
 
                 Dom serverDom = Dom.unwrap(server);
-                Configs configs = serverDom.getHabitat().getComponent(Configs.class);
+                Configs configs = serverDom.getHabitat().getService(Configs.class);
                 String configName = getReference(server);
                 Config theConfig = null;
 

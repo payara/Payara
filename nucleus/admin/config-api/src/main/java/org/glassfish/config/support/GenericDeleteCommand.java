@@ -98,7 +98,7 @@ public class GenericDeleteCommand extends GenericCrudCommand implements AdminCom
 	    // the target type are not used for the Delete method parameters.
             model = new GenericCommandModel(targetType, false, delete.cluster(), delete.i18n(),
                     new LocalStringManagerImpl(targetType),
-                    habitat.getComponent(DomDocument.class), commandName, false,
+                    habitat.<DomDocument>getService(DomDocument.class), commandName, false,
                     delete.resolver(), delete.decorator());
             if (logger.isLoggable(level)) {
                 for (String paramName : model.getParametersNames()) {
@@ -121,7 +121,7 @@ public class GenericDeleteCommand extends GenericCrudCommand implements AdminCom
     @Override
     public Collection<? extends AccessCheck> getAccessChecks() {
         final Collection<AccessCheck> checks = new ArrayList<AccessCheck>();
-        parentBean = habitat.getComponent((Class<? extends ConfigBeanProxy>) parentType);
+        parentBean = habitat.getService((Class<? extends ConfigBeanProxy>) parentType);
         name = "";
         if (resolver instanceof TypeAndNameResolver) {
             name = ((TypeAndNameResolver) resolver).name();
@@ -177,7 +177,7 @@ public class GenericDeleteCommand extends GenericCrudCommand implements AdminCom
                 public Object run(ConfigBeanProxy parentProxy) throws PropertyVetoException, TransactionFailure {
                     ConfigSupport._deleteChild(child.parent(), (WriteableView) Proxy.getInvocationHandler(parentProxy), child);
 
-                    DeletionDecorator<ConfigBeanProxy, ConfigBeanProxy> decorator = habitat.getComponent(delete.decorator());
+                    DeletionDecorator<ConfigBeanProxy, ConfigBeanProxy> decorator = habitat.getService(delete.decorator());
                     if (decorator==null) {
                         String msg = localStrings.getLocalString(GenericCrudCommand.class,
                                 "GenericCreateCommand.deletion_decorator_not_found",

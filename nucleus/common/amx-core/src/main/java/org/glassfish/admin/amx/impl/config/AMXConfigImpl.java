@@ -584,7 +584,7 @@ public class AMXConfigImpl extends AMXImplBase
             final ConfigBeanProxy parent = params[0];
 
             final ConfigBean source = (ConfigBean) ConfigBean.unwrap(parent);
-            final ConfigSupport configSupport = source.getHabitat().getComponent(ConfigSupport.class);
+            final ConfigSupport configSupport = source.getHabitat().getService(ConfigSupport.class);
 
             return _run(parent, configSupport);
         }
@@ -745,7 +745,7 @@ public class AMXConfigImpl extends AMXImplBase
         {
             final ConfigBeanJMXSupport sptRoot = ConfigBeanJMXSupportRegistry.getInstance( com.sun.enterprise.config.serverbeans.Domain.class );
         
-            final ConfigSupport configSupport = mConfigBean.getHabitat().getComponent(ConfigSupport.class);
+            final ConfigSupport configSupport = mConfigBean.getHabitat().getService(ConfigSupport.class);
             
             recursiveCreate( item, sptRoot, mSubs );
         }
@@ -1477,7 +1477,7 @@ public class AMXConfigImpl extends AMXImplBase
 
         final AttributeList successfulAttrs = new AttributeList();
 
-        final Transactions transactions = mConfigBean.getHabitat().getComponent(Transactions.class);
+        final Transactions transactions = mConfigBean.getHabitat().getService(Transactions.class);
 
         if (xmlAttrs.size() != 0)
         {

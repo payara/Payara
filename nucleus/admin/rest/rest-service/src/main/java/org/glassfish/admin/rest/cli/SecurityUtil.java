@@ -81,7 +81,7 @@ public class SecurityUtil {
     }
 
     public  RealmsManager getRealmsManager() {
-        RealmsManager mgr = Globals.getDefaultHabitat().getComponent(RealmsManager.class);
+        RealmsManager mgr = Globals.getDefaultHabitat().getService(RealmsManager.class);
         return mgr;
     }
 

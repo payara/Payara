@@ -103,7 +103,7 @@ public class MonitoringResource {
 
         String currentInstanceName = System.getProperty("com.sun.aas.instanceName");
         boolean isRunningOnDAS = "server".equals(currentInstanceName); //TODO this needs to come from an API. Check with admin team
-        MonitoringRuntimeDataRegistry monitoringRegistry =habitat.getComponent(MonitoringRuntimeDataRegistry.class);
+        MonitoringRuntimeDataRegistry monitoringRegistry =habitat.getService(MonitoringRuntimeDataRegistry.class);
         TreeNode rootNode = monitoringRegistry.get(currentInstanceName);
 
         //The pathSegments will always contain "domain". Discard it
@@ -159,7 +159,7 @@ public class MonitoringResource {
             constructEntity(list,  ar);
 
             if(isRunningOnDAS) { // Add links to instances from the cluster
-                Domain domain = habitat.getComponent(Domain.class);
+                Domain domain = habitat.getService(Domain.class);
                 Map<String, String> links = (Map<String, String>) ar.getExtraProperties().get("childResources");
                 for (Server s : domain.getServers().getServer()) {
                     if (!s.getName().equals("server")) {// add all non 'server' instances

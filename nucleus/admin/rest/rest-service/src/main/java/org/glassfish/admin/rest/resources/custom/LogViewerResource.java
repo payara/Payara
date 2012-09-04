@@ -137,7 +137,7 @@ public class LogViewerResource {
 
 
         // getting logFilter object from habitat
-        LogFilter logFilter = habitat.getComponent(LogFilter.class);
+        LogFilter logFilter = habitat.getService(LogFilter.class);
         String logLocation = "";
 
         // getting log file location on DAS for server/local instance/remote instance
