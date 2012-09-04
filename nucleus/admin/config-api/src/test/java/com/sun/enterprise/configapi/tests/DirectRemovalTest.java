@@ -75,7 +75,7 @@ public class DirectRemovalTest extends ConfigPersistence {
 
     public void doTest() throws TransactionFailure {
 
-        NetworkListeners listeners = habitat.getComponent(NetworkListeners.class);
+        NetworkListeners listeners = habitat.getService(NetworkListeners.class);
 
         ConfigBean serviceBean = (ConfigBean) ConfigBean.unwrap(listeners);
 

@@ -70,7 +70,7 @@ public class SubTypesTest extends ConfigApiTest {
 
     @Test
     public void testSubTypesOfDomain() {
-        Domain domain = super.getHabitat().getComponent(Domain.class);
+        Domain domain = super.getHabitat().getService(Domain.class);
         try {
             Class<?>[] subTypes = ConfigSupport.getSubElementsTypes((ConfigBean) ConfigBean.unwrap(domain));
             for (Class subType : subTypes) {

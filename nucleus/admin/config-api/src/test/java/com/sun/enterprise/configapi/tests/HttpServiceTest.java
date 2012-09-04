@@ -67,7 +67,7 @@ public class HttpServiceTest extends ConfigApiTest {
 
     @Before
     public void setup() {
-        listener = getHabitat().getComponent(NetworkConfig.class).getNetworkListener("admin-listener");
+        listener = getHabitat().<NetworkConfig>getService(NetworkConfig.class).getNetworkListener("admin-listener");
         assertTrue(listener != null);
     }
 

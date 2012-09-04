@@ -66,7 +66,7 @@ public class SecurityServiceDefaultsTest extends ConfigApiTest {
 
     @Before
     public void setUp() {
-        ss = super.getHabitat().getComponent(SecurityService.class);
+        ss = super.getHabitat().getService(SecurityService.class);
     }
 
     @After

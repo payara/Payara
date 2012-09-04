@@ -72,7 +72,7 @@ public class TypedListenerTest extends ConfigApiTest {
     @Test
     public void addElementTest() throws TransactionFailure {
 
-        final Domain domain = getHabitat().getComponent(Domain.class);
+        final Domain domain = getHabitat().getService(Domain.class);
         final ConfigListener configListener = new ConfigListener() {
             @Override
             public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
@@ -81,7 +81,7 @@ public class TypedListenerTest extends ConfigApiTest {
             }
         };
 
-        Transactions transactions = getHabitat().getComponent(Transactions.class);
+        Transactions transactions = getHabitat().getService(Transactions.class);
 
         try {
             transactions.addListenerForType(SystemProperty.class, configListener);
@@ -159,7 +159,7 @@ public class TypedListenerTest extends ConfigApiTest {
 
     @Test
     public void multipleListeners() throws TransactionFailure {
-        final Domain domain = getHabitat().getComponent(Domain.class);
+        final Domain domain = getHabitat().getService(Domain.class);
         final ConfigListener configListener1 = new ConfigListener() {
             @Override
             public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
@@ -175,7 +175,7 @@ public class TypedListenerTest extends ConfigApiTest {
             }
         };
 
-        Transactions transactions = getHabitat().getComponent(Transactions.class);
+        Transactions transactions = getHabitat().getService(Transactions.class);
 
         try {
             transactions.addListenerForType(SystemProperty.class, configListener1);

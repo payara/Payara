@@ -93,7 +93,7 @@ public class ReferenceConstrainClusterTest extends ConfigApiTest {
     
     @Test
     public void clusterServerRefInvalid() throws TransactionFailure {
-        Cluster cluster = habitat.getComponent(Cluster.class, "clusterA");
+        Cluster cluster = habitat.getService(Cluster.class, "clusterA");
         assertNotNull(cluster);
         ServerRef sref = cluster.getServerRef().get(0);
         ConfigBean serverConfig = (ConfigBean) ConfigBean.unwrap(sref);
@@ -102,7 +102,7 @@ public class ReferenceConstrainClusterTest extends ConfigApiTest {
         configChanges.put("ref", "server-nonexist");
         changes.put(serverConfig, configChanges);
         try {
-            ConfigSupport cs = getHabitat().getComponent(ConfigSupport.class);
+            ConfigSupport cs = getHabitat().getService(ConfigSupport.class);
             cs.apply(changes);
             fail("Can not reach this point");
         } catch (TransactionFailure tf) {
@@ -113,7 +113,7 @@ public class ReferenceConstrainClusterTest extends ConfigApiTest {
     
     @Test
     public void clusterServerRefValid() throws TransactionFailure {
-        Cluster cluster = habitat.getComponent(Cluster.class, "clusterA");
+        Cluster cluster = habitat.getService(Cluster.class, "clusterA");
         assertNotNull(cluster);
         ServerRef sref = cluster.getServerRef().get(0);
         ConfigBean serverConfig = (ConfigBean) ConfigBean.unwrap(sref);
@@ -122,7 +122,7 @@ public class ReferenceConstrainClusterTest extends ConfigApiTest {
         configChanges.put("ref", "server");
         changes.put(serverConfig, configChanges);
         try {
-            ConfigSupport cs = getHabitat().getComponent(ConfigSupport.class);
+            ConfigSupport cs = getHabitat().getService(ConfigSupport.class);
             cs.apply(changes);
         } catch (TransactionFailure tf) {
             fail("Can not reach this point");
@@ -131,7 +131,7 @@ public class ReferenceConstrainClusterTest extends ConfigApiTest {
     
     @Test
     public void clusterConfigRefInvalid() throws TransactionFailure {
-        Cluster cluster = habitat.getComponent(Cluster.class, "clusterA");
+        Cluster cluster = habitat.getService(Cluster.class, "clusterA");
         assertNotNull(cluster);
         ConfigBean serverConfig = (ConfigBean) ConfigBean.unwrap(cluster);
         Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
@@ -139,7 +139,7 @@ public class ReferenceConstrainClusterTest extends ConfigApiTest {
         configChanges.put("config-ref", "server-config-nonexist");
         changes.put(serverConfig, configChanges);
         try {
-            ConfigSupport cs = getHabitat().getComponent(ConfigSupport.class);
+            ConfigSupport cs = getHabitat().getService(ConfigSupport.class);
             cs.apply(changes);
             fail("Can not reach this point");
         } catch (TransactionFailure tf) {
@@ -150,7 +150,7 @@ public class ReferenceConstrainClusterTest extends ConfigApiTest {
     
     @Test
     public void clusterConfigRefValid() throws TransactionFailure {
-        Cluster cluster = habitat.getComponent(Cluster.class, "clusterA");
+        Cluster cluster = habitat.getService(Cluster.class, "clusterA");
         assertNotNull(cluster);
         ConfigBean serverConfig = (ConfigBean) ConfigBean.unwrap(cluster);
         Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
@@ -158,7 +158,7 @@ public class ReferenceConstrainClusterTest extends ConfigApiTest {
         configChanges.put("config-ref", "server-config");
         changes.put(serverConfig, configChanges);
         try {
-            ConfigSupport cs = getHabitat().getComponent(ConfigSupport.class);
+            ConfigSupport cs = getHabitat().getService(ConfigSupport.class);
             cs.apply(changes);
         } catch (TransactionFailure tf) {
             fail("Can not reach this point");

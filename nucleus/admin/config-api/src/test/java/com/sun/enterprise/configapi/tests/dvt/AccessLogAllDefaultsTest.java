@@ -70,7 +70,7 @@ public class AccessLogAllDefaultsTest extends ConfigApiTest {
     
     @Before
     public void setUp() {
-        al = super.getHabitat().getComponent(AccessLog.class);
+        al = super.getHabitat().getService(AccessLog.class);
     }
 
     @After

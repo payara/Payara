@@ -62,13 +62,13 @@ public class ApplicationsTest extends ConfigApiTest {
 
     @Test
     public void appsExistTest() {
-        Applications apps = getHabitat().getComponent(Applications.class);
+        Applications apps = getHabitat().getService(Applications.class);
         assertTrue(apps!=null);
     }
 
     @Test
     public void getModulesTest() {
-        Applications apps = getHabitat().getComponent(Applications.class);
+        Applications apps = getHabitat().getService(Applications.class);
         List<ApplicationName> modules = apps.getModules();
         for (ApplicationName module : modules) {
             logger.fine("Module = " + module.getName());
@@ -78,7 +78,7 @@ public class ApplicationsTest extends ConfigApiTest {
 
     @Test
     public void getApplicationTest() {
-        Applications apps = getHabitat().getComponent(Applications.class);
+        Applications apps = getHabitat().getService(Applications.class);
         Application app = apps.getApplication("simple");
         assertTrue(app != null);
     }
@@ -91,7 +91,7 @@ public class ApplicationsTest extends ConfigApiTest {
      */
     @Test(expected = UnsupportedOperationException.class)
     public void removalTest() throws Throwable {
-        Applications apps = getHabitat().getComponent(Applications.class);
+        Applications apps = getHabitat().getService(Applications.class);
         try {
             ConfigSupport.apply(new SingleConfigCode<Applications>() {
                 public Object run(Applications param) throws PropertyVetoException, TransactionFailure {

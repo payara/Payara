@@ -85,7 +85,7 @@ public class TransactionCallBackTest extends ConfigPersistence {
     }
     
     public void doTest() throws TransactionFailure {
-        ConfigBean serviceBean = (ConfigBean) ConfigBean.unwrap(habitat.getComponent(NetworkListeners.class));
+        ConfigBean serviceBean = (ConfigBean) ConfigBean.unwrap(habitat.<NetworkListeners>getService(NetworkListeners.class));
         Map<String, String> configChanges = new HashMap<String, String>();
         configChanges.put("name", "funky-listener");
 

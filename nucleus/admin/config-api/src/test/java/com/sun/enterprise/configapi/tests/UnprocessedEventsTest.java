@@ -91,7 +91,7 @@ public class UnprocessedEventsTest  extends ConfigApiTest
         // Let's register a listener
         ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(listener);
         bean.addListener(this);
-        Transactions transactions = getHabitat().getComponent(Transactions.class);
+        Transactions transactions = getHabitat().getService(Transactions.class);
 
         try {
             transactions.addTransactionsListener(this);

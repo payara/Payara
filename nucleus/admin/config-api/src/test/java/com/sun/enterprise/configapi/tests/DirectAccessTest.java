@@ -85,7 +85,7 @@ public class DirectAccessTest extends ConfigPersistence {
     }
     
     public void doTest() throws TransactionFailure {
-        NetworkConfig networkConfig = habitat.getComponent(NetworkConfig.class);
+        NetworkConfig networkConfig = habitat.getService(NetworkConfig.class);
         final NetworkListener listener = networkConfig.getNetworkListeners()
             .getNetworkListener().get(0);
         final Http http = listener.findHttpProtocol().getHttp();
@@ -100,13 +100,13 @@ public class DirectAccessTest extends ConfigPersistence {
         changes.put(config, configChanges);
         changes.put(config2, config2Changes);
 
-        JavaConfig javaConfig = habitat.getComponent(JavaConfig.class);
+        JavaConfig javaConfig = habitat.getService(JavaConfig.class);
         ConfigBean javaConfigBean = (ConfigBean) ConfigBean.unwrap(javaConfig);
         Map<String, String> javaConfigChanges = new HashMap<String, String>();
         javaConfigChanges.put("jvm-options", "-XFooBar=false");
         changes.put(javaConfigBean, javaConfigChanges);
 
-        getHabitat().getComponent(ConfigSupport.class).apply(changes);
+        getHabitat().<ConfigSupport>getService(ConfigSupport.class).apply(changes);
     }
 
     public boolean assertResult(String s) {

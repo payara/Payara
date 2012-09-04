@@ -92,7 +92,7 @@ public class TranslatedViewCreationTest extends ConfigApiTest {
 
     @Test
     public void createVirtualServerTest() throws TransactionFailure {
-        httpService = getHabitat().getComponent(HttpService.class);
+        httpService = getHabitat().getService(HttpService.class);
         final TransactionListener listener = new TransactionListener() {
                 public void transactionCommited(List<PropertyChangeEvent> changes) {
                     events = changes;
@@ -102,7 +102,7 @@ public class TranslatedViewCreationTest extends ConfigApiTest {
             }
         };
 
-        Transactions transactions = getHabitat().getComponent(Transactions.class);
+        Transactions transactions = getHabitat().getService(Transactions.class);
 
         try {
             transactions.addTransactionsListener(listener);

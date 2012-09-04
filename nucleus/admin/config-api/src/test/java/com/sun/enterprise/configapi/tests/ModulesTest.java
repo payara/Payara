@@ -62,7 +62,7 @@ public class ModulesTest extends ConfigApiTest {
 
     @Before
     public void setup() {
-        Applications apps = getHabitat().getComponent(Applications.class);
+        Applications apps = getHabitat().getService(Applications.class);
         assertTrue(apps!=null);
         modules = apps.getModules();
         assertTrue(modules!=null);

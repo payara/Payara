@@ -62,7 +62,7 @@ public class Ssl2EnabledTest extends ConfigApiTest {
 
     @Before
     public void setup() {
-        config = getHabitat().getComponent(NetworkConfig.class);
+        config = getHabitat().getService(NetworkConfig.class);
         assertTrue(config !=null);
 
     }

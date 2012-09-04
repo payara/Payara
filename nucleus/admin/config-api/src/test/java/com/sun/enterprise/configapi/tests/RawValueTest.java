@@ -67,7 +67,7 @@ public class RawValueTest extends ConfigApiTest {
 
     @Test
     public void testAppRoot() {
-        Domain domain = getHabitat().getComponent(Domain.class);
+        Domain domain = getHabitat().getService(Domain.class);
         Domain rawDomain = GlassFishConfigBean.getRawView(domain);
         String appRoot = domain.getApplicationRoot();
         String appRawRoot = rawDomain.getApplicationRoot();

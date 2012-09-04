@@ -63,7 +63,7 @@ public class EnabledTest extends ConfigApiTest {
 
     @Before
     public void setup() {
-        NetworkConfig service = getHabitat().getComponent(NetworkConfig.class);
+        NetworkConfig service = getHabitat().getService(NetworkConfig.class);
         assertTrue(service != null);
         listeners = service.getNetworkListeners().getNetworkListener();
     }

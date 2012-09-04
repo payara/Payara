@@ -106,7 +106,7 @@ public abstract class ConfigPersistence extends ConfigApiTest {
 
             }
         };
-        Transactions transactions = getHabitat().getComponent(Transactions.class);
+        Transactions transactions = getHabitat().getService(Transactions.class);
         
         try {
             transactions.addTransactionsListener(testListener);

@@ -66,7 +66,7 @@ public class HttpListenerTest extends ConfigApiTest {
 
     @Before
     public void setup() {
-        NetworkListeners service = getHabitat().getComponent(NetworkListeners.class);
+        NetworkListeners service = getHabitat().getService(NetworkListeners.class);
         assertTrue(service!=null);
         for (NetworkListener item : service.getNetworkListener()) {
             if ("http-listener-1".equals(item.getName())) {

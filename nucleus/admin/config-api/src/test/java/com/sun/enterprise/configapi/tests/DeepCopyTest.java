@@ -69,7 +69,7 @@ public class DeepCopyTest extends ConfigApiTest {
 
     @Test
     public void configCopy() throws Exception {
-        final Config config = getHabitat().getComponent(Config.class);
+        final Config config = getHabitat().getService(Config.class);
         Assert.assertNotNull(config);
         String configName = config.getName();
         final Config newConfig = (Config) ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
@@ -101,7 +101,7 @@ public class DeepCopyTest extends ConfigApiTest {
                 wConfigs.getConfig().add(newConfig);
                 return null;
             }
-        }, getHabitat().getComponent(Configs.class));
+        }, getHabitat().<Configs>getService(Configs.class));
         String resultingXML = save(document).toString();
         Assert.assertTrue("Expecting some-config, got " + resultingXML, resultingXML.contains("some-config"));
     }
@@ -109,7 +109,7 @@ public class DeepCopyTest extends ConfigApiTest {
     @Test
     public void parentingTest() throws Exception {
 
-        final Config config = getHabitat().getComponent(Config.class);
+        final Config config = getHabitat().getService(Config.class);
         Assert.assertNotNull(config);
         String configName = config.getName();
         final Config newConfig = (Config) ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {

@@ -92,7 +92,7 @@ public class ReferenceConstrainTest extends ConfigApiTest {
     
     @Test
     public void serverConfigRefInvalid() throws TransactionFailure {
-        Server server = habitat.getComponent(Server.class, "server");
+        Server server = habitat.getService(Server.class, "server");
         assertNotNull(server);
         ConfigBean serverConfig = (ConfigBean) ConfigBean.unwrap(server);
         Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
@@ -100,7 +100,7 @@ public class ReferenceConstrainTest extends ConfigApiTest {
         configChanges.put("config-ref", "server-config-nonexist");
         changes.put(serverConfig, configChanges);
         try {
-            ConfigSupport cs = getHabitat().getComponent(ConfigSupport.class);
+            ConfigSupport cs = getHabitat().getService(ConfigSupport.class);
             cs.apply(changes);
             fail("Can not reach this point");
         } catch (TransactionFailure tf) {
@@ -111,7 +111,7 @@ public class ReferenceConstrainTest extends ConfigApiTest {
     
     @Test
     public void serverConfigRefValid() throws TransactionFailure {
-        Server server = habitat.getComponent(Server.class, "server");
+        Server server = habitat.getService(Server.class, "server");
         assertNotNull(server);
         ConfigBean serverConfig = (ConfigBean) ConfigBean.unwrap(server);
         Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
@@ -119,7 +119,7 @@ public class ReferenceConstrainTest extends ConfigApiTest {
         configChanges.put("config-ref", "server-config");
         changes.put(serverConfig, configChanges);
         try {
-            ConfigSupport cs = getHabitat().getComponent(ConfigSupport.class);
+            ConfigSupport cs = getHabitat().getService(ConfigSupport.class);
             cs.apply(changes);
         } catch (TransactionFailure tf) {
             fail("Can not reach this point");
@@ -128,7 +128,7 @@ public class ReferenceConstrainTest extends ConfigApiTest {
     
     @Test
     public void jmxConnectorAuthRealmRefInvalid() throws TransactionFailure {
-        JmxConnector jmxConnector = habitat.getComponent(JmxConnector.class, "system");
+        JmxConnector jmxConnector = habitat.getService(JmxConnector.class, "system");
         assertNotNull(jmxConnector);
         ConfigBean serverConfig = (ConfigBean) ConfigBean.unwrap(jmxConnector);
         Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
@@ -136,7 +136,7 @@ public class ReferenceConstrainTest extends ConfigApiTest {
         configChanges.put("auth-realm-name", "realm-not-exist");
         changes.put(serverConfig, configChanges);
         try {
-            ConfigSupport cs = getHabitat().getComponent(ConfigSupport.class);
+            ConfigSupport cs = getHabitat().getService(ConfigSupport.class);
             cs.apply(changes);
             fail("Can not reach this point");
         } catch (TransactionFailure tf) {
@@ -147,7 +147,7 @@ public class ReferenceConstrainTest extends ConfigApiTest {
     
     @Test
     public void jmxConnectorAuthRealmRefValid() throws TransactionFailure {
-        JmxConnector jmxConnector = habitat.getComponent(JmxConnector.class, "system");
+        JmxConnector jmxConnector = habitat.getService(JmxConnector.class, "system");
         assertNotNull(jmxConnector);
         ConfigBean serverConfig = (ConfigBean) ConfigBean.unwrap(jmxConnector);
         Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
@@ -155,7 +155,7 @@ public class ReferenceConstrainTest extends ConfigApiTest {
         configChanges.put("auth-realm-name", "file");
         changes.put(serverConfig, configChanges);
         try {
-            ConfigSupport cs = getHabitat().getComponent(ConfigSupport.class);
+            ConfigSupport cs = getHabitat().getService(ConfigSupport.class);
             cs.apply(changes);
         } catch (TransactionFailure tf) {
             fail("Can not reach this point");

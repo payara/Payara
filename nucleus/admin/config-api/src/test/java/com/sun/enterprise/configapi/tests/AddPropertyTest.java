@@ -77,7 +77,7 @@ public class AddPropertyTest extends ConfigApiTest {
 
     @Test
     public void transactionEvents() throws TransactionFailure {
-        final Domain domain = getHabitat().getComponent(Domain.class);
+        final Domain domain = getHabitat().getService(Domain.class);
         final TransactionListener listener = new TransactionListener() {
                 public void transactionCommited(List<PropertyChangeEvent> changes) {
                     events = changes;
@@ -87,7 +87,7 @@ public class AddPropertyTest extends ConfigApiTest {
             }
         };
 
-        Transactions transactions = getHabitat().getComponent(Transactions.class);
+        Transactions transactions = getHabitat().getService(Transactions.class);
 
         try {
 

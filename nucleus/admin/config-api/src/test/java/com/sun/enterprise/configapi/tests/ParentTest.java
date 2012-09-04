@@ -61,7 +61,7 @@ public class ParentTest extends ConfigApiTest {
     @Test
     public void parents() {
 
-        NetworkListeners service = getHabitat().getComponent(NetworkListeners.class);
+        NetworkListeners service = getHabitat().getService(NetworkListeners.class);
         assertNotNull(service);
         NetworkListener listener = service.getNetworkListener().get(0);
         assertNotNull(listener);

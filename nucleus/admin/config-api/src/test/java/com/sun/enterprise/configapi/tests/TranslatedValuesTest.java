@@ -68,7 +68,7 @@ public class TranslatedValuesTest extends ConfigApiTest {
 
     @Test
     public void testAppRoot() {
-        Domain domain = getHabitat().getComponent(Domain.class);
+        Domain domain = getHabitat().getService(Domain.class);
         String appRoot = domain.getApplicationRoot();
         assertTrue(appRoot.startsWith("cafebabe"));
     }
@@ -76,7 +76,7 @@ public class TranslatedValuesTest extends ConfigApiTest {
     @Test
     public void testJavaRoot() {
         if (System.getProperty("user.home").contains(File.separator)) {
-            JavaConfig config = getHabitat().getComponent(JavaConfig.class);
+            JavaConfig config = getHabitat().getService(JavaConfig.class);
             String javaRoot = config.getJavaHome();
             assertTrue(javaRoot.indexOf(File.separatorChar)!=-1);
         }

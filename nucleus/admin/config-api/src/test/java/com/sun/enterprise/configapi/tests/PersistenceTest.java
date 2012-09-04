@@ -56,7 +56,7 @@ public class PersistenceTest extends ConfigPersistence {
     }
     
     public void doTest() throws TransactionFailure {
-        NetworkListeners service = getHabitat().getComponent(NetworkListeners.class);
+        NetworkListeners service = getHabitat().getService(NetworkListeners.class);
         // now do a transaction
 
         ConfigSupport.apply(new SingleConfigCode<Transport>() {

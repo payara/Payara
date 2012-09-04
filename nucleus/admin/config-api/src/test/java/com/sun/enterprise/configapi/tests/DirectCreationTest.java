@@ -91,7 +91,7 @@ public class DirectCreationTest extends ConfigPersistence {
     
     public void doTest() throws TransactionFailure {
 
-        AdminService service = habitat.getComponent(AdminService.class);
+        AdminService service = habitat.getService(AdminService.class);
 
         ConfigBean serviceBean = (ConfigBean) ConfigBean.unwrap(service);
         Class<?>[] subTypes = null;
@@ -127,7 +127,7 @@ public class DirectCreationTest extends ConfigPersistence {
         ConfigSupport.MultipleAttributeChanges multipleChanges1 = new ConfigSupport.MultipleAttributeChanges("name", values1 );
         profilerChanges.add(multipleChanges);
         profilerChanges.add(multipleChanges1);
-        support.createAndSet((ConfigBean) ConfigBean.unwrap(habitat.getComponent(JavaConfig.class))
+        support.createAndSet((ConfigBean) ConfigBean.unwrap(habitat.<JavaConfig>getService(JavaConfig.class))
                 , Profiler.class, profilerChanges);
     }
 
@@ -136,7 +136,7 @@ public class DirectCreationTest extends ConfigPersistence {
 
         boolean foundOne=false;
         for (String attrName :
-                ((ConfigBean) ConfigBean.unwrap(habitat.getComponent(JavaConfig.class))).model.getAttributeNames()) {
+                ((ConfigBean) ConfigBean.unwrap(habitat.<JavaConfig>getService(JavaConfig.class))).model.getAttributeNames()) {
             assertTrue(attrName!=null);
             foundOne=true;
         }

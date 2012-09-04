@@ -104,21 +104,16 @@ public class ParentConfigListenerTest extends ConfigApiTest {
         List<ServiceHandle<?>> networkListeners = habitat.getAllServiceHandles(NetworkListener.class);
         boolean found = false;
         
-        for (ServiceHandle<?> bobSH : networkListeners) {
-            Object bob = bobSH.getService();
-            if (!(bob instanceof NetworkListener)) {
-                System.out.println("JRW(10) PCL bob=" + bob + " of type " + bob.getClass().getName() +
-                        " bobSH=" + bobSH);
-            }
-            NetworkListener nl = (NetworkListener) bob;
-            System.out.println("Network listener " + nl.getName());
+        for (ServiceHandle<?> nlSH : networkListeners) {
+            NetworkListener nl = (NetworkListener) nlSH.getService();
             if (nl.getName().equals("Funky-Listener")) {
                 found=true;
             }
         }
         Assert.assertTrue("Newly added listener not found", found);
+        
         // direct access.
-        NetworkListener nl = habitat.getComponent(NetworkListener.class, "Funky-Listener");
+        NetworkListener nl = habitat.getService(NetworkListener.class, "Funky-Listener");
         Assert.assertTrue("Direct access to newly added listener failed", nl!=null);
         bean.removeListener(container);
     }

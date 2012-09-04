@@ -43,6 +43,7 @@ package com.sun.enterprise.configapi.tests;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.hk2.api.DynamicConfiguration;
 import org.glassfish.hk2.api.DynamicConfigurationService;
+import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import org.glassfish.config.support.ConfigConfigBeanListener;
@@ -54,7 +55,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
+// import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -78,8 +79,8 @@ public class ConfigListenerTest extends ConfigApiTest {
         habitat = Utils.instance.getHabitat(this);
         
         // make sure the ConfigConfigListener exists
-        Inhabitant<ConfigConfigBeanListener> i = habitat.getInhabitantByType(ConfigConfigBeanListener.class);
-        ConfigConfigBeanListener ccbl = i.get();
+        ServiceHandle<ConfigConfigBeanListener> i = habitat.getServiceHandle(ConfigConfigBeanListener.class);
+        ConfigConfigBeanListener ccbl = i.getService();
         assertTrue(ccbl != null);
     }
     
@@ -103,7 +104,7 @@ public class ConfigListenerTest extends ConfigApiTest {
     @Test
     public void changedTest() throws TransactionFailure {
 
-        Transactions transactions = getHabitat().getComponent(Transactions.class);
+        Transactions transactions = getHabitat().getService(Transactions.class);
 
         HttpListenerContainer container = registerAndCreateHttpListenerContainer(habitat);
 
@@ -135,7 +136,7 @@ public class ConfigListenerTest extends ConfigApiTest {
     @Test
     public void removeListenerTest() throws TransactionFailure {
 
-        Transactions transactions = getHabitat().getComponent(Transactions.class);
+        Transactions transactions = getHabitat().getService(Transactions.class);
         
         HttpListenerContainer container = registerAndCreateHttpListenerContainer(habitat);
 

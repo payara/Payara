@@ -60,7 +60,7 @@ public class DefaultValueTest extends ConfigApiTest {
 
     @Before
     public void setup() {
-        NetworkListeners httpService = getHabitat().getComponent(NetworkListeners.class);
+        NetworkListeners httpService = getHabitat().getService(NetworkListeners.class);
         listener = httpService.getNetworkListener().get(0);
 
     }
@@ -81,7 +81,7 @@ public class DefaultValueTest extends ConfigApiTest {
 
     @Test
     public void defaultValueTest() {
-        Protocols protocols = getHabitat().getComponent(Protocols.class);
+        Protocols protocols = getHabitat().getService(Protocols.class);
         for (Protocol protocol : protocols.getProtocol()) {
             Http http = protocol.getHttp();
             System.out.println(http.getCompressableMimeType());

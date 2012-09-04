@@ -72,8 +72,8 @@ public class TransactionListenerTest extends ConfigApiTest {
 
     @Test
     public void transactionEvents() throws Exception, TransactionFailure {
-        httpService = getHabitat().getComponent(HttpService.class);
-        NetworkConfig networkConfig = getHabitat().getComponent(NetworkConfig.class);
+        httpService = getHabitat().getService(HttpService.class);
+        NetworkConfig networkConfig = getHabitat().getService(NetworkConfig.class);
         final NetworkListener netListener = networkConfig.getNetworkListeners()
             .getNetworkListener().get(0);
         final Http http = netListener.findHttpProtocol().getHttp();
@@ -86,7 +86,7 @@ public class TransactionListenerTest extends ConfigApiTest {
             }
         };
 
-        Transactions transactions = getHabitat().getComponent(Transactions.class);
+        Transactions transactions = getHabitat().getService(Transactions.class);
 
         try {
             transactions.addTransactionsListener(listener);

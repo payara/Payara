@@ -54,7 +54,7 @@ public class DomainTest extends ConfigApiTest {
     @Test
     public void domainExist() {
 
-        Domain domain = getHabitat().getComponent(Domain.class);
+        Domain domain = getHabitat().getService(Domain.class);
         assertTrue(domain != null);
     }
 

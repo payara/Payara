@@ -66,7 +66,7 @@ public class AttributeRemovalTest extends ConfigApiTest {
 
     @Test
     public void removeAttributeTest() throws TransactionFailure {
-        HttpService httpService = Utils.instance.getHabitat(this).getComponent(HttpService.class);
+        HttpService httpService = Utils.instance.getHabitat(this).getService(HttpService.class);
         VirtualServer vs = httpService.getVirtualServerByName("server");
         ConfigSupport.apply(new SingleConfigCode<VirtualServer>() {
 
@@ -93,7 +93,7 @@ public class AttributeRemovalTest extends ConfigApiTest {
     
     @Test(expected=PropertyVetoException.class)
     public void readOnlyRemovalTest() throws TransactionFailure , PropertyVetoException{
-        Server server = getHabitat().getComponent(Server.class);
+        Server server = getHabitat().getService(Server.class);
         logger.fine("config-ref is " + server.getConfigRef());
         try {
             server.setConfigRef(null);
@@ -106,7 +106,7 @@ public class AttributeRemovalTest extends ConfigApiTest {
 
     @Test
     public void deprecatedWrite() throws TransactionFailure {
-        final Server server = getHabitat().getComponent(Server.class);
+        final Server server = getHabitat().getService(Server.class);
         final String value = server.getNodeRef();
         logger.fine("node-ref is " + server.getNodeRef());
         ConfigSupport.apply(new SingleConfigCode<Server>() {

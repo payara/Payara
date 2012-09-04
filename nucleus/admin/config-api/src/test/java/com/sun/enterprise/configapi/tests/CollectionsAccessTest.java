@@ -67,14 +67,14 @@ public class CollectionsAccessTest extends ConfigApiTest  {
 
     @Test(expected=IllegalStateException.class)
     public void unprotectedAccess() throws IllegalStateException {
-        Applications apps = getHabitat().getComponent(Applications.class);
+        Applications apps = getHabitat().getService(Applications.class);
         assertTrue(apps!=null);
         apps.getModules().add(null);
     }
 
     @Test(expected= TransactionFailure.class)
     public void semiProtectedTest() throws TransactionFailure {
-        final Applications apps = getHabitat().getComponent(Applications.class);
+        final Applications apps = getHabitat().getService(Applications.class);
         assertTrue(apps!=null);
         ConfigSupport.apply(new SingleConfigCode<Applications>() {
             public Object run(Applications param) throws PropertyVetoException, TransactionFailure {
@@ -89,7 +89,7 @@ public class CollectionsAccessTest extends ConfigApiTest  {
 
     @Test
     public void protectedTest() throws TransactionFailure {
-        final Applications apps = getHabitat().getComponent(Applications.class);
+        final Applications apps = getHabitat().getService(Applications.class);
         assertTrue(apps!=null);
         ConfigSupport.apply(new SingleConfigCode<Applications>() {
             public Object run(Applications param) throws PropertyVetoException, TransactionFailure {

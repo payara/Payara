@@ -66,7 +66,7 @@ public class DuplicateKeyedElementTest extends ConfigApiTest {
 
     @Test(expected = TransactionFailure.class)
     public void duplicateKeyTest() throws TransactionFailure {
-        HttpService httpService = getHabitat().getComponent(HttpService.class);
+        HttpService httpService = getHabitat().getService(HttpService.class);
         assertNotNull(httpService);
         // let's find a acceptable target.
         VirtualServer target = null;
@@ -96,7 +96,7 @@ public class DuplicateKeyedElementTest extends ConfigApiTest {
 
     @Test(expected = TransactionFailure.class)
     public void identicalKeyTest() throws TransactionFailure {
-        HttpService httpService = getHabitat().getComponent(HttpService.class);
+        HttpService httpService = getHabitat().getService(HttpService.class);
         assertNotNull(httpService);
         // let's find a acceptable target.
         VirtualServer target = null;

@@ -61,7 +61,7 @@ public class GetElementTypeByNameTest extends ConfigApiTest {
 
     @Test
     public void testAppRoot() {
-        Config c = getHabitat().getComponent(Config.class);
+        Config c = getHabitat().getService(Config.class);
         Class<? extends ConfigBeanProxy> elementType = null;
         try {
             elementType = ConfigSupport.getElementTypeByName(c, "admin-service");
