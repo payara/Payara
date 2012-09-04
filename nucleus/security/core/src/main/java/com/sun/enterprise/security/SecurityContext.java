@@ -189,7 +189,7 @@ public class SecurityContext extends AbstractSecurityContext  {
 	        _logger.warning("java_security.null_subject");
             }
 	}
-    PrincipalGroupFactory factory = Globals.getDefaultHabitat().getComponent(PrincipalGroupFactory.class);
+    PrincipalGroupFactory factory = Globals.getDefaultHabitat().getService(PrincipalGroupFactory.class);
     if (factory!=null) {
 	    this.initiator = factory.getPrincipalInstance(userName, realm);
     }
@@ -248,7 +248,7 @@ public class SecurityContext extends AbstractSecurityContext  {
 		    guestUser = (String)
 			AppservAccessController.doPrivileged(new PrivilegedExceptionAction() {
 				public java.lang.Object run() throws Exception {
-                                    SecurityService securityService = SecurityServicesUtil.getInstance().getHabitat().getComponent(SecurityService.class,
+                                    SecurityService securityService = SecurityServicesUtil.getInstance().getHabitat().getService(SecurityService.class,
                                             ServerEnvironment.DEFAULT_INSTANCE_NAME);
                                     if(securityService==null)   return null;
                                     return securityService.getDefaultPrincipal();

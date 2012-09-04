@@ -414,7 +414,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
 //         * Crude way to get the master password of the keystore.
 //         */
 //        if (masterPassword == null) {
-//            masterPassword = habitat.getComponent(MasterPassword.class);
+//            masterPassword = habitat.getService(MasterPassword.class);
 //        }
 //        return masterPassword.getMasterPasswordAdapter().getPasswordForAlias("s1as");
         String masterPW = "changeit";

@@ -192,7 +192,7 @@ public class SecurityServicesUtil {
         if (habitat == null) {
             return null;
         }
-        return habitat.getComponent(SecurityServicesUtil.class);
+        return habitat.getService(SecurityServicesUtil.class);
     }
 
     public ProcessEnvironment getProcessEnv() {

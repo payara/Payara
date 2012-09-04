@@ -72,7 +72,7 @@ public class GSSUPName {
 
 	this.username = username;
 	this.realm    = realm;
-        gssUtils = Util.getDefaultHabitat().getComponent(GSSUtilsContract.class);
+        gssUtils = Util.getDefaultHabitat().getService(GSSUtilsContract.class);
     }
 
     /* Construct a GSSUPName from an exported name. This constructor
@@ -87,7 +87,7 @@ public class GSSUPName {
         String name_scope = "" ;
         byte[] exportedname = null ;
 
-        gssUtils = Util.getDefaultHabitat().getComponent(GSSUtilsContract.class);
+        gssUtils = Util.getDefaultHabitat().getService(GSSUtilsContract.class);
         assert(gssUtils != null);
         if(_logger.isLoggable(Level.FINE)){
             _logger.log(Level.FINE,"Attempting to create a mechanism specific name from the exported name.");

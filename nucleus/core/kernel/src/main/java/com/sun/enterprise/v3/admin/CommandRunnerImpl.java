@@ -157,7 +157,7 @@ public class CommandRunnerImpl implements CommandRunner {
      */
     @Override
     public ActionReport getActionReport(String name) {
-        return habitat.getComponent(ActionReport.class, name);
+        return habitat.getService(ActionReport.class, name);
     }
 
     /**
@@ -186,7 +186,7 @@ public class CommandRunnerImpl implements CommandRunner {
         AdminCommand command;
         try {
             String commandServiceName = (scope != null) ? scope + commandName : commandName;
-            command = habitat.getComponent(AdminCommand.class, commandServiceName);
+            command = habitat.getService(AdminCommand.class, commandServiceName);
         } catch (ComponentException e) {
             logger.log(Level.SEVERE, "Cannot instantiate " + commandName, e);
             return null;
@@ -262,7 +262,7 @@ public class CommandRunnerImpl implements CommandRunner {
         String commandServiceName = (scope != null) ? scope + commandName : commandName;
         
         try {
-            command = habitat.getComponent(AdminCommand.class, commandServiceName);
+            command = habitat.getService(AdminCommand.class, commandServiceName);
         } catch (ComponentException e) {
             e.printStackTrace();
             report.setFailureCause(e);
@@ -525,7 +525,7 @@ public class CommandRunnerImpl implements CommandRunner {
         for (Annotation a : annotations) {
             CommandWrapper cw = a.annotationType().getAnnotation(CommandWrapper.class);
             if (cw != null) {
-                CommandWrapperImpl cwi = habitat.getByType(cw.value());
+                CommandWrapperImpl cwi = habitat.getService(cw.value());
                 wrappedCommand = cwi.createWrapper(a, model, wrappedCommand, report);
             }
         }
@@ -1515,9 +1515,9 @@ public class CommandRunnerImpl implements CommandRunner {
                 // This try-catch block is a fix for 13838
                 try {
                     if (model.getClusteringAttributes() != null && model.getClusteringAttributes().executor() != null) {
-                        executor = habitat.getComponent(model.getClusteringAttributes().executor());
+                        executor = habitat.getService(model.getClusteringAttributes().executor());
                     } else {
-                        executor = habitat.getComponent(ClusterExecutor.class, "GlassFishClusterExecutor");
+                        executor = habitat.getService(ClusterExecutor.class, "GlassFishClusterExecutor");
                     }
                 } catch (UnsatisfiedDependencyException usdepex) {
                     String err = adminStrings.getLocalString("commandrunner.clusterexecutor.notinitialized",
