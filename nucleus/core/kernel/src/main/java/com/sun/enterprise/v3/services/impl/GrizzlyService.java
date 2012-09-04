@@ -65,6 +65,7 @@ import javax.inject.Singleton;
 
 import org.glassfish.api.FutureProvider;
 import org.glassfish.api.Startup;
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.api.container.RequestDispatcher;
@@ -79,6 +80,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
@@ -93,8 +95,8 @@ import org.jvnet.hk2.config.Transactions;
  * @author Jerome Dochez
  */
 @Service
-@Singleton
-public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct, PreDestroy, FutureProvider<Result<Thread>> {
+@RunLevel(StartupRunLevel.VAL)
+public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDestroy, FutureProvider<Result<Thread>> {
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
@@ -363,16 +365,6 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
 
     public GrizzlyMonitoring getMonitoring() {
         return monitoring;
-    }
-
-    /**
-     * Returns the life expectency of the service
-     *
-     * @return the life expectency.
-     */
-    @Override
-    public Lifecycle getLifecycle() {
-        return Lifecycle.SERVER;
     }
 
     /**
