@@ -74,6 +74,10 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
         this.commandName = name;
 
     }
+
+    protected AdminCommandInstanceImpl( String name) {
+        this(null,name);
+    }
     
     @Override
     public CommandProgress getCommandProgress() {

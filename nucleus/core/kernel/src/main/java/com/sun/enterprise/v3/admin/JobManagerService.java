@@ -118,8 +118,12 @@ public class JobManagerService implements JobManager {
      * @return   a newly created job
      */
     @Override
-    public Job createJob(String name) {
-        return new AdminCommandInstanceImpl(getNewId(),name);
+    public Job createJob(String name,boolean isManagedJob) {
+        if (isManagedJob) {
+            return new AdminCommandInstanceImpl(getNewId(),name);
+        } else {
+            return new AdminCommandInstanceImpl(name);
+        }
     }
 
     /**

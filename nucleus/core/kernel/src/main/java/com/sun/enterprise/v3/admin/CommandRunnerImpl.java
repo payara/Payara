@@ -244,6 +244,15 @@ public class CommandRunnerImpl implements CommandRunner {
         return null;
     }
 
+    private static boolean getManagedJob(Class<?> onMe) {
+        for (Annotation anno : onMe.getAnnotations()) {
+            return (anno.annotationType().isAnnotationPresent(ManagedJob.class) ? true : false) ;
+        }
+        return false;
+    }
+
+
+
 
     /**
      * Obtain and return the command implementation defined by
@@ -1694,11 +1703,16 @@ public class CommandRunnerImpl implements CommandRunner {
 
         @Override
         public void execute(AdminCommand command) {
-            Job commandInstance = jobRegistry.createJob(name());
+            AdminCommand command1 = getCommand(scope(),name(),report(),logger);
+            boolean isManagedJob = getManagedJob(command1.getClass());
+            Job commandInstance = jobRegistry.createJob(name(),isManagedJob);
+
             for (NameListerPair nameListerPair : nameListerPairs) {
                 commandInstance.getEventBroker().registerListener(nameListerPair.nameRegexp, nameListerPair.listener);
             }
-            jobRegistry.registerJob(commandInstance);
+            if (isManagedJob)  {
+                jobRegistry.registerJob(commandInstance);
+            }
             CommandRunnerImpl.this.doCommand(this, command, subject, commandInstance);
             commandInstance.complete(report(), outboundPayload());
         }
