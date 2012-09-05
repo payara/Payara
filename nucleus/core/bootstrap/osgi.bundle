@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -53,9 +53,14 @@ Import-Package: \
 
 DynamicImport-Package: *
 
-# For embeddable packages, we use semantic versioning. Their version is still 3.1.1,
-# since they have not changed since 3.1.1. This version must match what is found in 
-# osgi.properties file.
+# For ease of use reasons, we bundle & export embeddable packages in this bundle,
+# although the source of those packages is simple-glassfish-api module.
+# We have not figured out a way to configure bundle-plugin to deduce the package version
+# for a package that's borrowed from another bundle, hence we have to configure the
+# version here as well. We understand this is a duplication, but that's easy to manage given that
+# we don't revise these packages that often. The version here is same as what's specified in
+# simple-glassfish-api/osgi.bundle. That's the source of truth.
+# Also note that, those embeddable packages use semantic versioning.
 -exportcontents: \
-    org.glassfish.embeddable.*; \
-    com.sun.enterprise.glassfish.bootstrap; version=3.1.1
+    org.glassfish.embeddable.*; version=3.1.1, \
+    com.sun.enterprise.glassfish.bootstrap; version=${project.osgi.version}
