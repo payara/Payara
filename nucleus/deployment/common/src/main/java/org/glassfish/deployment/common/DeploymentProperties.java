@@ -92,9 +92,10 @@ public class DeploymentProperties extends Properties {
             return;
         }
         Properties props = new Properties();
-        for (Iterator itr = map.keySet().iterator(); itr.hasNext();) {
-            String mapKey = (String) itr.next();
-            String mapValue = (String) map.get(mapKey);
+        for (Iterator<Map.Entry> itr = map.entrySet().iterator(); itr.hasNext();) {
+            Map.Entry entry = itr.next();
+            String mapKey = (String) entry.getKey() ;
+            String mapValue = (String) entry.getValue();
             String propsKey = (String) keyMap.get(mapKey);
             if (mapValue != null) {
                 // for public keys, we need to convert
@@ -126,9 +127,10 @@ public class DeploymentProperties extends Properties {
         if (dProps == null) {
             return map;
         }
-        for (Iterator itr = dProps.keySet().iterator(); itr.hasNext();) {
-            String propsKey = (String) itr.next();
-            String propsValue = (String) dProps.get(propsKey);
+        for (Iterator<Map.Entry<Object, Object>> itr = dProps.entrySet().iterator(); itr.hasNext();) {
+            Map.Entry<Object, Object> entry = itr.next();
+            String propsKey = (String) entry.getKey();
+            String propsValue = (String) entry.getValue();
             String mapKey = (String) keyMap.get(propsKey);
             if (propsValue != null) {
                 // for public keys, we need to convert

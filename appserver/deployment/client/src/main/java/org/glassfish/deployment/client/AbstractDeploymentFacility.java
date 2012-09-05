@@ -325,7 +325,9 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
                 int actual = (remaining < chunkSize) ? (int) remaining : chunkSize;
                 byte[] bytes = new byte[actual];
                 try {
-                    bis.read(bytes);
+                    for (int totalCount = 0, count = 0; 
+                        count != -1 && totalCount < actual; 
+                        totalCount += (count = bis.read(bytes, totalCount, actual - totalCount)));
                     bos.write(bytes);
                 } catch (EOFException eof) {
                     break;
@@ -334,8 +336,11 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
             }
         } finally {
             if (bos != null) {
-                bos.flush();
-                bos.close();
+                try {
+                    bos.flush();
+                } finally {
+                   bos.close();
+                }
             }
             if (bis != null) {
                 bis.close(); 

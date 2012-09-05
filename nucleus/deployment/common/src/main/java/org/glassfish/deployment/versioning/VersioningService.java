@@ -124,11 +124,9 @@ public class VersioningService {
             if(enabledVersionsInTargets != Collections.EMPTY_MAP){
 
                 // foreach enabled version we combine the target list into the map
-                Iterator tempIt = tempMap.keySet().iterator();
-                while(tempIt.hasNext()){
-
-                    String tempKey = (String)tempIt.next();
-                    Set<String> tempList = tempMap.get(tempKey);
+                for (Map.Entry<String, Set<String>> entry : tempMap.entrySet()) {
+                    String tempKey = entry.getKey();
+                    Set<String> tempList = entry.getValue();
 
                     if(enabledVersionsInTargets.containsKey(tempKey)){
                         enabledVersionsInTargets.get(tempKey).addAll(tempList);

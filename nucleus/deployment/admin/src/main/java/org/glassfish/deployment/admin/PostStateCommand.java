@@ -89,7 +89,12 @@ public class PostStateCommand implements AdminCommand,
       try {
         logger.log(Level.INFO, "PostState starting: " + this.getClass().getName());
                 
-        final ExtendedDeploymentContext dc = suppInfo.deploymentContext();
+        final ExtendedDeploymentContext dc;
+        if (suppInfo == null) {
+            throw new IllegalStateException("Internal Error: suppInfo was not set. Insure that it is set properly.");
+        } else {
+            dc = suppInfo.deploymentContext();
+        }
         final InterceptorNotifier notifier = new InterceptorNotifier(habitat, dc);
 
         try {

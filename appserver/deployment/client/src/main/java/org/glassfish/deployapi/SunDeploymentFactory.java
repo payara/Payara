@@ -187,7 +187,8 @@ public class SunDeploymentFactory implements DeploymentFactory {
         
         if (uri != null) {
             try {
-                return (parseURIForHostInfo(uri)!=null);
+                parseURIForHostInfo(uri);
+                return true;
             } catch (Exception ex) {
                 sLogger.log(Level.SEVERE, "enterprise.deployment.backend.deplyomentManagerLoadFailure", // NOI18N
                 new Object[] {uri});

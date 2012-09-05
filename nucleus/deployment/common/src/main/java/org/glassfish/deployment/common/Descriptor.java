@@ -55,7 +55,7 @@ import java.util.*;
  * @author Danny Coward
  */
 
-public class Descriptor extends DynamicAttributesDescriptor implements Serializable {
+public class Descriptor extends DynamicAttributesDescriptor {
 
     /**
      * Notification String for a general descriptor change.

@@ -252,7 +252,7 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
                 ReadableArchive archive;
                 File file = null;
                 DeployCommandParameters commandParams=null;
-                Properties contextProps = new Properties();
+                Properties contextProps;
                 Map<String, Properties> modulePropsMap = null;
                 ApplicationConfigInfo savedAppConfig = null;
                 try {

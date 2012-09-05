@@ -400,10 +400,8 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
             }
 
             // check if it's directory deployment
-            boolean isDirectoryDeployed = false;
-            if (application!=null) {
-                isDirectoryDeployed = Boolean.valueOf(application.getDirectoryDeployed());
-            }
+            boolean isDirectoryDeployed = 
+                Boolean.valueOf(application.getDirectoryDeployed());
 
             // we should try to unregister the application for both success
             // and warning case

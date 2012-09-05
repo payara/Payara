@@ -174,7 +174,9 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
          * slightly faster that way.
          */
         staleFileManager = StaleFileManager.Util.getInstance(archive);
-        archive.mkdirs();
+        if (!archive.exists() && !archive.mkdirs()) {
+          throw new IOException("Unable to create directory for " + archive.getAbsolutePath());
+        }
     }
 
     /**
@@ -324,7 +326,9 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
         File subEntry = new File(subEntryName);
         if (!subEntry.exists()) {
             // time to create a new sub directory
-            subEntry.mkdirs();
+            if (!subEntry.exists() && !subEntry.mkdirs()) {
+              throw new IOException("Unable to create directory for " + subEntry.getAbsolutePath());
+            }
             logger.log(DEBUG_LEVEL, "FileArchive.createSubArchive created dirs for {0}",
                 subEntry.getAbsolutePath());
         } else {
@@ -661,8 +665,11 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
         // if the entry name contains directory structure, we need
         // to create those directories first.
         if (name.lastIndexOf(File.separatorChar)!=-1) {
-            String dirs = name.substring(0, name.lastIndexOf(File.separatorChar));            
-            (new File(archive, dirs)).mkdirs();
+            String dirs = name.substring(0, name.lastIndexOf(File.separatorChar));    
+            File dirsFile = new File(archive, dirs);
+            if (!dirsFile.exists() && !dirsFile.mkdirs()) {
+              throw new IOException("Unable to create directory for " + dirsFile.getAbsolutePath());
+            }
         }
         staleFileManager().recordValidEntry(newFile);
         os = new BufferedOutputStream(new FileOutputStream(newFile));

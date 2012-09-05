@@ -170,10 +170,13 @@ public class ClientJarWriter {
     private void addManifest(final Collection<Artifacts.FullAndPartURIs> artifacts) throws IOException {
         final File mfFile = File.createTempFile("clientmf", ".MF");
         final OutputStream mfOS = new BufferedOutputStream(new FileOutputStream(mfFile));
-        final Manifest mf = new Manifest();
-        mf.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
-        mf.write(mfOS);
-        mfOS.close();
+        try {
+            final Manifest mf = new Manifest();
+            mf.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+            mf.write(mfOS);
+        } finally {
+            mfOS.close();
+        }
         artifacts.add(new Artifacts.FullAndPartURIs(mfFile.toURI(), JarFile.MANIFEST_NAME, true /* isTemporary */));
     }
     

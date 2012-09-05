@@ -45,6 +45,7 @@ import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.api.deployment.archive.Archive;
 import java.io.*;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.jar.JarFile;
 import java.util.jar.JarEntry;
 import java.util.logging.Logger;
@@ -87,7 +88,9 @@ public class ModuleExploder {
                 File out = new File(destination, fileSystemName);
 
                 if (entry.isDirectory()) {
-                    out.mkdirs();
+                    if (!out.exists() && !out.mkdirs()) {
+                      throw new IOException("Unable to create directories " + out.getAbsolutePath());
+                    }
                 } else {
                     if (!out.getParentFile().exists()) {
                         out.getParentFile().mkdirs();
@@ -165,7 +168,8 @@ public class ModuleExploder {
              /*
               *Expand the file only if it is a jar and only if it does not lie in WEB-INF/lib.
               */
-            if (fileName.toLowerCase().endsWith(".jar") && ( ! fileName.replace('\\', '/').toUpperCase().startsWith(WEB_INF_PREFIX)) ) {
+            if (fileName.toLowerCase().endsWith(".jar") && 
+                ( ! fileName.replace('\\', '/').toUpperCase(Locale.getDefault()).startsWith(WEB_INF_PREFIX)) ) { 
 
                 try {
                     File f = new File(directory, fileName);

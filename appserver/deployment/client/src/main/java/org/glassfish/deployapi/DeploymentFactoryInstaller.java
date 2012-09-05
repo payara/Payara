@@ -40,17 +40,26 @@
 
 package org.glassfish.deployapi;
 
-import java.io.*;
-import java.util.jar.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.logging.Logger;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 
 import org.glassfish.deployment.common.DeploymentUtils;
+
 import com.sun.enterprise.util.shared.ArchivistUtils;
 import com.sun.logging.LogDomains;
 
@@ -78,8 +87,9 @@ public class DeploymentFactoryInstaller {
     public static DeploymentFactoryInstaller getInstaller() {
     
         if (dfInstaller==null) {
-            dfInstaller = new DeploymentFactoryInstaller();
-            dfInstaller.initialize();
+            DeploymentFactoryInstaller tmpInstaller = new DeploymentFactoryInstaller();
+            tmpInstaller.initialize();
+            dfInstaller = tmpInstaller; // The use of tmpInstaller insures that dfInstaller is not available to other threads until it is initialized
         }
         return dfInstaller;
     }
@@ -129,7 +139,7 @@ public class DeploymentFactoryInstaller {
     }
     
     
-    protected void installDeploymentFactory(File installedDM) throws IOException {
+    protected void installDeploymentFactory(final File installedDM) throws IOException {
         
         if (sLogger.isLoggable(Level.FINE)) {
             sLogger.fine("Installing Deployment factory = " 
@@ -143,22 +153,22 @@ public class DeploymentFactoryInstaller {
          *Declare the JarFile and Manifest but populate them inside the first try block.  This way the 
          *jar file can be closed right away to conserve resources.
          */
-        JarFile jarFile = null;
         Manifest m = null;
+        JarFile jarFile = new JarFile(installedDM);
         try {
-            jarFile = new JarFile(installedDM);
             m = jarFile.getManifest();
         } finally {
-            /*
-             *The jarFile.close can throw IOException, but this method also throws that exception so there is no
-             *need to catch it and wrap it here in the finally clause.
-             */
             jarFile.close();
-            jarFile = null;
         }
         String className = m.getMainAttributes().getValue(J2EE_DEPLOYMENT_MANAGER);
-        URL[] urls = new URL[]{installedDM.toURI().toURL()};
-        URLClassLoader urlClassLoader = new java.net.URLClassLoader(urls, getClass().getClassLoader());
+        final URL[] urls = new URL[]{installedDM.toURI().toURL()};
+        URLClassLoader urlClassLoader;
+        urlClassLoader = AccessController.doPrivileged(new PrivilegedAction<URLClassLoader>() {
+          public URLClassLoader run() {
+              return new java.net.URLClassLoader(urls, getClass().getClassLoader());
+          }
+        });
+
         Class factory = null;
         try {
             factory=urlClassLoader.loadClass(className);

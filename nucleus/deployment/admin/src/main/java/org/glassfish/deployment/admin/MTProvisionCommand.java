@@ -195,7 +195,9 @@ public class MTProvisionCommand implements AdminCommand, AdminCommandSecurity.Ac
     }
 
     private void expandCustomizationJar(File tenantDir) throws IOException {
-        tenantDir.mkdirs();
+        if (!tenantDir.exists() && !tenantDir.mkdirs()) {
+             // TODO Handle this situation properly -- issue reported by findbugs
+        }
 
         if (customizations == null) {
             return;

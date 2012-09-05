@@ -204,11 +204,12 @@ public class ListSubComponentsCommand implements AdminCommand {
         }
 
         int[] longestValue = new int[2];
-        for (String key : subComponents.keySet()) {
+        for (Map.Entry<String, String> entry : subComponents.entrySet()) {
+            String key = entry.getKey();
             if (key.length() > longestValue[0]) {
                 longestValue[0] = key.length();
             }
-            String value = subComponents.get(key);
+            String value = entry.getValue();
             if (value.length() > longestValue[1]) {
                 longestValue[1] = value.length();
             }

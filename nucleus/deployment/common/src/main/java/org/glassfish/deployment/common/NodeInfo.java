@@ -80,8 +80,6 @@ class NodeInfo
 
     private Set<NodeInfo> directImplementorsNodeInfos;
 
-    private String infoAsString;
-
     private int classType;
 
     private String classTypeAsString;
@@ -92,15 +90,12 @@ class NodeInfo
 
     NodeInfo(byte[] classData) {
         ClassReader cr = new ClassReader(classData);
-        infoAsString = className;
 
         cr.accept(this, ClassReader.SKIP_CODE);
     }
 
     void load(byte[] classData) {
         ClassReader cr = new ClassReader(classData);
-        infoAsString = className;
-
         cr.accept(this, ClassReader.SKIP_CODE);
     }
 
@@ -142,7 +137,6 @@ class NodeInfo
 
     NodeInfo(String className) {
         this.className = className;
-        infoAsString = className;
     }
 
     int getNodeId() {
@@ -313,7 +307,6 @@ class NodeInfo
             }
         }
 
-        infoAsString = sb.toString();
         if (directSubClasses != null) {
             for (String sub : directSubClasses) {
                 sb.append("\n\tdirect subclass => ").append(sub);

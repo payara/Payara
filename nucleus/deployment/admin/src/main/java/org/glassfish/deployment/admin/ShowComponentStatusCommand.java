@@ -157,7 +157,13 @@ public class ShowComponentStatusCommand implements AdminCommand, AdminCommandSec
     
     public void execute(AdminCommandContext context) {
         
-        ActionReport.MessagePart part = report.getTopMessagePart();
+        ActionReport.MessagePart part;
+        if (report == null) {
+            // We could handle this more elegantly by requiring that report be passed as an argument.
+            throw new IllegalStateException("Internal Error: The report should have been initializes by the preAuthorization method");
+        } else {
+            part = report.getTopMessagePart();
+        }
 
          // for each matched version
         Iterator it = matchedVersions.iterator();

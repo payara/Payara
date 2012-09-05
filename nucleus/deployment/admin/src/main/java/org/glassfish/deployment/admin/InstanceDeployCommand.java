@@ -308,5 +308,6 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters
                 }
             }
         }
+        zipFile.close();
     }
 }

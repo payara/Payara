@@ -61,7 +61,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  */
 public class ClientConfigurationImpl implements ClientConfiguration {
     
-    TargetModuleIDImpl targetModuleID;
+    TargetModuleIDImpl targetModuleID; // TODO neither transient or Serializable we need to choose one or the other
     String originalArchivePath;
     
     private static LocalStringManagerImpl localStrings =
@@ -102,7 +102,7 @@ public class ClientConfigurationImpl implements ClientConfiguration {
             String appClientBinary = j2eeHome + File.separatorChar + "bin" + File.separatorChar + "appclient";
             String command = appClientBinary + " -client " + location;
             
-            Process p = Runtime.getRuntime().exec(command);
+            Runtime.getRuntime().exec(command);
             
         } catch(Exception e) {
             Logger.getAnonymousLogger().log(Level.WARNING, "Error occurred", e); 

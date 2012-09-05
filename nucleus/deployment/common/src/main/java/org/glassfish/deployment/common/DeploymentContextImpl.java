@@ -186,8 +186,13 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *         source
      * @link {org.jvnet.glassfish.apu.deployment.archive.ArchiveHandler.getClassLoader()}
      */
-    public ClassLoader getClassLoader() {
-        return getClassLoader(true);
+    public ClassLoader getClassLoader() { 
+      /* TODO -- Replace this method with another that does not imply it is
+       * an accessor and conveys that the result may change depending on the
+       * current lifecycle. For instance contemporaryClassLoader()
+       * Problem was reported by findbug
+       */
+      return getClassLoader(true);
     }
 
     public synchronized void setClassLoader(ClassLoader cloader) {
@@ -598,7 +603,12 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         }
         File f = getRootTenantDirForApp(originalAppName);
         f = new File(f, tenant);
-        f.mkdirs();
+        if (!f.exists() && !f.mkdirs()) {
+          // TODO handle this case properly -- reported by findbugs
+          if (logger.isLoggable(Level.FINEST)) {
+            logger.log(Level.FINEST, "Unable to create directory " + f.getAbsolutePath());
+          }
+        }
         return f;
     }
 
