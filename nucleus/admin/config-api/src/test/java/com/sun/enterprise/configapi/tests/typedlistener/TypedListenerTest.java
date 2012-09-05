@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,18 +42,16 @@ package com.sun.enterprise.configapi.tests.typedlistener;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.configapi.tests.ConfigApiTest;
-import org.junit.Test;
-import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.config.types.Property;
-
-import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.Arrays;
 import java.util.List;
-
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+import org.jvnet.hk2.config.*;
 
 /**
  * Test the listeners per type registration/events/un-registration.
@@ -62,7 +60,7 @@ import static org.junit.Assert.assertTrue;
 public class TypedListenerTest extends ConfigApiTest {
 
     List<PropertyChangeEvent> events = null;
-    volatile int listenersInvoked=0;
+    AtomicInteger listenersInvoked = new AtomicInteger();
 
     @Override
     public String getFileName() {
@@ -91,6 +89,7 @@ public class TypedListenerTest extends ConfigApiTest {
             // adding
             ConfigSupport.apply(new SingleConfigCode<Domain>() {
 
+                        @Override
                         public Object run(Domain domain) throws PropertyVetoException, TransactionFailure {
                             SystemProperty prop = domain.createChild(SystemProperty.class);
                             domain.getSystemProperty().add(prop);
@@ -102,7 +101,7 @@ public class TypedListenerTest extends ConfigApiTest {
             transactions.waitForDrain();
 
             assertTrue(events!=null);
-            logger.fine("Number of events " + events.size());
+            logger.log(Level.FINE, "Number of events {0}", events.size());
             assertTrue(events.size()==3);
             for (PropertyChangeEvent event : events) {
                 logger.fine(event.toString());
@@ -123,7 +122,7 @@ public class TypedListenerTest extends ConfigApiTest {
                 }
             }
             assertTrue(events!=null);
-            logger.fine("Number of events " + events.size());
+            logger.log(Level.FINE, "Number of events {0}", events.size());
             assertTrue(events.size()==1);
             for (PropertyChangeEvent event : events) {
                 logger.fine(event.toString());
@@ -134,6 +133,7 @@ public class TypedListenerTest extends ConfigApiTest {
             // removal
             assertNotNull(ConfigSupport.apply(new SingleConfigCode<Domain>() {
 
+                        @Override
                         public Object run(Domain domain) throws PropertyVetoException, TransactionFailure {
                             for (SystemProperty prop : domain.getSystemProperty()) {
                                 if (prop.getName().equals("Jerome")) {
@@ -147,7 +147,7 @@ public class TypedListenerTest extends ConfigApiTest {
             transactions.waitForDrain();
 
             assertTrue(events!=null);
-            logger.fine("Number of events " + events.size());
+            logger.log(Level.FINE, "Number of events {0}", events.size());
             assertTrue(events.size()==1);
             for (PropertyChangeEvent event : events) {
                 logger.fine(event.toString());
@@ -163,14 +163,14 @@ public class TypedListenerTest extends ConfigApiTest {
         final ConfigListener configListener1 = new ConfigListener() {
             @Override
             public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
-                listenersInvoked++;
+                listenersInvoked.incrementAndGet();
                 return null;
             }
         };
         final ConfigListener configListener2 = new ConfigListener() {
             @Override
             public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
-                listenersInvoked++;
+                listenersInvoked.incrementAndGet();
                 return null;
             }
         };
@@ -186,6 +186,7 @@ public class TypedListenerTest extends ConfigApiTest {
             // adding
             ConfigSupport.apply(new SingleConfigCode<Domain>() {
 
+                        @Override
                         public Object run(Domain domain) throws PropertyVetoException, TransactionFailure {
                             SystemProperty prop = domain.createChild(SystemProperty.class);
                             domain.getSystemProperty().add(prop);
@@ -196,7 +197,7 @@ public class TypedListenerTest extends ConfigApiTest {
                     }, domain);
             transactions.waitForDrain();
 
-            assertTrue(listenersInvoked==2);
+            assertTrue(listenersInvoked.intValue()==2);
         } finally {
             assertTrue(transactions.removeListenerForType(SystemProperty.class, configListener1));
             assertTrue(transactions.removeListenerForType(SystemProperty.class, configListener2));
