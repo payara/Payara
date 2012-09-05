@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.resources.config;
+package org.glassfish.connectors.config;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Resource;

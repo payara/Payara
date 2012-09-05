@@ -154,7 +154,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             VirtualServer vs = null;
             String webAppRootPath = null;
 
-            final Collection<VirtualServer> list = grizzlyService.getHabitat().getAllByContract(VirtualServer.class);
+            final Collection<VirtualServer> list = grizzlyService.getHabitat().getAllServices(VirtualServer.class);
             final String vsName = http.getDefaultVirtualServer();
             for (final VirtualServer virtualServer : list) {
                 if (virtualServer.getId().equals(vsName)) {

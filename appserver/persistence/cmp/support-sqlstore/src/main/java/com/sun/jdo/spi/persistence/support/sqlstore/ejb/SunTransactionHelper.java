@@ -107,12 +107,12 @@ public class SunTransactionHelper extends TransactionHelperImpl
         // Register with ApplicationLoaderEventNotifier to receive Sun
         // Application Server specific lifecycle events.
 //        ApplicationLoaderEventNotifier.getInstance().addListener(helper);
-        ConnectorRuntime connectorRuntime = Globals.getDefaultHabitat().getByContract(ConnectorRuntime.class);
+        ConnectorRuntime connectorRuntime = Globals.getDefaultHabitat().getService(ConnectorRuntime.class);
         connectorRuntime.registerConnectorNamingEventListener(helper);
         
         pmf_list = new ArrayList<PersistenceManagerFactory>();
 
-        ejbContainerUtil = Globals.getDefaultHabitat().getByContract(EjbContainerUtil.class);
+        ejbContainerUtil = Globals.getDefaultHabitat().getService(EjbContainerUtil.class);
     }
  
     /** Default constructor should not be public */

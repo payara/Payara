@@ -236,7 +236,7 @@ public class ResourcesUtil {
 
         } else {
             Collection<ConnectorRuntimeExtension> extensions =
-                    Globals.getDefaultHabitat().getAllByContract(ConnectorRuntimeExtension.class);
+                    Globals.getDefaultHabitat().getAllServices(ConnectorRuntimeExtension.class);
             for (ConnectorRuntimeExtension extension : extensions) {
                 return extension.getDeferredResourceConfig(resource, pool, resType, raName);
             }
@@ -857,7 +857,7 @@ public class ResourcesUtil {
             return ConnectorConstants.RES_TYPE_CR;
         }
         Collection<ConnectorRuntimeExtension> extensions =
-                Globals.getDefaultHabitat().getAllByContract(ConnectorRuntimeExtension.class);
+                Globals.getDefaultHabitat().getAllServices(ConnectorRuntimeExtension.class);
         for (ConnectorRuntimeExtension extension : extensions) {
             return extension.getResourceType(cb);
         }

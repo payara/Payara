@@ -586,7 +586,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     private Object lookupDataSourceInDAS(ResourceInfo resourceInfo) {
         try{
             Collection<ConnectorRuntimeExtension> extensions =
-                    habitat.getAllByContract(ConnectorRuntimeExtension.class);
+                    habitat.getAllServices(ConnectorRuntimeExtension.class);
             for(ConnectorRuntimeExtension extension : extensions) {
                 return extension.lookupDataSourceInDAS(resourceInfo);
             }
@@ -979,7 +979,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
 
             resources = null;
             Collection<ConnectorRuntimeExtension> extensions =
-                habitat.getAllByContract(ConnectorRuntimeExtension.class);
+                habitat.getAllServices(ConnectorRuntimeExtension.class);
             for(ConnectorRuntimeExtension extension : extensions) {
                     resources = extension.getAllSystemRAResourcesAndPools();
                 resourceManagerProvider.get().undeployResources(resources);
@@ -1358,7 +1358,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      */
     public void registerDataSourceDefinitions(com.sun.enterprise.deployment.Application application) {
         Collection<ConnectorRuntimeExtension> extensions =
-                habitat.getAllByContract(ConnectorRuntimeExtension.class);
+                habitat.getAllServices(ConnectorRuntimeExtension.class);
         for(ConnectorRuntimeExtension extension : extensions) {
             extension.registerDataSourceDefinitions(application);
         }
@@ -1369,7 +1369,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      */
     public void unRegisterDataSourceDefinitions(com.sun.enterprise.deployment.Application application) {
         Collection<ConnectorRuntimeExtension> extensions =
-                habitat.getAllByContract(ConnectorRuntimeExtension.class);
+                habitat.getAllServices(ConnectorRuntimeExtension.class);
         for(ConnectorRuntimeExtension extension : extensions) {
             extension.unRegisterDataSourceDefinitions(application);
         }

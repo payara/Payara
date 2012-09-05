@@ -77,7 +77,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
     public ApplicationRuntimeNode(Application descriptor) {
         super(descriptor);
         //trigger registration in standard node, if it hasn't happened
-        habitat.getByType(ApplicationNode.class);
+        habitat.getService(ApplicationNode.class);
     }   
     
     /**

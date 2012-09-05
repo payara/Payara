@@ -166,7 +166,7 @@ public final class JDBCRealm extends DigestRealmBase {
         String groupTable = props.getProperty(PARAM_GROUP_TABLE);
         String groupNameColumn = props.getProperty(PARAM_GROUP_NAME_COLUMN);
         String groupTableUserNameColumn = props.getProperty(PARAM_GROUP_TABLE_USER_NAME_COLUMN,userNameColumn);
-        cr = Util.getDefaultHabitat().getByContract(ConnectorRuntime.class);
+        cr = Util.getDefaultHabitat().getService(ConnectorRuntime.class);
         
         if (jaasCtx == null) {
             String msg = sm.getString(

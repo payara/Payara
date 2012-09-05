@@ -83,7 +83,7 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
     public WebBundleRuntimeNode(WebBundleDescriptorImpl descriptor) {
         super(descriptor);
         //trigger registration in standard node, if it hasn't happened
-        habitat.getByType(WebBundleNode.class);
+        habitat.getService(WebBundleNode.class);
         if (descriptor != null) {
             getSunDescriptor();
         }

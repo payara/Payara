@@ -64,7 +64,7 @@ public class AppClientRuntimeNode extends
     public AppClientRuntimeNode(ApplicationClientDescriptor descriptor) {
         super(descriptor);
         //trigger registration in standard node, if it hasn't happened
-        habitat.getByType(AppClientNode.class);
+        habitat.getService(AppClientNode.class);
     }
     
     public AppClientRuntimeNode() {

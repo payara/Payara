@@ -168,7 +168,7 @@ public class ConnectionPoolStatsProviderBootstrap implements PostConstruct,
     public ConnectionPoolAppProbeProvider registerPool(PoolInfo poolInfo, String appName) {
         ConnectionPoolAppProbeProvider probeAppProvider = null;
         Collection<ConnectionPoolMonitoringExtension> extensions =
-                habitat.getAllByContract(ConnectionPoolMonitoringExtension.class);
+                habitat.getAllServices(ConnectionPoolMonitoringExtension.class);
         for(ConnectionPoolMonitoringExtension extension : extensions) {
             probeAppProvider = extension.registerConnectionPool(poolInfo, appName);
         }
@@ -293,7 +293,7 @@ public class ConnectionPoolStatsProviderBootstrap implements PostConstruct,
 
     public void unRegisterPool() {
         Collection<ConnectionPoolMonitoringExtension> extensions =
-                habitat.getAllByContract(ConnectionPoolMonitoringExtension.class);
+                habitat.getAllServices(ConnectionPoolMonitoringExtension.class);
         for(ConnectionPoolMonitoringExtension extension : extensions) {
             extension.unRegisterConnectionPool();
         }
@@ -339,7 +339,7 @@ public class ConnectionPoolStatsProviderBootstrap implements PostConstruct,
         if(runtime.isServer()) {
             ResourcePool pool = runtime.getConnectionPoolConfig(poolInfo);
             Collection<ConnectionPoolMonitoringExtension> extensions =
-                    habitat.getAllByContract(ConnectionPoolMonitoringExtension.class);
+                    habitat.getAllServices(ConnectionPoolMonitoringExtension.class);
             for(ConnectionPoolMonitoringExtension extension : extensions) {
                 extension.registerPool(poolInfo);
             }
@@ -363,7 +363,7 @@ public class ConnectionPoolStatsProviderBootstrap implements PostConstruct,
         }
         if (runtime.isServer()) {
             Collection<ConnectionPoolMonitoringExtension> extensions =
-                    habitat.getAllByContract(ConnectionPoolMonitoringExtension.class);
+                    habitat.getAllServices(ConnectionPoolMonitoringExtension.class);
             for(ConnectionPoolMonitoringExtension extension : extensions) {
                 extension.unregisterPool(poolInfo);
             }

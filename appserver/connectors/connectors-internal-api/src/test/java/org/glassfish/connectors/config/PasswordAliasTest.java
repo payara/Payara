@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.resources.config;
+package org.glassfish.connectors.config;
 
 import org.glassfish.connectors.config.BackendPrincipal;
 import org.junit.Ignore;

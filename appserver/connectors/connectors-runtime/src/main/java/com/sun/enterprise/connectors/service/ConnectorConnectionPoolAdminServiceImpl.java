@@ -728,7 +728,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
         ResourcesUtil resUtil = ResourcesUtil.createInstance();
         boolean isJdbcPoolReferredInServerInstance = false;
         Collection<ConnectorRuntimeExtension> extensions =
-                Globals.getDefaultHabitat().getAllByContract(ConnectorRuntimeExtension.class);
+                Globals.getDefaultHabitat().getAllServices(ConnectorRuntimeExtension.class);
         for(ConnectorRuntimeExtension extension : extensions) {
             isJdbcPoolReferredInServerInstance = extension.isConnectionPoolReferredInServerInstance(poolInfo);
         }
@@ -1665,7 +1665,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
     private PoolInfo getPoolNameFromResourceJndiName(ResourceInfo resourceInfo) {
         PoolInfo poolInfo= null;
         Collection<ConnectorRuntimeExtension> extensions =
-                Globals.getDefaultHabitat().getAllByContract(ConnectorRuntimeExtension.class);
+                Globals.getDefaultHabitat().getAllServices(ConnectorRuntimeExtension.class);
         for(ConnectorRuntimeExtension extension : extensions) {
             poolInfo = extension.getPoolNameFromResourceJndiName(resourceInfo);
         }

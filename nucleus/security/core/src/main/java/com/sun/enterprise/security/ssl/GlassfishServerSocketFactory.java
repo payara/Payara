@@ -91,7 +91,7 @@ public class GlassfishServerSocketFactory extends JSSE14SocketFactory {
     private void initSSLUtils() {
         if (sslUtils == null) {
             if (Globals.getDefaultHabitat() != null) {
-                sslUtils = Globals.getDefaultHabitat().getByType(SSLUtils.class);
+                sslUtils = Globals.getDefaultHabitat().getService(SSLUtils.class);
             } else {
                 sslUtils = new SSLUtils();
                 sslUtils.postConstruct();

@@ -56,7 +56,7 @@ import java.util.concurrent.ThreadFactory;
 public abstract class ConfigApiTest extends org.glassfish.tests.utils.ConfigApiTest {
 
     public DomDocument getDocument(Habitat habitat) {
-        DomDocument doc = habitat.getByType(GlassFishDocument.class);
+        DomDocument doc = habitat.getService(GlassFishDocument.class);
         if (doc==null) {
             return new GlassFishDocument(habitat, Executors.newCachedThreadPool(new ThreadFactory() {
 

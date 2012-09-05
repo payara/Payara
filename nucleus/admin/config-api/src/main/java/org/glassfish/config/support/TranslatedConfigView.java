@@ -79,7 +79,7 @@ public class TranslatedConfigView implements ConfigView {
             if (stringValue.indexOf('$')==-1) {
                 return value;
             }
-            MasterPassword masterpasswd =  habitat.getByContract(MasterPassword.class);
+            MasterPassword masterpasswd =  habitat.getService(MasterPassword.class);
             if (masterpasswd!= null) {
                 if (getAlias(stringValue) != null) {
                     try{

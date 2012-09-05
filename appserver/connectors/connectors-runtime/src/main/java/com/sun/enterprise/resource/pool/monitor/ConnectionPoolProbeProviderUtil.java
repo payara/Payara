@@ -94,7 +94,7 @@ public class ConnectionPoolProbeProviderUtil {
      */   
     public void createJdbcProbeProvider() {
         Collection<ConnectionPoolMonitoringExtension> extensions =
-                habitat.getAllByContract(ConnectionPoolMonitoringExtension.class);
+                habitat.getAllServices(ConnectionPoolMonitoringExtension.class);
         for(ConnectionPoolMonitoringExtension extension : extensions) {
             jdbcProbeProvider = extension.createProbeProvider();
         }

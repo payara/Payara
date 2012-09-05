@@ -77,7 +77,7 @@ public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
         
         habitat.<Transactions>getService(Transactions.class).addTransactionsListener(new TransactionListener() {
             public void transactionCommited(List<PropertyChangeEvent> changes) {
-                for (ConfigurationPersistence pers : habitat.getAllByContract(ConfigurationPersistence.class)) {
+                for (ConfigurationPersistence pers : habitat.<ConfigurationPersistence>getAllServices(ConfigurationPersistence.class)) {
                     try {
                         if (doc.getRoot().getProxyType().equals(Domain.class)) {
                             Dom domainRoot = doc.getRoot();

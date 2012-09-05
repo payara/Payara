@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.resources.config;
+package org.glassfish.connectors.config;
 
 import org.glassfish.config.support.GlassFishDocument;
 import org.jvnet.hk2.component.Habitat;
@@ -56,7 +56,7 @@ import java.util.concurrent.ThreadFactory;
 public abstract class ConfigApiTest extends org.glassfish.tests.utils.ConfigApiTest {
 
     public DomDocument getDocument(Habitat habitat) {
-        DomDocument doc = habitat.getByType(GlassFishDocument.class);
+        DomDocument doc = habitat.getService(GlassFishDocument.class);
         if (doc==null) {
             return new GlassFishDocument(habitat, Executors.newCachedThreadPool(new ThreadFactory() {
 

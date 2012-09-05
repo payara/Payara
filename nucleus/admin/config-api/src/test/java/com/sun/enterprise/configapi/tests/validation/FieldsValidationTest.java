@@ -62,7 +62,7 @@ public class FieldsValidationTest extends ConfigApiTest {
 
     @Test
     public void testNotNullField() {
-        AdminService admin = super.getHabitat().getByType(AdminService.class);
+        AdminService admin = super.getHabitat().getService(AdminService.class);
         Assert.assertNotNull(admin);
         try {
             ConfigSupport.apply(new SingleConfigCode<AdminService>() {

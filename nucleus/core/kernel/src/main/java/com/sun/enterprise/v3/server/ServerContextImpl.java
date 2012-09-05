@@ -113,29 +113,29 @@ public class ServerContextImpl implements ServerContext, PostConstruct {
     }
 
     public com.sun.enterprise.config.serverbeans.Server getConfigBean() {
-        return services.getByContract(com.sun.enterprise.config.serverbeans.Server.class);
+        return services.getService(com.sun.enterprise.config.serverbeans.Server.class);
     }
 
     public InitialContext getInitialContext() {
         GlassfishNamingManager gfNamingManager = 
-            services.getByContract(GlassfishNamingManager.class);
+            services.getService(GlassfishNamingManager.class);
         return (InitialContext)gfNamingManager.getInitialContext();
     }
 
     public ClassLoader getCommonClassLoader() {
-        return services.getByType(CommonClassLoaderServiceImpl.class).getCommonClassLoader();
+        return services.<CommonClassLoaderServiceImpl>getService(CommonClassLoaderServiceImpl.class).getCommonClassLoader();
     }
 
     public ClassLoader getSharedClassLoader() {
-        return services.getByContract(ClassLoaderHierarchy.class).getConnectorClassLoader(null);
+        return services.<ClassLoaderHierarchy>getService(ClassLoaderHierarchy.class).getConnectorClassLoader(null);
     }
 
     public ClassLoader getLifecycleParentClassLoader() {
-        return services.getByContract(ClassLoaderHierarchy.class).getConnectorClassLoader(null);
+        return services.<ClassLoaderHierarchy>getService(ClassLoaderHierarchy.class).getConnectorClassLoader(null);
     }
 
     public InvocationManager getInvocationManager() {
-        return services.getByContract(InvocationManager.class);
+        return services.getService(InvocationManager.class);
     }
 
     public String getDefaultDomainName() {

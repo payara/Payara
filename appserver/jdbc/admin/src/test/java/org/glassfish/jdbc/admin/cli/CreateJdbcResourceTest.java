@@ -74,7 +74,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 public class CreateJdbcResourceTest extends ConfigApiTest {
     // Get Resources config bean
     Habitat habitat = Utils.instance.getHabitat(this);
-    private Resources resources = habitat.getComponent(Domain.class).getResources();
+    private Resources resources = habitat.<Domain>getService(Domain.class).getResources();
     private CreateJdbcResource command = null;
     private ParameterMap parameters = new ParameterMap();
     private AdminCommandContext context = null;
@@ -100,7 +100,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
         assertTrue(resources!=null);
         
         // Get an instance of the CreateJdbcResource command
-        command = habitat.getComponent(CreateJdbcResource.class);
+        command = habitat.getService(CreateJdbcResource.class);
         assertTrue(command!=null);
         
         // Set the options and operand to pass to the command
@@ -113,7 +113,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
                 LogDomains.getLogger(CreateJdbcResourceTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
         
-        cr = habitat.getComponent(CommandRunner.class);
+        cr = habitat.getService(CommandRunner.class);
     }
 
     @After
@@ -184,7 +184,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
         logger.fine("msg: " + context.getActionReport().getMessage());       
         
         // Check resource-ref created
-        Servers servers = habitat.getComponent(Servers.class);
+        Servers servers = habitat.getService(Servers.class);
         boolean isRefCreated = false;
         for (Server server : servers.getServer()) {
             if (server.getName().equals(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)) {
@@ -271,7 +271,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
         assertTrue(isCreated);
         
         //Try to create a duplicate resource dupRes. Get a new instance of the command.
-        CreateJdbcResource command2 = habitat.getComponent(CreateJdbcResource.class);
+        CreateJdbcResource command2 = habitat.getService(CreateJdbcResource.class);
         cr.getCommandInvocation("create-jdbc-resource", context.getActionReport()).parameters(parameters).execute(command2);
         
         // Check the exit code is FAILURE

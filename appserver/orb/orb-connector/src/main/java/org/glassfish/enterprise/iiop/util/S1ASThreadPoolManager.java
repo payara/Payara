@@ -78,7 +78,7 @@ public class S1ASThreadPoolManager implements ThreadPoolManager {
     
     S1ASThreadPoolManager() {
         try {
-            _iiopUtils = Globals.getDefaultHabitat().getByType(IIOPUtils.class);
+            _iiopUtils = Globals.getDefaultHabitat().getService(IIOPUtils.class);
             Collection<org.glassfish.grizzly.config.dom.ThreadPool> tpCol = _iiopUtils.getAllThreadPools();
             org.glassfish.grizzly.config.dom.ThreadPool[] allThreadPools = tpCol.toArray(new org.glassfish.grizzly.config.dom.ThreadPool[tpCol.size()]);
             for (int i = 0; i < allThreadPools.length; i++) {
