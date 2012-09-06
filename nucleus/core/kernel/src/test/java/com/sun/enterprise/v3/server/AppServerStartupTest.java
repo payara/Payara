@@ -47,7 +47,6 @@ import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 import com.sun.enterprise.util.Result;
 import org.glassfish.api.FutureProvider;
-import org.glassfish.api.Startup;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -161,7 +160,6 @@ public class AppServerStartupTest {
         config.addActiveDescriptor(descriptor);
 
         bindService(config, InitRunLevelBridge.class);
-        bindService(config, StartupRunLevelBridge.class);
         bindService(config, PostStartupRunLevelBridge.class);
 
         bindService(config, TestInitService.class);
@@ -540,12 +538,9 @@ public class AppServerStartupTest {
      * Startup service that implements the old style {@link Startup} interface.
      */
     @SuppressWarnings("deprecation")
+    @RunLevel(StartupRunLevel.VAL)
     @Service
-    public static class TestStartupService extends TestService implements Startup, FutureProvider {
-        @Override
-        public Lifecycle getLifecycle() {
-            return Lifecycle.START;
-        }
+    public static class TestStartupService extends TestService implements FutureProvider {
 
         @Override
         public List getFutures() {

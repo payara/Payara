@@ -40,36 +40,26 @@
 
 package com.sun.enterprise.v3.admin.listener;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.JavaConfig;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.Profiler;
-import com.sun.enterprise.config.serverbeans.SystemProperty;
-import com.sun.logging.LogDomains;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.types.Property;
-
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
-import org.glassfish.api.Startup;
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.TranslatedConfigView;
-
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.Changed;
 import org.jvnet.hk2.config.Changed.TYPE;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -80,8 +70,16 @@ import org.jvnet.hk2.config.NotProcessed;
 import org.jvnet.hk2.config.ObservableBean;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
+import org.jvnet.hk2.config.types.Property;
 
-import javax.inject.Inject;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.JavaConfig;
+import com.sun.enterprise.config.serverbeans.Profiler;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.SystemProperty;
+import com.sun.logging.LogDomains;
 
 /**
  *  Listens for the changes to the configuration of JVM and Java system
@@ -120,7 +118,8 @@ import javax.inject.Inject;
  */
 
 @Service
-public final class CombinedJavaConfigSystemPropertyListener implements PostConstruct, ConfigListener, Startup {
+@RunLevel(StartupRunLevel.VAL)
+public final class CombinedJavaConfigSystemPropertyListener implements PostConstruct, ConfigListener {
     @Inject
     ServiceLocator habitat;
     
@@ -165,11 +164,6 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
             oldAttrs = collectAttrs(jc);
         }
         transactions.addListenerForType(SystemProperty.class, this);
-    }
-
-    @Override
-    public Lifecycle getLifecycle() {
-        return Startup.Lifecycle.SERVER;
     }
         
     /**

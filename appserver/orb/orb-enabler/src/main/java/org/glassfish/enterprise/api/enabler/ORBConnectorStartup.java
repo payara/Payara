@@ -40,28 +40,29 @@
 
 package org.glassfish.enterprise.api.enabler;
 
-import org.glassfish.api.Startup;
-import org.glassfish.hk2.api.PostConstruct;
+import java.util.List;
 
-import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import com.sun.enterprise.config.serverbeans.Config;
-import org.glassfish.orb.admin.config.IiopListener;
-import org.glassfish.orb.admin.config.IiopService;
-import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
-import com.sun.enterprise.v3.services.impl.GrizzlyService;
-import java.util.List;
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.orb.admin.config.IiopListener;
+import org.glassfish.orb.admin.config.IiopService;
+import org.jvnet.hk2.annotations.Service;
 
-import org.omg.CORBA.ORB ;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
+import com.sun.enterprise.v3.services.impl.GrizzlyService;
 
 /**
  */
 @Service
-public class ORBConnectorStartup implements Startup, PostConstruct {
+@RunLevel(StartupRunLevel.VAL)
+public class ORBConnectorStartup implements PostConstruct {
 
     // RMI-IIOP delegate constants
     private static final String ORB_UTIL_CLASS_PROPERTY =
@@ -105,8 +106,6 @@ public class ORBConnectorStartup implements Startup, PostConstruct {
         setORBSystemProperties();    
         initializeLazyListener();        
     }
-
-    public Startup.Lifecycle getLifecycle() { return Startup.Lifecycle.START; }
 
 /**
      * Set ORB-related system properties that are required in case

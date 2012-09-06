@@ -40,30 +40,30 @@
 
 package com.sun.enterprise.transaction.startup;
 
-import com.sun.enterprise.transaction.api.JavaEETransactionManager;
-import com.sun.enterprise.transaction.config.TransactionService;
-import com.sun.logging.LogDomains;
-import org.glassfish.api.Startup;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.naming.Context;
+import javax.naming.NamingException;
+
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.api.naming.NamingObjectProxy;
-import javax.inject.Inject;
-
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.glassfish.hk2.utilities.BuilderHelper;
-import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Service;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-import java.util.logging.Logger;
+import com.sun.enterprise.transaction.api.JavaEETransactionManager;
+import com.sun.enterprise.transaction.config.TransactionService;
+import com.sun.logging.LogDomains;
 
 /**
  * Service wrapper to only lookup the transaction recovery when there
@@ -168,10 +168,6 @@ public class TransactionLifecycleService implements PostConstruct, PreDestroy {
             _logger.fine("ON TM SHUTDOWN FINISHED");
         }
 
-    }
-
-    public Startup.Lifecycle getLifecycle() {
-        return Startup.Lifecycle.SERVER;
     }
 
 }

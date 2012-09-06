@@ -40,6 +40,32 @@
 
 package org.glassfish.gms.bootstrap;
 
+import java.beans.PropertyChangeEvent;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.Changed;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.NotProcessed;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -48,26 +74,6 @@ import com.sun.enterprise.ee.cms.core.GroupManagementService;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
-
-import java.beans.PropertyChangeEvent;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.glassfish.api.Startup;
-import org.glassfish.api.admin.ServerEnvironment;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Provider;
-
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.BuilderHelper;
-import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
-import org.jvnet.hk2.config.*;
 
 /**
  * This service is responsible for loading the group management
@@ -80,8 +86,9 @@ import org.jvnet.hk2.config.*;
  * to a GMSAdapter object. From this, the appropriate GroupManagementService
  * object can be retrieved.
  */
-@Service()
-public class GMSAdapterService implements Startup, PostConstruct, ConfigListener {
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class GMSAdapterService implements PostConstruct, ConfigListener {
 
     final static Logger logger = LogDomains.getLogger(
         GMSAdapterService.class, LogDomains.CORE_LOGGER);
@@ -113,16 +120,6 @@ public class GMSAdapterService implements Startup, PostConstruct, ConfigListener
 
     final static private Level TRACE_LEVEL = Level.FINE;
 
-    /**
-     * Returns the lifecyle of the service. This service may not be needed
-     * after startup -- we still need to determine how to load GMS when
-     * a gms-enabled cluster is first created during runtime.
-     * TODO: determine SERVER v START
-     */
-    @Override
-    public Startup.Lifecycle getLifecycle() {
-        return Startup.Lifecycle.SERVER;
-    }
 
     /**
      * Starts the application loader service.

@@ -45,7 +45,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.glassfish.api.Startup;
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.InstanceCommand;
 import org.glassfish.api.admin.InstanceCommandResult;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -53,6 +53,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.runlevel.RunLevel;
 
 import javax.inject.Singleton;
 
@@ -67,8 +68,8 @@ import java.util.logging.Logger;
  * @author Vijay Ramachandran
  */
 @Service
-@Singleton
-public class CommandThreadPool implements Startup, PostConstruct {
+@RunLevel(mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING,value=StartupRunLevel.VAL)
+public class CommandThreadPool implements PostConstruct {
 
     @Inject
     private ServiceLocator habitat;
@@ -120,11 +121,6 @@ public class CommandThreadPool implements Startup, PostConstruct {
     public Future<InstanceCommandResult> submitJob(InstanceCommand ice, InstanceCommandResult r) {
         FutureTask<InstanceCommandResult> t = new FutureTask<InstanceCommandResult>((Runnable)ice, r);
         return svc.submit(t, r);
-    }
-
-    @Override
-    public Lifecycle getLifecycle() {
-        return Startup.Lifecycle.SERVER;
     }
 
     private static class InstanceStateThreadFactory implements ThreadFactory {

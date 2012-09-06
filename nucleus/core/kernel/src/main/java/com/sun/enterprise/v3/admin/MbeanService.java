@@ -40,32 +40,27 @@
 
 package com.sun.enterprise.v3.admin;
 
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
-import org.glassfish.api.Startup;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.management.InstanceNotFoundException;
+
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.PropertyResolver;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.Target;
-import javax.inject.Inject;
-
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
 
-import javax.management.InstanceNotFoundException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.rmi.PortableRemoteObject;
-
-import java.util.Properties;
-import java.util.List;
-import java.util.ArrayList;
-
-import org.glassfish.api.admin.ServerEnvironment;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
 
 @Service
-@Singleton
-public class MbeanService implements Startup {
+@RunLevel(mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING, value=StartupRunLevel.VAL)
+public class MbeanService {
 
     @Inject
     private Domain domain;
@@ -78,10 +73,6 @@ public class MbeanService implements Startup {
     @Inject
     private ServerEnvironment env;
 
-    @Override
-    public Lifecycle getLifecycle() {
-        return Startup.Lifecycle.SERVER;
-    }
 
     public static MbeanService getInstance() {
         if (habitat == null)

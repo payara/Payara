@@ -40,48 +40,47 @@
 
 package com.sun.enterprise.v3.server;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
-import com.sun.enterprise.config.serverbeans.ServerTags;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.util.Result;
-
-import com.sun.appserv.server.ServerLifecycleException;
-import com.sun.appserv.server.LifecycleListener;
-import org.glassfish.deployment.common.DeploymentException;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
-import org.glassfish.api.event.Events;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.FutureProvider;
-import org.glassfish.internal.api.ClassLoaderHierarchy;
-import org.glassfish.internal.api.ServerContext;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.FutureProvider;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.api.event.Events;
+import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
-import org.glassfish.api.Startup;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.ServerContext;
+import org.jvnet.hk2.annotations.Service;
+
+import com.sun.appserv.server.LifecycleListener;
+import com.sun.appserv.server.ServerLifecycleException;
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.ServerTags;
+import com.sun.enterprise.util.Result;
 
 /**
  * Support class to assist in firing LifecycleEvent notifications to
  * registered LifecycleListeners.
  */
 @Service
-public class LifecycleModuleService implements Startup, PreDestroy, PostConstruct, EventListener, FutureProvider<Result<Thread>>{
+@RunLevel(StartupRunLevel.VAL)
+public class LifecycleModuleService implements PreDestroy, PostConstruct, EventListener, FutureProvider<Result<Thread>>{
 
     @Inject
     ServerContext context;
@@ -124,10 +123,6 @@ public class LifecycleModuleService implements Startup, PreDestroy, PostConstruc
 
     public List<Future<Result<Thread>>> getFutures() {
         return futures;
-    }
-
-    public Startup.Lifecycle getLifecycle() {
-        return Startup.Lifecycle.SERVER;
     }
 
     public void event(Event event) {

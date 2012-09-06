@@ -39,9 +39,10 @@
  */
 package com.sun.enterprise.security.admin.cli;
 
-import org.glassfish.api.Startup;
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 /**
  *
  * Starting in GlassFish 3.1.2, the DAS uses SSL to send admin requests to
@@ -71,7 +72,8 @@ import org.glassfish.hk2.api.PostConstruct;
  * @author Tim Quinn
  */
 @Service
-public class SecureAdminStartupCheck extends SecureAdminUpgradeHelper implements Startup, PostConstruct {
+@RunLevel(StartupRunLevel.VAL)
+public class SecureAdminStartupCheck extends SecureAdminUpgradeHelper implements PostConstruct {
 
     @Override
     public void postConstruct() {
@@ -91,14 +93,6 @@ public class SecureAdminStartupCheck extends SecureAdminUpgradeHelper implements
             throw new RuntimeException(e);
         }
         
-    }
-    
-    @Override
-    public Lifecycle getLifecycle() {
-        /*
-         * This start-up service runs only during start-up, not for the life of the server.
-         */
-        return Lifecycle.START;
     }
     
     private boolean isFormalUpgrade() {

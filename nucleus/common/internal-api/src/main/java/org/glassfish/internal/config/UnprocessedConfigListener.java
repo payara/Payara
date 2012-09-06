@@ -47,7 +47,6 @@ import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import java.beans.PropertyChangeEvent;
 
-import org.glassfish.api.Startup;
 import org.glassfish.api.Async;
 import org.glassfish.internal.api.*;
 

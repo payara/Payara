@@ -40,45 +40,51 @@
 
 package com.sun.enterprise.container.common.impl.managedbean;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.Set;
-import java.util.Map;
-import java.util.List;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.HashMap;
-import java.lang.reflect.Method;
-import java.lang.reflect.Field;
-import java.lang.reflect.Proxy;
-import javax.naming.InitialContext;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.glassfish.api.naming.GlassfishNamingManager;
-
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
-import com.sun.enterprise.container.common.spi.util.InjectionManager;
-import com.sun.logging.LogDomains;
-
-import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.Events;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.internal.data.ApplicationInfo;
-import org.glassfish.internal.api.*;
+import javax.naming.InitialContext;
 
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
-import org.glassfish.api.Startup;
-
-import com.sun.enterprise.container.common.spi.util.InterceptorInfo;
-import com.sun.enterprise.container.common.spi.*;
-
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
+import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.api.naming.NamingObjectProxy;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.PostStartup;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.deployment.Deployment;
+import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.container.common.spi.InterceptorInvoker;
+import com.sun.enterprise.container.common.spi.JCDIService;
+import com.sun.enterprise.container.common.spi.JavaEEInterceptorBuilder;
+import com.sun.enterprise.container.common.spi.JavaEEInterceptorBuilderFactory;
+import com.sun.enterprise.container.common.spi.ManagedBeanManager;
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.container.common.spi.util.InjectionManager;
+import com.sun.enterprise.container.common.spi.util.InterceptorInfo;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.ApplicationClientDescriptor;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
+import com.sun.enterprise.deployment.ManagedBeanDescriptor;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.logging.LogDomains;
 
 /**
  */
@@ -119,8 +125,6 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostStartup, 
         events.register(this);
         processType = processEnv.getProcessType();
     }
-
-    public Startup.Lifecycle getLifecycle() { return Startup.Lifecycle.SERVER; }
 
     public void event(Event event) {
         

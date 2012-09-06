@@ -55,7 +55,6 @@ import com.sun.enterprise.security.common.Util;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import org.glassfish.internal.api.ServerContext;
 import com.sun.logging.LogDomains;
-import org.glassfish.api.Startup.Lifecycle;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
@@ -204,10 +203,6 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
             pch, true);
         PolicyContext.registerHandler(PolicyContextHandlerImpl.REUSE, pch, true);
     }*/
-
-    public Lifecycle getLifecycle() {
-        return Lifecycle.START;
-    }
 
     @Override
     public void postConstruct() {

@@ -39,18 +39,19 @@
  */
 package org.glassfish.config.support;
 
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.logging.LogDomains;
-
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.api.Startup;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
-
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -58,8 +59,8 @@ import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.logging.LogDomains;
 
 /**
  * Listens for changes to the Config for the current server and adds an 
@@ -67,7 +68,8 @@ import javax.inject.Named;
  * that are added.
  */
 @Service
-public final class ConfigConfigBeanListener implements ConfigListener, Startup {
+@RunLevel(mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING,value=StartupRunLevel.VAL)
+public final class ConfigConfigBeanListener implements ConfigListener {
 
     @Inject
     private ServiceLocator habitat;
@@ -76,10 +78,6 @@ public final class ConfigConfigBeanListener implements ConfigListener, Startup {
     static final Logger logger = LogDomains.getLogger(ConfigConfigBeanListener.class,
             LogDomains.ADMIN_LOGGER);
 
-    @Override
-    public Lifecycle getLifecycle() {
-        return Startup.Lifecycle.SERVER;
-    }
 
     /* force serial behavior; don't allow more than one thread to make a mess here */
     @Override

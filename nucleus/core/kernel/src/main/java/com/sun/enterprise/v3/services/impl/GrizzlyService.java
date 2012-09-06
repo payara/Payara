@@ -40,14 +40,6 @@
 
 package com.sun.enterprise.v3.services.impl;
 
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.HttpService;
-import com.sun.enterprise.config.serverbeans.SystemProperty;
-import com.sun.enterprise.config.serverbeans.VirtualServer;
-import com.sun.enterprise.util.Result;
-import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.v3.services.impl.monitor.GrizzlyMonitoring;
-import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -56,35 +48,51 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Singleton;
 
 import org.glassfish.api.FutureProvider;
-import org.glassfish.api.Startup;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.api.container.RequestDispatcher;
 import org.glassfish.api.deployment.ApplicationContainer;
-import org.glassfish.grizzly.config.dom.*;
+import org.glassfish.grizzly.config.dom.NetworkConfig;
+import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.grizzly.config.dom.NetworkListeners;
+import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.impl.FutureImpl;
 import org.glassfish.grizzly.impl.UnsafeFutureImpl;
 import org.glassfish.grizzly.utils.Futures;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
 import org.jvnet.hk2.config.Transactions;
+
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.serverbeans.SystemProperty;
+import com.sun.enterprise.config.serverbeans.VirtualServer;
+import com.sun.enterprise.util.Result;
+import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.v3.services.impl.monitor.GrizzlyMonitoring;
+import com.sun.logging.LogDomains;
 
 /**
  * The Network Service is responsible for starting grizzly and register the

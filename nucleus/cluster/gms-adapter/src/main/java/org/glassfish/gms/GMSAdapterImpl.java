@@ -40,31 +40,6 @@
 
 package org.glassfish.gms;
 
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.ee.cms.core.*;
-import com.sun.enterprise.ee.cms.core.GroupManagementService;
-import com.sun.enterprise.ee.cms.impl.client.*;
-import com.sun.enterprise.mgmt.transport.NetworkUtility;
-import com.sun.enterprise.mgmt.transport.grizzly.GrizzlyConfigConstants;
-import com.sun.enterprise.util.io.ServerDirs;
-import com.sun.logging.LogDomains;
-import org.glassfish.api.Startup;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
-import org.glassfish.api.event.Events;
-import org.glassfish.gms.bootstrap.GMSAdapter;
-import org.glassfish.gms.bootstrap.HealthHistory;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.config.Dom;
-import org.jvnet.hk2.config.types.Property;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -76,6 +51,63 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.api.event.Events;
+import org.glassfish.gms.bootstrap.GMSAdapter;
+import org.glassfish.gms.bootstrap.HealthHistory;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.Dom;
+import org.jvnet.hk2.config.types.Property;
+
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Clusters;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.Nodes;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.ServerRef;
+import com.sun.enterprise.config.serverbeans.Servers;
+import com.sun.enterprise.ee.cms.core.AliveAndReadySignal;
+import com.sun.enterprise.ee.cms.core.AliveAndReadyView;
+import com.sun.enterprise.ee.cms.core.CallBack;
+import com.sun.enterprise.ee.cms.core.FailureNotificationActionFactory;
+import com.sun.enterprise.ee.cms.core.FailureNotificationSignal;
+import com.sun.enterprise.ee.cms.core.FailureRecoverySignal;
+import com.sun.enterprise.ee.cms.core.FailureSuspectedActionFactory;
+import com.sun.enterprise.ee.cms.core.GMSConstants;
+import com.sun.enterprise.ee.cms.core.GMSException;
+import com.sun.enterprise.ee.cms.core.GMSFactory;
+import com.sun.enterprise.ee.cms.core.GroupLeadershipNotificationActionFactory;
+import com.sun.enterprise.ee.cms.core.GroupManagementService;
+import com.sun.enterprise.ee.cms.core.JoinNotificationActionFactory;
+import com.sun.enterprise.ee.cms.core.JoinedAndReadyNotificationActionFactory;
+import com.sun.enterprise.ee.cms.core.JoinedAndReadyNotificationSignal;
+import com.sun.enterprise.ee.cms.core.PlannedShutdownActionFactory;
+import com.sun.enterprise.ee.cms.core.PlannedShutdownSignal;
+import com.sun.enterprise.ee.cms.core.ServiceProviderConfigurationKeys;
+import com.sun.enterprise.ee.cms.core.Signal;
+import com.sun.enterprise.ee.cms.impl.client.FailureNotificationActionFactoryImpl;
+import com.sun.enterprise.ee.cms.impl.client.FailureRecoveryActionFactoryImpl;
+import com.sun.enterprise.ee.cms.impl.client.FailureSuspectedActionFactoryImpl;
+import com.sun.enterprise.ee.cms.impl.client.GroupLeadershipNotificationActionFactoryImpl;
+import com.sun.enterprise.ee.cms.impl.client.JoinNotificationActionFactoryImpl;
+import com.sun.enterprise.ee.cms.impl.client.JoinedAndReadyNotificationActionFactoryImpl;
+import com.sun.enterprise.ee.cms.impl.client.MessageActionFactoryImpl;
+import com.sun.enterprise.ee.cms.impl.client.PlannedShutdownActionFactoryImpl;
+import com.sun.enterprise.mgmt.transport.NetworkUtility;
+import com.sun.enterprise.mgmt.transport.grizzly.GrizzlyConfigConstants;
+import com.sun.enterprise.util.io.ServerDirs;
+import com.sun.logging.LogDomains;
 
 /**
  * @author Sheetal.Vartak@Sun.COM
@@ -744,10 +776,6 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         }
         logger.log(Level.CONFIG,
             "Printing all GMS properties: ", sb.toString());
-    }
-
-    public Startup.Lifecycle getLifecycle() {
-        return Startup.Lifecycle.SERVER;
     }
 
     private void checkInitialized() {

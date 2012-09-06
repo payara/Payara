@@ -40,21 +40,17 @@
 
 package com.sun.enterprise.security.jmac;
 
-import com.sun.enterprise.config.serverbeans.MessageSecurityConfig;
-import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.security.jmac.config.GFServerConfigProvider;
-import com.sun.logging.LogDomains;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.api.admin.ServerEnvironment;
-
-import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Singleton;
-import org.glassfish.api.Startup;
+
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.Changed;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigListener;
@@ -62,24 +58,24 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.NotProcessed;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
+import com.sun.enterprise.config.serverbeans.MessageSecurityConfig;
+import com.sun.enterprise.config.serverbeans.SecurityService;
+import com.sun.enterprise.security.jmac.config.GFServerConfigProvider;
+import com.sun.logging.LogDomains;
+
 /**
 * Listener class to handle admin message-security-config element events.
 * @author Nithya Subramanian
 */
 
 @Service
-@Singleton
-public class MessageSecurityConfigEventListenerImpl implements ConfigListener, Startup {
+@RunLevel(StartupRunLevel.VAL)
+public class MessageSecurityConfigEventListenerImpl implements ConfigListener {
 
     private static Logger logger = LogDomains.getLogger(MessageSecurityConfigEventListenerImpl.class,LogDomains.SECURITY_LOGGER);
     
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private SecurityService service;
-    
-    @Override
-    public Lifecycle getLifecycle() {
-        return Startup.Lifecycle.SERVER;
-    }
         
     /**
     * @param event - Event to be processed.

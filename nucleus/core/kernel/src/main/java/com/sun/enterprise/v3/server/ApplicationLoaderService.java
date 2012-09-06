@@ -57,7 +57,6 @@ import javax.inject.Named;
 import javax.inject.Provider;
 
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.Startup;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
@@ -87,18 +86,12 @@ import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.SnifferManager;
-import org.glassfish.internal.deployment.DeploymentTracing;
-import org.glassfish.internal.api.*;
-import org.glassfish.external.probe.provider.PluginPoint;
-import org.glassfish.external.probe.provider.StatsProviderManager;
-import org.glassfish.deployment.monitor.DeploymentLifecycleStatsProvider;
 import org.glassfish.security.services.impl.AuthenticationServiceImpl;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 
-import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.AppTenant;
+import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -109,10 +102,6 @@ import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.common.HTMLActionReporter;
 import com.sun.logging.LogDomains;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Provider;
 
 /**
  * This service is responsible for loading all deployed applications...
@@ -174,14 +163,6 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
     private String deploymentTracingEnabled = null;
 
-    /**
-     * Retuns the lifecyle of the service.
-     * Once the applications are loaded, this service does not need to remain
-     * available
-     */
-    public Startup.Lifecycle getLifecycle() {
-        return Startup.Lifecycle.SERVER;
-    }
 
     /**
      * Starts the application loader service.

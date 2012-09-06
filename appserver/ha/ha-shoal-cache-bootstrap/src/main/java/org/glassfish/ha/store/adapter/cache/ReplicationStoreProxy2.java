@@ -40,45 +40,35 @@
 
 package org.glassfish.ha.store.adapter.cache;
 
-import org.glassfish.api.Startup;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
-import org.glassfish.api.event.Events;
-import org.glassfish.ha.store.api.*;
-import org.glassfish.ha.store.spi.BackingStoreFactoryRegistry;
+import java.io.Serializable;
+
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
+
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.event.Events;
+import org.glassfish.ha.store.api.BackingStore;
+import org.glassfish.ha.store.api.BackingStoreConfiguration;
+import org.glassfish.ha.store.api.BackingStoreException;
+import org.glassfish.ha.store.api.BackingStoreFactory;
+import org.glassfish.ha.store.api.BackingStoreTransaction;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
-
-import java.io.Serializable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * @author Mahesh Kannan
  */
 @Service(name = "replication")
+@RunLevel(StartupRunLevel.VAL)
 public class ReplicationStoreProxy2
-        implements Startup, PostConstruct, BackingStoreFactory {
+        implements PostConstruct, BackingStoreFactory {
 
     @Inject
     ServiceLocator habitat;
 
     @Inject
     Events events;
-
-    /**
-     * Returns the lifecyle of the service. This service may not be needed
-     * after startup -- we still need to determine how to load GMS when
-     * a gms-enabled cluster is first created during runtime.
-     * TODO: determine SERVER v START
-     */
-    @Override
-    public Startup.Lifecycle getLifecycle() {
-        return Startup.Lifecycle.SERVER;
-    }
 
     @Override
     public <K extends Serializable, V extends Serializable> BackingStore<K, V> createBackingStore(BackingStoreConfiguration<K, V> conf) throws BackingStoreException {

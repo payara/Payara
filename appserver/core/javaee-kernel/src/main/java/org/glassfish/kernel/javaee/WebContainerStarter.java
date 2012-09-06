@@ -40,26 +40,6 @@
 
 package org.glassfish.kernel.javaee;
 
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.module.Module;
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.v3.server.ContainerStarter;
-import org.glassfish.grizzly.config.dom.*;
-import com.sun.logging.LogDomains;
-import org.glassfish.api.Startup;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.container.Sniffer;
-import org.glassfish.internal.data.ContainerRegistry;
-import org.glassfish.internal.data.EngineInfo;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Provider;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import javax.inject.Singleton;
-import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.config.types.Property;
-
 import java.beans.PropertyChangeEvent;
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -67,6 +47,39 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.container.Sniffer;
+import org.glassfish.grizzly.config.dom.NetworkConfig;
+import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.grizzly.config.dom.NetworkListeners;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.data.ContainerRegistry;
+import org.glassfish.internal.data.EngineInfo;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.Changed;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.NotProcessed;
+import org.jvnet.hk2.config.ObservableBean;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
+import org.jvnet.hk2.config.types.Property;
+
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.serverbeans.VirtualServer;
+import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.v3.server.ContainerStarter;
+import com.sun.logging.LogDomains;
 
 /**
  * Startup service for the web container.
@@ -79,9 +92,9 @@ import java.util.logging.Logger;
  * @author jluehe
  */
 @Service
-@Singleton
+@RunLevel(StartupRunLevel.VAL)
 public class WebContainerStarter
-        implements Startup, PostConstruct, ConfigListener {
+        implements PostConstruct, ConfigListener {
 
     private static final Logger logger = LogDomains.getLogger(
         WebContainerStarter.class, LogDomains.CORE_LOGGER);
@@ -139,12 +152,6 @@ public class WebContainerStarter
             bean = (ObservableBean) ConfigSupport.getImpl(serverConfig.getNetworkConfig().getNetworkListeners());
             bean.addListener(this);
         }
-    }
-
-    public Lifecycle getLifecycle() {
-        // This service stays running for the life of the app server,
-        // hence SERVER
-        return Lifecycle.SERVER;
     }
 
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
