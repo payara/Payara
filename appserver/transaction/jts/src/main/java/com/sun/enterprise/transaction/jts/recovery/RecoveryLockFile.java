@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -80,8 +80,8 @@ import com.sun.jts.CosTransactions.RecoveryManager;
 
 public class RecoveryLockFile implements TransactionRecoveryFence, DelegatedTransactionRecoveryFence {
 
-    // Logger to log transaction messages
-    static Logger _logger = LogDomains.getLogger(RecoveryLockFile.class, LogDomains.TRANSACTION_LOGGER);
+    // Logger to log transaction messages = use class from com.sun.jts sub-package to find the bundle
+    static Logger _logger = LogDomains.getLogger(Configuration.class, LogDomains.TRANSACTION_LOGGER);
 
     private final static String SEPARATOR = " ";
     private final static String OWN = "O";
@@ -115,14 +115,15 @@ public class RecoveryLockFile implements TransactionRecoveryFence, DelegatedTran
 
     private void init(GMSCallBack gmsCallBack) {
         this.gmsCallBack = gmsCallBack;
+        instance_name = Configuration.getPropertyValue(Configuration.INSTANCE_NAME);
+        log_path = LogControl.getLogPath();
+        // Create (if it doesn't exist) recoveryLockFile to hold info about instance and delegated recovery
+        File recoveryLockFile = LogControl.recoveryLockFile(null, log_path);
         try {
-            instance_name = Configuration.getPropertyValue(Configuration.INSTANCE_NAME);
-            log_path = LogControl.getLogPath();
-            // Create (if it doesn't exist) recoveryLockFile to hold info about instance and delegated recovery
-            File recoveryLockFile = LogControl.recoveryLockFile(null, log_path);
             recoveryLockFile.createNewFile();
         } catch (Exception ex) {
-            _logger.log(Level.WARNING, "jts.exception_in_recovery_file_handling", ex);
+            _logger.log(Level.WARNING, "jts.exception_creating_recovery_file", recoveryLockFile);
+            _logger.log(Level.WARNING, "", ex);
         }
         RecoveryManager.registerTransactionRecoveryFence(this);
     }

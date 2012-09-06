@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -235,8 +235,11 @@ public class LogControl {
             */
             logName = logFileName;
             File logDir = directory(logName,directoryPath);
-            if( !logDir.exists() )
-                logDir.mkdirs();
+            if( !logDir.exists() ) {
+                boolean created = logDir.mkdirs();
+                if (!created)
+                     _logger.log(Level.WARNING,"jts.exception_creating_log_directory",logDir);
+            }
         }
 
         // Build name of log's control file, e.g. (<logname>.control)
@@ -939,7 +942,13 @@ public class LogControl {
     }
 
     public final static File recoveryLockFile(String logId, String logDir) {
-        File result = new File(directory(logId,logDir),RECOVERY_LOCK_FILE_NAME);
+        File dir = directory(logId,logDir);
+        if( !dir.exists() ) {
+            boolean created = dir.mkdirs();
+            if (!created)
+                 _logger.log(Level.WARNING,"jts.exception_creating_log_directory",dir);
+        }
+        File result = new File(dir,RECOVERY_LOCK_FILE_NAME);
         return result;
     }
 
