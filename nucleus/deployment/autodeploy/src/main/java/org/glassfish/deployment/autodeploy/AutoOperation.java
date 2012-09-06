@@ -213,9 +213,11 @@ public abstract class AutoOperation {
         try {
             for (String suffix : autoDeployFileSuffixes) {
                 final File suffixedFile = getSuffixedFile(f, suffix);
-                if ( ! suffixedFile.delete()) {
-                    sLogger.log(Level.WARNING, "enterprise.deployment.deleteFailed",
-                            suffixedFile.getAbsolutePath());
+                if(suffixedFile.exists()){
+                    if ( ! suffixedFile.delete()) {
+                        sLogger.log(Level.WARNING, "enterprise.deployment.deleteFailed",
+                                suffixedFile.getAbsolutePath());
+                    }
                 }
             }
         } catch (Exception e) { 
