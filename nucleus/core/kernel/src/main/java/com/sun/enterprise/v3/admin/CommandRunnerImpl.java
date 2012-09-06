@@ -1704,7 +1704,11 @@ public class CommandRunnerImpl implements CommandRunner {
         @Override
         public void execute(AdminCommand command) {
             AdminCommand command1 = getCommand(scope(),name(),report(),logger);
-            boolean isManagedJob = getManagedJob(command1.getClass());
+            boolean isManagedJob = false;
+
+            if(command1 != null) {
+                isManagedJob = getManagedJob(command1.getClass());
+            }
             Job commandInstance = jobRegistry.createJob(name(),isManagedJob);
 
             for (NameListerPair nameListerPair : nameListerPairs) {
