@@ -201,7 +201,7 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
     /**
      * Adds the specified mail-session-definition to the receiver.
      *
-     * @param desc DataSourceDefinitionDescriptor to add.
+     * @param desc MailSessionDescriptor to add.
      */
     public void addMailSessionDescriptor(MailSessionDescriptor desc);
 
@@ -224,6 +224,30 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
      * @param desc ConnectorResourceDefinitionDescriptor to add.
      */
     public void addConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor desc);
+
+    /**
+     * get all jms-connection-factory-definition descriptors
+     * @return jms-connection-factory-definition descriptors
+     */
+    public Set<JMSConnectionFactoryDefinitionDescriptor> getJMSConnectionFactoryDefinitionDescriptors();
+
+    /**
+     * Adds the specified jms-connection-factory-definition to the receiver.
+     * @param desc JMSConnectionFactoryDefinitionDescriptor to add.
+     */
+    public void addJMSConnectionFactoryDefinitionDescriptor(JMSConnectionFactoryDefinitionDescriptor desc);
+
+    /**
+     * get all jms-destination-definition descriptors
+     * @return jms-destination-definition descriptors
+     */
+    public Set<JMSDestinationDefinitionDescriptor> getJMSDestinationDefinitionDescriptors();
+
+    /**
+     * Adds the specified jms-destination-definition to the receiver.
+     * @param desc JMSDestinationDefinitionDescriptor to add.
+     */
+    public void addJMSDestinationDefinitionDescriptor(JMSDestinationDefinitionDescriptor desc);
 
     public void addManagedBean(ManagedBeanDescriptor managedBeanDesc);
 }

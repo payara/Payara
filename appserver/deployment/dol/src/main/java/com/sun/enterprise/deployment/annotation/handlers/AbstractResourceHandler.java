@@ -147,31 +147,27 @@ public abstract class AbstractResourceHandler extends AbstractHandler {
     
 
     protected boolean isAEjbComponentClass(Annotation[] annotations) {
-        boolean ejbClass = false;
-        Class ejbAnnotations[] = getEjbAnnotationTypes();
-        for(Annotation annotation : annotations){
-            for(Class ejbAnnotation : ejbAnnotations){
-                if(ejbAnnotation.equals(annotation.annotationType())){
-                    ejbClass = true;
-                    break;
+        Class<? extends Annotation> ejbAnnotations[] = getEjbAnnotationTypes();
+        for (Annotation annotation : annotations) {
+            for (Class<? extends Annotation> ejbAnnotation : ejbAnnotations) {
+                if (ejbAnnotation.equals(annotation.annotationType())) {
+                    return true;
                 }
             }
         }
-        return ejbClass;
+        return false;
     }
     
     protected boolean isAWebComponentClass(Annotation[] annotations) {
-        boolean warClass = false;
-        Class webAnnotations[] = getWebAnnotationTypes();
-        for(Annotation annotation : annotations){
-            for(Class webAnnotation : webAnnotations){
-                if(webAnnotation.equals(annotation.annotationType())){
-                    warClass = true;
-                    break;
+        Class<? extends Annotation> webAnnotations[] = getWebAnnotationTypes();
+        for (Annotation annotation : annotations) {
+            for (Class<? extends Annotation> webAnnotation : webAnnotations) {
+                if (webAnnotation.equals(annotation.annotationType())) {
+                    return true;
                 }
             }
         }
-        return warClass;
+        return false;
     }
 
 }

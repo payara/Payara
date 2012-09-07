@@ -59,6 +59,8 @@ import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
 import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
 import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
 import com.sun.enterprise.deployment.EnvironmentProperty;
+import com.sun.enterprise.deployment.JMSConnectionFactoryDefinitionDescriptor;
+import com.sun.enterprise.deployment.JMSDestinationDefinitionDescriptor;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.MailSessionDescriptor;
@@ -1019,6 +1021,44 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
         for(;descIterator.hasNext();){
             ConnectorResourceDefinitionDescriptor next = descIterator.next();
             subNode.writeDescriptor(parentNode, TagNames.CONNECTOR_RESOURCE, next);
+        }
+    }
+
+    /**
+     * write a list of jms-connection-factory-definition descriptors to a DOM Tree
+     *
+     * @param parentNode parent node for the DOM tree
+     * @param descIterator the iterator over the descriptors to write
+     */
+    protected void writeJMSConnectionFactoryDefinitionDescriptors(Node parentNode,
+                              Iterator<JMSConnectionFactoryDefinitionDescriptor>  descIterator) {
+        if (descIterator == null || !descIterator.hasNext()) {
+            return;
+        }
+
+        JMSConnectionFactoryDefinitionNode subNode = new JMSConnectionFactoryDefinitionNode();
+        for (;descIterator.hasNext();) {
+            JMSConnectionFactoryDefinitionDescriptor next = descIterator.next();
+            subNode.writeDescriptor(parentNode, TagNames.JMS_CONNECTION_FACTORY, next);
+        }
+    }
+
+    /**
+     * write a list of jms-destination-definition descriptors to a DOM Tree
+     *
+     * @param parentNode parent node for the DOM tree
+     * @param descIterator the iterator over the descriptors to write
+     */
+    protected void writeJMSDestinationDefinitionDescriptors(Node parentNode,
+                              Iterator<JMSDestinationDefinitionDescriptor>  descIterator) {
+        if (descIterator == null || !descIterator.hasNext()) {
+            return;
+        }
+
+        JMSDestinationDefinitionNode subNode = new JMSDestinationDefinitionNode();
+        for (;descIterator.hasNext();) {
+            JMSDestinationDefinitionDescriptor next = descIterator.next();
+            subNode.writeDescriptor(parentNode, TagNames.JMS_DESTINATION, next);
         }
     }
 

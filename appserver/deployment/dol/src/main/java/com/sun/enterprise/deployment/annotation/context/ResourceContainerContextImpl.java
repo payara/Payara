@@ -475,6 +475,46 @@ public class ResourceContainerContextImpl extends AnnotationContext
         getConnectorResourceDefinitionContainer().addConnectorResourceDefinitionDescriptor(desc);
     }
 
+    protected WritableJndiNameEnvironment getJMSConnectionFactoryDefinitionContainer(){
+        return (WritableJndiNameEnvironment)descriptor;
+    }
+
+    /**
+     * get all jms-connection-factory-definition descriptors
+     * @return jms-connection-factory-definition descriptors
+     */
+    public Set<JMSConnectionFactoryDefinitionDescriptor> getJMSConnectionFactoryDefinitionDescriptors() {
+        return getJMSConnectionFactoryDefinitionContainer().getJMSConnectionFactoryDefinitionDescriptors();
+    }
+
+    /**
+     * Adds the specified jms-connection-factory-definition to the receiver.
+     * @param desc JMSConnectionFactoryDefinitionDescriptor to add.
+     */
+    public void addJMSConnectionFactoryDefinitionDescriptor(JMSConnectionFactoryDefinitionDescriptor desc) {
+        getJMSConnectionFactoryDefinitionContainer().addJMSConnectionFactoryDefinitionDescriptor(desc);
+    }
+
+    protected WritableJndiNameEnvironment getJMSDestinationDefinitionContainer(){
+        return (WritableJndiNameEnvironment)descriptor;
+    }
+
+    /**
+     * get all jms-destination-definition descriptors
+     * @return jms-destination-definition descriptors
+     */
+    public Set<JMSDestinationDefinitionDescriptor> getJMSDestinationDefinitionDescriptors() {
+        return getJMSDestinationDefinitionContainer().getJMSDestinationDefinitionDescriptors();
+    }
+
+    /**
+     * Adds the specified jms-destination-definition to the receiver.
+     * @param desc JMSDestinationDefinitionDescriptor to add.
+     */
+    public void addJMSDestinationDefinitionDescriptor(JMSDestinationDefinitionDescriptor desc) {
+        getJMSDestinationDefinitionContainer().addJMSDestinationDefinitionDescriptor(desc);
+    }
+
     protected WritableJndiNameEnvironment getPreDestroyContainer() {
         return (WritableJndiNameEnvironment)descriptor;
     }

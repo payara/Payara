@@ -116,6 +116,8 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
         registerElementHandler(new XMLElement(TagNames.PRE_DESTROY), LifecycleCallbackNode.class, "addPreDestroyDescriptor");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
         registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addJMSConnectionFactoryDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addJMSDestinationDefinitionDescriptor");
 
         SaxParserHandler.registerBundleNode(this, ApplicationClientTagNames.APPLICATION_CLIENT_TAG);
     }
@@ -231,6 +233,12 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
         
         // mail-session*
         writeMailSessionDescriptors(appclientNode, appclientDesc.getMailSessionDescriptors().iterator());
+
+        // jms-connection-factory-definition*
+        writeJMSConnectionFactoryDefinitionDescriptors(appclientNode, appclientDesc.getJMSConnectionFactoryDefinitionDescriptors().iterator());
+
+        // jms-destination-definition*
+        writeJMSDestinationDefinitionDescriptors(appclientNode, appclientDesc.getJMSDestinationDefinitionDescriptors().iterator());
 
         appendTextChild(appclientNode, ApplicationClientTagNames.CALLBACK_HANDLER, appclientDesc.getCallbackHandler());
 
