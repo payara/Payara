@@ -202,8 +202,14 @@ public class MessageDrivenBeanNode extends EjbNode<EjbMessageBeanDescriptor> {
         //mail-seesion*
         writeMailSessionDescriptors(ejbNode, ejbDesc.getMailSessionDescriptors().iterator());
         
-        // connecto-resource-definition*
+        // connector-resource-definition*
         writeConnectorResourceDefinitionDescriptors(ejbNode, ejbDesc.getConnectorResourceDefinitionDescriptors().iterator());
+
+        // jms-connection-factory-definition*
+        writeJMSConnectionFactoryDefinitionDescriptors(ejbNode, ejbDesc.getJMSConnectionFactoryDefinitionDescriptors().iterator());
+
+        // jms-destination-definition*
+        writeJMSDestinationDefinitionDescriptors(ejbNode, ejbDesc.getJMSDestinationDefinitionDescriptors().iterator());
 
         // security-role-ref*
         writeRoleReferenceDescriptors(ejbNode, ejbDesc.getRoleReferences().iterator());

@@ -328,6 +328,34 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
         }
     }
 
+    @Override
+    public void combineJMSConnectionFactoryDefinitionDescriptors(JndiNameEnvironment env) {
+        for (JMSConnectionFactoryDefinitionDescriptor jmscfdd: env.getJMSConnectionFactoryDefinitionDescriptors()) {
+            JMSConnectionFactoryDefinitionDescriptor desc = getJMSConnectionFactoryDefinitionDescriptor(jmscfdd.getName());
+            if (desc != null) {
+                if (desc.isConflict(jmscfdd)) {
+                    conflictJMSConnectionFactoryDefinition = true;
+                }
+            } else {
+                addJMSConnectionFactoryDefinitionDescriptor(null);
+            }
+        }
+    }
+
+    @Override
+    public void combineJMSDestinationDefinitionDescriptors(JndiNameEnvironment env) {
+        for (JMSDestinationDefinitionDescriptor jmsddd: env.getJMSDestinationDefinitionDescriptors()) {
+            JMSDestinationDefinitionDescriptor desc = getJMSDestinationDefinitionDescriptor(jmsddd.getName());
+            if (desc != null) {
+                if (desc.isConflict(jmsddd)) {
+                    conflictJMSDestinationDefinition = true;
+                }
+            } else {
+                addJMSDestinationDefinitionDescriptor(null);
+            }
+        }
+    }
+
     /**
      * Return a formatted version as a String.
      */

@@ -328,6 +328,12 @@ public class EjbSessionNode  extends InterfaceBasedEjbNode<EjbSessionDescriptor>
         // connecto-resource-definition*
         writeConnectorResourceDefinitionDescriptors(ejbNode, ejbDesc.getConnectorResourceDefinitionDescriptors().iterator());
 
+        // jms-connection-factory-definition*
+        writeJMSConnectionFactoryDefinitionDescriptors(ejbNode, ejbDesc.getJMSConnectionFactoryDefinitionDescriptors().iterator());
+
+        // jms-destination-definition*
+        writeJMSDestinationDefinitionDescriptors(ejbNode, ejbDesc.getJMSDestinationDefinitionDescriptors().iterator());
+
         // post-activate-method
         writeLifeCycleCallbackDescriptors(ejbNode, EjbTagNames.POST_ACTIVATE_METHOD, ejbDesc.getPostActivateDescriptors());
 

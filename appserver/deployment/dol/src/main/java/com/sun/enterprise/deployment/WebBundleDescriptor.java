@@ -74,6 +74,8 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     public boolean conflictDataSourceDefinition = false;
     public boolean conflictMailSessionDefinition = false;
     public boolean conflictConnectorResourceDefinition = false;
+    public boolean conflictJMSConnectionFactoryDefinition = false;
+    public boolean conflictJMSDestinationDefinition = false;
     public boolean conflictEnvironmentEntry = false;
     public boolean conflictEjbReference = false;
     public boolean conflictServiceReference = false;
@@ -413,6 +415,10 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     public abstract void combineMailSessionDescriptors(JndiNameEnvironment env);
 
     public abstract void combineConnectorResourceDefinitionDescriptors(JndiNameEnvironment env);
+
+    public abstract void combineJMSConnectionFactoryDefinitionDescriptors(JndiNameEnvironment env);
+
+    public abstract void combineJMSDestinationDefinitionDescriptors(JndiNameEnvironment env);
 
 }
     

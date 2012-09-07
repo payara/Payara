@@ -58,6 +58,8 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.javaee.services.DataSourceDefinitionProxy;
 import org.glassfish.javaee.services.ConnectorResourceDefinitionProxy;
+import org.glassfish.javaee.services.JMSConnectionFactoryDefinitionProxy;
+import org.glassfish.javaee.services.JMSDestinationDefinitionProxy;
 import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.util.ResourceManagerFactory;
 import javax.inject.Inject;
@@ -397,6 +399,45 @@ public class ComponentEnvManagerImpl
         }
     }
     
+    private void addJMSConnectionFactoryBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
+
+        for (JMSConnectionFactoryDefinitionDescriptor jmscfd : env.getJMSConnectionFactoryDefinitionDescriptors()) {
+
+            if (!dependencyAppliesToScope(jmscfd, scope)) {
+                continue;
+            }
+
+            String resourceId = getResourceId(env, jmscfd);
+            jmscfd.setResourceId(resourceId);
+
+            JMSConnectionFactoryDefinitionProxy proxy = habitat.getService(JMSConnectionFactoryDefinitionProxy.class);
+            proxy.setDescriptor(jmscfd);
+
+            String logicalJndiName = descriptorToLogicalJndiName(jmscfd);
+            CompEnvBinding envBinding = new CompEnvBinding(logicalJndiName, proxy);
+            jndiBindings.add(envBinding);
+        }
+    }
+
+    private void addJMSDestinationBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
+
+        for (JMSDestinationDefinitionDescriptor jmsdd : env.getJMSDestinationDefinitionDescriptors()) {
+
+            if (!dependencyAppliesToScope(jmsdd, scope)) {
+                continue;
+            }
+
+            String resourceId = getResourceId(env, jmsdd);
+            jmsdd.setResourceId(resourceId);
+
+            JMSDestinationDefinitionProxy proxy = habitat.getService(JMSDestinationDefinitionProxy.class);
+            proxy.setDescriptor(jmsdd);
+
+            String logicalJndiName = descriptorToLogicalJndiName(jmsdd);
+            CompEnvBinding envBinding = new CompEnvBinding(logicalJndiName, proxy);
+            jndiBindings.add(envBinding);
+        }
+    }
 
     private ResourceDeployer getResourceDeployer(Object resource) {
         return habitat.<ResourceManagerFactory>getService(ResourceManagerFactory.class).getResourceDeployer(resource);
@@ -414,6 +455,12 @@ public class ComponentEnvManagerImpl
 
         //undelploy connector-resources
         undeployConnectorResourceDefinitions(env);
+
+        //undelploy jms-connection-factories
+        undeployJMSConnectionFactoryDefinitions(env);
+
+        //undelploy jms-destinations
+        undeployJMSDestinationDefinitions(env);
         
         // Unpublish any global entries exported by this environment
         Collection<JNDIBinding> globalBindings = new ArrayList<JNDIBinding>();
@@ -430,6 +477,8 @@ public class ComponentEnvManagerImpl
         for(ApplicationClientDescriptor acd : appClientDescs){
             undeployDataSourceDefinitions(acd);
             undeployMailSessions(acd);
+            undeployJMSConnectionFactoryDefinitions(acd);
+            undeployJMSDestinationDefinitions(acd);
         }
 
         if( !(env instanceof ApplicationClientDescriptor ) &&
@@ -495,6 +544,30 @@ public class ComponentEnvManagerImpl
                 deployer.undeployResource(crd);
             }catch(Exception e){
                 _logger.log(Level.WARNING, "unable to undeploy ConnectorResourceDefinition [ " + crd.getName() + " ] ", e);
+            }
+        }
+    }
+
+    private void undeployJMSConnectionFactoryDefinitions(JndiNameEnvironment env) {
+
+        for (JMSConnectionFactoryDefinitionDescriptor jmscfd : env.getJMSConnectionFactoryDefinitionDescriptors()) {
+            try {
+                ResourceDeployer deployer = getResourceDeployer(jmscfd);
+                deployer.undeployResource(jmscfd);
+            } catch(Exception e) {
+                _logger.log(Level.WARNING, "unable to undeploy JMSConnectionFactoryDefinition [ " + jmscfd.getName() + " ] ", e);
+            }
+        }
+    }
+
+    private void undeployJMSDestinationDefinitions(JndiNameEnvironment env) {
+
+        for (JMSDestinationDefinitionDescriptor jmsdd : env.getJMSDestinationDefinitionDescriptors()) {
+            try {
+                ResourceDeployer deployer = getResourceDeployer(jmsdd);
+                deployer.undeployResource(jmsdd);
+            } catch(Exception e) {
+                _logger.log(Level.WARNING, "unable to undeploy JMSDestinationDefinition [ " + jmsdd.getName() + " ] ", e);
             }
         }
     }
@@ -608,6 +681,8 @@ public class ComponentEnvManagerImpl
         addDataSourceBindings(env, scope, jndiBindings); 
         addMailSessionBindings(env, scope, jndiBindings);
         addConnectorResourceBindings(env, scope, jndiBindings); 
+        addJMSConnectionFactoryBindings(env, scope, jndiBindings);
+        addJMSDestinationBindings(env, scope, jndiBindings);
 
         for (Iterator itr = env.getEjbReferenceDescriptors().iterator();
              itr.hasNext();) {

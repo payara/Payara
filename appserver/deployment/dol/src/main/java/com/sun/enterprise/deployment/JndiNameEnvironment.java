@@ -172,6 +172,20 @@ public interface JndiNameEnvironment {
     public Set<ConnectorResourceDefinitionDescriptor> getConnectorResourceDefinitionDescriptors();    
 
     /**
+     * Return a set of jms-connection-factory-definition descriptors.
+     *
+     * @return java.util.Set of jms-connection-factorty-definition objects
+     */
+    public Set<JMSConnectionFactoryDefinitionDescriptor> getJMSConnectionFactoryDefinitionDescriptors();
+
+    /**
+     * Return a set of jms-destination-definition descriptors.
+     *
+     * @return java.util.Set of jms-destination-definition objects
+     */
+    public Set<JMSDestinationDefinitionDescriptor> getJMSDestinationDefinitionDescriptors();
+
+    /**
      * Return the pre-destroy descriptor corresponding to
      * the given name.
      *

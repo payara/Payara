@@ -119,6 +119,8 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
         registerElementHandler(new XMLElement(TagNames.PRE_DESTROY), LifecycleCallbackNode.class, "addPreDestroyDescriptor");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
         registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addConnectorResourceDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addJMSConnectionFactoryDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addJMSDestinationDefinitionDescriptor");
         registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
     }
     
@@ -406,6 +408,10 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
         writeDataSourceDefinitionDescriptors(jarNode, webBundleDesc.getDataSourceDefinitionDescriptors().iterator());
         // connector-resource-definition*
         writeConnectorResourceDefinitionDescriptors(jarNode, webBundleDesc.getConnectorResourceDefinitionDescriptors().iterator());
+        // jms-connection-factory-session*
+        writeJMSConnectionFactoryDefinitionDescriptors(jarNode, webBundleDesc.getJMSConnectionFactoryDefinitionDescriptors().iterator());
+        // jms-destination-session*
+        writeJMSDestinationDefinitionDescriptors(jarNode, webBundleDesc.getJMSDestinationDefinitionDescriptors().iterator());
 
         // mail-session*
         writeMailSessionDescriptors(jarNode, webBundleDesc.getMailSessionDescriptors().iterator());

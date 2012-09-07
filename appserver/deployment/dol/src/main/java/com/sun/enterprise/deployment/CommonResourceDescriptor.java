@@ -111,4 +111,36 @@ public abstract class CommonResourceDescriptor extends Descriptor {
         commonResourceFunctionality.removeConnectorResourceDefinitionDescriptor(reference);
     }
 
+    public Set<JMSConnectionFactoryDefinitionDescriptor> getJMSConnectionFactoryDefinitionDescriptors() {
+        return commonResourceFunctionality.getJMSConnectionFactoryDefinitionDescriptors();
+    }
+
+    protected JMSConnectionFactoryDefinitionDescriptor getJMSConnectionFactoryDefinitionDescriptor(String name) {
+        return commonResourceFunctionality.getJMSConnectionFactoryDefinitionDescriptor(name);
+    }
+
+    public void addJMSConnectionFactoryDefinitionDescriptor(JMSConnectionFactoryDefinitionDescriptor reference) {
+        commonResourceFunctionality.addJMSConnectionFactoryDefinitionDescriptor(reference);
+    }
+
+    public void removeJMSConnectionFactoryDefinitionDescriptor(JMSConnectionFactoryDefinitionDescriptor reference) {
+        commonResourceFunctionality.removeJMSConnectionFactoryDefinitionDescriptor(reference);
+    }
+
+    public Set<JMSDestinationDefinitionDescriptor> getJMSDestinationDefinitionDescriptors() {
+        return commonResourceFunctionality.getJMSDestinationDefinitionDescriptors();
+    }
+
+    protected JMSDestinationDefinitionDescriptor getJMSDestinationDefinitionDescriptor(String name) {
+        return commonResourceFunctionality.getJMSDestinationDefinitionDescriptor(name);
+    }
+
+    public void addJMSDestinationDefinitionDescriptor(JMSDestinationDefinitionDescriptor reference) {
+        commonResourceFunctionality.addJMSDestinationDefinitionDescriptor(reference);
+    }
+
+    public void removeJMSDestinationDefinitionDescriptor(JMSDestinationDefinitionDescriptor reference) {
+        commonResourceFunctionality.removeJMSDestinationDefinitionDescriptor(reference);
+    }
+
 }

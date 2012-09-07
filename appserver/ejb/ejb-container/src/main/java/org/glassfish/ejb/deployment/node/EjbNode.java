@@ -50,6 +50,8 @@ import com.sun.enterprise.deployment.RoleReference;
 import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
 import com.sun.enterprise.deployment.node.ConnectorResourceDefinitionNode;
 import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
+import com.sun.enterprise.deployment.node.JMSConnectionFactoryDefinitionNode;
+import com.sun.enterprise.deployment.node.JMSDestinationDefinitionNode;
 import com.sun.enterprise.deployment.node.MailSessionNode;
 import com.sun.enterprise.deployment.node.DisplayableComponentNode;
 import com.sun.enterprise.deployment.node.EjbLocalReferenceNode;
@@ -97,6 +99,8 @@ public abstract class EjbNode<S extends EjbDescriptor> extends DisplayableCompon
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
         registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
         registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addConnectorResourceDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addJMSConnectionFactoryDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addJMSDestinationDefinitionDescriptor");
 
         registerElementHandler(new XMLElement(EjbTagNames.SECURITY_IDENTITY),
                                                             SecurityIdentityNode.class);             

@@ -597,6 +597,18 @@ public class ConnectorsUtil {
         return getReservePrefixedJNDINameForConnectorResourceDefinitionPool(compId, poolName);
     }
 
+    public static String deriveJMSConnectionFactoryDefinitionResourceName(String compId, String name) {
+        return getReservePrefixedJNDINameForJMSConnectionFactoryDefinitionResource(compId, name);
+    }
+
+    public static String deriveJMSConnectionFactoryDefinitionPoolName(String compId, String poolName) {
+        return getReservePrefixedJNDINameForJMSConnectionFactoryDefinitionPool(compId, poolName);
+    }
+
+    public static String deriveJMSDestinationDefinitionResourceName(String compId, String name) {
+      return getReservePrefixedJNDINameForJMSDestinationDefinitionResource(compId, name);
+    }
+
 
     public static Map<String,String> convertPropertiesToMap(Properties properties){
         if(properties == null){
@@ -629,6 +641,18 @@ public class ConnectorsUtil {
         return getReservePrefixedJNDIName(prefix, poolName);
     }
 
+    public static String getReservePrefixedJNDINameForJMSConnectionFactoryDefinitionPool(String compId, String poolName) {
+        String prefix = null;
+        if (compId == null || compId.equals("")) {
+            prefix = ConnectorConstants.POOLS_JNDINAME_PREFIX +
+                ConnectorConstants.JMS_CONNECTION_FACTORY_DEFINITION_JNDINAME_PREFIX;
+        } else {
+            prefix = ConnectorConstants.POOLS_JNDINAME_PREFIX +
+                ConnectorConstants.JMS_CONNECTION_FACTORY_DEFINITION_JNDINAME_PREFIX + compId +"/";
+        }
+        return getReservePrefixedJNDIName(prefix, poolName);
+    }
+
     private static String getReservePrefixedJNDIName(String prefix, String resourceName) {
         return prefix + resourceName;
     }
@@ -653,6 +677,30 @@ public class ConnectorsUtil {
         }else{
             prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
                 ConnectorConstants.CONNECTOR_RESOURCE_DEFINITION_JNDINAME_PREFIX + compId +"/";
+        }
+        return getReservePrefixedJNDIName(prefix, resourceName);
+    }
+
+    public static String getReservePrefixedJNDINameForJMSConnectionFactoryDefinitionResource(String compId, String resourceName) {
+        String prefix = null;
+        if (compId == null || compId.equals("")) {
+            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
+                ConnectorConstants.JMS_CONNECTION_FACTORY_DEFINITION_JNDINAME_PREFIX;
+        } else {
+            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
+                ConnectorConstants.JMS_CONNECTION_FACTORY_DEFINITION_JNDINAME_PREFIX + compId +"/";
+        }
+        return getReservePrefixedJNDIName(prefix, resourceName);
+    }
+
+    public static String getReservePrefixedJNDINameForJMSDestinationDefinitionResource(String compId, String resourceName) {
+        String prefix = null;
+        if (compId == null || compId.equals("")) {
+            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
+                ConnectorConstants.JMS_DESTINATION_DEFINITION_JNDINAME_PREFIX;
+        } else {
+            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
+                ConnectorConstants.JMS_DESTINATION_DEFINITION_JNDINAME_PREFIX + compId +"/";
         }
         return getReservePrefixedJNDIName(prefix, resourceName);
     }

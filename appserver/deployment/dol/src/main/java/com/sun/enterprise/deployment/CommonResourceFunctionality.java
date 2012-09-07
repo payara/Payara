@@ -68,6 +68,12 @@ public class CommonResourceFunctionality implements Serializable {
     private Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescs =
             new HashSet<ConnectorResourceDefinitionDescriptor>();
 
+    private Set<JMSConnectionFactoryDefinitionDescriptor> jmsConnectionFactoryDefinitionDescs =
+            new HashSet<JMSConnectionFactoryDefinitionDescriptor>();
+
+    private Set<JMSDestinationDefinitionDescriptor> jmsDestinationDefinitionDescs =
+            new HashSet<JMSDestinationDefinitionDescriptor>();
+
     private Set<Descriptor> allResourceDescriptors = new HashSet<Descriptor>();
 
     public Set<Descriptor> getAllResourcesDescriptors() {
@@ -188,6 +194,64 @@ public class CommonResourceFunctionality implements Serializable {
 
     public void removeConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference){
         connectorResourceDefinitionDescs.remove(reference);
+        allResourceDescriptors.remove(reference);
+    }
+
+    public Set<JMSConnectionFactoryDefinitionDescriptor> getJMSConnectionFactoryDefinitionDescriptors() {
+        return jmsConnectionFactoryDefinitionDescs;
+    }
+
+    protected JMSConnectionFactoryDefinitionDescriptor getJMSConnectionFactoryDefinitionDescriptor(String name) {
+        for (JMSConnectionFactoryDefinitionDescriptor jmscfdDesc : getJMSConnectionFactoryDefinitionDescriptors()) {
+            if (jmscfdDesc.getName().equals(name)) {
+                return jmscfdDesc;
+            }
+        }
+        return null;
+    }
+
+    public void addJMSConnectionFactoryDefinitionDescriptor(JMSConnectionFactoryDefinitionDescriptor reference) {
+        if (foundDescriptor(reference)) {
+            throw new IllegalStateException(
+                    localStrings.getLocalString("enterprise.deployment.exceptionduplicatejmsconnectionfactorydefinition",
+                            "This descriptor/class cannot have jms connection factory definitions of same name : [{0}]",
+                            reference.getName()));
+        }
+        jmsConnectionFactoryDefinitionDescs.add(reference);
+        allResourceDescriptors.add(reference);
+    }
+
+    public void removeJMSConnectionFactoryDefinitionDescriptor(JMSConnectionFactoryDefinitionDescriptor reference) {
+        jmsConnectionFactoryDefinitionDescs.remove(reference);
+        allResourceDescriptors.remove(reference);
+    }
+
+    public Set<JMSDestinationDefinitionDescriptor> getJMSDestinationDefinitionDescriptors() {
+        return jmsDestinationDefinitionDescs;
+    }
+
+    protected JMSDestinationDefinitionDescriptor getJMSDestinationDefinitionDescriptor(String name) {
+        for (JMSDestinationDefinitionDescriptor jmsddDesc : getJMSDestinationDefinitionDescriptors()) {
+            if (jmsddDesc.getName().equals(name)) {
+                return jmsddDesc;
+            }
+        }
+        return null;
+    }
+
+    public void addJMSDestinationDefinitionDescriptor(JMSDestinationDefinitionDescriptor reference) {
+        if (foundDescriptor(reference)) {
+            throw new IllegalStateException(
+                    localStrings.getLocalString("enterprise.deployment.exceptionduplicatejmsdestinationdefinition",
+                            "This descriptor/class cannot have jms connection factory definitions of same name : [{0}]",
+                            reference.getName()));
+        }
+        jmsDestinationDefinitionDescs.add(reference);
+        allResourceDescriptors.add(reference);
+    }
+
+    public void removeJMSDestinationDefinitionDescriptor(JMSDestinationDefinitionDescriptor reference) {
+        jmsDestinationDefinitionDescs.remove(reference);
         allResourceDescriptors.remove(reference);
     }
 

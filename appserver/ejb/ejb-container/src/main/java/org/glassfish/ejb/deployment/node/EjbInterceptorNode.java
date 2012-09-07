@@ -48,6 +48,8 @@ import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
 import com.sun.enterprise.deployment.node.ConnectorResourceDefinitionNode;
 import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
+import com.sun.enterprise.deployment.node.JMSConnectionFactoryDefinitionNode;
+import com.sun.enterprise.deployment.node.JMSDestinationDefinitionNode;
 import com.sun.enterprise.deployment.node.MailSessionNode;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.EjbLocalReferenceNode;
@@ -87,6 +89,8 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
         registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
         registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addConnectorResourceDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addJMSConnectionFactoryDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addJMSDestinationDefinitionDescriptor");
 
         registerElementHandler(new XMLElement(TagNames.ENVIRONMENT_PROPERTY), 
                EnvEntryNode.class, "addEnvironmentProperty");
@@ -188,6 +192,12 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
 
        // connecto-resource-definition*
        writeConnectorResourceDefinitionDescriptors(interceptorNode, descriptor.getConnectorResourceDefinitionDescriptors().iterator());
+
+       // jms-connection-factory-definition*
+       writeJMSConnectionFactoryDefinitionDescriptors(interceptorNode, descriptor.getJMSConnectionFactoryDefinitionDescriptors().iterator());
+
+       // jms-destination-definition*
+       writeJMSDestinationDefinitionDescriptors(interceptorNode, descriptor.getJMSDestinationDefinitionDescriptors().iterator());
 
         return interceptorNode;
     }

@@ -71,6 +71,8 @@ import com.sun.enterprise.deployment.InjectionCapable;
 import com.sun.enterprise.deployment.InjectionInfo;
 import com.sun.enterprise.deployment.InjectionTarget;
 import com.sun.enterprise.deployment.InterceptorDescriptor;
+import com.sun.enterprise.deployment.JMSConnectionFactoryDefinitionDescriptor;
+import com.sun.enterprise.deployment.JMSDestinationDefinitionDescriptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.MailSessionDescriptor;
@@ -311,6 +313,18 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
             if (connectorResourceDescriptors.size() > 0) {
                 for (ConnectorResourceDefinitionDescriptor desc : connectorResourceDescriptors) {
                     this.addConnectorResourceDefinitionDescriptor(desc);
+                }
+            }
+            Set<JMSConnectionFactoryDefinitionDescriptor> jmsConnectionFactoryDescriptors = other.getJMSConnectionFactoryDefinitionDescriptors();
+            if (jmsConnectionFactoryDescriptors.size() > 0) {
+                for (JMSConnectionFactoryDefinitionDescriptor desc : jmsConnectionFactoryDescriptors) {
+                    this.addJMSConnectionFactoryDefinitionDescriptor(desc);
+                }
+            }
+            Set<JMSDestinationDefinitionDescriptor> jmsDestinationDescriptors = other.getJMSDestinationDefinitionDescriptors();
+            if (jmsDestinationDescriptors.size() > 0) {
+                for (JMSDestinationDefinitionDescriptor desc : jmsDestinationDescriptors) {
+                    this.addJMSDestinationDefinitionDescriptor(desc);
                 }
             }
             this.getEntityManagerFactoryReferenceDescriptors().addAll(other.getEntityManagerFactoryReferenceDescriptors());

@@ -227,5 +227,41 @@ public interface WritableJndiNameEnvironment extends JndiNameEnvironment {
     public void removeConnectorResourceDefinitionDescriptor(
     		ConnectorResourceDefinitionDescriptor reference);
 
+    /**
+     * Adds the specified jms-connection-factory-definition to the receiver.
+     *
+     * @param reference JMSConnectionFactoryDefinitionDescriptor to add.
+     *
+     */
+    public void addJMSConnectionFactoryDefinitionDescriptor(
+    		JMSConnectionFactoryDefinitionDescriptor reference);
+
+    /**
+     * Removes the specified jms-connection-factory-definition from the receiver.
+     *
+     * @param reference JMSConnectionFactoryDefinitionDescriptor to remove.
+     *
+     */
+    public void removeJMSConnectionFactoryDefinitionDescriptor(
+    		JMSConnectionFactoryDefinitionDescriptor reference);
+
+    /**
+     * Adds the specified jms-destination-definition to the receiver.
+     *
+     * @param reference JMSDestinationDefinitionDescriptor to add.
+     *
+     */
+    public void addJMSDestinationDefinitionDescriptor(
+    		JMSDestinationDefinitionDescriptor reference);
+
+    /**
+     * Removes the specified jms-destination-definition from the receiver.
+     *
+     * @param reference JMSDestinationDefinitionDescriptor to remove.
+     *
+     */
+    public void removeJMSDestinationDefinitionDescriptor(
+    		JMSDestinationDefinitionDescriptor reference);
+
 }
 

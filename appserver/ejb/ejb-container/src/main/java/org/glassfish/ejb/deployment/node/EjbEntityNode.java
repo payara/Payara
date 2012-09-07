@@ -203,6 +203,12 @@ public class EjbEntityNode  extends InterfaceBasedEjbNode<EjbEntityDescriptor> {
         // connecto-resource-definition*
         writeConnectorResourceDefinitionDescriptors(ejbNode, ejbDesc.getConnectorResourceDefinitionDescriptors().iterator());
 
+        // jms-connection-factory-definition*
+        writeJMSConnectionFactoryDefinitionDescriptors(ejbNode, ejbDesc.getJMSConnectionFactoryDefinitionDescriptors().iterator());
+
+        // jms-destination-definition*
+        writeJMSDestinationDefinitionDescriptors(ejbNode, ejbDesc.getJMSDestinationDefinitionDescriptors().iterator());
+
         // security-role-ref*
         writeRoleReferenceDescriptors(ejbNode, ejbDesc.getRoleReferences().iterator());
         

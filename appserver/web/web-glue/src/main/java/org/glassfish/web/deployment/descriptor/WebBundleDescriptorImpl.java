@@ -283,6 +283,8 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         combineEntityManagerFactoryReferenceDescriptors(env);
         combineMailSessionDescriptors(env);
         combineConnectorResourceDefinitionDescriptors(env);
+        combineJMSConnectionFactoryDefinitionDescriptors(env);
+        combineJMSDestinationDefinitionDescriptors(env);
     }
 
     public boolean isEmpty() {
@@ -625,6 +627,58 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                                  "There are more than one connector resource definitions defined in web fragments with the same name, but not overrided in web.xml"));
                      } else {
                          getConnectorResourceDefinitionDescriptors().add(desc);
+                     }
+                 }
+             }
+         }
+     }
+
+     public void combineJMSConnectionFactoryDefinitionDescriptors(JndiNameEnvironment env) {
+         boolean isFromXml = false;
+         for (JMSConnectionFactoryDefinitionDescriptor desc : env.getJMSConnectionFactoryDefinitionDescriptors()) {
+             isFromXml = (desc.getMetadataSource() == MetadataSource.XML);
+             if (isFromXml) {
+                 break;
+             }
+         }
+
+         if (isFromXml) {
+             for (JMSConnectionFactoryDefinitionDescriptor desc: env.getJMSConnectionFactoryDefinitionDescriptors()) {
+                 JMSConnectionFactoryDefinitionDescriptor jmscfdDesc = getJMSConnectionFactoryDefinitionDescriptor(desc.getName());
+                 if (jmscfdDesc == null) {
+                     if (env instanceof WebBundleDescriptor &&
+                             ((WebBundleDescriptor)env).conflictJMSConnectionFactoryDefinition) {
+                         throw new IllegalArgumentException(localStrings.getLocalString(
+                                 "enterprise.deployment.exceptionconflictjmsconnectionfactorydefinition",
+                                 "There are more than one jms connection factory definitions defined in web fragments with the same name, but not overrided in web.xml"));
+                     } else {
+                         getJMSConnectionFactoryDefinitionDescriptors().add(desc);
+                     }
+                 }
+             }
+         }
+     }
+
+     public void combineJMSDestinationDefinitionDescriptors(JndiNameEnvironment env) {
+         boolean isFromXml = false;
+         for (JMSDestinationDefinitionDescriptor desc : env.getJMSDestinationDefinitionDescriptors()) {
+             isFromXml = (desc.getMetadataSource() == MetadataSource.XML);
+             if (isFromXml) {
+                 break;
+             }
+         }
+
+         if (isFromXml) {
+             for (JMSDestinationDefinitionDescriptor desc: env.getJMSDestinationDefinitionDescriptors()) {
+                 JMSDestinationDefinitionDescriptor jmsddDesc = getJMSDestinationDefinitionDescriptor(desc.getName());
+                 if (jmsddDesc == null) {
+                     if (env instanceof WebBundleDescriptor &&
+                             ((WebBundleDescriptor)env).conflictJMSDestinationDefinition) {
+                         throw new IllegalArgumentException(localStrings.getLocalString(
+                                 "enterprise.deployment.exceptionconflictjmsdestinationdefinition",
+                                 "There are more than one jms destination definitions defined in web fragments with the same name, but not overrided in web.xml"));
+                     } else {
+                         getJMSDestinationDefinitionDescriptors().add(desc);
                      }
                  }
              }
