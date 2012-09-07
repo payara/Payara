@@ -328,6 +328,13 @@ public class DeploymentImpl implements Deployment {
         Set<URI> beanXMLUris = new CopyOnWriteArraySet<URI>();
         Set<EjbDescriptor> ejbs = new HashSet<EjbDescriptor>();
         beanClasses.add(beanClass);
+
+        // Workaround for WELD-1182
+        // TODO: The workaround will be removed once the defect is addressed.
+        WeldGFExtension gfExtension = beanClass.getAnnotation(WeldGFExtension.class);
+        if(gfExtension != null)
+        	beanClasses.addAll(java.util.Arrays.asList(gfExtension.beans()));
+
         BeanDeploymentArchive newBda = 
             new BeanDeploymentArchiveImpl(beanClass.getName(), 
                     beanClasses, beanXMLUris, ejbs, context);
