@@ -796,13 +796,12 @@ public class AppTest extends TestCase {
             t.delistResource(tx, new TestResourceHandle(theResource), XAResource.TMSUCCESS);
             t.delistResource(tx, new TestResourceHandle(theResource1), XAResource.TMSUCCESS);
 
-            System.out.println("**Calling TX commit ===>");
+            System.out.println("**Calling TM commit ===>");
             try {
-                tx.commit();
+                t.commit();
                 assert (false);
             } catch (RollbackException ex) {
                 System.out.println("**Caught expected exception...");
-
                 Throwable te = ex.getCause();
                 if (te != null && te instanceof MyRuntimeException) {
                     System.out.println("**Caught expected nested exception...");

@@ -330,7 +330,12 @@ public class TransactionManagerImpl implements TransactionManager {
         try {
             current.commit(true);
         } catch (TRANSACTION_ROLLEDBACK ex) {
-            throw new RollbackException();
+            RollbackException rbe = new RollbackException();
+            Throwable cause = ex.getCause();
+            if (cause != null) {
+                rbe.initCause(cause);
+            }
+            throw rbe;
         } catch (NoTransaction ex) {
             throw new IllegalStateException();
         } catch (NO_PERMISSION ex) {
