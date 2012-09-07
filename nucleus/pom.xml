@@ -603,7 +603,7 @@
             <plugin>
                 <groupId>org.glassfish.copyright</groupId>
                 <artifactId>glassfish-copyright-maven-plugin</artifactId>
-                <version>1.29</version>
+                <version>1.31</version>
                 <configuration>
                     <excludeFile>
                         copyright-exclude
