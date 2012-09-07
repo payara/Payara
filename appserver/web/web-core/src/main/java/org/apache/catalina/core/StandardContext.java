@@ -5808,6 +5808,13 @@ public class StandardContext
         if (log.isLoggable(Level.FINE))
             log.fine("Stopping complete");
 
+        if(oname != null) {
+            // Send j2ee.object.deleted notification
+            Notification notification =
+                    new Notification("j2ee.object.deleted", this, sequenceNumber++);
+            sendNotification(notification);
+        }
+
     }
 
     /**
@@ -5824,12 +5831,6 @@ public class StandardContext
      */
     @Override
     public void destroy() throws Exception {
-        if(oname != null) {
-            // Send j2ee.object.deleted notification
-            Notification notification =
-                new Notification("j2ee.object.deleted", this, sequenceNumber++);
-            sendNotification(notification);
-        }
         super.destroy();
 
         // START SJASAS 6359401

@@ -931,6 +931,17 @@ public class StandardHost
 
     }
 
+     @Override
+     public synchronized void stop() throws LifecycleException {
+         super.stop();
+
+         if(oname != null) {
+             // Send j2ee.object.deleted notification
+             Notification notification =
+                     new Notification("j2ee.object.deleted", this, sequenceNumber++);
+             sendNotification(notification);
+         }
+     }
 
      public void sendNotification(Notification notification) {
 
