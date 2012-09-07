@@ -350,6 +350,49 @@ public class DOLUtils {
         return processedConfDDFiles;
     }
 
+    // read alternative runtime descriptor if there is an alternative runtime 
+    // DD packaged inside the archive
+    public static void readAlternativeRuntimeDescriptor(ReadableArchive appArchive, ReadableArchive embeddedArchive, Archivist archivist, BundleDescriptor descriptor, String altDDPath) throws IOException, SAXParseException {
+        String altRuntimeDDPath = null;
+        ConfigurationDeploymentDescriptorFile confDD = null;
+        for (ConfigurationDeploymentDescriptorFile ddFile : sortConfigurationDDFiles(archivist.getConfigurationDDFiles(), archivist.getModuleType())) {
+            String ddPath = ddFile.getDeploymentDescriptorPath();
+            if (ddPath.indexOf(DescriptorConstants.WLS) != -1 && 
+                appArchive.exists(DescriptorConstants.WLS + altDDPath)) {
+                // TODO: need to revisit this for WLS alt-dd pattern
+                confDD = ddFile;
+                altRuntimeDDPath = DescriptorConstants.WLS + altDDPath;
+            } else if (ddPath.indexOf(DescriptorConstants.GF_PREFIX) != -1 &&
+                appArchive.exists(DescriptorConstants.GF_PREFIX + altDDPath)) {
+                confDD = ddFile;
+                altRuntimeDDPath = DescriptorConstants.GF_PREFIX + altDDPath;
+            } else if (ddPath.indexOf(DescriptorConstants.S1AS_PREFIX) != -1 
+                && appArchive.exists(DescriptorConstants.S1AS_PREFIX + altDDPath)){
+                confDD = ddFile;
+                altRuntimeDDPath = DescriptorConstants.S1AS_PREFIX + altDDPath;
+            }
+        }
+
+        if (confDD != null && altRuntimeDDPath != null) {
+            // found an alternative runtime DD file
+            InputStream is = appArchive.getEntry(altRuntimeDDPath); 
+            confDD.setXMLValidation(
+                archivist.getRuntimeXMLValidation());
+            confDD.setXMLValidationLevel(
+                archivist.getRuntimeXMLValidationLevel());
+            if (appArchive.getURI()!=null) {
+                confDD.setErrorReportingString(
+                    appArchive.getURI().getSchemeSpecificPart());
+            }
+
+            confDD.read(descriptor, is);
+            is.close();
+            archivist.postRuntimeDDsRead(descriptor, embeddedArchive);
+        } else {
+            archivist.readRuntimeDeploymentDescriptor(embeddedArchive,descriptor);
+        }
+    }
+
     /**
      * Read the runtime deployment descriptors (can contained in one or
      * many file) set the corresponding information in the passed descriptor.

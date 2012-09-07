@@ -365,7 +365,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
      * @param descriptor the deployment descriptor for the module
      * @param archive the module archive
      */
-    protected void postRuntimeDDsRead(T descriptor,
+    public void postRuntimeDDsRead(T descriptor,
                                       ReadableArchive archive) throws IOException {
     }
 
@@ -1683,20 +1683,5 @@ public abstract class Archivist<T extends BundleDescriptor> {
         allDescPaths.add(EJB_WEBSERVICES_JAR_ENTRY);
 
         return allDescPaths;
-    }
-
-
-    // this is for the alt dd support for sun-*.xml, we need to clean 
-    // this up later
-    DeploymentDescriptorFile getSunConfigurationDDFile() {
-        DeploymentDescriptorFile sunConfDD = null;
-        for (DeploymentDescriptorFile ddFile : getConfigurationDDFiles()) {
-            String ddPath = ddFile.getDeploymentDescriptorPath();
-            if (ddPath.indexOf(DescriptorConstants.S1AS_PREFIX) != -1) {
-                sunConfDD = ddFile;
-                break;
-            }
-        }
-        return sunConfDD;
     }
 }

@@ -593,25 +593,7 @@ public class ApplicationArchivist extends Archivist<Application> {
                 newArchivist.postOpen(descriptor, embeddedArchive);
                 // now reads the runtime deployment descriptor...
                 if (isHandlingRuntimeInfo()) {
-                    is = appArchive.getEntry("sun-" + aModule.getAlternateDescriptor());
-                    if (is!=null) {
-                        DeploymentDescriptorFile confDD = 
-                            newArchivist.getSunConfigurationDDFile();
-                        confDD.setXMLValidation(
-                            newArchivist.getRuntimeXMLValidation());
-                        confDD.setXMLValidationLevel(
-                            newArchivist.getRuntimeXMLValidationLevel());
-                        if (appArchive.getURI()!=null) {
-                            confDD.setErrorReportingString(
-                                appArchive.getURI().getSchemeSpecificPart());
-                        }
-
-                        confDD.read(descriptor, is);
-                        is.close();
-                        newArchivist.postRuntimeDDsRead(descriptor, embeddedArchive);
-                    } else {
-                        newArchivist.readRuntimeDeploymentDescriptor(embeddedArchive,descriptor);
-                    }
+                    DOLUtils.readAlternativeRuntimeDescriptor(appArchive, embeddedArchive, newArchivist, descriptor, aModule.getAlternateDescriptor());
                     // read extensions runtime deployment descriptors if any
                     for (Map.Entry<ExtensionsArchivist, RootDeploymentDescriptor> extension : extensions.entrySet()) {
                         // after standard DD and annotations are processed
@@ -688,32 +670,10 @@ public class ApplicationArchivist extends Archivist<Application> {
                     this.getRuntimeXMLValidation());
                 archivist.setRuntimeXMLValidationLevel(
                     this.getRuntimeXMLValidationLevel());
-                InputStream is = null;
-                
+                ReadableArchive subArchive = archive.getSubArchive(md.getArchiveUri());
                 if (md.getAlternateDescriptor()!=null) {
-                    // we are using alternate deployment descriptors
-                    // TODO: need to fix this to consider wls/gf case
-                    is = archive.getEntry("sun-" + md.getAlternateDescriptor());
-                    if (is!=null) {
-                        DeploymentDescriptorFile confDD =
-                            archivist.getSunConfigurationDDFile();
-                        confDD.setXMLValidation(
-                            archivist.getRuntimeXMLValidation());
-                        confDD.setXMLValidationLevel(
-                            archivist.getRuntimeXMLValidationLevel());
-                        if (archive.getURI()!=null) {
-                            confDD.setErrorReportingString(
-                                archive.getURI().getSchemeSpecificPart());
-                        }
-                        confDD.read(md.getDescriptor(), is);
-                        is.close();
-                    }                    
-                }
-                // if is variable is null, it means that we are either 
-                // not using alternate deployment descriptors or we could 
-                // not find the appropriate sun-???.xml alternate DD.
-                if (is==null) {
-                    ReadableArchive subArchive = archive.getSubArchive(md.getArchiveUri());
+                    DOLUtils.readAlternativeRuntimeDescriptor(archive, subArchive, archivist, (BundleDescriptor)md.getDescriptor(), md.getAlternateDescriptor());
+                } else {
                     archivist.readRuntimeDeploymentDescriptor(subArchive, (BundleDescriptor)md.getDescriptor());
                 }
             }
