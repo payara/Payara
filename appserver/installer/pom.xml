@@ -74,15 +74,6 @@
                      </goals>
                   </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>sun.jdk</groupId>
-                        <artifactId>tools</artifactId>
-                        <version>1.6</version>
-                        <scope>system</scope>
-                        <systemPath>${java.home}/../lib/tools.jar</systemPath>
-                    </dependency>
-                </dependencies>
              </plugin>
         </plugins>
     </build>

@@ -53,19 +53,11 @@
     <name>Admin Runtime Annotations Processor</name>
     <description>Admin Runtime Annotations Processor</description>
 
-
     <dependencies>
         <dependency>
           <groupId>org.glassfish.admin.runtime.rtapt</groupId>
           <artifactId>annotations</artifactId>
           <version>1.1-SNAPSHOT</version>
-       </dependency>
-        <dependency>
-          <groupId>com.sun</groupId>
-          <artifactId>tools</artifactId>
-          <version>1.4.2</version>
-          <scope>system</scope>
-          <systemPath>${java.home}/../lib/tools.jar</systemPath>
        </dependency>
      </dependencies>
 </project>

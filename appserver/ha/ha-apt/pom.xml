@@ -96,12 +96,5 @@
             <groupId>org.glassfish.ha</groupId>
             <artifactId>ha-api</artifactId>
           </dependency>
-          <dependency>
-            <groupId>sun.jdk</groupId>
-            <artifactId>tools</artifactId>
-            <version>1.6.0</version>
-            <scope>system</scope>
-            <systemPath>${java.home}/../lib/tools.jar</systemPath>
-          </dependency>
     </dependencies>
 </project>

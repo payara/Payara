@@ -70,14 +70,5 @@
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>com.sun</groupId>
-            <artifactId>tools</artifactId>
-            <scope>system</scope>
-            <version>1.6.0</version>
-            <systemPath>${java.home}/../lib/tools.jar</systemPath>
-        </dependency>
-        -->
     </dependencies>
 </project>

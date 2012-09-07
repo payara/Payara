@@ -40,7 +40,7 @@
 
 -->
 
-<project>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -127,74 +127,5 @@
      </plugin>
     </plugins>
   </build>
-
-  <!-- need to set the tools.jar/classes.jar in the dependency to compile DIY.java -->
-  <!-- also set javac property since java.home is different in MacOC -->
-  <profiles>
-      <profile>
-          <id>sun-jdk</id>
-          <activation>
-            <property>
-              <name>java.vendor.url</name>
-              <value>http://java.sun.com/</value>
-            </property>
-          </activation>
-          <properties>
-             <javac>${java.home}/../bin/javac</javac>
-          </properties>
-          <dependencies>
-            <dependency>
-              <groupId>com.sun</groupId>
-              <artifactId>tools</artifactId>
-              <version>1.6</version>
-              <scope>system</scope>
-              <systemPath>${java.home}/../lib/tools.jar</systemPath>
-            </dependency>
-          </dependencies>
-      </profile>
-      <profile>
-          <id>jrockit-jdk</id>
-          <activation>
-            <property>
-              <name>java.vendor.url</name>
-              <value>http://www.bea.com/</value>
-            </property>
-          </activation>
-          <properties>
-             <javac>${java.home}/../bin/javac</javac>
-          </properties>
-          <dependencies>
-            <dependency>
-              <groupId>com.sun</groupId>
-              <artifactId>tools</artifactId>
-              <version>1.6</version>
-              <scope>system</scope>
-              <systemPath>${java.home}/../lib/tools.jar</systemPath>
-            </dependency>
-          </dependencies>
-      </profile>
-      <profile>
-          <id>apple-jdk</id>
-          <activation>
-            <property>
-              <name>java.vendor.url</name>
-              <value>http://www.apple.com/</value>
-            </property>
-          </activation>
-          <properties>
-             <javac>${java.home}/bin/javac</javac>
-          </properties>
-          <dependencies>
-             <dependency>
-                <groupId>com.sun</groupId>
-                <artifactId>tools</artifactId>
-                <version>1.6.0</version>
-                <scope>system</scope>
-                <systemPath>${java.home}/../Classes/classes.jar</systemPath>
-              </dependency>
-          </dependencies>
-      </profile>
-
-  </profiles>
 
 </project>

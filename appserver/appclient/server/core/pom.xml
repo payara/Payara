@@ -54,46 +54,6 @@
     
     <name>GlassFish AppClient Server-Side Core</name>
 
-    <profiles>
-        <profile>
-          <id>sun-jdk</id>
-          <activation>
-            <property>
-              <name>java.vendor.url</name>
-              <value>http://java.sun.com/</value>
-            </property>
-          </activation>
-          <dependencies>
-            <dependency>
-              <groupId>com.sun</groupId>
-              <artifactId>tools</artifactId>
-              <version>1.6</version>
-              <scope>system</scope>
-              <systemPath>${java.home}/../lib/tools.jar</systemPath>
-            </dependency>
-          </dependencies>
-        </profile>
-        <profile>
-          <id>jrockit-jdk</id>
-          <activation>
-            <property>
-              <name>java.vendor.url</name>
-              <value>http://www.bea.com/</value>
-            </property>
-          </activation>
-          <dependencies>
-            <dependency>
-              <groupId>com.sun</groupId>
-              <artifactId>tools</artifactId>
-              <version>1.6</version>
-              <scope>system</scope>
-              <systemPath>${java.home}/../lib/tools.jar</systemPath>
-            </dependency>
-          </dependencies>
-        </profile>
-
-      </profiles>
-
     <build>
         <plugins>
               <plugin>
