@@ -199,7 +199,7 @@ public abstract class CLICommand implements PostConstruct {
     
     private static boolean useRest() {
         //return environment != null && environment.getBooleanOption("USE_REST");
-        return true;
+        return false;
     }
 
     /**
