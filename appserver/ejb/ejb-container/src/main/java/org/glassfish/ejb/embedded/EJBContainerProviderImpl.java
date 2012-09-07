@@ -221,6 +221,13 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
                 // server is started in EJBContainerImpl constructor
                 container = new EJBContainerImpl(server);
 
+                // Verify that the instance was created properly
+                File instance_directory = new File(System.getProperty("com.sun.aas.instanceRoot"));
+                File[] files = instance_directory.listFiles();
+                if (files == null || files.length == 0) {
+                    throw new IllegalStateException("Unexpected ERROR: Instance directory is empty");
+                }
+
                 archiveFactory = server.getService(ArchiveFactory.class);
 
                 Sniffer sniffer = server.getService(Sniffer.class, "Ejb");
