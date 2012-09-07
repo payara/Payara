@@ -66,6 +66,7 @@ import org.jvnet.hk2.config.ConfigInjector;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.ConfigView;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.IndentingXMLStreamWriter;
@@ -84,6 +85,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.Collection;
@@ -142,17 +144,17 @@ public final class ConfigModularityUtils {
             }
         } else {
 
-            String fileName = isDas ? c.dasConfigFileName() : c.defaultConfigFileName();
+            String fileName = isDas ? c.adminConfigFileName() : c.defaultConfigFileName();
             //TODO properly handle the exceptions
             LocalStringManager localStrings =
-                                new LocalStringManagerImpl(configBeanClass);
-                        ModuleConfigurationParser parser = new ModuleConfigurationParser(localStrings);
+                    new LocalStringManagerImpl(configBeanClass);
+            ModuleConfigurationParser parser = new ModuleConfigurationParser(localStrings);
             try {
                 defaults = parser.parseServiceConfiguration(getConfigurationFileUrl(configBeanClass, fileName).openStream());
             } catch (XMLStreamException e) {
-                LOG.log(Level.SEVERE,"Cannot parse default module configuration", e);
+                LOG.log(Level.SEVERE, "Cannot parse default module configuration", e);
             } catch (IOException e) {
-                LOG.log(Level.SEVERE,"Cannot parse default module configuration", e);
+                LOG.log(Level.SEVERE, "Cannot parse default module configuration", e);
             }
 
         }
@@ -289,14 +291,14 @@ public final class ConfigModularityUtils {
             StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
             //something directly inside the config itself
             if (tokenizer.countTokens() == 3) {
-                String configName = resolveExpression(location.substring(location.lastIndexOf("[") + 1,location.length()-1));
+                String configName = resolveExpression(location.substring(location.lastIndexOf("[") + 1, location.length() - 1));
                 return habitat.<Domain>getService(Domain.class).getConfigNamed(configName);
             }
 
             location = location.substring(location.indexOf("/", "domain/configs".length()) + 1);
             tokenizer = new StringTokenizer(location, "/", false);
             String curLevel = tokenizer.nextToken();
-            String configName = resolveExpression(curLevel.substring(curLevel.lastIndexOf("[") + 1,curLevel.length()));
+            String configName = resolveExpression(curLevel.substring(curLevel.lastIndexOf("[") + 1, curLevel.length()));
             ConfigBeanProxy parent = habitat.<Domain>getService(Domain.class).getConfigNamed(configName);
 
             String childElement;
@@ -327,7 +329,7 @@ public final class ConfigModularityUtils {
             if (m != null) {
                 try {
                     Collection col = (Collection) m.invoke(parent);
-                    componentName= resolveExpression(componentName);
+                    componentName = resolveExpression(componentName);
                     return getNamedConfigBeanFromCollection(col, componentName, childClass);
                 } catch (Exception e) {
                     LOG.log(Level.INFO, "The provided path is not valid: " + childElement, e);
@@ -361,10 +363,10 @@ public final class ConfigModularityUtils {
         Method m = getMatchingSetterMethod(clz, configBeanClass);
         if (m != null) {
             try {
-                m.invoke(parent, finalConfigBean);
                 if (configBeanClass.getAnnotation(HasCustomizationTokens.class) != null) {
                     applyCustomTokens(configBeanDefaultValue, finalConfigBean, parent);
                 }
+                m.invoke(parent, finalConfigBean);
             } catch (Exception e) {
                 LOG.log(Level.INFO, "cannot set ConfigBean for: " + finalConfigBean.getClass().getName(), e);
             }
@@ -386,13 +388,16 @@ public final class ConfigModularityUtils {
                         LOG.log(Level.INFO, "could not remove a config bean named " + finalConfigBean.getClass().getName() + " as it does not exist", ex);
                     }
                 }
-
-                if (itemToRemove == null) {
-                    ((Collection) m.invoke(parent)).add(finalConfigBean);
-                }
                 if (configBeanClass.getAnnotation(HasCustomizationTokens.class) != null) {
                     applyCustomTokens(configBeanDefaultValue, finalConfigBean, parent);
                 }
+                if (itemToRemove != null && !configBeanDefaultValue.isReplaceCurrentIfExists()) {
+                    //Check for duplication here.
+                    if (((ConfigView) Proxy.getInvocationHandler(itemToRemove)).getProxyType().isAssignableFrom(configBeanClass)) {
+                        return;
+                    }
+                }
+                col.add(finalConfigBean);
             } catch (Exception e) {
                 LOG.log(Level.INFO, "cannot set ConfigBean for: " + finalConfigBean.getClass().getName(), e);
             }
@@ -436,7 +441,6 @@ public final class ConfigModularityUtils {
             }
         }
     }
-
 
     public static <T extends ConfigBeanProxy> T getCurrentConfigBeanForDefaultValue(ConfigBeanDefaultValue defaultValue,
                                                                                     Habitat habitat)
@@ -486,13 +490,15 @@ public final class ConfigModularityUtils {
         return null;
     }
 
-
     private static <T extends ConfigBeanProxy> T getNamedConfigBeanFromCollection(Collection<T> col,
                                                                                   String nameToLookFor,
                                                                                   Class typeOfObjects)
             throws InvocationTargetException, IllegalAccessException {
         if (nameToLookFor == null) return null;
         for (Object item : col) {
+            if (!((ConfigView) Proxy.getInvocationHandler(item)).getProxyType().isAssignableFrom(typeOfObjects)) {
+                continue;
+            }
             String name = getNameForConfigBean(item, typeOfObjects);
             if (nameToLookFor.equalsIgnoreCase(name)) {
                 return (T) item;
@@ -572,12 +578,15 @@ public final class ConfigModularityUtils {
         return serviceName;
     }
 
-    public static String resolveExpression(String expression){
-        if(expression.startsWith("$")){
+    public static String resolveExpression(String expression) {
+        if (expression.startsWith("$")) {
             String name = expression.substring(1, expression.length());
-            if(name.equalsIgnoreCase("CURRENT_INSTANCE_CONFIG_NAME"))
-            //TODO P1: find out how these placeholders are being resolved
-                expression= "server-config";
+            if (name.equalsIgnoreCase("CURRENT_INSTANCE_CONFIG_NAME"))
+                //TODO P1: find out how these placeholders are being resolved no hardcoded name should be here
+                expression = "server-config";
+            else if (name.equalsIgnoreCase("CURRENT_INSTANCE_CONFIG_SERVER"))
+                //TODO P1: find out how these placeholders are being resolved no hardcoded name should be here
+                expression = "server";
         }
         return expression;
     }

@@ -44,6 +44,10 @@ import com.sun.enterprise.config.modularity.annotation.HasNoDefaultConfiguration
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.config.ConfigExtension;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -89,7 +93,7 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
                     U child = parent.createChild(childElement);
                     Dom unwrappedChild = Dom.unwrap(child);
                     boolean writeDefaultElementsToXml = Boolean.parseBoolean(System.getProperty("writeDefaultElementsToXml"));
-                    if (!writeDefaultElementsToXml)  {
+                    if (!writeDefaultElementsToXml) {
                         //Do not write default snippets to the domain.xml
                         unwrappedChild.skipFromXml();
                     }
@@ -104,8 +108,15 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
         List<U> extensions = getExtensions(extensionOwner);
         for (ConfigBeanProxy extension : extensions) {
             try {
-                U configExtension = configExtensionType.cast(extension);
-                return configExtension;
+                U configBeanInstance = configExtensionType.cast(extension);
+                if (configBeanInstance instanceof ConfigExtension) {
+                    ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(configBeanInstance)).getMasterView();
+                    Habitat habitat = cb.getHabitat();
+                    ServiceLocatorUtilities.addOneDescriptor(habitat,
+                            BuilderHelper.createConstantDescriptor(configBeanInstance, ServerEnvironment.DEFAULT_INSTANCE_NAME,
+                                    ConfigSupport.getImpl(configBeanInstance).getProxyType()));
+                }
+                return configBeanInstance;
             } catch (Exception e) {
                 // ignore, not the right type.
             }

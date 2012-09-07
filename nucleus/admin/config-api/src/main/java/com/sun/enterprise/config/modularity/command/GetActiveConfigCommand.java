@@ -186,7 +186,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
             builder.append(replaceExpressionsWithValues(value.getLocation()));
             builder.append(System.getProperty("line.separator"));
             String substituted = replacePropertiesWithCurrentValue(
-                    getDependentConfigElement(value), value);
+                    getDependentConfigElement(value), value, habitat);
             builder.append(substituted);
             builder.append(System.getProperty("line.separator"));
         }
@@ -205,29 +205,30 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
 
     }
 
-    private String replacePropertiesWithCurrentValue(String xmlConfiguration, ConfigBeanDefaultValue value) throws InvocationTargetException, IllegalAccessException {
+    private String replacePropertiesWithCurrentValue(String xmlConfiguration, ConfigBeanDefaultValue value, Habitat habitat) throws InvocationTargetException, IllegalAccessException {
         for (ConfigCustomizationToken token : value.getCustomizationTokens()) {
-            String toReplace = "\\$\\{" + token.getKey() + "\\}";
+            String toReplace = "${" + token.getKey() + "}";
             ConfigBeanProxy current = ConfigModularityUtils.getCurrentConfigBeanForDefaultValue(value, habitat);
-            if (current != null) {
                 String propertyValue = getPropertyValue(token, current);
                 if (propertyValue != null) {
-                    xmlConfiguration = xmlConfiguration.replaceAll(toReplace, propertyValue);
+                    xmlConfiguration = xmlConfiguration.replace(toReplace, propertyValue);
                 }
-            }
         }
         return xmlConfiguration;
     }
 
 
-    private static String getPropertyValue(ConfigCustomizationToken token, ConfigBeanProxy finalConfigBean) {
-        ConfigBeanProxy parent = finalConfigBean.getParent();
-        while (!(parent instanceof SystemPropertyBag)) {
-            parent = parent.getParent();
-            if (parent == null) return null;
-        }
-        if (((SystemPropertyBag) parent).getSystemProperty(token.getKey()) != null) {
-            return ((SystemPropertyBag) parent).getSystemProperty(token.getKey()).getValue();
+    private String getPropertyValue(ConfigCustomizationToken token, ConfigBeanProxy finalConfigBean) {
+        if (finalConfigBean != null) {
+            ConfigBeanProxy parent = finalConfigBean.getParent();
+            while (!(parent instanceof SystemPropertyBag)) {
+                parent = parent.getParent();
+                if (parent == null) return null;
+            }
+            if (((SystemPropertyBag) parent).getSystemProperty(token.getKey()) != null) {
+                return ((SystemPropertyBag) parent).getSystemProperty(token.getKey()).getValue();
+            }
+            return null;
         } else return token.getDefaultValue();
     }
 }

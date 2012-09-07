@@ -60,6 +60,6 @@ import java.lang.annotation.Target;
 @Qualifier
 public @interface CustomConfiguration {
     String defaultConfigFileName() default "module-configuration.xml";
-    String dasConfigFileName() default "module-configuration.xml";
+    String adminConfigFileName() default "module-configuration.xml";
     boolean usesOnTheFlyConfigGeneration() default false;
 }

@@ -72,7 +72,7 @@ import java.util.List;
 
 @Configured
 @HasCustomizationTokens
-@CustomConfiguration(dasConfigFileName = "jms-service-das-config.xml", defaultConfigFileName = "jms-service-default-config.xml")
+@CustomConfiguration
 public interface JmsService extends ConfigExtension, Injectable, PropertyBag, Container {
 
     /**

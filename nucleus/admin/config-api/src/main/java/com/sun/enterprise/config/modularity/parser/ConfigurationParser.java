@@ -91,6 +91,20 @@ class ConfigurationParser<C extends ConfigLoader> {
         for (final ConfigBeanDefaultValue configBeanDefaultValue : values) {
             Domain domain = habitat.getService(Domain.class);
             ConfigurationPopulator populator = new ConfigurationPopulator(configBeanDefaultValue.getXmlConfiguration(), doc, domain);
+//            ConfigurationPopulator populator = null;
+//            try {
+//                populator = new ConfigurationPopulator(
+//                        ConfigModularityUtils.replacePropertiesWithCurrentValue(
+//                                configBeanDefaultValue.getXmlConfiguration(), configBeanDefaultValue, habitat)
+//                        , doc, domain);
+//            } catch (Exception e) {
+//                LocalStringManager localStrings =
+//                        new LocalStringManagerImpl(ConfigurationParser.class);
+//                final String msg = localStrings.getLocalString(
+//                        "can.not.add.configuration.to.extension.point",
+//                        "Cannot add new configuration extension to the extension point.");
+//                LOG.log(Level.SEVERE, msg, e);
+//            }
             populator.run(configParser);
             final ConfigBeanProxy parent;
             try {
