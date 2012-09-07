@@ -796,6 +796,64 @@ public class AppTest extends TestCase {
             t.delistResource(tx, new TestResourceHandle(theResource), XAResource.TMSUCCESS);
             t.delistResource(tx, new TestResourceHandle(theResource1), XAResource.TMSUCCESS);
 
+            System.out.println("**Calling TX commit ===>");
+            try {
+                tx.commit();
+                assert (false);
+            } catch (RollbackException ex) {
+                System.out.println("**Caught expected exception...");
+                Throwable te = ex.getCause();
+                if (te != null && te instanceof MyRuntimeException) {
+                    System.out.println("**Caught expected nested exception...");
+                } else {
+                    System.out.println("**Unexpected nested exception: " + te);
+                    assert (false);
+                }
+            }
+            System.out.println("**Status after commit: "
+                    + JavaEETransactionManagerSimplified.getStatusAsString(tx.getStatus())
+                    + " <===");
+            assertTrue ("beforeCompletion was not called", s.called_beforeCompletion);
+            assertTrue ("afterCompletion was not called", s.called_afterCompletion);
+            assert (true);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            assert (false);
+        }
+    }
+
+    public void testTMCommitFailBC2PC() {
+        System.out.println("**Testing TM commit with exception in beforeCompletion of 2PC ===>");
+        try {
+            // Suppress warnings from beforeCompletion() logging
+            ((JavaEETransactionManagerSimplified)t).getLogger().setLevel(Level.SEVERE);
+            LogDomains.getLogger(SynchronizationImpl.class, LogDomains.TRANSACTION_LOGGER).setLevel(Level.SEVERE);
+
+            System.out.println("**Starting transaction ....");
+            t.begin();
+            Transaction tx = t.getTransaction();
+
+            System.out.println("**Registering Synchronization ....");
+            TestSync s = new TestSync(true);
+            tx.registerSynchronization(s);
+
+            String status = JavaEETransactionManagerSimplified.getStatusAsString(t.getStatus());
+            System.out.println("**TX Status after begin: " + status);
+
+            assertEquals (status, "Active");
+
+            TestResource theResource = new TestResource();
+            TestResource theResource1 = new TestResource();
+
+            t.enlistResource(tx, new TestResourceHandle(theResource));
+            t.enlistResource(tx, new TestResourceHandle(theResource1));
+
+            theResource.setCommitErrorCode(9999);
+            theResource1.setCommitErrorCode(9999);
+
+            t.delistResource(tx, new TestResourceHandle(theResource), XAResource.TMSUCCESS);
+            t.delistResource(tx, new TestResourceHandle(theResource1), XAResource.TMSUCCESS);
+
             System.out.println("**Calling TM commit ===>");
             try {
                 t.commit();
