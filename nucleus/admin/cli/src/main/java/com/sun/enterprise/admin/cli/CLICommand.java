@@ -196,6 +196,11 @@ public abstract class CLICommand implements PostConstruct {
         file2Set(UNSUPPORTED_CMD_FILE_NAME, unsup);
         unsupported = Collections.unmodifiableSet(unsup);
     }
+    
+    private static boolean useRest() {
+        //return environment != null && environment.getBooleanOption("USE_REST");
+        return true;
+    }
 
     /**
      * Get a CLICommand object representing the named command.
@@ -214,8 +219,7 @@ public abstract class CLICommand implements PostConstruct {
         // nope, must be a remote command
         logger.finer("Assuming it's a remote command: " + name);
         Environment environment = habitat.getService(Environment.class);
-        if (environment != null && environment.getBooleanOption("USE_REST")) {
-            logger.finest("AS_ADMIN_USE_REST environment variable is on.");
+        if (useRest()) {
             return new RemoteCLICommand(name,
                 habitat.<ProgramOptions>getService(ProgramOptions.class),
                 environment);

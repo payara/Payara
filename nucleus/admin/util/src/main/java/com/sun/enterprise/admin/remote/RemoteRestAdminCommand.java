@@ -1356,7 +1356,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         if (isStatusRedirection(code)) {
             return response.getHeader("Location");
         }
-        if (code != HttpURLConnection.HTTP_OK) {
+        if (code != HttpURLConnection.HTTP_OK && code != HttpURLConnection.HTTP_INTERNAL_ERROR) {
             throw new CommandException(strings.get("BadResponse", String.valueOf(code),
                                         response.readEntity(String.class)));
         }

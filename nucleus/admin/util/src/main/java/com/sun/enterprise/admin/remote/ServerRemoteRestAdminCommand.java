@@ -50,8 +50,8 @@ import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Invocation;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.security.common.MasterPassword;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * RemoteRestAdminCommand which is sent from a server (DAS or instance).

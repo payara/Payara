@@ -244,7 +244,7 @@ public class RestPayloadImpl extends PayloadImpl {
                         }
                     }
                 }
-                if (bodyPart.getMediaType().isCompatible(new MediaType("actionreport", "json"))) {
+                if (bodyPart.getMediaType().isCompatible(new MediaType("application", "json"))) {
                     if (logger.isLoggable(Level.FINER)) {
                         String body = bodyPart.getEntityAs(String.class);
                         logger.log(Level.FINER, body);

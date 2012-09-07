@@ -55,15 +55,20 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.security.auth.Subject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
 import org.glassfish.api.admin.*;
+import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.sse.EventChannel;
@@ -87,6 +92,10 @@ public class CommandResource {
     private static volatile String serverName;
     
     private CommandRunner commandRunner;
+    
+    @Inject
+    protected Ref<Request> requestRef;
+    private Subject subject;
     
 //    @GET
 //    @Produces({MediaType.TEXT_PLAIN})
@@ -368,6 +377,7 @@ public class CommandResource {
         }
         commandInvocation
                 .outbound(new RestPayloadImpl.Outbound(false))
+                .subject(getSubject())
                 .parameters(params);
         final EventChannel ec = new EventChannel();
         AdminCommandListener listener = new AdminCommandListener() {
@@ -454,6 +464,7 @@ public class CommandResource {
         commandInvocation
                 .outbound(outbound)
                 .parameters(params)
+                .subject(getSubject())
                 .execute();
         ActionReport.ExitCode exitCode = ar.getActionExitCode();
         int status = HttpURLConnection.HTTP_OK; /*200 - ok*/
@@ -578,6 +589,14 @@ public class CommandResource {
         }
         return serverName;
     } 
+    
+    private Subject getSubject() {
+        if (subject == null) {
+            Request req = requestRef.get();
+            subject = (Subject) req.getAttribute(Constants.REQ_ATTR_SUBJECT);
+        }
+        return subject;
+    }
     
     private static class CommandName {
         private String scope;

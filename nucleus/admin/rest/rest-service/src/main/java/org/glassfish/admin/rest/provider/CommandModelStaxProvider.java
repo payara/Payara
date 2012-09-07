@@ -41,6 +41,8 @@ package org.glassfish.admin.rest.provider;
 
 import com.sun.enterprise.util.StringUtils;
 import com.sun.logging.LogDomains;
+import java.io.File;
+import java.util.Properties;
 import java.util.logging.Logger;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -91,7 +93,7 @@ public class CommandModelStaxProvider extends AbstractStaxProvider<CommandModel>
             Param par = p.getParam();
             wr.writeStartElement("option");
             wr.writeAttribute("name", p.getName());
-            wr.writeAttribute("type", CommandModelHtmlProvider.simplifiedTypeOf(p));
+            wr.writeAttribute("type", simplifiedTypeOf(p));
             if (par.primary()) {
                 wr.writeAttribute("primary", "true");
             }
@@ -128,6 +130,21 @@ public class CommandModelStaxProvider extends AbstractStaxProvider<CommandModel>
         }
         wr.writeEndElement(); //</command>
         wr.writeEndDocument();
+    }
+    
+    public static String simplifiedTypeOf(CommandModel.ParamModel p) {
+        Class t = p.getType();
+        if (t == Boolean.class || t == boolean.class) {
+            return "BOOLEAN";
+        } else if (t == File.class || t == File[].class) {
+            return "FILE";
+        } else if (t == Properties.class) { // XXX - allow subclass?
+            return "PROPERTIES";
+        } else if (p.getParam().password()) {
+            return "PASSWORD";
+        } else {
+            return "STRING";
+        }
     }
 
 }

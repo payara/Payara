@@ -82,6 +82,13 @@ public class ClusterOperationUtil {
     }
     //TODO : End temp fix for undoable commands
 
+    //TODO: Remove after one replication method will be choosen
+    private static boolean useRest() {
+//        String useRestStr = System.getenv("AS_ADMIN_USE_REST");
+//        return Boolean.valueOf(useRestStr);
+        return true;
+    }
+    
     public static ActionReport.ExitCode replicateCommand(String commandName,
                                                    FailurePolicy failPolicy,
                                                    FailurePolicy offlinePolicy,
@@ -171,16 +178,44 @@ public class ClusterOperationUtil {
                 int port = rich.getAdminPort(svr);
                 ActionReport aReport = context.getActionReport().addSubActionsReport();
                 InstanceCommandResult aResult = new InstanceCommandResult();
-                InstanceCommandExecutor ice =
-                        new InstanceCommandExecutor(habitat, commandName, failPolicy, offlinePolicy,
-                                svr, host, port, logger, parameters, aReport, aResult);
-                if (CommandTarget.DAS.isValid(habitat, ice.getServer().getName()))
-                    continue;
-                if (intermediateDownloadDir != null) {
-                    ice.setFileOutputDirectory(
-                        subdirectoryForInstance(intermediateDownloadDir, ice));
+//                InstanceCommandExecutor ice =
+//                        new InstanceCommandExecutor(habitat, commandName, failPolicy, offlinePolicy,
+//                                svr, host, port, logger, parameters, aReport, aResult);
+//                if (CommandTarget.DAS.isValid(habitat, ice.getServer().getName()))
+//                    continue;
+//                if (intermediateDownloadDir != null) {
+//                    ice.setFileOutputDirectory(
+//                        subdirectoryForInstance(intermediateDownloadDir, ice));
+//                }
+//                Future<InstanceCommandResult> f = instanceState.submitJob(svr, ice, aResult);
+                //TODO: Remove this if after only one remote admin call method will be choosen
+                Future<InstanceCommandResult> f;
+                if (useRest()) {
+                    InstanceRestCommandExecutor ice =
+                            new InstanceRestCommandExecutor(habitat, commandName, failPolicy, offlinePolicy,
+                                    svr, host, port, logger, parameters, aReport, aResult);
+                    if (CommandTarget.DAS.isValid(habitat, ice.getServer().getName())) {
+                        continue;
+                    }
+                    if (intermediateDownloadDir != null) {
+                        ice.setFileOutputDirectory(
+                                new File(intermediateDownloadDir, ice.getServer().getName()));
+                    }
+                    f = instanceState.submitJob(svr, ice, aResult);
+                } else {
+                    logger.log(Level.FINEST, "replicateCommand(): Use traditional way for replication - {0}", commandName);
+                    InstanceCommandExecutor ice =
+                            new InstanceCommandExecutor(habitat, commandName, failPolicy, offlinePolicy,
+                                    svr, host, port, logger, parameters, aReport, aResult);
+                    if (CommandTarget.DAS.isValid(habitat, ice.getServer().getName())) {
+                        continue;
+                    }
+                    if (intermediateDownloadDir != null) {
+                        ice.setFileOutputDirectory(
+                            new File(intermediateDownloadDir, ice.getServer().getName()));
+                    }
+                    f = instanceState.submitJob(svr, ice, aResult);
                 }
-                Future<InstanceCommandResult> f = instanceState.submitJob(svr, ice, aResult);
                 if(f==null) {
                     logger.severe(strings.getLocalString("clusterutil.instancehasnostate",
                             "Could not find state of instance registered in the state service"));
@@ -201,8 +236,9 @@ public class ClusterOperationUtil {
             context.getLogger().log(Level.SEVERE, strings.getLocalString("clusterutil.replicationfailed",
                     "Error during command replication: {0}", 
                     ex.getLocalizedMessage()));
-            if(returnValue ==ActionReport.ExitCode.SUCCESS)
+            if(returnValue ==ActionReport.ExitCode.SUCCESS) {
                 returnValue = finalResult;
+            }
         }
 
         boolean gotFirstResponse = false;
@@ -224,14 +260,27 @@ public class ClusterOperationUtil {
                     gotFirstResponse = true;
                 }
                 if( (maxWaitTime > timeBeforeAsadminTimeout) ||
-                    (maxWaitTime < 60000) )
+                    (maxWaitTime < 60000) ) {
                     maxWaitTime = timeBeforeAsadminTimeout;
-                InstanceCommandExecutor ice = (InstanceCommandExecutor) aResult.getInstanceCommand();
-                if(ice.getReport().getActionExitCode() != ActionReport.ExitCode.FAILURE)
-                    completedInstances.add(ice.getServer());
-                finalResult = FailurePolicy.applyFailurePolicy(failPolicy, ice.getReport().getActionExitCode());
-                if(returnValue == ActionReport.ExitCode.SUCCESS)
+                }
+                ActionReport iReport;
+                Server iServer;
+                if (useRest()) {
+                    InstanceRestCommandExecutor ice = (InstanceRestCommandExecutor) aResult.getInstanceCommand();
+                    iReport = ice.getReport();
+                    iServer = ice.getServer();
+                } else {
+                    InstanceCommandExecutor ice = (InstanceCommandExecutor) aResult.getInstanceCommand();
+                    iReport = ice.getReport();
+                    iServer = ice.getServer();
+                }
+                if(iReport.getActionExitCode() != ActionReport.ExitCode.FAILURE) {
+                    completedInstances.add(iServer);
+                }
+                finalResult = FailurePolicy.applyFailurePolicy(failPolicy, iReport.getActionExitCode());
+                if(returnValue == ActionReport.ExitCode.SUCCESS) {
                     returnValue = finalResult;
+                }
                 if(finalResult != ActionReport.ExitCode.SUCCESS) {
                     instanceState.setState(s, InstanceState.StateType.RESTART_REQUIRED, false);
                     instanceState.addFailedCommandToInstance(s, commandName, parameters);
@@ -340,8 +389,8 @@ public class ClusterOperationUtil {
         }
     }
 
-    private static File subdirectoryForInstance(final File dir,
-            final InstanceCommandExecutor exec) {
-        return new File(dir, exec.getServer().getName());
-    }
+//    private static File subdirectoryForInstance(final File dir,
+//            final InstanceCommandExecutor exec) {
+//        return new File(dir, exec.getServer().getName());
+//    }
 }
