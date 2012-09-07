@@ -221,12 +221,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
                 // server is started in EJBContainerImpl constructor
                 container = new EJBContainerImpl(server);
 
-                // Verify that the instance was created properly
-                File instance_directory = new File(System.getProperty("com.sun.aas.instanceRoot"));
-                File[] files = instance_directory.listFiles();
-                if (files == null || files.length == 0) {
-                    throw new IllegalStateException("Unexpected ERROR: Instance directory is empty");
-                }
+                validateInstanceDirectory();
 
                 archiveFactory = server.getService(ArchiveFactory.class);
 
@@ -653,7 +648,6 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
     /**
      * Returns boolean value whether the original type is String or Boolean
      */
-
     private boolean getBooleanProperty(Map<?, ?> properties, String key) {
         boolean result = false;
         if (properties != null) {
@@ -670,6 +664,24 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
         }
 
         return result;
+    }
+
+    /**
+     * Verifies that instance directory exists and not empty
+     */
+    private void validateInstanceDirectory() {
+        // Verify that the instance was created properly
+        File instance_directory = new File(System.getProperty("com.sun.aas.instanceRoot"));
+        if (!instance_directory.exists()) {
+            throw new IllegalStateException("Unexpected ERROR: Instance directory " + instance_directory + " does not exist");
+        } else if (!instance_directory.isDirectory()) {
+            throw new IllegalStateException("Unexpected ERROR: Instance directory " + instance_directory + " is not a directory");
+        }
+
+        File[] files = instance_directory.listFiles();
+        if (files == null || files.length == 0) {
+            throw new IllegalStateException("Unexpected ERROR: Instance directory " + instance_directory + " is empty");
+        }
     }
 
     private static class Locations {
