@@ -70,6 +70,7 @@
         <module>vboxjws</module>
         <module>trilead-ssh2</module>
         <module>j-interop</module>
+	<module>antlr</module>
     </modules>
     <build>
         <plugins>
