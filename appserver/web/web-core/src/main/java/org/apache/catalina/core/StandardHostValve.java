@@ -355,9 +355,14 @@ final class StandardHostValve
         int statusCode = ((HttpResponse) response).getStatus();
         ErrorPage errorPage = context.findErrorPage(statusCode);
         if (errorPage != null) {
+            if (errorPage.getLocation() != null) {
+                File file = new File(context.getDocBase(), errorPage.getLocation());
+                if (!file.exists()) {
+                    log.warning("The error-page " +file.getAbsolutePath()+" does not exist");
+                }
+            }
             setErrorPageContentType(response, errorPage.getLocation(), context);
-            dispatchToErrorPage(request, response, errorPage, null, null,
-                                statusCode);
+            dispatchToErrorPage(request, response, errorPage, null, null, statusCode);
         } else if (statusCode >= 400 && statusCode < 600 &&
                 context.getDefaultErrorPage() != null) {
             dispatchToErrorPage(request, response,
@@ -368,6 +373,12 @@ final class StandardHostValve
             errorPage = ((StandardHost) getContainer()).findErrorPage(
                                                         statusCode);
             if (errorPage != null) {
+                if (errorPage.getLocation() != null) {
+                    File file = new File(context.getDocBase(), errorPage.getLocation());
+                    if (!file.exists()) {
+                        log.warning("The error-page " +file.getAbsolutePath()+" does not exist");
+                    }
+                }
                 try {
                     setErrorPageContentType(response, errorPage.getLocation(), context);
                     handleHostErrorPage(response, errorPage, statusCode);
