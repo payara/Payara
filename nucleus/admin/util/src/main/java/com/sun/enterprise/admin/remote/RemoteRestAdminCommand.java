@@ -80,6 +80,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.payload.PayloadFilesManager;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.admin.CommandModel.ParamModel;
 import org.glassfish.api.admin.*;
@@ -128,7 +129,7 @@ import org.w3c.dom.Node;
 public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInboundEvent> {
 
     private static final LocalStringsImpl strings =
-            new LocalStringsImpl(RemoteAdminCommand.class);
+            new LocalStringsImpl(RemoteRestAdminCommand.class);
 
     private static final String EOL = StringUtils.EOL;
 
@@ -591,6 +592,8 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 if (closeSse) {
                     try { eventReceiver.close(); } catch (Exception exc) {}
                 }
+            } catch (CommandException cex) {
+                throw cex;
             } catch (Exception ex) {
                 throw new CommandException(ex.getMessage(), ex);
             }
@@ -610,7 +613,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         return output;
     }
 
-    protected void setActionReport(ActionReport ar) {
+    protected void setActionReport(ActionReport ar) throws CommandException {
         this.actionReport = ar;
         if (ar == null) {
             this.output = null;
@@ -623,6 +626,9 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             }
             addSubMessages("", ar.getTopMessagePart(), sb);
             this.output = sb.toString();
+            if (ar.getActionExitCode() == ExitCode.FAILURE) {
+                throw new CommandException(strings.getString("remote.failure.prefix", "remote failure:") + " " + this.output);
+            }
         }
     }
 
@@ -976,7 +982,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 }
                 final AuthenticationInfo authInfo = authenticationInfo();
                 if (authInfo != null && shouldSendCredentials) {
-                    HttpBasicAuthFilter besicAuth = new HttpBasicAuthFilter(authInfo.getUser(), authInfo.getPassword());
+                    HttpBasicAuthFilter besicAuth = new HttpBasicAuthFilter(authInfo.getUser(), authInfo.getPassword() == null ? "" : authInfo.getPassword());
                     target.configuration().register(besicAuth);
                 }
                 Metrix.event("doRestCommand() - about to prepare request builder");

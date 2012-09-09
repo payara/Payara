@@ -67,7 +67,7 @@ public abstract class ActionReporter extends ActionReport {
     protected MessagePart topMessage = new MessagePart();
     protected String contentType = "text/html";
 
-    protected static final String EOL_MARKER = "%%%EOL%%%";
+    public static final String EOL_MARKER = "%%%EOL%%%";
 
     /** Creates a new instance of HTMLActionReporter */
     public ActionReporter() {
@@ -219,7 +219,7 @@ public abstract class ActionReporter extends ActionReport {
      * @param aReport a given (usually top-level) ActionReporter instance
      * @param sb StringBuilder instance that contains all the messages  
      */
-    protected void getCombinedMessages(ActionReporter aReport, StringBuilder sb) {
+    public void getCombinedMessages(ActionReporter aReport, StringBuilder sb) {
         if (aReport == null || sb == null)
             return;
         String mainMsg = ""; //this is the message related to the topMessage

@@ -197,9 +197,9 @@ public abstract class CLICommand implements PostConstruct {
         unsupported = Collections.unmodifiableSet(unsup);
     }
     
-    private static boolean useRest() {
+    private static boolean useRest(Environment environment) {
         //return environment != null && environment.getBooleanOption("USE_REST");
-        return false;
+        return true;
     }
 
     /**
@@ -219,7 +219,7 @@ public abstract class CLICommand implements PostConstruct {
         // nope, must be a remote command
         logger.finer("Assuming it's a remote command: " + name);
         Environment environment = habitat.getService(Environment.class);
-        if (useRest()) {
+        if (useRest(environment)) {
             return new RemoteCLICommand(name,
                 habitat.<ProgramOptions>getService(ProgramOptions.class),
                 environment);

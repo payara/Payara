@@ -1685,7 +1685,7 @@ public class CommandRunnerImpl implements CommandRunner {
             return scope;
         }
 
-        ActionReport report() {
+        public ActionReport report() {
             return report;
         }
         

@@ -86,7 +86,7 @@ public class ClusterOperationUtil {
     private static boolean useRest() {
 //        String useRestStr = System.getenv("AS_ADMIN_USE_REST");
 //        return Boolean.valueOf(useRestStr);
-        return false;
+        return true;
     }
     
     public static ActionReport.ExitCode replicateCommand(String commandName,

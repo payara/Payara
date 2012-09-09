@@ -49,6 +49,10 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.uuid.UuidGenerator;
 import com.sun.enterprise.util.uuid.UuidGeneratorImpl;
+import com.sun.enterprise.v3.admin.CommandRunnerImpl;
+import com.sun.enterprise.v3.common.ActionReporter;
+import com.sun.enterprise.v3.common.PlainTextActionReporter;
+import com.sun.enterprise.v3.common.PropsFileActionReporter;
 import com.sun.logging.LogDomains;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -426,7 +430,7 @@ public class CommandResource {
                             logger.log(Level.WARNING, strings.getLocalString("sse.commandexecution.unexpectedexception", 
                                                     "Unexpected exception during command execution. {0}", 
                                                     thr.toString()));
-                            ActionReport ar = new RestActionReporter();
+                            ActionReport ar = new PropsFileActionReporter(); //new RestActionReporter();
                             ar.setFailureCause(thr);
                             ar.setActionExitCode(ActionReport.ExitCode.FAILURE);
                             AdminCommandState acs = new AdminCommandStateImpl(AdminCommandState.State.COMPLETED, ar, true, "unknown");
@@ -454,7 +458,7 @@ public class CommandResource {
         CommandModel model = getCommandModel(commandName);
         checkCommandModelETag(model, modelETag);
         //Execute it
-        RestActionReporter ar = new RestActionReporter();
+        ActionReporter ar = new PropsFileActionReporter(); //new RestActionReporter(); //Must use PropsFileActionReporter because some commands react diferently on it :-(
         final RestPayloadImpl.Outbound outbound = new RestPayloadImpl.Outbound(false);
         final CommandRunner.CommandInvocation commandInvocation = 
                 getCommandRunner().getCommandInvocation(commandName.getScope(), commandName.getName(), ar);
@@ -466,6 +470,8 @@ public class CommandResource {
                 .parameters(params)
                 .subject(getSubject())
                 .execute();
+        ar = (ActionReporter) commandInvocation.report();
+        fixActionReporterSpecialCases(ar);
         ActionReport.ExitCode exitCode = ar.getActionExitCode();
         int status = HttpURLConnection.HTTP_OK; /*200 - ok*/
         if (exitCode == ActionReport.ExitCode.FAILURE) {
@@ -490,6 +496,23 @@ public class CommandResource {
             rb.cookie(getJSessionCookie(jSessionId));
         }
         return rb.build();
+    }
+    
+    /** Some ActionReporters has special logic which must be reflected here
+     */
+    private void fixActionReporterSpecialCases(ActionReporter ar) {
+        if (ar == null) {
+            return;
+        }
+        if (ar instanceof PlainTextActionReporter) {
+            PlainTextActionReporter par = (PlainTextActionReporter) ar;
+            StringBuilder finalOutput = new StringBuilder();
+            par.getCombinedMessages(par, finalOutput);
+            String outs = finalOutput.toString();
+            if (!StringUtils.ok(outs)) {
+                par.getTopMessagePart().setMessage(strings.getLocalString("get.mon.no.data", "No monitoring data to report.") + "\n");
+            }
+        }
     }
     
     /**
@@ -548,18 +571,11 @@ public class CommandResource {
         CommandRunner cr = getCommandRunner();
         CommandModel model = cr.getModel(commandName.getScope(), commandName.getName(), logger);
         if (model == null) {
-            //Looks like not existing command. Try to get info
-            RestActionReporter ar = new RestActionReporter();
-//            AdminCommand cmd = cr.getCommand(commandName.getScope(), commandName.getName(), ar, logger);
-            if (ar.hasFailures()) {
-                throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND)
-                        .type(MediaType.TEXT_PLAIN)
-                        .entity(ar.getCombinedMessage())
-                        .build());
-            } else {
-                throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND)
-                        .build());
-            }
+            throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND)
+                    .type(MediaType.TEXT_PLAIN)
+                    .entity(strings.getLocalString("adapter.command.notfound", 
+                        "Command {0} not found. \nCheck the entry of command name. This command may be provided by a package that is not installed.", commandName.getName()))
+                    .build());
         }
         return model;
     }

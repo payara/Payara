@@ -203,6 +203,10 @@ public interface CommandRunner {
          */
         public CommandInvocation listener(String nameRegexp, AdminCommandEventBroker.AdminCommandListener listener);
         
+        /** Current report. After command execution report can be changed by command
+         */
+        public ActionReport report();
+        
         /**
          * Executes the command and populate the report with the command
          * execution result. Parameters must have been set before invoking

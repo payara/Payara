@@ -100,7 +100,7 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
 
     protected JSONObject processReport(ActionReporter ar) throws JSONException {
         JSONObject result = new JSONObject();
-        result.put("message", (ar instanceof RestActionReporter) ? ((RestActionReporter)ar).getCombinedMessage() : ar.getMessage());
+        result.put("message", (ar instanceof RestActionReporter) ? ((RestActionReporter)ar).getCombinedMessage() : decodeEol(ar.getMessage()));
         result.put("command", ar.getActionDescription());
         result.put("exit_code", ar.getActionExitCode());
 
@@ -132,7 +132,7 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
 
         for (MessagePart part : parts) {
             JSONObject object = new JSONObject();
-            object.put("message", part.getMessage());
+            object.put("message", decodeEol(part.getMessage()));
             object.put("properties", part.getProps());
             List<MessagePart> children = part.getChildren();
             if (children.size() > 0) {
@@ -181,5 +181,12 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
                 return value;
             }
         });
+    }
+    
+    protected String decodeEol(String str) {
+        if (str == null) {
+            return str;
+        }
+        return str.replace(ActionReporter.EOL_MARKER, "\n");
     }
 }

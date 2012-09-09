@@ -59,8 +59,9 @@ public class ActionReportJson2Provider extends ActionReportJsonProvider {
     protected JSONObject processReport(ActionReporter ar) throws JSONException {
         JSONObject result = super.processReport(ar);
         String combinedMessage = result.optString("message");
-        if (combinedMessage != null && !combinedMessage.equals(ar.getTopMessagePart().getMessage())) {
-            result.put("top_message", ar.getTopMessagePart().getMessage());
+        String msg = decodeEol(ar.getTopMessagePart().getMessage());
+        if (combinedMessage != null && !combinedMessage.equals(msg)) {
+            result.put("top_message", msg);
         }
         if (ar.getFailureCause() != null) {
             result.put("failure_cause", ar.getFailureCause().getLocalizedMessage());

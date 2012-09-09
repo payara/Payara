@@ -129,7 +129,7 @@ public class PlainTextActionReporter extends ActionReporter {
     }
 
     @Override
-    protected void getCombinedMessages(ActionReporter aReport, StringBuilder out) {
+    public void getCombinedMessages(ActionReporter aReport, StringBuilder out) {
         PlainTextActionReporter ptr = null;
         try {
             ptr = (PlainTextActionReporter) aReport;
