@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 
 /**
  * Pickup any configuration from a downstream product and apply it, e.g remove the old config with a new one.
+ *
  * @author Masoud Kalali
  */
 @Service
@@ -84,14 +85,22 @@ public class StartupConfigBeanOverrider implements PostConstruct {
 
             if (injector != null) {
                 String clzName = injector.getClass().getName().substring(0, injector.getClass().getName().length() - 8);
+                if (clzName == null) {
+                    continue;
+                }
                 try {
                     clz = injector.getClass().getClassLoader().loadClass(clzName);
                     if (clz == null) {
-                        LOG.log(Level.INFO, "Cannot find the class mapping to:  " + clzName);
+                        LOG.log(Level.FINE, "Cannot find the class mapping to:  " + clzName);
+                        return;
                     }
 
                 } catch (Throwable e) {
-                    LOG.log(Level.INFO, "Cannot load the class due to:  " + clz.getName(), e);
+                    if (clz == null) {
+                        LOG.log(Level.FINE, "Cannot load the class due to: Null class name", e);
+                        continue;
+                    }
+                    LOG.log(Level.FINE, "Cannot load the class due to:  " + clz.getName(), e);
                 }
             }
 
