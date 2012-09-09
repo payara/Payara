@@ -63,12 +63,12 @@ import java.util.logging.Logger;
  */
 @Service
 @RunLevel(mode = RunLevel.RUNLEVEL_MODE_VALIDATING, value = 2)
-public class StarupConfigBeanOverrider implements PostConstruct {
+public class StartupConfigBeanOverrider implements PostConstruct {
 
     @Inject
     Habitat habitat;
 
-    private static final Logger LOG = Logger.getLogger(StarupConfigBeanOverrider.class.getName());
+    private static final Logger LOG = Logger.getLogger(StartupConfigBeanOverrider.class.getName());
 
     @Override
     public void postConstruct() {
