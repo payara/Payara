@@ -183,7 +183,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                 if (adminAuthenticator != null) {
                     final Subject subject = adminAuthenticator.loginAsAdmin(req);
                     req.setAttribute(Constants.REQ_ATTR_SUBJECT, subject);
-                    access = adminAuthenticator.chooseAccess(subject, req.getRemoteHost());
+                    //access = adminAuthenticator.chooseAccess(subject, req.getRemoteHost());
                 }
 
                 if (access == null || access.isOK()) {
@@ -195,22 +195,24 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                     }
                     //delegate to adapter managed by Jersey.
                     adapter.service(req, res);
-                } else { // Access != FULL
-                    String msg;
-                    int status;
-                    if(access == AdminAccessController.Access.NONE) {
-                        status = HttpURLConnection.HTTP_UNAUTHORIZED;
-                        msg = localStrings.getLocalString("rest.adapter.auth.userpassword",
-                                "Invalid user name or password");
-                        res.setHeader(HEADER_AUTHENTICATE, "BASIC");
-                    } else {
-                        assert access == AdminAccessController.Access.FORBIDDEN;
-                        status = HttpURLConnection.HTTP_FORBIDDEN;
-                        msg = localStrings.getLocalString("rest.adapter.auth.forbidden",
-                                "Remote access not allowed. If you desire remote access, please turn on secure admin");
-                    }
-                    reportError(req, res, status, msg);
-                }
+                } 
+//                  TODO: Check if it is correct from the pont of modern authorisation
+//                else { // Access != FULL
+//                    String msg;
+//                    int status;
+//                    if(access == AdminAccessController.Access.NONE) {
+//                        status = HttpURLConnection.HTTP_UNAUTHORIZED;
+//                        msg = localStrings.getLocalString("rest.adapter.auth.userpassword",
+//                                "Invalid user name or password");
+//                        res.setHeader(HEADER_AUTHENTICATE, "BASIC");
+//                    } else {
+//                        assert access == AdminAccessController.Access.FORBIDDEN;
+//                        status = HttpURLConnection.HTTP_FORBIDDEN;
+//                        msg = localStrings.getLocalString("rest.adapter.auth.forbidden",
+//                                "Remote access not allowed. If you desire remote access, please turn on secure admin");
+//                    }
+//                    reportError(req, res, status, msg);
+//                }
             } else { // !latch.await(...)
                 reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE,
                         localStrings.getLocalString("rest.adapter.server.wait",
