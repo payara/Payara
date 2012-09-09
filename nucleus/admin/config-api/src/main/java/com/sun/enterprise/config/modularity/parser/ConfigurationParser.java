@@ -68,7 +68,7 @@ import java.util.logging.Logger;
  * @author Bhakti Mehta
  * @author Masoud Kalali
  */
-public class ConfigurationParser<C extends ConfigLoader> {
+class ConfigurationParser<C extends ConfigLoader> {
     private static final Logger LOG = Logger.getLogger(ConfigurationParser.class.getName());
 
     /**

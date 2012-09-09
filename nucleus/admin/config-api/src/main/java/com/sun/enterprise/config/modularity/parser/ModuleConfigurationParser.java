@@ -98,7 +98,7 @@ public class ModuleConfigurationParser {
                         if (attribute.getName().toString().equals(LOCATION)) {
                             configValue.setLocation(attribute.getValue());
                         } else if (attribute.getName().toString().equals(REPLACE_IF_EXISTS)) {
-                            configValue.setReplaceCurrentIfExists(Boolean.parseBoolean(attribute.getValue()));
+                            configValue.setReplaceCurrentIfExists(Boolean.getBoolean(attribute.getValue()));
                         }
                     }//attributes
                     continue;

@@ -516,7 +516,7 @@ public final class ConfigModularityUtils {
             Resource res = (Resource) configBean;
             return res.getIdentity();
         }
-        Method[] methods = configBeanType.getMethods();
+        Method[] methods = configBeanType.getDeclaredMethods();
         for (Method method : methods) {
             Attribute attributeAnnotation = method.getAnnotation(Attribute.class);
             if ((attributeAnnotation != null) && attributeAnnotation.key()) {
