@@ -90,18 +90,12 @@ public class StartupConfigBeanOverrider implements PostConstruct {
                     clz = injector.getClass().getClassLoader().loadClass(clzName);
                     if (clz == null) {
                         LOG.log(Level.FINE, "Cannot find the class mapping to:  " + clzName);
-                        continue;
                     }
-
                 } catch (Throwable e) {
-                    if (clz == null) {
-                        LOG.log(Level.FINE, "Cannot load the class due to: Null class name", e);
-                    }
-                    LOG.log(Level.FINE, "Cannot load the class due to:  " + clz.getName(), e);
-                    continue;
+                    LOG.log(Level.FINE, "Cannot load the class", e);
                 }
+                continue;
             }
-
             if (clz.isAnnotationPresent(ActivateOnStartup.class)) {
                 LOG.info("Overriding Config specified by: " + clz.getName());
                 applyConfig(clz);
