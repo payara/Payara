@@ -128,8 +128,8 @@ class HttpRequestWrapper extends HttpServletRequestWrapper
 	return httpRequest.getSessionInternal(create);
     }
 
-    public void changeSessionId(String newSessionId) {
-        httpRequest.changeSessionId(newSessionId);
+    public String changeSessionId() {
+        return httpRequest.changeSessionId();
     }
 
     public void setPathInfo(String path) {

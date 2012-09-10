@@ -127,6 +127,12 @@ public final class ContainerEvent extends EventObject {
     public static final String AFTER_SESSION_DESTROYED
         = "afterSessionDestroyed";
 
+    public static final String BEFORE_SESSION_ID_CHANGED
+            = "beforeSessionIdChanged";
+
+    public static final String AFTER_SESSION_ID_CHANGED
+            = "afterSessionIdChanged";
+
     public static final String BEFORE_SESSION_ATTRIBUTE_ADDED
         = "beforeSessionAttributeAdded";
 

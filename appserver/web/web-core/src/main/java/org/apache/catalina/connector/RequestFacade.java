@@ -238,6 +238,14 @@ public class RequestFacade
         }           
     }
 
+    private final class ChangeSessionIdPrivilegedAction
+            implements PrivilegedAction<String> {
+
+        public String run() {
+            return request.changeSessionId();
+        }
+    }
+
 
     // ----------------------------------------------------------- Constructors
 
@@ -954,6 +962,21 @@ public class RequestFacade
         }
 
         return getSession(true);
+    }
+
+    public String changeSessionId() {
+
+        if (request == null) {
+            throw new IllegalStateException(
+                    sm.getString("requestFacade.nullRequest"));
+        }
+
+        if (SecurityUtil.isPackageProtectionEnabled()){
+            return AccessController.
+                    doPrivileged(new ChangeSessionIdPrivilegedAction());
+        } else {
+            return request.changeSessionId();
+        }
     }
 
 

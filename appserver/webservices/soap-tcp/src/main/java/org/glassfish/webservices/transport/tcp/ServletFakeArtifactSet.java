@@ -198,6 +198,10 @@ public final class ServletFakeArtifactSet extends DistributedPropertySet {
             return null;
         }
 
+        public String changeSessionId() {
+            return null;
+        }
+
         public boolean isRequestedSessionIdValid() {
             return true;
         }

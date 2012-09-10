@@ -90,6 +90,7 @@ import javax.servlet.*;
 import javax.servlet.descriptor.JspConfigDescriptor;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.http.HttpSessionIdListener;
 import javax.servlet.http.HttpSessionListener;
 import java.io.*;
 import java.net.MalformedURLException;
@@ -2903,7 +2904,8 @@ public class StandardContext
         if (t instanceof ServletContextAttributeListener ||
                 t instanceof ServletRequestAttributeListener ||
                 t instanceof ServletRequestListener ||
-                t instanceof HttpSessionAttributeListener) {
+                t instanceof HttpSessionAttributeListener ||
+                t instanceof HttpSessionIdListener) {
             eventListeners.add(t);
             added = true;
         }
@@ -2969,8 +2971,9 @@ public class StandardContext
                 !ServletContextAttributeListener.class.isAssignableFrom(clazz) &&
                 !ServletRequestListener.class.isAssignableFrom(clazz) &&
                 !ServletRequestAttributeListener.class.isAssignableFrom(clazz) &&
-                !HttpSessionListener.class.isAssignableFrom(clazz) &&
-                !HttpSessionAttributeListener.class.isAssignableFrom(clazz)) {
+                !HttpSessionAttributeListener.class.isAssignableFrom(clazz) &&
+                !HttpSessionIdListener.class.isAssignableFrom(clazz) &&
+                !HttpSessionListener.class.isAssignableFrom(clazz)) {
             throw new IllegalArgumentException(sm.getString(
                     "standardContext.invalidListenerType", clazz.getName()));
         }

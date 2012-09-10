@@ -56,8 +56,9 @@ import javax.servlet.ServletContextAttributeListener;
 import javax.servlet.ServletRequestListener;
 import javax.servlet.ServletRequestAttributeListener;
 import javax.servlet.annotation.WebListener;
-import javax.servlet.http.HttpSessionListener;
 import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.http.HttpSessionIdListener;
+import javax.servlet.http.HttpSessionListener;
 import java.lang.annotation.Annotation;
 import java.util.logging.Level;
 
@@ -100,11 +101,12 @@ public class WebListenerHandler extends AbstractWebHandler {
                 ServletRequestListener.class.isAssignableFrom(listenerClass) ||
                 ServletRequestAttributeListener.class.isAssignableFrom(listenerClass) ||
                 HttpSessionListener.class.isAssignableFrom(listenerClass) ||
-                HttpSessionAttributeListener.class.isAssignableFrom(listenerClass))) {
+                HttpSessionAttributeListener.class.isAssignableFrom(listenerClass) ||
+                HttpSessionIdListener.class.isAssignableFrom(listenerClass))) {
             log(Level.SEVERE, ainfo,
                 localStrings.getLocalString(
                 "enterprise.deployment.annotation.handlers.needtoimpllistenerinterface",
-                "The Class {0} having annotation javax.servlet.annotation.WebListener need to implement one of the following interfaces: javax.servlet.ServletContextLisener, javax.servlet.ServletContextAttributeListener, javax.servlet.ServletRequestListener, javax.servletServletRequestAttributeListener, javax.servlet.http.HttpSessionListener, javax.servlet.http.HttpSessionAttributeListener.",
+                "The Class {0} having annotation javax.servlet.annotation.WebListener need to implement one of the following interfaces: javax.servlet.ServletContextLisener, javax.servlet.ServletContextAttributeListener, javax.servlet.ServletRequestListener, javax.servletServletRequestAttributeListener, javax.servlet.http.HttpSessionListener, javax.servlet.http.HttpSessionAttributeListener, javax.servlet.http.HttpSessionIdListener.",
                 listenerClass.getName()));
             return getDefaultFailedResult();
         }

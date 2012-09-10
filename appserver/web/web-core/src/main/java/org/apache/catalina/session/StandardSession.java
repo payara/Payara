@@ -404,11 +404,52 @@ public class StandardSession
         if ((this.id != null) && (manager != null))
             manager.remove(this);
 
+        String oldId = this.id;
         this.id = id;
 
         if (manager != null)
             manager.add(this);
-        tellNew();
+
+        
+        // Notify interested session event listeners
+        if (oldId == null) { // the session is just created
+            tellNew();
+        } else { // change session id
+            HttpSessionEvent event = null;
+            List<EventListener> listeners = context.getApplicationEventListeners();
+            if (listeners.isEmpty()) {
+                return;
+            }
+            Iterator<EventListener> iter = listeners.iterator();
+            while (iter.hasNext()) {
+                EventListener eventListener = iter.next();
+                if (!(eventListener instanceof HttpSessionIdListener)) {
+                    continue;
+                }
+                HttpSessionIdListener listener = (HttpSessionIdListener)eventListener;
+                try {
+                    fireContainerEvent(context,
+                                       "beforeSessionIdChanged",
+                                       listener);
+                    if (event == null) {
+                        event = new HttpSessionEvent(getSession());
+                    }
+                    listener.sessionIdChanged(event, oldId);
+                    fireContainerEvent(context,
+                                       "afterSessionIdChanged",
+                                       listener);
+                } catch (Throwable t) {
+                    try {
+                        fireContainerEvent(context,
+                                           "afterSessionIdChanged",
+                                           listener);
+                    } catch (Exception e) {
+                        // Ignore
+                    }
+                    log(sm.getString("standardSession.sessionIdChanged"), t);
+                }
+            }
+        }
     }
 
 

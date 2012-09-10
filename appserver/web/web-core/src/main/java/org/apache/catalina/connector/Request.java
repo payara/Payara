@@ -2969,30 +2969,47 @@ public class Request
     }
 
     /**
-     * Change the ID of the session that this request is associated with. There
-     * are several things that may trigger an ID change. These include moving
-     * between nodes in a cluster and session fixation prevention during the
-     * authentication process.
-     * 
-     * @param newSessionId   The session to change the session ID for
+     * Change the session id of the current session associated with this
+     * request and return the new session id. 
+     *
+     * @return the original session id
+     *
+     * @throws IllegalStateException if there is no session associated
+     * with the request
+     *
+     * @since Servlet 3.1
      */
     @Override
-    public void changeSessionId(String newSessionId) {
+    public String changeSessionId() {
+        Manager manager = context.getManager();
+        if (manager == null) {
+            throw new IllegalStateException(sm.getString("coyoteRequest.changeSessionId.ise"));
+        }
+        Session session = getSessionInternal(false);
+        if (session == null) {
+            throw new IllegalStateException(sm.getString("coyoteRequest.changeSessionId.ise"));
+        }
+
+        String oldSessionId = session.getId();
+        manager.changeSessionId(session);
+        String newSessionId = session.getId();
         // This should only ever be called if there was an old session ID but
         // double check to be sure
         if (requestedSessionId != null && requestedSessionId.length() > 0) {
             requestedSessionId = newSessionId;
         }
-        
+
         if (context != null && !context.getCookies())
-            return;
-        
+            return oldSessionId;
+
         if (response != null) {
             Cookie newCookie = new Cookie(
                     getContext().getSessionCookieName(), newSessionId);
             configureSessionCookie(newCookie);
             ((HttpResponse)response).addSessionCookieInternal(newCookie);
         }
+
+        return oldSessionId;
     }
 
     /**

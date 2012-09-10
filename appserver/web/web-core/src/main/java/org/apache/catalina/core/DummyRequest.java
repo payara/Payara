@@ -301,7 +301,7 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
     public HttpSession getSession() { return null; }
     public HttpSession getSession(boolean create) { return null; }
     public Session getSessionInternal(boolean create) { return null; }
-    public void changeSessionId(String newSessionId) {}
+    public String changeSessionId() { return null; }
     public boolean isRequestedSessionIdFromCookie() { return false; }
     public boolean isRequestedSessionIdFromURL() { return false; }
     public boolean isRequestedSessionIdFromUrl() { return false; }

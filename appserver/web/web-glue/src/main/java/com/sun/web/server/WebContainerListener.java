@@ -85,6 +85,7 @@ public final class WebContainerListener
         beforeEvents.add(ContainerEvent.BEFORE_REQUEST_DESTROYED);
         beforeEvents.add(ContainerEvent.BEFORE_SESSION_CREATED);
         beforeEvents.add(ContainerEvent.BEFORE_SESSION_DESTROYED);
+        beforeEvents.add(ContainerEvent.BEFORE_SESSION_ID_CHANGED);
         beforeEvents.add(ContainerEvent.BEFORE_SESSION_ATTRIBUTE_ADDED);
         beforeEvents.add(ContainerEvent.BEFORE_SESSION_ATTRIBUTE_REMOVED);
         beforeEvents.add(ContainerEvent.BEFORE_SESSION_ATTRIBUTE_REPLACED);
@@ -102,6 +103,7 @@ public final class WebContainerListener
         afterEvents.add(ContainerEvent.AFTER_REQUEST_DESTROYED);
         afterEvents.add(ContainerEvent.AFTER_SESSION_CREATED);
         afterEvents.add(ContainerEvent.AFTER_SESSION_DESTROYED);
+        afterEvents.add(ContainerEvent.AFTER_SESSION_ID_CHANGED);
         afterEvents.add(ContainerEvent.AFTER_SESSION_ATTRIBUTE_ADDED);
         afterEvents.add(ContainerEvent.AFTER_SESSION_ATTRIBUTE_REMOVED);
         afterEvents.add(ContainerEvent.AFTER_SESSION_ATTRIBUTE_REPLACED);

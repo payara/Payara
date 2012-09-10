@@ -46,6 +46,7 @@ import java.util.*;
 import javax.servlet.*;
 import javax.servlet.descriptor.JspConfigDescriptor;
 import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.http.HttpSessionIdListener;
 import javax.servlet.http.HttpSessionListener;
 
 import org.apache.catalina.core.*;
@@ -531,7 +532,8 @@ public class ContextFacade extends WebModule {
                     !ServletRequestListener.class.isAssignableFrom(clazz) &&
                     !ServletRequestAttributeListener.class.isAssignableFrom(clazz) &&
                     !HttpSessionListener.class.isAssignableFrom(clazz) &&
-                    !HttpSessionAttributeListener.class.isAssignableFrom(clazz)) {
+                    !HttpSessionAttributeListener.class.isAssignableFrom(clazz) &&
+                    !HttpSessionIdListener.class.isAssignableFrom(clazz)) {
                 throw new IllegalArgumentException(sm.getString(
                         "standardContext.invalidListenerType", clazz.getName()));
             }

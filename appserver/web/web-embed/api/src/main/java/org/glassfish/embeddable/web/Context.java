@@ -73,6 +73,7 @@ public interface Context extends ServletContext {
      * <li><tt>javax.servlet.ServletRequestListener</tt>
      * <li><tt>javax.servlet.ServletContextListener</tt>
      * <li><tt>javax.servlet.http.HttpSessionAttributeListener</tt>
+     * <li><tt>javax.servlet.http.HttpSessionIdListener</tt>
      * <li><tt>javax.servlet.http.HttpSessionListener</tt>
      * </ul>
      *

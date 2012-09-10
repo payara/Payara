@@ -47,8 +47,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.*;
 import javax.servlet.descriptor.JspConfigDescriptor;
-import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionListener;
 
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.logging.LogDomains;
