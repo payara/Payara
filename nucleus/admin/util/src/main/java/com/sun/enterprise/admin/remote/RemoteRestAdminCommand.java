@@ -147,8 +147,9 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     private static final int defaultReadTimeout; // read timeout for URL conns
 
     //JAX-RS Client related attributes
-    private static final Client client;
-    static {
+    private final Client client;
+    //TODO: Make it static. It is non-static because of Jersey concurency bug in lazy init
+    {
         Metrix.event("Initialize jersey client - start");
         client = JerseyClientFactory.newClient(new ClientConfig().binders(new MultiPartClientBinder()));
         // client = ClientFactory.newClient(); - Move to this standard initialisation when people from Jersey will produce Multipart as a Feature not just module.
@@ -564,7 +565,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 closeSse = false;
                 GfSseEventReceiver eventReceiver = response.readEntity(GfSseEventReceiver.class);
                 GfSseInboundEvent event;
-                String instanceId = null; //TODO: Use ID to reconnect in case of connection lost
+                String instanceId; //TODO: Use ID to reconnect in case of connection lost
                 do {
                     event = eventReceiver.readEvent();
                     fireEvent(event.getName(), event);
@@ -600,11 +601,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         } else {
             throw new CommandException(strings.get("unknownResponse", resultMediaType));
         }
-        if (logger.isLoggable(Level.FINER)) {
-            logger.log(Level.FINER, "------ ACTION REPORT ------");
-            logger.log(Level.FINER, String.valueOf(actionReport));
-            logger.log(Level.FINER, "---- END ACTION REPORT ----");
-        }
         if (actionReport == null) {
             this.output = null;
             throw new CommandException(strings.get("emptyResponse"));
@@ -626,6 +622,11 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             }
             addSubMessages("", ar.getTopMessagePart(), sb);
             this.output = sb.toString();
+            if (logger.isLoggable(Level.FINER)) {
+                logger.log(Level.FINER, "------ ACTION REPORT ------");
+                logger.log(Level.FINER, String.valueOf(actionReport));
+                logger.log(Level.FINER, "---- END ACTION REPORT ----");
+            }
             if (ar.getActionExitCode() == ExitCode.FAILURE) {
                 throw new CommandException(strings.getString("remote.failure.prefix", "remote failure:") + " " + this.output);
             }
