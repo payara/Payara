@@ -264,12 +264,9 @@ public class DeploymentImpl implements Deployment {
 
     @Override
     public List<BeanDeploymentArchive> getBeanDeploymentArchives() {
-        return getBeanDeploymentArchives(true);
-    }
-    
-    public List<BeanDeploymentArchive> getBeanDeploymentArchives(boolean printDebug) {
-        if (printDebug) logger.log(FINE, "DeploymentImpl::getBDAs. " +
-        		"Returning \n" + beanDeploymentArchives);
+        if ( logger.isLoggable( FINE ) ) {
+            logger.log(FINE, "DeploymentImpl::getBDAs. Returning \n" + beanDeploymentArchives);
+        }
         if (!beanDeploymentArchives.isEmpty()) {
             return beanDeploymentArchives;
         }
@@ -279,7 +276,7 @@ public class DeploymentImpl implements Deployment {
     @Override
     public BeanDeploymentArchive loadBeanDeploymentArchive(Class<?> beanClass) {
         logger.log(FINE, "DeploymentImpl::loadBDA:"+ beanClass);
-        List<BeanDeploymentArchive> beanDeploymentArchives = getBeanDeploymentArchives(false);
+        List<BeanDeploymentArchive> beanDeploymentArchives = getBeanDeploymentArchives();
         
         ListIterator<BeanDeploymentArchive> lIter = beanDeploymentArchives.listIterator(); 
         while (lIter.hasNext()) {
