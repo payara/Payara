@@ -94,7 +94,7 @@ public class LogViewerContentSource  implements DownloadServlet.ContentSource {
             attrsMap.put("instanceName", instanceName);
             Response cr = RestUtil.getRequestFromServlet(request, endpoint, attrsMap);
             Map<String, String> headers = new HashMap<String, String>();
-            String xTextAppendNextHeader = cr.getHeader("X-Text-Append-Next");
+            String xTextAppendNextHeader = cr.getHeaderString("X-Text-Append-Next");
             if (!xTextAppendNextHeader.isEmpty()) {
                 StringTokenizer tokenizer = new StringTokenizer(xTextAppendNextHeader, ",");
                 if (tokenizer.hasMoreElements()) {

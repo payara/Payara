@@ -101,7 +101,7 @@ public class RestManagementAdapter extends RestAdapter {
         // uncomment if you need to run the generator:
 //        r.add(GeneratorResource.class);
         r.add(StatusGenerator.class);
-        r.add(ClientGenerator.class);
+//        r.add(ClientGenerator.class);
 //        r.add(ModelResource.class);
         //r.add(ActionReportResource.class);
 

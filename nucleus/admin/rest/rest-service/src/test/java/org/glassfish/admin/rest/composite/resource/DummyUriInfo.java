@@ -279,5 +279,20 @@ public class DummyUriInfo implements UriInfo {
         public URI buildFromEncoded(Object... values) throws IllegalArgumentException, UriBuilderException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public URI buildFromMap(Map<String, ?> values, boolean encodeSlashInPath) throws IllegalArgumentException, UriBuilderException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public URI build(Object[] values, boolean encodeSlashInPath) throws IllegalArgumentException, UriBuilderException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String toTemplate() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 }

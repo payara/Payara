@@ -8,17 +8,17 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.Configuration;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.UriBuilder;
-import org.glassfish.admin.rest.provider.RestModelProvider;
 
+import org.glassfish.admin.rest.provider.RestModelProvider;
 import org.glassfish.admin.rest.readers.RestModelReader;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.JerseyClientFactory;
@@ -92,12 +92,7 @@ public class RestClient implements Client {
     }
 
     @Override
-    public Invocation invocation(Link link) throws NullPointerException, IllegalArgumentException {
+    public Builder invocation(Link link) throws NullPointerException {
         return realClient.invocation(link);
-    }
-
-    @Override
-    public Invocation invocation(Link link, Entity<?> entity) throws NullPointerException, IllegalArgumentException {
-        return realClient.invocation(link, entity);
     }
 }

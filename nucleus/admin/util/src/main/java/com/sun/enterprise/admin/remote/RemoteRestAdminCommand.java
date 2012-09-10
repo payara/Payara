@@ -140,7 +140,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                                     "^[a-zA-Z_][-a-zA-Z0-9_]*$";
     private static final String READ_TIMEOUT = "AS_ADMIN_READTIMEOUT";
     public static final String COMMAND_MODEL_MATCH_HEADER = "X-If-Command-Model-Match";
-    private static final MediaType MEDIATYPE_ACTIONREPORT = new MediaType("application", "json", 
+    private static final MediaType MEDIATYPE_ACTIONREPORT = new MediaType("application", "json",
             new HashMap<String, String>(1) {{ put("q", "0.8"); }});
     private static final MediaType MEDIATYPE_MULTIPART = new MediaType("multipart", null,
             new HashMap<String, String>(1) {{ put("q", "0.9"); }});
@@ -208,9 +208,9 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     private boolean             omitCache = true;
 
     private List<Header>        requestHeaders = new ArrayList<Header>();
-    
+
     private boolean closeSse = false;
-    
+
     /*
      * Set a default read timeout for URL connections.
      */
@@ -334,11 +334,11 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             //todo: XXX - I18N
         }
     }
-    
+
     public void closeSse() {
         this.closeSse = true;
     }
-    
+
 //    private Target getTarget() {
 //        if (this.target == null) {
 //            StringBuilder path = new StringBuilder();
@@ -1361,7 +1361,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
          * the redirection.
          */
         if (isStatusRedirection(code)) {
-            return response.getHeader("Location");
+            return response.getHeaderString("Location");
         }
         if (code != HttpURLConnection.HTTP_OK && code != HttpURLConnection.HTTP_INTERNAL_ERROR) {
             throw new CommandException(strings.get("BadResponse", String.valueOf(code),
