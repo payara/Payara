@@ -102,7 +102,7 @@ public class Utils {
     private static synchronized Habitat getNewHabitat(final ConfigApiTest test) {
 
         String name = test.getFileName();
-        final ServiceLocator sl = getNewHabitat(name);
+        final ServiceLocator sl = getNewHabitat();
         Habitat habitat = sl.getService(Habitat.class);
 
         final String fileName = test.getFileName();
