@@ -51,6 +51,7 @@ import org.glassfish.admin.rest.provider.*;
 import org.glassfish.admin.rest.readers.JsonParameterMapProvider;
 import org.glassfish.admin.rest.readers.ParameterMapFormReader;
 import org.glassfish.admin.rest.resources.admin.CommandResource;
+import org.glassfish.admin.restconnector.Constants;
 import org.glassfish.jersey.media.sse.OutboundEventWriter;
 import org.jvnet.hk2.annotations.Service;
 
@@ -58,14 +59,14 @@ import org.jvnet.hk2.annotations.Service;
  *
  * @author mmares
  */
-@Service(name=RestCommandAdapter.CONTEXT_ROOT)
+@Service(name= Constants.REST_COMMAND_ADAPTER)
 public class RestCommandAdapter extends RestAdapter {
-    public static final String CONTEXT_ROOT = "command";
+    private static final String CONTEXT_ROOT = Constants.REST_COMMAND_CONTEXT_ROOT;
     private static final Logger logger = LogDomains.getLogger(RestCommandAdapter.class, LogDomains.ADMIN_LOGGER);
     
     @Override
     public String getContextRoot() {
-        return "/" + CONTEXT_ROOT;
+        return CONTEXT_ROOT;
     }
     
     @Override

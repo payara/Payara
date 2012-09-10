@@ -76,12 +76,12 @@ public class ProxyRestCommandAdapter extends AbstractProxyRestAdapter {
 
     @Override
     protected String getName() {
-        return "command";
+        return Constants.REST_COMMAND_ADAPTER;
     }
 
     @Override
     public String getContextRoot() {
-        return "/command";
+        return Constants.REST_COMMAND_CONTEXT_ROOT;
     }
     
 }
