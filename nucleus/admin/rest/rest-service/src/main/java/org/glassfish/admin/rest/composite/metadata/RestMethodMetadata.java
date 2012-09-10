@@ -48,13 +48,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.OptionsCapable;
-import org.glassfish.admin.rest.composite.CompositeResource;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.RestCollection;
 import org.glassfish.admin.rest.composite.RestModel;
@@ -81,12 +81,14 @@ public class RestMethodMetadata {
      * type of the items in the collection) or not.
      */
     private boolean isCollection = false;
+    private String path;
     private OptionsCapable context;
 
     public RestMethodMetadata(OptionsCapable context, Method method, Annotation designator) {
         this.context = context;
         this.httpMethod = designator.getClass().getInterfaces()[0].getSimpleName();
         this.returnPayload = calculateReturnPayload(method);
+        this.path = getPath(method);
         processParameters(method);
     }
 
@@ -143,6 +145,9 @@ public class RestMethodMetadata {
      */
     public JSONObject toJson() throws JSONException {
         JSONObject o = new JSONObject();
+        if (path != null) {
+            o.put("path", path);
+        }
         JSONArray array = new JSONArray();
         for (ParamMetadata pmd : queryParameters) {
             array.put(pmd.toJson());
@@ -190,6 +195,15 @@ public class RestMethodMetadata {
         }
         
         return value;
+    }
+
+    private String getPath(Method method) {
+        Path p = method.getAnnotation(Path.class);
+        if (p != null) {
+            return p.value();
+        } else {
+            return null;
+        }
     }
 
     /**
