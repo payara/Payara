@@ -304,7 +304,7 @@ public class AsadminMain {
                         strings.get("CommandUnSuccessful", command));
                 break;
         }
-        CLIUtil.writeCommandToDebugLog(po, env, args, exitCode);
+        CLIUtil.writeCommandToDebugLog(getCommandName(), env, args, exitCode);
         return exitCode;
     }
 

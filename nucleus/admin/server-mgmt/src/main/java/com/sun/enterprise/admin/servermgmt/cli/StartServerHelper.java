@@ -363,12 +363,7 @@ public class StartServerHelper {
         // we will not even see AS_DEBUG!
         if (DEBUG_MESSAGES_ON) {
             Environment env = new Environment();
-            try {
-                CLIUtil.writeCommandToDebugLog(new ProgramOptions(env), env, new String[]{"DEBUG MESSAGE FROM RESTART JVM", s}, 99999);
-            } catch (CommandException ce) {
-                // ignore
-            }
-        
+            CLIUtil.writeCommandToDebugLog("restart-debug", env, new String[]{"DEBUG MESSAGE FROM RESTART JVM", s}, 99999);
         }
     }
     private final boolean terse;
