@@ -56,7 +56,6 @@ import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.javaee.services.DataSourceDefinitionProxy;
 import org.glassfish.javaee.services.ConnectorResourceDefinitionProxy;
 import org.glassfish.javaee.services.JMSConnectionFactoryDefinitionProxy;
@@ -195,7 +194,6 @@ public class ComponentEnvManagerImpl
         // Add all java:comp, java:module, and java:app(except for app clients) dependencies
         // for the specified environment
         addJNDIBindings(env, ScopeType.COMPONENT, bindings);
-        addDefaultJNDIBindings(env, ScopeType.COMPONENT, bindings);
         addJNDIBindings(env, ScopeType.MODULE, bindings);
 
         if (!(env instanceof ApplicationClientDescriptor)) {
@@ -659,6 +657,7 @@ public class ComponentEnvManagerImpl
         }
     }
 
+
     private void addJNDIBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
 
         // Create objects to be bound for each env dependency.  Only add bindings that
@@ -790,24 +789,6 @@ public class ComponentEnvManagerImpl
          }
 
         return;
-    }
-
-    private void addDefaultJNDIBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
-        if (ScopeType.COMPONENT.equals(scope)) {
-            String logicalJndiName = "java:comp/defaultJMSConnectionFactory";
-            String physicalJndiName = "jms/__defaultConnectionFactory";
-            Object value = namingUtils.createLazyNamingObjectFactory(logicalJndiName, physicalJndiName, false);
-            if (env instanceof Application) {
-                jndiBindings.add(new CompEnvBinding(logicalJndiName, value));
-            } else {
-                String appName = getApplicationName(env);
-                String moduleName = getModuleName(env);
-                if (appName != null && moduleName != null) {
-                    // avoid NPE of few default web applications for they may not have names.
-                    jndiBindings.add(new CompEnvBinding(logicalJndiName, value));
-                }
-            }
-        }
     }
 
     private CompEnvBinding getCompEnvBinding(final ResourceEnvReferenceDescriptor next) {
