@@ -182,6 +182,14 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                 AdminAccessController.Access access = null;
                 if (adminAuthenticator != null) {
                     final Subject subject = adminAuthenticator.loginAsAdmin(req);
+                    if (subject == null) {
+                        int status = HttpURLConnection.HTTP_UNAUTHORIZED;
+                        String msg = localStrings.getLocalString("rest.adapter.auth.userpassword",
+                                "Invalid user name or password");
+                        res.setHeader(HEADER_AUTHENTICATE, "BASIC");
+                        reportError(req, res, status, msg);
+                        return;
+                    }
                     req.setAttribute(Constants.REQ_ATTR_SUBJECT, subject);
                     //access = adminAuthenticator.chooseAccess(subject, req.getRemoteHost());
                 }
@@ -195,7 +203,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                     }
                     //delegate to adapter managed by Jersey.
                     adapter.service(req, res);
-                } 
+                }
 //                  TODO: Check if it is correct from the pont of modern authorisation
 //                else { // Access != FULL
 //                    String msg;
