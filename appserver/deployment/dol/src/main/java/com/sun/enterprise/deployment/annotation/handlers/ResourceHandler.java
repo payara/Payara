@@ -251,6 +251,11 @@ public class ResourceHandler extends AbstractResourceHandler {
             if (!ok(desc.getMappedName()) && ok(resourceAn.mappedName()))
                 desc.setMappedName(resourceAn.mappedName());
 
+            if ("javax.jms.ConnectionFactory".equals(desc.getInjectResourceType())) {
+                if (!desc.hasLookupName() && !ok(desc.getMappedName()))
+                    desc.setLookupName("java:comp/defaultJMSConnectionFactory");
+            }
+
             // merge authentication-type and shareable
             if (desc instanceof ResourceReferenceDescriptor) {
                 ResourceReferenceDescriptor rdesc =
