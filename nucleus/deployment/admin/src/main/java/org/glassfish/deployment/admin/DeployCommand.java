@@ -40,6 +40,7 @@
 
 package org.glassfish.deployment.admin;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
@@ -358,13 +359,22 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             if ( ! keepreposdir.booleanValue()) {
                 final File reposDir = new File(env.getApplicationRepositoryPath(), VersioningUtils.getRepositoryName(name));
                 if (reposDir.exists()) {
-                    /*
-                     * Delete the repository directory as an archive to allow
-                     * any special processing (such as stale file handling)
-                     * to run.
-                     */
-                    final FileArchive arch = DeploymentUtils.openAsFileArchive(reposDir, archiveFactory);
-                    arch.delete();
+                    for (int i=0 ; i<domain.getApplications().getApplications().size() ; i++) { 
+                        File existrepos = new File(new URI(domain.getApplications().getApplications().get(i).getLocation()));
+                        String appname = domain.getApplications().getApplications().get(i).getName();
+                        if (!appname.equals(name) && existrepos.getAbsoluteFile().equals(reposDir.getAbsoluteFile())) {
+                            report.failure(logger,localStrings.getLocalString("deploy.dupdeployment","Application {0} is trying to use the same repository directory as application {1}, please choose a different application name to deploy",name,appname));
+                            return;
+                        } else {
+                            /*
+                             * Delete the repository directory as an archive to allow
+                             * any special processing (such as stale file handling)
+                             * to run.
+                             */
+                            final FileArchive arch = DeploymentUtils.openAsFileArchive(reposDir, archiveFactory);
+                            arch.delete();
+                        }
+                    }
                 }
             }
 
