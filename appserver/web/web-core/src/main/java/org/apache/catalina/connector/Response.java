@@ -176,6 +176,7 @@ public class Response
      */
     protected Context context = null;
 
+    protected boolean upgrade = false;
 
     // ------------------------------------------------------------- Properties
 
@@ -355,7 +356,9 @@ public class Response
         }
 
         context = null;
-        outputBuffer.recycle();
+        if (!upgrade) {
+            outputBuffer.recycle();
+        }
         usingOutputStream = false;
         usingWriter = false;
         appCommitted = false;
@@ -370,7 +373,7 @@ public class Response
                 facade.clear();
                 facade = null;
             }
-            if (outputStream != null) {
+            if ((outputStream != null) && !upgrade) {
                 outputStream.clear();
                 outputStream = null;
             }
@@ -1978,6 +1981,12 @@ public class Response
             log.log(Level.WARNING, localName + " " + message, t);
         }
     }
+
+
+    public void setUpgrade(boolean upgrade) {
+        this.upgrade = upgrade;
+    }
+
 
 }
 

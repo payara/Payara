@@ -577,7 +577,9 @@ public class Request
 
         authType = null;
         requestURI = null;
-        inputBuffer.recycle();
+        if (!isUpgrade()) {
+            inputBuffer.recycle();
+        }
         usingInputStream = false;
         usingReader = false;
         userPrincipal = null;
@@ -638,7 +640,7 @@ public class Request
                 defaultContextMaskingFacade.clear();
                 defaultContextMaskingFacade = null;
             }
-            if (inputStream != null) {
+            if ((inputStream != null) && !isUpgrade()) {
                 inputStream.clear();
                 inputStream = null;
             }

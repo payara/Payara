@@ -1011,7 +1011,11 @@ public class CoyoteAdapter extends HttpHandler {
 
             if (servletRequest != null) {
                 try {
-                    servletResponse.finishResponse();
+                    if (!servletRequest.isUpgrade()) {
+                        servletResponse.finishResponse();
+                    } else {
+                        servletResponse.setUpgrade(servletRequest.isUpgrade());
+                    }
                 } catch (Exception e) {
                     log.log(Level.SEVERE, sm.getString("coyoteAdapter.service"), e);
                 } finally {
