@@ -181,13 +181,9 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
     }
 
     private InjectionResolver<Param> getInjector(AdminCommand command, ParameterMap parameters, MultiMap<String, File> map) {
-        CommandModel model;
-        try {
-            CommandModelProvider c = CommandModelProvider.class.cast(command);
-            model = c.getModel();
-        } catch (ClassCastException e) {
-            model = new CommandModelImpl(command.getClass());
-        }
+        CommandModel model = command instanceof CommandModelProvider ? 
+	    ((CommandModelProvider)command).getModel() :
+	    new CommandModelImpl(command.getClass());
         return new MapInjectionResolver(model, parameters, map);
     }
 
