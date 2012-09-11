@@ -150,6 +150,7 @@
         <module>distributions</module>
         <module>security</module>
         <module>tests</module>
+        <module>diagnostics</module>
     </modules>
     
     <build>
