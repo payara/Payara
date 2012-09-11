@@ -79,7 +79,7 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
         this.extensionOwner = extensionOwner;
     }
 
-    public U createConfigBeanForType(Class<U> configExtensionType) throws TransactionFailure {
+    public <U extends ConfigBeanProxy> U createConfigBeanForType(Class<U> configExtensionType) throws TransactionFailure {
         if (ConfigModularityUtils.hasCustomConfig(configExtensionType)) {
             addConfigBeanFor(configExtensionType, extensionOwner);
         } else {
@@ -125,7 +125,7 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
     }
 
 
-    protected void addConfigBeanFor(Class<U> extensionType, C extensionOwner) {
+    protected <U extends ConfigBeanProxy> void addConfigBeanFor(Class<U> extensionType, C extensionOwner) {
         ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(extensionOwner)).getMasterView();
         Habitat habitat = cb.getHabitat();
         List<ConfigBeanDefaultValue> configBeanDefaultValueList = ConfigModularityUtils.getDefaultConfigurations(extensionType);

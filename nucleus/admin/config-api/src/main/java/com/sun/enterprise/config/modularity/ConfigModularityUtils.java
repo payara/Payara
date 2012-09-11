@@ -48,13 +48,11 @@ import com.sun.enterprise.config.modularity.parser.ConfigurationPopulator;
 import com.sun.enterprise.config.modularity.parser.ModuleConfigurationParser;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.hk2.api.ActiveDescriptor;
@@ -382,7 +380,9 @@ public final class ConfigModularityUtils {
                 if (configBeanDefaultValue.isReplaceCurrentIfExists()) {
                     try {
                         if (itemToRemove != null) {
-                            col.remove(itemToRemove);
+                            if (stackPositionHigher(finalConfigBean, itemToRemove)) {
+                                col.remove(itemToRemove);
+                            }
                         }
                     } catch (Exception ex) {
                         LOG.log(Level.INFO, "could not remove a config bean named " + finalConfigBean.getClass().getName() + " as it does not exist", ex);
@@ -402,6 +402,11 @@ public final class ConfigModularityUtils {
                 LOG.log(Level.INFO, "cannot set ConfigBean for: " + finalConfigBean.getClass().getName(), e);
             }
         }
+    }
+
+    private static <T extends ConfigBeanProxy> boolean stackPositionHigher(T finalConfigBean, ConfigBeanProxy itemToRemove) {
+        //This is a place holder for the stack-position comparison to be added.
+        return true;
     }
 
     private static <T extends ConfigBeanProxy> void applyCustomTokens(final ConfigBeanDefaultValue configBeanDefaultValue,
@@ -652,74 +657,6 @@ public final class ConfigModularityUtils {
         return null;
     }
 
-//    /**
-//     * checks and see if a class has an attribute with he specified name or not.
-//     *
-//     * @param classToQuery  the class toc heck the attribute presence
-//     * @param attributeName the attribute to check its presence in the class.
-//     * @return true if present and false if not.
-//     */
-//    private static boolean checkAttributePresence(Class classToQuery, String attributeName) {
-//        String fieldName = convertAttributeToPropertyName(attributeName);
-//        String methodName = "set" + fieldName.replaceFirst(fieldName.substring(0, 1), String.valueOf(Character.toUpperCase(fieldName.charAt(0))));
-//        Method[] methods = classToQuery.getMethods();
-//        for (Method m : methods) {
-//            if (m.getName().equals(methodName)) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-
-//    /**
-//     * convert an xml attribute name to variable name representing it.
-//     *
-//     * @param attributeName the attribute name in "-" separated form as appears in the domain.xml
-//     * @return the class instance variable which represent that attributeName
-//     */
-//    private static String convertAttributeToPropertyName(String attributeName) {
-//        StringTokenizer tokenizer = new StringTokenizer(attributeName, "-", false);
-//        StringBuilder propertyName = new StringBuilder();
-//        boolean isFirst = true;
-//        while (tokenizer.hasMoreTokens()) {
-//            String part = tokenizer.nextToken();
-//            if (!isFirst) {
-//                Locale loc = Locale.getDefault();
-//                part = part.replaceFirst(part.substring(0, 1), part.substring(0, 1).toUpperCase(loc));
-//            }
-//            isFirst = false;
-//            propertyName.append(part);
-//        }
-//        return propertyName.toString();
-//    }
-
-    public static boolean isConfigElementPresent(String serviceName, Habitat habitat, String target) {
-        Class configBeanType = getClassFor(serviceName, habitat);
-        Domain domain = habitat.getService(Domain.class);
-        if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
-            Config c = domain.getConfigNamed(target);
-            if (c.checkIfExtensionExists(configBeanType)) {
-                return true;
-            }
-        } else if (configBeanType.isAssignableFrom(DomainExtension.class)) {
-            if (domain.checkIfExtensionExists(configBeanType)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    public static void addBeanToDomainXml(String serviceName, String target, Habitat habitat) {
-        Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, habitat);
-        Domain domain = habitat.getService(Domain.class);
-        if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
-            Config c = domain.getConfigNamed(target);
-            c.getExtensionByType(configBeanType);
-        } else if (configBeanType.isAssignableFrom(DomainExtension.class)) {
-            domain.getExtensionByType(configBeanType);
-        }
-    }
 
     private static Class getDuckClass(Class configBeanType) {
         Class duck;
