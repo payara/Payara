@@ -62,13 +62,13 @@ import org.glassfish.weld.WeldGFExtension;
 public class JMSCDIExtension implements Extension {
     public JMSCDIExtension() {
     }
-
+/*
     private Bean createLocalBean(BeanManager beanManager, Class beanClass) {
         AnnotatedType annotatedType = beanManager.createAnnotatedType(beanClass);
         final InjectionTarget injectionTarget = beanManager.createInjectionTarget(annotatedType);
         return new LocalBean(beanClass, injectionTarget);
     }
-
+*/
     public void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBeanDiscoveryEvent, BeanManager beanManager) {
 // Workaround for WELD-1182. uncomment the following lines once the defect is addressed.
 //        Bean managerBean = createLocalBean(beanManager, InjectableJMSContext.class);
@@ -104,7 +104,7 @@ public class JMSCDIExtension implements Extension {
     public <T, X> void processProducer(@Observes ProcessProducer<T, X> event) {
     }
 
-    public class LocalBean implements Bean {
+    private static class LocalBean implements Bean {
         private Class beanClass;
         private InjectionTarget injectionTarget;
 
@@ -131,8 +131,8 @@ public class JMSCDIExtension implements Extension {
         @Override
         public Set<Annotation> getQualifiers() {
             Set<Annotation> qualifiers = new HashSet<Annotation>();
-            qualifiers.add( new AnnotationLiteral<Default>() {} );
-            qualifiers.add( new AnnotationLiteral<Any>() {} );
+            qualifiers.add(new StaticAnnotation<Default>());
+            qualifiers.add(new StaticAnnotation<Any>());
             return qualifiers;
         }
 
@@ -194,6 +194,9 @@ public class JMSCDIExtension implements Extension {
             injectionTarget.preDestroy( instance );
             injectionTarget.dispose( instance );
             ctx.release();
+        }
+
+        private static class StaticAnnotation<T extends java.lang.annotation.Annotation> extends AnnotationLiteral<T> {
         }
     }
 }
