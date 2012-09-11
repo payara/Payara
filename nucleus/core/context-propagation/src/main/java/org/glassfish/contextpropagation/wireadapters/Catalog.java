@@ -82,7 +82,9 @@ public class Catalog implements Serializable {
         int endPosition = itemNumber + 1 < positions.size() ? positions.get(itemNumber + 1) : -1;
         ContextBootstrap.debug(MessageID.ATTEMPT_TO_SKIP_TO_NEXT_ITEM, itemNumber + 1, startPosition, endPosition);
         ois.reset();
-        ois.skipBytes(startPosition); 
+        for (int skipped = 0; 
+            skipped < startPosition;
+            skipped += ois.skipBytes(startPosition - skipped));
         return true;
       } else {
         ContextBootstrap.debug(MessageID.ERROR_NO_MORE_ITEMS);
@@ -143,7 +145,7 @@ public class Catalog implements Serializable {
     contents[offset++] = (byte) position;
     short end =  positions.get(positions.size() - 1);
     contents[offset++] = (byte) (end >>> 8);
-    contents[offset++] = (byte) end;
+    contents[offset] = (byte) end;
   }
 
   private short findOffset(byte[] contents) {

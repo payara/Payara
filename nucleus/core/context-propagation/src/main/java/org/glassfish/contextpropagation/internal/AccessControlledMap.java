@@ -68,8 +68,8 @@ public class AccessControlledMap {
         return null;
       }
     } else {
-      if (entry != null && (entry.allowAllToRead ||
-          contextAccessController.isAccessAllowed(key, ContextAccessLevel.READ))) {
+      if (entry.allowAllToRead ||
+          contextAccessController.isAccessAllowed(key, ContextAccessLevel.READ)) {
         return (T) entry.getValue();
       }
     } 

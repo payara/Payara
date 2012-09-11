@@ -107,8 +107,8 @@ public class WLSWireAdapter extends AbstractWireAdapter {
       writeInWrapper(oos, new Carrier((Serializable) new ViewMeta()).toBytes());
       break;
     case ATOMICINTEGER: case ATOMICLONG: case BIGDECIMAL: case BIGINTEGER:
-    case BOOLEAN: case BYTE: case CHAR: case DOUBLE: case FLOAT:
-    case INT: case SHORT: 
+    case BOOLEAN: case BYTE: case CHAR: case DOUBLE: case FLOAT: // Fall through by design
+    case INT: case SHORT: // Fall through by designs
       ContextBootstrap.debug(MessageID.WLS_UNSUPPORTED_TYPE, key, contextType.name(), value);
     case SERIALIZABLE:      
       writeInWrapper(oos, new Carrier((Serializable) value).toBytes());
@@ -119,6 +119,9 @@ public class WLSWireAdapter extends AbstractWireAdapter {
       } else {
         writeInWrapper(oos, (byte[]) value);
       }
+    default:
+      // TODO log unexpected Type
+      break;
     }
   }
 
@@ -233,10 +236,11 @@ public class WLSWireAdapter extends AbstractWireAdapter {
         error(MessageID.ERROR_NO_WORK_CONTEXT_FACTORY, key, className);
         return null;
       } else {
-        value = factory.createInstance();
-        if (value instanceof WLSContext) {
-          ((WLSContext) value).readContext(ois);
+        WLSContext ctx = factory.createInstance();
+        if (ctx != null) {
+          ctx.readContext(ois);
         }
+        value = ctx;
       }
       break;
     default:
@@ -390,7 +394,10 @@ public class WLSWireAdapter extends AbstractWireAdapter {
       throws IOException {
     if (mandatory) {
       ois.reset();
-      ois.skip(catalog.getStart());
+      int amountToSkip = catalog.getStart();
+      for (int skipped = 0;
+          skipped < amountToSkip;
+          skipped += ois.skip(amountToSkip - skipped));
       nextKey();
       Entry catalogEntry = nextEntry();
       catalog.setPosisionsFrom((Catalog) catalogEntry.getValue());

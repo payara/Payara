@@ -135,6 +135,9 @@ public class DefaultWireAdapter extends AbstractWireAdapter {
       if (className != null) writeAscii(oos, className);
       writeBytes(oos, bytes); 
       break;
+    default:
+      // TODO log unexpected Type
+      break;
     }
     writePropagationModes(oos, propagationModes);
   }
@@ -212,7 +215,7 @@ public class DefaultWireAdapter extends AbstractWireAdapter {
         PrivilegedWireAdapterAccessor priviledgedCM = (PrivilegedWireAdapterAccessor) ContextMapHelper.getScopeAwareContextMap();
         priviledgedCM.createViewCapable(key, false);
         Entry entry = priviledgedCM.getAccessControlledMap(false).getEntry(key);
-        ContextBootstrap.debug(MessageID.READ_VALUE, value);
+        ContextBootstrap.debug(MessageID.READ_VALUE, "<a ViewCapable>");
         EnumSet<PropagationMode> propModes = readPropModes();
         ContextBootstrap.debug(MessageID.READ_PROP_MODES, propModes);
         return entry;
@@ -241,6 +244,9 @@ public class DefaultWireAdapter extends AbstractWireAdapter {
       SerializableContextFactory factory = WireAdapter.HELPER.findContextFactory(key, className);
       value = factory == null ? 
           bytes : WLSContext.HELPER.readFromBytes(factory.createInstance(), bytes);
+      break;
+    default:
+      // TODO log unexpected case
       break;
     }
     ContextBootstrap.debug(MessageID.READ_VALUE, value);
@@ -286,7 +292,10 @@ public class DefaultWireAdapter extends AbstractWireAdapter {
   protected void read(boolean mandatory, ObjectInputStream ois, Catalog catalog) throws IOException {
     if (mandatory) {
       ois.reset();
-      ois.skip(catalog.getStart()); 
+      int skipAmount = catalog.getStart();
+      for (int skipped = 0; 
+          skipped < skipAmount;
+          skipped += ois.skip(skipAmount - skipped) );
       readAscii(); // Read the NULL_KEY
     }
     catalog.read(ois);
