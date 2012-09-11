@@ -327,11 +327,19 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
         }
 
         public List<Property> getProperty() {
-            Properties p = desc.getProperties();
+            String destinationName = desc.getDestinationName();
+            boolean destinationNameSet = false;
             List<Property> jmsDestinationProperties = new ArrayList<Property>();
+            if (destinationName != null && !destinationName.equals("")) {
+                JMSDestinationProperty dp = convertProperty("Name", destinationName);
+                jmsDestinationProperties.add(dp);
+                destinationNameSet = true;
+            }
+
+            Properties p = desc.getProperties();
             for (Entry<Object, Object> entry : p.entrySet()) {
                 String key = (String) entry.getKey();
-                if (key.startsWith(PROPERTY_PREFIX)) {
+                if (key.startsWith(PROPERTY_PREFIX) || key.equalsIgnoreCase("Name") && destinationNameSet) {
                     continue;
                 }
                 String value = (String) entry.getValue();
@@ -365,4 +373,3 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
 
     }
 }
-
