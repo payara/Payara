@@ -84,11 +84,11 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
     @Override
     public synchronized void onAdminCommandEvent(String name, GfSseInboundEvent event) {
         try {
-            if (CommandProgress.EVENT_PROGRESSSTAUS_STATE.equals(name)) {
+            if (CommandProgress.EVENT_PROGRESSSTATUS_STATE.equals(name)) {
                 ProgressStatusDTO dto = event.getData(ProgressStatusDTO.class, MediaType.APPLICATION_JSON_TYPE);
                 client.mirror(dto);
                 commandProgress = (CommandProgress) client.getProgressStatus();
-            } else if (CommandProgress.EVENT_PROGRESSSTAUS_CHANGE.equals(name)) {
+            } else if (CommandProgress.EVENT_PROGRESSSTATUS_CHANGE.equals(name)) {
                 if (commandProgress == null) {
                     logger.log(Level.WARNING, strings.get("progressstatus.event.applyerror", "Inapplicable progress status event"));
                     return;

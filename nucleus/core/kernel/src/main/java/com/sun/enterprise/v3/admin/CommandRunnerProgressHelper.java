@@ -92,13 +92,13 @@ class CommandRunnerProgressHelper {
             return;
         }
         final ProgressStatusClient psc = new ProgressStatusClient(clientProgressStatus);
-        commandInstance.getEventBroker().registerListener(CommandProgress.EVENT_PROGRESSSTAUS_STATE, new AdminCommandEventBroker.AdminCommandListener<ProgressStatusBase>() {
+        commandInstance.getEventBroker().registerListener(CommandProgress.EVENT_PROGRESSSTATUS_STATE, new AdminCommandEventBroker.AdminCommandListener<ProgressStatusBase>() {
                     @Override
                     public void onAdminCommandEvent(String name, ProgressStatusBase event) {
                         psc.mirror(event);
                     }
                 });
-        commandInstance.getEventBroker().registerListener(CommandProgress.EVENT_PROGRESSSTAUS_CHANGE, new AdminCommandEventBroker.AdminCommandListener<ProgressStatusEvent>() {
+        commandInstance.getEventBroker().registerListener(CommandProgress.EVENT_PROGRESSSTATUS_CHANGE, new AdminCommandEventBroker.AdminCommandListener<ProgressStatusEvent>() {
                     @Override
                     public void onAdminCommandEvent(String name, ProgressStatusEvent event) {
                         psc.mirror(event);

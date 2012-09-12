@@ -194,6 +194,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     protected String            scope;
     protected String            authToken = null;
     protected boolean           prohibitDirectoryUploads = false;
+    protected boolean           isDetached = false;
 
     // executeCommand parameters
     protected ParameterMap      options;
@@ -293,7 +294,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     public RemoteRestAdminCommand(String name, String host, int port,
             boolean secure, String user, String password, Logger logger)
             throws CommandException {
-        this(name, host, port, secure, user, password, logger, null, null, false);
+        this(name, host, port, secure, user, password, logger, null, null, false,false);
     }
 
     /**
@@ -304,7 +305,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             boolean secure, String user, String password, Logger logger,
             final String scope,
             final String authToken,
-            final boolean prohibitDirectoryUploads)
+            final boolean prohibitDirectoryUploads,boolean isDetach)
             throws CommandException {
         Metrix.event("RemoteAdminCommand constructed");
         this.name = name;
@@ -314,6 +315,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         this.user = user;
         this.password = password;
         this.logger = logger;
+        this.isDetached = isDetach;
         if (scope != null && scope.endsWith("/")) {
             this.scope = scope.substring(0, scope.length() - 1);
         } else {
@@ -401,6 +403,10 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         return actionReport;
     }
 
+
+    public boolean isDetachedCommand() {
+        return isDetached;
+    }
     /**
      * Set the connect timeout for the URLConnection.
      */
@@ -1674,8 +1680,8 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     /**
      * Parse the JSon metadata for the command.
      *
-     * @param in the input stream
-     * @return the set of ValidOptions
+     * @param str the string
+     * @return the etag to compare the command cache model
      */
     private CachedCommandModel parseMetadata(String str, String etag) {
         Metrix.event("parseMetadata() = parse command model - start");

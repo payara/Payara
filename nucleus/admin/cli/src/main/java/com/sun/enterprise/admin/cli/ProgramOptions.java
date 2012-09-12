@@ -83,6 +83,7 @@ public class ProgramOptions {
     public static final String INTERACTIVE      = "interactive";
     public static final String SECURE           = "secure";
     public static final String HELP             = "help";
+    public static final String DETACH            = "detach";
     public static final String AUTHTOKEN        = AuthTokenManager.AUTH_TOKEN_OPTION_NAME;
     public static final String AUXINPUT         = AsadminInput.CLI_INPUT_OPTION_NAME;
     public static final String USECACHE         = "ignore-cache"; //todo: [mmar] Remove after implementation CLI->ReST done
@@ -126,6 +127,7 @@ public class ProgramOptions {
         addMetaOption(opts, HELP, '?', Boolean.class, false, "false");
         addMetaOption(opts, AUXINPUT, '\0', String.class, false, null);
         addMetaOption(opts, AUTHTOKEN, '\0', String.class, false, null);
+        addMetaOption(opts, DETACH, 'D', Boolean.class, false, "false");
         addMetaOption(opts, USECACHE, '\0', Boolean.class, false, "false"); //todo: [mmar] Remove after implementation CLI->ReST done
         programOptions = Collections.unmodifiableSet(opts);
     }
@@ -456,6 +458,19 @@ public class ProgramOptions {
         } else
             useCache = env.getBooleanOption(USECACHE);
         return useCache;
+    }
+
+    /**
+     * @return detach option
+     */
+    public boolean isDetachedCommand() {
+        boolean isDetach;
+        if (options.containsKey(DETACH)) {
+            String value = options.getOne(DETACH);
+            return (ok(value)) ? Boolean.parseBoolean(value) : true;
+        }
+        return false;
+
     }
 
     /**

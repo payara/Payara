@@ -37,34 +37,49 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.api.admin;
+package com.sun.enterprise.admin.cli.remote;
+import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
+import com.sun.enterprise.admin.remote.sse.GfSseInboundEvent;
+import com.sun.enterprise.util.StringUtils;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ws.rs.core.MediaType;
+import org.glassfish.api.admin.AdminCommandEventBroker;
+import org.glassfish.api.admin.AdminCommandState;
 
-import java.util.Iterator;
-import org.jvnet.hk2.annotations.Contract;
 
 /**
- * This is the contract for the JobManagerService
- * The JobManager will be responsible for
- *  1. generating unique ids for jobs
- *  2. serving as a registry for jobs
- *  3. creating thread pools for jobs
- *  4.removing expired jobs
+ * Whenever a command is executed with --detach
+ * this class will close the Server Sent Events for
+ * detached commands and give a job id.
  *
- * @author Martin Mares
  * @author Bhakti Mehta
  */
+public class DetachListener implements AdminCommandEventBroker.AdminCommandListener<GfSseInboundEvent> {
 
-@Contract
-public interface JobManager {
+    private final Logger logger;
+    private final RemoteRestAdminCommand rac;
 
-    public Job createJob(String name, boolean isManagedJob);
-    
-    public void registerJob(Job instance) throws IllegalArgumentException;
-    
-    public Iterator<Job> getJobs();
-    
-    public Job get(String id);
+    public DetachListener(Logger logger, RemoteRestAdminCommand rac) {
+        this.logger = logger;
+        this.rac = rac;
+    }
 
-    public void purgeJob(String id);
-    
+    @Override
+    public void onAdminCommandEvent(String name, GfSseInboundEvent event) {
+        try {
+            AdminCommandState acs = event.getData(AdminCommandState.class, MediaType.APPLICATION_JSON_TYPE);
+            String id = acs.getId();
+            if (StringUtils.ok(id)) {
+                logger.info("Detach ID message: " + id);
+                rac.closeSse();
+            } else {
+                logger.log(Level.SEVERE, "event comes but no id - error");
+            }
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+    }
+
 }

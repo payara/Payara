@@ -110,7 +110,7 @@ public class RemoteCLICommand extends CLICommand {
         private static final String COOKIE_HEADER  = "Cookie";
         private CookieManager cookieManager = null;
         private File sessionCache = null;
-        private final ProgressStatusPrinter stausPrinter;
+        private final ProgressStatusPrinter statusPrinter;
 
         /**
          * Construct a new remote command object.  The command and arguments
@@ -118,10 +118,10 @@ public class RemoteCLICommand extends CLICommand {
          */
         public CLIRemoteAdminCommand(String name, String host, int port,
                 boolean secure, String user, String password, Logger logger,
-                String authToken)
+                String authToken,boolean isDetach)
                 throws CommandException {
             super(name, host, port, secure, user, password, logger, getCommandScope(),
-                    authToken, true /* prohibitDirectoryUploads */);
+                    authToken, true /* prohibitDirectoryUploads */,isDetach);
 
             StringBuilder sessionFilePath = new StringBuilder();
 
@@ -133,10 +133,10 @@ public class RemoteCLICommand extends CLICommand {
 
             sessionCache = new File(AsadminSecurityUtil.getDefaultClientDir(),
                     sessionFilePath.toString());
-            stausPrinter = new ProgressStatusPrinter(env.debug() || env.trace(), logger);
+            statusPrinter = new ProgressStatusPrinter(env.debug() || env.trace(), logger);
             if (!env.getBooleanOption(ProgramOptions.TERSE)) {
-                super.registerListener(CommandProgress.EVENT_PROGRESSSTAUS_CHANGE, stausPrinter);
-                super.registerListener(CommandProgress.EVENT_PROGRESSSTAUS_STATE, stausPrinter);
+                super.registerListener(CommandProgress.EVENT_PROGRESSSTATUS_CHANGE, statusPrinter);
+                super.registerListener(CommandProgress.EVENT_PROGRESSSTATUS_STATE, statusPrinter);
             }
         }
         
@@ -257,7 +257,7 @@ public class RemoteCLICommand extends CLICommand {
          * Adds cookies to the header to support session based client 
          * routing.
          *
-         * @param urlConnection
+         *
          */
         @Override
         protected synchronized Invocation.Builder addAdditionalHeaders(final Invocation.Builder request) {
@@ -346,7 +346,6 @@ public class RemoteCLICommand extends CLICommand {
          * Processes the headers to support session based client 
          * routing.
          *
-         * @param urlConnection
          */
         @Override
         protected synchronized void processHeaders(final Response response) {
@@ -683,8 +682,12 @@ public class RemoteCLICommand extends CLICommand {
     protected int executeCommand()
             throws CommandException, CommandValidationException {
         try {
-            rac.stausPrinter.reset();
+            rac.statusPrinter.reset();
             options.set("DEFAULT", operands);
+            if (rac.isDetachedCommand())  {
+                rac.registerListener("AdminCommandInstance\\.stateChanged", new DetachListener(logger, rac));
+
+            }
             output = rac.executeCommand(options);
             ar = rac.getActionReport();
             if (!returnAttributes && !returnOutput) {
@@ -838,7 +841,7 @@ public class RemoteCLICommand extends CLICommand {
             rac = new RemoteCLICommand.CLIRemoteAdminCommand(name,
                 programOpts.getHost(), programOpts.getPort(),
                 programOpts.isSecure(), programOpts.getUser(),
-                programOpts.getPassword(), logger, programOpts.getAuthToken());
+                programOpts.getPassword(), logger, programOpts.getAuthToken(),programOpts.isDetachedCommand());
             rac.setFileOutputDirectory(outputDir);
             rac.setInteractive(programOpts.isInteractive());
             rac.setOmitCache(!programOpts.isUseCache()); //todo: [mmar] Remove after implementation CLI->ReST done

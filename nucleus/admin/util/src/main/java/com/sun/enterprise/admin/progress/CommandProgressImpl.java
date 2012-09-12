@@ -121,7 +121,7 @@ public class CommandProgressImpl extends ProgressStatusImpl implements CommandPr
         }
         eTag++;
         if (eventBroker != null) {
-            eventBroker.fireEvent(EVENT_PROGRESSSTAUS_CHANGE, event);
+            eventBroker.fireEvent(EVENT_PROGRESSSTATUS_CHANGE, event);
         }
     }
     
@@ -129,7 +129,7 @@ public class CommandProgressImpl extends ProgressStatusImpl implements CommandPr
     public void setEventBroker(AdminCommandEventBroker eventBroker) {
         this.eventBroker = eventBroker;
         if (eventBroker != null) {
-            eventBroker.fireEvent(EVENT_PROGRESSSTAUS_STATE, this);
+            eventBroker.fireEvent(EVENT_PROGRESSSTATUS_STATE, this);
         }
     }
     

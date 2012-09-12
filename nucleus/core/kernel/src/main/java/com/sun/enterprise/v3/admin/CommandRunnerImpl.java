@@ -244,11 +244,18 @@ public class CommandRunnerImpl implements CommandRunner {
         return null;
     }
 
+    /**
+     * Any command annotated with @ManagedJob if it needs to be
+     * managed by Job Manager
+     * Additionally any command annotated with @Progress is also a ManagedJob
+     * @param onMe
+     * @return true this command is a managed job
+     */
     private static boolean getManagedJob(Class<?> onMe) {
-        for (Annotation anno : onMe.getAnnotations()) {
-            return (anno.annotationType().isAnnotationPresent(ManagedJob.class) ? true : false) ;
-        }
-        return false;
+        Progress progress = onMe.getAnnotation(Progress.class);
+        ManagedJob managedJob = onMe.getAnnotation(ManagedJob.class) ;
+        return ( progress != null || managedJob != null)  ? true : false  ;
+
     }
 
 

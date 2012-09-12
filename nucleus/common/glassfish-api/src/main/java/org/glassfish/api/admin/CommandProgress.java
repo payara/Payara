@@ -49,8 +49,8 @@ import org.glassfish.api.admin.progress.ProgressStatusMirroringImpl;
  */
 public interface CommandProgress extends ProgressStatus {
     
-    public static final String EVENT_PROGRESSSTAUS_CHANGE = "ProgressStatus/change";
-    public static final String EVENT_PROGRESSSTAUS_STATE = "ProgressStatus/state";
+    public static final String EVENT_PROGRESSSTATUS_CHANGE = "ProgressStatus/change";
+    public static final String EVENT_PROGRESSSTATUS_STATE = "ProgressStatus/state";
     
     /** Timestamp of command complete event or {@code null} for running command
      */ 
