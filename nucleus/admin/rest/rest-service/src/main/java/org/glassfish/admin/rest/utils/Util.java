@@ -298,12 +298,19 @@ public class Util {
      * @param data The set of changes to be applied
      * @return ActionReporter containing result of "set" execution
      */
-    public static RestActionReporter applyChanges(Map<String, String> data, UriInfo uriInfo, ServiceLocator habitat) {
-        return applyChanges(data, getBasePathFromUri(uriInfo), habitat);
+    public static RestActionReporter applyChanges(Map<String, String> data, UriInfo uriInfo) {
+        return applyChanges(data, getBasePathFromUri(uriInfo));
     }
+
+    @Deprecated
     public static RestActionReporter applyChanges(Map<String, String> data, String basePath, ServiceLocator habitat) {
+        return applyChanges(data, basePath);
+    }
+
+    public static RestActionReporter applyChanges(Map<String, String> data, String basePath) {
+        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
         ParameterMap parameters = new ParameterMap();
-        Map<String, String> currentValues = getCurrentValues(basePath, habitat);
+        Map<String, String> currentValues = getCurrentValues(basePath, serviceLocator);
 
         for (Map.Entry<String, String> entry : data.entrySet()) {
             String currentValue = currentValues.get(basePath + entry.getKey());
@@ -312,7 +319,7 @@ public class Util {
             }
         }
         if (!parameters.entrySet().isEmpty()) {
-           return ResourceUtil.runCommand("set", parameters, habitat, ""); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
+           return ResourceUtil.runCommand("set", parameters, null); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
         } else {
             return new RestActionReporter(); // noop
         }

@@ -211,7 +211,7 @@ public class PropertiesBagResource {
             }
             
             if (!data.isEmpty()) {
-                Util.applyChanges(data, uriInfo, habitat);
+                Util.applyChanges(data, uriInfo);
             }
             
             String successMessage = localStrings.getLocalString("rest.resource.update.message",
@@ -257,7 +257,7 @@ public class PropertiesBagResource {
             }
         }
         if (!data.isEmpty()) {
-            Util.applyChanges(data, uriInfo, habitat);
+            Util.applyChanges(data, uriInfo);
         }
     }
 

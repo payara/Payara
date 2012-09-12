@@ -239,10 +239,17 @@ public class ResourceUtil {
         return runCommand(commandName, parameters, habitat, resultType, null);
     }
 
+    @Deprecated
     public static RestActionReporter runCommand(String commandName,
                                                 ParameterMap parameters,
                                                 ServiceLocator habitat,
                                                 String resultType,
+                                                Subject subject) {
+        return runCommand(commandName, parameters, subject);
+    }
+
+    public static RestActionReporter runCommand(String commandName,
+                                                ParameterMap parameters,
                                                 Subject subject) {
         CommandRunner cr = Globals.getDefaultHabitat().getService(CommandRunner.class);
         RestActionReporter ar = new RestActionReporter();

@@ -172,7 +172,7 @@ public class TemplateRestResource {
             }
             //just update it.
             data = ResourceUtil.translateCamelCasedNamesToXMLNames(data);
-            RestActionReporter ar = Util.applyChanges(data, uriInfo, habitat);
+            RestActionReporter ar = Util.applyChanges(data, uriInfo);
             if (ar.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
                 return handleError(Status.BAD_REQUEST, "Could not apply changes" + ar.getMessage()); // i18n
             }

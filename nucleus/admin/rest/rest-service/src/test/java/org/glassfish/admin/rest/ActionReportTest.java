@@ -88,7 +88,7 @@ public class ActionReportTest {
         String str = marshal(ar);
         assertNotNull(str);
         assertFalse(str.isEmpty());
-        System.out.println(str);
+        //System.out.println(str);
         return str;
     }
     
