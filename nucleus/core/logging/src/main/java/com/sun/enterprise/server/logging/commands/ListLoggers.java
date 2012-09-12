@@ -146,8 +146,8 @@ public class ListLoggers implements AdminCommand {
         } catch (Exception ex) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             ex.printStackTrace(new PrintStream(out));
-            report.setMessage(localStrings.getLocalString("list.logger.infos.failed",
-                    "Error listing logger info metadata: {0}", out.toString()));
+            report.setMessage(localStrings.getLocalString("list.loggers.failed",
+                    "Error listing loggers: {0}", out.toString()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
