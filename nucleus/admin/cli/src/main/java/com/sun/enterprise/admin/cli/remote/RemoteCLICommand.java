@@ -49,6 +49,7 @@ import com.sun.enterprise.admin.cli.DirectoryClassLoader;
 import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.cli.ProgramOptions.PasswordLocation;
+import com.sun.enterprise.admin.progress.CommandProgressImpl;
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.admin.util.CachedCommandModel;
 import com.sun.enterprise.admin.util.CommandModelData;
@@ -71,6 +72,7 @@ import javax.ws.rs.core.Response;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandProgress;
 import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.common.util.admin.ManPageFinder;
 import org.glassfish.hk2.api.ActiveDescriptor;
@@ -131,10 +133,11 @@ public class RemoteCLICommand extends CLICommand {
 
             sessionCache = new File(AsadminSecurityUtil.getDefaultClientDir(),
                     sessionFilePath.toString());
-            
-            stausPrinter = new ProgressStatusPrinter(logger);
-            super.registerListener("ProgressStatus\\.change", stausPrinter);
-            super.registerListener("ProgressStatus\\.state", stausPrinter);
+            stausPrinter = new ProgressStatusPrinter(env.debug() || env.trace(), logger);
+            if (!env.getBooleanOption(ProgramOptions.TERSE)) {
+                super.registerListener(CommandProgress.EVENT_PROGRESSSTAUS_CHANGE, stausPrinter);
+                super.registerListener(CommandProgress.EVENT_PROGRESSSTAUS_STATE, stausPrinter);
+            }
         }
         
         @Override

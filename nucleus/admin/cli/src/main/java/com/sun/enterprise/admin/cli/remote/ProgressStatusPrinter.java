@@ -62,12 +62,18 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
     
     private int lastPercentage = -1;
     private String lastMessage = "";
+    private StringBuilder outMsg = new StringBuilder();
+    private int lastSumSteps = -1;
     
-    private final Logger logger;
+    
     private ProgressStatusClient client = new ProgressStatusClient(null);
     private CommandProgress commandProgress;
+    private final boolean debug;
+    private final Logger logger;
+    private int lastMsgLength;
 
-    public ProgressStatusPrinter(Logger logger) {
+    public ProgressStatusPrinter(boolean debug, Logger logger) {
+        this.debug = debug;
         if (logger == null) {
             this.logger = Logger.getLogger(ProgressStatusPrinter.class.getName());
         } else {
@@ -93,16 +99,63 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
         } catch (IOException ex) {
             logger.log(Level.SEVERE, strings.get("progressstatus.event.parseerror", "Can not parse progress status event"), ex);
         }
+        //Now print
         if (commandProgress != null) {
+            outMsg.setLength(0);
+            boolean printIt = false;
+            //Measurements
             int percentage = Math.round(commandProgress.computeCompletePortion() * 100);
+            if (percentage >= 0) {
+                outMsg.append(percentage);
+                switch (outMsg.length()) {
+                    case 1:
+                        outMsg.insert(0, "  ");
+                        break;
+                    case 2:
+                        outMsg.insert(0, ' ');
+                        break;
+                }
+                outMsg.append('%');
+                if (percentage > lastPercentage) {
+                    printIt = true;
+                    lastPercentage = percentage;
+                }
+            } else {
+                int sumSteps = commandProgress.computeSumSteps();
+                outMsg.append(sumSteps);
+                if (sumSteps > lastSumSteps) {
+                    printIt = true;
+                    lastSumSteps = sumSteps;
+                }
+            }
+            //Message
             String message = commandProgress.getLastMessage();
-            if (message != null && !message.equals(lastMessage)) {
-                lastPercentage = percentage;
-                lastMessage = message;
-                logger.info(percentage + "%: " + message);
-            } else if (percentage > lastPercentage) {
-                lastPercentage = percentage;
-                logger.info(percentage + "%");
+            if (message != null && message.length() > 0) {
+                outMsg.append(": ");
+                outMsg.append(message);
+                if (!message.equals(lastMessage)) {
+                    printIt = true;
+                    lastMessage = message;
+                }
+            }
+            //Print
+            if (printIt) {
+                if (debug) {
+                    System.out.println(outMsg);
+                } else {
+                    System.out.print('\r');
+                    System.out.print(outMsg);
+                    System.out.print(' ');
+                    int spaceCount = lastMsgLength - outMsg.length();
+                    for (int i = 0; i < spaceCount; i++) {
+                        System.out.print(' ');
+                    }
+                    lastMsgLength = outMsg.length();
+                }
+            }
+            if (commandProgress.isComplete()) {
+                System.out.println("");
+                System.out.println("");
             }
         }
     }

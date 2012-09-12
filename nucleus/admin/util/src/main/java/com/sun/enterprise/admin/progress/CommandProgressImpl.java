@@ -91,6 +91,7 @@ public class CommandProgressImpl extends ProgressStatusImpl implements CommandPr
                         }
                         result.insert(0, parent.getName());
                     }
+                    fnd = parent;
                 }
                 contextString = result.toString();
             }

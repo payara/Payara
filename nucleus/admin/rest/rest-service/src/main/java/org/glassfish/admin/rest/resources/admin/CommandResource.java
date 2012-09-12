@@ -374,7 +374,7 @@ public class CommandResource {
         //Execute it
         final CommandRunner.CommandInvocation commandInvocation =
                 getCommandRunner().getCommandInvocation(commandName.getScope(),
-                commandName.getName(), new RestActionReporter());
+                commandName.getName(), new PropsFileActionReporter());
         if (inbound != null) {
             commandInvocation.inbound(inbound);
         }

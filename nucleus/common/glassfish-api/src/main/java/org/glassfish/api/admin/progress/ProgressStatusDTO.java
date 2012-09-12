@@ -108,6 +108,9 @@ public class ProgressStatusDTO {
 
     public void setName(String name) {
         this.name = name;
+        if ("null".equals(name)) {
+            this.name = null; //TODO: Debug to find out where is time to time "null" from
+        }
     }
 
     public int getTotalStepCount() {

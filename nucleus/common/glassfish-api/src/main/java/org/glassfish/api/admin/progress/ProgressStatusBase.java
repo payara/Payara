@@ -349,6 +349,14 @@ public abstract class ProgressStatusBase implements ProgressStatus {
         }
     }
     
+    public synchronized int computeSumSteps() {
+        int result = 0;
+        for (ChildProgressStatus child : children) {
+            result += child.progressStatus.computeSumSteps();
+        }
+        return getCurrentStepCount() + result;
+    }
+    
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();

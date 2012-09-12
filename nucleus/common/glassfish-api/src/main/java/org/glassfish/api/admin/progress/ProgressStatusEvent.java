@@ -39,6 +39,9 @@
  */
 package org.glassfish.api.admin.progress;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /** {@code ProgressStatus} is changed
  *
  * @author mmares
@@ -52,16 +55,20 @@ public class ProgressStatusEvent {
     
     private final ProgressStatusDTO source;
     private final String parentSourceId;
-    private final Changed[] changed;
+    private final List<Changed> changed;
     private final String message;
     private final int allocatedSteps; //For new child only
 
     private ProgressStatusEvent(ProgressStatusBase source, String message, int allocatedSteps, Changed... changed) {
         this.source = base2DTO(source);
-        if (changed == null) {
-            changed = new Changed[0];
+        this.changed = new ArrayList<Changed>();
+        if (changed != null) {
+            for (Changed chng : changed) {
+                if (chng != null) {
+                    this.changed.add(chng);
+                }
+            }
         }
-        this.changed = changed;
         this.message = message;
         this.allocatedSteps = allocatedSteps;
         ProgressStatusBase parrent = source.getParrent();
@@ -85,7 +92,14 @@ public class ProgressStatusEvent {
     public ProgressStatusEvent(ProgressStatusDTO source, String parentSourceId, String message, int allocatedSteps, Changed... changed) {
         this.source = source;
         this.parentSourceId = parentSourceId;
-        this.changed = changed;
+        this.changed = new ArrayList<Changed>();
+        if (changed != null) {
+            for (Changed chng : changed) {
+                if (chng != null) {
+                    this.changed.add(chng);
+                }
+            }
+        }
         this.message = message;
         this.allocatedSteps = allocatedSteps;
     }
@@ -107,7 +121,7 @@ public class ProgressStatusEvent {
         return allocatedSteps;
     }
 
-    public Changed[] getChanged() {
+    public List<Changed> getChanged() {
         return changed;
     }
 

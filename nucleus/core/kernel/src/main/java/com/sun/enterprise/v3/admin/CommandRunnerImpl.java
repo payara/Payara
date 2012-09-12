@@ -1102,7 +1102,7 @@ public class CommandRunnerImpl implements CommandRunner {
         ActionReport.ExitCode preSupplementalReturn = ActionReport.ExitCode.SUCCESS;
         ActionReport.ExitCode postSupplementalReturn = ActionReport.ExitCode.SUCCESS;
         CommandRunnerProgressHelper progressHelper = 
-                new CommandRunnerProgressHelper(command, model.getCommandName(), commandInstance); 
+                new CommandRunnerProgressHelper(command, model.getCommandName(), commandInstance, inv.progressStatusChild); 
                 
 
         // If this glassfish installation does not have stand alone instances / clusters at all, then
@@ -1620,6 +1620,7 @@ public class CommandRunnerImpl implements CommandRunner {
         protected Payload.Inbound inbound;
         protected Payload.Outbound outbound;
         protected Subject subject;
+        protected ProgressStatus progressStatusChild;
         private   List<NameListerPair> nameListerPairs = new ArrayList<NameListerPair>(); 
 
         private ExecutionContext(String scope, String name, ActionReport report) {
@@ -1661,6 +1662,12 @@ public class CommandRunnerImpl implements CommandRunner {
         @Override
         public CommandInvocation listener(String nameRegexp, AdminCommandEventBroker.AdminCommandListener listener) {
             nameListerPairs.add(new NameListerPair(nameRegexp, listener));
+            return this;
+        }
+        
+        @Override
+        public CommandInvocation progressStatusChild(ProgressStatus ps) {
+            this.progressStatusChild = ps;
             return this;
         }
         
@@ -1719,6 +1726,9 @@ public class CommandRunnerImpl implements CommandRunner {
             }
             CommandRunnerImpl.this.doCommand(this, command, subject, commandInstance);
             commandInstance.complete(report(), outboundPayload());
+            if (progressStatusChild != null) {
+                progressStatusChild.complete();
+            }
         }
     }
 

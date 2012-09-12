@@ -43,6 +43,7 @@ import com.sun.enterprise.util.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 import org.glassfish.api.admin.ProgressStatus;
+import org.glassfish.api.admin.progress.ProgressStatusBase;
 import org.glassfish.api.admin.progress.ProgressStatusDTO;
 import org.glassfish.api.admin.progress.ProgressStatusEvent;
 
@@ -68,8 +69,8 @@ public class ProgressStatusClient {
     private void preventNullStatus(String name, String id) {
         if (status == null) {
             status = new CommandProgressImpl(name, id);
-            map.put(id, status);
         }
+        map.put(id, status);
     }
     
     public synchronized void mirror(ProgressStatusDTO dto) {
@@ -81,12 +82,37 @@ public class ProgressStatusClient {
     }
     
     private void mirror(ProgressStatusDTO dto, ProgressStatus stat) {
+        //TODO: copy-paste problem because of ProgressStatusDTO and ProgressStatusBase we have to create shared interface
         stat.setTotalStepCount(dto.getTotalStepCount());
         stat.setCurrentStepCount(dto.getCurrentStepCount());
         if (dto.isCompleted()) {
             stat.complete();
         }
         for (ProgressStatusDTO.ChildProgressStatusDTO chld : dto.getChildren()) {
+            ProgressStatus dst = map.get(chld.getProgressStatus().getId());
+            if (dst == null) {
+                dst = stat.createChild(chld.getProgressStatus().getName(), chld.getAllocatedSteps());
+                map.put(chld.getProgressStatus().getId(), dst);
+            }
+            mirror(chld.getProgressStatus(), dst);
+        }
+    }
+    
+    public synchronized void mirror(ProgressStatusBase source) {
+        if (source == null) {
+            return;
+        }
+        preventNullStatus(source.getName(), source.getId());
+        mirror(source, status);
+    }
+    
+    private void mirror(ProgressStatusBase source, ProgressStatus stat) {
+        stat.setTotalStepCount(source.getTotalStepCount());
+        stat.setCurrentStepCount(source.getCurrentStepCount());
+        if (source.isComplete()) {
+            stat.complete();
+        }
+        for (ProgressStatusBase.ChildProgressStatus chld : source.getChildProgressStatuses()) {
             ProgressStatus dst = map.get(chld.getProgressStatus().getId());
             if (dst == null) {
                 dst = stat.createChild(chld.getProgressStatus().getName(), chld.getAllocatedSteps());
@@ -103,14 +129,14 @@ public class ProgressStatusClient {
             return;
         }
         ProgressStatus effected = map.get(event.getSource().getId());
-        if (event.getChanged() != null && event.getChanged().length > 0) {
+        if (event.getChanged() != null && event.getChanged().size() > 0) {
             for (ProgressStatusEvent.Changed chng : event.getChanged()) {
                 switch (chng) {
                     case NEW_CHILD:
                         effected = map.get(event.getParentSourceId());
                         if (effected != null) {
                             ProgressStatus child = effected.createChild(event.getSource().getName(), event.getAllocatedSteps());
-                            map.put(event.getSource().getName(), child);
+                            map.put(event.getSource().getId(), child);
                             child.setTotalStepCount(event.getSource().getTotalStepCount());
                             child.setCurrentStepCount(event.getSource().getCurrentStepCount());
                             if (event.getSource().isCompleted()) {

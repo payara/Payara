@@ -86,7 +86,7 @@ public class AttachCommand implements AdminCommand, AdminCommandListener {
         synchronized (attachedBroker) {
             eventBroker.fireEvent(AdminCommandStateImpl.EVENT_STATE_CHANGED, attached);
             if (attached.getCommandProgress() != null) {
-                eventBroker.fireEvent(CommandProgressImpl.EVENT_PROGRESSSTAUS_STATE, attached.getCommandProgress());
+                eventBroker.fireEvent(CommandProgress.EVENT_PROGRESSSTAUS_STATE, attached.getCommandProgress());
             }
             attachedBroker.registerListener(".*", this);
         }

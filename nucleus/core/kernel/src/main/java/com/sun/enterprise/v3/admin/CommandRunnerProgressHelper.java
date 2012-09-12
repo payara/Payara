@@ -40,9 +40,13 @@
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.progress.CommandProgressImpl;
+import com.sun.enterprise.admin.progress.ProgressStatusClient;
 import java.util.UUID;
 import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.CommandProgress;
 import org.glassfish.api.admin.SupplementalCommandExecutor.SupplementalCommand;
+import org.glassfish.api.admin.progress.ProgressStatusBase;
+import org.glassfish.api.admin.progress.ProgressStatusEvent;
 import org.glassfish.api.admin.progress.ProgressStatusMirroringImpl;
 
 /** Helper class for {@code ProgressStatus} manipulation during 
@@ -70,7 +74,7 @@ class CommandRunnerProgressHelper {
     private ProgressStatus progressForMainCommand = null;
     private ProgressStatusMirroringImpl progressMirroring = null;
     
-    public CommandRunnerProgressHelper(AdminCommand command, String name, Job commandInstance) {
+    public CommandRunnerProgressHelper(AdminCommand command, String name, Job commandInstance, ProgressStatus clientProgressStatus) {
         progressAnnotation = command.getClass().getAnnotation(Progress.class);
         if (progressAnnotation != null) {
             if (progressAnnotation.name() == null || progressAnnotation.name().isEmpty()) {
@@ -78,8 +82,28 @@ class CommandRunnerProgressHelper {
             } else {
                 commandProgress = new CommandProgressImpl(progressAnnotation.name(), createIdForCommandProgress(commandInstance));
             }
+            connectWithClientProgressStatus(commandInstance, clientProgressStatus);
             commandInstance.setCommandProgress(commandProgress);
         }
+    }
+    
+    private void connectWithClientProgressStatus(Job commandInstance, ProgressStatus clientProgressStatus) {
+        if (clientProgressStatus == null) {
+            return;
+        }
+        final ProgressStatusClient psc = new ProgressStatusClient(clientProgressStatus);
+        commandInstance.getEventBroker().registerListener(CommandProgress.EVENT_PROGRESSSTAUS_STATE, new AdminCommandEventBroker.AdminCommandListener<ProgressStatusBase>() {
+                    @Override
+                    public void onAdminCommandEvent(String name, ProgressStatusBase event) {
+                        psc.mirror(event);
+                    }
+                });
+        commandInstance.getEventBroker().registerListener(CommandProgress.EVENT_PROGRESSSTAUS_CHANGE, new AdminCommandEventBroker.AdminCommandListener<ProgressStatusEvent>() {
+                    @Override
+                    public void onAdminCommandEvent(String name, ProgressStatusEvent event) {
+                        psc.mirror(event);
+                    }
+                });
     }
     
     private String createIdForCommandProgress(Job commandInstance) {

@@ -92,7 +92,7 @@ public class ProgressStatusEventJsonProvider extends BaseProvider<ProgressStatus
         } else {
             out.writeStartObject();
         }
-        if (event.getChanged() != null && event.getChanged().length > 0) {
+        if (event.getChanged() != null && event.getChanged().size() > 0) {
             out.writeArrayFieldStart("changed");
             for (ProgressStatusEvent.Changed chng : event.getChanged()) {
                 if (chng != null) {

@@ -203,6 +203,15 @@ public interface CommandRunner {
          */
         public CommandInvocation listener(String nameRegexp, AdminCommandEventBroker.AdminCommandListener listener);
         
+        /**
+         * Register child of ProgressStatus. Usable for command from command 
+         * execution. 
+         * 
+         * @param ps
+         * @return 
+         */
+        public CommandInvocation progressStatusChild(ProgressStatus ps);
+        
         /** Current report. After command execution report can be changed by command
          */
         public ActionReport report();

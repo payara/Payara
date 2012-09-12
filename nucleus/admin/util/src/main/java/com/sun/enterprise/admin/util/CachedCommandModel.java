@@ -118,6 +118,9 @@ public class CachedCommandModel extends CommandModelData {
         }
         StringBuilder tag = new StringBuilder();
         tag.append("v1"); //Just symbol for loaders
+        if (cm.supportsProgress()) {
+            tag.append('p');
+        }
         tag.append(strLen(cm.getCommandName()));
         if (cm.unknownOptionsAreOperands()) {
             tag.append('y');
