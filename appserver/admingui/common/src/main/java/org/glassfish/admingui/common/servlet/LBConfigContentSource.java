@@ -109,7 +109,10 @@ public class LBConfigContentSource  implements DownloadServlet.ContentSource {
             attrsMap.put("id", slbFile);
             RestUtil.postRestRequestFromServlet(request, endpoint, attrsMap, true, true);
 	    tmpFile = new FileInputStream(lbFile);
-            lbFile.delete();
+            boolean success = lbFile.delete();
+            if (!success) {
+                throw new Exception("Load Balancer config file delete failed");
+            }
 	} catch (Exception ex) {
 	    throw new RuntimeException(ex);
 	}
