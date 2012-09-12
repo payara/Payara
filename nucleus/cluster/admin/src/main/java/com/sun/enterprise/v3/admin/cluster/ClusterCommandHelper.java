@@ -65,6 +65,7 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
+import org.glassfish.api.admin.ProgressStatus;
 import org.glassfish.grizzly.config.dom.ThreadPool;
 
 
@@ -85,6 +86,8 @@ class ClusterCommandHelper {
     private Domain domain;
 
     private CommandRunner runner;
+
+    private ProgressStatus progress;
 
     /**
      * Construct a ClusterCommandHelper
@@ -156,6 +159,7 @@ class ClusterCommandHelper {
         String msg;
         ReportResult reportResult = new ReportResult();
         boolean failureOccurred = false;
+        progress = context.getProgressStatus();
 
         // Save command output to return in ActionReport
         StringBuilder output = new StringBuilder();
@@ -183,10 +187,16 @@ class ClusterCommandHelper {
             map = new ParameterMap();
         }
 
-        logger.info(String.format(
+        msg = String.format(
             "Executing %s on %d instances using a thread pool of size %d: %s",
             command, nInstances, threadPoolSize,
-            serverListToString(targetServers)));
+            serverListToString(targetServers));
+        logger.info(msg);
+
+         msg = Strings.get("cluster.command.executing",
+                 command, Integer.toString(nInstances));
+        progress.setTotalStepCount(nInstances);
+        progress.progress(msg);
 
         // Loop through instance names, construct the command for each
         // instance name, and hand it off to the threadpool.
@@ -272,10 +282,13 @@ class ClusterCommandHelper {
                 msg = iname + ": " + instanceReport.getMessage();
                 logger.severe(msg);
                 output.append(msg).append(NL);
+                msg = Strings.get("cluster.command.instancesFailed", command, iname);
+                progress.progress(1, msg);
             } else {
                 // Command worked. Note that too.
                 succeededServerNames.append(iname).append(" ");
                 reportResult.succeededServerNames.add(iname);
+                progress.progress(1, iname);
             }
         }
 

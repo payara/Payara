@@ -67,6 +67,7 @@ import org.glassfish.hk2.api.PerLookup;
             @RestParam(name="id", value="$parent")
         })
 })
+@Progress
 public class StopClusterCommand implements AdminCommand {
 
     @Param(optional=false, primary=true)

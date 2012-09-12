@@ -71,6 +71,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
             @RestParam(name="id", value="$parent")
         })
 })
+@Progress
 public class StartClusterCommand implements AdminCommand {
 
     @Inject
