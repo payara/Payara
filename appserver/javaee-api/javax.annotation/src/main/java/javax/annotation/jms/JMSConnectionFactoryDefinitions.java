@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package javax.jms;
+package javax.annotation.jms;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -45,14 +45,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- *  Specifies one or more <code>JMSDestinationDefinition</code> annotations.
+ *  Specifies one or more <code>JMSConnectionFactoryDefinition</code>
+ *  annotations.
  *
- *  @see JMSDestinationDefinition
+ *  @see JMSConnectionFactoryDefinition
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface JMSDestinationDefinitions {
+public @interface JMSConnectionFactoryDefinitions {
 
-	JMSDestinationDefinition[] value();
+	JMSConnectionFactoryDefinition[] value();
 }
 
