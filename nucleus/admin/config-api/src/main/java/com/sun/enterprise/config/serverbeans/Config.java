@@ -60,15 +60,7 @@ import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.quality.ToDo;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.component.Injectable;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBean;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.ConfigView;
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.DuckTyped;
-import org.jvnet.hk2.config.Element;
-import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 
@@ -107,7 +99,7 @@ import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
 @Configured
 @NotDuplicateTargetName(message="{config.duplicate.name}", payload=Config.class)
-public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBag, Payload, ConfigLoader, ConfigBeanProxy {
+public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBag, Payload, ConfigLoader, ConfigBeanProxy, RefContainer {
     /**
      *  Name of the configured object
      *
@@ -420,6 +412,19 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
     @DuckTyped
     <P extends ConfigExtension> boolean checkIfExtensionExists(Class<P> configBeanType);
 
+
+    @DuckTyped
+    ResourceRef getResourceRef(String refName);
+
+    @DuckTyped
+    boolean isResourceRefExists(String refName);
+
+    @DuckTyped
+    void createResourceRef(String enabled, String refName) throws TransactionFailure;
+
+    @DuckTyped
+    void deleteResourceRef(String refName) throws TransactionFailure;
+
     class Duck {
         private final static Logger LOG = Logger.getLogger(Duck.class.getName());
 
@@ -535,6 +540,45 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
 
         public static MonitoringService getMonitoringService(Config param) throws ClassNotFoundException, TransactionFailure {
             return getExtensionByType(param, MonitoringService.class);
+        }
+
+        public static void createResourceRef(Config config, final String enabled, final String refName) throws TransactionFailure {
+            ConfigSupport.apply(new SingleConfigCode<Config>() {
+
+                public Object run(Config param) throws PropertyVetoException, TransactionFailure {
+
+                    ResourceRef newResourceRef = param.createChild(ResourceRef.class);
+                    newResourceRef.setEnabled(enabled);
+                    newResourceRef.setRef(refName);
+                    param.getResourceRef().add(newResourceRef);
+                    return newResourceRef;
+                }
+            }, config);
+        }
+
+        public static ResourceRef getResourceRef(Config config, String refName) {
+            for (ResourceRef ref : config.getResourceRef()) {
+                if (ref.getRef().equals(refName)) {
+                    return ref;
+                }
+            }
+            return null;
+        }
+
+        public static boolean isResourceRefExists(Config config, String refName) {
+            return getResourceRef(config, refName) != null;
+        }
+
+        public static void deleteResourceRef(Config config, String refName) throws TransactionFailure {
+            final ResourceRef ref = getResourceRef(config, refName);
+            if (ref != null) {
+                ConfigSupport.apply(new SingleConfigCode<Config>() {
+
+                    public Object run(Config param) {
+                        return param.getResourceRef().remove(ref);
+                    }
+                }, config);
+            }
         }
 
     }

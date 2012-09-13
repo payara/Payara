@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,29 +38,34 @@
  * holder.
  */
 
-package org.glassfish.resources.api;
+package org.glassfish.admin.cli.resources;
 
-import org.glassfish.hk2.api.Metadata;
-import org.glassfish.resources.util.ResourceManagerFactory;
-
-import javax.inject.Qualifier;
-import java.lang.annotation.ElementType;
+import javax.validation.Constraint;
+import javax.validation.Payload;
+import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- *
- * @author Jagadish Ramu
+ * Created with IntelliJ IDEA.
+ * User: naman
+ * Date: 2/8/12
+ * Time: 4:11 PM
+ * To change this template use File | Settings | File Templates.
  */
-@Qualifier
+
 @Retention(RUNTIME)
-@Target(ElementType.TYPE)
-public @interface ResourceDeployerInfo {
-    @Metadata(ResourceManagerFactory.METADATA_KEY)
-    Class<?> value();
-    
-    Class<? extends ResourceDeployerValidator> validator() default 
-    	DefaultResourceDeployerValidator.class;
+@Target({METHOD, FIELD, TYPE})
+@Documented
+@Constraint(validatedBy = UniqueResourceNameValidator.class)
+public @interface UniqueResourceNameConstraint {
+
+    String message() default "Name is already used by another resource.";
+
+    Class<?>[] groups() default {};
+
+    Class<? extends Payload>[] payload() default {};
 }

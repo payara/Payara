@@ -42,27 +42,25 @@ package org.glassfish.jdbc.config;
 
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
-import java.util.List;
-
+import org.glassfish.api.admin.RestRedirect;
+import org.glassfish.api.admin.RestRedirects;
+import org.glassfish.api.admin.config.PropertiesDesc;
+import org.glassfish.api.admin.config.PropertyDesc;
+import org.glassfish.config.support.datatypes.Port;
+import org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages;
+import org.glassfish.jdbc.config.validators.JdbcConnectionPoolConstraint;
+import org.glassfish.jdbc.config.validators.JdbcConnectionPoolConstraints;
+import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
+import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.component.Injectable;
-import java.beans.PropertyVetoException;
-
-import org.glassfish.config.support.datatypes.Port;
-
-import org.glassfish.api.admin.config.PropertyDesc;
-import org.glassfish.api.admin.config.PropertiesDesc;
 import org.jvnet.hk2.config.types.PropertyBag;
-import org.glassfish.api.admin.RestRedirects;
-import org.glassfish.api.admin.RestRedirect;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
-import org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages;
-import org.glassfish.jdbc.config.validators.JdbcConnectionPoolConstraints;
-import org.glassfish.jdbc.config.validators.JdbcConnectionPoolConstraint;
+import java.beans.PropertyVetoException;
+import java.util.List;
 
 /**
  * Defines configuration used to create and manage a pool physical database
@@ -91,6 +89,7 @@ import org.glassfish.jdbc.config.validators.JdbcConnectionPoolConstraint;
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-jdbc-connection-pool"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-jdbc-connection-pool")
 })
+@UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=JdbcConnectionPool.class)
 public interface JdbcConnectionPool extends ConfigBeanProxy, Injectable, Resource, ResourcePool,
     PropertyBag {
 

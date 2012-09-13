@@ -42,30 +42,31 @@ package org.glassfish.connectors.config;
 
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
+import org.glassfish.admin.cli.resources.ResourceConfigCreator;
+import org.glassfish.api.admin.RestRedirect;
+import org.glassfish.api.admin.RestRedirects;
+import org.glassfish.api.admin.config.PropertiesDesc;
+import org.glassfish.quality.ToDo;
+import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
+import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.component.Injectable;
-
-import java.beans.PropertyVetoException;
-import java.util.List;
-
-import org.glassfish.api.admin.config.PropertiesDesc;
 import org.jvnet.hk2.config.types.PropertyBag;
-import org.glassfish.api.admin.RestRedirects;
-import org.glassfish.api.admin.RestRedirect;
-
-import org.glassfish.quality.ToDo;
 
 import javax.validation.constraints.NotNull;
+import java.beans.PropertyVetoException;
+import java.util.List;
 
 /**
  *
  */
 @Configured
+@ResourceConfigCreator(commandName="create-admin-object")
 @RestRedirects({
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-admin-object"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-admin-object")
 })
+@UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=AdminObjectResource.class)
 /**
  * The admin-object-resource element describes a administered object
  * for a inbound resource adapter.

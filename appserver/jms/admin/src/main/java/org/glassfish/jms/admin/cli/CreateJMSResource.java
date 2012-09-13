@@ -41,26 +41,26 @@
 package org.glassfish.jms.admin.cli;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.connectors.config.AdminObjectResource;
-import org.glassfish.connectors.config.ConnectorResource;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.ActionReport;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
+import org.glassfish.connectors.config.ConnectorResource;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import org.glassfish.hk2.api.PerLookup;
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-
-import java.util.*;
-
 import javax.inject.Inject;
-
-import org.glassfish.api.admin.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Create JMS Resource Command
@@ -114,6 +114,12 @@ public class CreateJMSResource implements AdminCommand {
     private static final String UNIFIED_CF = "javax.jms.ConnectionFactory";
     private static final String DEFAULT_JMS_ADAPTER = "jmsra";
     private static final String DEFAULT_OPERAND="DEFAULT";
+    private static final String JNDINAME_APPENDER="-Connection-Pool";
+
+    /* As per new requirement all resources should have unique name so appending 'JNDINAME_APPENDER' to jndiName
+     for creating  jndiNameForConnectionPool.
+    */
+    private String jndiNameForConnectionPool;
 
     //JMS destination resource properties
     private static final String NAME = "Name";
@@ -153,6 +159,8 @@ public class CreateJMSResource implements AdminCommand {
             return;
 
         }
+
+        jndiNameForConnectionPool = jndiName + JNDINAME_APPENDER;
 
         if (force) {
             Resource res = null;
@@ -195,11 +203,11 @@ public class CreateJMSResource implements AdminCommand {
 
       if (resourceType.equals(TOPIC_CF) || resourceType.equals(QUEUE_CF) || resourceType.equals(UNIFIED_CF)) {
           ConnectorConnectionPool cpool = (ConnectorConnectionPool) ConnectorsUtil.getResourceByName(
-                  domain.getResources(), ConnectorConnectionPool.class, jndiName);
+                  domain.getResources(), ConnectorConnectionPool.class, jndiNameForConnectionPool);
 
           boolean createdPool = false;
            // If pool is already existing, do not try to create it again
-          if (cpool == null || ! filterForTarget (jndiName)) {
+          if (cpool == null || ! filterForTarget (jndiNameForConnectionPool)) {
                 // Add connector-connection-pool.
               ParameterMap parameters = populateConnectionPoolParameters();
 	          commandRunner.getCommandInvocation("create-connector-connection-pool", subReport).parameters(parameters).execute();
@@ -375,7 +383,7 @@ public class CreateJMSResource implements AdminCommand {
                }
          }
         //parameters.set("restype", resourceType);
-		parameters.set(DEFAULT_OPERAND, jndiName);
+		parameters.set(DEFAULT_OPERAND, jndiNameForConnectionPool);
         parameters.set("poolname", jndiName);
 
         if(description != null)
@@ -421,7 +429,7 @@ public class CreateJMSResource implements AdminCommand {
         parameters.set("jndi_name", jndiName);
         parameters.set(DEFAULT_OPERAND, jndiName);
         parameters.set("enabled", Boolean.toString(enabled));
-        parameters.set("poolname", jndiName);
+        parameters.set("poolname", jndiNameForConnectionPool);
         parameters.set("target", target);
         if(description != null)
             parameters.set("description", description);

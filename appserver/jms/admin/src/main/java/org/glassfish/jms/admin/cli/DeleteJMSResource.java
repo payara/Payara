@@ -40,22 +40,23 @@
 
 package org.glassfish.jms.admin.cli;
 
-import javax.inject.Inject;
-
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.config.serverbeans.*;
-import org.glassfish.connectors.config.ConnectorResource;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.api.admin.*;
+import org.glassfish.connectors.config.ConnectorResource;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import org.glassfish.hk2.api.PerLookup;
+import javax.inject.Inject;
 
 
 /**
@@ -87,6 +88,15 @@ public class DeleteJMSResource implements AdminCommand {
 
     @Inject
     Domain domain;
+
+    private static final String JNDINAME_APPENDER="-Connection-Pool";
+
+
+    /* As per new requirement all resources should have unique name so appending 'JNDINAME_APPENDER' to jndiName
+    for creating  jndiNameForConnectionPool.
+    */
+    private String jndiNameForConnectionPool;
+
     /**
          * Executes the command with the command parameters passed as Properties
          * where the keys are the paramter names and the values the parameter values
@@ -102,6 +112,8 @@ public class DeleteJMSResource implements AdminCommand {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
+
+            jndiNameForConnectionPool = jndiName + JNDINAME_APPENDER;
 
             ActionReport subReport = report.addSubActionsReport();
 
@@ -130,7 +142,7 @@ public class DeleteJMSResource implements AdminCommand {
             } else
             {
                  // Delete the connector resource and connector connection pool
-                String defPoolName = jndiName;
+                String defPoolName = jndiNameForConnectionPool;
                 String poolName = cresource.getPoolName();
                 if (poolName != null && poolName.equals(defPoolName))
                 {
@@ -150,7 +162,7 @@ public class DeleteJMSResource implements AdminCommand {
 
                     params = new ParameterMap();
                     params.set("poolname", jndiName);
-                    params.set("DEFAULT", jndiName);
+                    params.set("DEFAULT", jndiNameForConnectionPool);
 		            commandRunner.getCommandInvocation("delete-connector-connection-pool", subReport).parameters(params).execute();
 
                     if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())){

@@ -53,6 +53,7 @@ import com.sun.enterprise.config.serverbeans.ResourcePool;
 import org.glassfish.connectors.config.validators.ConnectionPoolConstraint;
 import org.glassfish.connectors.config.validators.ConnectionPoolConstraints;
 import org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages;
+import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
@@ -100,6 +101,7 @@ import javax.validation.constraints.NotNull;
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-connector-connection-pool"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-connector-connection-pool")
 })
+@UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ConnectorConnectionPool.class)
 public interface ConnectorConnectionPool extends ConfigBeanProxy, Injectable, Resource, ResourcePool,
         PropertyBag {
 

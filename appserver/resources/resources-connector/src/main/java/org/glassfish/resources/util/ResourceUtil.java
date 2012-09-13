@@ -77,6 +77,28 @@ public class ResourceUtil {
         return null;
     }
 
+
+    public static Resource getResourceByName(Class<? extends Resource> clazz, Resources resources,
+        String name) {
+      Collection<? extends Resource> typedResources = resources.getResources(clazz);
+      if (typedResources != null)
+        for (Resource resource : typedResources) {
+          if (resource.getIdentity().equals(name)) {
+            return resource;
+          }
+        }
+      return null;
+    }
+
+    public static Resource getResourceByIdentity(Resources resources, String name) {
+        for (Resource resource : resources.getResources()) {
+          if (resource.getIdentity().equals(name)) {
+            return resource;
+          }
+        }
+        return null;
+    }
+
     public static ResourceInfo getResourceInfo(BindableResource resource){
 
         if(resource.getParent() != null && resource.getParent().getParent() instanceof Application){

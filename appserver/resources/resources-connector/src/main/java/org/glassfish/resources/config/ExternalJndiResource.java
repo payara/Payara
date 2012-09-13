@@ -42,18 +42,18 @@ package org.glassfish.resources.config;
 
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
-import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.component.Injectable;
-
-import java.beans.PropertyVetoException;
-import java.util.List;
-
+import org.glassfish.admin.cli.resources.ResourceConfigCreator;
 import org.glassfish.api.admin.config.PropertiesDesc;
+import org.glassfish.quality.ToDo;
+import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
+import org.jvnet.hk2.component.Injectable;
+import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
-import org.glassfish.quality.ToDo;
 
 import javax.validation.constraints.NotNull;
+import java.beans.PropertyVetoException;
+import java.util.List;
 
 /**
  * Resource residing in an external JNDI repository
@@ -65,6 +65,8 @@ import javax.validation.constraints.NotNull;
 }) */
 
 @Configured
+@ResourceConfigCreator(commandName="create-jndi-resource")
+@UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ExternalJndiResource.class)
 public interface ExternalJndiResource extends ConfigBeanProxy, Injectable, Resource,
         PropertyBag, BindableResource {
 

@@ -46,12 +46,11 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
 
 /**
  * @author Jagadish Ramu
@@ -80,8 +79,12 @@ public class ResourceUtil {
             return;
         }
 
-        if( domain.getConfigNamed(target) != null){
-            return;
+        Config config = domain.getConfigNamed(target);
+        if( config != null){
+            if(!config.isResourceRefExists(jndiName)) {
+                config.createResourceRef(enabled,jndiName);
+            }
+            //return;
         }
         
         Server server = configBeansUtilities.getServerNamed(target);

@@ -43,21 +43,21 @@ package org.glassfish.connectors.config;
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
-import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.component.Injectable;
-
-import java.beans.PropertyVetoException;
-import java.util.List;
-import javax.validation.Payload;
-
+import org.glassfish.admin.cli.resources.ResourceConfigCreator;
+import org.glassfish.api.admin.RestRedirect;
+import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.api.admin.config.PropertiesDesc;
+import org.glassfish.quality.ToDo;
+import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
+import org.jvnet.hk2.component.Injectable;
+import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
-import org.glassfish.api.admin.RestRedirects;
-import org.glassfish.api.admin.RestRedirect;
-import org.glassfish.quality.ToDo;
 
+import javax.validation.Payload;
 import javax.validation.constraints.NotNull;
+import java.beans.PropertyVetoException;
+import java.util.List;
 
 /**
  *
@@ -69,10 +69,12 @@ import javax.validation.constraints.NotNull;
 }) */
 
 @Configured
+@ResourceConfigCreator(commandName="create-connector-resource")
 @RestRedirects({
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-connector-resource"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-connector-resource")
 })
+@UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ConnectorResource.class)
 @ReferenceConstraint(skipDuringCreation=true, payload=ConnectorResource.class)
 public interface ConnectorResource extends ConfigBeanProxy, Injectable, Resource,
     PropertyBag, BindableResource, Payload {

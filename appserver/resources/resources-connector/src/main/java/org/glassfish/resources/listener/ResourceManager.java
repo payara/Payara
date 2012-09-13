@@ -44,15 +44,15 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.hk2.api.IterableProvider;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
-import org.glassfish.internal.api.PostStartup;
-import org.glassfish.internal.api.PostStartupRunLevel;
 import org.glassfish.resources.api.ResourceDeployer;
+import org.glassfish.resources.api.ResourceDeployerInfo;
+import org.glassfish.resources.api.ResourceDeployerValidator;
 import org.glassfish.resources.api.ResourceInfo;
 import org.glassfish.resources.api.ResourcesBinder;
 import org.glassfish.resources.util.BindableResourcesHelper;
@@ -65,7 +65,6 @@ import org.jvnet.hk2.config.types.Property;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-import javax.inject.Singleton;
 
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
@@ -89,6 +88,9 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
             new LocalStringManagerImpl(ResourceManager.class);
 
     @Inject
+    private ServiceLocator locator;
+
+    @Inject
     private ResourcesBinder resourcesBinder;
 
     @Inject
@@ -99,9 +101,6 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
 
     @Inject
     private Provider<ResourceManagerFactory> resourceManagerFactoryProvider;
-
-    @Inject
-    private GlassfishNamingManager namingMgr;
 
     @Inject
     private ServerEnvironment environment;
@@ -151,6 +150,8 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                     ResourceInfo resourceInfo = new ResourceInfo(bindableResource.getJndiName());
                     resourcesBinder.deployResource(resourceInfo, resource);
                 }
+            } else if (resource instanceof ServerResource) {
+            	deployServerResource(resource);
             } else if (resource instanceof ResourcePool) {
                 // ignore, as they are loaded lazily
             } else {
@@ -169,6 +170,39 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
             connector during connector startup / redeploy ?
         */
         addListenerToResources(resources);
+    }
+
+    private void deployServerResource(Resource resource) {
+        ResourceDeployer deployer = getResourceDeployer(resource);
+        if (deployer == null) {
+            logger.log(
+                    Level.WARNING,
+                    "resources.resource-manager.no-resource-deployer",
+                    new Object[] { resource.getIdentity() }
+                    );
+            return;
+        }
+        ResourceDeployerValidator deployerValidator = getResourceDeployerValidator(deployer);
+        try {
+            if (deployerValidator.isEnabledLocally(resource))
+                deployer.deployResource(resource);
+        } catch (Exception e) {
+            Object[] params = {
+                    ResourceUtil.getGenericResourceInfo(resource), e };
+            logger.log(
+                    Level.WARNING,
+                    "resources.resource-manager.deploy-resource-failed",
+                    params);
+        }
+    }
+
+    private ResourceDeployerValidator getResourceDeployerValidator(
+            ResourceDeployer deployer) {
+        ResourceDeployerInfo annotation = deployer.getClass().
+        	getAnnotation(ResourceDeployerInfo.class);
+        ResourceDeployerValidator deployerValidator = 
+        	locator.getService(annotation.validator());
+        return deployerValidator;
     }
 
 
@@ -205,7 +239,15 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
     public void undeployResources(Collection<Resource> resources) {
         for (Resource resource : resources) {
             try {
-                getResourceDeployer(resource).undeployResource(resource);
+                ResourceDeployer deployer = getResourceDeployer(resource);
+                if (deployer != null)
+                    deployer.undeployResource(resource);
+                else {
+                    Object[] params = {resource.getIdentity()};
+                    logger.log(Level.WARNING, 
+                            "resources.resource-manager.undeploy-no-resource-deployer", 
+                            params);
+                }
             } catch (Exception e) {
                 Object[] params = {ResourceUtil.getGenericResourceInfo(resource), e};
                 logger.log(Level.WARNING, "resources.resource-manager.undeploy-resource-failed", params);
@@ -284,8 +326,10 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
             //TODO V3 handle enabled / disabled / resource-ref / redeploy ?
             try {
                 if (ResourceUtil.isValidEventType(instance)) {
+                    ResourceDeployer deployer = getResourceDeployer(instance);
                     boolean enabledAttributeChange = false;
-                    if (instance instanceof BindableResource) {
+                    if (instance instanceof BindableResource ||
+                        instance instanceof ServerResource) {
                         for (PropertyChangeEvent event : events) {
                             String propertyName = event.getPropertyName();
                             //Depending on the type of event (disable/enable, invoke the
@@ -293,7 +337,6 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                             if ("enabled".equalsIgnoreCase(propertyName)) {
                                 enabledAttributeChange = true;
                                 BindableResource bindableResource = (BindableResource) instance;
-                                ResourceDeployer deployer = getResourceDeployer(bindableResource);
                                 if (deployer != null) {
                                     boolean newValue = Boolean.valueOf(event.getNewValue().toString());
                                     boolean oldValue = Boolean.valueOf(event.getOldValue().toString());
@@ -308,33 +351,47 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                             }
                         }
                     }
-                    if (!enabledAttributeChange) {
+                    if (!enabledAttributeChange && deployer != null) {
                         if (instance instanceof BindableResource) {
                             BindableResource bindableResource = (BindableResource) instance;
                             if (getEnabledResourceRefforResource(bindableResource) && Boolean.valueOf(bindableResource.getEnabled())) {
-                                getResourceDeployer(instance).redeployResource(instance);
+                                deployer.redeployResource(instance);
+                            }
+                        } else if (instance instanceof ServerResource){
+                            // FIXME: if Resource namespace is global, then we can collapse
+                            // this and the above branch using the getIdentity() attribute?
+                            ServerResource serverResource = (ServerResource) instance; 
+                            if (isServerResourceEnabled(serverResource)) {
+                                deployer.redeployResource(instance);
                             }
                         } else {
-                            getResourceDeployer(instance).redeployResource(instance);
+                            deployer.redeployResource(instance);
                         }
                     }
                 } else if (ResourceUtil.isValidEventType(instance.getParent())) {
                     //Added in case of a property change
                     //check for validity of the property's parent and redeploy
+                    ResourceDeployer deployer = getResourceDeployer(instance);
                     if (instance.getParent() instanceof BindableResource) {
                         BindableResource bindableResource = (BindableResource) instance.getParent();
                         if (getEnabledResourceRefforResource(bindableResource) && Boolean.valueOf(bindableResource.getEnabled())) {
                             getResourceDeployer(instance.getParent()).redeployResource(instance.getParent());
+                        }
+                    } else if (instance instanceof ServerResource && deployer != null){
+                        // FIXME: if Resource namespace is global, then we can collapse
+                        // this and the above branch using the getIdentity() attribute?
+                        ServerResource serverResource = (ServerResource) instance; 
+                        if (isServerResourceEnabled(serverResource)) {
+                            deployer.redeployResource(instance);
                         }
                     } else {
                         getResourceDeployer(instance.getParent()).redeployResource(instance.getParent());
                     }
                 } else if (instance instanceof ResourceRef) {
                     ResourceRef ref = (ResourceRef) instance;
-                    ResourceDeployer deployer = null;
                     String refName = ref.getRef();
                     BindableResource bindableResource = null;
-
+                    ResourceDeployer deployer = null;
                     for (PropertyChangeEvent event : events) {
                         String propertyName = event.getPropertyName();
                         //Depending on the type of event (disable/enable, invoke the 
@@ -368,12 +425,19 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
             return np;
         }
 
+        private boolean isServerResourceEnabled(ServerResource serverResource) {
+            return getEnabledResourceRefforResource(serverResource) && 
+                    Boolean.valueOf(serverResource.getEnabled());
+        }
+
         private <T extends ConfigBeanProxy> NotProcessed handleAddEvent(T instance) {
             NotProcessed np = null;
             //Add listener to the changed instance object
             ResourceManager.this.addListenerToResource(instance);
 
             if (instance instanceof BindableResource) {
+                //ignore - as bindable-resources are handled during resource-ref creation
+            } else if (instance instanceof ServerResource) {
                 //ignore - as bindable-resources are handled during resource-ref creation
             } else if (instance instanceof ResourcePool) {
                 //ignore - as pools are handled lazily
@@ -391,11 +455,26 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
             } else if (instance instanceof ResourceRef) {
                 //create-resource-ref
                 ResourceRef ref = (ResourceRef) instance;
-                BindableResource resource =
-                        ResourceUtil.getBindableResourceByName(domain.getResources(), ref.getRef());
-                if (Boolean.valueOf(ref.getEnabled()) && Boolean.valueOf(resource.getEnabled())) {
-                    ResourceInfo resourceInfo = new ResourceInfo(resource.getJndiName());
-                    resourcesBinder.deployResource(resourceInfo, resource);
+                Resource resource = ResourceUtil.getResourceByIdentity(domain.getResources(), ref.getRef());
+                if (resource instanceof BindableResource) {
+                    BindableResource br = (BindableResource) resource;
+                    if (Boolean.valueOf(ref.getEnabled()) && Boolean.valueOf(br.getEnabled())) {
+                        ResourceInfo resourceInfo = new ResourceInfo(br.getJndiName());
+                        resourcesBinder.deployResource(resourceInfo, br);
+                    }
+                } else if (resource instanceof ServerResource) {
+                    ServerResource sr = (ServerResource) resource;
+                      try {
+                        if (Boolean.valueOf(ref.getEnabled())
+                            && Boolean.valueOf(sr.getEnabled())) {
+                          ResourceDeployer deployer = getResourceDeployer(resource);
+                          if (deployer != null)
+                            deployer.deployResource(resource);
+                        }
+                      } catch (Exception e) {
+                        Object params[] = {ResourceUtil.getGenericResourceInfo((Resource) instance), e};
+                        logger.log(Level.WARNING, "resources.resource-manager.deploy-resource-failed", params);
+                      }
                 }
             }
             return np;
@@ -412,8 +491,9 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                     //Remove listener from the removed instance
                     ResourceManager.this.removeListenerForResource(instance);
                     //get appropriate deployer and undeploy resource
-                    getResourceDeployer(instance).undeployResource(instance);
-
+                    ResourceDeployer resourceDeployer = getResourceDeployer(instance);
+                    if (resourceDeployer != null)
+                      resourceDeployer.undeployResource(instance);
                 } else if (ResourceUtil.isValidEventType(instance.getParent())) {
                     //Added in case of a property remove
                     //check for validity of the property's parent and redeploy
@@ -422,6 +502,14 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                         if (getEnabledResourceRefforResource(bindableResource) && Boolean.valueOf(bindableResource.getEnabled())) {
                             getResourceDeployer(instance.getParent()).redeployResource(instance.getParent());
                         }
+                    } else if (instance.getParent() instanceof ServerResource){
+                        // FIXME: if Resource namespace is global, then we can collapse
+                        // this and the above branch using the getIdentity() attribute?
+                        ServerResource serverResource = (ServerResource) instance; 
+                        ResourceDeployer deployer = getResourceDeployer(serverResource);
+                        if (deployer != null && isServerResourceEnabled(serverResource)) {
+                            deployer.redeployResource(instance);
+                        }
                     } else {
                         getResourceDeployer(instance.getParent()).redeployResource(instance.getParent());
                     }
@@ -429,11 +517,17 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                 } else if (instance instanceof ResourceRef) {
                     //delete-resource-ref
                     ResourceRef ref = (ResourceRef) instance;
-                    BindableResource resource = (BindableResource)
-                            ResourceUtil.getBindableResourceByName(domain.getResources(), ref.getRef());
+                    Resource resource = (Resource) ResourceUtil.getResourceByName(
+                            Resource.class, domain.getResources(), ref.getRef());
+//                    BindableResource resource = (BindableResource)
+//                            ResourceUtil.getBindableResourceByName(domain.getResources(), ref.getRef());
                     //get appropriate deployer and undeploy resource
-                    if (Boolean.valueOf(resource.getEnabled()) && Boolean.valueOf(ref.getEnabled())) {
-                        getResourceDeployer(resource).undeployResource(resource);
+                    boolean resourceEnabled = isResourceEnabled(resource);
+                    if (resourceEnabled && Boolean.valueOf(ref.getEnabled())) {
+                        ResourceDeployer resourceDeployer = 
+                            getResourceDeployer(resource);
+                        if (resourceDeployer != null)
+                            resourceDeployer.undeployResource(resource);
                     }
                     //Remove listener from the removed instance
                     ResourceManager.this.removeListenerForResource(instance);
@@ -446,6 +540,15 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                                 "Remove event failed"));
             }
             return np;
+        }
+
+        private boolean isResourceEnabled(Resource resource) {
+            boolean resourceEnabled = Boolean.valueOf(
+                    resource instanceof BindableResource ? 
+                            ((BindableResource) resource).getEnabled() 
+                            : (resource instanceof ServerResource ? 
+                                    ((ServerResource) resource).getEnabled() : "false"));
+            return resourceEnabled;
         }
     }
 
@@ -465,6 +568,15 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
     private boolean getEnabledResourceRefforResource(BindableResource bindableResource) {
         for (ResourceRef ref : getResourceRefs()) {
             if (ref.getRef().equals(bindableResource.getJndiName())) {
+                return Boolean.valueOf(ref.getEnabled());
+            }
+        }
+        return false;
+    }
+
+    private boolean getEnabledResourceRefforResource(ServerResource bindableResource) {
+        for (ResourceRef ref : getResourceRefs()) {
+            if (ref.getRef().equals(bindableResource.getIdentity())) {
                 return Boolean.valueOf(ref.getEnabled());
             }
         }

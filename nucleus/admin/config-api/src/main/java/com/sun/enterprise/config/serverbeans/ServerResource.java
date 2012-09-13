@@ -1,14 +1,14 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * https://glassfish.dev.java.net/public/CDDLGPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
@@ -38,29 +38,47 @@
  * holder.
  */
 
-package org.glassfish.resources.api;
+package com.sun.enterprise.config.serverbeans;
 
-import org.glassfish.hk2.api.Metadata;
-import org.glassfish.resources.util.ResourceManagerFactory;
+import org.glassfish.api.admin.config.Named;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.DuckTyped;
 
-import javax.inject.Qualifier;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.beans.PropertyVetoException;
 
 /**
+ * Tag interface for all types of resource.
  *
- * @author Jagadish Ramu
+ * @author Michael Cico
  */
-@Qualifier
-@Retention(RUNTIME)
-@Target(ElementType.TYPE)
-public @interface ResourceDeployerInfo {
-    @Metadata(ResourceManagerFactory.METADATA_KEY)
-    Class<?> value();
-    
-    Class<? extends ResourceDeployerValidator> validator() default 
-    	DefaultResourceDeployerValidator.class;
+@Configured
+public interface ServerResource extends Named, Resource {
+
+    /**
+     * Gets the value of the enabled property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    String getEnabled();
+
+    /**
+     * Sets the value of the enabled property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    void setEnabled(String value) throws PropertyVetoException;
+
+    @DuckTyped
+    @Override
+    String getIdentity();
+
+    class Duck {
+        public static String getIdentity(ServerResource resource) {
+            return resource.getName();
+        }
+    }
 }

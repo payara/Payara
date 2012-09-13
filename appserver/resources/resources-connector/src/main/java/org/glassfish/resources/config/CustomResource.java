@@ -42,22 +42,21 @@ package org.glassfish.resources.config;
 
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
+import org.glassfish.admin.cli.resources.ResourceConfigCreator;
+import org.glassfish.api.admin.RestRedirect;
+import org.glassfish.api.admin.RestRedirects;
+import org.glassfish.api.admin.config.PropertiesDesc;
+import org.glassfish.quality.ToDo;
+import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
+import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
-import org.jvnet.hk2.component.Injectable;
-
-import java.beans.PropertyVetoException;
-import java.util.List;
-
-import org.glassfish.api.admin.config.PropertiesDesc;
-import org.glassfish.api.admin.RestRedirects;
-import org.glassfish.api.admin.RestRedirect;
-import org.glassfish.quality.ToDo;
 
 import javax.validation.constraints.NotNull;
-
-import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
+import java.beans.PropertyVetoException;
+import java.util.List;
 /**
  * Custom (or generic) resource managed by a user-written factory class.
  */
@@ -68,10 +67,12 @@ import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
 }) */
 
 @Configured
+@ResourceConfigCreator(commandName="create-custom-resource")
 @RestRedirects({
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-custom-resource"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-custom-resource")
 })
+@UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=CustomResource.class)
 public interface CustomResource extends ConfigBeanProxy, Injectable, Resource,
         PropertyBag, BindableResource {
 
