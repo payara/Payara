@@ -47,7 +47,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 
-import javax.annotation.jms.JMSConnectionFactoryDefinition;
+import javax.jms.JMSConnectionFactoryDefinition;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.AroundTimeout;
 import javax.interceptor.Interceptors;

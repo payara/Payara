@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package javax.annotation.jms;
+package javax.jms;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -45,14 +45,54 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- *  Specifies one or more <code>JMSDestinationDefinition</code> annotations.
+ *  Annotation used to define a Java Message Service (JMS) destination
+ *  and be registered with JNDI. The <code>JMSDestination</code>
+ *  may be configured by setting the annotation elements for commonly used
+ *  <code>JMSDestination</code> properties.  Additional standard and
+ *  vendor-specific properties may be specified using the <code>properties
+ *  </code> element. Once defined, a destination resource may be referenced by
+ *  a component using the <code>lookup</code> element of the
+ *  <code>Resource</code> annotation.
  *
- *  @see JMSDestinationDefinition
+ *  @see javax.annotation.Resource
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface JMSDestinationDefinitions {
+public @interface JMSDestinationDefinition {
 
-	JMSDestinationDefinition[] value();
+    /**
+     *  Description of this JMS Destination.
+     */
+    String description() default "";
+
+    /**
+     *  JNDI name of the destination resource being defined.
+     */
+    String name();
+
+    /**
+     *  JMS destination implementation class name which implements:
+     *  <code>javax.jms.Queue</code> or <code>javax.jms.Topic</code>
+     */
+    String className();
+
+    /**
+     *  Resource adapter name.
+     */
+    String resourceAdapterName() default "";
+
+    /**
+     *  Name of the queue or topic.
+     */
+    String destinationName() default "";
+
+    /**
+     *  JMS destination property.  This may be a vendor-specific property
+     *  or a less commonly used <code>ConnectionFactory</code> property.
+     *  <p>
+     *  Properties are specified using the format:
+     *  <i>propertyName=propertyValue</i> with one property per array element.
+     */
+    String[] properties() default {};
 }
 
