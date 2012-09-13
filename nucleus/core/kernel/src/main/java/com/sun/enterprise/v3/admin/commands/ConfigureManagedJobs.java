@@ -103,9 +103,9 @@ public class ConfigureManagedJobs implements AdminCommand {
                 public Object run(ManagedJobConfig param) throws PropertyVetoException, TransactionFailure {
 
                     if (jobInactivityLimit != null)
-                        param.setJobInactivityLimitInHours(jobInactivityLimit);
+                        param.setJobInactivityLimit(jobInactivityLimit);
                     if (jobRetentionPeriod != null)
-                        param.setJobRetentionPeriodInHours(jobRetentionPeriod);
+                        param.setJobRetentionPeriod(jobRetentionPeriod);
                     if (persist)
                         param.setPersistingEnabled(persist);
 

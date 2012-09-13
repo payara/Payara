@@ -40,12 +40,14 @@
 package com.sun.enterprise.config.serverbeans;
 
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.Payload;
+import javax.validation.Payload;
 import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 
 import org.jvnet.hk2.config.types.PropertyBag;
+
+import javax.validation.constraints.Pattern;
 import java.beans.PropertyVetoException;
 
 /**
@@ -58,36 +60,41 @@ import java.beans.PropertyVetoException;
 public interface ManagedJobConfig extends DomainExtension, Injectable, PropertyBag, Payload {
 
     /**
-     * Gets the value of jobInactivityLimitInHours property
-     * @return
+     * Gets the value of jobInactivityLimit property
+     * @return possible object is
+     *         {@link String }
      */
-    @Attribute(defaultValue="24")
-    String getJobInactivityLimitInHours();
+    @Attribute(defaultValue="24h")
+    @Pattern(regexp = "[1-9]\\d*([hms]|[HMS])" , message = "{invalid.time.period.specified}"
+            , payload = ManagedJobConfig.class)
+    String getJobInactivityLimit();
 
     /**
-     * Sets the value of the jobInactivityLimitInHours property.
+     * Sets the value of the jobInactivityLimit property.
      *
      * @param value allowed object is
      *              {@link String }
      */
-    @Param(name = "jobinactivitylimitinhours", optional=true)
-    void setJobInactivityLimitInHours(String value) throws PropertyVetoException;
+    @Param(name = "jobinactivitylimit", optional=true)
+    void setJobInactivityLimit(String value) throws PropertyVetoException;
 
     /**
-     * Gets the value of jobRetentionPeriodInHours
+     * Gets the value of jobRetentionPeriod
      * @return
      */
-    @Attribute(defaultValue="24")
-    String getJobRetentionPeriodInHours();
+    @Attribute(defaultValue="24h")
+    @Pattern(regexp = "[1-9]\\d*([hms]|[HMS])" , message = "{invalid.time.period.specified}" ,
+            payload = ManagedJobConfig.class)
+    String getJobRetentionPeriod();
 
     /**
-     * Sets the value of the jobRetentionPeriodInHours property.
+     * Sets the value of the jobRetentionPeriod property.
      *
      * @param value allowed object is
      *              {@link String }
      */
     @Param(name = "jobretentionperiod", optional=true)
-    void setJobRetentionPeriodInHours(String value) throws PropertyVetoException;
+    void setJobRetentionPeriod(String value) throws PropertyVetoException;
 
 
     /**
