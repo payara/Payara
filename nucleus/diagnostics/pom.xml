@@ -55,5 +55,6 @@
     <name>Diagnostics</name>  
     <modules>
         <module>diagnostics-api</module>
+        <module>context</module>
     </modules>
 </project>
