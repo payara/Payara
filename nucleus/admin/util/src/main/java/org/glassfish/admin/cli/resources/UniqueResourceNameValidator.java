@@ -72,7 +72,7 @@ public class UniqueResourceNameValidator implements ConstraintValidator<UniqueRe
         Habitat habitat = Globals.getDefaultHabitat();
         if (habitat == null) return; // due to: http://java.net/jira/browse/GLASSFISH-19043
 
-        domain = habitat.getByContract(Domain.class);
+        domain = habitat.getService(Domain.class);
 
     }
 
