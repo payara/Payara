@@ -86,7 +86,7 @@ public class SSHCommandExecutionException extends CommandException{
     }
 
     private String SSHSettings = null;
-    private String FullCommand = null;
+    private String fullCommand = null;
 
     /* Stores the settings for the SSH connection that apply to node that was
      * used in the command execution
@@ -105,13 +105,13 @@ public class SSHCommandExecutionException extends CommandException{
      */
 
     public void setCommandRun(String fullcommand){
-        FullCommand= fullcommand;
+        fullCommand= fullcommand;
     }
     /* Returns the fully qualified command that was run on the remote node over SSH 
      */
 
     public String getCommandRun() {
-        return FullCommand;
+        return fullCommand;
     }
 }
 

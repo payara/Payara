@@ -170,7 +170,7 @@ public abstract class ProgressStatusBase implements ProgressStatus {
     }
 
     @Override
-    public int getTotalStepCount() {
+    public synchronized int getTotalStepCount() {
         return totalStepCount;
     }
 
@@ -315,7 +315,7 @@ public abstract class ProgressStatusBase implements ProgressStatus {
         return createChild(null, allocatedSteps);
     }
     
-    public int getCurrentStepCount() {
+    public synchronized int getCurrentStepCount() {
         return this.currentStepCount;
     }
     

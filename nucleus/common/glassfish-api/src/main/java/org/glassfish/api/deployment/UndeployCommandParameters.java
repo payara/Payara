@@ -62,6 +62,9 @@ public class UndeployCommandParameters extends OpsParams {
 
     @Param(optional=true, defaultValue="false")
     public Boolean isredeploy = false;
+    public Boolean isRedeploy() {
+      return isredeploy;
+    }
 
     @Param(optional=true)
     public Boolean droptables;
@@ -75,6 +78,9 @@ public class UndeployCommandParameters extends OpsParams {
 
     @Param(optional=true, separator=':')
     public Properties properties=null;
+    public Properties getProperties() {
+      return properties;
+    }
 
     @Param(optional=true)
     public Boolean keepstate;

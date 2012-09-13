@@ -82,7 +82,6 @@ public class AdminCommandLock {
      * Once the lock is released the thread will exit.
      */
     private SuspendCommandsLockThread suspendCommandsLockThread = null;
-    private boolean suspendCommandsTimedOut = false;
 
     private String lockOwner = null;
     private String lockMessage = null;
@@ -353,12 +352,6 @@ public class AdminCommandLock {
             suspendCommandsLockThread.isAlive()) {
             return SuspendStatus.ILLEGALSTATE;
         }
-
-        /*
-         * This can only happen after the above check.  We don't want to
-         * reset the status if a suspend op is in flight.
-         */
-        suspendCommandsTimedOut = false;
 
         /*
          * Start a thread to manage the RWLock.

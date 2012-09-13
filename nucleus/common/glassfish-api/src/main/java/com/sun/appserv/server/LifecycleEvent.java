@@ -50,7 +50,7 @@ public class LifecycleEvent extends java.util.EventObject {
     
     private int eventType;
     private Object eventData;
-    private LifecycleEventContext ctx = null;
+    private transient LifecycleEventContext ctx = null;
     
     // Lifecycle event types 
 

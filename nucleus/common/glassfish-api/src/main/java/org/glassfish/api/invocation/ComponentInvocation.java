@@ -69,6 +69,12 @@ public class ComponentInvocation
     public Object container;
 
     public Object jndiEnvironment;
+    public void setJNDIEnvironment(Object val) {
+      jndiEnvironment = val;
+    }
+    public Object getJNDIEnvironment() {
+      return jndiEnvironment;
+    }
 
     public String componentId;
 

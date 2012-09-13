@@ -60,8 +60,6 @@ import javax.inject.Inject;
 public class InvocationManagerImpl
         implements InvocationManager {
 
-    static public boolean debug;
-
     // This TLS variable stores an ArrayList. 
     // The ArrayList contains ComponentInvocation objects which represent
     // the stack of invocations on this thread. Accesses to the ArrayList
@@ -268,7 +266,7 @@ public class InvocationManagerImpl
         return frames.get();
     }
 
-    class InvocationArray<T extends ComponentInvocation> extends java.util.ArrayList<T> {
+    static class InvocationArray<T extends ComponentInvocation> extends java.util.ArrayList<T> {
         private ComponentInvocationType invocationAttribute;
 
         public void setInvocationAttribute(ComponentInvocationType attribute) {

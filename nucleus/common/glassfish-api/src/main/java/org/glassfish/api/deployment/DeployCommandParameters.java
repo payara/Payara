@@ -56,28 +56,52 @@ public class DeployCommandParameters extends OpsParams {
 
     @Param(name = ParameterNames.CONTEXT_ROOT, optional=true)
     public String contextroot = null;
+    public String getContextRoot() {
+        return contextroot;
+    }
+    public void setContextRoot(String val) {
+      contextroot = val;
+    }
 
     @Param(name = ParameterNames.VIRTUAL_SERVERS, optional=true)
     @I18n("virtualservers")
     public String virtualservers = null;
+    public String getVirtualServers() {
+        return virtualservers;
+    }
 
     @Param(name=ParameterNames.LIBRARIES, optional=true)
     public String libraries = null;
 
     @Param(optional=true, defaultValue="false")
     public Boolean force = false;
+    public Boolean isForce() {
+        return force;
+    }
 
     @Param(name=ParameterNames.PRECOMPILE_JSP, optional=true, defaultValue="false")
     public Boolean precompilejsp = false;
+    public Boolean isPrecompileJsp() {
+        return precompilejsp;
+    }
 
     @Param(optional=true, defaultValue="false")
     public Boolean verify = false;
+    public Boolean isVerify() {
+        return verify;
+    }
 
     @Param(optional=true)
     public String retrieve = null;
+    public String getRetrieve() {
+      return retrieve;
+    }
 
     @Param(optional=true)
     public String dbvendorname = null;
+    public String getDBVendorName() {
+      return dbvendorname;
+    }
 
     //mutually exclusive with dropandcreatetables
     @Param(optional=true)
@@ -92,39 +116,72 @@ public class DeployCommandParameters extends OpsParams {
 
     @Param(name=ParameterNames.DEPLOYMENT_PLAN, optional=true)
     public File deploymentplan = null;
+    public File getDeploymentPlan() {
+      return deploymentplan;
+    }
 
     @Param(name=ParameterNames.ALT_DD, optional=true)
     public File altdd = null;
+    public File getAltdd() {
+      return altdd;
+    }
 
     @Param(name=ParameterNames.ENABLED, optional=true)
     public Boolean enabled = null;
+    public Boolean isEnabled() {
+      return enabled;
+    }
 
     @Param(optional=true, defaultValue="false")
     public Boolean generatermistubs = false;
+    public Boolean isGenerateRMIStubs() {
+      return generatermistubs;
+    }
 
     @Param(optional=true, defaultValue="false")
     public Boolean availabilityenabled = false;
+    public Boolean isAvailabilityEnabled() {
+      return availabilityenabled;
+    }
 
     @Param(optional=true, defaultValue="true")
     public Boolean asyncreplication = true;
+    public Boolean isAsyncReplication() {
+      return asyncreplication;
+    }
 
     @Param(optional=true)
     public String target;
 
     @Param(optional=true, defaultValue="false")
     public Boolean keepreposdir = false;
+    public Boolean isKeepReposDir() {
+      return keepreposdir;
+    }
 
     @Param(optional=true, defaultValue="false")
     public Boolean keepfailedstubs = false;
+    public Boolean isKeepFailedStubs() {
+      return keepfailedstubs;
+    }
 
     @Param(optional=true, defaultValue="false")
     public Boolean isredeploy = false;
+    public Boolean isRedeploy() {
+      return isredeploy;
+    }
 
     @Param(optional=true, defaultValue="true")
     public Boolean logReportedErrors = false;
+  public Boolean isLogReportedErrors() {
+      return logReportedErrors;
+    }
 
     @Param(primary=true)
     public File path;
+    public File getPath() {
+      return path;
+    }
 
     @Param(optional=true)
     public String description;
@@ -137,6 +194,9 @@ public class DeployCommandParameters extends OpsParams {
 
     @Param(optional=true)
     public String type = null;
+    public String getType() {
+      return type;
+    }
 
     @Param(optional=true)
     public Boolean keepstate;
@@ -146,8 +206,14 @@ public class DeployCommandParameters extends OpsParams {
 
     // todo : why is this not a param ?
     public Boolean clientJarRequested = true;
+    public Boolean isClientJarRequested() {
+      return clientJarRequested;
+    }
 
     public String previousContextRoot = null;
+    public String getPreviousContextRoot() {
+      return previousContextRoot;
+    }
 
     public String name() {
         return name;

@@ -156,11 +156,17 @@ public abstract class OpsParams implements CommandParameters {
      * Type of deployment operation, by default it's deployment
      */
     public Origin origin = Origin.deploy; 
+    public Origin getOrigin() {
+      return origin;
+    }
 
     /**
      * The command associated with this operation, by default it's deploy
      */
     public Command command = Command.deploy;
+    public Command getCommand() {
+      return command;
+    }
 
     public abstract String name();
 
