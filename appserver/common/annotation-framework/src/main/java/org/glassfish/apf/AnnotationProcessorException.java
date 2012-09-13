@@ -50,7 +50,7 @@ public class AnnotationProcessorException extends Exception {
     
     final private String message;
     
-    final private AnnotationInfo locator;
+    transient final private AnnotationInfo locator; // TODO if this class is meant for serialization, make sure all its constituents are serializable.
     
     boolean isFatal = false;
     

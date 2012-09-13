@@ -52,8 +52,8 @@ import java.util.EventObject;
  */
 public class ProgressEvent extends EventObject
 {
-   private DeploymentStatus statuscode;
-   private TargetModuleID targetModuleID;
+   transient private DeploymentStatus statuscode; // TODO fully implement Serializable if this is needed.
+   transient private TargetModuleID targetModuleID;
 
    /**
     * Creates a new object representing a deployment

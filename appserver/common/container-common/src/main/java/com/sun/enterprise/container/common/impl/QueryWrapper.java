@@ -884,40 +884,39 @@ public class QueryWrapper implements Query {
         FlushModeType flushMode;
 
         LockModeType lockMode;
+        
+        private SetterData(SetterType type) {
+          this.type = type;
+        }
 
         static SetterData createMaxResults(int maxResults) {
-            SetterData data = new SetterData();
-            data.type = SetterType.MAX_RESULTS;
+            SetterData data = new SetterData(SetterType.MAX_RESULTS);
             data.int1 = maxResults;
             return data;
         }
 
         static SetterData createFirstResult(int firstResult) {
-            SetterData data = new SetterData();
-            data.type = SetterType.FIRST_RESULT;
+            SetterData data = new SetterData(SetterType.FIRST_RESULT);
             data.int1 = firstResult;
             return data;
         }
 
         static SetterData createHint(String hintName, Object value) {
-            SetterData data = new SetterData();
-            data.type = SetterType.HINT;
+            SetterData data = new SetterData(SetterType.HINT);
             data.string1 = hintName;
             data.object1 = value;
             return data;
         }
 
         static <T> SetterData createParameter(Parameter<T> param, T value) {
-            SetterData data = new SetterData<T>();
-            data.type = SetterType.PARAM_PARAMETER_OBJECT;
+            SetterData data = new SetterData<T>(SetterType.PARAM_PARAMETER_OBJECT);
             data.parameter = param;
             data.object1 = value;
             return data;
         }
 
         static SetterData<Date> createParameter(Parameter<Date> param, Date value, TemporalType temporalType) {
-            SetterData<Date> data = new SetterData<Date>();
-            data.type = SetterType.PARAM_PARAMETER_DATE_TEMPORAL_TYPE;
+            SetterData<Date> data = new SetterData<Date>(SetterType.PARAM_PARAMETER_DATE_TEMPORAL_TYPE);
             data.parameter = param;
             data.object1 = value;
             data.temporalType = temporalType;
@@ -925,8 +924,7 @@ public class QueryWrapper implements Query {
         }
 
         static SetterData<Calendar> createParameter(Parameter<Calendar> param, Calendar value, TemporalType temporalType) {
-            SetterData<Calendar> data = new SetterData<Calendar>();
-            data.type = SetterType.PARAM_PARAMETER_CALENDAR_TEMPORAL_TYPE;
+            SetterData<Calendar> data = new SetterData<Calendar>(SetterType.PARAM_PARAMETER_CALENDAR_TEMPORAL_TYPE);
             data.parameter = param;
             data.object1 = value;
             data.temporalType = temporalType;
@@ -935,8 +933,7 @@ public class QueryWrapper implements Query {
 
         static SetterData createParameter(String name, Object value) {
 
-            SetterData data = new SetterData();
-            data.type = SetterType.PARAM_NAME_OBJECT;
+            SetterData data = new SetterData(SetterType.PARAM_NAME_OBJECT);
             data.string1 = name;
             data.object1 = value;
             return data;
@@ -945,8 +942,7 @@ public class QueryWrapper implements Query {
         static SetterData createParameter(String name, Date value,
                                           TemporalType temporalType) {
 
-            SetterData data = new SetterData();
-            data.type = SetterType.PARAM_NAME_DATE_TEMPORAL;
+            SetterData data = new SetterData(SetterType.PARAM_NAME_DATE_TEMPORAL);
             data.string1 = name;
             data.date = value;
             data.temporalType = temporalType;
@@ -956,8 +952,7 @@ public class QueryWrapper implements Query {
         static SetterData createParameter(String name, Calendar value,
                                           TemporalType temporalType) {
 
-            SetterData data = new SetterData();
-            data.type = SetterType.PARAM_NAME_CAL_TEMPORAL;
+            SetterData data = new SetterData(SetterType.PARAM_NAME_CAL_TEMPORAL);
             data.string1 = name;
             data.calendar = value;
             data.temporalType = temporalType;
@@ -966,8 +961,7 @@ public class QueryWrapper implements Query {
         
         static SetterData createParameter(int position, Object value) {
 
-            SetterData data = new SetterData();
-            data.type = SetterType.PARAM_POSITION_OBJECT;
+            SetterData data = new SetterData(SetterType.PARAM_POSITION_OBJECT);
             data.int1 = position;
             data.object1 = value;
             return data;
@@ -975,8 +969,7 @@ public class QueryWrapper implements Query {
 
         static SetterData createParameter(int position, Date value, 
                                           TemporalType temporalType) {
-            SetterData data = new SetterData();
-            data.type = SetterType.PARAM_POSITION_DATE_TEMPORAL;
+            SetterData data = new SetterData(SetterType.PARAM_POSITION_DATE_TEMPORAL);
             data.int1 = position;
             data.date = value;
             data.temporalType = temporalType;
@@ -985,8 +978,7 @@ public class QueryWrapper implements Query {
 
        static SetterData createParameter(int position, Calendar value, 
                                           TemporalType temporalType) {
-            SetterData data = new SetterData();
-            data.type = SetterType.PARAM_POSITION_CAL_TEMPORAL;
+            SetterData data = new SetterData(SetterType.PARAM_POSITION_CAL_TEMPORAL);
             data.int1 = position;
             data.calendar = value;
             data.temporalType = temporalType;
@@ -995,8 +987,7 @@ public class QueryWrapper implements Query {
         
         static SetterData createFlushMode(FlushModeType flushMode) {
 
-            SetterData data = new SetterData();
-            data.type = SetterType.FLUSH_MODE;
+            SetterData data = new SetterData(SetterType.FLUSH_MODE);
             data.flushMode = flushMode;
             return data;
 
@@ -1004,8 +995,7 @@ public class QueryWrapper implements Query {
         
         static SetterData createLockMode(LockModeType lockMode) {
 
-            SetterData data = new SetterData();
-            data.type = SetterType.LOCK_MODE;
+            SetterData data = new SetterData(SetterType.LOCK_MODE);
             data.lockMode = lockMode;
             return data;
 

@@ -51,8 +51,6 @@ public class HACookieInfo {
 
     String newReplica;
 
-    Object hashKey;
-
     String oldReplica;
 
     public HACookieInfo(String newReplica, String oldReplica) {
@@ -77,7 +75,6 @@ public class HACookieInfo {
 
     void reset() {
         newReplica = null;
-        hashKey = null;
         oldReplica = null;
     }
 
@@ -93,7 +90,6 @@ public class HACookieInfo {
     public String toString() {
         return "HACookieInfo{" +
                 "newReplica='" + newReplica + '\'' +
-                ", hashKey=" + hashKey +
                 ", oldReplica='" + oldReplica + '\'' +
                 '}';
     }

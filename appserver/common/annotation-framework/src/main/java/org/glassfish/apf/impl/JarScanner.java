@@ -42,6 +42,7 @@ package org.glassfish.apf.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.Enumeration;
@@ -86,10 +87,16 @@ public class JarScanner extends JavaEEScanner implements Scanner<Object> {
     
     public ClassLoader getClassLoader() {
         if (classLoader==null) {
-            URL[] urls = new URL[1];
+            final URL[] urls = new URL[1];
             try {
+                if (jarFile == null) throw new IllegalStateException("jarFile must first be set with the process method.");
                 urls[0] = jarFile.getAbsoluteFile().toURL();
-                classLoader = new URLClassLoader(urls);
+                classLoader = new PrivilegedAction<URLClassLoader>() {
+                  @Override
+                  public URLClassLoader run() {
+                    return new URLClassLoader(urls);
+                  }
+                }.run();
             } catch(Exception e) {
                 e.printStackTrace();
             }

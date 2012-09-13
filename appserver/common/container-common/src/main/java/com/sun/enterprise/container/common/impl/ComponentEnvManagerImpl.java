@@ -309,20 +309,6 @@ public class ComponentEnvManagerImpl
 
     }
 
-    private void setResourceId(JndiNameEnvironment env, MailSessionDescriptor desc){
-
-        String resourceId = "";
-        if(dependencyAppliesToScope(desc, ScopeType.COMPONENT)){
-            resourceId = getApplicationName(env) +    "/" + getModuleName(env) + "/" +
-                    getComponentEnvId(env) ;
-        } else if(dependencyAppliesToScope(desc, ScopeType.MODULE)){
-            resourceId = getApplicationName(env) +    "/" + getModuleName(env) ;
-        } else if(dependencyAppliesToScope(desc, ScopeType.APP)){
-            resourceId = getApplicationName(env)  ;
-        }
-        desc.setResourceId(resourceId);
-    }
-
     private void addDataSourceBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
 
         for (DataSourceDefinitionDescriptor dsd : env.getDataSourceDefinitionDescriptors()) {

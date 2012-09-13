@@ -43,6 +43,7 @@ package org.glassfish.apf.impl;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.Enumeration;
@@ -107,10 +108,16 @@ public class DirectoryScanner extends JavaEEScanner implements Scanner {
 
     public ClassLoader getClassLoader() {
         if (classLoader==null) {
-            URL[] urls = new URL[1];
+            final URL[] urls = new URL[1];
             try {
+                if (directory == null) throw new IllegalStateException("directory must first be set by calling the process method.");
                 urls[0] = directory.getAbsoluteFile().toURL();
-                classLoader = new URLClassLoader(urls);
+                classLoader = new PrivilegedAction<URLClassLoader>() {
+                  @Override
+                  public URLClassLoader run() {
+                    return new URLClassLoader(urls);
+                  }
+                }.run();
             } catch(Exception e) {
                 e.printStackTrace();
             }
