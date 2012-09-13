@@ -98,17 +98,17 @@ import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 }) */
 
 @Configured
-@NotDuplicateTargetName(message="{config.duplicate.name}", payload=Config.class)
+@NotDuplicateTargetName(message = "{config.duplicate.name}", payload = Config.class)
 public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBag, Payload, ConfigLoader, ConfigBeanProxy, RefContainer {
     /**
-     *  Name of the configured object
+     * Name of the configured object
      *
      * @return name of the configured object
      FIXME: should set 'key=true'.  See bugs 6039, 6040
      */
     @NotNull
-    @NotTargetKeyword(message="{config.reserved.name}", payload=Config.class)
-    @Pattern(regexp=NAME_SERVER_REGEX, message="{config.invalid.name}", payload=Config.class)
+    @NotTargetKeyword(message = "{config.reserved.name}", payload = Config.class)
+    @Pattern(regexp = NAME_SERVER_REGEX, message = "{config.invalid.name}", payload = Config.class)
     @Override
     String getName();
 
@@ -127,7 +127,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
      * @return possible object is
      *         {@link String }
      */
-    @Attribute (defaultValue="true",dataType=Boolean.class)
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getDynamicReconfigurationEnabled();
 
     /**
@@ -143,7 +143,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
      *
      * @return possible object is {@link NetworkConfig }
      */
-    @Element(required=true)
+    @Element(required = true)
     NetworkConfig getNetworkConfig();
 
     /**
@@ -159,7 +159,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
      * @return possible object is
      *         {@link HttpService }
      */
-    @Element(required=true)
+    @Element(required = true)
     HttpService getHttpService();
 
     /**
@@ -176,7 +176,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
      * @return possible object is
      *         {@link AdminService }
      */
-    @Element(required=true)
+    @Element(required = true)
     AdminService getAdminService();
 
     /**
@@ -193,7 +193,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
      * @return possible object is
      *         {@link LogService }
      */
-    @Element(required=true)
+    @Element(required = true)
     LogService getLogService();
 
     /**
@@ -210,7 +210,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
      * @return possible object is
      *         {@link SecurityService }
      */
-    @Element(required=true)
+    @Element(required = true)
     SecurityService getSecurityService();
 
     /**
@@ -227,7 +227,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
      * @return possible object is
      *         {@link MonitoringService }
      */
-    @Element(required=true)
+    @Element(required = true)
     @NotNull
     MonitoringService getMonitoringService();
 
@@ -262,7 +262,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
      * @return possible object is
      *         {@link JavaConfig }
      */
-    @Element(required=true)
+    @Element(required = true)
     JavaConfig getJavaConfig();
 
     /**
@@ -297,7 +297,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
      * @return possible object is
      *         {@link ThreadPools }
      */
-    @Element(required=true)
+    @Element(required = true)
     ThreadPools getThreadPools();
 
     /**
@@ -346,18 +346,18 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
      * Objects of the following type(s) are allowed in the list
      * {@link SystemProperty }
      */
-    @ToDo(priority=ToDo.Priority.IMPORTANT, details="Any more legal system properties?" )
-@PropertiesDesc(
-    systemProperties=true,
-    props={
-        @PropertyDesc(name="HTTP_LISTENER_PORT", defaultValue="8080", dataType=Port.class),
-        @PropertyDesc(name="HTTP_SSL_LISTENER_PORT", defaultValue="1043", dataType=Port.class),
-        @PropertyDesc(name="HTTP_ADMIN_LISTENER_PORT", defaultValue="4848", dataType=Port.class),
-        @PropertyDesc(name="IIOP_LISTENER_PORT", defaultValue="3700", dataType=Port.class),
-        @PropertyDesc(name="IIOP_SSL_LISTENER_PORT", defaultValue="1060", dataType=Port.class),
-        @PropertyDesc(name="IIOP_SSL_MUTUALAUTH_PORT", defaultValue="1061", dataType=Port.class),
-        @PropertyDesc(name="JMX_SYSTEM_CONNECTOR_PORT", defaultValue="8686", dataType=Port.class)
-    }
+    @ToDo(priority = ToDo.Priority.IMPORTANT, details = "Any more legal system properties?")
+    @PropertiesDesc(
+            systemProperties = true,
+            props = {
+                    @PropertyDesc(name = "HTTP_LISTENER_PORT", defaultValue = "8080", dataType = Port.class),
+                    @PropertyDesc(name = "HTTP_SSL_LISTENER_PORT", defaultValue = "1043", dataType = Port.class),
+                    @PropertyDesc(name = "HTTP_ADMIN_LISTENER_PORT", defaultValue = "4848", dataType = Port.class),
+                    @PropertyDesc(name = "IIOP_LISTENER_PORT", defaultValue = "3700", dataType = Port.class),
+                    @PropertyDesc(name = "IIOP_SSL_LISTENER_PORT", defaultValue = "1060", dataType = Port.class),
+                    @PropertyDesc(name = "IIOP_SSL_MUTUALAUTH_PORT", defaultValue = "1061", dataType = Port.class),
+                    @PropertyDesc(name = "JMX_SYSTEM_CONNECTOR_PORT", defaultValue = "8686", dataType = Port.class)
+            }
     )
     @Element
     @Override
@@ -373,7 +373,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
     String setLoggingProperty(String property, String value);
 
     @DuckTyped
-    Map<String, String> updateLoggingProperties( Map<String, String> properties);
+    Map<String, String> updateLoggingProperties(Map<String, String> properties);
 
     @DuckTyped
     NetworkListener getAdminListener();
@@ -385,9 +385,9 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
      * Return an extension configuration given the extension type.
      *
      * @param type type of the requested extension configuration
-     * @param <T> interface subclassing the ConfigExtension type
+     * @param <T>  interface subclassing the ConfigExtension type
      * @return a configuration proxy of type T or null if there is no such
-     * configuration with that type.
+     *         configuration with that type.
      */
     @DuckTyped
     <T extends ConfigExtension> T getExtensionByType(Class<T> type);
@@ -398,7 +398,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
      * extensions.
      *
      * @param habitat Habitat that contains this Config
-     * @param name name to use to identify the objects
+     * @param name    name to use to identify the objects
      */
     @DuckTyped
     void addIndex(ServiceLocator habitat, String name);
@@ -481,7 +481,8 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
                 }
             }
             ModuleConfigurationLoader loader = new ModuleConfigurationLoader<Config, T>(c);
-                return (T) loader.createConfigBeanForType(type);
+            T result = (T) loader.createConfigBeanForType(type);
+            return result;
         }
 
         public static NetworkListener getAdminListener(Config c) {
@@ -585,8 +586,8 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
     /**
     	Properties as per {@link PropertyBag}
      */
-    @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
-    @PropertiesDesc(props={})
+    @ToDo(priority = ToDo.Priority.IMPORTANT, details = "Provide PropertyDesc for legal props")
+    @PropertiesDesc(props = {})
     @Element
     @Override
     List<Property> getProperty();
@@ -594,10 +595,11 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
     /**
      * Get the configuration for other types of containers.
      *
-     * @return  list of containers configuration
+     * @return list of containers configuration
      */
     @Element("*")
     List<Container> getContainers();
+
     @Element("*")
     List<ConfigExtension> getExtensions();
 }

@@ -76,7 +76,7 @@ public class ConfigBeanDefaultValue {
         return configBeanClassName;
     }
 
-    public boolean isReplaceCurrentIfExists() {
+    public boolean replaceCurrentIfExists() {
         return replaceCurrentIfExists;
     }
 

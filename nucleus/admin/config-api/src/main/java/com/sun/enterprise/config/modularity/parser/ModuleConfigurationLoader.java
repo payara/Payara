@@ -42,8 +42,6 @@ package com.sun.enterprise.config.modularity.parser;
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.modularity.annotation.HasNoDefaultConfiguration;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
-import com.sun.enterprise.util.LocalStringManager;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.hk2.utilities.BuilderHelper;
@@ -58,11 +56,8 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import java.beans.PropertyVetoException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -99,13 +94,13 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
                     }
 
                     unwrappedChild.addDefaultChildren();
-                    getExtensions(parent).add(child);
+                    ConfigModularityUtils.getExtensions(parent).add(child);
                     return child;
                 }
             }, extensionOwner);
         }
 
-        List<U> extensions = getExtensions(extensionOwner);
+        List<U> extensions = ConfigModularityUtils.getExtensions(extensionOwner);
         for (ConfigBeanProxy extension : extensions) {
             try {
                 U configBeanInstance = configExtensionType.cast(extension);
@@ -133,40 +128,5 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
         configurationParser.prepareAndSetConfigBean(habitat, configBeanDefaultValueList);
     }
 
-    private <U extends ConfigBeanProxy> List<U> getExtensions(ConfigBeanProxy parent) {
 
-        Method m = null;
-        try {
-            if (parent != null) {
-                m = parent.getClass().getMethod("getExtensions");
-            }
-        } catch (NoSuchMethodException e) {
-            LocalStringManager localStrings =
-                    new LocalStringManagerImpl(ConfigurationPopulator.class);
-            final String msg = localStrings.getLocalString(this.getClass(),
-                    "invalid.extension.point",
-                    Dom.unwrap(parent).getProxyType().getName());
-            LOG.log(Level.SEVERE, msg, e);
-        }
-        if (m != null) {
-            try {
-                return (List<U>) m.invoke(parent);
-            } catch (IllegalAccessException e) {
-                LocalStringManager localStrings =
-                        new LocalStringManagerImpl(ConfigurationPopulator.class);
-                final String msg = localStrings.getLocalString(this.getClass(),
-                        "invalid.extension.point",
-                        Dom.unwrap(parent).getProxyType().getName());
-                LOG.log(Level.SEVERE, msg, e);
-            } catch (InvocationTargetException e) {
-                LocalStringManager localStrings =
-                        new LocalStringManagerImpl(ConfigurationPopulator.class);
-                final String msg = localStrings.getLocalString(this.getClass(),
-                        "invalid.extension.point",
-                        Dom.unwrap(parent).getProxyType().getName());
-                LOG.log(Level.SEVERE, msg, e);
-            }
-        }
-        return null;
-    }
 }

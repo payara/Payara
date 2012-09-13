@@ -42,11 +42,9 @@ package com.sun.enterprise.config.modularity.command;
 
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
-import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
-import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
@@ -183,9 +181,9 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
         for (ConfigBeanDefaultValue value : defaults) {
             builder.append(localStrings.getLocalString("at.location",
                     "At Location:"));
-            builder.append(replaceExpressionsWithValues(value.getLocation()));
+            builder.append(replaceExpressionsWithValues(value.getLocation(),habitat));
             builder.append(System.getProperty("line.separator"));
-            String substituted = replacePropertiesWithCurrentValue(
+            String substituted = ConfigModularityUtils.replacePropertiesWithCurrentValue(
                     getDependentConfigElement(value), value, habitat);
             builder.append(substituted);
             builder.append(System.getProperty("line.separator"));
@@ -205,30 +203,5 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
 
     }
 
-    private String replacePropertiesWithCurrentValue(String xmlConfiguration, ConfigBeanDefaultValue value, Habitat habitat) throws InvocationTargetException, IllegalAccessException {
-        for (ConfigCustomizationToken token : value.getCustomizationTokens()) {
-            String toReplace = "${" + token.getKey() + "}";
-            ConfigBeanProxy current = ConfigModularityUtils.getCurrentConfigBeanForDefaultValue(value, habitat);
-                String propertyValue = getPropertyValue(token, current);
-                if (propertyValue != null) {
-                    xmlConfiguration = xmlConfiguration.replace(toReplace, propertyValue);
-                }
-        }
-        return xmlConfiguration;
-    }
 
-
-    private String getPropertyValue(ConfigCustomizationToken token, ConfigBeanProxy finalConfigBean) {
-        if (finalConfigBean != null) {
-            ConfigBeanProxy parent = finalConfigBean.getParent();
-            while (!(parent instanceof SystemPropertyBag)) {
-                parent = parent.getParent();
-                if (parent == null) return null;
-            }
-            if (((SystemPropertyBag) parent).getSystemProperty(token.getKey()) != null) {
-                return ((SystemPropertyBag) parent).getSystemProperty(token.getKey()).getValue();
-            }
-            return null;
-        } else return token.getDefaultValue();
-    }
 }

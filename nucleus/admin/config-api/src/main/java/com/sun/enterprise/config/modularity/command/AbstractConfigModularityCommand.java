@@ -55,13 +55,13 @@ import java.util.StringTokenizer;
  */
 public abstract class AbstractConfigModularityCommand {
 
-    protected String replaceExpressionsWithValues(String location) {
+    protected String replaceExpressionsWithValues(String location, Habitat habitat) {
         StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
         while (tokenizer.hasMoreElements()) {
             String level = tokenizer.nextToken();
             if (level.contains("[$")) {
                 String expr = location.substring(location.indexOf("$"), location.indexOf("]"));
-                String value = ConfigModularityUtils.resolveExpression(expr);
+                String value = ConfigModularityUtils.resolveExpression(expr,habitat);
                 location = location.replace(expr, value);
             }
         }

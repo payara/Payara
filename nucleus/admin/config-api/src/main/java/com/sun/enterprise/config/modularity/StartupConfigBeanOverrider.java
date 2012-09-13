@@ -94,17 +94,18 @@ public class StartupConfigBeanOverrider implements PostConstruct {
                     }
                 } catch (Throwable e) {
                     LOG.log(Level.FINE, "Cannot load the class", e);
+                    continue;
                 }
             }
             if (clz.isAnnotationPresent(ActivateOnStartup.class)) {
                 LOG.info("Overriding Config specified by: " + clz.getName());
-                applyConfig(clz);
+                applyConfigIfNeeded(clz);
             }
         }
         LOG.info("Finished the config overriding procedure");
     }
 
-    private void applyConfig(Class<?> clz) {
+    private void applyConfigIfNeeded(Class<?> clz) {
         try {
             ConfigurationParser configurationParser = new ConfigurationParser();
             List<ConfigBeanDefaultValue> configBeanDefaultValueList = ConfigModularityUtils.getDefaultConfigurations(clz);

@@ -42,7 +42,6 @@ package com.sun.enterprise.config.modularity.parser;
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
 import com.sun.enterprise.config.serverbeans.ConfigLoader;
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.config.support.GlassFishConfigBean;
@@ -70,6 +69,8 @@ import java.util.logging.Logger;
  */
 public class ConfigurationParser<C extends ConfigLoader> {
     private static final Logger LOG = Logger.getLogger(ConfigurationParser.class.getName());
+    //TODO Until the TranslatedView issue is fixed this remain true.
+    private static boolean replaceSystemProperties = true;
 
     /**
      * @param habitat The Habitat object to add the config to
@@ -89,37 +90,37 @@ public class ConfigurationParser<C extends ConfigLoader> {
         //TODO requires rework to put all the changes that a service may introduce into one transaction
         //the solution is to put the loop into the apply method...  But it would be some fine amount of work
         for (final ConfigBeanDefaultValue configBeanDefaultValue : values) {
-            Domain domain = habitat.getService(Domain.class);
-            ConfigurationPopulator populator = new ConfigurationPopulator(configBeanDefaultValue.getXmlConfiguration(), doc, domain);
-//            ConfigurationPopulator populator = null;
-//            try {
-//                populator = new ConfigurationPopulator(
-//                        ConfigModularityUtils.replacePropertiesWithCurrentValue(
-//                                configBeanDefaultValue.getXmlConfiguration(), configBeanDefaultValue, habitat)
-//                        , doc, domain);
-//            } catch (Exception e) {
-//                LocalStringManager localStrings =
-//                        new LocalStringManagerImpl(ConfigurationParser.class);
-//                final String msg = localStrings.getLocalString(
-//                        "can.not.add.configuration.to.extension.point",
-//                        "Cannot add new configuration extension to the extension point.");
-//                LOG.log(Level.SEVERE, msg, e);
-//            }
+            final ConfigBeanProxy parent = ConfigModularityUtils.getOwningObject(configBeanDefaultValue.getLocation(), habitat);
+            ConfigurationPopulator populator = null;
+            if (replaceSystemProperties)
+                try {
+                    populator = new ConfigurationPopulator(
+                            ConfigModularityUtils.replacePropertiesWithCurrentValue(
+                                    configBeanDefaultValue.getXmlConfiguration(), configBeanDefaultValue, habitat)
+                            , doc, parent);
+                } catch (Exception e) {
+                    LocalStringManager localStrings =
+                            new LocalStringManagerImpl(ConfigurationParser.class);
+                    final String msg = localStrings.getLocalString(
+                            "can.not.add.configuration.to.extension.point",
+                            "Cannot add new configuration extension to the extension point.");
+                    LOG.log(Level.SEVERE, msg, e);
+                }
+            else {
+                populator = new ConfigurationPopulator(configBeanDefaultValue.getXmlConfiguration(), doc, parent);
+            }
             populator.run(configParser);
-            final ConfigBeanProxy parent;
             try {
-                parent = ConfigModularityUtils.getOwningObject(configBeanDefaultValue.getLocation(), habitat);
+                Class configBeanClass = ConfigModularityUtils.getClassForFullName(configBeanDefaultValue.getConfigBeanClassName(), habitat);
+                final ConfigBeanProxy pr = doc.getRoot().createProxy(configBeanClass);
                 ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
                     public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
-                        Class configBeanClass = ConfigModularityUtils.getClassForFullName(configBeanDefaultValue.getConfigBeanClassName(), habitat);
                         boolean writeDefaultElementsToXml = Boolean.parseBoolean(System.getProperty("writeDefaultElementsToXml"));
-                        if (!writeDefaultElementsToXml)  {
+                        if (!writeDefaultElementsToXml) {
                             //Do not write default snippets to domain.xml
                             doc.getRoot().skipFromXml();
                         }
-                        ConfigModularityUtils.setConfigBean(
-                                doc.getRoot().createProxy(configBeanClass)
-                                , configBeanDefaultValue, habitat, param);
+                        ConfigModularityUtils.setConfigBean(pr, configBeanDefaultValue, habitat, param);
                         return param;
                     }
                 }, parent);

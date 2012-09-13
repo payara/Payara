@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.config.modularity.parser;
 
-import com.sun.enterprise.config.serverbeans.ConfigLoader;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -68,20 +67,20 @@ public class ConfigurationPopulator {
 
     private final static Logger LOG = Logger.getLogger(ConfigurationPopulator.class.getName());
     private final DomDocument doc;
-    private final ConfigLoader loader;
+    private final ConfigBeanProxy parent;
     private final String xmlContent;
 
-    public ConfigurationPopulator(String xmlContent, DomDocument doc, ConfigLoader loader) {
+    public ConfigurationPopulator(String xmlContent, DomDocument doc, ConfigBeanProxy parent) {
         this.xmlContent = xmlContent;
         this.doc = doc;
-        this.loader = loader;
+        this.parent = parent;
     }
 
     public void run(ConfigParser parser) {
         try {
             InputStream is = new ByteArrayInputStream(xmlContent.getBytes());
             XMLStreamReader reader = XMLInputFactory.newFactory().createXMLStreamReader(is, "utf-8");
-            parser.parse(reader, doc, Dom.unwrap((ConfigBeanProxy) loader));
+            parser.parse(reader, doc, Dom.unwrap((ConfigBeanProxy) parent));
         } catch (XMLStreamException e) {
             LocalStringManager localStrings =
                     new LocalStringManagerImpl(ConfigurationParser.class);
