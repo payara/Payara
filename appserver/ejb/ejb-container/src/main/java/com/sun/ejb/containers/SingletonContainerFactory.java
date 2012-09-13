@@ -57,6 +57,9 @@ public class SingletonContainerFactory extends BaseContainerFactory
                                      ClassLoader loader,
                                      DeploymentContext deployContext)
             throws Exception {
+        // EjbApplication got this ContainerFactory by ejbDescriptor type
+        // hence we can always cast
+        assert ejbDescriptor instanceof EjbSessionDescriptor;
         EjbSessionDescriptor sd = (EjbSessionDescriptor) ejbDescriptor;
         AbstractSingletonContainer container;
         if (sd.hasContainerManagedConcurrency()) {

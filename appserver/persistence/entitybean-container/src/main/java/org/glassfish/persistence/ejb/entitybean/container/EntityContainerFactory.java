@@ -85,6 +85,9 @@ public final class EntityContainerFactory extends BaseContainerFactory
         EntityContainer container = null;
 
         // instantiate container class
+      // EjbApplication got this ContainerFactory by ejbDescriptor type
+      // hence we can always cast
+      assert ejbDescriptor instanceof EjbEntityDescriptor;
       if (((EjbEntityDescriptor)ejbDescriptor).getIASEjbExtraDescriptors()
               .isIsReadOnlyBean()) {
 
