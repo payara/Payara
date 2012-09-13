@@ -757,6 +757,11 @@ public class VersioningUtilsTest {
         }
 
         @Override
+        public File altDD() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
         public List<Property> getProperty() {
             throw new UnsupportedOperationException("Not supported yet.");
         }

@@ -256,6 +256,10 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             commandParams.enabled = Boolean.TRUE;
         }
 
+        if (commandParams.altdd != null) {
+            context.getSource().addArchiveMetaData(DeploymentProperties.ALT_DD, commandParams.altdd);
+        }
+
         ProgressTracker tracker = new ProgressTracker() {
             @Override
             public void actOn(Logger logger) {
@@ -1840,6 +1844,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         final Collection<String> excludedParams = new ArrayList<String>();
         excludedParams.add(DeploymentProperties.PATH);
         excludedParams.add(DeploymentProperties.DEPLOYMENT_PLAN);
+        excludedParams.add(DeploymentProperties.ALT_DD);
         excludedParams.add(DeploymentProperties.UPLOAD); // We'll force it to true ourselves.
 
         final ParameterMap paramMap;
@@ -1862,6 +1867,12 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         if (planLocation != null) {
             final File actualPlan = new File(new URI(planLocation));
             paramMap.set(DeployCommandParameters.ParameterNames.DEPLOYMENT_PLAN, actualPlan.getAbsolutePath());
+        }
+
+        String altDDLocation = appProperties.getProperty(Application.ALT_DD_LOCATION_PROP_NAME);
+        if (altDDLocation != null) {
+            final File altDD = new File(new URI(altDDLocation));
+            paramMap.set(DeployCommandParameters.ParameterNames.ALT_DD, altDD.getAbsolutePath());
         }
 
         // always upload the archives to the instance side

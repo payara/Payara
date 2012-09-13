@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -93,6 +93,9 @@ public class DeployCommandParameters extends OpsParams {
     @Param(name=ParameterNames.DEPLOYMENT_PLAN, optional=true)
     public File deploymentplan = null;
 
+    @Param(name=ParameterNames.ALT_DD, optional=true)
+    public File altdd = null;
+
     @Param(name=ParameterNames.ENABLED, optional=true)
     public Boolean enabled = null;
 
@@ -177,6 +180,7 @@ public class DeployCommandParameters extends OpsParams {
         public static final String ENABLED = "enabled";
         public static final String PRECOMPILE_JSP = "precompilejsp";
         public static final String DEPLOYMENT_PLAN = "deploymentplan";
+        public static final String ALT_DD = "altdd";
     }
     
 }

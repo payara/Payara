@@ -64,6 +64,8 @@ public abstract class JarArchive implements Archive {
 
     protected Map<Class<?>, Object> extraData=new HashMap<Class<?>, Object>();
 
+    protected Map<String, Object> archiveMetaData = new HashMap<String, Object>();
+
     /**
      * Returns an enumeration of the module file entries with the
      * specified prefix.  All elements in the enumeration are of
@@ -173,5 +175,23 @@ public abstract class JarArchive implements Archive {
 
     public synchronized <U> void removeExtraData(Class<U> dataType) {
         extraData.remove(dataType);
+    }
+
+    public void addArchiveMetaData(String metaDataKey, Object metaData) {
+        if (metaData!=null) {
+            archiveMetaData.put(metaDataKey, metaData);
+        }
+    }
+
+    public <T> T getArchiveMetaData(String metaDataKey, Class<T> metadataType) {
+        Object metaData = archiveMetaData.get(metaDataKey);
+        if (metaData != null) {
+            return metadataType.cast(metaData);
+        }
+        return null;
+    }
+
+    public void removeArchiveMetaData(String metaDataKey) {
+        archiveMetaData.remove(metaDataKey);
     }
 }

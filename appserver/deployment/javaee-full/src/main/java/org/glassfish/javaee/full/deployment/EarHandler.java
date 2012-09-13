@@ -461,6 +461,11 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
         ApplicationHolder holder = context.getModuleMetaData(ApplicationHolder.class);
         if (holder==null || holder.app==null) {
             try {
+                DeployCommandParameters params = context.getCommandParameters(DeployCommandParameters.class); 
+                if (params != null && params.altdd != null) {
+                    source.addArchiveMetaData(DeploymentProperties.ALT_DD, 
+                        params.altdd);
+                }
                 long start = System.currentTimeMillis();
                 ApplicationArchivist archivist = habitat.getService(ApplicationArchivist.class);
                 archivist.setAnnotationProcessingRequested(true);

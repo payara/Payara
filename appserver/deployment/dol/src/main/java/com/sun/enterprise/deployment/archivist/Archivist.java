@@ -639,7 +639,13 @@ public abstract class Archivist<T extends BundleDescriptor> {
 
         try {
             getStandardDDFile().setArchiveType(getModuleType());
-            is = archive.getEntry(standardDD.getDeploymentDescriptorPath());
+            File altDDFile = archive.getArchiveMetaData(
+                DeploymentProperties.ALT_DD, File.class);
+            if (altDDFile != null && altDDFile.exists() && altDDFile.isFile()) {
+                is = new FileInputStream(altDDFile); 
+            } else {
+                is = archive.getEntry(standardDD.getDeploymentDescriptorPath());
+            }
             if (is != null) {
                 standardDD.setXMLValidation(getXMLValidation());
                 standardDD.setXMLValidationLevel(validationLevel);

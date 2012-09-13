@@ -249,11 +249,13 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         if (context == null) {
             return null;
         }
+        DeployCommandParameters params = context.getCommandParameters(DeployCommandParameters.class);
         Application application = null;
         try {
             // for these cases, the standard DD could contain the application
             // name for ear and module name for standalone module
-            if (archive.exists("META-INF/application.xml") || 
+            if (params.altdd != null || 
+                archive.exists("META-INF/application.xml") || 
                 archive.exists("WEB-INF/web.xml") ||
                 archive.exists("META-INF/ejb-jar.xml") || 
                 archive.exists("META-INF/application-client.xml") || 

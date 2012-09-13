@@ -117,4 +117,15 @@ abstract public class ReadableArchiveAdapter implements ReadableArchive{
 
     public <U> void removeExtraData(Class<U> dataType) {
     }
+
+    public void addArchiveMetaData(String metaDataKey, Object metaData) {
+    }
+
+    public <T> T getArchiveMetaData(String metaDataKey, Class<T> metadataType) {
+        return null;
+    }
+
+    public void removeArchiveMetaData(String metaDataKey) {
+    }
+
 }

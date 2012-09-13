@@ -71,6 +71,7 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
 
     public static final String APP_LOCATION_PROP_NAME = "appLocation";
     public static final String DEPLOYMENT_PLAN_LOCATION_PROP_NAME = "deploymentPlanLocation";
+    public static final String ALT_DD_LOCATION_PROP_NAME = "altDDLocation";
 
     /**
      * Gets the value of the contextRoot property.
@@ -312,6 +313,9 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
     @DuckTyped
     File deploymentPlan();
 
+    @DuckTyped
+    File altDD();
+
     class Duck {
 
         public static Module getModule(Application instance, String name) {
@@ -435,6 +439,10 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
 
         public static File deploymentPlan(final Application instance) {
             return fileForProp(instance, DEPLOYMENT_PLAN_LOCATION_PROP_NAME);
+        }
+
+        public static File altDD(final Application instance) {
+            return fileForProp(instance, ALT_DD_LOCATION_PROP_NAME);
         }
 
         private static File fileForProp(final Application instance,

@@ -50,6 +50,8 @@ import java.util.HashMap;
 public abstract class AbstractReadableArchive implements ReadableArchive {
     protected ReadableArchive parentArchive;
     protected Map<Class<?>, Object> extraData=new HashMap<Class<?>, Object>();
+    protected Map<String, Object> archiveMetaData = new HashMap<String, Object>();
+
 
     /**
      * set the parent archive for this archive
@@ -87,5 +89,24 @@ public abstract class AbstractReadableArchive implements ReadableArchive {
 
     public synchronized <U> void removeExtraData(Class<U> dataType) {
         extraData.remove(dataType);
+    }
+
+
+    public void addArchiveMetaData(String metaDataKey, Object metaData) {
+        if (metaData!=null) {
+            archiveMetaData.put(metaDataKey, metaData);
+        }
+    }
+
+    public <T> T getArchiveMetaData(String metaDataKey, Class<T> metadataType) {
+        Object metaData = archiveMetaData.get(metaDataKey);
+        if (metaData != null) {
+            return metadataType.cast(metaData);
+        }
+        return null;
+    }
+
+    public void removeArchiveMetaData(String metaDataKey) {
+        archiveMetaData.remove(metaDataKey);
     }
 }
