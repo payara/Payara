@@ -320,24 +320,7 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-eclipse-plugin</artifactId>
                     <version>2.9</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.glassfish.copyright</groupId>
-                    <artifactId>glassfish-copyright-maven-plugin</artifactId>
-                    <version>${copyright-plugin.version}</version>
-                    <configuration>
-                        <excludeFile>
-                            copyright-exclude
-                        </excludeFile>
-                    </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.glassfish.main</groupId>
-                            <artifactId>copyright</artifactId>
-                            <version>${project.version}</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>                
+                </plugin>               
             </plugins>
         </pluginManagement>
 
@@ -1153,6 +1136,35 @@
                     <systemPath>${java.home}/../Classes/classes.jar</systemPath>
                 </dependency>                    
             </dependencies>
+        </profile>
+        <profile>
+            <id>copyright</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.glassfish.copyright</groupId>
+                            <artifactId>glassfish-copyright-maven-plugin</artifactId>
+                            <version>${copyright-plugin.version}</version>
+                            <configuration>
+                                <excludeFile>
+                                    copyright-exclude
+                                </excludeFile>
+                            </configuration>
+                            <dependencies>
+                                <dependency>
+                                    <groupId>org.glassfish.main</groupId>
+                                    <artifactId>copyright</artifactId>
+                                    <version>${project.version}</version>
+                                </dependency>
+                            </dependencies>
+                        </plugin>                
+                    </plugins>
+                </pluginManagement>
+            </build>
         </profile>
     </profiles>
     
