@@ -92,12 +92,23 @@
         </mailingList>
     </mailingLists>
 
-    <modules>
-        <module>nucleus</module>
-        <module>appserver</module>
-    </modules>
+
 
     <profiles>
+        <profile>
+            <id>default-reactor</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>release-phase-all</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>nucleus</module>
+                <module>appserver</module>
+            </modules>
+        </profile>
         <profile>
             <id>release-phase1</id>
             <activation>
