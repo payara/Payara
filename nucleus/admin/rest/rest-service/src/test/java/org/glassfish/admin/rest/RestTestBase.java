@@ -105,7 +105,7 @@ public class RestTestBase {
 
             if (!currentTestClass.isEmpty()) {
                 RestTestBase rtb = new RestTestBase();
-                Client client = new RestClient();
+                Client client = new ClientWrapper();
                 Response cr = client.target(rtb.getAddress("/domain/view-log")).
                         request().
                         get(Response.class);
@@ -145,7 +145,7 @@ public class RestTestBase {
     @BeforeMethod(groups = "online", alwaysRun = true)
     protected Client getClient() {
         if (client == null) {
-            client = new RestClient(new HashMap<String, String>() {{
+            client = new ClientWrapper(new HashMap<String, String>() {{
                 put(Constants.HEADER_LEGACY_FORMAT, "dummy");
             }});
         }

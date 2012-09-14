@@ -66,10 +66,10 @@ import org.glassfish.jersey.media.multipart.MultiPartClientBinder;
  * client configuration concerns, such as registering the <code>CsrfProtectionFilter</code>.
  * @author jdlee
  */
-public class RestClient implements Client {
+public class ClientWrapper implements Client {
     protected Client realClient;
 
-    public RestClient() {
+    public ClientWrapper() {
         this(new HashMap<String, String>());
     }
 
@@ -78,7 +78,7 @@ public class RestClient implements Client {
      * each request.
      * @param headers
      */
-    public RestClient(final Map<String, String> headers) {
+    public ClientWrapper(final Map<String, String> headers) {
         realClient = JerseyClientFactory.newClient(new ClientConfig().
                 binders(new MultiPartClientBinder(), new JettisonBinder()));
         realClient.configuration().register(new CsrfProtectionFilter());
