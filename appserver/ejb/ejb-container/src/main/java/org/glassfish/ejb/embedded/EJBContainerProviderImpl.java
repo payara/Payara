@@ -201,6 +201,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
                 addWebContainerIfRequested(properties, glassFishProperties);
 
                 runtime = GlassFishRuntime.bootstrap(bootstrapProperties);
+                _logger.info("[EJBContainerProviderImpl] Using runtime class: " + runtime.getClass());
                 GlassFish server = runtime.newGlassFish(glassFishProperties);
                 if (l.instance_root != null && !l.reuse_instance_location) {
                     // XXX Start the server to get the services

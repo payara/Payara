@@ -132,6 +132,7 @@ public class EJBContainerImpl extends EJBContainer {
                 params = new String[] {};
             }
 
+            _logger.info("[EJBContainerImpl] GlassFish status: " + server.getStatus());
             if (app instanceof ScatteredArchive) {
                 _logger.info("[EJBContainerImpl] Deploying as a ScatteredArchive");
                 deployedAppName = deployer.deploy(((ScatteredArchive)app).toURI(), params);
