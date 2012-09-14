@@ -41,14 +41,41 @@
     <config-bundle location="domain/configs/config[$CURRENT_INSTANCE_CONFIG_NAME]" replace-if-exist="false">
         <customization-tokens>
             <customization-token
-                    title="$jms.service.portNumber.title" name="JMS_PROVIDER_PORT"
-                    default-value="7676"
-                    description="$jms.service.portNumber.description"/>
+                title="$jms.service.portNumber.title" name="JMS_PROVIDER_PORT"
+                default-value="7676"
+                description="$jms.service.portNumber.description"/>
         </customization-tokens>
         <configuration-element config-bean-class-name="com.sun.enterprise.connectors.jms.config.JmsService">
-            <![CDATA[<jms-service default-jms-host="default_JMS_host" type="EMBEDDED">
-   <jms-host port="${JMS_PROVIDER_PORT}" host="localhost" name="default_JMS_host"/>
-</jms-service>]]>
+<![CDATA[
+    <jms-service default-jms-host="default_JMS_host" type="EMBEDDED">
+        <jms-host port="${JMS_PROVIDER_PORT}" host="localhost" name="default_JMS_host"/>
+   </jms-service>
+]]>
+        </configuration-element>
+    </config-bundle>
+
+    <config-bundle location="domain/resources" replace-if-exist="false">
+        <configuration-element config-bean-class-name="org.glassfish.connectors.config.ConnectorConnectionPool">
+<![CDATA[
+    <connector-connection-pool name="__DefaultJMSConnectionFactory-Connection-Pool" max-pool-size="64" resource-adapter-name="jmsra" connection-definition-name="javax.jms.ConnectionFactory">
+    </connector-connection-pool>
+]]>
+        </configuration-element>
+    </config-bundle>
+
+    <config-bundle location="domain/resources" replace-if-exist="false">
+        <configuration-element config-bean-class-name="org.glassfish.connectors.config.ConnectorResource">
+<![CDATA[
+    <connector-resource pool-name="__DefaultJMSConnectionFactory-Connection-Pool" jndi-name="jms/__defaultConnectionFactory" object-type="system-all"></connector-resource>
+]]>
+        </configuration-element>
+    </config-bundle>
+
+    <config-bundle location="domain/servers/server[server]" replace-if-exist="false">
+        <configuration-element config-bean-class-name="com.sun.enterprise.config.serverbeans.ResourceRef">
+<![CDATA[
+    <resource-ref ref="jms/__defaultConnectionFactory"/>
+]]>
         </configuration-element>
     </config-bundle>
 </service-config>
