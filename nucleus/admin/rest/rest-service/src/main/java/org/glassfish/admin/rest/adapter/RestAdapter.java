@@ -88,6 +88,7 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.jettison.JettisonBinder;
 import org.glassfish.jersey.media.multipart.MultiPartBinder;
+import org.glassfish.jersey.message.MessageProperties;
 import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.CsrfProtectionFilter;
@@ -155,8 +156,8 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     public HttpHandler getHttpService() {
         return this;
     }
-    
-    /** If resource can provide access for non-GET methods. 
+
+    /** If resource can provide access for non-GET methods.
      * By default - NO.
      */
     protected boolean enableModifAccessToInstances() {
@@ -357,8 +358,11 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
             }
         });
 
+        rc.setProperty(MessageProperties.LEGACY_WORKERS_ORDERING, true);
+
         //add a rest config listener for possible reload of Jersey
         new RestConfigChangeListener(habitat, r, rc, sc);
+
         return rc;
     }
 
