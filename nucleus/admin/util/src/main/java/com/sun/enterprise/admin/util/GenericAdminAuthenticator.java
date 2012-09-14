@@ -108,7 +108,7 @@ import org.glassfish.internal.api.ServerContext;
 @ContractsProvided({JMXAuthenticator.class, AdminAccessController.class})
 public class GenericAdminAuthenticator implements AdminAccessController, JMXAuthenticator, PostConstruct {
     
-    @LoggerInfo(subsystem="ADMSEC", description="Admin security ")
+    @LoggerInfo(subsystem="ADMSEC", description="Admin security")
     private static final String ADMSEC_LOGGER_NAME = "javax.enterprise.system.tools.admin.security";
 
     @LogMessagesResourceBundle

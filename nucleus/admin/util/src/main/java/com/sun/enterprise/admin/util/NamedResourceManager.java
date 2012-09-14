@@ -89,15 +89,8 @@ public class NamedResourceManager {
     
     private final String LINE_SEP = System.getProperty("line.separator");
     
-    @LoggerInfo(subsystem="ADMSEC", description="Admin security ")
-    private static final String ADMSEC_LOGGER_NAME = "javax.enterprise.system.tools.admin.security";
+    private static final Logger  ADMSEC_LOGGER = GenericAdminAuthenticator.ADMSEC_LOGGER;
 
-    @LogMessagesResourceBundle
-    private static final String LOG_MESSAGES_RB = "com.sun.enterprise.admin.util.LogMessages";
-
-    static final Logger ADMSEC_LOGGER = Logger.getLogger(ADMSEC_LOGGER_NAME, LOG_MESSAGES_RB);
-    
-    
     public <T> T register(T instance) throws IllegalArgumentException, IllegalAccessException {
         final Model model = findOrCreateModel(instance.getClass());
         if ( ! model.isPrimary) {
