@@ -392,7 +392,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <configuration>
-                    <retryFailedDeploymentCount>20</retryFailedDeploymentCount>
+                    <retryFailedDeploymentCount>10</retryFailedDeploymentCount>
                 </configuration>
             </plugin>
             <plugin>
