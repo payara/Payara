@@ -655,10 +655,10 @@ public final class ConfigModularityUtils {
         if (expression.startsWith("$")) {
             String name = expression.substring(1, expression.length());
             if (name.equalsIgnoreCase("CURRENT_INSTANCE_CONFIG_NAME")) {
-                expression = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME).getName();
+                expression = habitat.<Config>getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME).getName();
             }
             if (name.equalsIgnoreCase("CURRENT_INSTANCE_CONFIG_SERVER")) {
-                expression = habitat.getComponent(Server.class, ServerEnvironment.DEFAULT_INSTANCE_NAME).getName();
+                expression = habitat.<Server>getService(Server.class, ServerEnvironment.DEFAULT_INSTANCE_NAME).getName();
             }
         }
         return expression;
