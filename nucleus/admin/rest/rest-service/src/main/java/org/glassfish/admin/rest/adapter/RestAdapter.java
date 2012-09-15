@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 import javax.ws.rs.core.MediaType;
@@ -80,15 +81,22 @@ import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
+import org.glassfish.hk2.api.Factory;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.internal.inject.ReferencingFactory;
+import org.glassfish.jersey.internal.util.collection.Ref;
+import org.glassfish.jersey.internal.util.collection.Refs;
 import org.glassfish.jersey.jettison.JettisonBinder;
 import org.glassfish.jersey.media.multipart.MultiPartBinder;
 import org.glassfish.jersey.message.MessageProperties;
+import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.CsrfProtectionFilter;
@@ -132,7 +140,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     protected AdminAccessController adminAuthenticator;
 
     protected static final Logger logger = LogDomains.getLogger(RestAdapter.class, LogDomains.ADMIN_LOGGER);
-    private volatile HttpHandler adapter = null;
+    private volatile JerseyContainer adapter = null;
     private AdminEndpointDecider epd = null;
 
     protected RestAdapter() {
@@ -156,8 +164,8 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     public HttpHandler getHttpService() {
         return this;
     }
-
-    /** If resource can provide access for non-GET methods.
+    
+    /** If resource can provide access for non-GET methods. 
      * By default - NO.
      */
     protected boolean enableModifAccessToInstances() {
@@ -297,6 +305,30 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
         }};
     }
 
+    public static class SubjectReferenceFactory implements Factory<Ref<Subject>> {
+
+        Ref<Request> requestReference;
+
+        @Inject
+        public SubjectReferenceFactory(Provider<Ref<Request>> requestReference) {
+            this.requestReference = requestReference.get();
+        }
+
+        @Override
+        public Ref<Subject> provide() {
+            Subject subject = (Subject) requestReference.get().getAttribute(Constants.REQ_ATTR_SUBJECT);
+            return Refs.of(subject);
+        }
+
+        @Override
+        public void dispose(Ref<Subject> t) {
+        }
+    }
+
+    protected Class<? extends Factory<Ref<Subject>>> getSubjectReferenceFactory() {
+        return SubjectReferenceFactory.class;
+    }
+
     protected ResourceConfig getResourceConfig(Set<Class<?>> classes,
                                                final ServerContext sc,
                                                final Habitat habitat) throws EndpointRegistrationException {
@@ -355,6 +387,12 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                 AbstractActiveDescriptor<RestSessionManager> rmDescriptor =
                         BuilderHelper.createConstantDescriptor(rsm);
                 bind(rmDescriptor);
+
+                bindFactory(getSubjectReferenceFactory()).to(new TypeLiteral<Ref<Subject>>() {
+                }).in(PerLookup.class);
+                bindFactory(ReferencingFactory.<Subject>referenceFactory()).to(new TypeLiteral<Ref<Subject>>() {
+                }).in(RequestScoped.class);
+
             }
         });
 
@@ -371,21 +409,32 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
      * so that Jersey is not loaded when the RestAdapter is loaded at boot time
      * gain a few 100 millis at GlassFish startup time
      */
-    public HttpHandler exposeContext(Set<Class<?>> classes, final ServerContext sc,
+    protected JerseyContainer exposeContext(Set<Class<?>> classes, final ServerContext sc,
                                      final Habitat habitat) throws EndpointRegistrationException {
-        HttpHandler httpHandler = null;
-        ResourceConfig rc = getResourceConfig(classes, sc, habitat);
-        //Use common classloader. Jersey artifacts are not visible through
-        //module classloader
+        // Use common classloader. Jersey artifacts are not visible through
+        // module classloader. Actually there is a more important reason to use CommonClassLoader.
+        // jax-rs API called RuntimeDelegate makes stupid class loading assumption and throws LinkageError
+        // when it finds an implementation of RuntimeDelegate that's part of WLS system class loader.
+        // So, we force it to restrict its search space using common class loader.
         ClassLoader originalContextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             ClassLoader apiClassLoader = sc.getCommonClassLoader();
             Thread.currentThread().setContextClassLoader(apiClassLoader);
-            httpHandler = ContainerFactory.createContainer(HttpHandler.class, rc);
+            ResourceConfig rc = getResourceConfig(classes, sc, habitat);
+            return getJerseyContainer(rc);
         } finally {
             Thread.currentThread().setContextClassLoader(originalContextClassLoader);
         }
-        return httpHandler;
+    }
+
+    protected JerseyContainer getJerseyContainer(ResourceConfig rc) {
+        final HttpHandler httpHandler = ContainerFactory.createContainer(HttpHandler.class, rc);
+        return new JerseyContainer() {
+            @Override
+            public void service(Request request, Response response) throws Exception {
+                httpHandler.service(request, response);
+            }
+        };
     }
 
     private void reportError(Request req, Response res, int statusCode, String msg) {

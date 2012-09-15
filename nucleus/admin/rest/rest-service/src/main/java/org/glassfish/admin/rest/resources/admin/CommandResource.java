@@ -68,7 +68,6 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
 import org.glassfish.api.admin.*;
-import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.internal.util.collection.Ref;
@@ -97,8 +96,7 @@ public class CommandResource {
     private CommandRunner commandRunner;
 
     @Inject
-    protected Ref<Request> requestRef;
-    private Subject subject;
+    protected Ref<Subject> subjectRef;
 
 //    @GET
 //    @Produces({MediaType.TEXT_PLAIN})
@@ -606,11 +604,7 @@ public class CommandResource {
     }
 
     private Subject getSubject() {
-        if (subject == null) {
-            Request req = requestRef.get();
-            subject = (Subject) req.getAttribute(Constants.REQ_ATTR_SUBJECT);
-        }
-        return subject;
+        return subjectRef.get();
     }
 
     private static class CommandName {

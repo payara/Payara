@@ -65,7 +65,6 @@ import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.security.services.common.SubjectUtil;
@@ -84,10 +83,9 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
     @Context
     protected UriInfo uriInfo;
     @Inject
-    protected Ref<Request> requestRef;
+    protected Ref<Subject> subjectRef;
     @Inject
     protected Habitat habitat;
-    protected Subject subject;
     private String authenticatedUser;
     protected CompositeUtil compositeUtil = CompositeUtil.instance();
 
@@ -96,12 +94,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
      * @return
      */
     protected Subject getSubject() {
-        if (subject == null) {
-            Request req = requestRef.get();
-            subject = (Subject) req.getAttribute(Constants.REQ_ATTR_SUBJECT);
-        }
-        
-        return subject;
+        return subjectRef.get();
     }
 
     /**
@@ -132,8 +125,8 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
         this.uriInfo = uriInfo;
     }
 
-    public void setRequestRef(Ref<Request> requestRef) {
-        this.requestRef = requestRef;
+    public void setSubjectRef(Ref<Subject> subjectRef) {
+        this.subjectRef = subjectRef;
     }
 
     public void setHabitat(Habitat habitat) {
@@ -175,7 +168,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
             T resource = clazz.newInstance();
             CompositeResource cr = (CompositeResource)resource;
             cr.setHabitat(habitat);
-            cr.setRequestRef(requestRef);
+            cr.setSubjectRef(subjectRef);
             cr.setUriInfo(uriInfo);
             
             return resource;
