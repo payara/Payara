@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,12 +46,13 @@
 
 package com.sun.appserv;
 
-/** Third party tool vendors may implement this interface to provide code
+/**
+ * Third party tool vendors may implement this interface to provide code
  * instrumentation to the application server.
  *
- * This interface is retained for compatibility reasons, new implementation should use
- * the org.glassfish.apu.BytecodeProcessor interfae.
+ * This interface is retained for compatibility reasons, new implementations
+ * should use the org.glassfish.api.BytecodePreprocessor interface.
  */
-public interface BytecodePreprocessor extends org.glassfish.api.BytecodePreprocessor {
-
+public interface BytecodePreprocessor
+    extends org.glassfish.api.BytecodePreprocessor {
 }
