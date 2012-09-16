@@ -96,7 +96,7 @@
 
     <profiles>
         <profile>
-            <id>default-reactor</id>
+            <id>release-phase2</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
                 <property>
@@ -130,7 +130,7 @@
             <!--
                 RE profile for release purposes.
             -->
-            <id>release-phase2</id>
+            <id>ips</id>
             <activation>
                 <property>
                     <name>release-phase-all</name>
