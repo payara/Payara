@@ -40,6 +40,7 @@
 
 package org.glassfish.orb.admin.config;
 
+import com.sun.enterprise.config.modularity.annotation.ActivateOnStartup;
 import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
 import com.sun.enterprise.config.modularity.annotation.HasCustomizationTokens;
 import com.sun.enterprise.config.serverbeans.SslClientConfig;
@@ -63,6 +64,7 @@ import java.util.List;
 @Configured
 @CustomConfiguration
 @HasCustomizationTokens
+@ActivateOnStartup
 public interface IiopService extends ConfigBeanProxy, Injectable, ConfigExtension   {
 
 
