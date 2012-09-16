@@ -49,7 +49,6 @@ import javax.net.ssl.SSLContext;
 import com.sun.corba.ee.spi.orb.ORB;
 import com.sun.corba.ee.spi.misc.ORBConstants;
 import com.sun.corba.ee.spi.transport.ORBSocketFactory;
-import com.sun.enterprise.config.serverbeans.Config;
 import org.glassfish.orb.admin.config.IiopListener;
 import org.glassfish.orb.admin.config.IiopService;
 import org.glassfish.grizzly.config.dom.Ssl;
@@ -135,9 +134,8 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
             //if (Switch.getSwitch().getContainerType() == Switch.EJBWEB_CONTAINER) {
             if((processType != null) && (processType.isServer())) {
                 //this is the EJB container
-                        Config conf = Globals.getDefaultHabitat().getService(Config.class,
+                IiopService iiopBean = Globals.getDefaultHabitat().getService(IiopService.class,
                         ServerEnvironment.DEFAULT_INSTANCE_NAME);
-                IiopService iiopBean =conf.getExtensionByType(IiopService.class);
                 List<IiopListener> iiopListeners = iiopBean.getIiopListener();
                 for (IiopListener listener : iiopListeners) {
                     Ssl ssl = listener.getSsl(); 

@@ -95,6 +95,16 @@
         <virtual-server id="server" network-listeners="http-listener-1,http-listener-2"/>
         <virtual-server id="__asadmin" network-listeners="admin-listener"/>
       </http-service>
+      <iiop-service>
+        <orb use-thread-pool-ids="thread-pool-1" />
+        <iiop-listener address="0.0.0.0" port="%%%ORB_LISTENER_PORT%%%" id="orb-listener-1" lazy-init="true"/>
+        <iiop-listener security-enabled="true" address="0.0.0.0" port="%%%ORB_SSL_PORT%%%" id="SSL">
+          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" />
+        </iiop-listener>
+        <iiop-listener security-enabled="true" address="0.0.0.0" port="%%%ORB_MUTUALAUTH_PORT%%%" id="SSL_MUTUALAUTH">
+          <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" cert-nickname="s1as" client-auth-enabled="true" />
+        </iiop-listener>
+      </iiop-service>
       <admin-service auth-realm-name="admin-realm" type="das-and-server" system-jmx-connector-name="system">
         <jmx-connector auth-realm-name="admin-realm" security-enabled="false" address="0.0.0.0" port="%%%JMX_SYSTEM_CONNECTOR_PORT%%%" name="system" />
         <property value="/admin" name="adminConsoleContextRoot" />

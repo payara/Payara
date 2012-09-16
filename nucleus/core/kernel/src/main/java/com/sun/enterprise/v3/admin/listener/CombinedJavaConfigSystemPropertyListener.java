@@ -118,7 +118,7 @@ import com.sun.logging.LogDomains;
  */
 
 @Service
-@RunLevel(mode = RunLevel.RUNLEVEL_MODE_VALIDATING, value = 1)
+@RunLevel(mode = RunLevel.RUNLEVEL_MODE_VALIDATING, value = 2)
 public final class CombinedJavaConfigSystemPropertyListener implements PostConstruct, ConfigListener {
     @Inject
     ServiceLocator habitat;
