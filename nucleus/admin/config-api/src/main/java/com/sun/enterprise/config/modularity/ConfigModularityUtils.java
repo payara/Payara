@@ -395,7 +395,9 @@ public final class ConfigModularityUtils {
 
                     if (configBeanInstance != null) return (T) configBeanInstance;
                 } else {
-                    extensions.remove(configBeanInstance);
+                    if (configBeanInstance != null) {
+                        extensions.remove(configBeanInstance);
+                    }
                 }
             }
 
@@ -483,24 +485,6 @@ public final class ConfigModularityUtils {
             }
         }
     }
-
-    public static <T extends ConfigBeanProxy> void applyCustomTokens(final ConfigBeanDefaultValue configBeanDefaultValue,
-                                                                     ConfigBeanProxy bag, final DomDocument doc)
-            throws TransactionFailure, PropertyVetoException {
-        final List<ConfigCustomizationToken> tokens = configBeanDefaultValue.getCustomizationTokens();
-        ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
-            public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
-                boolean writeDefaultElementsToXml = Boolean.parseBoolean(System.getProperty("writeDefaultElementsToXml"));
-                if (!writeDefaultElementsToXml) {
-                    //Do not write default snippets to domain.xml
-                    doc.getRoot().skipFromXml();
-                }
-                addSystemPropertyForToken(tokens, (SystemPropertyBag) param);
-                return param;
-            }
-        }, bag);
-    }
-
 
     private static void addSystemPropertyForToken(List<ConfigCustomizationToken> tokens, SystemPropertyBag bag)
             throws TransactionFailure, PropertyVetoException {

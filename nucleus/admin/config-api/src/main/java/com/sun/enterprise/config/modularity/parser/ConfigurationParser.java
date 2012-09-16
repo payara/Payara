@@ -70,7 +70,7 @@ import java.util.logging.Logger;
 public class ConfigurationParser<C extends ConfigLoader> {
     private static final Logger LOG = Logger.getLogger(ConfigurationParser.class.getName());
     //TODO Until the TranslatedView issue is fixed this remain true.
-    private static boolean replaceSystemProperties = true;
+    private static boolean replaceSystemProperties = false;
 
     /**
      * @param habitat The Habitat object to add the config to
