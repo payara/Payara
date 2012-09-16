@@ -39,79 +39,20 @@
  */
 package org.glassfish.admin.rest.adapter;
 
-import com.sun.enterprise.admin.remote.writer.PayloadPartProvider;
-import com.sun.logging.LogDomains;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
-import javax.ws.rs.core.MediaType;
-import org.glassfish.admin.rest.provider.*;
-import org.glassfish.admin.rest.readers.JsonParameterMapProvider;
-import org.glassfish.admin.rest.readers.ParameterMapFormReader;
-import org.glassfish.admin.rest.resources.admin.CommandResource;
 import org.glassfish.admin.restconnector.Constants;
-import org.glassfish.jersey.media.sse.OutboundEventWriter;
 import org.jvnet.hk2.annotations.Service;
 
-/** Adapter for {@code asadmin} and {@code cadmin} communication.
+/**
+ * Adapter for {@code asadmin} and {@code cadmin} communication.
  *
  * @author mmares
+ * @author sanjeeb.sahoo@oracle.com
  */
-@Service(name= Constants.REST_COMMAND_ADAPTER)
+@Service(name = Constants.REST_COMMAND_ADAPTER)
 public class RestCommandAdapter extends RestAdapter {
-    private static final String CONTEXT_ROOT = Constants.REST_COMMAND_CONTEXT_ROOT;
-    private static final Logger logger = LogDomains.getLogger(RestCommandAdapter.class, LogDomains.ADMIN_LOGGER);
-    
-    @Override
-    public String getContextRoot() {
-        return CONTEXT_ROOT;
+
+    public RestCommandAdapter() {
+        setRrp(new RestCommandResourceProvider());
     }
-    
-    @Override
-    protected boolean enableModifAccessToInstances() {
-        return true;
-    }
-    
-    @Override
-    public Map<String, Boolean> getFeatures() {
-        final Map<String, Boolean> features = super.getFeatures();
-        //features.put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
-        return features;
-    }
-    
-    @Override
-    public Map<String, MediaType> getMimeMappings() {
-        return new HashMap<String, MediaType>() {{
-            put("json", MediaType.APPLICATION_JSON_TYPE);
-            put("txt", MediaType.TEXT_PLAIN_TYPE);
-            put("multi", new MediaType("multipart", null));
-            put("sse", new MediaType("text", "event-stream"));
-        }};
-    }
-    
-    @Override
-    protected Set<Class<?>> getResourceClasses() {
-        final Set<Class<?>> r = new HashSet<Class<?>>();
-        r.add(CommandResource.class);
-        //ActionReport - providers
-        r.add(ActionReportJson2Provider.class);
-        //CommandModel - providers
-        r.add(CommandModelStaxProvider.class);
-        //Parameters
-        r.add(ParameterMapFormReader.class);
-        r.add(JsonParameterMapProvider.class);
-        r.add(PayloadPartProvider.class);
-        //SSE data
-        r.add(OutboundEventWriter.class);
-        r.add(AdminCommandStateJsonProvider.class);
-        //ProgressStatus
-        r.add(ProgressStatusJsonProvider.class);
-        r.add(ProgressStatusEventJsonProvider.class);
-//        //Debuging filters
-//        r.add(LoggingFilter.class);
-        return r;
-    }
-    
+
 }

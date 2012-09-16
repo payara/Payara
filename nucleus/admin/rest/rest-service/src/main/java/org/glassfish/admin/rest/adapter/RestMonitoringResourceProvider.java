@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,22 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+
 package org.glassfish.admin.rest.adapter;
 
 import org.glassfish.admin.restconnector.Constants;
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.hk2.api.ServiceLocator;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Adapter for REST monitoring interface
+ * ReST adapter for monitoring requests via HttpServlet interface
  *
- * @author Rajeshwar Patil, Ludovic Champenois
- * @author sanjeeb.sahoo@oracle.com
+ *
  */
-@Service(name=Constants.REST_MONITORING_ADAPTER)
-public class RestMonitoringAdapter extends RestAdapter {
-
-    public RestMonitoringAdapter() {
-        setRrp(new RestMonitoringResourceProvider());
+public class RestMonitoringResourceProvider extends AbstractRestResourceProvider {
+    public RestMonitoringResourceProvider() {
+        super();
     }
 
+    public Set<Class<?>> getResourceClasses(ServiceLocator habitat) {
+//        return getLazyJersey().getResourcesConfigForMonitoring(habitat);
+//    @Override
+//    public Set<Class<?>> getResourcesConfigForMonitoring(ServiceLocator habitat) {
+        final Set<Class<?>> r = new HashSet<Class<?>>();
+        r.add(org.glassfish.admin.rest.resources.MonitoringResource.class);
+
+        r.add(org.glassfish.admin.rest.provider.ActionReportResultHtmlProvider.class);
+        r.add(org.glassfish.admin.rest.provider.ActionReportResultJsonProvider.class);
+        r.add(org.glassfish.admin.rest.provider.ActionReportResultXmlProvider.class);
+
+        return r;
+    }
+
+    @Override
+    public String getContextRoot() {
+        return Constants.REST_MONITORING_CONTEXT_ROOT;
+    }
 }

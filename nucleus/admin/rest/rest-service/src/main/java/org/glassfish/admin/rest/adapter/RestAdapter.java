@@ -46,9 +46,7 @@ import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
 import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
@@ -60,16 +58,13 @@ import javax.inject.Named;
 import javax.inject.Provider;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
-import javax.ws.rs.core.MediaType;
 
 import org.glassfish.admin.rest.Constants;
-import org.glassfish.admin.rest.RestConfigChangeListener;
 import org.glassfish.admin.rest.RestService;
 import org.glassfish.admin.rest.provider.ActionReportResultHtmlProvider;
 import org.glassfish.admin.rest.provider.ActionReportResultJsonProvider;
 import org.glassfish.admin.rest.provider.ActionReportResultXmlProvider;
 import org.glassfish.admin.rest.provider.BaseProvider;
-import org.glassfish.admin.rest.resources.ReloadResource;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.admin.restconnector.ProxiedRestAdapter;
@@ -82,31 +77,20 @@ import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.hk2.api.Factory;
-import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.TypeLiteral;
-import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
-import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.jersey.internal.inject.AbstractBinder;
-import org.glassfish.jersey.internal.inject.ReferencingFactory;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.internal.util.collection.Refs;
-import org.glassfish.jersey.jettison.JettisonBinder;
-import org.glassfish.jersey.media.multipart.MultiPartBinder;
-import org.glassfish.jersey.message.MessageProperties;
-import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.filter.CsrfProtectionFilter;
-import org.glassfish.jersey.server.filter.UriConnegFilter;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.component.Habitat;
 
 /**
  * Adapter for REST interface
  * @author Rajeshwar Patil, Ludovic Champenois
+ * @author sanjeeb.sahoo@oracle.com
  */
 public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdapter, PostConstruct {
     protected static final String COOKIE_REST_TOKEN = "gfresttoken";
@@ -117,6 +101,8 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     protected static final String HEADER_AUTHENTICATE = "WWW-Authenticate";
 
     protected final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RestService.class);
+
+    private RestResourceProvider rrp;
 
     @Inject
     protected Habitat habitat;
@@ -147,31 +133,21 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
         setAllowEncodedSlash(true);
     }
 
-    protected AbstractBinder getJsonBinder() {
-        return new JettisonBinder();
-    }
-
     @Override
     public void postConstruct() {
         epd = new AdminEndpointDecider(config, logger);
         latch.countDown();
     }
 
-    protected abstract String getContextRoot();
-    protected abstract Set<Class<?>> getResourceClasses();
+    protected String getContextRoot() {
+        return getRrp().getContextRoot();
+    }
 
     @Override
     public HttpHandler getHttpService() {
         return this;
     }
     
-    /** If resource can provide access for non-GET methods. 
-     * By default - NO.
-     */
-    protected boolean enableModifAccessToInstances() {
-        return false;
-    }
-
     @Override
     public void service(Request req, Response res) {
         logger.log(Level.FINER, "Received resource request: {0}", req.getRequestURI());
@@ -180,7 +156,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
             res.setCharacterEncoding(Constants.ENCODING);
             if (latch.await(20L, TimeUnit.SECONDS)) {
                 if(serverEnvironment.isInstance()) {
-                    if(!Method.GET.equals(req.getMethod()) && !enableModifAccessToInstances()) {
+                    if(!Method.GET.equals(req.getMethod()) && !getRrp().enableModifAccessToInstances()) {
                         reportError(req, res, HttpURLConnection.HTTP_FORBIDDEN,
                                 localStrings.getLocalString("rest.resource.only.GET.on.instance",
                                 "Only GET requests are allowed on an instance that is not DAS."));
@@ -207,7 +183,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                     String context = getContextRoot();
                     logger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
                     if ((context != null) && (!"".equals(context)) && (adapter == null)) {
-                        adapter = exposeContext(getResourceClasses(), sc, habitat);
+                        adapter = exposeContext(getRrp().getResourceClasses(habitat), sc, habitat);
                         logger.log(Level.INFO, "rest.rest_interface_initialized", context);
                     }
                     //delegate to adapter managed by Jersey.
@@ -289,20 +265,12 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
         return type;
     }
 
-    public Map<String, MediaType> getMimeMappings() {
-        return new HashMap<String, MediaType>() {{
-            put("xml", MediaType.APPLICATION_XML_TYPE);
-            put("json", MediaType.APPLICATION_JSON_TYPE);
-            put("html", MediaType.TEXT_HTML_TYPE);
-            put("js", new MediaType("text", "javascript"));
-        }};
+    protected RestResourceProvider getRrp() {
+        return rrp;
     }
 
-
-    public Map<String, Boolean> getFeatures() {
-        return new HashMap<String, Boolean>() {{
-       //    put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.TRUE);
-        }};
+    protected void setRrp(RestResourceProvider rrp) {
+        this.rrp = rrp;
     }
 
     public static class SubjectReferenceFactory implements Factory<Ref<Subject>> {
@@ -329,81 +297,6 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
         return SubjectReferenceFactory.class;
     }
 
-    protected ResourceConfig getResourceConfig(Set<Class<?>> classes,
-                                               final ServerContext sc,
-                                               final Habitat habitat) throws EndpointRegistrationException {
-        final Reloader r = new Reloader();
-
-        ResourceConfig rc = new ResourceConfig(classes);
-
-        //rc.services = habitat.getDefault();
-
-        UriConnegFilter.enableFor(rc, getMimeMappings(), null);
-
-        rc.addClasses(CsrfProtectionFilter.class);
-
-
-//        TODO - JERSEY2
-//        RestConfig restConf = ResourceUtil.getRestConfig(habitat);
-//        if (restConf != null) {
-//            if (restConf.getLogOutput().equalsIgnoreCase("true")) { //enable output logging
-//                rc.getContainerResponseFilters().add(LoggingFilter.class);
-//            }
-//            if (restConf.getLogInput().equalsIgnoreCase("true")) { //enable input logging
-//                rc.getContainerRequestFilters().add(LoggingFilter.class);
-//            }
-//            if (restConf.getWadlGeneration().equalsIgnoreCase("false")) { //disable WADL
-//                rc.getFeatures().put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.TRUE);
-//            }
-//        }
-//        else {
-//                 rc.getFeatures().put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.TRUE);
-//        }
-//
-        rc.addSingletons(r);
-        rc.addClasses(ReloadResource.class);
-
-        /**
-         * JRW JRW
-         *
-         */
-        rc.addBinders(getJsonBinder(), new MultiPartBinder(), new AbstractBinder() {
-
-            @Override
-            protected void configure() {
-                AbstractActiveDescriptor<Reloader> descriptor = BuilderHelper.createConstantDescriptor(r);
-                descriptor.addContractType(Reloader.class);
-                bind(descriptor);
-
-                AbstractActiveDescriptor<ServerContext> scDescriptor = BuilderHelper.createConstantDescriptor(sc);
-                scDescriptor.addContractType(ServerContext.class);
-                bind(scDescriptor);
-
-                AbstractActiveDescriptor<Habitat> hDescriptor = BuilderHelper.createConstantDescriptor(habitat);
-                hDescriptor.addContractType(Habitat.class);
-                bind(hDescriptor);
-
-                RestSessionManager rsm = habitat.getService(RestSessionManager.class);
-                AbstractActiveDescriptor<RestSessionManager> rmDescriptor =
-                        BuilderHelper.createConstantDescriptor(rsm);
-                bind(rmDescriptor);
-
-                bindFactory(getSubjectReferenceFactory()).to(new TypeLiteral<Ref<Subject>>() {
-                }).in(PerLookup.class);
-                bindFactory(ReferencingFactory.<Subject>referenceFactory()).to(new TypeLiteral<Ref<Subject>>() {
-                }).in(RequestScoped.class);
-
-            }
-        });
-
-        rc.setProperty(MessageProperties.LEGACY_WORKERS_ORDERING, true);
-
-        //add a rest config listener for possible reload of Jersey
-        new RestConfigChangeListener(habitat, r, rc, sc);
-
-        return rc;
-    }
-
     /**
      * dynamically load the class that contains all references to Jersey APIs
      * so that Jersey is not loaded when the RestAdapter is loaded at boot time
@@ -420,7 +313,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
         try {
             ClassLoader apiClassLoader = sc.getCommonClassLoader();
             Thread.currentThread().setContextClassLoader(apiClassLoader);
-            ResourceConfig rc = getResourceConfig(classes, sc, habitat);
+            ResourceConfig rc = getRrp().getResourceConfig(classes, sc, habitat, getSubjectReferenceFactory());
             return getJerseyContainer(rc);
         } finally {
             Thread.currentThread().setContextClassLoader(originalContextClassLoader);

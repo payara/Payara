@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,22 +37,43 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+
 package org.glassfish.admin.rest.adapter;
 
-import org.glassfish.admin.restconnector.Constants;
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.container.EndpointRegistrationException;
+import org.glassfish.hk2.api.Factory;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.internal.util.collection.Ref;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.jvnet.hk2.component.Habitat;
+
+import javax.security.auth.Subject;
+import javax.ws.rs.core.MediaType;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Adapter for REST monitoring interface
+ * Represents contract between {@link RestAdapter} and actual ReST resource providers.
  *
- * @author Rajeshwar Patil, Ludovic Champenois
  * @author sanjeeb.sahoo@oracle.com
  */
-@Service(name=Constants.REST_MONITORING_ADAPTER)
-public class RestMonitoringAdapter extends RestAdapter {
+public interface RestResourceProvider {
+    /**
+     * If resource can provide access for non-GET methods.
+     * By default - NO.
+     */
+    boolean enableModifAccessToInstances();
 
-    public RestMonitoringAdapter() {
-        setRrp(new RestMonitoringResourceProvider());
-    }
+    Set<Class<?>> getResourceClasses(ServiceLocator habitat);
 
+    ResourceConfig getResourceConfig(Set<Class<?>> classes,
+                                     final ServerContext sc,
+                                     final Habitat habitat,
+                                     final Class<? extends Factory<Ref<Subject>>> subjectReferenceFactory)
+            throws EndpointRegistrationException;
+
+    String getContextRoot();
 }
