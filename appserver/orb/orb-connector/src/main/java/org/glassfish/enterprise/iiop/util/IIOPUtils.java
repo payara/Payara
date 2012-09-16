@@ -89,7 +89,6 @@ public class IIOPUtils implements PostConstruct {
     private Collection<ThreadPool> threadPools;
     private IiopService iiopService;
     private Collection<ServerRef> serverRefs;
-    private Configs configs;
 
     // Set during init
     private ORB defaultORB;
@@ -102,9 +101,10 @@ public class IIOPUtils implements PostConstruct {
 
         if( processEnv.getProcessType().isServer()) {
 
-            iiopService = services.getService(IiopService.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+            Config c = services.getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+            iiopService =c.getExtensionByType(IiopService.class);
 
-            final Collection<ThreadPool> threadPool = iiopService.getParent(Config.class).getThreadPools().getThreadPool();
+            final Collection<ThreadPool> threadPool = c.getThreadPools().getThreadPool();
             final Collection<NetworkListener> listeners = allByContract(NetworkListener.class);
             final Set<String> names = new TreeSet<String>();
             threadPools = new ArrayList<ThreadPool>();
@@ -117,7 +117,6 @@ public class IIOPUtils implements PostConstruct {
                 }
             }
             serverRefs  = allByContract(ServerRef.class);
-            configs     = services.getService(Configs.class);
         }
 
         IIOPUtils.initMe(this);
