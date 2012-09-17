@@ -96,20 +96,37 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
     }
 
     @Override
-    public void destroy() {
+    public void stop() throws IOException {
         ServiceLocator locator = grizzlyService.getHabitat();
         IndexedFilter removeFilter = BuilderHelper.createNameAndContractFilter(Mapper.class.getName(),
                 (address.toString() + port));
-        
+
         DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
         DynamicConfiguration config = dcs.createDynamicConfiguration();
-        
+
         config.addUnbindFilter(removeFilter);
-        
+
         config.commit();
-        
+
         unregisterMonitoringStatsProviders();
+        super.stop();
     }
+
+//    @Override
+//    public void destroy() {
+//        ServiceLocator locator = grizzlyService.getHabitat();
+//        IndexedFilter removeFilter = BuilderHelper.createNameAndContractFilter(Mapper.class.getName(),
+//                (address.toString() + port));
+//
+//        DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
+//        DynamicConfiguration config = dcs.createDynamicConfiguration();
+//
+//        config.addUnbindFilter(removeFilter);
+//
+//        config.commit();
+//
+//        unregisterMonitoringStatsProviders();
+//    }
 
     @SuppressWarnings("unchecked")
     @Override
