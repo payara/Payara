@@ -142,6 +142,7 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
             if (password == null) {
                 throw new CommandValidationException(strings.get("AdminPwRequired"));
             }
+            programOpts.setPassword(password, ProgramOptions.PasswordLocation.USER);
         }
 
         if (newpassword == null) {
