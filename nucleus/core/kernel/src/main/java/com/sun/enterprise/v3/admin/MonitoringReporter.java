@@ -260,7 +260,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
                     flag = true;
                     break;
                 }
-                if (tmp != null) {
+                else {
                     int count  = Integer.parseInt(tmp);
                     values[index++] = count;
                     total = total + count;
@@ -852,7 +852,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
     private final StringBuilder cliOutput = new StringBuilder();
     private boolean targetIsMultiInstanceCluster = false;
     private String targetName;
-    private Boolean aggregateDataOnly;
+    private Boolean aggregateDataOnly = Boolean.FALSE;
 
     private static class NameValue {
         String name;
