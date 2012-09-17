@@ -43,26 +43,27 @@ package com.sun.enterprise.web;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
-import com.sun.logging.LogDomains;
+import java.io.File;
+import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import com.sun.web.server.WebContainerListener;
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.catalina.startup.Embedded;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.internal.api.ServerContext;
-import javax.inject.Inject;
-
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.glassfish.hk2.api.PostConstruct;
-import javax.inject.Singleton;
 
-import java.io.File;
-import java.text.MessageFormat;
-import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 /**
  * Represents an embedded Catalina web container within the Application Server.
@@ -71,17 +72,26 @@ import java.util.logging.Logger;
 @Service(name="com.sun.enterprise.web.EmbeddedWebContainer")
 @Singleton
 public final class EmbeddedWebContainer extends Embedded implements PostConstruct {
-    
+
+    public static final Logger logger = WebContainer.logger;
+
+    @LogMessageInfo(
+            message = "Unable to instantiate ContainerListener of type {0}",
+            level = "SEVERE",
+            cause = "An exception occurred during instantiation of ContainerListener of type {0}",
+            action = "Check the Exception for error")
+    public static final String UNABLE_TO_INSTANTIATE_CONTAINER_LISTENER = "AS-WEB-00044";
+
+    @LogMessageInfo(
+            message = "Creating connector for address='{0}' port='{1}' protocol='{2}'",
+            level = "FINE")
+    public static final String CREATE_CONNECTOR = "AS-WEB-00045";
+
     @Inject
     private Habitat services;
     
     @Inject
     private ServerContext serverContext;
-
-    private static final Logger _logger
-        = LogDomains.getLogger(EmbeddedWebContainer.class, LogDomains.WEB_LOGGER);
-
-    private static final ResourceBundle rb = _logger.getResourceBundle();
 
     private WebContainerFeatureFactory webContainerFeatureFactory;
 
@@ -252,9 +262,9 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
             Class clazz = Class.forName(className);
             return (ContainerListener)clazz.newInstance();
         } catch (Throwable ex){
-            String msg = rb.getString("embedded.loadListener");
+            String msg = logger.getResourceBundle().getString(UNABLE_TO_INSTANTIATE_CONTAINER_LISTENER);
             msg = MessageFormat.format(msg, className);
-            _logger.log(Level.SEVERE, msg, ex);
+            logger.log(Level.SEVERE, msg, ex);
         }
         return null;
     }
@@ -305,11 +315,9 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
                 address = address.substring(index + 1);
             }
         }
-
-        _logger.log(Level.FINE,
-                    "Creating connector for address='" +
-                    ((address == null) ? "ALL" : address) +
-                    "' port='" + port + "' protocol='" + protocol + "'");
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, CREATE_CONNECTOR, new Object[]{(address == null) ? "ALL" : address, port, protocol});
+        }
 
         WebConnector connector = new WebConnector(webContainer);
 
@@ -350,7 +358,7 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
 
         engine.setDebug(debug);
         // Default host will be set to the first host added
-        engine.setLogger(logger);       // Inherited by all children
+        engine.setLogger(super.getLogger());       // Inherited by all children
         engine.setRealm(null);         // Inherited by all children
         
         //ContainerListener listener = loadListener
