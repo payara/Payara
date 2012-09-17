@@ -63,7 +63,7 @@ import java.util.logging.Logger;
  * @author Masoud Kalali
  */
 @Service
-@RunLevel(mode = RunLevel.RUNLEVEL_MODE_VALIDATING, value = 2)
+@RunLevel(mode = RunLevel.RUNLEVEL_MODE_VALIDATING, value = 2)//from 2
 public class StartupConfigBeanOverrider implements PostConstruct {
 
     @Inject
