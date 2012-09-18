@@ -329,20 +329,28 @@ public abstract class ProgressStatusBase implements ProgressStatus {
             if (childPortion < 0) {
                 return -1;
             }
-            realStepCount += ((float) child.getAllocatedSteps()) * child.progressStatus.computeCompletePortion();
+            realStepCount += ((float) child.getAllocatedSteps()) * childPortion;
         }
         return realStepCount;
     }
     
     public synchronized float computeCompletePortion() {
-        if (totalStepCount < 0) {
-            return -1;
+        if (isComplete()) {
+            return 1;
         }
+//        if (totalStepCount < 0) {
+//            return -1;
+//        }
         float realSteps = computeCompleteSteps();
         if (realSteps < 0) {
             return -1;
         }
-        if (totalStepCount > 0) {
+        if (realSteps == 0) {
+            return 0;
+        }
+        if (totalStepCount < 0) {
+            return -1;
+        } else if (totalStepCount > 0) {
             return realSteps / ((float) totalStepCount);
         } else {
             return 1;

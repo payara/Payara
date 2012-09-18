@@ -42,6 +42,7 @@ package com.sun.enterprise.admin.cli.remote;
 import com.sun.enterprise.admin.progress.ProgressStatusClient;
 import com.sun.enterprise.admin.remote.sse.GfSseInboundEvent;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.util.StringUtils;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,13 +65,14 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
     private String lastMessage = "";
     private StringBuilder outMsg = new StringBuilder();
     private int lastSumSteps = -1;
+    private int lastMsgLength = 0;
+    private boolean firstPrint = true;
     
     
     private ProgressStatusClient client = new ProgressStatusClient(null);
     private CommandProgress commandProgress;
     private final boolean debug;
     private final Logger logger;
-    private int lastMsgLength;
 
     public ProgressStatusPrinter(boolean debug, Logger logger) {
         this.debug = debug;
@@ -88,6 +90,9 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
                 ProgressStatusDTO dto = event.getData(ProgressStatusDTO.class, MediaType.APPLICATION_JSON_TYPE);
                 client.mirror(dto);
                 commandProgress = (CommandProgress) client.getProgressStatus();
+                if (StringUtils.ok(commandProgress.getName()) && !StringUtils.ok(commandProgress.getLastMessage())) {
+                    commandProgress.progress(strings.getString("progressstatus.message.starting", "Starting"));
+                }
             } else if (CommandProgress.EVENT_PROGRESSSTATUS_CHANGE.equals(name)) {
                 if (commandProgress == null) {
                     logger.log(Level.WARNING, strings.get("progressstatus.event.applyerror", "Inapplicable progress status event"));
@@ -143,7 +148,11 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
                 if (debug) {
                     System.out.println(outMsg);
                 } else {
-                    System.out.print('\r');
+                    if (!firstPrint) {
+                        System.out.print('\r');
+                    } else {
+                        firstPrint = false;
+                    }
                     System.out.print(outMsg);
                     System.out.print(' ');
                     int spaceCount = lastMsgLength - outMsg.length();
@@ -163,6 +172,12 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
     public synchronized void reset() {
         client = new ProgressStatusClient(null);
         commandProgress = null;
+        lastPercentage = -1;
+        lastMessage = "";
+        outMsg.setLength(0);
+        lastSumSteps = -1;
+        lastMsgLength = 0;
+        firstPrint = true;
     }
     
 }

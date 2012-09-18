@@ -146,8 +146,15 @@ public class ProgressStatusMirroringImpl extends ProgressStatusBase {
     
     @Override
     public synchronized float computeCompletePortion() {
-        if (totalStepCount < 0) {
-            return -1;
+        if (isComplete()) {
+            return 1;
+        }
+        if (totalStepCount == 0) {
+            if (currentStepCount == 0) {
+                return 0;
+            } else {
+                return 1;
+            }
         }
         return ((float) currentStepCount) / ((float) totalStepCount);
     }
