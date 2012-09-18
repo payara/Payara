@@ -44,12 +44,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.jvnet.hk2.annotations.Service;
 
 
 /** DataProvider for byte array. (Super simple)
  *
  * @author mmares
  */
+@Service
 public class ByteArrayDataProvider implements DataProvider {
 
     @Override

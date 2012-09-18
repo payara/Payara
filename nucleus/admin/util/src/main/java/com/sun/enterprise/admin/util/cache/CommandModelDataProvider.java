@@ -44,12 +44,10 @@ import com.sun.enterprise.admin.util.CommandModelData;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import java.io.*;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 import javax.xml.stream.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandModel;
+import org.jvnet.hk2.annotations.Service;
 
 /** 
  * Works with {@link com.sun.enterprise.admin.util.CachedCommandModel} and
@@ -60,6 +58,7 @@ import org.glassfish.api.admin.CommandModel;
  * @author mmares
  */
 //It is ugly hand made code bud fast and with readable result. Maybe rewrite to some JAX-B based on performance result.
+@Service
 public class CommandModelDataProvider implements DataProvider {
     private static final String ADDEDUPLOADOPTIONS_ELEMENT = "added-upload-options";
     private static final String ALIAS_ELEMENT = "alias";
@@ -389,9 +388,6 @@ public class CommandModelDataProvider implements DataProvider {
                 result.dashOk = unknownAreOperands;
                 result.setUsage(usage);
                 result.setAddedUploadOption(addedUploadOption);
-            }
-            if (eTag != null && !eTag.isEmpty() && !eTag.startsWith("v1")) {
-                return null;
             }
         } finally {
             try {r.close();} catch (Exception ex) {}

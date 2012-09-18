@@ -65,7 +65,7 @@ public class GenericCommandModel extends CommandModel {
     final ExecuteOn cluster;
     final I18n i18n;
     final LocalStringManager localStrings;
-    final boolean supportsProgress;
+    final boolean managedJob;
 
     /**
      * GenericCommandModel constructor.
@@ -91,14 +91,14 @@ public class GenericCommandModel extends CommandModel {
                                LocalStringManager localStrings,
                                DomDocument document,
                                String commandName,
-                               boolean supportsProgress,
+                               boolean managedJob,
                                Class<?>... extraTypes) {
         this.commandName = commandName;
         this.commandClass = targetType;
         this.cluster = cluster;
         this.i18n = i18n;
         this.localStrings = localStrings;
-        this.supportsProgress = supportsProgress;
+        this.managedJob = managedJob;
 
         if (useAnnotations && targetType!=null &&
 		ConfigBeanProxy.class.isAssignableFrom(targetType)) {
@@ -178,8 +178,8 @@ public class GenericCommandModel extends CommandModel {
     }
     
     @Override
-    public boolean supportsProgress() {
-        return supportsProgress;
+    public boolean isManagedJob() {
+        return managedJob;
     }
 
     private final class ParamBasedModel extends ParamModel {

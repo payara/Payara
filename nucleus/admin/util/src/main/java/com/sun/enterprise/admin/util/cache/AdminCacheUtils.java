@@ -40,10 +40,15 @@
 package com.sun.enterprise.admin.util.cache;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.regex.Pattern;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 
 /** Tooling for AdminCache {@link DataProvider} implementation.
  *
@@ -56,7 +61,13 @@ public class AdminCacheUtils {
     
     private final Map<Class, DataProvider> providers = new HashMap<Class, DataProvider>();
     private final Pattern keyPattern = Pattern.compile("([-_.a-zA-Z0-9]+/?)+");
-    private final ServiceLoader<DataProvider> dataProviderLoader = ServiceLoader.<DataProvider>load(DataProvider.class);
+    //private final ServiceLoader<DataProvider> dataProviderLoader = ServiceLoader.<DataProvider>load(DataProvider.class);
+    
+    private static final DataProvider[] allProviders = new DataProvider[]{
+        new StringDataProvider(), 
+        new ByteArrayDataProvider(),
+        new CommandModelDataProvider()
+    };
     
     private AdminCacheUtils() {
     }
@@ -64,14 +75,34 @@ public class AdminCacheUtils {
     public DataProvider getProvider(final Class clazz) {
         DataProvider result = providers.get(clazz);
         if (result == null) {
-            for (DataProvider provider : dataProviderLoader) {
+            //Use hardcoded data providers - fastest and not problematic
+            for (DataProvider provider : allProviders) {
                 if (provider.accept(clazz)) {
-                    result = provider;
-                    providers.put(clazz, result);
+                    providers.put(clazz, provider);
+                    return provider;
                 }
             }
+//            ServiceLocator habitat = Globals.getDefaultHabitat();
+//            if (habitat != null) {
+//                List<DataProvider> allServices = habitat.getAllServices(DataProvider.class);
+//                for (DataProvider provider : allServices) {
+//                    if (provider.accept(clazz)) {
+//                        providers.put(clazz, provider);
+//                        return provider;
+//                    }
+//                }
+//            }
+//            for (DataProvider provider : dataProviderLoader) {
+//                if (provider.accept(clazz)) {
+//                    providers.put(clazz, provider);
+//                    return provider;
+//                }
+//            }
+            
+            return null;
+        } else {
+            return result;
         }
-        return result;
     }
     
     public final boolean validateKey(final String key) {

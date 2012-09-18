@@ -46,6 +46,7 @@
                         com.sun.enterprise.admin.progress; \
                         com.sun.enterprise.admin.util.jmx; \
                         com.sun.enterprise.admin.util.proxy; \
+                        com.sun.enterprise.admin.util.cache; \
                         com.sun.enterprise.admin.remote.reader; \
                         com.sun.enterprise.admin.remote.writer; \
                         com.sun.enterprise.admin.remote.sse; \

@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.core.MediaType;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandEventBroker;
 import org.glassfish.api.admin.AdminCommandState;
 
@@ -72,8 +73,7 @@ public class DetachListener implements AdminCommandEventBroker.AdminCommandListe
             AdminCommandState acs = event.getData(AdminCommandState.class, MediaType.APPLICATION_JSON_TYPE);
             String id = acs.getId();
             if (StringUtils.ok(id)) {
-                logger.info("Detach ID message: " + id);
-                rac.closeSse();
+                rac.closeSse("Detach ID message: " + id, ActionReport.ExitCode.SUCCESS);
             } else {
                 logger.log(Level.SEVERE, "event comes but no id - error");
             }

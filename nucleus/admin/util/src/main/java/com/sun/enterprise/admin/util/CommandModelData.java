@@ -61,7 +61,7 @@ public class CommandModelData extends CommandModel {
     private final Map<String, CommandModel.ParamModel> params =
                                 new LinkedHashMap<String, ParamModel>();
     private final String commandName;
-    public boolean supportsProgress = false;
+    public boolean managedJob = false;
     public boolean dashOk = false;
 
     public CommandModelData(String name) {
@@ -108,8 +108,8 @@ public class CommandModelData extends CommandModel {
     }
     
     @Override
-    public boolean supportsProgress() {
-        return this.supportsProgress;
+    public boolean isManagedJob() {
+        return this.managedJob;
     }
 
     /**

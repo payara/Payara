@@ -40,6 +40,7 @@
 
 package org.glassfish.common.util.admin;
 
+import com.sun.enterprise.util.AnnotationUtil;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.Param;
@@ -59,6 +60,7 @@ import java.util.Map;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import org.glassfish.api.ParamDefaultCalculator;
+import org.glassfish.api.admin.ManagedJob;
 import org.glassfish.api.admin.Progress;
 
 /**
@@ -76,7 +78,7 @@ public class CommandModelImpl extends CommandModel {
     final private I18n i18n;
     final private boolean dashOk;
     final private LocalStringManager localStrings;
-    final private boolean supportsProgress;
+    final private boolean managedJob;
 
     public CommandModelImpl(Class<?> commandType) {
 
@@ -86,7 +88,7 @@ public class CommandModelImpl extends CommandModel {
         i18n = commandType.getAnnotation(I18n.class);
         execOn = commandType.getAnnotation(ExecuteOn.class);
         localStrings = new LocalStringManagerImpl(commandType);
-        supportsProgress = commandType.getAnnotation(Progress.class) != null;
+        managedJob = AnnotationUtil.presentTransitive(ManagedJob.class, commandType);
 
         params = init(commandType, i18n, localStrings);
         Class currentClazz = commandType;
@@ -172,8 +174,8 @@ public class CommandModelImpl extends CommandModel {
     }
     
     @Override
-    public boolean supportsProgress() {
-        return supportsProgress;
+    public boolean isManagedJob() {
+        return managedJob;
     }
 
     /**

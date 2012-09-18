@@ -41,17 +41,14 @@
 package org.glassfish.api.admin;
 
 import org.glassfish.api.Param;
-import org.glassfish.api.I18n;
 
 import java.util.Collection;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.beans.Introspector;
 
-import com.sun.hk2.component.InjectionResolver;
 
 /**
  * Model for an administrative command
@@ -110,12 +107,12 @@ public abstract class CommandModel {
      */
     public abstract Class<?> getCommandClass();
     
-    /** This command supports progress status. It is possible to listen to
-     * its progress during command execution.
+    /** This command is managed job. It is preferred to listen using SSE
+     * in case of remote execution.
      * 
-     * @return {@code true} only if command is annotated @Progress
+     * @return {@code true} only if command is @ManagedJob
      */
-    public abstract boolean supportsProgress();
+    public abstract boolean isManagedJob();
 
     /**
      * Return the cluster parameters for this command  or null if none are

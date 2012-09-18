@@ -79,8 +79,8 @@ public class CommandModelStaxProvider extends AbstractStaxProvider<CommandModel>
         if (proxy.unknownOptionsAreOperands()) {
             wr.writeAttribute("unknown-options-are-operands", "true");
         }
-        if (proxy.supportsProgress()) {
-            wr.writeAttribute("supports-progress", "true");
+        if (proxy.isManagedJob()) {
+            wr.writeAttribute("managed-job", "true");
         }
         String usage = proxy.getUsageText();
         if (StringUtils.ok(usage)) {

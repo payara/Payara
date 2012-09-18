@@ -379,6 +379,7 @@ public class CommandResource {
         commandInvocation
                 .outbound(new RestPayloadImpl.Outbound(false))
                 .subject(getSubject())
+                .managedJob()
                 .parameters(params);
         final EventChannel ec = new EventChannel();
         AdminCommandListener listener = new AdminCommandListener() {

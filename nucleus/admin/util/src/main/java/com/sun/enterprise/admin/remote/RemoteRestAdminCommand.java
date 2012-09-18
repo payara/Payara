@@ -95,6 +95,7 @@ import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartClientBinder;
 import org.glassfish.jersey.media.sse.EventChannel;
+import org.glassfish.jersey.server.model.ModelValidationException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -194,7 +195,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     protected String            scope;
     protected String            authToken = null;
     protected boolean           prohibitDirectoryUploads = false;
-    protected boolean           isDetached = false;
 
     // executeCommand parameters
     protected ParameterMap      options;
@@ -294,7 +294,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     public RemoteRestAdminCommand(String name, String host, int port,
             boolean secure, String user, String password, Logger logger)
             throws CommandException {
-        this(name, host, port, secure, user, password, logger, null, null, false,false);
+        this(name, host, port, secure, user, password, logger, null, null, false);
     }
 
     /**
@@ -305,7 +305,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             boolean secure, String user, String password, Logger logger,
             final String scope,
             final String authToken,
-            final boolean prohibitDirectoryUploads,boolean isDetach)
+            final boolean prohibitDirectoryUploads)
             throws CommandException {
         Metrix.event("RemoteAdminCommand constructed");
         this.name = name;
@@ -315,7 +315,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         this.user = user;
         this.password = password;
         this.logger = logger;
-        this.isDetached = isDetach;
         if (scope != null && scope.endsWith("/")) {
             this.scope = scope.substring(0, scope.length() - 1);
         } else {
@@ -337,7 +336,11 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         }
     }
 
-    public void closeSse() {
+    public void closeSse(String message, ActionReport.ExitCode exitCode) {
+        ActionReport report = new CliActionReport();
+        report.setMessage(message);
+        report.setActionExitCode(exitCode);
+        setActionReport(report);
         this.closeSse = true;
     }
 
@@ -403,10 +406,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         return actionReport;
     }
 
-
-    public boolean isDetachedCommand() {
-        return isDetached;
-    }
     /**
      * Set the connect timeout for the URLConnection.
      */
@@ -441,27 +440,26 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
      */
     public CommandModel getCommandModel() throws CommandException {
         Metrix.event("getCommandModel() - start");
-//        TODO: Disable cache temporsry - hsve to investigate and retest it again
-//        if (commandModel == null) {
-//            long startNanos = System.nanoTime();
-//            try {
-//                commandModel = getCommandModelFromCahce();
-//                if (commandModel != null) {
-//                    this.commandModelFromCache = true;
-//                    if (logger.isLoggable(Level.FINEST)) {
-//                        logger.log(Level.FINEST, "Command model for command {0} was successfully loaded from the cache. [Duration: {1} nanos]", new Object[] {name, System.nanoTime() - startNanos});
-//                    }
-//                } else {
-//                    if (logger.isLoggable(Level.FINEST)) {
-//                        logger.log(Level.FINEST, "Command model for command {0} is not in cache. It must be fatched from server.", name);
-//                    }
-//                }
-//            } catch (Exception ex) {
-//                if (logger.isLoggable(Level.FINEST)) {
-//                    logger.log(Level.FINEST, "Can not get data from cache under key " + createCommandCacheKey(), ex);
-//                }
-//            }
-//        }
+        if (commandModel == null) {
+            long startNanos = System.nanoTime();
+            try {
+                commandModel = getCommandModelFromCahce();
+                if (commandModel != null) {
+                    this.commandModelFromCache = true;
+                    if (logger.isLoggable(Level.FINEST)) {
+                        logger.log(Level.FINEST, "Command model for command {0} was successfully loaded from the cache. [Duration: {1} nanos]", new Object[] {name, System.nanoTime() - startNanos});
+                    }
+                } else {
+                    if (logger.isLoggable(Level.FINEST)) {
+                        logger.log(Level.FINEST, "Command model for command {0} is not in cache. It must be fatched from server.", name);
+                    }
+                }
+            } catch (Exception ex) {
+                if (logger.isLoggable(Level.FINEST)) {
+                    logger.log(Level.FINEST, "Can not get data from cache under key " + createCommandCacheKey(), ex);
+                }
+            }
+        }
         if (commandModel == null) {
             fetchCommandModel();
         }
@@ -517,6 +515,10 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     public List<Header> headers() {
         return requestHeaders;
     }
+    
+    protected boolean useSse() throws CommandException {
+        return getCommandModel().isManagedJob();
+    }
 
     public String executeCommand(ParameterMap opts) throws CommandException {
         Metrix.event("executeCommand() - start");
@@ -525,98 +527,112 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             Metrix.event("executeCommand() - done");
             return getManPage();
         }
-        //execute
-        ParameterMap preparedParams = processParams(opts);
-        MediaType[] acceptMediaTypes = new MediaType[] {MEDIATYPE_MULTIPART, MEDIATYPE_ACTIONREPORT};
-        if (getCommandModel().supportsProgress() || "_attach".equals(name)) {
-            acceptMediaTypes = new MediaType[] {EventChannel.SERVER_SENT_EVENTS_TYPE};
-        }
-        Response response = doRestCommand(preparedParams, null, "POST", false, acceptMediaTypes);
-        MediaType resultMediaType = response.getMediaType();
-        if (logger.isLoggable(Level.FINER)) {
-            logger.log(Level.FINER, "Result type is {0}", resultMediaType);
-        }
-        if (MEDIATYPE_ACTIONREPORT.isCompatible(resultMediaType)) {
-            setActionReport(response.readEntity(ActionReport.class));
-//            if (logger.isLoggable(Level.FINER)) {
-//                String data = response.readEntity(String.class);
-//                logger.log(Level.FINER, "-------- RAW DATA --------");
-//                logger.log(Level.FINER, data);
-//                logger.log(Level.FINER, "------ END RAW DATA ------");
-//            }
-        } else if (MEDIATYPE_MULTIPART.isCompatible(resultMediaType)) {
-            MultiPart mp = response.readEntity(MultiPart.class);
-            Inbound inbound = new RestPayloadImpl.Inbound();
-            setActionReport(RestPayloadImpl.Inbound.fillFromMultipart(mp, inbound, logger));
-            if (logger.isLoggable(Level.FINER)) {
-                logger.log(Level.FINER, "------ PAYLOAD ------");
-                Iterator<Part> parts = inbound.parts();
-                while (parts.hasNext()) {
-                    Part part = parts.next();
-                    logger.log(Level.FINER, " - {0} [{1}]", new Object[]{part.getName(), part.getContentType()});
+        boolean retry;
+        do { //Cache update cycle
+            retry = false;
+            try {
+                //execute
+                ParameterMap preparedParams = processParams(opts);
+                MediaType[] acceptMediaTypes = new MediaType[] {MEDIATYPE_MULTIPART, MEDIATYPE_ACTIONREPORT};
+                if (useSse()) {
+                    acceptMediaTypes = new MediaType[] {EventChannel.SERVER_SENT_EVENTS_TYPE};
                 }
-                logger.log(Level.FINER, "---- END PAYLOAD ----");
-            }
-            PayloadFilesManager downloadedFilesMgr =
-                    new PayloadFilesManager.Perm(fileOutputDir, null, logger, null);
-            try {
-                downloadedFilesMgr.processParts(inbound);
-            } catch (CommandException cex) {
-                throw cex;
-            } catch (Exception ex) {
-                throw new CommandException(ex.getMessage(), ex);
-            }
-        } else if (EventChannel.SERVER_SENT_EVENTS_TYPE.isCompatible(resultMediaType)) {
-            try {
-                logger.log(Level.FINEST, "Response is SSE - about to read events");
-                closeSse = false;
-                GfSseEventReceiver eventReceiver = response.readEntity(GfSseEventReceiver.class);
-                GfSseInboundEvent event;
-                String instanceId; //TODO: Use ID to reconnect in case of connection lost
-                do {
-                    event = eventReceiver.readEvent();
-                    fireEvent(event.getName(), event);
-                    if (AdminCommandState.EVENT_STATE_CHANGED.equals(event.getName())) {
-                        AdminCommandState acs = event.getData(AdminCommandState.class, MediaType.APPLICATION_JSON_TYPE);
-                        if (acs.getId() != null) {
-                            instanceId = acs.getId();
-                            if (logger.isLoggable(Level.FINEST)) {
-                                logger.log(Level.FINEST, "Command instance ID: {0}", instanceId);
-                            }
+                Response response = doRestCommand(preparedParams, null, "POST", false, acceptMediaTypes);
+                MediaType resultMediaType = response.getMediaType();
+                if (logger.isLoggable(Level.FINER)) {
+                    logger.log(Level.FINER, "Result type is {0}", resultMediaType);
+                }
+                if (MEDIATYPE_ACTIONREPORT.isCompatible(resultMediaType)) {
+                    setActionReport(response.readEntity(ActionReport.class));
+        //            if (logger.isLoggable(Level.FINER)) {
+        //                String data = response.readEntity(String.class);
+        //                logger.log(Level.FINER, "-------- RAW DATA --------");
+        //                logger.log(Level.FINER, data);
+        //                logger.log(Level.FINER, "------ END RAW DATA ------");
+        //            }
+                } else if (MEDIATYPE_MULTIPART.isCompatible(resultMediaType)) {
+                    MultiPart mp = response.readEntity(MultiPart.class);
+                    Inbound inbound = new RestPayloadImpl.Inbound();
+                    setActionReport(RestPayloadImpl.Inbound.fillFromMultipart(mp, inbound, logger));
+                    if (logger.isLoggable(Level.FINER)) {
+                        logger.log(Level.FINER, "------ PAYLOAD ------");
+                        Iterator<Part> parts = inbound.parts();
+                        while (parts.hasNext()) {
+                            Part part = parts.next();
+                            logger.log(Level.FINER, " - {0} [{1}]", new Object[]{part.getName(), part.getContentType()});
                         }
-                        if (acs.getState() == AdminCommandState.State.COMPLETED ||
-                                acs.getState() == AdminCommandState.State.RECORDED) {
-                            if (acs.getActionReport() != null) {
-                                setActionReport(acs.getActionReport());
-                            }
-                            closeSse();
-                            if (!acs.isOutboundPayloadEmpty()) {
-                                logger.log(Level.FINEST, "Romote command holds data. Must load it");
-                                //TODO: Retrieve remote outbound data
-                            }
-                        }
+                        logger.log(Level.FINER, "---- END PAYLOAD ----");
                     }
-                } while (event != null && !eventReceiver.isClosed() && !closeSse);
-                if (closeSse) {
-                    try { eventReceiver.close(); } catch (Exception exc) {}
+                    PayloadFilesManager downloadedFilesMgr =
+                            new PayloadFilesManager.Perm(fileOutputDir, null, logger, null);
+                    try {
+                        downloadedFilesMgr.processParts(inbound);
+                    } catch (CommandException cex) {
+                        throw cex;
+                    } catch (Exception ex) {
+                        throw new CommandException(ex.getMessage(), ex);
+                    }
+                } else if (EventChannel.SERVER_SENT_EVENTS_TYPE.isCompatible(resultMediaType)) {
+                    try {
+                        logger.log(Level.FINEST, "Response is SSE - about to read events");
+                        closeSse = false;
+                        GfSseEventReceiver eventReceiver = response.readEntity(GfSseEventReceiver.class);
+                        GfSseInboundEvent event;
+                        String instanceId; //TODO: Use ID to reconnect in case of connection lost
+                        do {
+                            event = eventReceiver.readEvent();
+                            fireEvent(event.getName(), event);
+                            if (AdminCommandState.EVENT_STATE_CHANGED.equals(event.getName())) {
+                                AdminCommandState acs = event.getData(AdminCommandState.class, MediaType.APPLICATION_JSON_TYPE);
+                                if (acs.getId() != null) {
+                                    instanceId = acs.getId();
+                                    if (logger.isLoggable(Level.FINEST)) {
+                                        logger.log(Level.FINEST, "Command instance ID: {0}", instanceId);
+                                    }
+                                }
+                                if (acs.getState() == AdminCommandState.State.COMPLETED ||
+                                        acs.getState() == AdminCommandState.State.RECORDED) {
+                                    if (acs.getActionReport() != null) {
+                                        setActionReport(acs.getActionReport());
+                                    }
+                                    closeSse = true;
+                                    if (!acs.isOutboundPayloadEmpty()) {
+                                        logger.log(Level.FINEST, "Romote command holds data. Must load it");
+                                        //TODO: Retrieve remote outbound data
+                                    }
+                                }
+                            }
+                        } while (event != null && !eventReceiver.isClosed() && !closeSse);
+                        if (closeSse) {
+                            try { eventReceiver.close(); } catch (Exception exc) {}
+                        }
+                    } catch (Exception ex) {
+                        throw new CommandException(ex.getMessage(), ex);
+                    }
+                } else {
+                    throw new CommandException(strings.get("unknownResponse", resultMediaType));
                 }
-            } catch (CommandException cex) {
-                throw cex;
-            } catch (Exception ex) {
-                throw new CommandException(ex.getMessage(), ex);
+            } catch (CommandValidationException mve) {
+                if (refetchInvalidModel() && isCommandModelFromCache()) {
+                    fetchCommandModel();
+                    retry = true;
+                } else {
+                    throw mve;
+                }
             }
-        } else {
-            throw new CommandException(strings.get("unknownResponse", resultMediaType));
-        }
+        } while (retry);
         if (actionReport == null) {
             this.output = null;
             throw new CommandException(strings.get("emptyResponse"));
+        }
+        if (actionReport.getActionExitCode() == ExitCode.FAILURE) {
+            throw new CommandException(strings.getString("remote.failure.prefix", "remote failure:") + " " + this.output);
         }
         Metrix.event("executeCommand() - done");
         return output;
     }
 
-    protected void setActionReport(ActionReport ar) throws CommandException {
+    protected void setActionReport(ActionReport ar) {
         this.actionReport = ar;
         if (ar == null) {
             this.output = null;
@@ -633,9 +649,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 logger.log(Level.FINER, "------ ACTION REPORT ------");
                 logger.log(Level.FINER, String.valueOf(actionReport));
                 logger.log(Level.FINER, "---- END ACTION REPORT ----");
-            }
-            if (ar.getActionExitCode() == ExitCode.FAILURE) {
-                throw new CommandException(strings.getString("remote.failure.prefix", "remote failure:") + " " + this.output);
             }
         }
     }
@@ -795,6 +808,12 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
      */
     protected boolean updateAuthentication() {
         return false;
+    }
+    
+    /** If admin model is invalid, will be automatically refetched?
+     */
+    protected boolean refetchInvalidModel() {
+        return true;
     }
 
     /**
@@ -1093,7 +1112,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
 
                     continue;
                 }
-
                 processHeaders(response);
                 logger.finer("doHttpCommand succeeds");
                 return response;
@@ -1702,7 +1720,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             obj = obj.getJSONObject("command");
             CachedCommandModel cm = new CachedCommandModel(obj.getString("@name"), etag);
             cm.dashOk = obj.optBoolean("@unknown-options-are-operands", false);
-            cm.supportsProgress = obj.optBoolean("@supports-progress", false);
+            cm.managedJob = obj.optBoolean("@managed-job", false);
             cm.setUsage(obj.optString("usage"));
             Object optns = obj.opt("option");
             if (!JSONObject.NULL.equals(optns)) {

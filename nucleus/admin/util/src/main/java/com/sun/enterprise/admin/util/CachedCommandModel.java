@@ -39,9 +39,10 @@
  */
 package com.sun.enterprise.admin.util;
 
-import java.nio.charset.Charset;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.util.Comparator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.xml.bind.DatatypeConverter;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandModel;
@@ -108,7 +109,6 @@ public class CachedCommandModel extends CommandModelData {
         this.addedUploadOption = addedUploadOption;
     }
     
-    //TODO: This is very light algorithm. But have allways problem to find something - keep searching
     public static String computeETag(CommandModel cm) {
         if (cm instanceof CachedCommandModel) {
             String result = ((CachedCommandModel) cm).eTag;
@@ -117,65 +117,131 @@ public class CachedCommandModel extends CommandModelData {
             }
         }
         StringBuilder tag = new StringBuilder();
-        tag.append("v1"); //Just symbol for loaders
-        if (cm.supportsProgress()) {
-            tag.append('p');
+        tag.append(cm.getCommandName());
+        if (cm.isManagedJob()) {
+            tag.append('m');
         }
-        tag.append(strLen(cm.getCommandName()));
         if (cm.unknownOptionsAreOperands()) {
-            tag.append('y');
+            tag.append('o');
         }
         if (cm.getParameters() != null) {
-            int size = cm.getParameters().size();
-            int totalStrings = 0;
-            int totalAliasStrings = 0;
-            int totalOptional = 0;
-            boolean existPrimaty = false;
-            boolean isPrimaryMultiple = false;
-            int withShortName = 0;
-            int totalObsoletes = 0;
+            //sort
+            SortedSet<ParamModel> tree = new TreeSet<ParamModel>(new Comparator<ParamModel>() {
+                    @Override
+                    public int compare(ParamModel o1, ParamModel o2) {
+                        return o1.getName().compareTo(o2.getName());
+                    }
+                });
             for (ParamModel paramModel : cm.getParameters()) {
-                if ("upload".equals(paramModel.getName())) {
-                    //Skip because potentialy generated on client side
-                    size--;
+                tree.add(paramModel);
+            }
+            //print
+            for (ParamModel pm : tree) {
+                if ("upload".equals(pm.getName())) {
                     continue;
                 }
-                totalStrings += strLen(paramModel.getName());
-                Param param = paramModel.getParam();
+                tag.append(pm.getName());
+                if (pm.getClass() != null) {
+                    tag.append(pm.getClass().getCanonicalName());
+                }
+                Param param = pm.getParam();
                 if (param.multiple()) {
-                    isPrimaryMultiple = true;
+                    tag.append('M');
                 }
                 if (param.optional()) {
-                    totalOptional++;
+                    tag.append('P');
                 }
                 if (param.primary()) {
-                    existPrimaty = true;
-                    continue;
+                    tag.append('1');
                 }
                 if (param.obsolete()) {
-                    totalObsoletes++;
+                    tag.append('O');
                 }
                 if (param.shortName() != null && !param.shortName().isEmpty()) {
-                    withShortName++;
+                    tag.append(param.shortName());
                 }
-                totalAliasStrings += strLen(param.alias());
-            }
-            tag.append(size);
-            tag.append(totalStrings);
-            tag.append(totalAliasStrings);
-            tag.append(totalOptional);
-            tag.append(withShortName);
-            tag.append(totalObsoletes);
-            tag.append(totalStrings);
-            if (existPrimaty) {
-                tag.append(isPrimaryMultiple ? 'b' : 'a');
-            } else {
-                tag.append(isPrimaryMultiple ? 'c' : 'd');
+                if (param.alias() != null && !param.alias().isEmpty()) {
+                    tag.append(param.alias());
+                }
             }
         }
-        return tag.toString();
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(tag.toString().getBytes("UTF-8"));
+            return DatatypeConverter.printBase64Binary(md.digest());
+        } catch (Exception ex) {
+            return "v2" + tag.toString();
+        }
     }
     
+    //TODO: This is very light algorithm. But have allways problem to find something - keep searching
+//    public static String computeETag(CommandModel cm) {
+//        if (cm instanceof CachedCommandModel) {
+//            String result = ((CachedCommandModel) cm).eTag;
+//            if (result != null && !result.isEmpty()) {
+//                return ((CachedCommandModel) cm).eTag;
+//            }
+//        }
+//        StringBuilder tag = new StringBuilder();
+//        tag.append("v1"); //Just symbol for loaders
+//        if (cm.isManagedJob()) {
+//            tag.append('p');
+//        }
+//        tag.append(strLen(cm.getCommandName()));
+//        if (cm.unknownOptionsAreOperands()) {
+//            tag.append('y');
+//        }
+//        if (cm.getParameters() != null) {
+//            int size = cm.getParameters().size();
+//            int totalStrings = 0;
+//            int totalAliasStrings = 0;
+//            int totalOptional = 0;
+//            boolean existPrimaty = false;
+//            boolean isPrimaryMultiple = false;
+//            int withShortName = 0;
+//            int totalObsoletes = 0;
+//            for (ParamModel paramModel : cm.getParameters()) {
+//                if ("upload".equals(paramModel.getName())) {
+//                    //Skip because potentialy generated on client side
+//                    size--;
+//                    continue;
+//                }
+//                totalStrings += strLen(paramModel.getName());
+//                Param param = paramModel.getParam();
+//                if (param.multiple()) {
+//                    isPrimaryMultiple = true;
+//                }
+//                if (param.optional()) {
+//                    totalOptional++;
+//                }
+//                if (param.primary()) {
+//                    existPrimaty = true;
+//                    continue;
+//                }
+//                if (param.obsolete()) {
+//                    totalObsoletes++;
+//                }
+//                if (param.shortName() != null && !param.shortName().isEmpty()) {
+//                    withShortName++;
+//                }
+//                totalAliasStrings += strLen(param.alias());
+//            }
+//            tag.append(size);
+//            tag.append(totalStrings);
+//            tag.append(totalAliasStrings);
+//            tag.append(totalOptional);
+//            tag.append(withShortName);
+//            tag.append(totalObsoletes);
+//            tag.append(totalStrings);
+//            if (existPrimaty) {
+//                tag.append(isPrimaryMultiple ? 'b' : 'a');
+//            } else {
+//                tag.append(isPrimaryMultiple ? 'c' : 'd');
+//            }
+//        }
+//        return tag.toString();
+//    }
+//    
     
 //    public static String computeETag(CommandModel cm) {
 //        if (cm instanceof CachedCommandModel) {

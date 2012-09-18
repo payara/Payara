@@ -42,11 +42,13 @@ package com.sun.enterprise.admin.util.cache;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.*;
 import java.nio.charset.Charset;
+import org.jvnet.hk2.annotations.Service;
 
 /** DataProvider for String
  *
  * @author mmares
  */
+@Service
 public class StringDataProvider implements DataProvider {
     
     private Charset charset;

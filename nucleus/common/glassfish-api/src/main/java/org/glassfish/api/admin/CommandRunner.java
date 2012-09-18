@@ -212,6 +212,11 @@ public interface CommandRunner {
          */
         public CommandInvocation progressStatusChild(ProgressStatus ps);
         
+        /**
+         * Set the AdminCommand to be a managed job
+         */
+        public CommandInvocation managedJob(); 
+        
         /** Current report. After command execution report can be changed by command
          */
         public ActionReport report();

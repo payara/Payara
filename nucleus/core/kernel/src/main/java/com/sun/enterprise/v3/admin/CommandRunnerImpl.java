@@ -84,6 +84,7 @@ import com.sun.hk2.component.InjectionResolver;
 
 import com.sun.enterprise.universal.collections.ManifestUtils;
 import com.sun.enterprise.universal.glassfish.AdminCommandResponse;
+import com.sun.enterprise.util.AnnotationUtil;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.v3.common.XMLContentActionReporter;
@@ -243,23 +244,6 @@ public class CommandRunnerImpl implements CommandRunner {
         
         return null;
     }
-
-    /**
-     * Any command annotated with @ManagedJob if it needs to be
-     * managed by Job Manager
-     * Additionally any command annotated with @Progress is also a ManagedJob
-     * @param onMe
-     * @return true this command is a managed job
-     */
-    private static boolean getManagedJob(Class<?> onMe) {
-        Progress progress = onMe.getAnnotation(Progress.class);
-        ManagedJob managedJob = onMe.getAnnotation(ManagedJob.class) ;
-        return ( progress != null || managedJob != null)  ? true : false  ;
-
-    }
-
-
-
 
     /**
      * Obtain and return the command implementation defined by
@@ -1628,6 +1612,7 @@ public class CommandRunnerImpl implements CommandRunner {
         protected Payload.Outbound outbound;
         protected Subject subject;
         protected ProgressStatus progressStatusChild;
+        protected boolean isManagedJob;
         private   List<NameListerPair> nameListerPairs = new ArrayList<NameListerPair>(); 
 
         private ExecutionContext(String scope, String name, ActionReport report) {
@@ -1679,6 +1664,12 @@ public class CommandRunnerImpl implements CommandRunner {
         }
         
         @Override
+        public CommandInvocation managedJob() {
+            this.isManagedJob = true;
+            return this;
+        }
+        
+        @Override
         public void execute() {
             execute(null);
         }
@@ -1699,6 +1690,7 @@ public class CommandRunnerImpl implements CommandRunner {
             return scope;
         }
 
+        @Override
         public ActionReport report() {
             return report;
         }
@@ -1714,16 +1706,14 @@ public class CommandRunnerImpl implements CommandRunner {
         private Payload.Outbound outboundPayload() {
             return outbound;
         }
-
+        
         @Override
         public void execute(AdminCommand command) {
             AdminCommand command1 = getCommand(scope(),name(),report(),logger);
-            boolean isManagedJob = false;
-
-            if(command1 != null) {
-                isManagedJob = getManagedJob(command1.getClass());
+            if(command1 != null && !isManagedJob) {
+                isManagedJob = AnnotationUtil.presentTransitive(ManagedJob.class, command1.getClass());
             }
-            Job commandInstance = jobRegistry.createJob(name(),isManagedJob);
+            Job commandInstance = jobRegistry.createJob(name(), isManagedJob);
 
             for (NameListerPair nameListerPair : nameListerPairs) {
                 commandInstance.getEventBroker().registerListener(nameListerPair.nameRegexp, nameListerPair.listener);

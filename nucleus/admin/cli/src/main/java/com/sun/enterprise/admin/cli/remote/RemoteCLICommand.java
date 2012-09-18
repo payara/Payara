@@ -118,10 +118,10 @@ public class RemoteCLICommand extends CLICommand {
          */
         public CLIRemoteAdminCommand(String name, String host, int port,
                 boolean secure, String user, String password, Logger logger,
-                String authToken,boolean isDetach)
+                String authToken)
                 throws CommandException {
             super(name, host, port, secure, user, password, logger, getCommandScope(),
-                    authToken, true /* prohibitDirectoryUploads */,isDetach);
+                    authToken, true /* prohibitDirectoryUploads */);
 
             StringBuilder sessionFilePath = new StringBuilder();
 
@@ -263,6 +263,16 @@ public class RemoteCLICommand extends CLICommand {
         protected synchronized Invocation.Builder addAdditionalHeaders(final Invocation.Builder request) {
             return addCookieHeaders(request);
         }
+        
+        @Override
+        protected boolean useSse() throws CommandException {
+            return programOpts.isDetachedCommand() || super.useSse();
+        }
+        
+//        @Override
+//        protected boolean refetchInvalidModel() {
+//            return false;
+//        }
 
         /*
          * Adds any cookies maintained in the clients session cookie cache.
@@ -638,6 +648,16 @@ public class RemoteCLICommand extends CLICommand {
             throw ex;
         }
     }
+    
+    @Override
+    protected void parse() throws CommandException {
+        try {
+            super.parse();
+        } catch (CommandValidationException ex) {
+            reExecuteAfterMetadataUpdate();
+            throw ex;
+        }
+    }
 
     /**
      * If it's a help request, don't prompt for any missing options.
@@ -684,7 +704,7 @@ public class RemoteCLICommand extends CLICommand {
         try {
             rac.statusPrinter.reset();
             options.set("DEFAULT", operands);
-            if (rac.isDetachedCommand())  {
+            if (programOpts.isDetachedCommand())  {
                 rac.registerListener("AdminCommandInstance\\.stateChanged", new DetachListener(logger, rac));
 
             }
@@ -841,7 +861,7 @@ public class RemoteCLICommand extends CLICommand {
             rac = new RemoteCLICommand.CLIRemoteAdminCommand(name,
                 programOpts.getHost(), programOpts.getPort(),
                 programOpts.isSecure(), programOpts.getUser(),
-                programOpts.getPassword(), logger, programOpts.getAuthToken(),programOpts.isDetachedCommand());
+                programOpts.getPassword(), logger, programOpts.getAuthToken());
             rac.setFileOutputDirectory(outputDir);
             rac.setInteractive(programOpts.isInteractive());
             rac.setOmitCache(!programOpts.isUseCache()); //todo: [mmar] Remove after implementation CLI->ReST done
