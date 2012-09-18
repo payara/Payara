@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -109,9 +110,11 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.grizzly.ContextMapper;
+
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+
 import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.glassfish.web.admin.monitor.JspProbeProvider;
 import org.glassfish.web.admin.monitor.RequestProbeProvider;
@@ -161,6 +164,7 @@ import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
 import com.sun.enterprise.web.logger.IASLogger;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.web.reconfig.WebConfigListener;
+import com.sun.logging.LogDomains;
 
 /**
  * Web container service
@@ -195,7 +199,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     @LoggerInfo(subsystem="WEB", description="Main WEB Logger", publish=true)
     public static final String WEB_MAIN_LOGGER = "javax.enterprise.web";
-    public static final Logger logger =
+    private static final Logger logger =
             Logger.getLogger(WEB_MAIN_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 
     @LogMessageInfo(
@@ -288,7 +292,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             message = "Error loading web module {0}",
             level = "SEVERE",
             cause = "An error occurred during loading web module",
-            action = "Check the Exception for the error")
+            action = "Check the Exception for the error details ")
     public static final String LOAD_WEB_MODULE_ERROR = "AS-WEB-00015";
 
     @LogMessageInfo(
@@ -347,7 +351,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     @LogMessageInfo(
             message = "Maximum depth for nested request dispatches set to {0}",
-            level = "FINE")
+            level = "INFO")
     public static final String MAX_DISPATCH_DEPTH_SET = "AS-WEB-00026";
 
     @LogMessageInfo(
@@ -377,27 +381,27 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     @LogMessageInfo(
             message = "Loading web module {0} to virtual servers {1}",
-            level = "FINE")
+            level = "INFO")
     public static final String LOADING_WEB_MODULE = "AS-WEB-00031";
 
     @LogMessageInfo(
             message = "Unloading web module {0} from virtual servers {1}",
-            level = "FINE")
+            level = "INFO")
     public static final String UNLOADING_WEB_MODULE = "AS-WEB-00032";
 
     @LogMessageInfo(
             message = "Context {0} undeployed from virtual server {1}",
-            level = "FINE")
+            level = "INFO")
     public static final String CONTEXT_UNDEPLOYED = "AS-WEB-00033";
 
     @LogMessageInfo(
             message = "Context {0} disabled from virtual server {1}",
-            level = "FINE")
+            level = "INFO")
     public static final String CONTEXT_DISABLED = "AS-WEB-00034";
 
     @LogMessageInfo(
             message = "Virtual server {0}'s network listeners are updated from {1} to {2}",
-            level = "FINE")
+            level = "INFO")
     public static final String VS_UPDATED_NETWORK_LISTENERS = "AS-WEB-00035";
 
     @LogMessageInfo(
@@ -407,7 +411,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     @LogMessageInfo(
             message = "-DjvmRoute updated with {0}",
-            level = "FINE")
+            level = "INFO")
     public static final String JVM_ROUTE_UPDATED= "AS-WEB-00037";
 
     @LogMessageInfo(
@@ -417,7 +421,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     @LogMessageInfo(
             message = "Virtual server {0} set listener name {1}",
-            level = "FINE")
+            level = "INFO")
     public static final String VIRTUAL_SERVER_SET_LISTENER_NAME = "AS-WEB-00039";
 
     @LogMessageInfo(
@@ -427,18 +431,18 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     @LogMessageInfo(
             message = "Virtual server {0} set jk listener name {1}",
-            level = "FINE")
+            level = "INFO")
     public static final String VIRTUAL_SERVER_SET_JK_LISTENER_NAME = "AS-WEB-00041";
 
     @LogMessageInfo(
             message = "virtual server {0} has an invalid docroot {1}",
             level = "INFO")
-    public static final String VIRTUAL_SERVER_INVALID_DOCROOT = "AS-WEB-00042";
+    public static final String VIRTUAL_SERVER_INVALID_DOCROOT= "AS-WEB-00042";
 
     @LogMessageInfo(
             message = "{0} network listener is not included in {1} and will be updated ",
-            level = "FINE")
-    public static final String UPDATE_LISTENER = "AS-WEB-00043";
+            level = "INFO")
+    public static final String UPDATE_LISTENER= "AS-WEB-00043";
 
     /**
      * Are we using Tomcat deployment backend or DOL?
