@@ -505,7 +505,7 @@ public class WebContainerImpl implements WebContainer {
 
             }
 
-            EmbeddedWebArchivist archivist = habitat.getService(EmbeddedWebArchivist.class);
+            EmbeddedWebArchivist archivist = habitat.<EmbeddedWebArchivist>getService(EmbeddedWebArchivist.class);
             archivist.setDefaultWebXml(config.getDefaultWebXml());
 
             embedded.setDirectoryListing(config.getListings());

@@ -44,9 +44,11 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.apf.ProcessingResult;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.internal.embedded.*;
 import org.glassfish.web.deployment.archivist.WebArchivist;
+import org.jvnet.hk2.annotations.Service;
 
 import java.io.IOException;
 import java.io.File;
@@ -61,6 +63,7 @@ import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 /**
  * @author Jerome Dochez
  */
+@Service @PerLookup
 public class EmbeddedWebArchivist extends WebArchivist {
 
     private final ModuleScanner scanner = new ModuleScanner() {
