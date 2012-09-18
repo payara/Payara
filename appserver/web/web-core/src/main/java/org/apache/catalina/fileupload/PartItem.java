@@ -61,6 +61,8 @@ package org.apache.catalina.fileupload;
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.util.RequestUtil;
+import org.apache.catalina.util.StringManager;
+import org.apache.catalina.valves.Constants;
 
 import javax.servlet.http.Part;
 import java.io.*;
@@ -100,6 +102,12 @@ class PartItem
     private static final long serialVersionUID = 2237570099615271025L;
 
     protected Logger log = Logger.getLogger(PartItem.class.getName());
+
+    /**
+     * The string manager for this package.
+     */
+    private static final StringManager sm =
+            StringManager.getManager(Constants.Package);
 
     // ----------------------------------------------------------- Data members
 
@@ -350,7 +358,9 @@ class PartItem
 
         try {
             fis = new FileInputStream(dfos.getFile());
-            fis.read(fileData);
+            if (fis.read(fileData) != (int)getSize())
+                if (log.isLoggable(Level.INFO))
+                    log.log(Level.INFO, sm.getString("partItem.get"));
         } catch (IOException e) {
             fileData = null;
         } finally {

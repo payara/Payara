@@ -1789,7 +1789,9 @@ public class DefaultServlet
                 if (f.exists()){
                     fis =new FileInputStream(f);
                     byte b[] = new byte[(int)f.length()]; /* danger! */
-                    fis.read(b);
+                    if ((fis.read(b) < 0) && (debug > 0))
+                        log("DefaultServlet.findXsltInputStream:  globalXsltFile '" +
+                                globalXsltFile + "' is empty.");
                     return new ByteArrayInputStream(b);
                 }
             } finally {

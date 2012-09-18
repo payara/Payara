@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,6 +63,8 @@ import org.apache.catalina.util.StringManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Coyote implementation of the buffered reader.
@@ -84,7 +86,8 @@ public class CoyoteReader
      */
     private static final StringManager sm =
         StringManager.getManager(Constants.Package);
-
+    private static final Logger log =
+        Logger.getLogger(CoyoteReader.class.getName());
 
     // ----------------------------------------------------- Instance Variables
 
@@ -286,7 +289,10 @@ public class CoyoteReader
                 pos = 0;
             } else {
                 reset();
-                skip(skip);
+                if (skip(skip) != skip && log.isLoggable(Level.WARNING)) {
+                    log.warning(sm.getString(
+                            "coyoteReader.readline.skipFailure", skip));
+                }
             }
         }
 

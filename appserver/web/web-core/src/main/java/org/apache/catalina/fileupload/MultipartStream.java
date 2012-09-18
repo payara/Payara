@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,6 +61,11 @@ package org.apache.catalina.fileupload;
 
 import java.io.ByteArrayOutputStream;
 import java.io.*;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.apache.catalina.util.StringManager;
 
 /**
  * <p> Low level API for processing file uploads.
@@ -238,6 +243,11 @@ public class MultipartStream {
     private static final byte[] BOUNDARY_PREFIX = {
         CR, LF, DASH, DASH};
 
+
+    private static final StringManager sm =
+        StringManager.getManager(MultipartStream.class.getPackage().getName());
+    private static final Logger log =
+        Logger.getLogger(MultipartStream.class.getName());
 
     // ----------------------------------------------------------- Data members
 
@@ -906,7 +916,10 @@ public class MultipartStream {
                             break;
                         }
                     }
-                    skip(av);
+                    if (skip(av) != av && log.isLoggable(Level.WARNING)) {
+                        log.warning(
+                                sm.getString("multipartStream.close.skipFailure", av));
+                    }
                 }
             }
             closed = true;
