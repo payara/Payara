@@ -1721,7 +1721,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             CachedCommandModel cm = new CachedCommandModel(obj.getString("@name"), etag);
             cm.dashOk = obj.optBoolean("@unknown-options-are-operands", false);
             cm.managedJob = obj.optBoolean("@managed-job", false);
-            cm.setUsage(obj.optString("usage"));
+            cm.setUsage(obj.optString("usage", null));
             Object optns = obj.opt("option");
             if (!JSONObject.NULL.equals(optns)) {
                 JSONArray jsonOptions;
