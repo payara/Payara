@@ -44,7 +44,6 @@ import java.net.URI;
 import java.util.List;
 import javax.inject.Inject;
 import javax.security.auth.Subject;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
@@ -77,7 +76,6 @@ import org.jvnet.hk2.component.Habitat;
  * @author jdlee
  */
 @Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
 public abstract class CompositeResource implements RestResource, DefaultsGenerator, OptionsCapable {
 
     @Context
