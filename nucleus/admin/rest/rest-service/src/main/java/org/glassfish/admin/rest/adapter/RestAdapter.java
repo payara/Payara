@@ -164,13 +164,12 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                     }
                 }
 
-                AdminAccessController.Access access = null;
                 if (adminAuthenticator != null) {
                     final Subject subject = adminAuthenticator.loginAsAdmin(req);
                     if (subject == null) {
                         int status = HttpURLConnection.HTTP_UNAUTHORIZED;
                         String msg = localStrings.getLocalString("rest.adapter.auth.userpassword",
-                                "Invalid user name or password");
+                                                                 "Invalid user name or password");
                         res.setHeader(HEADER_AUTHENTICATE, "BASIC");
                         reportError(req, res, status, msg);
                         return;
@@ -179,16 +178,16 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                     //access = adminAuthenticator.chooseAccess(subject, req.getRemoteHost());
                 }
 
-                if (access == null || access.isOK()) {
-                    String context = getContextRoot();
-                    logger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
-                    if ((context != null) && (!"".equals(context)) && (adapter == null)) {
-                        adapter = exposeContext(getRrp().getResourceClasses(habitat), sc, habitat);
-                        logger.log(Level.INFO, "rest.rest_interface_initialized", context);
-                    }
-                    //delegate to adapter managed by Jersey.
-                    adapter.service(req, res);
+                String context = getContextRoot();
+                logger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
+                if ((context != null) && (!"".equals(context)) && (adapter == null)) {
+                    adapter = exposeContext(getRrp().
+                            getResourceClasses(habitat), sc, habitat);
+                    logger.log(Level.INFO, "rest.rest_interface_initialized", context);
                 }
+                //delegate to adapter managed by Jersey.
+                adapter.service(req, res);
+
 //                  TODO: Check if it is correct from the pont of modern authorisation
 //                else { // Access != FULL
 //                    String msg;

@@ -40,7 +40,6 @@
 package org.glassfish.admin.rest.composite;
 
 import com.sun.enterprise.v3.common.ActionReporter;
-import java.io.Serializable;
 import java.net.URI;
 import java.util.List;
 import javax.inject.Inject;
@@ -55,7 +54,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilderException;
 import javax.ws.rs.core.UriInfo;
 import org.codehaus.jettison.json.JSONException;
-import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.OptionsCapable;
 import org.glassfish.admin.rest.RestResource;
 import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
@@ -77,7 +75,7 @@ import org.jvnet.hk2.component.Habitat;
  * @author jdlee
  */
 @Produces(MediaType.APPLICATION_JSON)
-public abstract class CompositeResource implements RestResource, DefaultsGenerator, OptionsCapable, Serializable {
+public abstract class CompositeResource implements RestResource, DefaultsGenerator, OptionsCapable {
 
     @Context
     protected UriInfo uriInfo;

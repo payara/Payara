@@ -41,6 +41,7 @@
 
 package org.glassfish.admin.rest.adapter;
 
+import java.io.Serializable;
 import org.glassfish.admin.rest.RestConfigChangeListener;
 import org.glassfish.admin.rest.resources.ReloadResource;
 import org.glassfish.api.container.EndpointRegistrationException;
@@ -73,34 +74,43 @@ import java.util.Set;
  * Base class for various ReST resource providers
  *
  */
-public abstract class AbstractRestResourceProvider implements RestResourceProvider {
+public abstract class AbstractRestResourceProvider implements RestResourceProvider, Serializable {
     // content of this class has been copied from RestAdapter.java
+    protected Map<String, MediaType> mappings;
+    protected Map<String, Boolean> features;
+
     protected AbstractRestResourceProvider() {
     }
 
+    @Override
     public boolean enableModifAccessToInstances() {
         return false;
     }
 
     protected Map<String, MediaType> getMimeMappings() {
-        return new HashMap<String, MediaType>() {{
-            put("xml", MediaType.APPLICATION_XML_TYPE);
-            put("json", MediaType.APPLICATION_JSON_TYPE);
-            put("html", MediaType.TEXT_HTML_TYPE);
-            put("js", new MediaType("text", "javascript"));
-        }};
+        if (mappings == null) {
+            mappings = new HashMap<String, MediaType>();
+            mappings.put("xml", MediaType.APPLICATION_XML_TYPE);
+            mappings.put("json", MediaType.APPLICATION_JSON_TYPE);
+            mappings.put("html", MediaType.TEXT_HTML_TYPE);
+            mappings.put("js", new MediaType("text", "javascript"));
+        }
+        return mappings;
     }
 
     protected Map<String, Boolean> getFeatures() {
-        return new HashMap<String, Boolean>() {{
+        if (features == null) {
+            features = new HashMap<String, Boolean>();
             //    put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.TRUE);
-        }};
+        }
+        return features;
     }
 
     protected AbstractBinder getJsonBinder() {
         return new JettisonBinder();
     }
 
+    @Override
     public ResourceConfig getResourceConfig(Set<Class<?>> classes,
                                             final ServerContext sc,
                                             final Habitat habitat,

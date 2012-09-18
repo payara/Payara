@@ -41,6 +41,7 @@ package org.glassfish.admin.rest.annotation.processor;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +68,7 @@ public class RestModelExtensionProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> elements, RoundEnvironment env) {
         Messager messager = processingEnv.getMessager();
+        BufferedWriter bw = null;
         try {
             Map<String, List<String>> classes = new HashMap<String, List<String>>();
 
@@ -86,8 +88,7 @@ public class RestModelExtensionProcessor extends AbstractProcessor {
             if (!classes.isEmpty()) {
                 final Filer filer = processingEnv.getFiler();
                 FileObject fo = filer.createResource(StandardLocation.CLASS_OUTPUT, "", "META-INF/restmodelextensions");
-
-                BufferedWriter bw = new BufferedWriter(fo.openWriter());
+                bw = new BufferedWriter(fo.openWriter());
                 // parent model:model extension
                 for (Map.Entry<String, List<String>> entry : classes.entrySet()) {
                     final String key = entry.getKey();
@@ -99,6 +100,13 @@ public class RestModelExtensionProcessor extends AbstractProcessor {
             }
         } catch (IOException ex) {
             messager.printMessage(Kind.ERROR, ex.getLocalizedMessage());
+            if (bw != null) {
+                try {
+                    bw.close();
+                } catch (Exception e) {
+                    
+                }
+            }
         }
 
         return true;

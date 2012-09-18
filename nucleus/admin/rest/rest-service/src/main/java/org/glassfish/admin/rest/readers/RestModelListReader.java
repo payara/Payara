@@ -97,7 +97,8 @@ public class RestModelListReader implements MessageBodyReader<List<RestModel>> {
 
             JSONArray array = new JSONArray(sb.toString());
             Class<?> modelType = null;
-            if (ParameterizedType.class.isAssignableFrom(genericType.getClass())) {
+//            if (ParameterizedType.class.isAssignableFrom(genericType.getClass())) {
+            if (genericType instanceof ParameterizedType) {
                 final ParameterizedType pt = (ParameterizedType) genericType;
                 modelType = (Class) pt.getActualTypeArguments()[0];
             }

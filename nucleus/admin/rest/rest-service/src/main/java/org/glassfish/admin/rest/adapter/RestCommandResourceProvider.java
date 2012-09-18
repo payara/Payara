@@ -42,6 +42,7 @@
 package org.glassfish.admin.rest.adapter;
 
 import com.sun.enterprise.admin.remote.writer.PayloadPartProvider;
+import java.io.Serializable;
 import org.glassfish.admin.rest.provider.*;
 import org.glassfish.admin.rest.readers.JsonParameterMapProvider;
 import org.glassfish.admin.rest.readers.ParameterMapFormReader;
@@ -83,12 +84,15 @@ public class RestCommandResourceProvider extends AbstractRestResourceProvider {
 
     @Override
     public Map<String, MediaType> getMimeMappings() {
-        return new HashMap<String, MediaType>() {{
-            put("json", MediaType.APPLICATION_JSON_TYPE);
-            put("txt", MediaType.TEXT_PLAIN_TYPE);
-            put("multi", new MediaType("multipart", null));
-            put("sse", new MediaType("text", "event-stream"));
-        }};
+        if (mappings == null) {
+            mappings = new HashMap<String, MediaType>();
+            mappings.put("json", MediaType.APPLICATION_JSON_TYPE);
+            mappings.put("txt", MediaType.TEXT_PLAIN_TYPE);
+            mappings.put("multi", new MediaType("multipart", null));
+            mappings.put("sse", new MediaType("text", "event-stream"));
+        };
+
+        return mappings;
     }
 
     @Override

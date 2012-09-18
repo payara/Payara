@@ -537,7 +537,7 @@ public class Util {
      * @return
      */
     public static Class<?> getFirstGenericType(Type genericType) {
-        if (ParameterizedType.class.isAssignableFrom(genericType.getClass())) {
+        if (genericType instanceof ParameterizedType) {
             ParameterizedType pt = (ParameterizedType)genericType;
             Type [] typeArgs = pt.getActualTypeArguments();
             if ((typeArgs != null) && (typeArgs.length >= 1)) {
