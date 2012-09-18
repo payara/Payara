@@ -53,7 +53,7 @@ import org.testng.annotations.Test;
  * @author jdlee
  */
 public class ModelExtensionTest {
-    @Test(groups = "offline")
+    @Test
     public void testNestedModels() {
         BaseModel model = CompositeUtil.instance().getModel(BaseModel.class);
         List<RelatedModel> related = model.getRelated();
@@ -70,7 +70,7 @@ public class ModelExtensionTest {
         Assert.assertEquals(related.size(), 1);
     }
 
-    @Test(groups = "offline")
+    @Test
     public void testModelExtension() {
         BaseModel model = CompositeUtil.instance().getModel(BaseModel.class);
         Assert.assertTrue(ModelExt1.class.isAssignableFrom(model.getClass()));

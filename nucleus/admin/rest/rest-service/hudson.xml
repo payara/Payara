@@ -76,7 +76,7 @@
     <property name="glassfish.dist.url"
               value="http://hudson.glassfish.org/job/gf-trunk-build-continuous/lastSuccessfulBuild/artifact/bundles/glassfish.zip"/>
     <property name="maven.url"
-              value="http://mirrors.ibiblio.org/apache/maven/binaries/apache-maven-${maven.version}-bin.tar.gz"/>
+              value="http://mirrors.ibiblio.org/apache/maven/maven-3/${maven.version}/binaries/apache-maven-${maven.version}-bin.tar.gz"/>
 
     <target name="download">
         <get src="${ant.contrib.url}" dest="ant-contrib.jar" usetimestamp="true"/>

@@ -60,7 +60,7 @@ public class CompositeUtilTest {
     private static String json =
             "{\"name\":\"testModel\",\"count\":123, \"related\":[{\"id\":\"rel1\", \"description\":\"description 1\"},{\"id\":\"rel2\", \"description\":\"description 2\"}]}";
 
-    @Test(groups="offline")
+    @Test
     public void readInJson() throws Exception {
         JSONObject o = new JSONObject(json);
         BaseModel model = CompositeUtil.instance().unmarshallClass(BaseModel.class, o);
@@ -70,7 +70,7 @@ public class CompositeUtilTest {
         Assert.assertTrue(model.getRelated().get(0).getDescription().startsWith("description "));
     }
 
-    @Test(groups="offline")
+    @Test
     public void testBeanValidationSupport() {
         final CompositeUtil cu = CompositeUtil.instance();
         BaseModel model = cu.getModel(BaseModel.class);
@@ -82,7 +82,7 @@ public class CompositeUtilTest {
         Assert.assertEquals(3, violations.size());
     }
 
-    @Test(groups="offline")
+    @Test
     public void testAttributeReferenceProcessing() throws Exception {
         final CompositeUtil cu = CompositeUtil.instance();
         BaseModel model = cu.getModel(BaseModel.class);

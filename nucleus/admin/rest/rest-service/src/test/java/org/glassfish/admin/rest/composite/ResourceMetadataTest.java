@@ -51,7 +51,7 @@ import org.testng.annotations.Test;
  * @author jdlee
  */
 public class ResourceMetadataTest  {
-    @Test(groups="offline")
+    @Test
     public void testMetadata() throws JSONException {
         RestResourceMetadata rrmd = new RestResourceMetadata(new DummiesResource());
         Assert.assertNotNull(rrmd);
