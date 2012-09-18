@@ -82,6 +82,9 @@ public class WarDetector implements ArchiveDetector {
     private static final String JSP_SUFFIX = ".jsp";
     private static final String WAR_EXTENSION = ".war";
 
+    //for avatar
+    private static final String AVATAR = "avatar";
+
     @Override
     public int rank() {
         return Integer.getInteger(WAR_DETECTOR_RANK_PROP, DEFAULT_WAR_DETECTOR_RANK);
@@ -97,6 +100,11 @@ public class WarDetector implements ArchiveDetector {
             if (archive.exists(WEB_INF)) {
                 return true;
             }
+
+            if (archive.exists(AVATAR)) {
+                return true;
+            }
+
             Enumeration<String> entries = archive.entries();
             while (entries.hasMoreElements()) {
                 String entryName = entries.nextElement();
