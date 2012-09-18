@@ -148,7 +148,7 @@ public class AsadminMain {
                         }
                     });
         } else {
-            logger.info(strings.get("ExtDirMissing", ext));
+            logger.finer(strings.get("ExtDirMissing", ext));
         }
 
         return ecl;
