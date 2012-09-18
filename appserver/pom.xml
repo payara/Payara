@@ -60,7 +60,7 @@
     </scm>
     
     <properties>
-        <jms-api.version>2.0-b03</jms-api.version>
+        <jms-api.version>2.0-b04</jms-api.version>
         <jsp-api.version>2.2.1</jsp-api.version>
         <jsp-impl.version>2.2.6</jsp-impl.version>
         <el-api.version>2.2.4</el-api.version>
@@ -104,7 +104,7 @@
         <schema2beans.version>3.1.1</schema2beans.version>
         <!-- osgi version string must start with a number. Manually mapping above schema2beans.version to osgi.version here -->
         <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
-        <mq.version>5.0-003</mq.version>
+        <mq.version>5.0-004</mq.version>
         <javadb.version>10.8.1.2</javadb.version>
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <weld.version>1.1.4.Final</weld.version>
