@@ -700,9 +700,11 @@ public final class ExtendedAccessLogValve
             File holder = currentLogFile;
             close();
             try {
-                holder.renameTo(new File(newFileName));
+                if (!holder.renameTo(new File(newFileName))) {
+                    log.log(Level.SEVERE, sm.getString("rotateLogValve.renameFailure", newFileName));
+                }
             } catch(Throwable e){
-                log.log(Level.SEVERE, "rotate failed", e);
+                log.log(Level.SEVERE, sm.getString("rotateLogValve.renameFailure", newFileName), e);
             }
 
             /* Make sure date is correct */
