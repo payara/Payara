@@ -155,6 +155,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     private File safeCopyOfApp = null;
     private File safeCopyOfDeploymentPlan = null;
     private File safeCopyOfAltDD = null;
+    private File safeCopyOfRuntimeAltDD = null;
     private File originalPathValue;
     private List<String> previousTargets = new ArrayList<String>();
     private Properties previousVirtualServers = new Properties();
@@ -230,6 +231,11 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
         if (altdd != null) {
             archive.addArchiveMetaData(DeploymentProperties.ALT_DD, altdd);
+        }
+
+        if (runtimealtdd != null) {
+            archive.addArchiveMetaData(DeploymentProperties.RUNTIME_ALT_DD, 
+                runtimealtdd);
         }
 
         expansionDir=null;
@@ -599,8 +605,8 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     }
 
     /**
-     * Makes safe copies of the archive, deployment plan, alternate dd 
-     * for later use during instance sync activity.
+     * Makes safe copies of the archive, deployment plan, alternate dd, 
+     * runtime alternate dd for later use during instance sync activity.
      * <p>
      * We rename any uploaded files from the temp directory to the permanent
      * place, and we copy any archive files that were not uploaded.  This
@@ -622,6 +628,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
         safeCopyOfApp = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalUploadDir, originalPathValue, logger, env);
         safeCopyOfDeploymentPlan = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalUploadDir, deploymentplan, logger, env);
         safeCopyOfAltDD = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalUploadDir, altdd, logger, env);
+        safeCopyOfRuntimeAltDD = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalUploadDir, runtimealtdd, logger, env);
     }
 
     private void recordFileLocations(
@@ -645,6 +652,12 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 appProps.setProperty(Application.ALT_DD_LOCATION_PROP_NAME,
                         DeploymentUtils.relativizeWithinDomainIfPossible(
                         safeCopyOfAltDD.toURI()));
+        }
+        if (safeCopyOfRuntimeAltDD != null) {
+                appProps.setProperty(
+                        Application.RUNTIME_ALT_DD_LOCATION_PROP_NAME,
+                        DeploymentUtils.relativizeWithinDomainIfPossible(
+                        safeCopyOfRuntimeAltDD.toURI()));
         }
     }
 

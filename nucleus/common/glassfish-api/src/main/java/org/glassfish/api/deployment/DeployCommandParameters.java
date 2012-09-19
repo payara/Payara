@@ -126,6 +126,12 @@ public class DeployCommandParameters extends OpsParams {
       return altdd;
     }
 
+    @Param(name=ParameterNames.RUNTIME_ALT_DD, optional=true)
+    public File runtimealtdd = null;
+    public File getRuntimeAltdd() {
+      return runtimealtdd;
+    }
+
     @Param(name=ParameterNames.ENABLED, optional=true)
     public Boolean enabled = null;
     public Boolean isEnabled() {
@@ -247,6 +253,7 @@ public class DeployCommandParameters extends OpsParams {
         public static final String PRECOMPILE_JSP = "precompilejsp";
         public static final String DEPLOYMENT_PLAN = "deploymentplan";
         public static final String ALT_DD = "altdd";
+        public static final String RUNTIME_ALT_DD = "runtimealtdd";
     }
     
 }

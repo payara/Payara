@@ -214,6 +214,7 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters
 
             if (report.getActionExitCode()==ActionReport.ExitCode.SUCCESS) {
                 try {
+                    moveAltDDFilesToPermanentLocation(deploymentContext, logger);
                     // register application information in domain.xml
                     if (application != null)  {
                         // application element already synchronized over
@@ -309,5 +310,31 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters
             }
         }
         zipFile.close();
+    }
+
+    /**
+     * Makes safe copies of the alternate dd, runtime alternate dd for 
+     * loading altdd and runtime altdd during enable application on instance
+     * and loading application during instance start up.
+     * <p>
+     * We rename any uploaded files from the temp directory to the permanent
+     * place, and we copy any archive files that were not uploaded.  This
+     * prevents any confusion that could result if the developer modified the
+     * archive file - changing its lastModified value - before redeploying it.
+     *
+     * @param deploymentContext
+     * @param logger logger
+     * @throws IOException
+     */
+    private void moveAltDDFilesToPermanentLocation(
+            final ExtendedDeploymentContext deploymentContext,
+            final Logger logger) throws IOException {
+        final File finalUploadDir = deploymentContext.getAppInternalDir();
+        if ( ! finalUploadDir.mkdirs()) {
+            logger.log(Level.FINE," Attempting to create directory {0} was reported as failed; attempting to continue",
+                    new Object[] {finalUploadDir.getAbsolutePath()});
+        }
+        DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalUploadDir, altdd, logger, env);
+        DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalUploadDir, runtimealtdd, logger, env);
     }
 }

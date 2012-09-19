@@ -250,6 +250,7 @@ public class ListComponentsCommandTest {
         public File application() {return null;}
         public File deploymentPlan() {return null;}
         public File altDD() {return null;}
+        public File runtimeAltDD() {return null;}
         public void recordFileLocations(File appFile, File deploymentPlanFile) {}
 
         @Override

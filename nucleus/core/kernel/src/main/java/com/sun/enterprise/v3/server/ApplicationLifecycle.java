@@ -260,6 +260,10 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             context.getSource().addArchiveMetaData(DeploymentProperties.ALT_DD, commandParams.altdd);
         }
 
+        if (commandParams.runtimealtdd != null) {
+            context.getSource().addArchiveMetaData(DeploymentProperties.RUNTIME_ALT_DD, commandParams.runtimealtdd);
+        }
+
         ProgressTracker tracker = new ProgressTracker() {
             @Override
             public void actOn(Logger logger) {
@@ -1845,6 +1849,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         excludedParams.add(DeploymentProperties.PATH);
         excludedParams.add(DeploymentProperties.DEPLOYMENT_PLAN);
         excludedParams.add(DeploymentProperties.ALT_DD);
+        excludedParams.add(DeploymentProperties.RUNTIME_ALT_DD);
         excludedParams.add(DeploymentProperties.UPLOAD); // We'll force it to true ourselves.
 
         final ParameterMap paramMap;
@@ -1873,6 +1878,12 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         if (altDDLocation != null) {
             final File altDD = new File(new URI(altDDLocation));
             paramMap.set(DeployCommandParameters.ParameterNames.ALT_DD, altDD.getAbsolutePath());
+        }
+
+        String runtimeAltDDLocation = appProperties.getProperty(Application.RUNTIME_ALT_DD_LOCATION_PROP_NAME);
+        if (runtimeAltDDLocation != null) {
+            final File runtimeAltDD = new File(new URI(runtimeAltDDLocation));
+            paramMap.set(DeployCommandParameters.ParameterNames.RUNTIME_ALT_DD, runtimeAltDD.getAbsolutePath());
         }
 
         // always upload the archives to the instance side

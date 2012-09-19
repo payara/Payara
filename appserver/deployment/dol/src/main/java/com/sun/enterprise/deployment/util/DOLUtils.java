@@ -48,6 +48,7 @@ import javax.enterprise.deploy.shared.ModuleType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.deployment.common.DeploymentContextImpl;
+import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
@@ -67,6 +68,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.StringTokenizer;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import com.sun.enterprise.deployment.BundleDescriptor;
@@ -81,6 +83,7 @@ import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFileFor
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
@@ -105,6 +108,9 @@ public class DOLUtils {
     
     public final static String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
     public final static String SCHEMA_LOCATION_TAG = "xsi:schemaLocation";
+
+    private static LocalStringManagerImpl localStrings =
+            new LocalStringManagerImpl(DOLUtils.class);
 
     private static Logger logger=null;
     
@@ -284,7 +290,7 @@ public class DOLUtils {
     // configuration file with precedence from high to low
     // this list does not take consideration of what runtime files are 
     // present in the current archive
-    private static List<ConfigurationDeploymentDescriptorFile> sortConfigurationDDFiles(List<ConfigurationDeploymentDescriptorFile> ddFiles, ArchiveType archiveType) {
+    private static List<ConfigurationDeploymentDescriptorFile> sortConfigurationDDFiles(List<ConfigurationDeploymentDescriptorFile> ddFiles, ArchiveType archiveType, ReadableArchive archive) {
         ConfigurationDeploymentDescriptorFile wlsConfDD = null;
         ConfigurationDeploymentDescriptorFile gfConfDD = null;
         ConfigurationDeploymentDescriptorFile sunConfDD = null;
@@ -300,6 +306,25 @@ public class DOLUtils {
             }
         }
         List<ConfigurationDeploymentDescriptorFile> sortedConfDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>(); 
+
+        // if there is external runtime alternate deployment descriptor 
+        // specified, just use that
+        File runtimeAltDDFile = archive.getArchiveMetaData(
+            DeploymentProperties.RUNTIME_ALT_DD, File.class);
+        if (runtimeAltDDFile != null && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
+            String runtimeAltDDPath = runtimeAltDDFile.getPath();
+            validateRuntimeAltDDPath(runtimeAltDDPath);
+            if (runtimeAltDDPath.indexOf(
+                DescriptorConstants.GF_PREFIX) != -1 && gfConfDD != null) {
+                sortedConfDDFiles.add(gfConfDD);
+                return sortedConfDDFiles;
+            }
+            if (runtimeAltDDPath.indexOf(
+                DescriptorConstants.WLS) != -1 && wlsConfDD != null) {
+                sortedConfDDFiles.add(wlsConfDD);
+                return sortedConfDDFiles;
+            }
+        }
 
         // sort the deployment descriptor files by precedence order 
         // when they are present in the same archive
@@ -336,13 +361,29 @@ public class DOLUtils {
         return sortedConfDDFiles;
     }
 
+    public static void validateRuntimeAltDDPath(String runtimeAltDDPath) {
+        if (runtimeAltDDPath.indexOf(DescriptorConstants.GF_PREFIX) == -1 && 
+            runtimeAltDDPath.indexOf(DescriptorConstants.WLS) == -1) {
+            String msg = localStrings.getLocalString(
+                "enterprise.deployment.util.unsupportedruntimealtdd", "Unsupported external runtime alternate deployment descriptor [{0}].", new Object[] {runtimeAltDDPath});
+            throw new IllegalArgumentException(msg);
+        }
+    }
+
     // process the list of the configuration files, and return the sorted
     // configuration file with precedence from high to low
     // this list takes consideration of what runtime files are 
     // present in the current archive
     public static List<ConfigurationDeploymentDescriptorFile> processConfigurationDDFiles(List<ConfigurationDeploymentDescriptorFile> ddFiles, ReadableArchive archive, ArchiveType archiveType) throws IOException {
+        File runtimeAltDDFile = archive.getArchiveMetaData(
+            DeploymentProperties.RUNTIME_ALT_DD, File.class);
+        if (runtimeAltDDFile != null && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
+            // if there are external runtime alternate deployment descriptor 
+            // specified, the config DD files are already processed
+            return sortConfigurationDDFiles(ddFiles, archiveType, archive);
+        }
         List<ConfigurationDeploymentDescriptorFile> processedConfDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();
-        for (ConfigurationDeploymentDescriptorFile ddFile : sortConfigurationDDFiles(ddFiles, archiveType)) {
+        for (ConfigurationDeploymentDescriptorFile ddFile : sortConfigurationDDFiles(ddFiles, archiveType, archive)) {
             if (archive.exists(ddFile.getDeploymentDescriptorPath())) {
                 processedConfDDFiles.add(ddFile);
             }
@@ -355,7 +396,7 @@ public class DOLUtils {
     public static void readAlternativeRuntimeDescriptor(ReadableArchive appArchive, ReadableArchive embeddedArchive, Archivist archivist, BundleDescriptor descriptor, String altDDPath) throws IOException, SAXParseException {
         String altRuntimeDDPath = null;
         ConfigurationDeploymentDescriptorFile confDD = null;
-        for (ConfigurationDeploymentDescriptorFile ddFile : sortConfigurationDDFiles(archivist.getConfigurationDDFiles(), archivist.getModuleType())) {
+        for (ConfigurationDeploymentDescriptorFile ddFile : sortConfigurationDDFiles(archivist.getConfigurationDDFiles(), archivist.getModuleType(), embeddedArchive)) {
             String ddPath = ddFile.getDeploymentDescriptorPath();
             if (ddPath.indexOf(DescriptorConstants.WLS) != -1 && 
                 appArchive.exists(DescriptorConstants.WLS + altDDPath)) {
@@ -412,7 +453,13 @@ public class DOLUtils {
         ConfigurationDeploymentDescriptorFile confDD = confDDFiles.get(0);
         InputStream is = null;
         try {
-            is = archive.getEntry(confDD.getDeploymentDescriptorPath());
+            File runtimeAltDDFile = archive.getArchiveMetaData(
+                DeploymentProperties.RUNTIME_ALT_DD, File.class);
+            if (runtimeAltDDFile != null && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
+                is = new FileInputStream(runtimeAltDDFile);
+            } else {
+                is = archive.getEntry(confDD.getDeploymentDescriptorPath());
+            }
             for (int i = 1; i < confDDFiles.size(); i++) {
                 if (warnIfMultipleDDs) {
                     logger.log(Level.WARNING, "counterpart.configdd.exists",

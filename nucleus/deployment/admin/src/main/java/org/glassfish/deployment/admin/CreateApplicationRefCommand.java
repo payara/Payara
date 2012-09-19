@@ -315,6 +315,10 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
                     if (altDDLocation != null) {
                         appProps.setProperty(Application.ALT_DD_LOCATION_PROP_NAME, DeploymentUtils.relativizeWithinDomainIfPossible(new URI(altDDLocation)));
                     }
+                    String runtimeAltDDLocation = appProps.getProperty(Application.RUNTIME_ALT_DD_LOCATION_PROP_NAME);
+                    if (runtimeAltDDLocation != null) {
+                        appProps.setProperty(Application.RUNTIME_ALT_DD_LOCATION_PROP_NAME, DeploymentUtils.relativizeWithinDomainIfPossible(new URI(runtimeAltDDLocation)));
+                    }
                     savedAppConfig.store(appProps);
 
                     if (modulePropsMap != null) {

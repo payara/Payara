@@ -117,7 +117,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     public String getVersionIdentifier(ReadableArchive archive) {
         String versionIdentifier = null;
         try {
-            GFApplicationXmlParser gfApplicationXMLParser = new GFApplicationXmlParser(null);
+            GFApplicationXmlParser gfApplicationXMLParser = new GFApplicationXmlParser(archive);
             versionIdentifier = gfApplicationXMLParser.extractVersionIdentifierValue(archive);
         } catch (XMLStreamException e) {
             _logger.log(Level.SEVERE, e.getMessage());
@@ -302,7 +302,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
             // let's see if it's defined in glassfish-application.xml
             if (compatProp == null) {
                 GFApplicationXmlParser gfApplicationXmlParser =
-                    new GFApplicationXmlParser(context.getSourceDir());
+                    new GFApplicationXmlParser(context.getSource());
                 compatProp = gfApplicationXmlParser.getCompatibilityValue();
                 if (compatProp != null) {
                     context.getAppProps().put(
@@ -514,11 +514,18 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
         private XMLStreamReader parser = null;
         private String compatValue = null;
 
-        GFApplicationXmlParser(File baseDir) throws XMLStreamException, FileNotFoundException {
+        GFApplicationXmlParser(ReadableArchive archive) throws XMLStreamException, FileNotFoundException, IOException {
             InputStream input = null;
-            File f = new File(baseDir, "META-INF/glassfish-application.xml");
-            if (f.exists()) {
-                input = new FileInputStream(f);
+            File runtimeAltDDFile = archive.getArchiveMetaData(
+                DeploymentProperties.RUNTIME_ALT_DD, File.class);
+            if (runtimeAltDDFile != null && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
+                DOLUtils.validateRuntimeAltDDPath(runtimeAltDDFile.getPath());
+                input = new FileInputStream(runtimeAltDDFile);
+            } else {
+                input = archive.getEntry("META-INF/glassfish-application.xml");
+            }
+
+            if (input != null) {
                 try {
                     read(input);
                 } finally {
@@ -529,12 +536,10 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                             // ignore
                         }
                     }
-                    if (input != null) {
-                        try {
-                            input.close();
-                        } catch(Exception ex) {
+                    try {
+                        input.close();
+                    } catch(Exception ex) {
                             // ignore
-                        }
                     }
                 }
             }
@@ -547,7 +552,14 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
 
             try
             {
-                input = archive.getEntry("META-INF/glassfish-application.xml");
+                File runtimeAltDDFile = archive.getArchiveMetaData(
+                    DeploymentProperties.RUNTIME_ALT_DD, File.class);
+                if (runtimeAltDDFile != null && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
+                    DOLUtils.validateRuntimeAltDDPath(runtimeAltDDFile.getPath());
+                    input = new FileInputStream(runtimeAltDDFile);
+                } else {
+                    input = archive.getEntry("META-INF/glassfish-application.xml");
+                }
 
                 if (input != null) {
 

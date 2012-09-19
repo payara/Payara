@@ -72,6 +72,7 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
     public static final String APP_LOCATION_PROP_NAME = "appLocation";
     public static final String DEPLOYMENT_PLAN_LOCATION_PROP_NAME = "deploymentPlanLocation";
     public static final String ALT_DD_LOCATION_PROP_NAME = "altDDLocation";
+    public static final String RUNTIME_ALT_DD_LOCATION_PROP_NAME = "runtimeAltDDLocation";
 
     /**
      * Gets the value of the contextRoot property.
@@ -316,6 +317,9 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
     @DuckTyped
     File altDD();
 
+    @DuckTyped
+    File runtimeAltDD();
+
     class Duck {
 
         public static Module getModule(Application instance, String name) {
@@ -377,6 +381,32 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
             }
             if (appRef != null) {
                 deploymentParams.virtualservers = appRef.getVirtualServers();
+            }
+            for (Property prop : app.getProperty()) {
+                if (prop.getName().equals(ALT_DD_LOCATION_PROP_NAME)) {
+                    URI altDDUri = null;
+                    try {
+                        altDDUri = new URI(prop.getValue());
+                    } catch (URISyntaxException e) {
+                        Logger.getAnonymousLogger().log(
+                            Level.SEVERE, e.getMessage(), e);
+                    }
+                    if (altDDUri != null) {
+                        deploymentParams.altdd = new File(altDDUri);
+                    }
+                } else if (prop.getName().equals(
+                        RUNTIME_ALT_DD_LOCATION_PROP_NAME)) {
+                    URI runtimeAltDDUri = null;
+                    try {
+                        runtimeAltDDUri = new URI(prop.getValue());
+                    } catch (URISyntaxException e) {
+                        Logger.getAnonymousLogger().log(
+                            Level.SEVERE, e.getMessage(), e);
+                    }
+                    if (runtimeAltDDUri != null) {
+                        deploymentParams.runtimealtdd = new File(runtimeAltDDUri);
+                    }
+                }
             }
             return deploymentParams;
         }
@@ -443,6 +473,10 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
 
         public static File altDD(final Application instance) {
             return fileForProp(instance, ALT_DD_LOCATION_PROP_NAME);
+        }
+
+        public static File runtimeAltDD(final Application instance) {
+            return fileForProp(instance, RUNTIME_ALT_DD_LOCATION_PROP_NAME);
         }
 
         private static File fileForProp(final Application instance,
