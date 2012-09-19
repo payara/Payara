@@ -391,6 +391,9 @@ public class CommandResource {
                         if (event == null) {
                             return;
                         }
+                        if (ec.isClosed()) {
+                            return;
+                        }
                         OutboundEvent outEvent = new OutboundEvent.Builder()
                                                     .name(name)
                                                     .mediaType(MediaType.APPLICATION_JSON_TYPE)
@@ -398,10 +401,12 @@ public class CommandResource {
                                                     .build();
                         try {
                             ec.write(outEvent);
-                        } catch (IOException ex) {
-                            logger.log(Level.WARNING, strings.getLocalString("sse.writeevent.exception",
-                                    "Can not write object as SSE (type = {0})",
-                                    event.getClass().getName()), ex);
+                        } catch (Exception ex) {
+                            if (logger.isLoggable(Level.FINE)) {
+                                logger.log(Level.FINE, strings.getLocalString("sse.writeevent.exception",
+                                        "Can not write object as SSE (type = {0})",
+                                        event.getClass().getName()), ex);
+                            }
                         }
                     }
                 };
