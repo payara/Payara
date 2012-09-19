@@ -43,6 +43,8 @@ package org.glassfish.ejb.deployment;
 
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
 import com.sun.enterprise.loader.ASURLClassLoader;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.io.DescriptorConstants;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -87,7 +89,7 @@ public class EjbJarHandler extends AbstractArchiveHandler {
     public String getVersionIdentifier(ReadableArchive archive) {
         String versionIdentifier = null;
         try {
-            GFEjbJarXMLParser gfXMLParser = new GFEjbJarXMLParser(null);
+            GFEjbJarXMLParser gfXMLParser = new GFEjbJarXMLParser(archive);
             versionIdentifier = gfXMLParser.extractVersionIdentifierValue(archive);
         } catch (XMLStreamException e) {
             _logger.log(Level.SEVERE, e.getMessage());
@@ -112,7 +114,7 @@ public class EjbJarHandler extends AbstractArchiveHandler {
             // let's see if it's defined in glassfish-ejb-jar.xml
             if (compatProp == null) {
                 GFEjbJarXMLParser gfEjbJarXMLParser =
-                        new GFEjbJarXMLParser(context.getSourceDir());
+                        new GFEjbJarXMLParser(context.getSource());
                 compatProp = gfEjbJarXMLParser.getCompatibilityValue();
                 if (compatProp != null) {
                     context.getAppProps().put(
@@ -161,11 +163,18 @@ public class EjbJarHandler extends AbstractArchiveHandler {
         private XMLStreamReader parser = null;
         private String compatValue = null;
 
-        GFEjbJarXMLParser(File baseDir) throws XMLStreamException, FileNotFoundException {
+        GFEjbJarXMLParser(ReadableArchive archive) throws XMLStreamException, FileNotFoundException, IOException {
             InputStream input = null;
-            File f = new File(baseDir, "META-INF/glassfish-ejb-jar.xml");
-            if (f.exists()) {
-                input = new FileInputStream(f);
+            File runtimeAltDDFile = archive.getArchiveMetaData(
+                DeploymentProperties.RUNTIME_ALT_DD, File.class);
+            if (runtimeAltDDFile != null && runtimeAltDDFile.getPath().indexOf(DescriptorConstants.GF_PREFIX) != -1 && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
+                DOLUtils.validateRuntimeAltDDPath(runtimeAltDDFile.getPath());
+                input = new FileInputStream(runtimeAltDDFile);
+            } else {
+                input = archive.getEntry("META-INF/glassfish-ejb-jar.xml");
+            }
+
+            if (input != null) {
                 try {
                     read(input);
                 } finally {
@@ -176,12 +185,10 @@ public class EjbJarHandler extends AbstractArchiveHandler {
                             // ignore
                         }
                     }
-                    if (input != null) {
-                        try {
-                            input.close();
-                        } catch (Exception ex) {
-                            // ignore
-                        }
+                    try {
+                        input.close();
+                    } catch (Exception ex) {
+                        // ignore
                     }
                 }
             }
@@ -194,8 +201,16 @@ public class EjbJarHandler extends AbstractArchiveHandler {
             String rootElement = null;
 
             try {
+                File runtimeAltDDFile = archive.getArchiveMetaData(
+                    DeploymentProperties.RUNTIME_ALT_DD, File.class);
+                if (runtimeAltDDFile != null && runtimeAltDDFile.getPath().indexOf(DescriptorConstants.GF_PREFIX) != -1 && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
+                    DOLUtils.validateRuntimeAltDDPath(runtimeAltDDFile.getPath());
+                    input = new FileInputStream(runtimeAltDDFile);
+                } else {
+                    input = archive.getEntry("META-INF/glassfish-ejb-jar.xml");
+                }
+
                 rootElement = "glassfish-ejb-jar";
-                input = archive.getEntry("META-INF/glassfish-ejb-jar.xml");
                 if (input != null) {
 
                     // parse elements only from glassfish-ejb

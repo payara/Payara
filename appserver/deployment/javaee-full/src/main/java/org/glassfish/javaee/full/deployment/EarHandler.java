@@ -68,6 +68,7 @@ import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.deployment.archivist.ApplicationArchivist;
 import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.config.serverbeans.DasConfig;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deployment.deploy.shared.JarArchive;
@@ -518,7 +519,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
             InputStream input = null;
             File runtimeAltDDFile = archive.getArchiveMetaData(
                 DeploymentProperties.RUNTIME_ALT_DD, File.class);
-            if (runtimeAltDDFile != null && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
+            if (runtimeAltDDFile != null && runtimeAltDDFile.getPath().indexOf(DescriptorConstants.GF_PREFIX) != -1 && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
                 DOLUtils.validateRuntimeAltDDPath(runtimeAltDDFile.getPath());
                 input = new FileInputStream(runtimeAltDDFile);
             } else {
@@ -554,7 +555,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
             {
                 File runtimeAltDDFile = archive.getArchiveMetaData(
                     DeploymentProperties.RUNTIME_ALT_DD, File.class);
-                if (runtimeAltDDFile != null && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
+                if (runtimeAltDDFile != null && runtimeAltDDFile.getPath().indexOf(DescriptorConstants.GF_PREFIX) != -1 && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
                     DOLUtils.validateRuntimeAltDDPath(runtimeAltDDFile.getPath());
                     input = new FileInputStream(runtimeAltDDFile);
                 } else {
