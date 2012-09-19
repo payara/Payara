@@ -52,7 +52,7 @@ import java.beans.PropertyVetoException;
 
 /**
  * This config bean will define parameters for Managed Jobs
- * A Managed jobs are commands which are annotated with @ManagedJob
+ * A Managed jobs are commands which are annotated with @ManagedJob,@Progress
  * or running with --detach
  * @author Bhakti Mehta
  */
@@ -112,6 +112,45 @@ public interface ManagedJobConfig extends DomainExtension, Injectable, PropertyB
      *              {@link String }
      */
     void setPersistingEnabled(boolean value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of pollInterval property
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute(defaultValue="20m")
+    @Pattern(regexp = "[1-9]\\d*([hms]|[HMS])" , message = "{invalid.time.period.specified}"
+            , payload = ManagedJobConfig.class)
+    String getPollInterval();
+
+    /**
+     * Sets the value of the pollInterval property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    @Param(name = "pollinterval", optional=true)
+    void setPollInterval(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of initialDelay
+     * @return
+     */
+    @Attribute(defaultValue="20m")
+    @Pattern(regexp = "[1-9]\\d*([hms]|[HMS])" , message = "{invalid.time.period.specified}" ,
+            payload = ManagedJobConfig.class)
+    String getInitialDelay();
+
+    /**
+     * Sets the value of the initialDelay property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    @Param(name = "initialdelay", optional=true)
+    void setInitialDelay(String value) throws PropertyVetoException;
+
+
 
 
 
