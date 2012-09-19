@@ -60,4 +60,15 @@ public class ParameterMap extends MultiMap<String, String> {
     public ParameterMap(ParameterMap base) {
         super(base);
     }
+
+    /**
+     * Fluent API for adding parameters to the map.
+     * @param k
+     * @param v
+     * @return ParameterMap
+     */
+    public ParameterMap insert(String k, String v) {
+        add(k, v);
+        return this;
+    }
 }
