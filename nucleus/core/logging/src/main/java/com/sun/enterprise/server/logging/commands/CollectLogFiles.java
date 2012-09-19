@@ -511,10 +511,14 @@ public class CollectLogFiles implements AdminCommand {
                 if (!targetLocalFile.getParentFile().exists()) {
                     throw new Exception("Parent directory does not exist");
                 }
-                FileOutputStream targetStream = new FileOutputStream(targetLocalFile);
+                FileOutputStream targetStream = null;
+                try {
+                targetStream = new FileOutputStream(targetLocalFile);
                 outboundPayload.writeTo(targetStream);
                 targetStream.flush();
-                targetStream.close();
+                } finally {
+                    if (targetStream != null) targetStream.close();
+                }
             }
         }
         catch (Exception ex) {

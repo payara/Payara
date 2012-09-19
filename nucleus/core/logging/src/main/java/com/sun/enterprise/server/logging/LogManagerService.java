@@ -468,11 +468,13 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                             loggerReference = new Vector<Logger>();
                             if (props == null)
                                 return;
-                            Set<String> keys = props.keySet();
-                            for (String a : keys) {
+                            // Set<String> keys = props.keySet();
+                            for (Map.Entry<String,String> entry : props.entrySet()) {
+                                String a = entry.getKey();
+                                String val = entry.getValue();
                                 if (a.endsWith(".level")) {
                                     String n = a.substring(0, a.lastIndexOf(".level"));
-                                    Level l = Level.parse(props.get(a));
+                                    Level l = Level.parse(val);
                                     Logger appLogger = logMgr.getLogger(n);
                                     if (appLogger != null) {
                                         appLogger.setLevel(l);
@@ -493,79 +495,79 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
                                 } else if (a.equals(SERVER_LOG_FILE_PROPERTY)) {
                                     //check if file name was changed and send notification
-                                    if (!props.get(a).equals(serverLogFileDetail)) {
-                                        PropertyChangeEvent pce = new PropertyChangeEvent(this, a, serverLogFileDetail, props.get(a));
+                                    if (!val.equals(serverLogFileDetail)) {
+                                        PropertyChangeEvent pce = new PropertyChangeEvent(this, a, serverLogFileDetail, val);
                                         UnprocessedChangeEvents ucel = new UnprocessedChangeEvents(new UnprocessedChangeEvent(pce, "server log filename changed."));
                                         List<UnprocessedChangeEvents> b = new ArrayList();
                                         b.add(ucel);
                                         ucl.unprocessedTransactedEvents(b);
                                     }
                                 } else if (a.equals(HANDLER_PROPERTY)) {
-                                    if (!props.get(a).equals(handlerDetail)) {
+                                    if (!val.equals(handlerDetail)) {
                                         generateAttributeChangeEvent(HANDLER_PROPERTY, handlerDetail, props);
                                     }
                                 } else if (a.equals(CONSOLEHANDLER_FORMATTER_PROPERTY)) {
-                                    if (!props.get(a).equals(consoleHandlerFormatterDetail)) {
+                                    if (!val.equals(consoleHandlerFormatterDetail)) {
                                         generateAttributeChangeEvent(CONSOLEHANDLER_FORMATTER_PROPERTY, consoleHandlerFormatterDetail, props);
                                     }
                                 } else if (a.equals(GFFILEHANDLER_FORMATTER_PROPERTY)) {
-                                    if (!props.get(a).equals(gffileHandlerFormatterDetail)) {
+                                    if (!val.equals(gffileHandlerFormatterDetail)) {
                                         generateAttributeChangeEvent(GFFILEHANDLER_FORMATTER_PROPERTY, gffileHandlerFormatterDetail, props);
                                     }
                                 } else if (a.equals(ROTATIONTIMELIMITINMINUTES_PROPERTY)) {
-                                    if (!props.get(a).equals(rotationOnTimeLimitInMinutesDetail)) {
+                                    if (!val.equals(rotationOnTimeLimitInMinutesDetail)) {
                                         generateAttributeChangeEvent(ROTATIONTIMELIMITINMINUTES_PROPERTY, rotationOnTimeLimitInMinutesDetail, props);
                                     }
                                 } else if (a.equals(FLUSHFREQUENCY_PROPERTY)) {
-                                    if (!props.get(a).equals(flushFrequencyDetail)) {
+                                    if (!val.equals(flushFrequencyDetail)) {
                                         generateAttributeChangeEvent(FLUSHFREQUENCY_PROPERTY, flushFrequencyDetail, props);
                                     }
                                 } else if (a.equals(FILEHANDLER_LIMIT_PROPERTY)) {
-                                    if (!props.get(a).equals(filterHandlerDetails)) {
+                                    if (!val.equals(filterHandlerDetails)) {
                                         generateAttributeChangeEvent(FILEHANDLER_LIMIT_PROPERTY, filterHandlerDetails, props);
                                     }
                                 } else if (a.equals(LOGTOCONSOLE_PROPERTY)) {
-                                    if (!props.get(a).equals(logToConsoleDetail)) {
+                                    if (!val.equals(logToConsoleDetail)) {
                                         generateAttributeChangeEvent(LOGTOCONSOLE_PROPERTY, logToConsoleDetail, props);
                                     }
                                 } else if (a.equals(ROTATIONLIMITINBYTES_PROPERTY)) {
-                                    if (!props.get(a).equals(rotationInTimeLimitInBytesDetail)) {
+                                    if (!val.equals(rotationInTimeLimitInBytesDetail)) {
                                         generateAttributeChangeEvent(ROTATIONLIMITINBYTES_PROPERTY, rotationInTimeLimitInBytesDetail, props);
                                     }
                                 } else if (a.equals(USESYSTEMLOGGING_PROPERTY)) {
-                                    if (!props.get(a).equals(useSystemLoggingDetail)) {
+                                    if (!val.equals(useSystemLoggingDetail)) {
                                         generateAttributeChangeEvent(USESYSTEMLOGGING_PROPERTY, useSystemLoggingDetail, props);
                                     }
                                 } else if (a.equals(FILEHANDLER_COUNT_PROPERTY)) {
-                                    if (!props.get(a).equals(fileHandlerCountDetail)) {
+                                    if (!val.equals(fileHandlerCountDetail)) {
                                         generateAttributeChangeEvent(FILEHANDLER_COUNT_PROPERTY, fileHandlerCountDetail, props);
                                     }
                                 } else if (a.equals(RETAINERRORSSTATICTICS_PROPERTY)) {
-                                    if (!props.get(a).equals(retainErrorsStaticticsDetail)) {
+                                    if (!val.equals(retainErrorsStaticticsDetail)) {
                                         generateAttributeChangeEvent(RETAINERRORSSTATICTICS_PROPERTY, retainErrorsStaticticsDetail, props);
                                     }
                                 } else if (a.equals(LOG4J_VERSION_PROPERTY)) {
-                                    if (!props.get(a).equals(log4jVersionDetail)) {
+                                    if (!val.equals(log4jVersionDetail)) {
                                         generateAttributeChangeEvent(LOG4J_VERSION_PROPERTY, log4jVersionDetail, props);
                                     }
                                 } else if (a.equals(MAXHISTORY_FILES_PROPERTY)) {
-                                    if (!props.get(a).equals(maxHistoryFilesDetail)) {
+                                    if (!val.equals(maxHistoryFilesDetail)) {
                                         generateAttributeChangeEvent(MAXHISTORY_FILES_PROPERTY, maxHistoryFilesDetail, props);
                                     }
                                 } else if (a.equals(ROTATIONONDATECHANGE_PROPERTY)) {
-                                    if (!props.get(a).equals(rotationOnDateChangeDetail)) {
+                                    if (!val.equals(rotationOnDateChangeDetail)) {
                                         generateAttributeChangeEvent(ROTATIONONDATECHANGE_PROPERTY, rotationOnDateChangeDetail, props);
                                     }
                                 } else if (a.equals(FILEHANDLER_PATTERN_PROPERTY)) {
-                                    if (!props.get(a).equals(fileHandlerPatternDetail)) {
+                                    if (!val.equals(fileHandlerPatternDetail)) {
                                         generateAttributeChangeEvent(FILEHANDLER_PATTERN_PROPERTY, fileHandlerPatternDetail, props);
                                     }
                                 } else if (a.equals(FILEHANDLER_FORMATTER_PROPERTY)) {
-                                    if (!props.get(a).equals(fileHandlerFormatterDetail)) {
+                                    if (!val.equals(fileHandlerFormatterDetail)) {
                                         generateAttributeChangeEvent(FILEHANDLER_FORMATTER_PROPERTY, fileHandlerFormatterDetail, props);
                                     }
                                 } else if (a.equals(LOGFORMAT_DATEFORMAT_PROPERTY)) {
-                                    if (!props.get(a).equals(logFormatDateFormatDetail)) {
+                                    if (!val.equals(logFormatDateFormatDetail)) {
                                         generateAttributeChangeEvent(LOGFORMAT_DATEFORMAT_PROPERTY, logFormatDateFormatDetail, props);
                                     }
                                 }

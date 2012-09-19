@@ -148,6 +148,7 @@ public class LogFilterForInstance {
                 BufferedInputStream in = null;
                 FileOutputStream file = null;
                 BufferedOutputStream out = null;
+                try {
                 InputStream inputStream = sftpClient.read(loggingFile);
                 in = new BufferedInputStream(inputStream);
                 file = new FileOutputStream(instanceLogFile);
@@ -157,6 +158,10 @@ public class LogFilterForInstance {
                     out.write(i);
                 }
                 out.flush();
+                } finally {
+                    if (out != null) try { out.close(); } catch (IOException ex) {}
+                    if (in != null) try { in.close(); } catch (IOException ex) {}
+                }
             }
 
             sftpClient.close();

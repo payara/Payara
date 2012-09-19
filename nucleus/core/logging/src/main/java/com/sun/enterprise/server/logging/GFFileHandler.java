@@ -446,7 +446,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                 formatterClass.setRecordFieldSeparator(recordFieldSeparator);
             }
 
-        } else if (formatterName == null || ODLLogFormatter.class.getName().equals(formatterName)) {
+        } else if (ODLLogFormatter.class.getName().equals(formatterName)) {
             // this loop is used for ODL formatter
             ODLLogFormatter formatterClass = null;
             // set the formatter
@@ -573,7 +573,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     //   (a) forwards all its output to a target stream
     //   (b) keeps track of how many bytes have been written
 
-    private final class MeteredStream extends OutputStream {
+    private static final class MeteredStream extends OutputStream {
 
         private volatile boolean isOpen = false;
 
