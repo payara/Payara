@@ -77,6 +77,10 @@ import org.jvnet.hk2.component.Habitat;
 @Produces(MediaType.APPLICATION_JSON)
 public abstract class CompositeResource implements RestResource, DefaultsGenerator, OptionsCapable {
 
+    // All methods that expect a request body should include the annotation:
+    // @Consumes(CONSUMES_TYPE)
+    protected static final String CONSUMES_TYPE = MediaType.APPLICATION_JSON;
+
     @Context
     protected UriInfo uriInfo;
     @Inject
@@ -176,6 +180,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
 
     /**
      * Execute an <code>AdminCommand</code> with no parameters
+     * Deprecated - will be removed soon.  Use executeReadCommand or executeWriteCommand instead.
      * @param command
      * @return
      */
@@ -185,19 +190,103 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
 
     /**
      * Execute an <code>AdminCommand</code> with the specified parameters.
+     * Deprecated - will be removed soon.  Use executeReadCommand or executeWriteCommand instead.
      * @param command
      * @param parameters
      * @return
      */
     protected ActionReporter executeCommand(String command, ParameterMap parameters) {
+        return executeWriteCommand(command, parameters);
+    }
+
+    /**
+     * Execute a delete <code>AdminCommand</code> with no parameters.
+     * @param command
+     * @return
+     */
+    protected ActionReporter executeDeleteCommand(String command) {
+        return executeDeleteCommand(command, new ParameterMap());
+    }
+
+    /**
+     * Execute a delete <code>AdminCommand</code> with the specified parameters.
+     * @param command
+     * @param parameters
+     * @return
+     */
+    protected ActionReporter executeDeleteCommand(String command, ParameterMap parameters) {
+        return executeCommand(command, parameters, false, true);
+    }
+
+    /**
+     * Execute a writing <code>AdminCommand</code> with no parameters.
+     * @param command
+     * @return
+     */
+    protected ActionReporter executeWriteCommand(String command) {
+        return executeWriteCommand(command, new ParameterMap());
+    }
+
+    /**
+     * Execute a writing <code>AdminCommand</code> with the specified parameters.
+     * @param command
+     * @param parameters
+     * @return
+     */
+    protected ActionReporter executeWriteCommand(String command, ParameterMap parameters) {
+        return executeCommand(command, parameters, true, true);
+    }
+
+    /**
+     * Execute a read-only <code>AdminCommand</code> with the specified parameters.
+     * @param command
+     * @param parameters
+     * @return
+     */
+    protected ActionReporter executeReadCommand(String command) {
+        return executeReadCommand(command, new ParameterMap());
+    }
+
+    /**
+     * Execute a read-only <code>AdminCommand</code> with no parameters.
+     * @param command
+     * @param parameters
+     * @return
+     */
+    protected ActionReporter executeReadCommand(String command, ParameterMap parameters) {
+        return executeCommand(command, parameters, false, true);
+    }
+
+    /**
+     * Execute an <code>AdminCommand</code> with the specified parameters.
+     * @param command
+     * @param parameters
+     * @param throwBadRequest (vs. NOT_FOUND)
+     * @param throwOnWarning (vs.ignore warning)
+     * @return
+     */
+    protected ActionReporter executeCommand(String command, ParameterMap parameters, boolean throwBadRequest, boolean throwOnWarning) {
         RestActionReporter ar = ResourceUtil.runCommand(command, parameters,
                 Globals.getDefaultHabitat(), "", getSubject()); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
-        if (ar.getActionExitCode().equals(ExitCode.FAILURE)) {
-            throw new WebApplicationException(Response.status(Status.BAD_REQUEST).
+        ExitCode code = ar.getActionExitCode();
+        if (code.equals(ExitCode.FAILURE) || (code.equals(ExitCode.WARNING) && throwOnWarning)) {
+            if (throwBadRequest) {
+                throw new WebApplicationException(Response.status(Status.BAD_REQUEST).
                     entity(ar.getTopMessagePart().getMessage()).
                     build());
+            } else {
+                throw new WebApplicationException(Status.NOT_FOUND);
+            }
         }
         return ar;
+    }
+
+    /**
+     * Convenience wrapper around ParameterMap constructor to make it easier to use its fluent API
+     * @return ParameterMap
+     */
+    protected ParameterMap newParameterMap() {
+        return new ParameterMap();
     }
 
     /**
