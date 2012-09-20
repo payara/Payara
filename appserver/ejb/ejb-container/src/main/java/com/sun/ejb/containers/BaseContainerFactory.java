@@ -64,7 +64,6 @@ public abstract class BaseContainerFactory {
           throws Exception {
     assert bc != null;
 
-    bc.initializeHome();
     String ctxId = EJBSecurityManager.getContextID(ejbDescriptor);
     String ejbName = ejbDescriptor.getName();
     EJBSecurityManager sm = securityManagerFactory.getManager(ctxId, ejbName, false);
@@ -72,5 +71,6 @@ public abstract class BaseContainerFactory {
       sm = securityManagerFactory.createManager(ejbDescriptor, true);
     }
     bc.setSecurityManager(sm);
+    bc.initializeHome();
   }
 }
