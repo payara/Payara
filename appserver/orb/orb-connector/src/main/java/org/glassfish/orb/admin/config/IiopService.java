@@ -62,8 +62,8 @@ import java.util.List;
 }) */
 
 @Configured
-@CustomConfiguration
-@HasCustomizationTokens
+//@CustomConfiguration
+//@HasCustomizationTokens
 public interface IiopService extends ConfigBeanProxy, Injectable, ConfigExtension   {
 
 
