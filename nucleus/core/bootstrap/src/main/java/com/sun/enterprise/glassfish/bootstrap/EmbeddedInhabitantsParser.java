@@ -109,13 +109,17 @@ public class EmbeddedInhabitantsParser implements PopulatorPostProcessor {
 				descriptorImpl.getImplementation())) {
 			descriptorImpl.setImplementation("org.glassfish.kernel.embedded.EmbeddedDomainXml");
 			descriptorImpl.setScope(PerLookup.class.getCanonicalName());
-		}
-
-		if ("com.sun.enterprise.v3.server.DomainXmlPersistence".equals(
+		} else if ("com.sun.enterprise.v3.server.DomainXmlPersistence".equals(
 				descriptorImpl.getImplementation())) {
 			descriptorImpl.setImplementation("org.glassfish.kernel.embedded.EmbeddedDomainPersistence");
 			descriptorImpl.setScope(PerLookup.class.getCanonicalName());
-		}
+		} else if ("org.glassfish.web.deployment.archivist.WebArchivist".equals(descriptorImpl.getImplementation())) {
+            descriptorImpl.setImplementation("org.glassfish.web.embed.impl.EmbeddedWebArchivist");
+            descriptorImpl.setScope(PerLookup.class.getCanonicalName());
+        } else if ("org.glassfish.web.WebEntityResolver".equals(descriptorImpl.getImplementation())) {
+            descriptorImpl.setImplementation("org.glassfish.web.embed.impl.EmbeddedWebEntityResolver");
+            descriptorImpl.setScope(PerLookup.class.getCanonicalName());
+        }
 
 		if (!skip) {
 			return descriptorImpl;
