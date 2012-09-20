@@ -91,6 +91,10 @@ import org.apache.naming.NamingContextBindingsEnumeration;
 import org.apache.naming.NamingContextEnumeration;
 import org.apache.naming.Util;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+
 /**
  * Filesystem Directory Context implementation helper class.
  *
@@ -100,8 +104,48 @@ import org.apache.naming.Util;
 
 public class FileDirContext extends BaseDirContext {
 
-    private static Logger logger = Logger.getLogger(FileDirContext.class
-            .getName());
+    @LogMessagesResourceBundle
+    public static final String SHARED_LOGMESSAGE_RESOURCE =
+            "org.apache.naming.resources.LogMessages";
+
+    @LoggerInfo(subsystem="WEB", description="WEB Naming Logger", publish=true)
+    public static final String WEB_NAMING_LOGGER = "org.apache.naming.resources";
+
+    public static final Logger logger =
+            Logger.getLogger(WEB_NAMING_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo(
+            message = "Canonical Pathname cannot be null",
+            level = "FINE")
+    public static final String FILE_RESOURCES_NULL_CANONICAL_PATH = "AS-WEB-NAMING_00001";
+
+    @LogMessageInfo(
+            message = "Outside webapp not allowed {0} {1} {2}",
+            level = "FINE")
+    public static final String FILE_RESOURCES_NOT_ALLOWED = "AS-WEB-NAMING_00002";
+
+    @LogMessageInfo(
+            message = "Absolute Pathname cannot be null {0} {1}",
+            level = "FINE")
+    public static final String FILE_RESOURCES_NULL_ABS_PATH = "AS-WEB-NAMING_00003";
+
+    @LogMessageInfo(
+            message = "Canonical pathname {0} equals to absolute pathname {1} {2}",
+            level = "FINE")
+    public static final String FILE_RESOURCES_PATH_EQUALS_ABS_PATH = "AS-WEB-NAMING_00004";
+
+    @LogMessageInfo(
+            message = "File cannot be read {0}",
+            level = "FINE")
+    public static final String FILE_RESOURCES_NOT_EXIST = "AS-WEB-NAMING_00005";
+
+    @LogMessageInfo(
+            message = "Could not get dir listing for {0}",
+            level = "WARNING",
+            cause = "Some IO error occurred such as bad file permissions",
+            action = "Verify the file descriptors")
+    public static final String FILE_RESOURCES_LISTING_NULL = "AS-WEB-00006";
+
 
     // -------------------------------------------------------------- Constants
 
@@ -905,7 +949,7 @@ public class FileDirContext extends BaseDirContext {
             }
             if (canPath == null) {
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, sm.getString("fileResources.nullCanonicalPath"));
+                    logger.log(Level.FINE, FILE_RESOURCES_NULL_CANONICAL_PATH);
                 }
                 return null;
             }
@@ -913,8 +957,7 @@ public class FileDirContext extends BaseDirContext {
             // Check to see if going outside of the web application root
             if ((!allowLinking) && (!canPath.startsWith(absoluteBase))) {
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, sm.getString("fileResources.notAllowed",
-                            allowLinking,canPath,absoluteBase));
+                    logger.log(Level.FINE, FILE_RESOURCES_NOT_ALLOWED, new Object[]{allowLinking,canPath,absoluteBase});
                 }
                 return null;
             }
@@ -933,8 +976,8 @@ public class FileDirContext extends BaseDirContext {
                 canPath = normalize(canPath);
                 if ((canPath == null) || (absPath == null)) {
                     if (logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE, sm.getString("fileResources.nullAbsPath",
-                                canPath,absPath));
+                        logger.log(Level.FINE, FILE_RESOURCES_NULL_ABS_PATH,
+                                new Object[]{canPath,absPath});
                     }
                     return null;
                 }
@@ -954,8 +997,8 @@ public class FileDirContext extends BaseDirContext {
                         if (canPath.equalsIgnoreCase(absPath)
                                 || !allowLinking) {
                             if (logger.isLoggable(Level.FINE)) {
-                                logger.log(Level.FINE, sm.getString("fileResources.canPathEqualsAbsPath",
-                                    canPath,absPath,allowLinking));
+                                logger.log(Level.FINE, FILE_RESOURCES_PATH_EQUALS_ABS_PATH,
+                                    new Object[]{canPath,absPath,allowLinking});
                             }
                             return null;
                         }
@@ -966,8 +1009,8 @@ public class FileDirContext extends BaseDirContext {
 
         } else {
             if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, sm.getString("fileResources.notExist",
-                        file.getAbsolutePath()));
+                logger.log(Level.FINE, FILE_RESOURCES_NOT_EXIST,
+                        file.getAbsolutePath());
             }
             return null;
         }
@@ -995,8 +1038,8 @@ public class FileDirContext extends BaseDirContext {
             /* Some IO error occurred such as bad file permissions,
              * lack of file descriptors.
              * Prevent a NPE with Arrays.sort(names) */
-            logger.warning(sm.getString("fileResources.listingNull",
-                                  file.getAbsolutePath()));
+            logger.log(Level.WARNING, FILE_RESOURCES_LISTING_NULL,
+                                  file.getAbsolutePath());
             return entries;
         }
 
