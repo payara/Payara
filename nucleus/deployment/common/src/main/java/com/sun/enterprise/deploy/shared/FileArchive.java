@@ -541,21 +541,28 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
 
         boolean allDeletesSucceeded = true;
         // delete contents
-        File[] entries = directory.listFiles();
-        for (int i=0;i<entries.length;i++) {
-            if (entries[i].isDirectory()) {
-                allDeletesSucceeded &= deleteDir(entries[i]);
-            } else {
-                if ( ! entries[i].equals(StaleFileManager.Util.markerFile(archive))) {
-                    final boolean fileDeleteOK = FileUtils.deleteFile(entries[i]);
-                    if (fileDeleteOK) {
-                        staleFileManager.recordDeletedEntry(entries[i]);
+
+        /*
+        *Do not recursively delete the contents if the current directory
+        *is a symbolic link.
+        */
+        if (FileUtils.safeIsRealDirectory(directory)) {
+            File[] entries = directory.listFiles();
+            for (int i=0;i<entries.length;i++) {
+                if (entries[i].isDirectory()) {
+                    allDeletesSucceeded &= deleteDir(entries[i]);
+                } else {
+                    if ( ! entries[i].equals(StaleFileManager.Util.markerFile(archive))) {
+                        final boolean fileDeleteOK = FileUtils.deleteFile(entries[i]);
+                        if (fileDeleteOK) {
+                            staleFileManager.recordDeletedEntry(entries[i]);
+                        }
+                        allDeletesSucceeded &= fileDeleteOK;
                     }
-                    allDeletesSucceeded &= fileDeleteOK;
                 }
             }
         }
-        // delete self
+        // delete self (the directory or the symbolic link)
         return (allDeletesSucceeded && FileUtils.deleteFile(directory));
     } 
     
