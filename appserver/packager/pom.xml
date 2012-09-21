@@ -150,6 +150,7 @@
         <module>glassfish-registration-l10n</module>
 	<module>glassfish-jmx</module>
 	<module>glassfish-entitybeans-container</module>
+	<module>json</module>
     </modules>
 
     <build>

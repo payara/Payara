@@ -100,6 +100,10 @@
         <property name="image.dir" value="${image.dir}"/>
     </ant>
     <ant antfile="../distributions.xml" target="install-package">
+        <property name="package.name" value="json"/>
+        <property name="image.dir" value="${image.dir}"/>
+    </ant>
+    <ant antfile="../distributions.xml" target="install-package">
         <property name="package.name" value="glassfish-appclient"/>
         <property name="image.dir" value="${image.dir}"/>
     </ant>
