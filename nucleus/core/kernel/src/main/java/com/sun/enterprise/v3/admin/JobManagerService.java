@@ -43,12 +43,17 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.ManagedJobConfig;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.Job;
 import org.glassfish.api.admin.JobManager;
 import org.glassfish.api.admin.AdminCommandState;
+import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
 
 /**
  *  This is the implementation for the JobManagerService
@@ -63,9 +68,14 @@ import org.jvnet.hk2.annotations.Service;
  */
 
 @Service
-public class JobManagerService implements JobManager {
+public class JobManagerService implements JobManager,PostConstruct {
     
     private static final int MAX_SIZE = 65535;
+
+    @Inject
+    Domain domain;
+
+    private ManagedJobConfig managedJobConfig;
 
     /**
      * This is configurable retention period of 1 day
@@ -172,6 +182,7 @@ public class JobManagerService implements JobManager {
      * @return  list of jobs to be purged
      */
     public ArrayList<Job> getExpiredJobs() {
+        long JOBS_RETENTION_PERIOD = convert(managedJobConfig.getJobRetentionPeriod());
         ArrayList expiredJobs = new ArrayList();
         Iterator<Job> jobs = getJobs();
         while ( jobs.hasNext()) {
@@ -193,7 +204,30 @@ public class JobManagerService implements JobManager {
     @Override
     public synchronized void purgeJob(String id) {
         Job obj = jobRegistry.remove(id);
-        logger.fine(adminStrings.getLocalString("removed.expired.job","Removed expired job ",  obj));
+        logger.fine(adminStrings.getLocalString("removed.expired.job", "Removed expired job ", obj));
 
+    }
+
+    public long convert(String input ) {
+        String period = input.substring(0,input.length()-1);
+        Long timeInterval = new Long(period);
+        String s = input.toLowerCase();
+        long milliseconds = 86400000;
+        if (s.indexOf("s") >0 ) {
+            milliseconds = timeInterval*1000;
+        }
+        else if (s.indexOf("h") >0 ) {
+            milliseconds = timeInterval*3600*1000;
+
+        }
+        else if (s.indexOf("m") >0 ) {
+            milliseconds = timeInterval*60*1000;
+        }
+        return milliseconds;
+    }
+
+    @Override
+    public void postConstruct() {
+        managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
     }
 }
