@@ -72,7 +72,6 @@ import com.sun.enterprise.module.bootstrap.StartupContext;
 /**
  * The GlassFishRuntime implementation for NonOSGi environments.
  *
- * @author bhavanishankar@dev.java.net
  */
 public class StaticGlassFishRuntime extends GlassFishRuntime {
 
@@ -243,6 +242,11 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
             URL configFileRL = configFileURI == null ? getClass().getClassLoader().getResource(
                     "org/glassfish/embed/domain.xml") : URI.create(configFileURI).toURL();
                 copy(configFileRL, new File(instanceRoot, configDir + "domain.xml"), false);
+            String configFileURI1 = gfProps.getConfigFileURI();
+
+            URL configFileRL1 = configFileURI1 == null ? getClass().getClassLoader().getResource(
+                    "org/glassfish/web/embed/default-web.xml") : URI.create(configFileURI1).toURL();
+                copy(configFileRL1, new File(instanceRoot, configDir + "default-web.xml"), false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
