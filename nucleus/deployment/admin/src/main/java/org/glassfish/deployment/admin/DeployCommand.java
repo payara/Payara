@@ -377,16 +377,15 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                         if (!appname.equals(name) && existrepos.getAbsoluteFile().equals(reposDir.getAbsoluteFile())) {
                             report.failure(logger,localStrings.getLocalString("deploy.dupdeployment","Application {0} is trying to use the same repository directory as application {1}, please choose a different application name to deploy",name,appname));
                             return;
-                        } else {
-                            /*
-                             * Delete the repository directory as an archive to allow
-                             * any special processing (such as stale file handling)
-                             * to run.
-                             */
-                            final FileArchive arch = DeploymentUtils.openAsFileArchive(reposDir, archiveFactory);
-                            arch.delete();
                         }
                     }
+                    /*
+                     * Delete the repository directory as an archive to allow
+                     * any special processing (such as stale file handling)
+                     * to run.
+                     */
+                    final FileArchive arch = DeploymentUtils.openAsFileArchive(reposDir, archiveFactory);
+                    arch.delete();
                 }
             }
 
