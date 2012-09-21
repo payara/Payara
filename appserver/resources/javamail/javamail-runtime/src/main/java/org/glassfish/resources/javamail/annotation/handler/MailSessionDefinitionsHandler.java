@@ -38,14 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.connectors.deployment.annotation.handlers;
-
-import java.lang.annotation.Annotation;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.annotation.mail.MailSessionDefinition;
-import javax.annotation.mail.MailSessionDefinitions;
+package org.glassfish.resources.javamail.annotation.handler;
 
 import com.sun.enterprise.deployment.MailSessionDescriptor;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
@@ -55,7 +48,13 @@ import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.resources.javamail.annotation.MailSessionDefinition;
+import org.glassfish.resources.javamail.annotation.MailSessionDefinitions;
 import org.jvnet.hk2.annotations.Service;
+
+import java.lang.annotation.Annotation;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA.

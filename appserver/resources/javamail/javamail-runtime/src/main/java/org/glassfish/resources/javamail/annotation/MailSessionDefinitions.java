@@ -38,7 +38,7 @@
  * holder.
  */
 
-package javax.annotation.mail;
+package org.glassfish.resources.javamail.annotation;
 
 import java.lang.annotation.Target;
 import java.lang.annotation.Retention;
@@ -56,7 +56,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Declares one or more <code>MailSessionDefinition</code> annotations.
  *
- * @see javax.annotation.mail.MailSessionDefinition
+ * @see MailSessionDefinition
  * @since Common Annotations 1.1
  */
 @Target({ElementType.TYPE})

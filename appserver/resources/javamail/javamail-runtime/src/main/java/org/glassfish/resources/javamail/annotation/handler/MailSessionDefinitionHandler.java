@@ -38,19 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.connectors.deployment.annotation.handlers;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Properties;
-import java.util.Set;
-import java.util.logging.Level;
-
-import javax.annotation.mail.MailSessionDefinition;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.AroundTimeout;
-import javax.interceptor.Interceptors;
+package org.glassfish.resources.javamail.annotation.handler;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.annotation.context.*;
@@ -61,7 +49,18 @@ import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.glassfish.resources.javamail.annotation.MailSessionDefinition;
 import org.jvnet.hk2.annotations.Service;
+
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.AroundTimeout;
+import javax.interceptor.Interceptors;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
 
 /**
  * Created by IntelliJ IDEA.
