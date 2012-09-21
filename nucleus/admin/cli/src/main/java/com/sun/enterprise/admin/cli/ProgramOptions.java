@@ -127,7 +127,7 @@ public class ProgramOptions {
         addMetaOption(opts, HELP, '?', Boolean.class, false, "false");
         addMetaOption(opts, AUXINPUT, '\0', String.class, false, null);
         addMetaOption(opts, AUTHTOKEN, '\0', String.class, false, null);
-        addMetaOption(opts, DETACH, 'D', Boolean.class, false, "false");
+        addMetaOption(opts, DETACH, '\0', Boolean.class, false, "false");
         addMetaOption(opts, USECACHE, '\0', Boolean.class, false, "false"); //todo: [mmar] Remove after implementation CLI->ReST done
         programOptions = Collections.unmodifiableSet(opts);
     }
