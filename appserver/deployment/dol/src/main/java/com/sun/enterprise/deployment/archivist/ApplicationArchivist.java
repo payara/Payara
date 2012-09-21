@@ -540,6 +540,9 @@ public class ApplicationArchivist extends Archivist<Application> {
         List<ModuleDescriptor> sortedModules = sortModules(app);
 
         for (ModuleDescriptor aModule : sortedModules) {
+            if (aModule.getArchiveUri().indexOf(" ") != -1) { 
+                throw new IllegalArgumentException(localStrings.getLocalString("enterprise.deployment.unsupporturi", "Unsupported module URI {0}, it contains space(s)", new Object[]{aModule.getArchiveUri()}));
+            }
             if(DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
                 DOLUtils.getDefaultLogger().fine("Opening sub-module " + aModule);
             }
