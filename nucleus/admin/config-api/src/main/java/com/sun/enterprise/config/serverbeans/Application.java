@@ -334,10 +334,14 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
         public static Properties getDeployProperties(Application instance) {
             Properties deploymentProps = new Properties();
             for (Property prop : instance.getProperty()) {
-                deploymentProps.put(prop.getName(), prop.getValue());
+                if (prop.getValue() != null) {
+                    deploymentProps.put(prop.getName(), prop.getValue());
+                }
             }
-            deploymentProps.setProperty(ServerTags.OBJECT_TYPE,
+            if (instance.getObjectType() != null) {
+                deploymentProps.setProperty(ServerTags.OBJECT_TYPE,
                     instance.getObjectType());
+            }
             if (instance.getContextRoot() != null) {
                 deploymentProps.setProperty(ServerTags.CONTEXT_ROOT,
                         instance.getContextRoot());
