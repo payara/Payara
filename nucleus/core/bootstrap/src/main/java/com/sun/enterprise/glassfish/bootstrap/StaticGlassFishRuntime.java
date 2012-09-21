@@ -71,6 +71,7 @@ import com.sun.enterprise.module.bootstrap.StartupContext;
 
 /**
  * The GlassFishRuntime implementation for NonOSGi environments.
+ * @author bhavanishankar@dev.java.net
  *
  */
 public class StaticGlassFishRuntime extends GlassFishRuntime {
