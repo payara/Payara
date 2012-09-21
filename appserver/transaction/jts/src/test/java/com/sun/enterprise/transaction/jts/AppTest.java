@@ -188,6 +188,43 @@ public class AppTest extends TestCase {
         }
     }
 
+/**
+    public void testUTXTimeout() {
+        System.out.println("**Testing UTX Timeout ===>");
+        TestSync s = new TestSync(false);
+
+        try {
+            UserTransaction utx = createUtx();
+            System.out.println("**Calling UTX setTransactionTimeout ===>");
+            utx.setTransactionTimeout(5);
+            utx.begin();
+
+            Transaction tx = t.getTransaction();
+            System.out.println("**Registering Synchronization ....");
+            tx.registerSynchronization(s);
+
+            TestResource theResource = new TestResource(tx);
+            t.enlistResource(tx, new TestResourceHandle(theResource));
+
+            Thread.sleep(12000);
+            t.delistResource(tx, new TestResourceHandle(theResource), XAResource.TMSUCCESS);
+
+            utx.commit(); 
+            System.out.println("**WRONG: UTX commit successful <===");
+            assert (false);
+        } catch (RollbackException ex) {
+            ex.printStackTrace();
+            System.out.println("**Caught expected RollbackException <===");
+            assertFalse ("beforeCompletion was called", s.called_beforeCompletion);
+            assertTrue ("afterCompletion was not called", s.called_afterCompletion);
+            assert (true);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            assert (false);
+        }
+    }
+**/
+
     public void testWrongTMOperationsAfterCommit() {
         System.out.println("**Testing Wrong TM Operations After Commit ===>");
         try {
@@ -247,12 +284,17 @@ public class AppTest extends TestCase {
             tx = t.getTransaction();
             System.out.println("**Testing Resource Status in 2PC ===>");
             TestResource theResource = new TestResource(tx);
+            //TestResource theResource = new TestResource(tx, 1L);
+            //TestResource theResource2 = new TestResource(tx, 1L);
             TestResource theResource1 = new TestResource(tx);
             t.enlistResource(tx, new TestResourceHandle(theResource));
+            //t.enlistResource(tx, new TestResourceHandle(theResource2));
             t.enlistResource(tx, new TestResourceHandle(theResource1));
             t.delistResource(tx, new TestResourceHandle(theResource), XAResource.TMSUCCESS);
+            //t.delistResource(tx, new TestResourceHandle(theResource2), XAResource.TMSUCCESS);
             t.delistResource(tx, new TestResourceHandle(theResource1), XAResource.TMSUCCESS);
             t.commit();
+//System.err.println(".................");
 
             String status = JavaEETransactionManagerSimplified.getStatusAsString(tx.getStatus());
             System.out.println("**Status after commit: "  + status + " <===");
@@ -1608,11 +1650,18 @@ public class AppTest extends TestCase {
       private int commit_status = -1;
       private int rollback_status = -1;
       private int prepare_status = -1;
+
+      private long id = System.currentTimeMillis();
     
       TestResource() {}
 
       TestResource(Transaction tx) {
          this.tx = tx;
+      }
+
+      TestResource(Transaction tx, long id) {
+         this.tx = tx;
+         this.id = id;
       }
 
       // to test different xaexception error codes
@@ -1655,7 +1704,7 @@ public class AppTest extends TestCase {
     
       public boolean isSameRM(XAResource xaresource)
         throws XAException {
-          return xaresource == this;
+          return xaresource == this ; // || this.id == ((TestResource)xaresource).id;
       }
     
     

@@ -151,12 +151,11 @@ class RegisteredSyncs {
             } catch (Throwable exc) {
 
                 // Discard any exceptions at this point and return false.
-            	//Commented if to fix findbugs error
-                //if (!(exc instanceof INVALID_TRANSACTION)) {
+                if (!(exc instanceof INVALID_TRANSACTION)) {
 					_logger.log(Level.WARNING,
 							"jts.exception_in_synchronization_operation",
 		                    new java.lang.Object[] { exc.toString(),"before_completion"});
-                //}
+                }
                 result = false;
             }
         }
