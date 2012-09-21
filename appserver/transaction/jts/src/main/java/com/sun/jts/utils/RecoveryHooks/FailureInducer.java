@@ -285,10 +285,12 @@ public class FailureInducer {
     }
 
     // Utility methods for fetching i18n/l10n messages
-
+    /*
+     * Findbug fix: Commented as it's never used
     private static String getMessage(String key) {
         return getMessage(key, null);
     }
+    
 
     private static String getMessage(String key, Object[] inserts) {
         if (messages == null || key == null) {
@@ -302,7 +304,7 @@ public class FailureInducer {
             return MessageFormat.format(msg, inserts);
         }
     }
-
+	*/
     private static GlobalTID getGlobalTID() {
         GlobalTID gtid = null;
         Coordinator coord = Utility.getCoordinator(Utility.getControl());

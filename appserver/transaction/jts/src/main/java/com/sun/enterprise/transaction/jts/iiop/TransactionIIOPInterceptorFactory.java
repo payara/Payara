@@ -187,8 +187,10 @@ public class TransactionIIOPInterceptorFactory implements IIOPInterceptorFactory
             }
         }
     }
-
+    /*
+     * Findbug fix: Commented as it's never used
     private boolean isValueSet(String value) {
         return (value != null && !value.equals("") && !value.equals(" "));
     }
+    */
 }

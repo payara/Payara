@@ -528,6 +528,8 @@ public class DelegatedRecoveryManager {
      *
      * @return stringified contents of the xid.
      */
+    /*
+     * Findbug fix: Commented as it's never used
     private static String stringifyXid(Xid xid) {
         int glen = xid.getGlobalTransactionId().length;
         int blen = xid.getBranchQualifier().length;
@@ -538,7 +540,7 @@ public class DelegatedRecoveryManager {
         System.arraycopy(xid.getBranchQualifier(), 0, xidRep, glen + 1, blen);
         
         return new String(xidRep);
-    }
+    }*/
     
     /**
      * Reduce the set of XAResource objects into a unique set such that there

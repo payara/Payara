@@ -97,13 +97,13 @@ public class GlobalTID extends Object {
     private int hashCode = 0;
     private boolean hashed = false;
 
-    static GlobalTID NULL_GLOBAL_TID = new GlobalTID(-1,-1,null);
-
 	/*
 		Logger to log transaction messages
 	*/
     static Logger _logger = LogDomains.getLogger(GlobalTID.class, LogDomains.TRANSACTION_LOGGER);
 
+    static GlobalTID NULL_GLOBAL_TID = new GlobalTID(-1,-1,null);
+    
     /**Creates a new global identifier which is a copy of the parameter.
      *
      * @param otherTID  The other global identifier.
