@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.connectors.deployment.annotation.handlers;
+package com.sun.enterprise.connectors.jms.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -47,7 +47,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 
-import javax.annotation.jms.JMSConnectionFactoryDefinition;
+import javax.jms.JMSDestinationDefinition;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.AroundTimeout;
 import javax.interceptor.Interceptors;
@@ -61,7 +61,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.JMSConnectionFactoryDefinitionDescriptor;
+import com.sun.enterprise.deployment.JMSDestinationDefinitionDescriptor;
 import com.sun.enterprise.deployment.MetadataSource;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
@@ -74,20 +74,20 @@ import com.sun.enterprise.deployment.annotation.context.WebComponentsContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 
 @Service
-@AnnotationHandlerFor(JMSConnectionFactoryDefinition.class)
-public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandler {
+@AnnotationHandlerFor(JMSDestinationDefinition.class)
+public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
 
-    public JMSConnectionFactoryDefinitionHandler() {
+    public JMSDestinationDefinitionHandler() {
     }
 
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
-    	JMSConnectionFactoryDefinition jmsConnectionFactoryDefnAn =
-                (JMSConnectionFactoryDefinition)ainfo.getAnnotation();
-        return processAnnotation(jmsConnectionFactoryDefnAn, ainfo, rcContexts);
+    	JMSDestinationDefinition jmsDestinationDefnAn =
+                (JMSDestinationDefinition)ainfo.getAnnotation();
+        return processAnnotation(jmsDestinationDefnAn, ainfo, rcContexts);
     }
 
-    protected HandlerProcessingResult processAnnotation(JMSConnectionFactoryDefinition jmsConnectionFactoryDefnAn, AnnotationInfo aiInfo,
+    protected HandlerProcessingResult processAnnotation(JMSDestinationDefinition jmsDestinationDefnAn, AnnotationInfo aiInfo,
                                                         ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
         Class<?> annotatedClass = (Class<?>)aiInfo.getAnnotatedElement();
@@ -100,12 +100,12 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
                 return getDefaultProcessedResult();
             }
 
-            Set<JMSConnectionFactoryDefinitionDescriptor> jmscfdDescs = context.getJMSConnectionFactoryDefinitionDescriptors();
-            JMSConnectionFactoryDefinitionDescriptor desc = createDescriptor(jmsConnectionFactoryDefnAn);
-            if (isDefinitionAlreadyPresent(jmscfdDescs, desc)) {
-                merge(jmscfdDescs, jmsConnectionFactoryDefnAn);
+            Set<JMSDestinationDefinitionDescriptor> jmsddDescs = context.getJMSDestinationDefinitionDescriptors();
+            JMSDestinationDefinitionDescriptor desc = createDescriptor(jmsDestinationDefnAn);
+            if (isDefinitionAlreadyPresent(jmsddDescs, desc)) {
+                merge(jmsddDescs, jmsDestinationDefnAn);
             } else {
-                context.addJMSConnectionFactoryDefinitionDescriptor(desc);
+                context.addJMSDestinationDefinitionDescriptor(desc);
             }
         }
         return getDefaultProcessedResult();
@@ -132,7 +132,7 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
                     context instanceof EjbInterceptorContext
             )) {
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Ignoring @JMSConnectionFactoryDefinition annotation processing as the class is " +
+                    logger.log(Level.FINEST, "Ignoring @JMSDestinationDefinition annotation processing as the class is " +
                             "an EJB class and context is not one of EJBContext");
                 }
                 return false;
@@ -143,7 +143,7 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
             EjbDescriptor[] ejbDescriptor = ejbBundleDescriptor.getEjbByClassName(annotatedClass.getName());
             if (ejbDescriptor == null || ejbDescriptor.length == 0) {
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Ignoring @JMSConnectionFactoryDefinition annotation processing as the class " +
+                    logger.log(Level.FINEST, "Ignoring @JMSDestinationDefinition annotation processing as the class " +
                             "[ " + annotatedClass + " ] is " +
                             "not an EJB class and the context is EJBContext");
                 }
@@ -153,7 +153,7 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
             if (!(context instanceof WebBundleContext || context instanceof WebComponentsContext
                     || context instanceof WebComponentContext )) {
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Ignoring @JMSConnectionFactoryDefinition annotation processing as the class is " +
+                    logger.log(Level.FINEST, "Ignoring @JMSDestinationDefinition annotation processing as the class is " +
                             "an Web class and context is not one of WebContext");
                 }
                 return false;
@@ -168,14 +168,14 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
                     EjbDescriptor[] ejbDescs = ejbBundleDesc.getEjbByClassName(annotatedClass.getName());
                     if (ejbDescs != null && ejbDescs.length > 0) {
                         if (logger.isLoggable(Level.FINEST)) {
-                            logger.log(Level.FINEST, "Ignoring @JMSConnectionFactoryDefinition annotation processing as the class " +
+                            logger.log(Level.FINEST, "Ignoring @JMSDestinationDefinition annotation processing as the class " +
                                     "[ " + annotatedClass + " ] is " +
                                     "not an Web class and the context is WebContext");
                         }
                         return false;
                     } else if (ejbBundleDesc.getInterceptorByClassName(annotatedClass.getName()) != null) {
                             if (logger.isLoggable(Level.FINEST)) {
-                                logger.log(Level.FINEST, "Ignoring @JMSConnectionFactoryDefinition annotation processing " +
+                                logger.log(Level.FINEST, "Ignoring @JMSDestinationDefinition annotation processing " +
                                         "as the class " +
                                         "[ " + annotatedClass + " ] is " +
                                         "not an Web class and the context is WebContext");
@@ -190,7 +190,7 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
                                         annotation.annotationType().equals(AroundTimeout.class) ||
                                         annotation.annotationType().equals(Interceptors.class)) {
                                     if (logger.isLoggable(Level.FINEST)) {
-                                        logger.log(Level.FINEST, "Ignoring @JMSConnectionFactoryDefinition annotation processing " +
+                                        logger.log(Level.FINEST, "Ignoring @JMSDestinationDefinition annotation processing " +
                                                 "as the class " +
                                                 "[ " + annotatedClass + " ] is " +
                                                 "not an Web class, an interceptor and the context is WebContext");
@@ -206,19 +206,19 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
         return true;
     }
 
-    private boolean isDefinitionAlreadyPresent(Set<JMSConnectionFactoryDefinitionDescriptor> jmscfdDescs,
-                                               JMSConnectionFactoryDefinitionDescriptor desc) {
-        for (JMSConnectionFactoryDefinitionDescriptor jmscfdDesc : jmscfdDescs) {
-            if (jmscfdDesc.equals(desc)) {
+    private boolean isDefinitionAlreadyPresent(Set<JMSDestinationDefinitionDescriptor> jmsddDescs,
+                                               JMSDestinationDefinitionDescriptor desc) {
+        for (JMSDestinationDefinitionDescriptor jmsddDesc : jmsddDescs) {
+            if (jmsddDesc.equals(desc)) {
                 return true;
             }
         }
         return false;
     }
 
-    private void merge(Set<JMSConnectionFactoryDefinitionDescriptor> jmscfdDescs, JMSConnectionFactoryDefinition defn) {
+    private void merge(Set<JMSDestinationDefinitionDescriptor> jmsddDescs, JMSDestinationDefinition defn) {
 
-        for (JMSConnectionFactoryDefinitionDescriptor desc : jmscfdDescs) {
+        for (JMSDestinationDefinitionDescriptor desc : jmsddDescs) {
 
             if (desc.getName().equals(defn.name())) {
 
@@ -238,55 +238,9 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
                     }
                 }
 
-                if (desc.getUser() == null) {
-                    if (defn.user() != null && !defn.user().equals("")) {
-                        desc.setUser(defn.user());
-                    }
-                }
-
-                if (desc.getPassword() == null) {
-                    if (defn.password() != null /*ALLOW EMPTY PASSWORDS && !defn.password().equals("")*/) {
-                        desc.setPassword(defn.password());
-                    }
-                }
-
-                if (desc.getClientId() == null) {
-                    if (defn.clientId() != null && !defn.clientId().equals("")) {
-                        desc.setClientId(defn.clientId());
-                    }
-                }
-
-                if (!desc.isConnectionTimeoutSet()) {
-                    if (defn.connectionTimeout() >= 0) {
-                        desc.setConnectionTimeout(defn.connectionTimeout());
-                    }
-                }
-
-                if (!desc.isTransactionSet()) {
-                    desc.setTransactional(defn.transactional());
-                }
-
-                if (desc.getInitialPoolSize() < 0) {
-                    if (defn.initialPoolSize() >= 0) {
-                        desc.setInitialPoolSize(defn.initialPoolSize());
-                    }
-                }
-
-                if (desc.getMaxPoolSize() < 0) {
-                    if (defn.maxPoolSize() >= 0) {
-                        desc.setMaxPoolSize(defn.maxPoolSize());
-                    }
-                }
-
-                if (desc.getMinPoolSize() < 0) {
-                    if (defn.minPoolSize() >= 0) {
-                        desc.setMinPoolSize(defn.minPoolSize());
-                    }
-                }
-
-                if (desc.getMaxIdleTime() < 0) {
-                    if (defn.maxIdleTime() >= 0) {
-                        desc.setMaxIdleTime(defn.maxIdleTime());
+                if (desc.getDestinationName() == null) {
+                    if (defn.destinationName() != null && !defn.destinationName().equals("")) {
+                        desc.setDestinationName(defn.resourceAdapterName());
                     }
                 }
 
@@ -313,9 +267,9 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
 
     }
 
-    private JMSConnectionFactoryDefinitionDescriptor createDescriptor(JMSConnectionFactoryDefinition defn) {
+    private JMSDestinationDefinitionDescriptor createDescriptor(JMSDestinationDefinition defn) {
 
-    	JMSConnectionFactoryDefinitionDescriptor desc = new JMSConnectionFactoryDefinitionDescriptor();
+    	JMSDestinationDefinitionDescriptor desc = new JMSDestinationDefinitionDescriptor();
         desc.setMetadataSource(MetadataSource.ANNOTATION);
 
         desc.setName(defn.name());
@@ -329,35 +283,8 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
             desc.setResourceAdapterName(defn.resourceAdapterName());
         }
 
-        if (defn.user() != null && !defn.user().equals("")) {
-            desc.setUser(defn.user());
-        }
-
-        if (defn.password() != null /*ALLOW EMPTY PASSWORDS && !defn.password().equals("")*/) {
-            desc.setPassword(defn.password());
-        }
-
-        if (defn.clientId() != null && !defn.clientId().equals("")) {
-            desc.setClientId(defn.clientId());
-        }
-
-        if (defn.connectionTimeout() >= 0) {
-            desc.setConnectionTimeout(defn.connectionTimeout());
-        }
-
-        desc.setTransactional(defn.transactional());
-
-        if (defn.initialPoolSize() >= 0) {
-            desc.setInitialPoolSize(defn.initialPoolSize());
-        }
-        if (defn.maxPoolSize() >= 0) {
-            desc.setMaxPoolSize(defn.maxPoolSize());
-        }
-        if (defn.minPoolSize() >= 0) {
-            desc.setMinPoolSize(defn.minPoolSize());
-        }
-        if (defn.maxIdleTime() >= 0) {
-            desc.setMaxIdleTime(defn.maxIdleTime());
+        if (defn.destinationName() != null && !defn.destinationName().equals("")) {
+            desc.setDestinationName(defn.destinationName());
         }
 
         if (defn.properties() != null) {

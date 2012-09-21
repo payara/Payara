@@ -39,6 +39,7 @@
 #
 
 -exportcontents: \
+			com.sun.enterprise.connectors.jms.deployment.annotation.handlers;\
 			com.sun.enterprise.connectors.jms.inflow;\
 			com.sun.enterprise.connectors.jms.system;\
 			com.sun.enterprise.connectors.jms.util; version=${project.osgi.version}

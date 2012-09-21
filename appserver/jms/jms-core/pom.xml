@@ -127,6 +127,10 @@
             <artifactId>kernel</artifactId>
             <version>${project.version}</version>
         </dependency>        
+        <dependency>
+            <groupId>javax.jms</groupId>
+            <artifactId>javax.jms-api</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

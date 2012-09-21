@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.connectors.deployment.annotation.handlers;
+package com.sun.enterprise.connectors.jms.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.JMSDestinationDefinitionDescriptor;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
@@ -48,8 +48,8 @@ import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.annotation.jms.JMSDestinationDefinition;
-import javax.annotation.jms.JMSDestinationDefinitions;
+import javax.jms.JMSDestinationDefinition;
+import javax.jms.JMSDestinationDefinitions;
 
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
