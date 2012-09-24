@@ -71,7 +71,7 @@
         </configuration-element>
     </config-bundle>
 
-    <config-bundle location="domain/servers/server[server]" replace-if-exist="false">
+    <config-bundle location="domain/servers/server[$CURRENT_INSTANCE_SERVER_NAME]" replace-if-exist="false">
         <configuration-element config-bean-class-name="com.sun.enterprise.config.serverbeans.ResourceRef">
 <![CDATA[
     <resource-ref ref="jms/__defaultConnectionFactory"/>

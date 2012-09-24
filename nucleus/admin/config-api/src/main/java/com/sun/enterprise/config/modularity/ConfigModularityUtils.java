@@ -641,7 +641,7 @@ public final class ConfigModularityUtils {
             if (name.equalsIgnoreCase("CURRENT_INSTANCE_CONFIG_NAME")) {
                 expression = habitat.<Config>getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME).getName();
             }
-            if (name.equalsIgnoreCase("CURRENT_INSTANCE_CONFIG_SERVER")) {
+            if (name.equalsIgnoreCase("CURRENT_INSTANCE_SERVER_NAME")) {
                 expression = habitat.<Server>getService(Server.class, ServerEnvironment.DEFAULT_INSTANCE_NAME).getName();
             }
         }
