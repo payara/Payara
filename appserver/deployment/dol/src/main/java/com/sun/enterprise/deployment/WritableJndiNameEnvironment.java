@@ -227,6 +227,24 @@ public interface WritableJndiNameEnvironment extends JndiNameEnvironment {
     public void removeConnectorResourceDefinitionDescriptor(
     		ConnectorResourceDefinitionDescriptor reference);
 
+    /**  
+     * Adds the specified administered-object-definition to the receiver.
+     *   
+     * @param reference AdministeredObjectDefinitionDescriptor to add.
+     *
+     */
+    public void addAdministeredObjectDefinitionDescriptor(
+            AdministeredObjectDefinitionDescriptor reference);
+
+    /**  
+     * Removes the specified administered-object-definition from the receiver.
+     *   
+     * @param reference AdministeredObjectDefinitionDescriptor to remove.
+     *
+     */
+    public void removeAdministeredObjectDefinitionDescriptor(
+            AdministeredObjectDefinitionDescriptor reference);
+
     /**
      * Adds the specified jms-connection-factory-definition to the receiver.
      *

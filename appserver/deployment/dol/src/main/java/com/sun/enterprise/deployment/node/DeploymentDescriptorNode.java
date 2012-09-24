@@ -54,6 +54,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 
+import com.sun.enterprise.deployment.AdministeredObjectDefinitionDescriptor;
 import com.sun.enterprise.deployment.ConnectorResourceDefinitionDescriptor;
 import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
 import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
@@ -1021,6 +1022,25 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
         for(;descIterator.hasNext();){
             ConnectorResourceDefinitionDescriptor next = descIterator.next();
             subNode.writeDescriptor(parentNode, TagNames.CONNECTOR_RESOURCE, next);
+        }
+    }
+
+    /**
+     * write a list of administered-object-definition descriptors to a DOM Tree
+     *
+     * @param parentNode parent node for the DOM tree
+     * @param descIterator the iterator over the descriptors to write
+     */
+    protected void writeAdministeredObjectDefinitionDescriptors(Node parentNode,
+                              Iterator<AdministeredObjectDefinitionDescriptor>  descIterator) {
+        if(descIterator == null || !descIterator.hasNext()){
+            return;
+        }
+
+        AdministeredObjectDefinitionNode subNode = new AdministeredObjectDefinitionNode();
+        for(;descIterator.hasNext();){
+            AdministeredObjectDefinitionDescriptor next = descIterator.next();
+            subNode.writeDescriptor(parentNode, TagNames.ADMINISTERED_OBJECT, next);
         }
     }
 

@@ -125,6 +125,15 @@ public interface TagNames {
     public static final String CONNECTOR_RESOURCE_PROPERTY_NAME = "name";
     public static final String CONNECTOR_RESOURCE_PROPERTY_VALUE = "value";
 
+    public static final String ADMINISTERED_OBJECT = "administered-object";
+    public static final String ADMINISTERED_OBJECT_DESCRIPTION = "description";
+    public static final String ADMINISTERED_OBJECT_NAME = "name";
+    public static final String ADMINISTERED_OBJECT_CLASS_NAME = "class-name";
+    public static final String ADMINISTERED_OBJECT_ADAPTER_NAME = "resource-adapter-name";
+    public static final String ADMINISTERED_OBJECT_PROPERTY = "property";
+    public static final String ADMINISTERED_OBJECT_PROPERTY_NAME = "name";
+    public static final String ADMINISTERED_OBJECT_PROPERTY_VALUE = "value";
+
     public static final String JMS_CONNECTION_FACTORY = "jms-connection-factory";
     public static final String JMS_CONNECTION_FACTORY_DESCRIPTION = "description";
     public static final String JMS_CONNECTION_FACTORY_NAME = "name";

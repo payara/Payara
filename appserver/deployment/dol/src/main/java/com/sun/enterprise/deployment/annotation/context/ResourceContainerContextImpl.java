@@ -475,6 +475,27 @@ public class ResourceContainerContextImpl extends AnnotationContext
         getConnectorResourceDefinitionContainer().addConnectorResourceDefinitionDescriptor(desc);
     }
 
+    protected WritableJndiNameEnvironment getAdministeredObjectDefinitionContainer(){
+        return (WritableJndiNameEnvironment)descriptor;
+    }
+
+    /**
+     * get all administered-object-definition descriptors
+     * @return administered-object-definition descriptors
+     */
+    public Set<AdministeredObjectDefinitionDescriptor> getAdministeredObjectDefinitionDescriptors(){
+        return getAdministeredObjectDefinitionContainer().getAdministeredObjectDefinitionDescriptors();
+    }
+
+    /**
+     * Adds the specified administered-object-definition to the receiver.
+     * @param desc AdministeredObjectDefinitionDescriptor to add.
+     */
+    public void addAdministeredObjectDefinitionDescriptor(AdministeredObjectDefinitionDescriptor desc){
+        getAdministeredObjectDefinitionContainer().addAdministeredObjectDefinitionDescriptor(desc);
+    }
+
+
     protected WritableJndiNameEnvironment getJMSConnectionFactoryDefinitionContainer(){
         return (WritableJndiNameEnvironment)descriptor;
     }

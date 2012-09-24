@@ -170,6 +170,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
         registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
         registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addConnectorResourceDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.ADMINISTERED_OBJECT), AdministeredObjectDefinitionNode.class, "addAdministeredObjectDefinitionDescriptor");
         registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addJMSConnectionFactoryDefinitionDescriptor");
         registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addJMSDestinationDefinitionDescriptor");
 
@@ -319,6 +320,9 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
 
         // connector-resource-definition*
         writeConnectorResourceDefinitionDescriptors(appNode, application.getConnectorResourceDefinitionDescriptors().iterator());
+        
+        // administered-object-definition
+        writeAdministeredObjectDefinitionDescriptors(appNode, application.getAdministeredObjectDefinitionDescriptors().iterator());
 
         // jms-connection-factory-definition*
         writeJMSConnectionFactoryDefinitionDescriptors(appNode, application.getJMSConnectionFactoryDefinitionDescriptors().iterator());

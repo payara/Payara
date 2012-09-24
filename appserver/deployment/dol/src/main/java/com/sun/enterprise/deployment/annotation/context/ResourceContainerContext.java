@@ -226,6 +226,18 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
     public void addConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor desc);
 
     /**
+     * get all administered-object-definition descriptors
+     * @return administered-object-definition descriptors
+     */
+    public Set<AdministeredObjectDefinitionDescriptor> getAdministeredObjectDefinitionDescriptors();
+
+    /**
+     * Adds the specified administered-object-definition to the receiver.
+     * @param desc AdministeredObjectDefinitionDescriptor to add.
+     */
+    public void addAdministeredObjectDefinitionDescriptor(AdministeredObjectDefinitionDescriptor desc);
+
+    /**
      * get all jms-connection-factory-definition descriptors
      * @return jms-connection-factory-definition descriptors
      */

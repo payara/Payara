@@ -696,4 +696,29 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
 			    "The application client [{0}] do not support connector resource definitions", 
 		            new Object[] {getName()}));
 	}
+
+    @Override
+    public Set<AdministeredObjectDefinitionDescriptor> getAdministeredObjectDefinitionDescriptors() {
+        throw new UnsupportedOperationException(localStrings.getLocalString(
+                "enterprise.deployment.exceptionappclientnotsupportadministeredobjectdefinition",
+                "The application client [{0}] do not support administered object definitions", 
+                    new Object[] {getName()}));
+    }
+
+    @Override
+    public void addAdministeredObjectDefinitionDescriptor(AdministeredObjectDefinitionDescriptor reference) {
+        throw new UnsupportedOperationException(localStrings.getLocalString(
+                "enterprise.deployment.exceptionappclientnotsupportadministeredobjectdefinition",
+                "The application client [{0}] do not support administered object definitions", 
+                    new Object[] {getName()}));
+    }
+
+    @Override
+    public void removeAdministeredObjectDefinitionDescriptor(AdministeredObjectDefinitionDescriptor reference) {
+        throw new UnsupportedOperationException(localStrings.getLocalString(
+                "enterprise.deployment.exceptionappclientnotsupportadministeredobjectdefinition",
+                "The application client [{0}] do not support administered object definitions", 
+                    new Object[] {getName()}));
+    }
+
 }

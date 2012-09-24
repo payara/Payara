@@ -205,6 +205,9 @@ public class MessageDrivenBeanNode extends EjbNode<EjbMessageBeanDescriptor> {
         // connector-resource-definition*
         writeConnectorResourceDefinitionDescriptors(ejbNode, ejbDesc.getConnectorResourceDefinitionDescriptors().iterator());
 
+        // administered-object-definition
+        writeAdministeredObjectDefinitionDescriptors(ejbNode, ejbDesc.getAdministeredObjectDefinitionDescriptors().iterator());
+
         // jms-connection-factory-definition*
         writeJMSConnectionFactoryDefinitionDescriptors(ejbNode, ejbDesc.getJMSConnectionFactoryDefinitionDescriptors().iterator());
 

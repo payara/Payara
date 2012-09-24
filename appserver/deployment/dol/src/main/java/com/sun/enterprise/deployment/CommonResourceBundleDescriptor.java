@@ -111,6 +111,23 @@ public abstract class CommonResourceBundleDescriptor  extends BundleDescriptor {
         commonResourceFunctionality.removeConnectorResourceDefinitionDescriptor(reference);
     }
 
+    // for admin-object-definition
+    public Set<AdministeredObjectDefinitionDescriptor> getAdministeredObjectDefinitionDescriptors() {
+        return commonResourceFunctionality.getAdministeredObjectDefinitionDescriptors();
+    }
+
+    protected AdministeredObjectDefinitionDescriptor getAdministeredObjectDefinitionDescriptor(String name) {
+        return commonResourceFunctionality.getAdministeredObjectDefinitionDescriptor(name);
+    }
+
+    public void addAdministeredObjectDefinitionDescriptor(AdministeredObjectDefinitionDescriptor reference){
+        commonResourceFunctionality.addAdministeredObjectDefinitionDescriptor(reference);
+    }
+
+    public void removeAdministeredObjectDefinitionDescriptor(AdministeredObjectDefinitionDescriptor reference){
+        commonResourceFunctionality.removeAdministeredObjectDefinitionDescriptor(reference);
+    }
+
     public Set<JMSConnectionFactoryDefinitionDescriptor> getJMSConnectionFactoryDefinitionDescriptors() {
         return commonResourceFunctionality.getJMSConnectionFactoryDefinitionDescriptors();
     }

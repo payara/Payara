@@ -106,9 +106,6 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
             entityManagerReferences =
             new HashSet<EntityManagerReferenceDescriptor>();
 
-    private Set<DataSourceDefinitionDescriptor> datasourceDefinitionDescs =
-            new HashSet<DataSourceDefinitionDescriptor>();
-
     private Boolean isDistributable;
     private Set<SecurityRoleDescriptor> securityRoles;
     private Set<SecurityConstraint> securityConstraints;
@@ -283,6 +280,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         combineEntityManagerFactoryReferenceDescriptors(env);
         combineMailSessionDescriptors(env);
         combineConnectorResourceDefinitionDescriptors(env);
+        combineAdministeredObjectDefinitionDescriptors(env);
         combineJMSConnectionFactoryDefinitionDescriptors(env);
         combineJMSDestinationDefinitionDescriptors(env);
     }
@@ -2303,6 +2301,31 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
     }
 
+    public void combineAdministeredObjectDefinitionDescriptors(JndiNameEnvironment env) {
+        boolean isFromXml = false;
+        for (AdministeredObjectDefinitionDescriptor desc : env.getAdministeredObjectDefinitionDescriptors()) {
+            isFromXml = (desc.getMetadataSource() == MetadataSource.XML);
+            if (isFromXml) {
+                break;
+            }
+        }
+
+        if (isFromXml) {
+            for (AdministeredObjectDefinitionDescriptor desc: env.getAdministeredObjectDefinitionDescriptors()) {
+                AdministeredObjectDefinitionDescriptor crdDesc = getAdministeredObjectDefinitionDescriptor(desc.getName());
+                if (crdDesc == null) {
+                    if (env instanceof WebBundleDescriptor &&
+                            ((WebBundleDescriptor)env).conflictAdminObjectDefinition) {
+                        throw new IllegalArgumentException(localStrings.getLocalString(
+                                "enterprise.deployment.exceptionconflictadministeredobjectdefinition",
+                                "There are more than one administered object definitions defined in web fragments with the same name, but not overrided in web.xml"));
+                    } else {
+                        getAdministeredObjectDefinitionDescriptors().add(desc);
+                    }
+                }
+            }
+        }
+    }
 
     /*******************************************************************************************
      * END

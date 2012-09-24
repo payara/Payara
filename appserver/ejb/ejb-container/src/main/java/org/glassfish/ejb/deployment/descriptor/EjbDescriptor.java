@@ -57,6 +57,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.deployment.AdministeredObjectDefinitionDescriptor;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.CommonResourceDescriptor;
 import com.sun.enterprise.deployment.ConnectorResourceDefinitionDescriptor;
@@ -315,6 +316,14 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
                     this.addConnectorResourceDefinitionDescriptor(desc);
                 }
             }
+
+            Set<AdministeredObjectDefinitionDescriptor> administeredObjectDescriptors = other.getAdministeredObjectDefinitionDescriptors();
+            if (administeredObjectDescriptors.size() > 0) {
+                for (AdministeredObjectDefinitionDescriptor desc : administeredObjectDescriptors) {
+                    this.addAdministeredObjectDefinitionDescriptor(desc);
+                }
+            }
+
             Set<JMSConnectionFactoryDefinitionDescriptor> jmsConnectionFactoryDescriptors = other.getJMSConnectionFactoryDefinitionDescriptors();
             if (jmsConnectionFactoryDescriptors.size() > 0) {
                 for (JMSConnectionFactoryDefinitionDescriptor desc : jmsConnectionFactoryDescriptors) {

@@ -68,6 +68,9 @@ public class CommonResourceFunctionality implements Serializable {
     private Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescs =
             new HashSet<ConnectorResourceDefinitionDescriptor>();
 
+    private Set<AdministeredObjectDefinitionDescriptor> adminObjectDefinitionDescs =
+            new HashSet<AdministeredObjectDefinitionDescriptor>();
+
     private Set<JMSConnectionFactoryDefinitionDescriptor> jmsConnectionFactoryDefinitionDescs =
             new HashSet<JMSConnectionFactoryDefinitionDescriptor>();
 
@@ -194,6 +197,38 @@ public class CommonResourceFunctionality implements Serializable {
 
     public void removeConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference){
         connectorResourceDefinitionDescs.remove(reference);
+        allResourceDescriptors.remove(reference);
+    }
+
+    // for admin-object-definition
+    public Set<AdministeredObjectDefinitionDescriptor> getAdministeredObjectDefinitionDescriptors() {
+        return adminObjectDefinitionDescs;
+    }
+
+    protected AdministeredObjectDefinitionDescriptor getAdministeredObjectDefinitionDescriptor(String name) {
+        AdministeredObjectDefinitionDescriptor aodDesc = null;
+        for (AdministeredObjectDefinitionDescriptor aodd : this.getAdministeredObjectDefinitionDescriptors()) {
+            if (aodd.getName().equals(name)) {
+                aodDesc = aodd;
+                break;
+            }
+        }
+        return aodDesc;
+    }
+
+    public void addAdministeredObjectDefinitionDescriptor(AdministeredObjectDefinitionDescriptor reference){
+        if(foundDescriptor(reference)){
+            throw new IllegalStateException(
+                    localStrings.getLocalString("enterprise.deployment.exceptionapplicationduplicateadministeredobjectdefinition",
+                            "This application cannot have administered object definitions of same name : [{0}]",
+                            reference.getName()));
+        }
+        adminObjectDefinitionDescs.add(reference);
+        allResourceDescriptors.add(reference);
+    }
+
+    public void removeAdministeredObjectDefinitionDescriptor(AdministeredObjectDefinitionDescriptor reference){
+        adminObjectDefinitionDescs.remove(reference);
         allResourceDescriptors.remove(reference);
     }
 

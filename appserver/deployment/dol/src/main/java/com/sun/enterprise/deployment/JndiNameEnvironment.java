@@ -224,4 +224,10 @@ public interface JndiNameEnvironment {
 
     public Set<MailSessionDescriptor> getMailSessionDescriptors();
 
+    /**
+     * Return a set of administered-object-definition descriptors.
+     *
+     * @return java.util.Set of AdministeredObjectDefinitionDescriptor objects
+     */
+    public Set<AdministeredObjectDefinitionDescriptor> getAdministeredObjectDefinitionDescriptors();
 }

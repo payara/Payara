@@ -343,6 +343,11 @@ public class ApplicationValidator extends ComponentValidator
                 return false;
             }
 
+            Set<AdministeredObjectDefinitionDescriptor> administeredObjectDefinitionDescriptors = application.getAdministeredObjectDefinitionDescriptors();
+            if (isExistingAdministeredObjectDefinitionDescriptor(administeredObjectDefinitionDescriptors, APP_LEVEL+application.getName())) {
+                return false;
+            }
+
             appLevel.add(APP_LEVEL+commonResourceBundleDescriptor.getName());
             validNameSpaceDetails.put(APP_KEYS, appLevel);
         }
@@ -378,10 +383,6 @@ public class ApplicationValidator extends ComponentValidator
             if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, APPCLIENT_LEVEL+cd.getName())) {
               return false;
             }
-            Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescriptors = cd.getConnectorResourceDefinitionDescriptors();
-            if (isExistingConnectorResourceDefinitionDescriptor(connectorResourceDefinitionDescriptors, APPCLIENT_LEVEL+cd.getName())) {
-                return false;
-            }
             cdLevel.add(APPCLIENT_LEVEL+cd.getName());
           }
           validNameSpaceDetails.put(CONNECTOR_KEYS, cdLevel);
@@ -405,6 +406,10 @@ public class ApplicationValidator extends ComponentValidator
             if (isExistingConnectorResourceDefinitionDescriptor(connectorResourceDefinitionDescriptors, EJBBUNDLE_LEVEL+ebd.getName())) {
                 return false;
             }
+            Set<AdministeredObjectDefinitionDescriptor> administeredObjectDefinitionDescriptors = application.getAdministeredObjectDefinitionDescriptors();
+            if (isExistingAdministeredObjectDefinitionDescriptor(administeredObjectDefinitionDescriptors, EJBBUNDLE_LEVEL+application.getName())) {
+                return false;
+            }
             ebdLevel.add(EJBBUNDLE_LEVEL+ebd.getName());
 
 
@@ -422,6 +427,10 @@ public class ApplicationValidator extends ComponentValidator
                 }
                 connectorResourceDefinitionDescriptors = ejbDescriptor.getConnectorResourceDefinitionDescriptors();
                 if (isExistingConnectorResourceDefinitionDescriptor(connectorResourceDefinitionDescriptors, EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName())) {
+                    return false;
+                }
+                administeredObjectDefinitionDescriptors = application.getAdministeredObjectDefinitionDescriptors();
+                if (isExistingAdministeredObjectDefinitionDescriptor(administeredObjectDefinitionDescriptors, EJB_LEVEL+application.getName())) {
                     return false;
                 }
               edLevel.add(EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName());
@@ -448,6 +457,10 @@ public class ApplicationValidator extends ComponentValidator
             }
             Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescriptors = wbd.getConnectorResourceDefinitionDescriptors();
             if (isExistingConnectorResourceDefinitionDescriptor(connectorResourceDefinitionDescriptors, WEBBUNDLE_LEVEL+wbd.getName())) {
+                return false;
+            }
+            Set<AdministeredObjectDefinitionDescriptor> administeredObjectDefinitionDescriptors = application.getAdministeredObjectDefinitionDescriptors();
+            if (isExistingAdministeredObjectDefinitionDescriptor(administeredObjectDefinitionDescriptors, WEBBUNDLE_LEVEL+application.getName())) {
                 return false;
             }
             wbdLevel.add(WEBBUNDLE_LEVEL+wbd.getName());
@@ -496,20 +509,35 @@ public class ApplicationValidator extends ComponentValidator
     }
 
     /**
-         * Method to validate CRD is unique or not
-         * @param connectorResourceDefinitionDescriptors
-         * @param scope
-         * @return
-         */
-        private boolean isExistingConnectorResourceDefinitionDescriptor(Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescriptors, String scope) {
-            for (Iterator itr = connectorResourceDefinitionDescriptors.iterator(); itr.hasNext(); ) {
-                ConnectorResourceDefinitionDescriptor connectorResourceDefinitionDescriptor = (ConnectorResourceDefinitionDescriptor) itr.next();
-                if (isExistsDescriptor(connectorResourceDefinitionDescriptor.getName(), connectorResourceDefinitionDescriptor, scope)) {
-                    return true;
-                }
+     * Method to validate CRD is unique or not
+     * @param connectorResourceDefinitionDescriptors
+     * @param scope
+     * @return
+     */
+    private boolean isExistingConnectorResourceDefinitionDescriptor(Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescriptors, String scope) {
+        for (Iterator itr = connectorResourceDefinitionDescriptors.iterator(); itr.hasNext(); ) {
+            ConnectorResourceDefinitionDescriptor connectorResourceDefinitionDescriptor = (ConnectorResourceDefinitionDescriptor) itr.next();
+            if (isExistsDescriptor(connectorResourceDefinitionDescriptor.getName(), connectorResourceDefinitionDescriptor, scope)) {
+                return true;
             }
-            return false;
         }
+        return false;
+    }
+
+    /**
+     * Method to validate AOD is unique or not
+     * @param descriptors
+     * @param scope
+     * @return
+     */
+    private boolean isExistingAdministeredObjectDefinitionDescriptor(Set<AdministeredObjectDefinitionDescriptor> descriptors, String scope) {
+        for (AdministeredObjectDefinitionDescriptor aodDescriptor : descriptors ) {
+            if (isExistsDescriptor(aodDescriptor.getName(), aodDescriptor, scope)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Method to compare existing descriptor with other descriptors. If both descriptor is equal then deployment
@@ -546,6 +574,15 @@ public class ApplicationValidator extends ComponentValidator
 
                     }
                 } else if (descriptor instanceof ConnectorResourceDefinitionDescriptor && existingDescriptor instanceof ConnectorResourceDefinitionDescriptor) {
+                    if (!descriptor.equals(existingDescriptor)) {
+                        allUniqueResource = false;
+                        return true;
+                    } else {
+                        DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.descriptor.duplicate",
+                                new Object[] { descriptor.getName() });
+
+                    }
+                } else if (descriptor instanceof AdministeredObjectDefinitionDescriptor && existingDescriptor instanceof AdministeredObjectDefinitionDescriptor) {
                     if (!descriptor.equals(existingDescriptor)) {
                         allUniqueResource = false;
                         return true;

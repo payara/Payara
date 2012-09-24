@@ -325,8 +325,11 @@ public class EjbSessionNode  extends InterfaceBasedEjbNode<EjbSessionDescriptor>
         // mail-session definition
         writeMailSessionDescriptors(ejbNode, ejbDesc.getMailSessionDescriptors().iterator());
 
-        // connecto-resource-definition*
+        // connector-resource-definition*
         writeConnectorResourceDefinitionDescriptors(ejbNode, ejbDesc.getConnectorResourceDefinitionDescriptors().iterator());
+
+        // administered-object-definition
+        writeAdministeredObjectDefinitionDescriptors(ejbNode, ejbDesc.getAdministeredObjectDefinitionDescriptors().iterator());
 
         // jms-connection-factory-definition*
         writeJMSConnectionFactoryDefinitionDescriptors(ejbNode, ejbDesc.getJMSConnectionFactoryDefinitionDescriptors().iterator());

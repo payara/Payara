@@ -122,6 +122,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
         registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addJMSConnectionFactoryDefinitionDescriptor");
         registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addJMSDestinationDefinitionDescriptor");
         registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.ADMINISTERED_OBJECT), AdministeredObjectDefinitionNode.class, "addAdministeredObjectDefinitionDescriptor");
     }
     
     /**
@@ -416,7 +417,10 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
         // mail-session*
         writeMailSessionDescriptors(jarNode, webBundleDesc.getMailSessionDescriptors().iterator());
 
-         // message-destination*
+        // administered-object-definition
+        writeAdministeredObjectDefinitionDescriptors(jarNode, webBundleDesc.getAdministeredObjectDefinitionDescriptors().iterator());
+
+        // message-destination*
        writeMessageDestinations
            (jarNode, webBundleDesc.getMessageDestinations().iterator());
 

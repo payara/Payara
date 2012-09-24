@@ -580,7 +580,7 @@ public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
         }
 
         public String getPooling() {
-            String pooling = desc.getProperty("pooling");
+            String pooling = desc.getProperty(PROPERTY_PREFIX+"pooling");
             if (pooling != null && !pooling.equals("")) {
                 return pooling;
             }else{
@@ -675,7 +675,7 @@ public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
         }
 
         public String getPing() {
-            String ping = desc.getProperty("ping");
+            String ping = desc.getProperty(PROPERTY_PREFIX+"ping");
             if (ping != null && !ping.equals("")) {
                 return ping;
             }else{

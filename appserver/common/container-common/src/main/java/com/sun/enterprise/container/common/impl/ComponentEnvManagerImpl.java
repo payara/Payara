@@ -57,6 +57,7 @@ import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.javaee.services.DataSourceDefinitionProxy;
+import org.glassfish.javaee.services.AdministeredObjectDefinitionProxy;
 import org.glassfish.javaee.services.ConnectorResourceDefinitionProxy;
 import org.glassfish.javaee.services.JMSConnectionFactoryDefinitionProxy;
 import org.glassfish.javaee.services.JMSDestinationDefinitionProxy;
@@ -363,7 +364,7 @@ public class ComponentEnvManagerImpl
     private void addConnectorResourceBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
 
         if(env instanceof ApplicationClientDescriptor){
-            // Do not support connectore-resource in client module
+            // Do not support connector-resource in client module
             _logger.fine("Do not support connector-resource in client module.");
             return;
         }
@@ -426,6 +427,32 @@ public class ComponentEnvManagerImpl
         }
     }
 
+    private void addAdministeredObjectBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
+
+        if(env instanceof ApplicationClientDescriptor){
+            // Do not support admin-object in client module
+            _logger.fine("Do not support administered-object in client module.");
+            return;
+        }
+        
+        for (AdministeredObjectDefinitionDescriptor aod : env.getAdministeredObjectDefinitionDescriptors()) {
+
+            if (!dependencyAppliesToScope(aod, scope)) {
+                continue;
+            }
+
+            String resourceId = getResourceId(env, aod);
+            aod.setResourceId(resourceId);
+
+            AdministeredObjectDefinitionProxy proxy = habitat.getService(AdministeredObjectDefinitionProxy.class);
+            proxy.setDescriptor(aod);
+
+            String logicalJndiName = descriptorToLogicalJndiName(aod);
+            CompEnvBinding envBinding = new CompEnvBinding(logicalJndiName, proxy);
+            jndiBindings.add(envBinding);
+        }
+    }
+
     private ResourceDeployer getResourceDeployer(Object resource) {
         return habitat.<ResourceManagerFactory>getService(ResourceManagerFactory.class).getResourceDeployer(resource);
     }
@@ -442,7 +469,10 @@ public class ComponentEnvManagerImpl
 
         //undelploy connector-resources
         undeployConnectorResourceDefinitions(env);
-
+        
+        //undelploy administered-objects
+        undeployAdministeredObjectDefinitions(env);
+        
         //undelploy jms-connection-factories
         undeployJMSConnectionFactoryDefinitions(env);
 
@@ -534,6 +564,19 @@ public class ComponentEnvManagerImpl
             }
         }
     }
+
+    private void undeployAdministeredObjectDefinitions(JndiNameEnvironment env) {
+
+        for (AdministeredObjectDefinitionDescriptor aod : env.getAdministeredObjectDefinitionDescriptors()) {
+            try{
+                ResourceDeployer deployer = getResourceDeployer(aod);
+                deployer.undeployResource(aod);
+            }catch(Exception e){
+                _logger.log(Level.WARNING, "unable to undeploy AdministeredObjectDefinition [ " + aod.getName() + " ] ", e);
+            }
+        }
+    }
+
 
     private void undeployJMSConnectionFactoryDefinitions(JndiNameEnvironment env) {
 
@@ -667,6 +710,7 @@ public class ComponentEnvManagerImpl
         addDataSourceBindings(env, scope, jndiBindings); 
         addMailSessionBindings(env, scope, jndiBindings);
         addConnectorResourceBindings(env, scope, jndiBindings); 
+        addAdministeredObjectBindings(env, scope, jndiBindings);
         addJMSConnectionFactoryBindings(env, scope, jndiBindings);
         addJMSDestinationBindings(env, scope, jndiBindings);
 

@@ -597,6 +597,21 @@ public class ConnectorsUtil {
         return getReservePrefixedJNDINameForConnectorResourceDefinitionPool(compId, poolName);
     }
 
+    public static String deriveAdministeredObjectDefinitionResourceName(String compId, String resourceName) {
+        return getReservePrefixedJNDINameForAdministeredObjectDefinitionResource(compId, resourceName);
+    }
+
+    public static String getReservePrefixedJNDINameForAdministeredObjectDefinitionResource(String compId, String resourceName) {
+        String prefix = null;
+        if(compId == null || compId.equals("")){
+            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
+                ConnectorConstants.ADMINISTERED_OBJECT_DEFINITION_JNDINAME_PREFIX ;
+        }else{
+            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
+                ConnectorConstants.ADMINISTERED_OBJECT_DEFINITION_JNDINAME_PREFIX + compId +"/";
+        }
+        return getReservePrefixedJNDIName(prefix, resourceName);
+    }
     public static String deriveJMSConnectionFactoryDefinitionResourceName(String compId, String name) {
         return getReservePrefixedJNDINameForJMSConnectionFactoryDefinitionResource(compId, name);
     }

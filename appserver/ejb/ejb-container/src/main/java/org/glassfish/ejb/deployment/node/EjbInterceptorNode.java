@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
+import com.sun.enterprise.deployment.node.AdministeredObjectDefinitionNode;
 import com.sun.enterprise.deployment.node.ConnectorResourceDefinitionNode;
 import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
 import com.sun.enterprise.deployment.node.JMSConnectionFactoryDefinitionNode;
@@ -89,6 +90,7 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
         registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
         registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addConnectorResourceDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.ADMINISTERED_OBJECT), AdministeredObjectDefinitionNode.class, "addAdministeredObjectDefinitionDescriptor");
         registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addJMSConnectionFactoryDefinitionDescriptor");
         registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addJMSDestinationDefinitionDescriptor");
 
@@ -184,14 +186,17 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
         }
 
         //TODO V3 should we check for the availability of datasource-definition similar to above ? (hasCallbackDescriptor)
-       // datasource-definition*
-       writeDataSourceDefinitionDescriptors(interceptorNode, descriptor.getDataSourceDefinitionDescriptors().iterator());
+        // datasource-definition*
+        writeDataSourceDefinitionDescriptors(interceptorNode, descriptor.getDataSourceDefinitionDescriptors().iterator());
 
         // mail-session*
         writeMailSessionDescriptors(interceptorNode, descriptor.getMailSessionDescriptors().iterator());
 
-       // connecto-resource-definition*
-       writeConnectorResourceDefinitionDescriptors(interceptorNode, descriptor.getConnectorResourceDefinitionDescriptors().iterator());
+        // connector-resource-definition*
+        writeConnectorResourceDefinitionDescriptors(interceptorNode, descriptor.getConnectorResourceDefinitionDescriptors().iterator());
+
+        // administered-object-definition
+        writeAdministeredObjectDefinitionDescriptors(interceptorNode, descriptor.getAdministeredObjectDefinitionDescriptors().iterator());
 
        // jms-connection-factory-definition*
        writeJMSConnectionFactoryDefinitionDescriptors(interceptorNode, descriptor.getJMSConnectionFactoryDefinitionDescriptors().iterator());
