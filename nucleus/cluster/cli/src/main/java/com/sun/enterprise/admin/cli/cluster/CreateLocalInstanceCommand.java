@@ -41,7 +41,7 @@
 package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.admin.cli.CLIConstants;
-import com.sun.enterprise.admin.cli.remote.RemoteCommand;
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.servermgmt.KeystoreManager;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.security.store.PasswordAdapter;
@@ -49,8 +49,8 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.io.FileUtils;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
@@ -62,11 +62,9 @@ import org.glassfish.hk2.api.PerLookup;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 
 
@@ -226,7 +224,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     }
 
     private int bootstrapSecureAdminFiles() throws CommandException {
-        RemoteCommand rc = new RemoteCommand("_bootstrap-secure-admin", this.programOpts, this.env);
+        RemoteCLICommand rc = new RemoteCLICommand("_bootstrap-secure-admin", this.programOpts, this.env);
         rc.setFileOutputDirectory(instanceDir);
         final int result = rc.execute(new String[] {"_bootstrap-secure-admin"});
         return result;
@@ -360,14 +358,14 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         String[] argsArray = new String[argsList.size()];
         argsArray = argsList.toArray(argsArray);
 
-        RemoteCommand rc = new RemoteCommand("_register-instance", this.programOpts, this.env);
+        RemoteCLICommand rc = new RemoteCLICommand("_register-instance", this.programOpts, this.env);
         return rc.execute(argsArray);
     }
 
     private boolean isRegisteredToDAS() {
         boolean isRegistered = false;
         try {
-            RemoteCommand rc = new RemoteCommand("get", this.programOpts, this.env);
+            RemoteCLICommand rc = new RemoteCLICommand("get", this.programOpts, this.env);
             rc.executeAndReturnOutput("get", INSTANCE_DOTTED_NAME);
             isRegistered = true;
         } catch (CommandException ex) {
@@ -379,9 +377,9 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
 
     private boolean rendezvousOccurred() {
         boolean rendezvousOccurred = false;
-        RemoteCommand rc = null;
+        RemoteCLICommand rc = null;
         try {
-            rc = new RemoteCommand("get", this.programOpts, this.env);
+            rc = new RemoteCLICommand("get", this.programOpts, this.env);
             String s = rc.executeAndReturnOutput("get", RENDEZVOUS_DOTTED_NAME);
             String val = s.substring(s.indexOf("=") + 1);
             rendezvousOccurred = Boolean.parseBoolean(val);
@@ -394,7 +392,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
 
     private void setRendezvousOccurred(String rendezVal) throws CommandException {
         String dottedName = RENDEZVOUS_DOTTED_NAME + "=" + rendezVal;
-        RemoteCommand rc = new RemoteCommand("set", this.programOpts, this.env);
+        RemoteCLICommand rc = new RemoteCLICommand("set", this.programOpts, this.env);
         logger.finer("Setting rendezvousOccurred to " + rendezVal + " for instance " + instanceName);
         rc.executeAndReturnOutput("set", dottedName);
     }
@@ -420,7 +418,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         String[] argsArray = new String[argsList.size()];
         argsArray = argsList.toArray(argsArray);
 
-        RemoteCommand rc = new RemoteCommand("_create-node-implicit", this.programOpts, this.env);
+        RemoteCLICommand rc = new RemoteCLICommand("_create-node-implicit", this.programOpts, this.env);
         return rc.execute(argsArray);
     }
 
@@ -447,7 +445,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         String[] argsArray = new String[argsList.size()];
         argsArray = argsList.toArray(argsArray);    
 
-        RemoteCommand rc = new RemoteCommand("_validate-node", this.programOpts, this.env);
+        RemoteCLICommand rc = new RemoteCLICommand("_validate-node", this.programOpts, this.env);
         return rc.execute(argsArray);
     }
     
@@ -486,9 +484,9 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     }
 
     private void setDomainName() throws CommandException {
-        RemoteCommand rc = new RemoteCommand("_get-runtime-info", this.programOpts, this.env);
-        Map<String, String> map = rc.executeAndReturnAttributes("_get-runtime-info", "--target", "server");
-        this.domainName = map.get("domain_name_value");
+        RemoteCLICommand rc = new RemoteCLICommand("_get-runtime-info", this.programOpts, this.env);
+        ActionReport report = rc.executeAndReturnActionReport("_get-runtime-info", "--target", "server");
+        this.domainName = report.findProperty("domain_name");
     }
 
     @Override

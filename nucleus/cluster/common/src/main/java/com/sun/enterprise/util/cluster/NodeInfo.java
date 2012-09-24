@@ -40,13 +40,7 @@
 
 package com.sun.enterprise.util.cluster;
 
-import com.sun.enterprise.admin.remote.RemoteAdminCommand;
-import com.sun.enterprise.util.StringUtils;
 import java.util.*;
-import java.util.logging.Logger;
-import org.glassfish.api.admin.CommandException;
-import org.glassfish.api.admin.ParameterMap;
-import com.sun.enterprise.universal.Duration;
 
 public final class NodeInfo {
 

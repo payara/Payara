@@ -193,7 +193,35 @@ public abstract class ActionReport {
 
         public List<MessagePart> getChildren() {
             return children;
-        }        
+        }
+        
+        protected String findPropertyImpl(final String key) {
+            String value = props.getProperty(key);
+            if (value != null) {
+                return value;
+            }
+            for (MessagePart child : children) {
+                value = child.findProperty(key);
+                if (value != null) {
+                    return value;
+                }
+            }
+            return null;
+        }
+        
+        /** Search in message parts properties then in extra properties and then
+         * in sub reports. Returns first occurrence of the key.
+         */
+        public String findProperty(String key) {
+            if (key == null) {
+                return null;
+            }
+            if (key.endsWith("_value")) {
+                key = key.substring(0, key.length() - 6); //Because of back compatibility
+            }
+            return findPropertyImpl(key);
+        }
+        
     }
 
     Properties extraProperties;
@@ -228,5 +256,33 @@ public abstract class ActionReport {
      */
     public <T> void setResultType(Class<T> resultType, T resultTypeInstance) {
         resultTypes.put(resultType, resultTypeInstance);
+    }
+    
+    /** Search in message parts properties then in extra properties and then
+     * in sub reports. Returns first occurrence of the key.
+     */
+    public String findProperty(String key) {
+        MessagePart topMessagePart = getTopMessagePart();
+        if (topMessagePart != null) {
+            String value = topMessagePart.findProperty(key);
+            if (value != null) {
+                return value;
+            }
+        }
+        if (extraProperties != null) {
+            String value = extraProperties.getProperty(key);
+            if (value != null) {
+                return value;
+            }
+        }
+        if (getSubActionsReport() != null) {
+            for (ActionReport subReport : getSubActionsReport()) {
+                String value = subReport.findProperty(key);
+                if (value != null) {
+                    return value;
+                }
+            }
+        }
+        return null;
     }
 }

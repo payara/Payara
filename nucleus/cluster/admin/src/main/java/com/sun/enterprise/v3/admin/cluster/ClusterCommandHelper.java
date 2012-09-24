@@ -41,32 +41,29 @@
 package com.sun.enterprise.v3.admin.cluster;
 
 
+import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
-
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.CommandException;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.CommandRunner.CommandInvocation;
+import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
-import com.sun.enterprise.admin.remote.RemoteAdminCommand;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.CommandRunner.CommandInvocation;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.ProgressStatus;
-import org.glassfish.grizzly.config.dom.ThreadPool;
 
 
 /*
@@ -233,7 +230,7 @@ class ClusterCommandHelper {
 
         // Make sure we don't wait longer than the admin read timeout. Set
         // our limit to be 3 seconds less.
-        long adminTimeout = RemoteAdminCommand.getReadTimeout() - 3000;
+        long adminTimeout = RemoteRestAdminCommand.getReadTimeout() - 3000;
         if (adminTimeout <= 0) {
             // This should never be the case
             adminTimeout = 57 * 1000;

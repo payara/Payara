@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.admin.cli.cluster;
 
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -54,15 +55,12 @@ import java.util.zip.ZipFile;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import javax.inject.Inject;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import static com.sun.enterprise.admin.cli.CLIConstants.*;
-import com.sun.enterprise.admin.cli.remote.RemoteCommand;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.FileInputStream;
 import org.glassfish.admin.payload.PayloadImpl;
@@ -392,7 +390,7 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
     private void setRendezvousOccurred(String rendezVal) {
         String dottedName = RENDEZVOUS_DOTTED_NAME + "=" + rendezVal;
         try {
-            RemoteCommand rc = new RemoteCommand("set", this.programOpts, this.env);
+            RemoteCLICommand rc = new RemoteCLICommand("set", this.programOpts, this.env);
             rc.executeAndReturnOutput("set", dottedName);
         } catch (CommandException ex) {
             logger.warning(Strings.get("import.sync.bundle.completeRegistrationFailed", dottedName));
@@ -448,14 +446,14 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
         String[] argsArray = new String[argsList.size()];
         argsArray = argsList.toArray(argsArray);
 
-        RemoteCommand rc = new RemoteCommand("_validate-node", this.programOpts, this.env);
+        RemoteCLICommand rc = new RemoteCLICommand("_validate-node", this.programOpts, this.env);
         return rc.execute(argsArray);
     }
 
     private boolean isRegisteredToDAS() {
         boolean isRegistered = true;
         try {
-            RemoteCommand rc = new RemoteCommand("get", this.programOpts, this.env);
+            RemoteCLICommand rc = new RemoteCLICommand("get", this.programOpts, this.env);
             rc.executeAndReturnOutput("get", INSTANCE_DOTTED_NAME);
         } catch (CommandException ex) {
             isRegistered = false;

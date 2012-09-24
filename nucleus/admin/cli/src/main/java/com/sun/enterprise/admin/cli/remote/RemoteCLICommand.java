@@ -49,7 +49,6 @@ import com.sun.enterprise.admin.cli.DirectoryClassLoader;
 import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.cli.ProgramOptions.PasswordLocation;
-import com.sun.enterprise.admin.progress.CommandProgressImpl;
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.admin.util.CachedCommandModel;
 import com.sun.enterprise.admin.util.CommandModelData;
@@ -85,12 +84,12 @@ import org.glassfish.hk2.utilities.BuilderHelper;
 public class RemoteCLICommand extends CLICommand {
 
     private static final LocalStringsImpl   strings =
-            new LocalStringsImpl(RemoteCommand.class);
+            new LocalStringsImpl(RemoteCLICommand.class);
 
     // return output string rather than printing it
     private boolean                     returnOutput = false;
     private String                      output;
-    private boolean                     returnAttributes = false;
+    private boolean                     returnActionReport = false;
     private ActionReport                ar;
     private String                      usage;
 
@@ -269,10 +268,10 @@ public class RemoteCLICommand extends CLICommand {
             return programOpts.isDetachedCommand() || super.useSse();
         }
         
-//        @Override
-//        protected boolean refetchInvalidModel() {
-//            return false;
-//        }
+        @Override
+        protected boolean refetchInvalidModel() {
+            return false;
+        }
 
         /*
          * Adds any cookies maintained in the clients session cookie cache.
@@ -710,7 +709,7 @@ public class RemoteCLICommand extends CLICommand {
             }
             output = rac.executeCommand(options);
             ar = rac.getActionReport();
-            if (!returnAttributes && !returnOutput) {
+            if (!returnActionReport && !returnOutput) {
                 if (output.length() > 0) {
                     logger.info(output);
                 }
@@ -772,21 +771,21 @@ public class RemoteCLICommand extends CLICommand {
         return output;
     }
 
-//    /**
-//     * Execute the command and return the main attributes from the manifest
-//     * instead of writing out the output.
-//     */
-//    public Map<String, String> executeAndReturnAttributes(String... args)
-//            throws CommandException, CommandValidationException {
-//        /*
-//         * Tell the low level output processing to just save the attributes
-//         * instead of writing out the output.  Yes, this is pretty gross.
-//         */
-//        returnAttributes = true;
-//        execute(args);
-//        returnAttributes = false;
-//        return attrs;
-//    }
+    /**
+     * Execute the command and return the main attributes from the manifest
+     * instead of writing out the output.
+     */
+    public ActionReport executeAndReturnActionReport(String... args)
+            throws CommandException, CommandValidationException {
+        /*
+         * Tell the low level output processing to just save the attributes
+         * instead of writing out the output.  Yes, this is pretty gross.
+         */
+        returnActionReport = true;
+        execute(args);
+        returnActionReport = false;
+        return ar;
+    }
 
     /**
      * Get the usage text.

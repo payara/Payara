@@ -40,11 +40,11 @@
 
 package com.sun.enterprise.admin.cli.remote;
 
+import com.sun.enterprise.admin.cli.*;
 import java.io.*;
 import java.net.*;
 import java.util.logging.*;
 import org.glassfish.api.admin.*;
-import com.sun.enterprise.admin.cli.*;
 
 /**
  * Domain Admin Server utility method.
@@ -71,7 +71,7 @@ public class DASUtils {
     public static boolean pingDASQuietly(ProgramOptions programOpts,
             Environment env) {
         try {
-            RemoteCommand cmd = new RemoteCommand("version", programOpts, env);
+            RemoteCLICommand cmd = new RemoteCLICommand("version", programOpts, env);
             cmd.executeAndReturnOutput(new String[]{"version"});
             return true;
         }
@@ -105,7 +105,7 @@ public class DASUtils {
     public static Error pingDASWithAuth(ProgramOptions programOpts,
             Environment env) throws CommandException {
         try {
-            RemoteCommand cmd = new RemoteCommand("version", programOpts, env);
+            RemoteCLICommand cmd = new RemoteCLICommand("version", programOpts, env);
             cmd.executeAndReturnOutput(new String[]{"version"});
         }
         catch (AuthenticationException aex) {

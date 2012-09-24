@@ -39,7 +39,7 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
-import com.sun.enterprise.admin.cli.remote.RemoteCommand;
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.io.InstanceDirs;
@@ -482,10 +482,10 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
     protected String getNodeInstallDir() throws CommandException {
         String installDir = null;
         try {
-            RemoteCommand rc = new RemoteCommand("get", this.programOpts, this.env);
+            RemoteCLICommand rc = new RemoteCLICommand("get", this.programOpts, this.env);
             String s = rc.executeAndReturnOutput("get", "nodes.node." + node + ".install-dir");
             if (s != null) {
-                installDir = s.substring(s.indexOf("=") + 1);
+                installDir = s.substring(s.indexOf('=') + 1);
             }
         } catch (CommandException ce) {
             // ignore

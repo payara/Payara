@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.admin.cli.optional;
 
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import java.io.File;
 
 import org.glassfish.api.Param;
@@ -162,7 +163,7 @@ public final class BackupDomainCommand extends BackupCommands {
     private boolean canSuspend() {
 
         try {
-            RemoteCommand cmd = new RemoteCommand("list-commands", 
+            RemoteCLICommand cmd = new RemoteCLICommand("list-commands", 
                                                   programOpts, env);
             String response = cmd.executeAndReturnOutput("list-commands");
 
@@ -182,7 +183,7 @@ public final class BackupDomainCommand extends BackupCommands {
     private boolean isSuspended() {
 
         try {
-            RemoteCommand cmd = new RemoteCommand("suspend-domain", 
+            RemoteCLICommand cmd = new RemoteCLICommand("suspend-domain", 
                                                   programOpts, env);
             String response = cmd.executeAndReturnOutput("suspend-domain",
                                                          "--_test=true");

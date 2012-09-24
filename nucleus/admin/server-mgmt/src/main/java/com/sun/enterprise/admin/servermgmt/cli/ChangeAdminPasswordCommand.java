@@ -40,21 +40,18 @@
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
-import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.launcher.GFLauncher;
 import com.sun.enterprise.admin.launcher.GFLauncherException;
 import com.sun.enterprise.admin.launcher.GFLauncherFactory;
 import com.sun.enterprise.admin.launcher.GFLauncherInfo;
+import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import java.io.Console;
 import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.admin.*;
-import com.sun.enterprise.admin.remote.RemoteAdminCommand;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.enterprise.universal.xml.MiniXmlParser;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.net.NetUtils;
 import java.io.IOException;
@@ -178,12 +175,12 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
         
        } else {
            try {
-            RemoteAdminCommand rac = new RemoteAdminCommand(name,
-                programOpts.getHost(), programOpts.getPort(),
-                programOpts.isSecure(), programOpts.getUser(),
-                programOpts.getPassword(), logger);
-            rac.executeCommand(params);
-            return SUCCESS;
+                RemoteRestAdminCommand rac = new RemoteRestAdminCommand(name,
+                    programOpts.getHost(), programOpts.getPort(),
+                    programOpts.isSecure(), programOpts.getUser(),
+                    programOpts.getPassword(), logger);
+                rac.executeCommand(params);
+                return SUCCESS;
            } catch(CommandException ce) {
                if ( ce.getCause() instanceof ConnectException) {
                    //Remote change failure - change password with default values of

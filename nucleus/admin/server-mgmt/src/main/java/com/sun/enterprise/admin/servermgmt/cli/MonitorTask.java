@@ -41,13 +41,13 @@ package com.sun.enterprise.admin.servermgmt.cli;
 
 import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.ProgramOptions;
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import java.util.TimerTask;
 import java.util.Timer;
 import java.util.logging.Logger;
 import java.io.File;
 
 import org.glassfish.api.admin.*;
-import com.sun.enterprise.admin.cli.remote.RemoteCommand;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 public class MonitorTask extends TimerTask {
@@ -56,7 +56,7 @@ public class MonitorTask extends TimerTask {
     private Timer timer = null;
     private String[] remoteArgs;
     private String exceptionMessage = null;
-    private RemoteCommand cmd;
+    private RemoteCLICommand cmd;
     private static final int NUM_ROWS = 25;
     private int counter = 0;
     private static final Logger logger =
@@ -75,7 +75,7 @@ public class MonitorTask extends TimerTask {
         if ((filter != null) && (filter.length() > 0))
             this.filter = filter;
         this.remoteArgs = remoteArgs;
-        cmd = new RemoteCommand(remoteArgs[0], programOpts, env);
+        cmd = new RemoteCLICommand(remoteArgs[0], programOpts, env);
         displayHeader(type);
 
     }

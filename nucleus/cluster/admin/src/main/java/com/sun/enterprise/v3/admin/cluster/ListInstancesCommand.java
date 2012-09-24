@@ -39,29 +39,25 @@
  */
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.admin.remote.RemoteAdminCommand;
 import com.sun.enterprise.admin.util.InstanceStateService;
+import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.cluster.InstanceInfo;
+import static com.sun.enterprise.v3.admin.cluster.Constants.*;
 import java.util.*;
 import java.util.logging.*;
-
+import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import javax.inject.Inject;
 import org.glassfish.api.admin.config.ReferenceContainer;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
-
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
-import static com.sun.enterprise.v3.admin.cluster.Constants.*;
-import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 
 /**
  * AdminCommand to list all instances and their states

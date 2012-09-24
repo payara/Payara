@@ -39,21 +39,17 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
-import com.sun.enterprise.admin.cli.remote.DASUtils;
-import com.sun.enterprise.admin.cli.remote.RemoteCommand;
+import com.sun.enterprise.admin.cli.*;
+import com.sun.enterprise.admin.cli.cluster.Strings;
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.universal.process.ProcessUtils;
+import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.*;
-
-
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
-
-import com.sun.enterprise.admin.cli.*;
-import com.sun.enterprise.util.HostAndPort;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * Stop a local server instance.
@@ -170,7 +166,7 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
 
         try {
             // run the remote stop-domain command and throw away the output
-            RemoteCommand cmd = new RemoteCommand("_stop-instance", programOpts, env);
+            RemoteCLICommand cmd = new RemoteCLICommand("_stop-instance", programOpts, env);
             cmd.executeAndReturnOutput("_stop-instance", "--force", force.toString());
             waitForDeath();
         }

@@ -82,8 +82,8 @@ import org.glassfish.admin.payload.PayloadFilesManager;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.ActionReport.MessagePart;
-import org.glassfish.api.admin.CommandModel.ParamModel;
 import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.CommandModel.ParamModel;
 import org.glassfish.api.admin.Payload.Part;
 import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.jersey.client.ClientConfig;
@@ -95,13 +95,12 @@ import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartClientBinder;
 import org.glassfish.jersey.media.sse.EventChannel;
-import org.glassfish.jersey.server.model.ModelValidationException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 /**
  * Utility class for executing remote admin commands.
- * Each instance of RemoteAdminCommand represents a particular
+ * Each instance of RemoteRestAdminCommand represents a particular
  * remote command on a particular remote server accessed using
  * particular credentials.  The instance can be reused to execute
  * the same command multiple times with different arguments.
@@ -307,7 +306,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             final String authToken,
             final boolean prohibitDirectoryUploads)
             throws CommandException {
-        Metrix.event("RemoteAdminCommand constructed");
+        Metrix.event("RemoteRestAdminCommand constructed");
         this.name = name;
         this.host = host;
         this.port = port;
@@ -404,6 +403,13 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
 
     public ActionReport getActionReport() {
         return actionReport;
+    }
+    
+    public String findPropertyInReport(String key) {
+        if (actionReport == null) {
+            return null;
+        }
+        return actionReport.findProperty(key);
     }
 
     /**
@@ -1281,7 +1287,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
 //     * <p>
 //     * This implementation works for true admin clients and will not work
 //     * correctly for commands submitted to instances from inside the DAS.  (That
-//     * is done from the implementation in ServerRemoteAdminCommand which extends
+//     * is done from the implementation in ServerRemoteRestAdminCommand which extends
 //     * this class.)
 //     * <p>
 //     * This code constructs the HttpConnectorAddress in a way that uses either
@@ -1342,7 +1348,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
      */
     protected void processHeaders(final Response headers) {
         /*
-         * No headers are processed by RemoteAdminCommand.
+         * No headers are processed by RemoteRestAdminCommand.
          */
     }
 

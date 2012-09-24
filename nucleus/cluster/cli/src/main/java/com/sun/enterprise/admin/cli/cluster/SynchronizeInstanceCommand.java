@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.admin.cli.cluster;
 
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import java.io.*;
 import java.net.ConnectException;
 import java.text.DateFormat;
@@ -50,12 +51,9 @@ import javax.xml.bind.*;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 
-import com.sun.enterprise.admin.cli.*;
-import com.sun.enterprise.admin.cli.remote.RemoteCommand;
 import com.sun.enterprise.util.cluster.SyncRequest;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.common.util.admin.AuthTokenManager;
@@ -75,7 +73,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
         acceptableValues = "none, normal, full")
     protected String sync="normal";
 
-    private RemoteCommand syncCmd = null;
+    private RemoteCLICommand syncCmd = null;
 
     private static enum SyncLevel { TOP, FILES, DIRECTORY, RECURSIVE };
 
@@ -136,7 +134,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
             programOpts.setAuthToken(AuthTokenManager.markTokenForReuse(origAuthToken));
         }
 
-        syncCmd = new RemoteCommand("_synchronize-files", programOpts, env);
+        syncCmd = new RemoteCLICommand("_synchronize-files", programOpts, env);
         syncCmd.setFileOutputDirectory(instanceDir);
 
         /*

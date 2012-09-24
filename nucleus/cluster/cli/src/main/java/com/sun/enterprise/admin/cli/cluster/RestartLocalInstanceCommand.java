@@ -89,7 +89,7 @@ public class RestartLocalInstanceCommand extends StopLocalInstanceCommand {
         long timestamp = (pwFile != null) ? pwFile.lastModified() : -1;
 
         // run the remote restart-domain command and throw away the output
-        RemoteCommand cmd = new RemoteCommand("_restart-instance", programOpts, env);
+        RemoteCLICommand cmd = new RemoteCLICommand("_restart-instance", programOpts, env);
 
         if (debug != null)
             cmd.executeAndReturnOutput("_restart-instance", "--debug", debug.toString());

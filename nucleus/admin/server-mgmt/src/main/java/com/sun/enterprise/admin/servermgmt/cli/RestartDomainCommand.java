@@ -46,7 +46,6 @@ import java.util.*;
 import org.glassfish.api.Param;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -98,8 +97,8 @@ public class RestartDomainCommand extends StopDomainCommand {
         long uptimeOldServer = getUptime();  // may throw CommandException
 
         // run the remote restart-domain command and throw away the output
-        RemoteCommand cmd =
-                new RemoteCommand("restart-domain", programOpts, env);
+        RemoteCLICommand cmd =
+                new RemoteCLICommand("restart-domain", programOpts, env);
 
         File pwFile = getServerDirs().getLocalPasswordFile();
         long stamp = -1;

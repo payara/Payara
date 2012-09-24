@@ -40,17 +40,18 @@
 
 package com.sun.enterprise.admin.cli;
 
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import java.io.*;
-import java.util.*;
 import java.text.*;
-
+import java.util.*;
+import java.util.logging.Logger;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.ActionReport.MessagePart;
+import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.component.*;
-import org.glassfish.api.admin.*;
-import com.sun.enterprise.admin.cli.remote.RemoteCommand;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import java.util.logging.Logger;
 
 /**
  *  CLI Utility class
@@ -249,27 +250,15 @@ public class CLIUtil {
         /*
          * Now get the list of remote commands.
          */
-        RemoteCommand cmd =
-            new RemoteCommand("list-commands", po, env);
-        String cmds = cmd.executeAndReturnOutput("list-commands");
-        List<String> rcmds = new ArrayList<String>();
-        BufferedReader r = new BufferedReader(new StringReader(cmds));
-        String line;
-
-        /*
-         * The output of the remote list-commands command is a bunch of
-         * lines of the form:
-         * cmd-name
-         */
-        try {
-            while ((line = r.readLine()) != null) {
-                // add it if it's not a local command
-                if (!localnames.contains(line)) {
-                    rcmds.add(line);
-                }
+        RemoteCLICommand cmd =
+            new RemoteCLICommand("list-commands", po, env);
+        ActionReport report = cmd.executeAndReturnActionReport("list-commands");
+        List<MessagePart> children = report.getTopMessagePart().getChildren();
+        List<String> rcmds = new ArrayList<String>(children.size());
+        for (ActionReport.MessagePart msg : children) {
+            if (!localnames.contains(msg.getMessage())) {
+                rcmds.add(msg.getMessage());
             }
-        } catch (IOException ioex) {
-            // ignore it, will never happen
         }
         Collections.sort(rcmds);
         String[] remoteCommands = rcmds.toArray(new String[rcmds.size()]);

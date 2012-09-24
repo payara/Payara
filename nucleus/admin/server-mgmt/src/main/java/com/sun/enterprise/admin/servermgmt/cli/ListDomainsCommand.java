@@ -39,15 +39,13 @@
  */
 package com.sun.enterprise.admin.servermgmt.cli;
 
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import java.io.File;
 import java.io.IOException;
 import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 
-import com.sun.enterprise.admin.cli.*;
-import com.sun.enterprise.admin.cli.remote.RemoteCommand;
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
 import com.sun.enterprise.admin.servermgmt.DomainsManager;
 import com.sun.enterprise.admin.servermgmt.pe.PEDomainsManager;
@@ -108,8 +106,8 @@ public final class ListDomainsCommand extends LocalDomainCommand {
         boolean status = isThisDAS(getDomainRootDir());
         if (status) {
             try {
-                RemoteCommand cmd =
-                        new RemoteCommand("_get-restart-required",
+                RemoteCLICommand cmd =
+                        new RemoteCLICommand("_get-restart-required",
                         programOpts, env);
                 String restartRequired =
                         cmd.executeAndReturnOutput("_get-restart-required");

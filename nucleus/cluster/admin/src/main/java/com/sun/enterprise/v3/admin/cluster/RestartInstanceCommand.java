@@ -39,8 +39,8 @@
  */
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.admin.remote.RemoteAdminCommand;
-import com.sun.enterprise.admin.remote.ServerRemoteAdminCommand;
+import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
+import com.sun.enterprise.admin.remote.ServerRemoteRestAdminCommand;
 import com.sun.enterprise.admin.util.*;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -164,7 +164,7 @@ public class RestartInstanceCommand implements AdminCommand {
 
         String cmdName = "_restart-instance";
 
-        RemoteAdminCommand rac = createRac(cmdName);
+        RemoteRestAdminCommand rac = createRac(cmdName);
         // notice how we do NOT send in the instance's name as an operand!!
         ParameterMap map = new ParameterMap();
 
@@ -180,7 +180,7 @@ public class RestartInstanceCommand implements AdminCommand {
 
         String cmdName = "_get-runtime-info";
 
-        RemoteAdminCommand rac;
+        RemoteRestAdminCommand rac;
         try {
             rac = createRac(cmdName);
             rac.executeCommand(new ParameterMap());
@@ -190,14 +190,10 @@ public class RestartInstanceCommand implements AdminCommand {
             // namely if the instance isn't running.
             throw new InstanceNotRunningException();
         }
-
-        Map<String, String> atts = rac.getAttributes();
-
-        if (atts != null) {
-            String val = atts.get("restartable_value");
-
-            if (val != null && val.equals("false"))
-                return false;
+        
+        String val = rac.findPropertyInReport("restartable");
+        if (val != null && val.equals("false")) {
+            return false;
         }
         return true;
     }
@@ -225,10 +221,10 @@ public class RestartInstanceCommand implements AdminCommand {
         setError(Strings.get("restart.instance.timeout", instanceName));
     }
 
-    private RemoteAdminCommand createRac(String cmdName) throws CommandException {
+    private RemoteRestAdminCommand createRac(String cmdName) throws CommandException {
         // I wonder why the signature is so unwieldy?
         // hiding it here...
-        return new ServerRemoteAdminCommand(habitat, cmdName, host,
+        return new ServerRemoteRestAdminCommand(habitat, cmdName, host,
                 port, false, "admin", null, logger);
     }
 
@@ -258,10 +254,9 @@ public class RestartInstanceCommand implements AdminCommand {
 
     private String getPid() throws CommandException {
         String cmdName = "_get-runtime-info";
-        RemoteAdminCommand rac = createRac(cmdName);
+        RemoteRestAdminCommand rac = createRac(cmdName);
         rac.executeCommand(new ParameterMap());
-        Map<String, String> map = rac.getAttributes();
-        return map.get("pid_value");
+        return rac.findPropertyInReport("pid");
     }
 
     /* 

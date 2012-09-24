@@ -40,7 +40,7 @@
 package org.glassfish.admin.rest.resources.admin;
 
 import com.sun.enterprise.admin.remote.AdminCommandStateImpl;
-import com.sun.enterprise.admin.remote.RemoteAdminCommand;
+import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.admin.remote.RestPayloadImpl;
 import com.sun.enterprise.admin.util.CachedCommandModel;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -63,8 +63,6 @@ import javax.security.auth.Subject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import org.glassfish.admin.rest.Constants;
-import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
 import org.glassfish.api.admin.*;
@@ -192,7 +190,7 @@ public class CommandResource {
     @Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
     public Response execCommandSimpInSimpOut(@PathParam("command") String command,
                 @HeaderParam("X-Indent") String indent,
-                @HeaderParam(RemoteAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
+                @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
                 ParameterMap data) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
@@ -208,7 +206,7 @@ public class CommandResource {
     @Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
     public Response execCommandMultInSimpOut(@PathParam("command") String command,
                 @HeaderParam("X-Indent") String indent,
-                @HeaderParam(RemoteAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
+                @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
                 FormDataMultiPart mp) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
@@ -225,7 +223,7 @@ public class CommandResource {
     @Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
     public Response execCommandEmptyInSimpOut(@PathParam("command") String command,
                 @HeaderParam("X-Indent") String indent,
-                @HeaderParam(RemoteAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
+                @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
         if (logger.isLoggable(Level.FINEST)) {
@@ -243,7 +241,7 @@ public class CommandResource {
     @Produces("multipart/mixed")
     public Response execCommandSimpInMultOut(@PathParam("command") String command,
                 @HeaderParam("X-Indent") String indent,
-                @HeaderParam(RemoteAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
+                @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
                 ParameterMap data) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
@@ -259,7 +257,7 @@ public class CommandResource {
     @Produces("multipart/mixed")
     public Response execCommandMultInMultOut(@PathParam("command") String command,
                 @HeaderParam("X-Indent") String indent,
-                @HeaderParam(RemoteAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
+                @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
                 FormDataMultiPart mp) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
@@ -276,7 +274,7 @@ public class CommandResource {
     @Produces("multipart/mixed")
     public Response execCommandEmptyInMultOut(@PathParam("command") String command,
                 @HeaderParam("X-Indent") String indent,
-                @HeaderParam(RemoteAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
+                @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
         if (logger.isLoggable(Level.FINEST)) {
@@ -293,7 +291,7 @@ public class CommandResource {
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     @Produces(EventChannel.SERVER_SENT_EVENTS)
     public Response execCommandSimpInSseOut(@PathParam("command") String command,
-                @HeaderParam(RemoteAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
+                @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
                 ParameterMap data) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
@@ -308,7 +306,7 @@ public class CommandResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(EventChannel.SERVER_SENT_EVENTS)
     public Response execCommandMultInSseOut(@PathParam("command") String command,
-                @HeaderParam(RemoteAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
+                @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
                 FormDataMultiPart mp) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
@@ -324,7 +322,7 @@ public class CommandResource {
     @Path("/{command:.*}/")
     @Produces(EventChannel.SERVER_SENT_EVENTS)
     public Response execCommandEmptyInSseOut(@PathParam("command") String command,
-                @HeaderParam(RemoteAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
+                @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
         if (logger.isLoggable(Level.FINEST)) {

@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.admin.remote.ServerRemoteAdminCommand;
+import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import java.util.logging.Logger;
 import java.io.File;
@@ -48,7 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.sun.enterprise.admin.remote.RemoteAdminCommand;
+import com.sun.enterprise.admin.remote.ServerRemoteRestAdminCommand;
 import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.module.ModulesRegistry;
@@ -282,7 +282,7 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
 
         try {
             logger.info(Strings.get("stop.instance.init", instanceName));
-            RemoteAdminCommand rac = new ServerRemoteAdminCommand(habitat, "_stop-instance",
+            RemoteRestAdminCommand rac = new ServerRemoteRestAdminCommand(habitat, "_stop-instance",
                     host, port, false, "admin", null, logger);
 
             // notice how we do NOT send in the instance's name as an operand!!

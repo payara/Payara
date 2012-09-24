@@ -42,15 +42,15 @@ package com.sun.enterprise.admin.servermgmt.cli;
 import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.ProgramOptions;
-import com.sun.enterprise.util.OS;
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.security.KeyStore;
+import org.glassfish.api.ActionReport;
 
 import org.glassfish.api.admin.CommandException;
-import com.sun.enterprise.admin.cli.remote.RemoteCommand;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
@@ -256,11 +256,11 @@ public abstract class LocalServerCommand extends CLICommand {
         logger.log(Level.FINER, "Check if server is at location {0}", ourDir);
 
         try {
-            RemoteCommand cmd =
-                    new RemoteCommand("__locations", programOpts, env);
-            Map<String, String> attrs =
-                    cmd.executeAndReturnAttributes(new String[]{"__locations"});
-            String theirDirPath = attrs.get(directoryKey);
+            RemoteCLICommand cmd =
+                    new RemoteCLICommand("__locations", programOpts, env);
+            ActionReport report =
+                    cmd.executeAndReturnActionReport(new String[]{"__locations"});
+            String theirDirPath = report.findProperty(directoryKey);
             logger.log(Level.FINER, "Remote server has root directory {0}", theirDirPath);
 
             if (ok(theirDirPath)) {
@@ -465,7 +465,7 @@ public abstract class LocalServerCommand extends CLICommand {
      * Get uptime from the server.
      */
     protected final long getUptime() throws CommandException {
-        RemoteCommand cmd = new RemoteCommand("uptime", programOpts, env);
+        RemoteCLICommand cmd = new RemoteCLICommand("uptime", programOpts, env);
         String up = cmd.executeAndReturnOutput("uptime", "--milliseconds").trim();
         long up_ms = parseUptime(up);
 
@@ -485,11 +485,11 @@ public abstract class LocalServerCommand extends CLICommand {
     protected final boolean isRestartable() throws CommandException {
         // false negative is worse than false positive.
         // there is one and only one case where we return false
-        RemoteCommand cmd = new RemoteCommand("_get-runtime-info", programOpts, env);
-        Map<String, String> atts = cmd.executeAndReturnAttributes("_get-runtime-info");
+        RemoteCLICommand cmd = new RemoteCLICommand("_get-runtime-info", programOpts, env);
+        ActionReport report = cmd.executeAndReturnActionReport("_get-runtime-info");
 
-        if (atts != null) {
-            String val = atts.get("restartable_value");
+        if (report != null) {
+            String val = report.findProperty("restartable_value");
 
             if (ok(val) && val.equals("false"))
                 return false;

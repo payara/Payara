@@ -41,23 +41,13 @@
 package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.io.FileUtils;
-import java.io.*;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 
-import com.sun.enterprise.admin.cli.*;
-import com.sun.enterprise.admin.cli.remote.RemoteCommand;
 
 // TODO TODO
 // wipe out the tree if this is the last instance

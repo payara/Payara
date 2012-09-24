@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.v3.admin;
 
-import com.sun.enterprise.admin.remote.RemoteAdminCommand;
+import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.config.serverbeans.*;
 import java.util.Set;
 
@@ -574,7 +574,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
                 return report;
             }
             //Validate admin command eTag
-            String modelETag = req.getHeader(RemoteAdminCommand.COMMAND_MODEL_MATCH_HEADER);
+            String modelETag = req.getHeader(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER);
             if (modelETag != null && !commandRunner.validateCommandModelETag(adminCommand, modelETag)) {
                 String message =
                     adminStrings.getLocalString("commandmodel.etag.invalid",

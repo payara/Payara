@@ -39,18 +39,16 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.util.StringUtils;
 import java.io.*;
-import javax.inject.Inject;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
 
-import com.sun.enterprise.admin.cli.remote.RemoteCommand;
 
 /**
  * Delete a local server instance.
@@ -145,7 +143,7 @@ public class DeleteLocalInstanceCommand extends LocalInstanceCommand {
         }
 
         if (isRegisteredToDas()) {
-            RemoteCommand rc = new RemoteCommand("_unregister-instance", programOpts, env);
+            RemoteCLICommand rc = new RemoteCLICommand("_unregister-instance", programOpts, env);
             rc.execute("_unregister-instance", getServerDirs().getServerName());
         }
     }
@@ -164,11 +162,11 @@ public class DeleteLocalInstanceCommand extends LocalInstanceCommand {
      * in domain.xml), the get command will throw a CommandException
      */
     private boolean isRegisteredToDas() {
-        boolean isRegistered = false;
-        RemoteCommand rc = null;
+        boolean isRegistered;
+        RemoteCLICommand rc;
         String INSTANCE_DOTTED_NAME = "servers.server." + instanceName;
         try {
-            rc = new RemoteCommand("get", this.programOpts, this.env);
+            rc = new RemoteCLICommand("get", this.programOpts, this.env);
             rc.executeAndReturnOutput("get", INSTANCE_DOTTED_NAME);
             isRegistered = true;
         } catch (CommandException ce) {

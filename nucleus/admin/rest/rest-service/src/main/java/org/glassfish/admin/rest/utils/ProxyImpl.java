@@ -137,7 +137,7 @@ public abstract class ProxyImpl implements Proxy {
         SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
         //Instruct Jersey to use HostNameVerifier and SSLContext provided by us.
         client.configuration().setProperty(ClientProperties.HOSTNAME_VERIFIER, new BasicHostnameVerifier(server.getAdminHost()));
-        client.configuration().setProperty(ClientProperties.SSL_CONTEXT, habitat.<SSLUtils>getService(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), "TLS" )); //TODO need to get hardcoded "TLS" from corresponding ServerRemoteAdminCommand constant);
+        client.configuration().setProperty(ClientProperties.SSL_CONTEXT, habitat.<SSLUtils>getService(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), "TLS" )); //TODO need to get hardcoded "TLS" from corresponding ServerRemoteRestAdminCommand constant);
     }
 
     /**

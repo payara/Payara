@@ -40,16 +40,14 @@
 
 package com.sun.enterprise.admin.cli;
 
-import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.component.*;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.hk2.api.PerLookup;
-
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.admin.cli.remote.*;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import java.util.logging.Level;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.*;
 
 /**
  * A local version command.
@@ -87,7 +85,7 @@ public class VersionCommand extends CLICommand {
             return 0;
         }
         try {
-            RemoteCommand cmd = new RemoteCommand("version", programOpts, env);
+            RemoteCLICommand cmd = new RemoteCLICommand("version", programOpts, env);
             String version;
             if (verbose)
                 version = cmd.executeAndReturnOutput("version", "--verbose");

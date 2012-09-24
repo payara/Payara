@@ -62,7 +62,7 @@ public abstract class LocalDomainCommand extends LocalServerCommand {
     private String userArgDomainName;
     // the key for the Domain Root in the main attributes of the
     // manifest returned by the __locations command
-    private static final String DOMAIN_ROOT_KEY = "Domain-Root_value";
+    private static final String DOMAIN_ROOT_KEY = "Domain-Root";
     private DomainDirs dd = null;
 
     /*

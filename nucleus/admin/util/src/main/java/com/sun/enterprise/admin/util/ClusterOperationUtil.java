@@ -40,26 +40,24 @@
 
 package com.sun.enterprise.admin.util;
 
+import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.admin.remote.RemoteAdminCommand;
-
-import com.sun.enterprise.config.serverbeans.Config;
-import java.io.File;
-
 import com.sun.logging.LogDomains;
-import java.util.logging.Level;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.*;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Target;
-import org.glassfish.config.support.CommandTarget;
+import java.io.File;
 
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.*;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Target;
 
 /**
  *
@@ -242,7 +240,7 @@ public class ClusterOperationUtil {
         }
 
         boolean gotFirstResponse = false;
-        long maxWaitTime = RemoteAdminCommand.getReadTimeout();
+        long maxWaitTime = RemoteRestAdminCommand.getReadTimeout();
         long timeBeforeAsadminTimeout = maxWaitTime;
         long waitStart = System.currentTimeMillis();
         for(Map.Entry<String, Future<InstanceCommandResult>> fe : futures.entrySet()) {

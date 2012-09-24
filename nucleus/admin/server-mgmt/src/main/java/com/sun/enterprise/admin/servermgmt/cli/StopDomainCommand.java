@@ -40,21 +40,15 @@
 package com.sun.enterprise.admin.servermgmt.cli;
 
 import com.sun.enterprise.admin.cli.CLIConstants;
-import com.sun.enterprise.universal.process.ProcessManager;
-import com.sun.enterprise.universal.process.ProcessManagerException;
+import com.sun.enterprise.admin.cli.remote.DASUtils;
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.universal.process.ProcessUtils;
-import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.File;
-import java.io.IOException;
-import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
-
-import com.sun.enterprise.admin.cli.remote.RemoteCommand;
-import com.sun.enterprise.admin.cli.remote.DASUtils;
+import org.jvnet.hk2.annotations.*;
 
 /**
  * The stop-domain command.
@@ -171,7 +165,7 @@ public class StopDomainCommand extends LocalDomainCommand {
      */
     protected void doCommand() throws CommandException {
         // run the remote stop-domain command and throw away the output
-        RemoteCommand cmd = new RemoteCommand(getName(), programOpts, env);
+        RemoteCLICommand cmd = new RemoteCLICommand(getName(), programOpts, env);
         cmd.executeAndReturnOutput("stop-domain", "--force", force.toString());
         try {
             waitForDeath();
