@@ -162,6 +162,8 @@ public final class GfSseEventReceiver implements Closeable {
                             baos.write(data);
                         }
                         break;
+                    default:
+                        //No-op default
                 }
 
             }
@@ -184,11 +186,13 @@ public final class GfSseEventReceiver implements Closeable {
             inboundEvent.addData(new byte[]{'\n'});
         } else if(name.equals("id")) {
             String s = new String(value);
-            try {
-                // TODO: check the value [0-9]*
-                Integer.parseInt(new String(value));
-            } catch (NumberFormatException nfe) {
+            if (s == null) {
                 s = "";
+            } else {
+                s = s.trim();
+                if (!s.matches("\\-?\\d+")) {
+                    s = "";
+                }
             }
             inboundEvent.setId(s);
         } else if(name.equals("retry")) {

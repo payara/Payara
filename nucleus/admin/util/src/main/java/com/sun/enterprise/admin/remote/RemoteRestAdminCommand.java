@@ -68,6 +68,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManager;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.Invocation.Builder;
@@ -1076,7 +1077,17 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
 
                 //Invoke
                 Metrix.event("doRestCommand() - about to invoke");
-                Response response = invoc.invoke();
+                Response response;
+                try {
+                    response = invoc.invoke();
+                } catch (ClientException ex) {
+                    //Rethrow original execaption (not Throwable) for future processing
+                    if (ex.getCause() != null && ex.getCause() instanceof Exception) {
+                        throw (Exception) ex.getCause();
+                    } else {
+                        throw ex;
+                    }
+                }
                 Metrix.event("doRestCommand() - after invoke");
                 /*
                  * We must handle redirection from http to https explicitly
@@ -1239,7 +1250,8 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     strings.get("IOError", e.getMessage()), e);
             } catch (CommandException e) {
                 throw e;
-            } catch (Exception e) {
+            } 
+            catch (Exception e) {
                 // logger.log(Level.FINER, "doHttpCommand: exception", e);
                 if (logger.isLoggable(Level.FINER)) {
                     logger.log(Level.FINER, "doHttpCommand: exception {0}", e);

@@ -66,7 +66,7 @@ public class ProgressStatusClient {
         this.status = status;
     }
     
-    private void preventNullStatus(String name, String id) {
+    private synchronized void preventNullStatus(String name, String id) {
         if (status == null) {
             status = new CommandProgressImpl(name, id);
         }
@@ -170,7 +170,7 @@ public class ProgressStatusClient {
         }
     }
 
-    public ProgressStatus getProgressStatus() {
+    public synchronized ProgressStatus getProgressStatus() {
         return status;
     }
     

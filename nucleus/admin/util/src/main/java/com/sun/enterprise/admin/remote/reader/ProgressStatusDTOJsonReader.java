@@ -95,11 +95,7 @@ public class ProgressStatusDTOJsonReader implements MessageBodyReader<ProgressSt
 
     public static ProgressStatusDTO readProgressStatus(JsonParser jp) throws IOException {
         ChildProgressStatusDTO child = readChildProgressStatus(jp);
-        if (child == null) {
-            return null;
-        } else {
-            return child.getProgressStatus();
-        }
+        return child.getProgressStatus();
     }
     
     public static ChildProgressStatusDTO readChildProgressStatus(JsonParser jp) throws IOException {
