@@ -43,12 +43,17 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.ManagedJobConfig;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.Job;
 import org.glassfish.api.admin.JobManager;
 import org.glassfish.api.admin.AdminCommandState;
+import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
 
 /**
  *  This is the implementation for the JobManagerService
@@ -64,13 +69,12 @@ import org.jvnet.hk2.annotations.Service;
 
 @Service
 public class JobManagerService implements JobManager {
+    @Inject
+    Domain domain;
+
+    private ManagedJobConfig managedJobConfig;
     
     private static final int MAX_SIZE = 65535;
-
-    /**
-     * This is configurable retention period of 1 day
-     */
-    private static final int JOBS_RETENTION_PERIOD = 86400000;
     
     private HashMap<String, Job> jobRegistry = new HashMap<String, Job>();
 
@@ -178,13 +182,39 @@ public class JobManagerService implements JobManager {
             Job job = jobs.next();
             long executedTime = job.getCommandExecutionDate();
             long currentTime = System.currentTimeMillis();
-            if (currentTime - executedTime > JOBS_RETENTION_PERIOD) {
+
+            long jobsRetentionPeriod = 86400000;
+            boolean enableJobManager = Boolean.parseBoolean(System.getProperty("enableJobManager"));
+            if (enableJobManager)  {
+                managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
+                jobsRetentionPeriod = convert(managedJobConfig.getJobRetentionPeriod());
+            }
+            if (currentTime - executedTime > jobsRetentionPeriod) {
                  expiredJobs.add(job);
             }
 
         }
         return expiredJobs;
     }
+
+    public long convert(String input ) {
+        String period = input.substring(0,input.length()-1);
+        Long timeInterval = new Long(period);
+        String s = input.toLowerCase();
+        long milliseconds = 86400000;
+        if (s.indexOf("s") > 0 ) {
+            milliseconds = timeInterval*1000;
+        }
+        else if (s.indexOf("h") > 0 ) {
+            milliseconds = timeInterval*3600*1000;
+
+        }
+        else if (s.indexOf("m") > 0 ) {
+            milliseconds = timeInterval*60*1000;
+        }
+        return milliseconds;
+    }
+
 
     /**
      * This will remove the job from the registry
