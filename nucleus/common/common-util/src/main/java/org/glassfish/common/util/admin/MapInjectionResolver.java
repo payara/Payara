@@ -41,7 +41,6 @@
 package org.glassfish.common.util.admin;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.hk2.component.InjectionResolver;
 import java.io.File;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -61,8 +60,8 @@ import org.glassfish.api.ParamDefaultCalculator;
 import org.glassfish.api.admin.CommandModel;
 import org.glassfish.api.admin.ParameterMap;
 import org.jvnet.hk2.component.ComponentException;
-import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.component.MultiMap;
+import org.jvnet.hk2.config.InjectionResolver;
 
 
 /**
@@ -110,7 +109,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
     }
 
     @Override
-    public <V> V getValue(Object component, Inhabitant<?> onBehalfOf, AnnotatedElement target, Type genericType, Class<V> type) throws ComponentException {
+    public <V> V getValue(Object component, AnnotatedElement target, Type genericType, Class<V> type) throws ComponentException {
 	// look for the name in the list of parameters passed.
 	Param param = target.getAnnotation(Param.class);
 	String paramName = CommandModel.getParamName(param, target);

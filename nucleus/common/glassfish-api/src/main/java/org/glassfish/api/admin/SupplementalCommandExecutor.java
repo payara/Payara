@@ -40,7 +40,6 @@
 
 package org.glassfish.api.admin;
 
-import com.sun.hk2.component.InjectionResolver;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.jvnet.hk2.annotations.Contract;

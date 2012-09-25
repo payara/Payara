@@ -41,27 +41,26 @@
 package org.glassfish.config.support;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.hk2.component.InjectionResolver;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandModelProvider;
 import org.glassfish.common.util.admin.ParamTokenizer;
 import org.jvnet.hk2.component.ComponentException;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
-import org.jvnet.hk2.component.InjectionManager;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.GenerateServiceFromMethod;
+import org.jvnet.hk2.config.InjectionManager;
+import org.jvnet.hk2.config.InjectionResolver;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.HK2Loader;
 import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.Self;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.tiger_types.Types;
 
 import java.beans.BeanInfo;
@@ -109,7 +108,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
     protected final Level level = Level.FINE;
     
     @Inject
-    Habitat habitat;
+    ServiceLocator habitat;
    
     InjectionManager manager;
     CrudResolver resolver;
@@ -234,7 +233,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
         final InjectionResolver<Param> delegate = injector;
         return new InjectionResolver<Param>(Param.class) {
             @Override
-            public <V> V getValue(Object component, Inhabitant<?> onBehalfOf, AnnotatedElement annotated, Type genericType, Class<V> type) throws ComponentException {
+            public <V> V getValue(Object component, AnnotatedElement annotated, Type genericType, Class<V> type) throws ComponentException {
                 if (type.isAssignableFrom(List.class)) {
                     final List<ConfigBeanProxy> values;
                     try {
@@ -268,7 +267,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                         logger.log(Level.SEVERE, "GenericCrudCommand.invocation_failure", params);
                         throw new ComponentException(msg, e);
                     }
-                    Object value = delegate.getValue(component, null, annotated, genericType, type);
+                    Object value = delegate.getValue(component, annotated, genericType, type);
                     if (value==null) {
                         if (logger.isLoggable(level)) {
                             logger.log(level, "Value of " + annotated.toString() + " is null");
@@ -350,7 +349,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                 }
 
                                 @Override
-                                public <V> V getValue(Object component, Inhabitant<?> onBehalfOf, AnnotatedElement annotated, Type genericType, Class<V> type) throws ComponentException {
+                                public <V> V getValue(Object component, AnnotatedElement annotated, Type genericType, Class<V> type) throws ComponentException {
                                     String name = annotated.getAnnotation(Attribute.class).value();
                                     if ((name==null || name.length()==0) && annotated instanceof Method) {
 
@@ -381,7 +380,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                     }
                     return null;
                 }
-                return delegate.getValue(component, null, annotated, genericType, type);
+                return delegate.getValue(component, annotated, genericType, type);
             }
 
             @Override

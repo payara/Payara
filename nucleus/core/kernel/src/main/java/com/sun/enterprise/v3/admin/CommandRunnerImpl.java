@@ -80,7 +80,6 @@ import org.glassfish.internal.deployment.DeploymentTargetResolver;
 import org.jvnet.hk2.annotations.Service;
 
 import org.jvnet.hk2.component.*;
-import com.sun.hk2.component.InjectionResolver;
 
 import com.sun.enterprise.universal.collections.ManifestUtils;
 import com.sun.enterprise.universal.glassfish.AdminCommandResponse;
@@ -100,7 +99,10 @@ import javax.validation.*;
 import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
 import org.glassfish.api.admin.Payload;
 import org.glassfish.api.admin.SupplementalCommandExecutor.SupplementalCommand;
+import org.jvnet.hk2.config.InjectionManager;
+import org.jvnet.hk2.config.InjectionResolver;
 import org.jvnet.hk2.config.MessageInterpolatorImpl;
+import org.jvnet.hk2.config.UnsatisfiedDependencyException;
 
 /**
  * Encapsulates the logic needed to execute a server-side command (for example,
@@ -1758,7 +1760,7 @@ public class CommandRunnerImpl implements CommandRunner {
         }
 
         @Override
-        public <V> V getValue(Object component, Inhabitant<?> onBehalfOf, AnnotatedElement target, Type genericType, Class<V> type) throws ComponentException {
+        public <V> V getValue(Object component, AnnotatedElement target, Type genericType, Class<V> type) throws ComponentException {
 
             // look for the name in the list of parameters passed.
             if (target instanceof Field) {

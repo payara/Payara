@@ -47,10 +47,9 @@ import java.util.logging.*;
 
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.InjectionManager;
-import org.jvnet.hk2.component.UnsatisfiedDependencyException;
-
-import com.sun.hk2.component.InjectionResolver;
+import org.jvnet.hk2.config.InjectionManager;
+import org.jvnet.hk2.config.InjectionResolver;
+import org.jvnet.hk2.config.UnsatisfiedDependencyException;
 
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;

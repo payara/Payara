@@ -41,7 +41,6 @@
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.hk2.component.InjectionResolver;
 import com.sun.logging.LogDomains;
 import java.util.Collection;
 import org.glassfish.api.ActionReport;
@@ -49,6 +48,8 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.common.util.admin.MapInjectionResolver;
 import org.jvnet.hk2.component.*;
+import org.jvnet.hk2.config.InjectionManager;
+import org.jvnet.hk2.config.InjectionResolver;
 import org.glassfish.common.util.admin.CommandModelImpl;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;

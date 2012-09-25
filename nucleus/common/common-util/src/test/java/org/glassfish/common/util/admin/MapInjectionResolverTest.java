@@ -298,7 +298,7 @@ public class MapInjectionResolverTest {
             
             AnnotatedElement ae =
                 (AnnotatedElement)cl.getDeclaredField("hello");
-            String hello = mir.getValue(dc, null, ae, null, String.class);
+            String hello = mir.getValue(dc, ae, null, String.class);
             assertEquals("hello should be world", "world", hello);
         }
         catch (Exception ex) {
