@@ -255,7 +255,7 @@ public class RestMethodMetadata {
         }
 
         for (Class<?> ifaces : clazz.getInterfaces()) {
-            for (Method m : ifaces.getDeclaredMethods()) {
+            for (Method m : ifaces.getMethods()) {
                 String methodName = m.getName();
                 if (methodName.startsWith("get")) {
                     String propertyName = methodName.substring(3,4).toLowerCase(Locale.getDefault()) + methodName.substring(4);
