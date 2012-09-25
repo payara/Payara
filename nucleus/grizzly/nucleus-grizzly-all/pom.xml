@@ -96,7 +96,8 @@
                 <configuration>
                     <instructions>
                         <Export-Package>
-                            org.glassfish.grizzly.*;version=${grizzly.version}
+                            org.glassfish.grizzly.*;version=${grizzly.version},
+                            maskedclasses.*;version=${grizzly.version}
                         </Export-Package>
                         <Import-Package>*</Import-Package>
                         <Include-Resource>META-INF/hk2-locator/=target/classes/META-INF/hk2-locator/</Include-Resource>

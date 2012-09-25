@@ -40,11 +40,10 @@
 
 package org.glassfish.extras.grizzly;
 
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.api.container.Sniffer;
-import org.glassfish.internal.deployment.GenericSniffer;
-import org.glassfish.api.deployment.archive.ArchiveType;
 import javax.enterprise.deploy.shared.ModuleType;
+import org.glassfish.api.deployment.archive.ArchiveType;
+import org.glassfish.internal.deployment.GenericSniffer;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * Sniffs raw grizzly adapters in jar files
@@ -54,12 +53,13 @@ import javax.enterprise.deploy.shared.ModuleType;
 @Service(name="grizzly")
 public class GrizzlyAdapterSniffer extends GenericSniffer {
     
-    final static private String[] containerNames = { "org.glassfish.extras.grizzly.GrizzlyContainer" };
+    final static private String[] containerNames = { "grizzly" };
 
     public GrizzlyAdapterSniffer() {
         super("grizzly", GrizzlyModuleDescriptor.DescriptorPath ,null);
     }
 
+    @Override
     public String[] getContainersNames() {
         return containerNames;
     }
@@ -75,6 +75,7 @@ public class GrizzlyAdapterSniffer extends GenericSniffer {
      * @return whether the sniffer supports the archive type
      *
      */
+    @Override
     public boolean supportsArchiveType(ArchiveType archiveType) {
         if (archiveType.toString().equals(ModuleType.WAR.toString()) ||
             archiveType.toString().equals(ModuleType.EJB.toString())) {

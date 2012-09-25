@@ -60,6 +60,7 @@ import java.util.ArrayList;
  */
 public class GrizzlyModuleDescriptor {
 
+    private final static String[] HANDLER_ELEMENTS = {"adapter", "http-handler"};
     final static String DescriptorPath = "META-INF/grizzly-glassfish.xml";
     final Map<String, String> tuples = new HashMap<String, String>();
     final Map<String, ArrayList<GrizzlyProperty>> adapterProperties = new HashMap<String,  ArrayList<GrizzlyProperty>>();
@@ -82,26 +83,28 @@ public class GrizzlyModuleDescriptor {
 
     private void parse(Document document) {
         Element element = document.getDocumentElement();
-        NodeList adapters = element.getElementsByTagName("service");
-        for (int i=0;i<adapters.getLength();i++) {
-            Node adapter = adapters.item(i);
-            NamedNodeMap attrs = adapter.getAttributes();
-            NodeList properties = adapter.getChildNodes();
-            ArrayList<GrizzlyProperty> list = new ArrayList<GrizzlyProperty>();
+        for (String handlerElement : HANDLER_ELEMENTS) {
+            NodeList adapters = element.getElementsByTagName(handlerElement);
+            for (int i=0;i<adapters.getLength();i++) {
+                Node adapter = adapters.item(i);
+                NamedNodeMap attrs = adapter.getAttributes();
+                NodeList properties = adapter.getChildNodes();
+                ArrayList<GrizzlyProperty> list = new ArrayList<GrizzlyProperty>();
 
-            // Read the properties to be set on a GrizzlyAdapter
-            for (int j=0; j < properties.getLength(); j++){
-                Node property = properties.item(j);
-                NamedNodeMap values = property.getAttributes();
-               if (values != null){
-                    list.add(new GrizzlyProperty(values.getNamedItem("name").getNodeValue(),
-                                          values.getNamedItem("value").getNodeValue()));
+                // Read the properties to be set on a GrizzlyAdapter
+                for (int j=0; j < properties.getLength(); j++){
+                    Node property = properties.item(j);
+                    NamedNodeMap values = property.getAttributes();
+                   if (values != null){
+                        list.add(new GrizzlyProperty(values.getNamedItem("name").getNodeValue(),
+                                              values.getNamedItem("value").getNodeValue()));
+                    }
                 }
-            }
 
-            adapterProperties.put(attrs.getNamedItem("class-name").getNodeValue(), list);
-            addAdapter(attrs.getNamedItem("context-root").getNodeValue(),
-                    attrs.getNamedItem("class-name").getNodeValue());
+                adapterProperties.put(attrs.getNamedItem("class-name").getNodeValue(), list);
+                addAdapter(attrs.getNamedItem("context-root").getNodeValue(),
+                        attrs.getNamedItem("class-name").getNodeValue());
+            }
         }
     }
 
