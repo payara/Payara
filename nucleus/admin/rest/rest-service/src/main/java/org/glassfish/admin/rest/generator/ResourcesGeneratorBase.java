@@ -401,6 +401,8 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
             } else {
                 if (elementName.charAt(i) == '-') {
                     nextisUpper = true;
+                } else  if (elementName.charAt(i) == '/') {
+                    nextisUpper = true;
                 } else {
                     nextisUpper = false;
                     ret.append(elementName.substring(i, i + 1));
