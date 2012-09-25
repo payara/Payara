@@ -109,7 +109,7 @@
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <weld.version>1.1.4.Final</weld.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
-        <tyrus.version>1.0-b04</tyrus.version>
+        <tyrus.version>1.0-b05</tyrus.version>
         <json.version>1.0-b01</json.version>
     </properties>
 
