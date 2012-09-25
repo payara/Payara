@@ -41,6 +41,7 @@ package org.glassfish.admin.rest.composite;
 
 import com.sun.enterprise.v3.common.ActionReporter;
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
 import javax.inject.Inject;
 import javax.security.auth.Subject;
@@ -185,7 +186,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
      * @return
      */
     protected ActionReporter executeCommand(String command) {
-        return executeCommand(command, new ParameterMap());
+        return getCompositeUtil().executeCommand(getSubject(), command);
     }
 
     /**
@@ -196,7 +197,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
      * @return
      */
     protected ActionReporter executeCommand(String command, ParameterMap parameters) {
-        return executeWriteCommand(command, parameters);
+        return getCompositeUtil().executeCommand(getSubject(), command, parameters);
     }
 
     /**
@@ -205,7 +206,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
      * @return
      */
     protected ActionReporter executeDeleteCommand(String command) {
-        return executeDeleteCommand(command, new ParameterMap());
+        return getCompositeUtil().executeDeleteCommand(getSubject(), command);
     }
 
     /**
@@ -215,7 +216,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
      * @return
      */
     protected ActionReporter executeDeleteCommand(String command, ParameterMap parameters) {
-        return executeCommand(command, parameters, false, true);
+        return getCompositeUtil().executeDeleteCommand(getSubject(), command, parameters);
     }
 
     /**
@@ -224,7 +225,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
      * @return
      */
     protected ActionReporter executeWriteCommand(String command) {
-        return executeWriteCommand(command, new ParameterMap());
+        return getCompositeUtil().executeWriteCommand(getSubject(), command);
     }
 
     /**
@@ -234,7 +235,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
      * @return
      */
     protected ActionReporter executeWriteCommand(String command, ParameterMap parameters) {
-        return executeCommand(command, parameters, true, true);
+        return getCompositeUtil().executeWriteCommand(getSubject(), command, parameters);
     }
 
     /**
@@ -244,7 +245,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
      * @return
      */
     protected ActionReporter executeReadCommand(String command) {
-        return executeReadCommand(command, new ParameterMap());
+        return getCompositeUtil().executeReadCommand(getSubject(), command);
     }
 
     /**
@@ -254,7 +255,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
      * @return
      */
     protected ActionReporter executeReadCommand(String command, ParameterMap parameters) {
-        return executeCommand(command, parameters, false, true);
+        return getCompositeUtil().executeReadCommand(getSubject(), command, parameters);
     }
 
     /**
@@ -266,19 +267,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
      * @return
      */
     protected ActionReporter executeCommand(String command, ParameterMap parameters, boolean throwBadRequest, boolean throwOnWarning) {
-        RestActionReporter ar = ResourceUtil.runCommand(command, parameters,
-                Globals.getDefaultHabitat(), "", getSubject()); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
-        ExitCode code = ar.getActionExitCode();
-        if (code.equals(ExitCode.FAILURE) || (code.equals(ExitCode.WARNING) && throwOnWarning)) {
-            if (throwBadRequest) {
-                throw new WebApplicationException(Response.status(Status.BAD_REQUEST).
-                    entity(ar.getTopMessagePart().getMessage()).
-                    build());
-            } else {
-                throw new WebApplicationException(Status.NOT_FOUND);
-            }
-        }
-        return ar;
+        return getCompositeUtil().executeCommand(getSubject(), command, parameters, throwBadRequest, throwOnWarning);
     }
 
     /**
@@ -299,5 +288,25 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
      */
     protected URI getChildItemUri(String name) throws IllegalArgumentException, UriBuilderException {
         return uriInfo.getAbsolutePathBuilder().path("id").path(name).build();
+    }
+
+    /**
+     * TBD - Jason Lee wants to move this into the defaults generators.
+     *
+     * Finds an unused name given the list of currently used names and a name prefix.
+     *
+     * @param namePrefix
+     * @param usedNames
+     * @return a String containing an unused dname, or an empty string if all candidate names are currently in use.
+     */
+    protected String generateDefaultName(String namePrefix, Collection<String> usedNames) {
+        for (int i = 1; i <= 100; i++) {
+            String name = namePrefix + "-" + i;
+            if (!usedNames.contains(name)) {
+                return name;
+            }
+        }
+        // All the candidate names are in use.  Return an empty name.
+        return "";
     }
 }

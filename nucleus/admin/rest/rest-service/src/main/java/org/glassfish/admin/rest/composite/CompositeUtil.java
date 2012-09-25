@@ -40,6 +40,7 @@
 package org.glassfish.admin.rest.composite;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.v3.common.ActionReporter;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -71,6 +72,9 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorContext;
 import javax.validation.ValidatorFactory;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.RestExtension;
@@ -78,6 +82,8 @@ import org.glassfish.admin.rest.composite.metadata.AttributeReference;
 import org.glassfish.admin.rest.composite.metadata.HelpText;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
+import org.glassfish.admin.rest.utils.xml.RestActionReporter;
+import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.internal.api.Globals;
 import static org.glassfish.pfl.objectweb.asm.Opcodes.*;
@@ -98,7 +104,6 @@ public class CompositeUtil {
     private boolean extensionsLoaded = false;
     private static volatile Validator beanValidator = null;
     private static final LocalStringManagerImpl adminStrings = new LocalStringManagerImpl(CompositeUtil.class);
-    private ThreadLocal<Subject> subject = new ThreadLocal<Subject>();
 
     private CompositeUtil() {
     }
@@ -160,14 +165,6 @@ public class CompositeUtil {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-    }
-
-    public Subject getSubject() {
-        return subject.get();
-    }
-
-    public void setSubject(Subject subject) {
-        this.subject.set(subject);
     }
 
     /**
@@ -323,6 +320,117 @@ public class CompositeUtil {
             sep = "\n";
         }
         return msg.toString();
+    }
+
+    /**
+     * Execute an <code>AdminCommand</code> with no parameters
+     * Deprecated - will be removed soon.  Use executeReadCommand or executeWriteCommand instead.
+     * @param subject
+     * @param command
+     * @return
+     */
+    public ActionReporter executeCommand(Subject subject, String command) {
+        return executeCommand(subject, command, new ParameterMap());
+    }
+
+    /**
+     * Execute an <code>AdminCommand</code> with the specified parameters.
+     * Deprecated - will be removed soon.  Use executeReadCommand or executeWriteCommand instead.
+     * @param subject
+     * @param command
+     * @param parameters
+     * @return
+     */
+    public ActionReporter executeCommand(Subject subject, String command, ParameterMap parameters) {
+        return executeWriteCommand(subject, command, parameters);
+    }
+
+    /**
+     * Execute a delete <code>AdminCommand</code> with no parameters.
+     * @param subject
+     * @param command
+     * @return
+     */
+    public ActionReporter executeDeleteCommand(Subject subject, String command) {
+        return executeDeleteCommand(subject, command, new ParameterMap());
+    }
+
+    /**
+     * Execute a delete <code>AdminCommand</code> with the specified parameters.
+     * @param subject
+     * @param command
+     * @param parameters
+     * @return
+     */
+    public ActionReporter executeDeleteCommand(Subject subject, String command, ParameterMap parameters) {
+        return executeCommand(subject, command, parameters, false, true);
+    }
+
+    /**
+     * Execute a writing <code>AdminCommand</code> with no parameters.
+     * @param subject
+     * @param command
+     * @return
+     */
+    public ActionReporter executeWriteCommand(Subject subject, String command) {
+        return executeWriteCommand(subject, command, new ParameterMap());
+    }
+
+    /**
+     * Execute a writing <code>AdminCommand</code> with the specified parameters.
+     * @param subject
+     * @param command
+     * @param parameters
+     * @return
+     */
+    public ActionReporter executeWriteCommand(Subject subject, String command, ParameterMap parameters) {
+        return executeCommand(subject, command, parameters, true, true);
+    }
+
+    /**
+     * Execute a read-only <code>AdminCommand</code> with the specified parameters.
+     * @param subject
+     * @param command
+     * @param parameters
+     * @return
+     */
+    public ActionReporter executeReadCommand(Subject subject, String command) {
+        return executeReadCommand(subject, command, new ParameterMap());
+    }
+
+    /**
+     * Execute a read-only <code>AdminCommand</code> with no parameters.
+     * @param subject
+     * @param command
+     * @param parameters
+     * @return
+     */
+    public ActionReporter executeReadCommand(Subject subject, String command, ParameterMap parameters) {
+        return executeCommand(subject, command, parameters, false, true);
+    }
+
+    /**
+     * Execute an <code>AdminCommand</code> with the specified parameters.
+     * @param command
+     * @param parameters
+     * @param throwBadRequest (vs. NOT_FOUND)
+     * @param throwOnWarning (vs.ignore warning)
+     * @return
+     */
+    public ActionReporter executeCommand(Subject subject, String command, ParameterMap parameters, boolean throwBadRequest, boolean throwOnWarning) {
+        RestActionReporter ar = ResourceUtil.runCommand(command, parameters,
+                Globals.getDefaultHabitat(), "", subject); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
+        ExitCode code = ar.getActionExitCode();
+        if (code.equals(ExitCode.FAILURE) || (code.equals(ExitCode.WARNING) && throwOnWarning)) {
+            if (throwBadRequest) {
+                throw new WebApplicationException(Response.status(Status.BAD_REQUEST).
+                    entity(ar.getTopMessagePart().getMessage()).
+                    build());
+            } else {
+                throw new WebApplicationException(Status.NOT_FOUND);
+            }
+        }
+        return ar;
     }
 
     /*******************************************************************************************************************
