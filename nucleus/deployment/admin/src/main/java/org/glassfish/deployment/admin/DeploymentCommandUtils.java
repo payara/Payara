@@ -180,8 +180,9 @@ public class DeploymentCommandUtils {
              * uploaded.
              */
             result = new File(finalUploadDir, fileParam.getName());
+            final long lastMod = fileParam.lastModified();
             FileUtils.renameFile(fileParam, result);
-            if ( ! result.setLastModified(fileParam.lastModified())) {
+            if ( ! result.setLastModified(lastMod)) {
                     logger.log(Level.FINE, "In renaming {0} to {1} could not setLastModified; continuing",
                             new Object[] {fileParam.getAbsolutePath(),
                                 result.getAbsolutePath()

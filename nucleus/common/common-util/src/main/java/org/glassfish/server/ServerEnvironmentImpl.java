@@ -71,6 +71,7 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
     /** folder where all generated code like compiled jsps, stubs is stored */
     public static final String kGeneratedDirName = "generated";
     public static final String kRepositoryDirName = "applications";
+    public static final String kAppAltDDDirName = "altdd";
     public static final String kEJBStubDirName = "ejb";
     public static final String kGeneratedXMLDirName = "xml";
     public static final String kPolicyFileDirName = "policy";
@@ -308,6 +309,14 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
     @Override
     public File getApplicationPolicyFilePath() {
         return new File(getApplicationStubPath(),kPolicyFileDirName);
+    }
+
+    /**
+     * Gets the directory to store external alternate deployment descriptors
+     * Normally {@code ROOT/generated/altdd}
+     */
+    public File getApplicationAltDDPath() {
+        return new File(getApplicationStubPath(), kAppAltDDDirName);
     }
 
     /*

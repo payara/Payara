@@ -178,6 +178,17 @@ public interface ExtendedDeploymentContext extends DeploymentContext {
     public File getAppInternalDir();
 
     /**
+     * Returns the alternate deployment descriptor directory for the 
+     * application (used for holding the external alternate deployment 
+     * descriptors).
+     *
+     * @return location of the alternate deployment descriptor directory for 
+     *  the application
+     */
+    public File getAppAltDDDir();
+
+
+    /**
      * Returns the tenant, if one is valid for this DeploymentContext.
      * @return tenant name if applicable, null if no tenant is set for this DC
      */

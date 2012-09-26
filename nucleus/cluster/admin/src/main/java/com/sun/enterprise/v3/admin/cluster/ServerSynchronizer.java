@@ -470,6 +470,10 @@ public final class ServerSynchronizer implements PostConstruct {
             attachAppDir(fileOf(gdir, mt.name), payload);
             gdir = new File(env.getApplicationStubPath(), "policy");
             attachAppDir(fileOf(gdir, mt.name), payload);
+            // and also the altdd dir
+            gdir = env.getApplicationAltDDPath();
+            attachAppDir(fileOf(gdir, mt.name), payload);
+
         } catch (IOException ioex) {
             logger.fine("ServerSynchronizer: IOException syncing app " +
                                                                     mt.name);

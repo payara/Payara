@@ -476,6 +476,8 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
             // archive (and possibly deployment plan) that cluster sync can use
             FileUtils.whack(getAppInternalDir());
 
+            FileUtils.whack(getAppAltDDDir());
+
              // remove the root tenant dir for this application
             FileUtils.whack(getRootTenantDirForApp(parameters.name()));
 
@@ -589,6 +591,11 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     public File getAppInternalDir() {
         final File internalDir = new File(env.getApplicationRepositoryPath(), INTERNAL_DIR_NAME);
         return new File(internalDir, VersioningUtils.getRepositoryName(parameters.name()));
+    }
+
+    public File getAppAltDDDir() {
+        final File altDDDir = env.getApplicationAltDDPath();
+        return new File(altDDDir, VersioningUtils.getRepositoryName(parameters.name()));
     }
 
     public void setTenant(final String tenant, final String appName) {

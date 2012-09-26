@@ -620,14 +620,15 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             final ExtendedDeploymentContext deploymentContext,
             final Logger logger) throws IOException {
         final File finalUploadDir = deploymentContext.getAppInternalDir();
+        final File finalAltDDDir = deploymentContext.getAppAltDDDir();
         if ( ! finalUploadDir.mkdirs()) {
             logger.log(Level.FINE," Attempting to create upload directory {0} was reported as failed; attempting to continue",
                     new Object[] {finalUploadDir.getAbsolutePath()});
         }
         safeCopyOfApp = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalUploadDir, originalPathValue, logger, env);
         safeCopyOfDeploymentPlan = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalUploadDir, deploymentplan, logger, env);
-        safeCopyOfAltDD = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalUploadDir, altdd, logger, env);
-        safeCopyOfRuntimeAltDD = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalUploadDir, runtimealtdd, logger, env);
+        safeCopyOfAltDD = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalAltDDDir, altdd, logger, env);
+        safeCopyOfRuntimeAltDD = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalAltDDDir, runtimealtdd, logger, env);
     }
 
     private void recordFileLocations(

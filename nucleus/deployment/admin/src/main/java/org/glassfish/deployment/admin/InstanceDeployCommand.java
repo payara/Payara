@@ -329,12 +329,12 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters
     private void moveAltDDFilesToPermanentLocation(
             final ExtendedDeploymentContext deploymentContext,
             final Logger logger) throws IOException {
-        final File finalUploadDir = deploymentContext.getAppInternalDir();
-        if ( ! finalUploadDir.mkdirs()) {
+        final File finalAltDDDir = deploymentContext.getAppAltDDDir();
+        if ( ! finalAltDDDir.mkdirs()) {
             logger.log(Level.FINE," Attempting to create directory {0} was reported as failed; attempting to continue",
-                    new Object[] {finalUploadDir.getAbsolutePath()});
+                    new Object[] {finalAltDDDir.getAbsolutePath()});
         }
-        DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalUploadDir, altdd, logger, env);
-        DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalUploadDir, runtimealtdd, logger, env);
+        DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalAltDDDir, altdd, logger, env);
+        DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalAltDDDir, runtimealtdd, logger, env);
     }
 }

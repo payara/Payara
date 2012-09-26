@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -111,6 +111,12 @@ public interface ServerEnvironment {
     public File getApplicationEJBStubPath();
 
     public File getApplicationPolicyFilePath();
+
+    /**
+     * Gets the directory to store external alternate deployment descriptor
+     * Normally {@code ROOT/generated/altdd}
+     */
+    public File getApplicationAltDDPath();
 
     /** A JCEKS keystore which is locked with a fixed-key. This is the "security-by-obfuscation"
      *  carried over from V2.
