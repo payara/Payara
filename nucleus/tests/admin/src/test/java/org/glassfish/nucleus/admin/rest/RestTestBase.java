@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
@@ -211,10 +212,12 @@ public class RestTestBase {
     }
 
     protected Response get(String address, Map<String, String> payload) {
-        return getClient().target(getAddress(address)).
-                queryParams(buildMultivaluedMap(payload)).
-                request(RESPONSE_TYPE).
-                get(Response.class);
+        final WebTarget target = getClient().target(getAddress(address));
+        for (Map.Entry<String, String> entry : payload.entrySet()) {
+            target.queryParam(entry.getKey(), entry.getValue());
+        }
+        return target.request(RESPONSE_TYPE)
+                .get(Response.class);
     }
 
     protected Response options(String address) {
@@ -267,10 +270,12 @@ public class RestTestBase {
     }
 
     protected Response delete(String address, Map<String, String> payload) {
-        return getClient().target(getAddress(address)).
-                queryParams(buildMultivaluedMap(payload)).
-                request(RESPONSE_TYPE).
-                delete(Response.class);
+        final WebTarget target = getClient().target(getAddress(address));
+        for (Map.Entry<String, String> entry : payload.entrySet()) {
+            target.queryParam(entry.getKey(), entry.getValue());
+        }
+        return target.request(RESPONSE_TYPE)
+                .delete(Response.class);
     }
 
     /**
