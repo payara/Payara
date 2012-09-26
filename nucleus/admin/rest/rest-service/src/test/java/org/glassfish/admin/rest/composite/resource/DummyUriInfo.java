@@ -294,5 +294,35 @@ public class DummyUriInfo implements UriInfo {
         public String toTemplate() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public UriBuilder resolveTemplate(String name, Object value) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder resolveTemplate(String name, Object value, boolean encodeSlashInPath) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder resolveTemplateFromEncoded(String name, Object value) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder resolveTemplates(Map<String, Object> templateValues) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder resolveTemplates(Map<String, Object> templateValues, boolean encodeSlashInPath) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder resolveTemplatesFromEncoded(Map<String, Object> templateValues) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 }

@@ -90,6 +90,7 @@ import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+import org.glassfish.jersey.client.SslConfig;
 /**
  *
  * @author anilam
@@ -796,7 +797,7 @@ public class RestUtil {
 
     public static Response getRequestFromServlet(HttpServletRequest request, String endpoint, Map<String, Object> attrs) {
         String token = (String) request.getSession().getAttribute(AdminConsoleAuthModule.REST_TOKEN);
-        WebTarget target = JERSEY_CLIENT.target(endpoint).queryParams(buildMultivalueMap(attrs));
+        WebTarget target = targetWithQueryParams(JERSEY_CLIENT.target(endpoint), buildMultivalueMap(attrs));
         Response cr = target
                 .request().cookie(new Cookie(REST_TOKEN_COOKIE, token))
                 .get(Response.class);
@@ -806,7 +807,7 @@ public class RestUtil {
 
     public static void getRestRequestFromServlet(HttpServletRequest request, String endpoint, Map<String, Object> attrs, boolean quiet, boolean throwException) {
         String token = (String) request.getSession().getAttribute(AdminConsoleAuthModule.REST_TOKEN);
-        WebTarget target = JERSEY_CLIENT.target(endpoint).queryParams(buildMultivalueMap(attrs));
+        WebTarget target = targetWithQueryParams(JERSEY_CLIENT.target(endpoint), buildMultivalueMap(attrs));
         Response cr = target
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, token))
@@ -815,6 +816,14 @@ public class RestUtil {
         parseResponse(rr, null, endpoint, attrs, quiet, throwException);
 
     }
+
+    public static WebTarget targetWithQueryParams(WebTarget target, MultivaluedMap<String, Object> paramMap) {
+        for (Map.Entry<String, List<Object>> param : paramMap.entrySet()) {
+            target = target.queryParam(param.getKey(), param.getValue());
+        }
+        return target;
+    }
+
 
     //******************************************************************************************************************
     // Jersey client methods
@@ -828,7 +837,7 @@ public class RestUtil {
         if (address.startsWith("/")) {
             address = FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("REST_URL") + address;
         }
-        WebTarget target = getJerseyClient().target(address).queryParams(buildMultivalueMap(payload));
+        WebTarget target = targetWithQueryParams(getJerseyClient().target(address), buildMultivalueMap(payload));
         Response resp = target
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
@@ -878,7 +887,7 @@ public class RestUtil {
 
     public static RestResponse delete(String address, Map<String, Object> payload) {
         WebTarget target = getJerseyClient().target(address);
-        Response cr = target.queryParams(buildMultivalueMap(payload))
+        Response cr = targetWithQueryParams(target, buildMultivalueMap(payload))
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
                 .delete(Response.class);
@@ -910,8 +919,8 @@ public class RestUtil {
         try{
             ServiceLocator habitat = SecurityServicesUtil.getInstance().getHabitat();
             SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
-            client.configuration().setProperty(ClientProperties.HOSTNAME_VERIFIER, new BasicHostnameVerifier());
-            client.configuration().setProperty(ClientProperties.SSL_CONTEXT, habitat.<SSLUtils>getService(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), null));
+            client.configuration().setProperty(ClientProperties.SSL_CONFIG, new SslConfig(new BasicHostnameVerifier(),
+                    habitat.<SSLUtils>getService(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), null)));
             client.configuration().register(CsrfProtectionFilter.class);
 
         }catch(Exception ex){

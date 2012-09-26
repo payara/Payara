@@ -61,6 +61,7 @@ import javax.net.ssl.SSLSession;
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.client.SslConfig;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
@@ -136,8 +137,8 @@ public abstract class ProxyImpl implements Proxy {
     private void addAuthenticationInfo(Client client, WebTarget resourceBuilder, Server server, ServiceLocator habitat) {
         SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
         //Instruct Jersey to use HostNameVerifier and SSLContext provided by us.
-        client.configuration().setProperty(ClientProperties.HOSTNAME_VERIFIER, new BasicHostnameVerifier(server.getAdminHost()));
-        client.configuration().setProperty(ClientProperties.SSL_CONTEXT, habitat.<SSLUtils>getService(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), "TLS" )); //TODO need to get hardcoded "TLS" from corresponding ServerRemoteRestAdminCommand constant);
+        client.configuration().setProperty(ClientProperties.SSL_CONFIG, new SslConfig(new BasicHostnameVerifier(server.getAdminHost()),
+                habitat.<SSLUtils>getService(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), "TLS" ))); //TODO need to get hardcoded "TLS" from corresponding ServerRemoteAdminCommand constant);
     }
 
     /**

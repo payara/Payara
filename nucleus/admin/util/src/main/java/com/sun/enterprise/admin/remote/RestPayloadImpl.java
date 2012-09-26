@@ -40,35 +40,48 @@
 
 package com.sun.enterprise.admin.remote;
 
-import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.Payload;
-import org.glassfish.jersey.media.multipart.*;
-import org.glassfish.jersey.message.internal.ContentDisposition;
+import org.glassfish.jersey.media.multipart.BodyPart;
+import org.glassfish.jersey.media.multipart.BodyPartEntity;
+import org.glassfish.jersey.media.multipart.ContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.MultiPart;
+
+import com.sun.logging.LogDomains;
+
 
 /** Payload implementation for ReST interface.
  *
  * @author mmares
  */
 public class RestPayloadImpl extends PayloadImpl {
-    
+
     public static class Outbound extends PayloadImpl.Outbound {
-        
+
         private String complexType;
         private boolean client2Server;
-        
+
         public Outbound(boolean client2Server) {
             this.client2Server = client2Server;
             if (client2Server) {
@@ -77,7 +90,7 @@ public class RestPayloadImpl extends PayloadImpl {
                 complexType = "multipart/mixed";
             }
         }
-        
+
         @Override
         public String getComplexContentType() {
             return complexType;
@@ -87,12 +100,12 @@ public class RestPayloadImpl extends PayloadImpl {
         protected void writePartsTo(OutputStream os) throws IOException {
             throw new UnsupportedOperationException("Not supported for RestPauloadImpl.");
         }
-        
+
         @Override
         public void writeTo(final OutputStream os) throws IOException {
             throw new UnsupportedOperationException("Not supported for RestPauloadImpl.");
         }
-        
+
         public MultiPart addToMultipart(MultiPart mp, Logger logger) {
             if (mp == null) {
                 if (client2Server) {
@@ -137,17 +150,17 @@ public class RestPayloadImpl extends PayloadImpl {
                 Properties props = part.getProperties();
                 for (Map.Entry<Object, Object> entry : props.entrySet()) {
                     if (logger.isLoggable(Level.FINEST)) {
-                        logger.log(Level.FINEST, "addToMultipart[{0}]: Header: {1}: {2}", 
+                        logger.log(Level.FINEST, "addToMultipart[{0}]: Header: {1}: {2}",
                                 new Object[]{index, addContentPrefix((String) entry.getKey()), entry.getValue()});
                     }
-                    bp.getHeaders().add(addContentPrefix((String) entry.getKey()), 
+                    bp.getHeaders().add(addContentPrefix((String) entry.getKey()),
                             (String) entry.getValue());
                 }
                 mp.bodyPart(bp);
             }
             return mp;
         }
-        
+
         private static String addContentPrefix(String key) {
             if (key == null) {
                 return null;
@@ -162,16 +175,16 @@ public class RestPayloadImpl extends PayloadImpl {
                 return "Content-" + key;
             }
         }
-        
+
     }
-    
+
     public static class Inbound extends PayloadImpl.Inbound {
-        
+
         private List<Payload.Part> parts = new ArrayList<Payload.Part>();
-        
+
         public Inbound() {
         }
-        
+
         private void add(BodyPart bodyPart, String name) throws WebApplicationException {
             String mimeType = bodyPart.getMediaType().toString();
             MultivaluedMap<String, String> headers = bodyPart.getHeaders();
@@ -191,7 +204,7 @@ public class RestPayloadImpl extends PayloadImpl {
                 throw new WebApplicationException(new Exception("Unsupported entity " + entity.getClass().getName()), Response.Status.BAD_REQUEST);
             }
         }
-        
+
         public static Inbound parseFromFormDataMultipart(FormDataMultiPart mp, ParameterMap paramMap) throws WebApplicationException {
             Inbound result = new Inbound();
             if (mp == null) {
@@ -212,7 +225,7 @@ public class RestPayloadImpl extends PayloadImpl {
             }
             return result;
         }
-        
+
         public static ActionReport fillFromMultipart(MultiPart mp, Inbound inb, Logger logger) throws WebApplicationException {
             if (logger == null) {
                 logger = LogDomains.getLogger(RestPayloadImpl.class, LogDomains.ADMIN_LOGGER);
@@ -260,7 +273,7 @@ public class RestPayloadImpl extends PayloadImpl {
             }
             return result;
         }
-        
+
         private static String removeContentPrefix(String key) {
             if (key == null) {
                 return null;
@@ -281,7 +294,7 @@ public class RestPayloadImpl extends PayloadImpl {
         public Iterator<Payload.Part> parts() {
             return parts.iterator();
         }
-        
+
     }
-    
+
 }

@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -166,16 +167,23 @@ public abstract class RestClientBase {
             }
             case DELETE: {
 //                addQueryParams(payload, target);
-                clientResponse = target.queryParams(buildMultivalueMap(payload)).request(RESPONSE_TYPE).delete(Response.class);
+                clientResponse = targetWithQueryParams(target, buildMultivalueMap(payload)).request(RESPONSE_TYPE).delete(Response.class);
                 break;
             }
             default: {
 //                addQueryParams(payload, target);
-                clientResponse = target.queryParams(buildMultivalueMap(payload)).request(RESPONSE_TYPE).get(Response.class);
+                clientResponse = targetWithQueryParams(target, buildMultivalueMap(payload)).request(RESPONSE_TYPE).get(Response.class);
             }
         }
 
         return new RestResponse(clientResponse);
+    }
+
+    private static WebTarget targetWithQueryParams(WebTarget target, MultivaluedMap<String, Object> paramMap) {
+        for (Entry<String, List<Object>> param : paramMap.entrySet()) {
+            target = target.queryParam(param.getKey(), param.getValue());
+        }
+        return target;
     }
 
     protected boolean isSuccess(Response response) {
@@ -331,11 +339,11 @@ public abstract class RestClientBase {
 //        return Entity.entity(formData, type);
 //    }
 
-    private Entity<MultivaluedMap> buildMultivalueMapEntity(Map<String, Object> payload, MediaType type) {
+    private Entity<MultivaluedMap<String, Object>> buildMultivalueMapEntity(Map<String, Object> payload, MediaType type) {
         return Entity.entity(buildMultivalueMap(payload), type);
     }
 
-    private MultivaluedMap buildMultivalueMap(Map<String, Object> payload) {
+    private MultivaluedMap<String, Object> buildMultivalueMap(Map<String, Object> payload) {
         MultivaluedMap formData = new MultivaluedHashMap();
         for (final Map.Entry<String, Object> entry : payload.entrySet()) {
             Object value = entry.getValue();

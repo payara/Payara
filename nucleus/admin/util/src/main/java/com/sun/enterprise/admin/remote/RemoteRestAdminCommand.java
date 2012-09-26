@@ -40,33 +40,30 @@
 
 package com.sun.enterprise.admin.remote;
 
-import com.sun.enterprise.admin.event.AdminCommandEventBrokerImpl;
-import com.sun.enterprise.admin.remote.RestPayloadImpl.Inbound;
-import com.sun.enterprise.admin.remote.reader.*;
-import com.sun.enterprise.admin.remote.sse.GfSseEventReceiver;
-import com.sun.enterprise.admin.remote.sse.GfSseEventReceiverReader;
-import com.sun.enterprise.admin.remote.sse.GfSseInboundEvent;
-import com.sun.enterprise.admin.remote.writer.ParameterMapFormWriter;
-import com.sun.enterprise.admin.remote.writer.PayloadPartProvider;
-import com.sun.enterprise.admin.util.AsadminTrustManager;
-import com.sun.enterprise.admin.util.AuthenticationInfo;
-import com.sun.enterprise.admin.util.CachedCommandModel;
-import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
-import com.sun.enterprise.admin.util.HttpConnectorAddress.BasicHostnameVerifier;
-import com.sun.enterprise.admin.util.cache.AdminCacheUtils;
-import com.sun.enterprise.config.serverbeans.SecureAdmin;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.enterprise.universal.io.SmartFile;
-import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.net.NetUtils;
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.ConnectException;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.TrustManager;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientException;
 import javax.ws.rs.client.Entity;
@@ -76,6 +73,11 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManager;
+
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -98,6 +100,27 @@ import org.glassfish.jersey.media.multipart.MultiPartClientBinder;
 import org.glassfish.jersey.media.sse.EventChannel;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+
+import com.sun.enterprise.admin.event.AdminCommandEventBrokerImpl;
+import com.sun.enterprise.admin.remote.RestPayloadImpl.Inbound;
+import com.sun.enterprise.admin.remote.reader.*;
+import com.sun.enterprise.admin.remote.sse.GfSseEventReceiver;
+import com.sun.enterprise.admin.remote.sse.GfSseEventReceiverReader;
+import com.sun.enterprise.admin.remote.sse.GfSseInboundEvent;
+import com.sun.enterprise.admin.remote.writer.ParameterMapFormWriter;
+import com.sun.enterprise.admin.remote.writer.PayloadPartProvider;
+import com.sun.enterprise.admin.util.AsadminTrustManager;
+import com.sun.enterprise.admin.util.AuthenticationInfo;
+import com.sun.enterprise.admin.util.CachedCommandModel;
+import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
+import com.sun.enterprise.admin.util.HttpConnectorAddress.BasicHostnameVerifier;
+import com.sun.enterprise.admin.util.cache.AdminCacheUtils;
+import com.sun.enterprise.config.serverbeans.SecureAdmin;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.universal.io.SmartFile;
+import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.util.net.NetUtils;
+import org.glassfish.jersey.client.SslConfig;
 
 /**
  * Utility class for executing remote admin commands.
@@ -522,7 +545,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     public List<Header> headers() {
         return requestHeaders;
     }
-    
+
     protected boolean useSse() throws CommandException {
         return getCommandModel().isManagedJob();
     }
@@ -816,7 +839,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     protected boolean updateAuthentication() {
         return false;
     }
-    
+
     /** If admin model is invalid, will be automatically refetched?
      */
     protected boolean refetchInvalidModel() {
@@ -1001,9 +1024,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             Metrix.event("doRestCommand() - about to create target");
             WebTarget target = client.target(uri);
             Metrix.event("doRestCommand() - about to configure security");
-            target.configuration()
-                    .setProperty(ClientProperties.HOSTNAME_VERIFIER, new BasicHostnameVerifier(host))
-                    .setProperty(ClientProperties.SSL_CONTEXT, getSslContext());
+            target.configuration().setProperty(ClientProperties.SSL_CONFIG, new SslConfig(new BasicHostnameVerifier(host), getSslContext()));
             /*
              * Any code that wants to trigger a retry will say so explicitly.
              */

@@ -58,6 +58,8 @@ import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 /**
@@ -104,8 +106,8 @@ public class RestUtil2 {
         Map<String, Object> attrs = (Map<String, Object>) handlerCtx.getInputValue("attrs");
         String endpoint = fixEndpoint((String) handlerCtx.getInputValue("endpoint"));
 
-        Response resp = RestUtil.getJerseyClient().target(endpoint)
-                .queryParams(RestUtil.buildMultivalueMap(attrs))
+        Response resp = RestUtil.targetWithQueryParams(RestUtil.getJerseyClient().target(endpoint),
+                RestUtil.buildMultivalueMap(attrs))
                 .request(RestUtil.RESPONSE_TYPE)
                 .cookie(new Cookie(RestUtil.REST_TOKEN_COOKIE, RestUtil.getRestToken()))
                 .get(Response.class);
