@@ -87,7 +87,7 @@ public class AdministeredObjectDefinitionDeployer implements ResourceDeployer {
     public void deployResource(Object resource) throws Exception {
 
         final AdministeredObjectDefinitionDescriptor desc = (AdministeredObjectDefinitionDescriptor) resource;
-        String resourceName = ConnectorsUtil.deriveAdministeredObjectDefinitionResourceName(desc.getResourceId(), desc.getName());
+        String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), desc.getResourceType());
 
         if(_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "AdministeredObjectDefinitionDeployer.deployResource() : resource-name ["+resourceName+"]");
@@ -139,7 +139,7 @@ public class AdministeredObjectDefinitionDeployer implements ResourceDeployer {
 
         final AdministeredObjectDefinitionDescriptor desc = (AdministeredObjectDefinitionDescriptor) resource;
 
-        String resourceName = ConnectorsUtil.deriveAdministeredObjectDefinitionResourceName(desc.getResourceId(), desc.getName());
+        String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), desc.getResourceType());
 
         if(_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "AdministeredObjectDefinitionDeployer.undeployResource() : resource-name ["+resourceName+"]");

@@ -40,35 +40,7 @@
 
 package com.sun.appserv.connectors.internal.api;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.BindableResource;
-import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
-import com.sun.enterprise.config.serverbeans.Resource;
-import com.sun.enterprise.config.serverbeans.ResourcePool;
-import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
@@ -79,15 +51,10 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ApplicationName;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.connectors.config.AdminObjectResource;
-import org.glassfish.connectors.config.ConnectorConnectionPool;
-import org.glassfish.connectors.config.ConnectorResource;
-import org.glassfish.connectors.config.ConnectorService;
-import org.glassfish.connectors.config.ResourceAdapterConfig;
-import org.glassfish.connectors.config.WorkSecurityMap;
+import org.glassfish.connectors.config.*;
 import org.glassfish.deployment.common.InstalledLibrariesResolver;
+import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.resources.api.GenericResourceInfo;
@@ -97,6 +64,15 @@ import org.glassfish.resources.api.ResourceInfo;
 import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
+
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.sql.Connection;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.sun.enterprise.util.SystemPropertyConstants.SLASH;
 
@@ -575,55 +551,66 @@ public class ConnectorsUtil {
         }
     }
 
-    public static String deriveDataSourceDefinitionResourceName(String compId, String name) {
-        //String derivedName = escapeJavaName(name);
+
+    public static String deriveResourceName(String compId, String name, JavaEEResourceType resType) {
         String derivedName = name;
-        return getReservePrefixedJNDINameForDataSourceDefinitionResource(compId, derivedName);
+        return getReservePrefixedJNDINameForResource(compId, derivedName, resType);
+
     }
 
-    public static String deriveDataSourceDefinitionPoolName(String compId, String name) {
-        //String derivedName = escapeJavaName(name);
-        String derivedName = name;
-        return getReservePrefixedJNDINameForDataSourceDefinitionPool(compId, derivedName);
-    }
-
-    public static String deriveConnectorResourceDefinitionResourceName(String compId, String name) {
-        //String derivedName = escapeJavaName(name);
-        String derivedName = name;
-        return getReservePrefixedJNDINameForConnectorResourceDefinitionResource(compId, derivedName);
-    }
-
-    public static String deriveConnectorResourceDefinitionPoolName(String compId, String poolName) {
-        return getReservePrefixedJNDINameForConnectorResourceDefinitionPool(compId, poolName);
-    }
-
-    public static String deriveAdministeredObjectDefinitionResourceName(String compId, String resourceName) {
-        return getReservePrefixedJNDINameForAdministeredObjectDefinitionResource(compId, resourceName);
-    }
-
-    public static String getReservePrefixedJNDINameForAdministeredObjectDefinitionResource(String compId, String resourceName) {
+    public static String getReservePrefixedJNDINameForResource(String compId, String resourceName, JavaEEResourceType resType) {
         String prefix = null;
+        String prefixPart1 = null;
+        String prefixPart2 = null;
+
+        if(resType!=null) {
+            switch (resType) {
+                case DSD :
+                    prefixPart1 = ConnectorConstants.RESOURCE_JNDINAME_PREFIX;
+                    prefixPart2 = ConnectorConstants.DATASOURCE_DEFINITION_JNDINAME_PREFIX;
+                break;
+                case MSD :
+                    prefixPart1 = ConnectorConstants.RESOURCE_JNDINAME_PREFIX;
+                    prefixPart2 = ConnectorConstants.MAILSESSION_DEFINITION_JNDINAME_PREFIX;
+                    break;
+                case CRD :
+                    prefixPart1 = ConnectorConstants.RESOURCE_JNDINAME_PREFIX;
+                    prefixPart2 = ConnectorConstants.CONNECTOR_RESOURCE_DEFINITION_JNDINAME_PREFIX;
+                    break;
+                case DSDPOOL:
+                    prefixPart1 = ConnectorConstants.POOLS_JNDINAME_PREFIX;
+                    prefixPart2 = ConnectorConstants.DATASOURCE_DEFINITION_JNDINAME_PREFIX;
+                    break;
+                case CRDPOOL:
+                    prefixPart1 = ConnectorConstants.POOLS_JNDINAME_PREFIX;
+                    prefixPart2 = ConnectorConstants.CONNECTOR_RESOURCE_DEFINITION_JNDINAME_PREFIX;
+                    break;
+                case JMSCFDD:
+                    prefixPart1 = ConnectorConstants.RESOURCE_JNDINAME_PREFIX;
+                    prefixPart2 = ConnectorConstants.JMS_CONNECTION_FACTORY_DEFINITION_JNDINAME_PREFIX;
+                    break;
+                case JMSCFDDPOOL:
+                    prefixPart1 = ConnectorConstants.POOLS_JNDINAME_PREFIX;
+                    prefixPart2 = ConnectorConstants.JMS_CONNECTION_FACTORY_DEFINITION_JNDINAME_PREFIX;
+                    break;
+                case JMSDD:
+                    prefixPart1 = ConnectorConstants.RESOURCE_JNDINAME_PREFIX;
+                    prefixPart2 = ConnectorConstants.JMS_DESTINATION_DEFINITION_JNDINAME_PREFIX;
+                    break;
+                case AODD:
+                    prefixPart1 = ConnectorConstants.RESOURCE_JNDINAME_PREFIX;
+                    prefixPart2 = ConnectorConstants.ADMINISTERED_OBJECT_DEFINITION_JNDINAME_PREFIX;
+                    break;
+            }
+        }
+
         if(compId == null || compId.equals("")){
-            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
-                ConnectorConstants.ADMINISTERED_OBJECT_DEFINITION_JNDINAME_PREFIX ;
+            prefix =  prefixPart1 + prefixPart2;
         }else{
-            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
-                ConnectorConstants.ADMINISTERED_OBJECT_DEFINITION_JNDINAME_PREFIX + compId +"/";
+            prefix = prefixPart1 + prefixPart2 + compId +"/";
         }
         return getReservePrefixedJNDIName(prefix, resourceName);
     }
-    public static String deriveJMSConnectionFactoryDefinitionResourceName(String compId, String name) {
-        return getReservePrefixedJNDINameForJMSConnectionFactoryDefinitionResource(compId, name);
-    }
-
-    public static String deriveJMSConnectionFactoryDefinitionPoolName(String compId, String poolName) {
-        return getReservePrefixedJNDINameForJMSConnectionFactoryDefinitionPool(compId, poolName);
-    }
-
-    public static String deriveJMSDestinationDefinitionResourceName(String compId, String name) {
-      return getReservePrefixedJNDINameForJMSDestinationDefinitionResource(compId, name);
-    }
-
 
     public static Map<String,String> convertPropertiesToMap(Properties properties){
         if(properties == null){
@@ -632,92 +619,8 @@ public class ConnectorsUtil {
         return new TreeMap<String, String>((Map) properties);
     }
 
-    public static String getReservePrefixedJNDINameForDataSourceDefinitionPool(String compId, String poolName) {
-        String prefix = null;
-        if(compId == null || compId.equals("")){
-            prefix = ConnectorConstants.POOLS_JNDINAME_PREFIX +
-                ConnectorConstants.DATASOURCE_DEFINITION_JNDINAME_PREFIX ;
-        }else{
-            prefix = ConnectorConstants.POOLS_JNDINAME_PREFIX +
-                ConnectorConstants.DATASOURCE_DEFINITION_JNDINAME_PREFIX + compId +"/";
-        }
-        return getReservePrefixedJNDIName(prefix, poolName);
-    }
-
-    public static String getReservePrefixedJNDINameForConnectorResourceDefinitionPool(String compId, String poolName) {
-        String prefix = null;
-        if(compId == null || compId.equals("")){
-            prefix = ConnectorConstants.POOLS_JNDINAME_PREFIX +
-                ConnectorConstants.CONNECTOR_RESOURCE_DEFINITION_JNDINAME_PREFIX ;
-        }else{
-            prefix = ConnectorConstants.POOLS_JNDINAME_PREFIX +
-                ConnectorConstants.CONNECTOR_RESOURCE_DEFINITION_JNDINAME_PREFIX + compId +"/";
-        }
-        return getReservePrefixedJNDIName(prefix, poolName);
-    }
-
-    public static String getReservePrefixedJNDINameForJMSConnectionFactoryDefinitionPool(String compId, String poolName) {
-        String prefix = null;
-        if (compId == null || compId.equals("")) {
-            prefix = ConnectorConstants.POOLS_JNDINAME_PREFIX +
-                ConnectorConstants.JMS_CONNECTION_FACTORY_DEFINITION_JNDINAME_PREFIX;
-        } else {
-            prefix = ConnectorConstants.POOLS_JNDINAME_PREFIX +
-                ConnectorConstants.JMS_CONNECTION_FACTORY_DEFINITION_JNDINAME_PREFIX + compId +"/";
-        }
-        return getReservePrefixedJNDIName(prefix, poolName);
-    }
-
     private static String getReservePrefixedJNDIName(String prefix, String resourceName) {
         return prefix + resourceName;
-    }
-
-    public static String getReservePrefixedJNDINameForDataSourceDefinitionResource(String compId, String resourceName) {
-        String prefix = null;
-        if(compId == null || compId.equals("")){
-            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
-                ConnectorConstants.DATASOURCE_DEFINITION_JNDINAME_PREFIX ;
-        }else{
-            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
-                ConnectorConstants.DATASOURCE_DEFINITION_JNDINAME_PREFIX + compId +"/";
-        }
-        return getReservePrefixedJNDIName(prefix, resourceName);
-    }
-
-    public static String getReservePrefixedJNDINameForConnectorResourceDefinitionResource(String compId, String resourceName) {
-        String prefix = null;
-        if(compId == null || compId.equals("")){
-            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
-                ConnectorConstants.CONNECTOR_RESOURCE_DEFINITION_JNDINAME_PREFIX ;
-        }else{
-            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
-                ConnectorConstants.CONNECTOR_RESOURCE_DEFINITION_JNDINAME_PREFIX + compId +"/";
-        }
-        return getReservePrefixedJNDIName(prefix, resourceName);
-    }
-
-    public static String getReservePrefixedJNDINameForJMSConnectionFactoryDefinitionResource(String compId, String resourceName) {
-        String prefix = null;
-        if (compId == null || compId.equals("")) {
-            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
-                ConnectorConstants.JMS_CONNECTION_FACTORY_DEFINITION_JNDINAME_PREFIX;
-        } else {
-            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
-                ConnectorConstants.JMS_CONNECTION_FACTORY_DEFINITION_JNDINAME_PREFIX + compId +"/";
-        }
-        return getReservePrefixedJNDIName(prefix, resourceName);
-    }
-
-    public static String getReservePrefixedJNDINameForJMSDestinationDefinitionResource(String compId, String resourceName) {
-        String prefix = null;
-        if (compId == null || compId.equals("")) {
-            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
-                ConnectorConstants.JMS_DESTINATION_DEFINITION_JNDINAME_PREFIX;
-        } else {
-            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
-                ConnectorConstants.JMS_DESTINATION_DEFINITION_JNDINAME_PREFIX + compId +"/";
-        }
-        return getReservePrefixedJNDIName(prefix, resourceName);
     }
 
     public static String getEmbeddedRarModuleName(String applicationName, String moduleName) {

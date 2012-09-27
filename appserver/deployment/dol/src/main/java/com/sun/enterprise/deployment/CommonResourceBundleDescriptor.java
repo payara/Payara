@@ -160,5 +160,34 @@ public abstract class CommonResourceBundleDescriptor  extends BundleDescriptor {
         commonResourceFunctionality.removeJMSDestinationDefinitionDescriptor(reference);
     }
 
+    /*public void addDescriptor(Descriptor descriptor) {
+        if(descriptor.getResourceType().equals(JavaEEResourceType.DSD)) {
+            commonResourceFunctionality.addDataSourceDefinitionDescriptor((DataSourceDefinitionDescriptor)descriptor);
+        }
+    }
+
+    public void removeDescriptor(Descriptor descriptor) {
+        if(descriptor.getResourceType().equals(JavaEEResourceType.DSD)) {
+            commonResourceFunctionality.removeDataSourceDefinitionDescriptor((DataSourceDefinitionDescriptor)descriptor);
+        }
+    }
+
+    public Set<Descriptor> getDescriptors(String type) {
+        Set<Descriptor> descriptors = new HashSet<Descriptor>();
+        if(type.equals(JavaEEResourceType.DSD)) {
+            Set<DataSourceDefinitionDescriptor> dataSourceDefinitionDescriptors = commonResourceFunctionality.getDataSourceDefinitionDescriptors();
+            descriptors.addAll(dataSourceDefinitionDescriptors);
+        }
+        return descriptors;
+    }
+
+    protected Descriptor getDescriptor(String type, String name) {
+        Descriptor descriptor = null;
+        if(type.equals(JavaEEResourceType.DSD)) {
+            descriptor = commonResourceFunctionality.getDataSourceDefinitionDescriptor(name);
+        }
+        return descriptor;
+    }*/
+
 }
 

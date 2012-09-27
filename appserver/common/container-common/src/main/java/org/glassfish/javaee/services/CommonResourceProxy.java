@@ -40,14 +40,9 @@
 
 package org.glassfish.javaee.services;
 
-import javax.inject.Inject;
-import javax.naming.Context;
-import javax.naming.NamingException;
-import java.io.Serializable;
-
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.deployment.MailSessionDescriptor;
 import org.glassfish.api.naming.NamingObjectProxy;
+import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.resources.api.ResourceDeployer;
@@ -55,30 +50,32 @@ import org.glassfish.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 
+import javax.inject.Inject;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import java.io.Serializable;
+
 /**
- * Created by IntelliJ IDEA.
- * User: naman mehta
- * Date: 23/4/12
- * Time: 2:24 PM
+ * Created with IntelliJ IDEA.
+ * User: naman
+ * Date: 27/8/12
+ * Time: 2:51 PM
  * To change this template use File | Settings | File Templates.
  */
-
 @Service
 @PerLookup
-public class MailSessionProxy implements NamingObjectProxy.InitializationNamingObjectProxy, Serializable {
+public class CommonResourceProxy implements NamingObjectProxy.InitializationNamingObjectProxy, Serializable {
 
     @Inject
-    private transient Habitat habitat;
-    private MailSessionDescriptor desc;
-    private String actualResourceName;
+    protected transient Habitat habitat;
+    private Descriptor desc;
+    protected String actualResourceName;
 
-    @Override
     public synchronized Object create(Context ic) throws NamingException {
         if (actualResourceName == null) {
 
-            actualResourceName = ConnectorsUtil.deriveDataSourceDefinitionResourceName
-                    (desc.getResourceId(), desc.getName());
-            desc.setName(actualResourceName);
+            actualResourceName = ConnectorsUtil.deriveResourceName
+                    (desc.getResourceId(), desc.getName(), desc.getResourceType());
 
             try {
                 if (habitat == null) {
@@ -98,11 +95,11 @@ public class MailSessionProxy implements NamingObjectProxy.InitializationNamingO
         return ic.lookup(actualResourceName);
     }
 
-    public void setDescriptor(MailSessionDescriptor desc) {
-        this.desc = desc;
+    protected ResourceDeployer getResourceDeployer(Object resource) {
+        return habitat.<ResourceManagerFactory>getService(ResourceManagerFactory.class).getResourceDeployer(resource);
     }
 
-    private ResourceDeployer getResourceDeployer(Object resource) {
-        return habitat.<ResourceManagerFactory>getService(ResourceManagerFactory.class).getResourceDeployer(resource);
+    public void setDescriptor(Descriptor desc) {
+        this.desc = desc;
     }
 }

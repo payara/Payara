@@ -42,13 +42,15 @@ package com.sun.enterprise.container.common.impl;
 
 import com.sun.enterprise.container.common.spi.EjbNamingReferenceManager;
 import com.sun.enterprise.container.common.spi.WebServiceReferenceManager;
-import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.CallFlowAgent;
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.naming.spi.NamingObjectFactory;
 import com.sun.enterprise.naming.spi.NamingUtils;
+import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.api.naming.ComponentNamingUtil;
 import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.api.naming.JNDIBinding;
 import org.glassfish.api.naming.NamingObjectProxy;
@@ -56,34 +58,26 @@ import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
-import org.glassfish.javaee.services.DataSourceDefinitionProxy;
-import org.glassfish.javaee.services.AdministeredObjectDefinitionProxy;
-import org.glassfish.javaee.services.ConnectorResourceDefinitionProxy;
-import org.glassfish.javaee.services.JMSConnectionFactoryDefinitionProxy;
-import org.glassfish.javaee.services.JMSDestinationDefinitionProxy;
+import org.glassfish.javaee.services.CommonResourceProxy;
 import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.util.ResourceManagerFactory;
-import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.api.naming.ComponentNamingUtil;
-import org.glassfish.api.admin.*;
 
-import javax.naming.NamingException;
-import javax.naming.NameNotFoundException;
+import javax.inject.Inject;
 import javax.naming.Context;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+import javax.transaction.TransactionManager;
+import javax.validation.*;
 import java.net.MalformedURLException;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.validation.Validation;
-import javax.validation.ValidationException;
-import javax.validation.Validator;
-import javax.validation.ValidatorContext;
-import javax.validation.ValidatorFactory;
-import javax.transaction.TransactionManager;
+
+import static org.glassfish.deployment.common.JavaEEResourceType.*;
 
 @Service
 public class ComponentEnvManagerImpl
@@ -310,144 +304,52 @@ public class ComponentEnvManagerImpl
 
     }
 
-    private void addDataSourceBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
+    private void addAllDescriptorBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
 
-        for (DataSourceDefinitionDescriptor dsd : env.getDataSourceDefinitionDescriptors()) {
-
-            if (!dependencyAppliesToScope(dsd, scope)) {
-                continue;
-            }
-
-            //the DSD would have been deployed already for JPA's requirements.
-            if (dsd.isDeployed()) {
-                continue;
-            }
-
-            String resourceId = getResourceId(env, dsd);
-            dsd.setResourceId(resourceId);
-
-            DataSourceDefinitionProxy proxy = habitat.getService(DataSourceDefinitionProxy.class);
-            proxy.setDescriptor(dsd);
-
-            String logicalJndiName = descriptorToLogicalJndiName(dsd);
-            CompEnvBinding envBinding = new CompEnvBinding(logicalJndiName, proxy);
-            jndiBindings.add(envBinding);
-            //dsd.setDeployed(true);
-        }
-    }
-
-    private void addMailSessionBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
-
-        for (MailSessionDescriptor msd : env.getMailSessionDescriptors()) {
-
-            if (!dependencyAppliesToScope(msd, scope)) {
-                continue;
-            }
-
-            //the DSD would have been deployed already for JPA's requirements.
-            if (msd.isDeployed()) {
-                continue;
-            }
-
-            String resourceId = getResourceId(env, msd);
-            msd.setResourceId(resourceId);
-
-            org.glassfish.javaee.services.MailSessionProxy proxy = habitat.getService(org.glassfish.javaee.services.MailSessionProxy.class);
-            proxy.setDescriptor(msd);
-
-            String logicalJndiName = descriptorToLogicalJndiName(msd);
-            CompEnvBinding envBinding = new CompEnvBinding(logicalJndiName, proxy);
-            jndiBindings.add(envBinding);
-        }
-    }
-    
-    private void addConnectorResourceBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
-
-        if(env instanceof ApplicationClientDescriptor){
-            // Do not support connector-resource in client module
+        Set<Descriptor> allDescriptors = new HashSet<Descriptor>();
+        Set<DataSourceDefinitionDescriptor> dsds = env.getDataSourceDefinitionDescriptors();
+        Set<JMSConnectionFactoryDefinitionDescriptor> jmscfdds = env.getJMSConnectionFactoryDefinitionDescriptors();
+        Set<MailSessionDescriptor> msds =env.getMailSessionDescriptors();
+        Set<JMSDestinationDefinitionDescriptor> jmsddds = env.getJMSDestinationDefinitionDescriptors();
+        if(!(env instanceof ApplicationClientDescriptor)) {
+            Set<ConnectorResourceDefinitionDescriptor> ccrdds = env.getConnectorResourceDefinitionDescriptors();
+            allDescriptors.addAll(ccrdds);
+        } else {
             _logger.fine("Do not support connector-resource in client module.");
-            return;
         }
-        
-        for (ConnectorResourceDefinitionDescriptor crd : env.getConnectorResourceDefinitionDescriptors()) {
+        if(!(env instanceof ApplicationClientDescriptor)) {
+           Set<AdministeredObjectDefinitionDescriptor> aodd = env.getAdministeredObjectDefinitionDescriptors();
+           allDescriptors.addAll(aodd);
+        } else {
+           _logger.fine("Do not support administered-object in client module.");
+        }
+        allDescriptors.addAll(dsds);
+        allDescriptors.addAll(jmscfdds);
+        allDescriptors.addAll(msds);
+        allDescriptors.addAll(jmsddds);
 
-            if (!dependencyAppliesToScope(crd, scope)) {
+        for (Descriptor descriptor : allDescriptors) {
+
+            if (!dependencyAppliesToScope(descriptor, scope)) {
                 continue;
             }
-
-            String resourceId = getResourceId(env, crd);
-            crd.setResourceId(resourceId);
-
-            ConnectorResourceDefinitionProxy proxy = habitat.getService(ConnectorResourceDefinitionProxy.class);
-            proxy.setDescriptor(crd);
-
-            String logicalJndiName = descriptorToLogicalJndiName(crd);
-            CompEnvBinding envBinding = new CompEnvBinding(logicalJndiName, proxy);
-            jndiBindings.add(envBinding);
-        }
-    }
-    
-    private void addJMSConnectionFactoryBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
-
-        for (JMSConnectionFactoryDefinitionDescriptor jmscfd : env.getJMSConnectionFactoryDefinitionDescriptors()) {
-
-            if (!dependencyAppliesToScope(jmscfd, scope)) {
-                continue;
+            if(descriptor.getResourceType().equals(DSD)) {
+                if (((DataSourceDefinitionDescriptor)descriptor).isDeployed()) {
+                    continue;
+                }
+            } else if(descriptor.getResourceType().equals(MSD)) {
+                if (((MailSessionDescriptor)descriptor).isDeployed()) {
+                    continue;
+                }
             }
 
-            String resourceId = getResourceId(env, jmscfd);
-            jmscfd.setResourceId(resourceId);
+            String resourceId = getResourceId(env, descriptor);
+            descriptor.setResourceId(resourceId);
 
-            JMSConnectionFactoryDefinitionProxy proxy = habitat.getService(JMSConnectionFactoryDefinitionProxy.class);
-            proxy.setDescriptor(jmscfd);
+            CommonResourceProxy proxy = habitat.getService(CommonResourceProxy.class);
+            proxy.setDescriptor(descriptor);
 
-            String logicalJndiName = descriptorToLogicalJndiName(jmscfd);
-            CompEnvBinding envBinding = new CompEnvBinding(logicalJndiName, proxy);
-            jndiBindings.add(envBinding);
-        }
-    }
-
-    private void addJMSDestinationBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
-
-        for (JMSDestinationDefinitionDescriptor jmsdd : env.getJMSDestinationDefinitionDescriptors()) {
-
-            if (!dependencyAppliesToScope(jmsdd, scope)) {
-                continue;
-            }
-
-            String resourceId = getResourceId(env, jmsdd);
-            jmsdd.setResourceId(resourceId);
-
-            JMSDestinationDefinitionProxy proxy = habitat.getService(JMSDestinationDefinitionProxy.class);
-            proxy.setDescriptor(jmsdd);
-
-            String logicalJndiName = descriptorToLogicalJndiName(jmsdd);
-            CompEnvBinding envBinding = new CompEnvBinding(logicalJndiName, proxy);
-            jndiBindings.add(envBinding);
-        }
-    }
-
-    private void addAdministeredObjectBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
-
-        if(env instanceof ApplicationClientDescriptor){
-            // Do not support admin-object in client module
-            _logger.fine("Do not support administered-object in client module.");
-            return;
-        }
-        
-        for (AdministeredObjectDefinitionDescriptor aod : env.getAdministeredObjectDefinitionDescriptors()) {
-
-            if (!dependencyAppliesToScope(aod, scope)) {
-                continue;
-            }
-
-            String resourceId = getResourceId(env, aod);
-            aod.setResourceId(resourceId);
-
-            AdministeredObjectDefinitionProxy proxy = habitat.getService(AdministeredObjectDefinitionProxy.class);
-            proxy.setDescriptor(aod);
-
-            String logicalJndiName = descriptorToLogicalJndiName(aod);
+            String logicalJndiName = descriptorToLogicalJndiName(descriptor);
             CompEnvBinding envBinding = new CompEnvBinding(logicalJndiName, proxy);
             jndiBindings.add(envBinding);
         }
@@ -461,24 +363,9 @@ public class ComponentEnvManagerImpl
     public void unbindFromComponentNamespace(JndiNameEnvironment env)
         throws NamingException {
 
-        //undeploy data-sources as they hold physical connections to database.
-        undeployDataSourceDefinitions(env);
+        //undeploy all descriptors
+        undeployAllDescriptors(env);
 
-        //undelploy mail-sessions
-        undeployMailSessions(env);
-
-        //undelploy connector-resources
-        undeployConnectorResourceDefinitions(env);
-        
-        //undelploy administered-objects
-        undeployAdministeredObjectDefinitions(env);
-        
-        //undelploy jms-connection-factories
-        undeployJMSConnectionFactoryDefinitions(env);
-
-        //undelploy jms-destinations
-        undeployJMSDestinationDefinitions(env);
-        
         // Unpublish any global entries exported by this environment
         Collection<JNDIBinding> globalBindings = new ArrayList<JNDIBinding>();
         addJNDIBindings(env, ScopeType.GLOBAL, globalBindings);
@@ -492,10 +379,7 @@ public class ComponentEnvManagerImpl
         //undeploy data-sources & mail-sessions exposed by app-client descriptors.
         Set<ApplicationClientDescriptor> appClientDescs = app.getBundleDescriptors(ApplicationClientDescriptor.class);
         for(ApplicationClientDescriptor acd : appClientDescs){
-            undeployDataSourceDefinitions(acd);
-            undeployMailSessions(acd);
-            undeployJMSConnectionFactoryDefinitions(acd);
-            undeployJMSDestinationDefinitions(acd);
+            undeployAllDescriptors(acd);
         }
 
         if( !(env instanceof ApplicationClientDescriptor ) &&
@@ -523,82 +407,72 @@ public class ComponentEnvManagerImpl
 
     }
 
-    private void undeployDataSourceDefinitions(JndiNameEnvironment env) {
+    private void undeployAllDescriptors(JndiNameEnvironment env) {
 
-        for (DataSourceDefinitionDescriptor dsd : env.getDataSourceDefinitionDescriptors()) {
-            try{
-                if(dsd.isDeployed()){
-                    ResourceDeployer deployer = getResourceDeployer(dsd);
-                    deployer.undeployResource(dsd);
-                    dsd.setDeployed(false);
-                }
-            }catch(Exception e){
-                _logger.log(Level.WARNING, "unable to undeploy DataSourceDefinition [ " + dsd.getName() + " ] ", e);
+        Set<Descriptor> allDescriptors = new HashSet<Descriptor>();
+        Set<DataSourceDefinitionDescriptor> dsds = env.getDataSourceDefinitionDescriptors();
+        Set<JMSConnectionFactoryDefinitionDescriptor> jmscfdds = env.getJMSConnectionFactoryDefinitionDescriptors();
+        Set<MailSessionDescriptor> msds =env.getMailSessionDescriptors();
+        Set<JMSDestinationDefinitionDescriptor> jmsddds = env.getJMSDestinationDefinitionDescriptors();
+        if(!(env instanceof ApplicationClientDescriptor)) {
+            Set<ConnectorResourceDefinitionDescriptor> ccrdds = env.getConnectorResourceDefinitionDescriptors();
+            allDescriptors.addAll(ccrdds);
+        } else {
+            _logger.fine("Do not support connector-resource in client module.");
+        }
+        if(!(env instanceof ApplicationClientDescriptor)) {
+            Set<AdministeredObjectDefinitionDescriptor> aodd = env.getAdministeredObjectDefinitionDescriptors();
+            allDescriptors.addAll(aodd);
+        } else {
+            _logger.fine("Do not support administered-object in client module.");
+        }
+        allDescriptors.addAll(dsds);
+        allDescriptors.addAll(jmscfdds);
+        allDescriptors.addAll(msds);
+        allDescriptors.addAll(jmsddds);
+
+        for (Descriptor descriptor : allDescriptors) {
+            switch (descriptor.getResourceType()) {
+                case DSD:
+                    DataSourceDefinitionDescriptor dataSourceDefinitionDescriptor = (DataSourceDefinitionDescriptor)descriptor;
+                    if(dataSourceDefinitionDescriptor.isDeployed()) {
+                        if(undepoyResource(dataSourceDefinitionDescriptor)) {
+                            dataSourceDefinitionDescriptor.setDeployed(false);
+                        }
+                    }
+                    break;
+                case MSD:
+                    MailSessionDescriptor mailSessionDescriptor = (MailSessionDescriptor)descriptor;
+                    if(mailSessionDescriptor.isDeployed()) {
+                        if(undepoyResource(mailSessionDescriptor)) {
+                            mailSessionDescriptor.setDeployed(false);
+                        }
+                    }
+                    break;
+                case CRD:
+                    ConnectorResourceDefinitionDescriptor connectorResourceDefinitionDescriptor = (ConnectorResourceDefinitionDescriptor)descriptor;
+                    undepoyResource(connectorResourceDefinitionDescriptor);
+                    break;
+                case JMSCFDD:
+                    JMSConnectionFactoryDefinitionDescriptor jmsConnectionFactoryDefinitionDescriptor = (JMSConnectionFactoryDefinitionDescriptor)descriptor;
+                    undepoyResource(jmsConnectionFactoryDefinitionDescriptor);
+                    break;
+                case AODD:
+                    AdministeredObjectDefinitionDescriptor administeredObjectDefinitionDescriptor = (AdministeredObjectDefinitionDescriptor)descriptor;
+                    undepoyResource(administeredObjectDefinitionDescriptor);
+                    break;
             }
         }
     }
 
-    private void undeployMailSessions(JndiNameEnvironment env) {
-
-        for (MailSessionDescriptor msd : env.getMailSessionDescriptors()) {
-            try{
-                if(msd.isDeployed()){
-                    ResourceDeployer deployer = getResourceDeployer(msd);
-                    deployer.undeployResource(msd);
-                    msd.setDeployed(false);
-                }
-            }catch(Exception e){
-                _logger.log(Level.WARNING, "unable to undeploy MailSessions [ " + msd.getName() + " ] ", e);
-            }
-        }
-    }
-
-    private void undeployConnectorResourceDefinitions(JndiNameEnvironment env) {
-
-        for (ConnectorResourceDefinitionDescriptor crd : env.getConnectorResourceDefinitionDescriptors()) {
-            try{
-                ResourceDeployer deployer = getResourceDeployer(crd);
-                deployer.undeployResource(crd);
-            }catch(Exception e){
-                _logger.log(Level.WARNING, "unable to undeploy ConnectorResourceDefinition [ " + crd.getName() + " ] ", e);
-            }
-        }
-    }
-
-    private void undeployAdministeredObjectDefinitions(JndiNameEnvironment env) {
-
-        for (AdministeredObjectDefinitionDescriptor aod : env.getAdministeredObjectDefinitionDescriptors()) {
-            try{
-                ResourceDeployer deployer = getResourceDeployer(aod);
-                deployer.undeployResource(aod);
-            }catch(Exception e){
-                _logger.log(Level.WARNING, "unable to undeploy AdministeredObjectDefinition [ " + aod.getName() + " ] ", e);
-            }
-        }
-    }
-
-
-    private void undeployJMSConnectionFactoryDefinitions(JndiNameEnvironment env) {
-
-        for (JMSConnectionFactoryDefinitionDescriptor jmscfd : env.getJMSConnectionFactoryDefinitionDescriptors()) {
-            try {
-                ResourceDeployer deployer = getResourceDeployer(jmscfd);
-                deployer.undeployResource(jmscfd);
-            } catch(Exception e) {
-                _logger.log(Level.WARNING, "unable to undeploy JMSConnectionFactoryDefinition [ " + jmscfd.getName() + " ] ", e);
-            }
-        }
-    }
-
-    private void undeployJMSDestinationDefinitions(JndiNameEnvironment env) {
-
-        for (JMSDestinationDefinitionDescriptor jmsdd : env.getJMSDestinationDefinitionDescriptors()) {
-            try {
-                ResourceDeployer deployer = getResourceDeployer(jmsdd);
-                deployer.undeployResource(jmsdd);
-            } catch(Exception e) {
-                _logger.log(Level.WARNING, "unable to undeploy JMSDestinationDefinition [ " + jmsdd.getName() + " ] ", e);
-            }
+    private boolean undepoyResource(Descriptor descriptor) {
+        try{
+            ResourceDeployer deployer = getResourceDeployer(descriptor);
+            deployer.undeployResource(descriptor);
+            return true;
+        }catch(Exception e){
+            _logger.log(Level.WARNING, "Unable to undeploy Descriptor [ " + descriptor.getName() + " ] ", e);
+            return false;
         }
     }
 
@@ -707,12 +581,7 @@ public class ComponentEnvManagerImpl
             jndiBindings.add(getCompEnvBinding(next));
         }
 
-        addDataSourceBindings(env, scope, jndiBindings); 
-        addMailSessionBindings(env, scope, jndiBindings);
-        addConnectorResourceBindings(env, scope, jndiBindings); 
-        addAdministeredObjectBindings(env, scope, jndiBindings);
-        addJMSConnectionFactoryBindings(env, scope, jndiBindings);
-        addJMSDestinationBindings(env, scope, jndiBindings);
+        addAllDescriptorBindings(env,scope,jndiBindings);
 
         for (Iterator itr = env.getEjbReferenceDescriptors().iterator();
              itr.hasNext();) {

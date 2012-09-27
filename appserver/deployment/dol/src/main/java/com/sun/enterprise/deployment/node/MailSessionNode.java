@@ -40,11 +40,11 @@
 
 package com.sun.enterprise.deployment.node;
 
-import java.util.Map;
-
 import com.sun.enterprise.deployment.MailSessionDescriptor;
 import com.sun.enterprise.deployment.xml.TagNames;
 import org.w3c.dom.Node;
+
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -59,7 +59,7 @@ public class MailSessionNode extends DeploymentDescriptorNode<MailSessionDescrip
     private MailSessionDescriptor descriptor = null;
 
     public MailSessionNode() {
-        registerElementHandler(new XMLElement(TagNames.MAIL_SESSION_PROPERTY), MailSessionPropertyNode.class,
+        registerElementHandler(new XMLElement(TagNames.RESOURCE_PROPERTY), ResourcePropertyNode.class,
                 "addMailSessionPropertyDescriptor");
     }
 
@@ -94,7 +94,7 @@ public class MailSessionNode extends DeploymentDescriptorNode<MailSessionDescrip
         appendTextChild(node, TagNames.MAIL_SESSION_PASSWORD, mailSessionDesc.getPassword());
         appendTextChild(node, TagNames.MAIL_SESSION_FROM, mailSessionDesc.getFrom());
 
-        MailSessionPropertyNode propertyNode = new MailSessionPropertyNode();
+        ResourcePropertyNode propertyNode = new ResourcePropertyNode();
         propertyNode.writeDescriptor(node, mailSessionDesc);
 
         return node;

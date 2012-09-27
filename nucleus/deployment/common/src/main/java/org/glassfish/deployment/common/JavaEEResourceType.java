@@ -38,56 +38,26 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.node;
-
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import com.sun.enterprise.deployment.MailSessionDescriptor;
-import com.sun.enterprise.deployment.MailSessionPropertyDescriptor;
-import com.sun.enterprise.deployment.xml.TagNames;
-import org.w3c.dom.Node;
+package org.glassfish.deployment.common;
 
 /**
- * Created by IntelliJ IDEA.
+ * Created with IntelliJ IDEA.
  * User: naman
- * Date: 17/4/12
- * Time: 11:02 AM
+ * Date: 5/9/12
+ * Time: 2:33 PM
  * To change this template use File | Settings | File Templates.
  */
-public class MailSessionPropertyNode extends DeploymentDescriptorNode<MailSessionPropertyDescriptor> {
-    private MailSessionPropertyDescriptor descriptor = null;
-
-    protected Map getDispatchTable() {
-        // no need to be synchronized for now
-        Map table = super.getDispatchTable();
-        table.put(TagNames.MAIL_SESSION_PROPERTY_NAME, "setName");
-        table.put(TagNames.MAIL_SESSION_PROPERTY_VALUE, "setValue");
-        return table;
-    }
-
-    public Node writeDescriptor(Node node, MailSessionDescriptor mailSessionDesc) {
-
-        Properties properties = mailSessionDesc.getProperties();
-
-        Set keys = properties.keySet();
-
-        for (Object key : keys) {
-            String name = (String) key;
-            String value = (String) properties.get(name);
-            Node propertyNode = appendChild(node, TagNames.MAIL_SESSION_PROPERTY);
-            appendTextChild(propertyNode, TagNames.MAIL_SESSION_PROPERTY_NAME, name);
-            appendTextChild(propertyNode, TagNames.MAIL_SESSION_PROPERTY_VALUE, value);
-        }
-        return node;
-    }
-
-
-    public MailSessionPropertyDescriptor getDescriptor() {
-        if (descriptor == null) {
-            descriptor = new MailSessionPropertyDescriptor();
-        }
-        return descriptor;
-    }
+public enum JavaEEResourceType {
+    /**
+     * MSD: MailSessionDescriptor
+     * DSD: DataSourceDefinitionDescriptor
+     * DSDPOOL: DataSourceDefinitionDescriptor Pool
+     * CRD: ConnectorResourceDefinitionDescriptor
+     * CRDPOOL: ConnectorResourceDefinitionDescriptor Pool
+     * JMSCFDD: JMSConnectionFactoryDefinitionDescriptor
+     * JMSCFDDPOOL: JMSConnectionFactoryDefinitionDescriptor Pool
+     * JMSDD: JMSDestinationDefinitionDescriptor
+     * AODD: AdministeredObjectDefinitionDescriptor
+     */
+    MSD, DSD, DSDPOOL, CRD, CRDPOOL, JMSCFDD, JMSCFDDPOOL, JMSDD, AODD;
 }

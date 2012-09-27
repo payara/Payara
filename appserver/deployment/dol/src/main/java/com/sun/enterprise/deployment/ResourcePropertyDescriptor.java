@@ -43,38 +43,43 @@ package com.sun.enterprise.deployment;
 import org.glassfish.deployment.common.Descriptor;
 
 /**
- * @author Jagadish Ramu
+ * Created with IntelliJ IDEA.
+ * User: naman
+ * Date: 7/9/12
+ * Time: 11:50 AM
+ * To change this template use File | Settings | File Templates.
  */
-public class DataSourcePropertyDescriptor extends Descriptor {
+public class ResourcePropertyDescriptor extends Descriptor {
+
     private String name;
     private String value;
 
-    public void setName(String name){
+    public void setName(String name) {
         this.name = name;
     }
 
-    public void setValue(String value){
+    public void setValue(String value) {
         this.value = value;
     }
 
-    public String getName(){
+    public String getName() {
         return name;
     }
 
-    public String getValue(){
+    public String getValue() {
         return value;
     }
 
-    public boolean equals(Object o){
-        if(this == o){
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if(o instanceof DataSourcePropertyDescriptor){
-            DataSourcePropertyDescriptor that = (DataSourcePropertyDescriptor)o;
-            String thatName = that.getName() ;
-            if(thatName!= null && this.name != null && this.name.equals(thatName)){
+        if (o instanceof ResourcePropertyDescriptor) {
+            ResourcePropertyDescriptor that = (ResourcePropertyDescriptor) o;
+            String thatName = that.getName();
+            if (thatName != null && this.name != null && this.name.equals(thatName)) {
                 String thatValue = that.getValue();
-                if(thatValue != null && this.value != null && this.value.equals(thatValue)){
+                if (thatValue != null && this.value != null && this.value.equals(thatValue)) {
                     return true;
                 }
             }
@@ -84,7 +89,7 @@ public class DataSourcePropertyDescriptor extends Descriptor {
 
     public int hashCode() {
         int result = 17;
-        result = 37*result + getName().hashCode();
+        result = 37 * result + getName().hashCode();
         return result;
     }
 }

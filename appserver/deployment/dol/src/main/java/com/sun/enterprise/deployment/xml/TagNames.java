@@ -112,18 +112,16 @@ public interface TagNames {
     public static final String DATA_SOURCE_MAX_POOL_SIZE = "max-pool-size";
     public static final String DATA_SOURCE_MAX_IDLE_TIME = "max-idle-time";
     public static final String DATA_SOURCE_MAX_STATEMENTS = "max-statements";
-    public static final String DATA_SOURCE_PROPERTY = "property";
-    public static final String DATA_SOURCE_PROPERTY_NAME = "name";
-    public static final String DATA_SOURCE_PROPERTY_VALUE = "value";
+
+    public static final String RESOURCE_PROPERTY_NAME = "name";
+    public static final String RESOURCE_PROPERTY_VALUE = "value";
+    public static final String RESOURCE_PROPERTY = "property";
 
     public static final String CONNECTOR_RESOURCE = "connector-resource";
     public static final String CONNECTOR_RESOURCE_DESCRIPTION = "description";
     public static final String CONNECTOR_RESOURCE_NAME = "name";
     public static final String CONNECTOR_RESOURCE_CLASS_NAME = "class-name";
     public static final String CONNECTOR_RESOURCE_ADAPTER_NAME = "resource-adapter-name";
-    public static final String CONNECTOR_RESOURCE_PROPERTY = "property";
-    public static final String CONNECTOR_RESOURCE_PROPERTY_NAME = "name";
-    public static final String CONNECTOR_RESOURCE_PROPERTY_VALUE = "value";
 
     public static final String ADMINISTERED_OBJECT = "administered-object";
     public static final String ADMINISTERED_OBJECT_DESCRIPTION = "description";
@@ -192,9 +190,6 @@ public interface TagNames {
     public static final String LANG = "lang";
 
     public static final String MAIL_SESSION = "mail-session";
-    public static final String MAIL_SESSION_PROPERTY = "property";
-    public static final String MAIL_SESSION_PROPERTY_NAME = "name";
-    public static final String MAIL_SESSION_PROPERTY_VALUE = "value";
     public static final String MAIL_SESSION_NAME = "name";
     public static final String MAIL_SESSION_STORE_PROTOCOL = "store-protocol";
     public static final String MAIL_SESSION_STORE_PROTOCOL_CLASS = "store-protocol-class";

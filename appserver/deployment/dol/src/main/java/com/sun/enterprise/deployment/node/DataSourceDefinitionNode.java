@@ -53,7 +53,7 @@ public class DataSourceDefinitionNode extends DeploymentDescriptorNode<DataSourc
     public final static XMLElement tag = new XMLElement(TagNames.DATA_SOURCE);
     private DataSourceDefinitionDescriptor descriptor = null;
     public DataSourceDefinitionNode() {
-        registerElementHandler(new XMLElement(TagNames.DATA_SOURCE_PROPERTY), DataSourcePropertyNode.class,
+        registerElementHandler(new XMLElement(TagNames.RESOURCE_PROPERTY), ResourcePropertyNode.class,
                 "addDataSourcePropertyDescriptor");
     }
 
@@ -97,7 +97,7 @@ public class DataSourceDefinitionNode extends DeploymentDescriptorNode<DataSourc
         appendTextChild(node, TagNames.DATA_SOURCE_USER, dataSourceDesc.getUser());
         appendTextChild(node, TagNames.DATA_SOURCE_PASSWORD, dataSourceDesc.getPassword());
 
-        DataSourcePropertyNode propertyNode = new DataSourcePropertyNode();
+        ResourcePropertyNode propertyNode = new ResourcePropertyNode();
         propertyNode.writeDescriptor(node, dataSourceDesc);
 
         appendTextChild(node, TagNames.DATA_SOURCE_LOGIN_TIMEOUT, String.valueOf(dataSourceDesc.getLoginTimeout()));

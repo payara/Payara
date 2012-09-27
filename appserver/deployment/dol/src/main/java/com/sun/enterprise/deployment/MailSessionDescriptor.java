@@ -40,9 +40,11 @@
 
 package com.sun.enterprise.deployment;
 
+import org.glassfish.deployment.common.Descriptor;
+
 import java.util.Properties;
 
-import org.glassfish.deployment.common.Descriptor;
+import static org.glassfish.deployment.common.JavaEEResourceType.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -71,7 +73,10 @@ public class MailSessionDescriptor extends Descriptor {
 
     private boolean deployed = false;
 
-    private String resourceId;
+    public MailSessionDescriptor(){
+        super.setResourceType(MSD);
+    }
+
 
     public String getName() {
         return name;
@@ -172,7 +177,7 @@ public class MailSessionDescriptor extends Descriptor {
         this.metadataSource = metadataSource;
     }
 
-    public void addMailSessionPropertyDescriptor(MailSessionPropertyDescriptor propertyDescriptor) {
+    public void addMailSessionPropertyDescriptor(ResourcePropertyDescriptor propertyDescriptor) {
         properties.put(propertyDescriptor.getName(), propertyDescriptor.getValue());
     }
 
@@ -182,14 +187,6 @@ public class MailSessionDescriptor extends Descriptor {
 
     public boolean isDeployed() {
         return deployed;
-    }
-
-    public String getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
     }
 
     public boolean equals(Object object) {

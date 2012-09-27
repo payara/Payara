@@ -120,8 +120,9 @@ public interface ResourceConstants {
     /**
      *  Reserved sub-context where datasource-definition objets (resource and pool) are bound with generated names.
      */
-    public static String DATASOURCE_DEFINITION_JNDINAME_PREFIX = "__datasource_definition/";
-    public static String CONNECTOR_RESOURCE_DEFINITION_JNDINAME_PREFIX = "__connector_resource_definition/";
+    public static String DATASOURCE_DEFINITION_JNDINAME_PREFIX="__datasource_definition/";
+    public static String MAILSESSION_DEFINITION_JNDINAME_PREFIX="__mailsession_definition/";
+    public static String CONNECTOR_RESOURCE_DEFINITION_JNDINAME_PREFIX="__connector_resource_definition/";
     public static String JMS_CONNECTION_FACTORY_DEFINITION_JNDINAME_PREFIX = "__jms_connection_factory_definition/";
     public static String JMS_DESTINATION_DEFINITION_JNDINAME_PREFIX = "__jms_destination_definition/";
     public static String ADMINISTERED_OBJECT_DEFINITION_JNDINAME_PREFIX="__administered_object_definition/";

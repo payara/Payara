@@ -39,12 +39,11 @@
  */
 package com.sun.enterprise.deployment.node;
 
-import java.util.Map;
-
-import org.w3c.dom.Node;
-
 import com.sun.enterprise.deployment.JMSDestinationDefinitionDescriptor;
 import com.sun.enterprise.deployment.xml.TagNames;
+import org.w3c.dom.Node;
+
+import java.util.Map;
 
 public class JMSDestinationDefinitionNode extends DeploymentDescriptorNode<JMSDestinationDefinitionDescriptor> {
 
@@ -53,7 +52,7 @@ public class JMSDestinationDefinitionNode extends DeploymentDescriptorNode<JMSDe
     private JMSDestinationDefinitionDescriptor descriptor = null;
 
     public JMSDestinationDefinitionNode() {
-        registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION_PROPERTY), JMSDestinationPropertyNode.class,
+        registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION_PROPERTY), ResourcePropertyNode.class,
                 "addJMSDestinationPropertyDescriptor");
     }
 
@@ -78,7 +77,7 @@ public class JMSDestinationDefinitionNode extends DeploymentDescriptorNode<JMSDe
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_RESOURCE_ADAPTER_NAME, desc.getResourceAdapterName());
         appendTextChild(node, TagNames.JMS_DESTINATION_DESTINATION_NAME, desc.getDestinationName());
 
-        JMSDestinationPropertyNode propertyNode = new JMSDestinationPropertyNode();
+        ResourcePropertyNode propertyNode = new ResourcePropertyNode();
         propertyNode.writeDescriptor(node, desc);
 
         return node;

@@ -40,10 +40,12 @@
 
 package com.sun.enterprise.deployment;
 
-import java.util.Properties;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.deployment.common.Descriptor;
 
-import com.sun.enterprise.deployment.util.DOLUtils;
+import java.util.Properties;
+
+import static org.glassfish.deployment.common.JavaEEResourceType.*;
 
 /**
  * @author Dapeng Hu
@@ -65,6 +67,7 @@ public class AdministeredObjectDefinitionDescriptor extends Descriptor {
     
     public AdministeredObjectDefinitionDescriptor() {
         super();
+        super.setResourceType(AODD);
     }
     
     public String getName() {
@@ -139,7 +142,7 @@ public class AdministeredObjectDefinitionDescriptor extends Descriptor {
         return theName;
     }
 
-    public void addAdministeredObjectPropertyDescriptor(AdministeredObjectPropertyDescriptor propertyDescriptor){
+    public void addAdministeredObjectPropertyDescriptor(ResourcePropertyDescriptor propertyDescriptor){
         properties.put(propertyDescriptor.getName(), propertyDescriptor.getValue());
     }
 

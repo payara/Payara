@@ -52,6 +52,7 @@ import javax.inject.Provider;
 import javax.naming.NamingException;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
@@ -60,7 +61,7 @@ import com.sun.enterprise.deployment.*;
 import com.sun.logging.LogDomains;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.glassfish.javaee.services.MailSessionProxy;
+import org.glassfish.javaee.services.CommonResourceProxy;
 import org.glassfish.resources.api.ResourceConflictException;
 import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.api.ResourceDeployerInfo;
@@ -89,7 +90,7 @@ public class MailSessionDeployer implements ResourceDeployer {
     private Provider<ResourceManagerFactory> resourceManagerFactoryProvider;
 
     @Inject
-    private Provider<MailSessionProxy> mailSessionProxyProvider;
+    private Provider<CommonResourceProxy> mailSessionProxyProvider;
 
     @Inject
     private Provider<ResourceNamingService> resourceNamingServiceProvider;
@@ -107,8 +108,9 @@ public class MailSessionDeployer implements ResourceDeployer {
     @Override
     public void deployResource(Object resource) throws Exception {
         final MailSessionDescriptor desc = (MailSessionDescriptor) resource;
+        String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), desc.getResourceType());
         if (desc != null) {
-            MailResource mailResource = new MyMailResource(desc, desc.getName());
+            MailResource mailResource = new MyMailResource(desc,resourceName);
             getDeployer(mailResource).deployResource(mailResource);
             _logger.log(Level.FINE, "Mail-Session resource is deployed having resource-name [" + desc.getName() + "]");
         } else {
@@ -119,8 +121,9 @@ public class MailSessionDeployer implements ResourceDeployer {
     @Override
     public void undeployResource(Object resource) throws Exception {
         final MailSessionDescriptor desc = (MailSessionDescriptor) resource;
+        String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(),desc.getResourceType());
         if (desc != null) {
-            MailResource mailResource = new MyMailResource(desc, desc.getName());
+            MailResource mailResource = new MyMailResource(desc, resourceName);
             getDeployer(mailResource).undeployResource(mailResource);
             _logger.log(Level.FINE, "Mail-Session resource is undeployed having resource-name [" + desc.getName() + "]");
         } else {
@@ -238,7 +241,7 @@ public class MailSessionDeployer implements ResourceDeployer {
                                                   MailSessionDescriptor msd) {
 
         if (!msd.isDeployed()) {
-            MailSessionProxy proxy = mailSessionProxyProvider.get();
+            CommonResourceProxy proxy = mailSessionProxyProvider.get();
             ResourceNamingService resourceNamingService = resourceNamingServiceProvider.get();
             proxy.setDescriptor(msd);
 

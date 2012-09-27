@@ -40,11 +40,12 @@
 
 package com.sun.enterprise.deployment;
 
-import java.util.Properties;
-
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.deployment.common.Descriptor;
 
-import com.sun.enterprise.deployment.util.DOLUtils;
+import java.util.Properties;
+
+import static org.glassfish.deployment.common.JavaEEResourceType.*;
 
 public class JMSDestinationDefinitionDescriptor extends Descriptor {
 
@@ -65,6 +66,7 @@ public class JMSDestinationDefinitionDescriptor extends Descriptor {
 
     public JMSDestinationDefinitionDescriptor() {
         super();
+        super.setResourceType(JMSDD);
     }
 
     public String getName() {
@@ -148,7 +150,7 @@ public class JMSDestinationDefinitionDescriptor extends Descriptor {
         return theName;
     }
 
-    public void addJMSDestinationPropertyDescriptor(JMSDestinationPropertyDescriptor propertyDescriptor){
+    public void addJMSDestinationPropertyDescriptor(ResourcePropertyDescriptor propertyDescriptor){
         properties.put(propertyDescriptor.getName(), propertyDescriptor.getValue());
     }
 

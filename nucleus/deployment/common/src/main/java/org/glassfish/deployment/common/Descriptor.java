@@ -43,7 +43,6 @@ package org.glassfish.deployment.common;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -88,6 +87,11 @@ public class Descriptor extends DynamicAttributesDescriptor {
     private Map<String, String> smallIcons = null;
 
     private Map<Class<? extends Descriptor>, List<? extends Descriptor>> descriptorExtensions = new HashMap<Class<? extends Descriptor>, List<? extends Descriptor>>();
+
+    private String resourceId;
+
+    private JavaEEResourceType resourceType;
+
 
     /**
      * The default constructor. Constructs a descriptor with
@@ -680,5 +684,21 @@ public class Descriptor extends DynamicAttributesDescriptor {
             // ignore
         }
     }
+
+    public String getResourceId() {
+        return resourceId;
+    }
+
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
+    }
     //end IASRI 4713550    
+
+    public JavaEEResourceType getResourceType() {
+        return resourceType;
+    }
+
+    public void setResourceType(JavaEEResourceType resourceType) {
+        this.resourceType = resourceType;
+    }
 }

@@ -1,4 +1,5 @@
-/* DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
@@ -36,49 +37,70 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package com.sun.enterprise.deployment.node;
+
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.xml.TagNames;
+import org.glassfish.deployment.common.Descriptor;
+import org.w3c.dom.Node;
 
 import java.util.Map;
 import java.util.Properties;
-
-import org.w3c.dom.Node;
-
-import com.sun.enterprise.deployment.AdministeredObjectDefinitionDescriptor;
-import com.sun.enterprise.deployment.AdministeredObjectPropertyDescriptor;
-import com.sun.enterprise.deployment.xml.TagNames;
+import java.util.Set;
 
 /**
- * @author  Dapeng Hu
- * @version 
+ * Created with IntelliJ IDEA.
+ * User: naman
+ * Date: 7/9/12
+ * Time: 12:18 PM
+ * To change this template use File | Settings | File Templates.
  */
-public class AdministeredObjectPropertyNode extends DeploymentDescriptorNode<AdministeredObjectPropertyDescriptor> {
-    private AdministeredObjectPropertyDescriptor descriptor = null;
+public class ResourcePropertyNode extends DeploymentDescriptorNode<ResourcePropertyDescriptor> {
 
-    protected Map<String, String> getDispatchTable() {
+    private ResourcePropertyDescriptor descriptor = null;
+
+    protected Map getDispatchTable() {
         // no need to be synchronized for now
-        Map<String, String> table = super.getDispatchTable();
-        table.put(TagNames.ADMINISTERED_OBJECT_PROPERTY_NAME, "setName");
-        table.put(TagNames.ADMINISTERED_OBJECT_PROPERTY_VALUE, "setValue");
+        Map table = super.getDispatchTable();
+        table.put(TagNames.RESOURCE_PROPERTY_NAME, "setName");
+        table.put(TagNames.RESOURCE_PROPERTY_VALUE, "setValue");
         return table;
     }
 
-    public Node writeDescriptor(Node node, AdministeredObjectDefinitionDescriptor desc) {
+    public Node writeDescriptor(Node node, Descriptor desc) {
 
-        Properties properties = desc.getProperties();
+        Properties properties = null;
 
-        for (Object key : properties.keySet()) {
+        if (desc instanceof MailSessionDescriptor) {
+            properties = ((MailSessionDescriptor) desc).getProperties();
+        } else if (desc instanceof ConnectorResourceDefinitionDescriptor) {
+            properties = ((ConnectorResourceDefinitionDescriptor) desc).getProperties();
+        } else if (desc instanceof DataSourceDefinitionDescriptor) {
+            properties = ((DataSourceDefinitionDescriptor) desc).getProperties();
+        } else if (desc instanceof JMSConnectionFactoryDefinitionDescriptor) {
+            properties = ((JMSConnectionFactoryDefinitionDescriptor) desc).getProperties();
+        } else if (desc instanceof JMSDestinationDefinitionDescriptor) {
+            properties = ((JMSDestinationDefinitionDescriptor) desc).getProperties();
+        }
+
+
+        Set keys = properties.keySet();
+
+        for (Object key : keys) {
             String name = (String) key;
             String value = (String) properties.get(name);
-            Node propertyNode = appendChild(node, TagNames.ADMINISTERED_OBJECT_PROPERTY);
-            appendTextChild(propertyNode, TagNames.ADMINISTERED_OBJECT_PROPERTY_NAME, name);
-            appendTextChild(propertyNode, TagNames.ADMINISTERED_OBJECT_PROPERTY_VALUE, value);
+            Node propertyNode = appendChild(node, TagNames.RESOURCE_PROPERTY);
+            appendTextChild(propertyNode, TagNames.RESOURCE_PROPERTY_NAME, name);
+            appendTextChild(propertyNode, TagNames.RESOURCE_PROPERTY_VALUE, value);
         }
         return node;
     }
 
-    public AdministeredObjectPropertyDescriptor getDescriptor() {
-        if(descriptor == null){
-            descriptor = new AdministeredObjectPropertyDescriptor();
+
+    public ResourcePropertyDescriptor getDescriptor() {
+        if (descriptor == null) {
+            descriptor = new ResourcePropertyDescriptor();
         }
         return descriptor;
     }

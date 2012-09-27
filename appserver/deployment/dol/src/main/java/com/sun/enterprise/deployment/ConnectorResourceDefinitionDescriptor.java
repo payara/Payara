@@ -40,10 +40,12 @@
 
 package com.sun.enterprise.deployment;
 
-import java.util.Properties;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.deployment.common.Descriptor;
 
-import com.sun.enterprise.deployment.util.DOLUtils;
+import java.util.Properties;
+
+import static org.glassfish.deployment.common.JavaEEResourceType.*;
 
 /**
  * @author Dapeng Hu
@@ -56,13 +58,13 @@ public class ConnectorResourceDefinitionDescriptor extends Descriptor {
     private String className;
     private Properties properties = new Properties();
     
-    private String resourceId;
     private MetadataSource metadataSource = MetadataSource.XML;
     private static final String JAVA_URL = "java:";
     private static final String JAVA_COMP_URL = "java:comp/";
     
 	public ConnectorResourceDefinitionDescriptor() {
-		super();
+        super();
+        super.setResourceType(CRD);
 	}
 	
     public String getName() {
@@ -82,15 +84,7 @@ public class ConnectorResourceDefinitionDescriptor extends Descriptor {
 		this.className = className;
 	}
 
-	public String getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
-    }
-
-    public MetadataSource getMetadataSource() {
+	public MetadataSource getMetadataSource() {
 		return metadataSource;
 	}
 
@@ -131,7 +125,7 @@ public class ConnectorResourceDefinitionDescriptor extends Descriptor {
         return theName;
     }
 
-    public void addConnectorResourcePropertyDescriptor(ConnectorResourcePropertyDescriptor propertyDescriptor){
+    public void addConnectorResourcePropertyDescriptor(ResourcePropertyDescriptor propertyDescriptor){
         properties.put(propertyDescriptor.getName(), propertyDescriptor.getValue());
     }
 
@@ -142,5 +136,4 @@ public class ConnectorResourceDefinitionDescriptor extends Descriptor {
                 properties.equals(other.properties)
             );
     }
-
 }

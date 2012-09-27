@@ -44,6 +44,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deployment.*;
+import org.glassfish.javaee.services.CommonResourceProxy;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.jdbc.config.JdbcResource;
 import org.glassfish.resources.api.ResourceConflictException;
@@ -51,7 +52,6 @@ import org.glassfish.resources.api.ResourceDeployer;
 import com.sun.logging.LogDomains;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.glassfish.javaee.services.DataSourceDefinitionProxy;
 import org.glassfish.resources.api.ResourceDeployerInfo;
 import org.glassfish.resources.api.ResourceInfo;
 import org.glassfish.resources.naming.ResourceNamingService;
@@ -69,6 +69,8 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import static org.glassfish.deployment.common.JavaEEResourceType.*;
+
 
 /**
  * @author Jagadish Ramu
@@ -81,7 +83,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
     private Provider<ResourceManagerFactory> resourceManagerFactoryProvider;
 
     @Inject
-    private Provider<DataSourceDefinitionProxy> dataSourceDefinitionProxyProvider;
+    private Provider<CommonResourceProxy> dataSourceDefinitionProxyProvider;
 
     @Inject
     private Provider<ResourceNamingService> resourceNamingServiceProvider;
@@ -94,8 +96,9 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
     public void deployResource(Object resource) throws Exception {
 
         final DataSourceDefinitionDescriptor desc = (DataSourceDefinitionDescriptor) resource;
-        String poolName = ConnectorsUtil.deriveDataSourceDefinitionPoolName(desc.getResourceId(), desc.getName());
-        String resourceName = ConnectorsUtil.deriveDataSourceDefinitionResourceName(desc.getResourceId(), desc.getName());
+        String poolName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), DSDPOOL);
+        String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), desc.getResourceType());
+                //desc.getName();
 
         if(_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "DataSourceDefinitionDeployer.deployResource() : pool-name ["+poolName+"], " +
@@ -263,7 +266,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         // when there are multiple PUs eg: one PU in each of war, ejb-jar. Make sure that
         // DSD is bound to JNDI only when it is not already deployed.
         if(!dsd.isDeployed()){
-            DataSourceDefinitionProxy proxy = dataSourceDefinitionProxyProvider.get();
+            CommonResourceProxy proxy = dataSourceDefinitionProxyProvider.get();
             ResourceNamingService resourceNamingService = resourceNamingServiceProvider.get();
             proxy.setDescriptor(dsd);
 
@@ -296,8 +299,8 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         final DataSourceDefinitionDescriptor desc = (DataSourceDefinitionDescriptor) resource;
 
-        String poolName = ConnectorsUtil.deriveDataSourceDefinitionPoolName(desc.getResourceId(), desc.getName());
-        String resourceName = ConnectorsUtil.deriveDataSourceDefinitionResourceName(desc.getResourceId(), desc.getName());
+        String poolName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), DSDPOOL);
+        String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(),desc.getResourceType());
 
         if(_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "DataSourceDefinitionDeployer.undeployResource() : pool-name ["+poolName+"], " +

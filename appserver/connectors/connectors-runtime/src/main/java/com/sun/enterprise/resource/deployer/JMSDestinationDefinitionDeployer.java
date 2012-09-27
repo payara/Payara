@@ -84,7 +84,7 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
     public void deployResource(Object resource) throws Exception {
 
         final JMSDestinationDefinitionDescriptor desc = (JMSDestinationDefinitionDescriptor) resource;
-        String resourceName = ConnectorsUtil.deriveJMSDestinationDefinitionResourceName(desc.getResourceId(), desc.getName());
+        String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), desc.getResourceType());
 
         if(_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "JMSDestinationDefinitionDeployer.deployResource() : resource-name [" + resourceName + "]");
@@ -136,7 +136,7 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
 
         final JMSDestinationDefinitionDescriptor desc = (JMSDestinationDefinitionDescriptor)resource;
 
-        String resourceName = ConnectorsUtil.deriveJMSDestinationDefinitionResourceName(desc.getResourceId(), desc.getName());
+        String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(),desc.getResourceType());
 
         if(_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "JMSDestinationDefinitionDeployer.undeployResource() : resource-name [" + resourceName + "]");

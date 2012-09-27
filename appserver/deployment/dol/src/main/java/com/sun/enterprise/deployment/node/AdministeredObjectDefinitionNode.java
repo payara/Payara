@@ -38,10 +38,11 @@
  */
 package com.sun.enterprise.deployment.node;
 
-import java.util.Map;
-import org.w3c.dom.Node;
 import com.sun.enterprise.deployment.AdministeredObjectDefinitionDescriptor;
 import com.sun.enterprise.deployment.xml.TagNames;
+import org.w3c.dom.Node;
+
+import java.util.Map;
 
 /**
  * This class handles all information related to the administered-object xml tag
@@ -56,7 +57,7 @@ public class AdministeredObjectDefinitionNode extends DeploymentDescriptorNode<A
     private AdministeredObjectDefinitionDescriptor descriptor = null;
     
     public AdministeredObjectDefinitionNode() {
-        registerElementHandler(new XMLElement(TagNames.ADMINISTERED_OBJECT_PROPERTY), AdministeredObjectPropertyNode.class,
+        registerElementHandler(new XMLElement(TagNames.ADMINISTERED_OBJECT_PROPERTY), ResourcePropertyNode.class,
                 "addAdministeredObjectPropertyDescriptor");
     }
 
@@ -77,7 +78,7 @@ public class AdministeredObjectDefinitionNode extends DeploymentDescriptorNode<A
         appendTextChild(node, TagNames.ADMINISTERED_OBJECT_CLASS_NAME, desc.getClassName());
         appendTextChild(node, TagNames.ADMINISTERED_OBJECT_ADAPTER_NAME, desc.getResourceAdapterName());
         
-        AdministeredObjectPropertyNode propertyNode = new AdministeredObjectPropertyNode();
+        ResourcePropertyNode propertyNode = new ResourcePropertyNode();
         propertyNode.writeDescriptor(node, desc);
 
         return node;

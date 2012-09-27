@@ -39,12 +39,11 @@
  */
 package com.sun.enterprise.deployment.node;
 
-import java.util.Map;
-
-import org.w3c.dom.Node;
-
 import com.sun.enterprise.deployment.ConnectorResourceDefinitionDescriptor;
 import com.sun.enterprise.deployment.xml.TagNames;
+import org.w3c.dom.Node;
+
+import java.util.Map;
 
 public class ConnectorResourceDefinitionNode extends DeploymentDescriptorNode<ConnectorResourceDefinitionDescriptor> {
     public final static XMLElement tag = new XMLElement(TagNames.CONNECTOR_RESOURCE);
@@ -52,7 +51,7 @@ public class ConnectorResourceDefinitionNode extends DeploymentDescriptorNode<Co
     private ConnectorResourceDefinitionDescriptor descriptor = null;
     
     public ConnectorResourceDefinitionNode() {
-        registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE_PROPERTY), ConnectorResourcePropertyNode.class,
+        registerElementHandler(new XMLElement(TagNames.RESOURCE_PROPERTY), ResourcePropertyNode.class,
                 "addConnectorResourcePropertyDescriptor");
     }
 
@@ -71,7 +70,7 @@ public class ConnectorResourceDefinitionNode extends DeploymentDescriptorNode<Co
         appendTextChild(node, TagNames.CONNECTOR_RESOURCE_NAME, desc.getName());
         appendTextChild(node, TagNames.CONNECTOR_RESOURCE_CLASS_NAME, desc.getClassName());
         
-        ConnectorResourcePropertyNode propertyNode = new ConnectorResourcePropertyNode();
+        ResourcePropertyNode propertyNode = new ResourcePropertyNode();
         propertyNode.writeDescriptor(node, desc);
 
         return node;

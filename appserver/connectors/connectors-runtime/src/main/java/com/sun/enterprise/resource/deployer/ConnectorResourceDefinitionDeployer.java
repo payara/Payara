@@ -70,6 +70,8 @@ import org.jvnet.hk2.config.types.Property;
 
 import com.sun.logging.LogDomains;
 
+import static org.glassfish.deployment.common.JavaEEResourceType.*;
+
 /**
  * @author Dapeng Hu
  */
@@ -90,8 +92,8 @@ public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
     public void deployResource(Object resource) throws Exception {
 
         final ConnectorResourceDefinitionDescriptor desc = (ConnectorResourceDefinitionDescriptor) resource;
-        String poolName = ConnectorsUtil.deriveConnectorResourceDefinitionPoolName(desc.getResourceId(), desc.getName());
-        String resourceName = ConnectorsUtil.deriveConnectorResourceDefinitionResourceName(desc.getResourceId(), desc.getName());
+        String poolName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), CRDPOOL);
+        String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(),desc.getResourceType());
 
         if(_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "ConnectorResourceDefinitionDeployer.deployResource() : pool-name ["+poolName+"], " +
@@ -149,8 +151,8 @@ public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
 
         final ConnectorResourceDefinitionDescriptor desc = (ConnectorResourceDefinitionDescriptor) resource;
 
-        String poolName = ConnectorsUtil.deriveConnectorResourceDefinitionPoolName(desc.getResourceId(), desc.getName());
-        String resourceName = ConnectorsUtil.deriveConnectorResourceDefinitionResourceName(desc.getResourceId(), desc.getName());
+        String poolName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), CRDPOOL);
+        String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(),desc.getResourceType());
 
         if(_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "ConnectorResourceDefinitionDeployer.undeployResource() : pool-name ["+poolName+"], " +

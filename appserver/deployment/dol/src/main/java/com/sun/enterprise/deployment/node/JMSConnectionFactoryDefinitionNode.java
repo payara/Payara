@@ -39,12 +39,11 @@
  */
 package com.sun.enterprise.deployment.node;
 
-import java.util.Map;
-
-import org.w3c.dom.Node;
-
 import com.sun.enterprise.deployment.JMSConnectionFactoryDefinitionDescriptor;
 import com.sun.enterprise.deployment.xml.TagNames;
+import org.w3c.dom.Node;
+
+import java.util.Map;
 
 public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode<JMSConnectionFactoryDefinitionDescriptor> {
 
@@ -53,7 +52,7 @@ public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode
     private JMSConnectionFactoryDefinitionDescriptor descriptor = null;
 
     public JMSConnectionFactoryDefinitionNode() {
-        registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY_PROPERTY), JMSConnectionFactoryPropertyNode.class,
+        registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY_PROPERTY), ResourcePropertyNode.class,
                 "addJMSConnectionFactoryPropertyDescriptor");
     }
 
@@ -89,7 +88,7 @@ public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_PASSWORD, desc.getPassword());
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_CLIENT_ID, desc.getClientId());
 
-        JMSConnectionFactoryPropertyNode propertyNode = new JMSConnectionFactoryPropertyNode();
+        ResourcePropertyNode propertyNode = new ResourcePropertyNode();
         propertyNode.writeDescriptor(node, desc);
 
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_CONNECTION_TIMEOUT, desc.getConnectionTimeout());

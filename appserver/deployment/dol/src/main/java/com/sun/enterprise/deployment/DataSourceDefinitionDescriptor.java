@@ -47,6 +47,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.sql.Connection;
 
+import static org.glassfish.deployment.common.JavaEEResourceType.*;
+
 /**
  * @author Jagadish Ramu
  */
@@ -75,8 +77,6 @@ public class DataSourceDefinitionDescriptor extends Descriptor {
     private boolean loginTimeoutSet = false; 
     private boolean serverNameSet = false;
 
-    private String resourceId;
-
     private MetadataSource metadataSource = MetadataSource.XML;
 
     private boolean deployed = false;
@@ -92,14 +92,7 @@ public class DataSourceDefinitionDescriptor extends Descriptor {
     private static final String TRANSACTION_SERIALIZABLE = "TRANSACTION_SERIALIZABLE";
 
     public DataSourceDefinitionDescriptor(){
-    }
-
-    public String getResourceId(){
-        return resourceId;
-    }
-
-    public void setResourceId(String resourceId){
-        this.resourceId = resourceId;
+        super.setResourceType(DSD);
     }
 
     public void setDeployed(boolean deployed){
@@ -382,7 +375,7 @@ public class DataSourceDefinitionDescriptor extends Descriptor {
         return thisName;
     }
 
-    public void addDataSourcePropertyDescriptor(DataSourcePropertyDescriptor propertyDescriptor){
+    public void addDataSourcePropertyDescriptor(ResourcePropertyDescriptor propertyDescriptor){
         properties.put(propertyDescriptor.getName(), propertyDescriptor.getValue());
     }
 

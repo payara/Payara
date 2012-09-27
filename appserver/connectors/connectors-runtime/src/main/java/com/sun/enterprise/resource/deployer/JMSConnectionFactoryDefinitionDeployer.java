@@ -40,6 +40,23 @@
 
 package com.sun.enterprise.resource.deployer;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.deployment.JMSConnectionFactoryDefinitionDescriptor;
+import com.sun.logging.LogDomains;
+import org.glassfish.connectors.config.ConnectorConnectionPool;
+import org.glassfish.connectors.config.ConnectorResource;
+import org.glassfish.connectors.config.SecurityMap;
+import org.glassfish.resources.api.ResourceConflictException;
+import org.glassfish.resources.api.ResourceDeployer;
+import org.glassfish.resources.api.ResourceDeployerInfo;
+import org.glassfish.resources.util.ResourceManagerFactory;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.types.Property;
+
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.beans.PropertyVetoException;
@@ -48,27 +65,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.deployment.JMSConnectionFactoryDefinitionDescriptor;
-import com.sun.enterprise.config.serverbeans.Resource;
-import com.sun.enterprise.config.serverbeans.Resources;
-
-import org.glassfish.connectors.config.ConnectorConnectionPool;
-import org.glassfish.connectors.config.ConnectorResource;
-import org.glassfish.connectors.config.SecurityMap;
-import org.glassfish.resources.api.ResourceDeployerInfo;
-import org.glassfish.resources.api.ResourceConflictException;
-import org.glassfish.resources.api.ResourceDeployer;
-import org.glassfish.resources.util.ResourceManagerFactory;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.config.types.Property;
-
-import com.sun.logging.LogDomains;
+import static org.glassfish.deployment.common.JavaEEResourceType.*;
 
 @Service
 @ResourceDeployerInfo(JMSConnectionFactoryDefinitionDescriptor.class)
@@ -87,8 +87,8 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
     public void deployResource(Object resource) throws Exception {
 
         final JMSConnectionFactoryDefinitionDescriptor desc = (JMSConnectionFactoryDefinitionDescriptor)resource;
-        String poolName = ConnectorsUtil.deriveJMSConnectionFactoryDefinitionPoolName(desc.getResourceId(), desc.getName());
-        String resourceName = ConnectorsUtil.deriveJMSConnectionFactoryDefinitionResourceName(desc.getResourceId(), desc.getName());
+        String poolName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), JMSCFDDPOOL);
+        String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), desc.getResourceType());
 
         if(_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "JMSConnectionFactoryDefinitionDeployer.deployResource() : pool-name [" + poolName + "], " +
@@ -146,8 +146,8 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         final JMSConnectionFactoryDefinitionDescriptor desc = (JMSConnectionFactoryDefinitionDescriptor) resource;
 
-        String poolName = ConnectorsUtil.deriveJMSConnectionFactoryDefinitionPoolName(desc.getResourceId(), desc.getName());
-        String resourceName = ConnectorsUtil.deriveJMSConnectionFactoryDefinitionResourceName(desc.getResourceId(), desc.getName());
+        String poolName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), JMSCFDDPOOL);
+        String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), desc.getResourceType());
 
         if(_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "JMSConnectionFactoryDefinitionDeployer.undeployResource() : pool-name [" + poolName + "], " +

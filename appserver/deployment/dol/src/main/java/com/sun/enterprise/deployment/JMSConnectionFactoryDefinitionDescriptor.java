@@ -40,11 +40,12 @@
 
 package com.sun.enterprise.deployment;
 
-import java.util.Properties;
-
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.deployment.common.Descriptor;
 
-import com.sun.enterprise.deployment.util.DOLUtils;
+import java.util.Properties;
+
+import static org.glassfish.deployment.common.JavaEEResourceType.*;
 
 public class JMSConnectionFactoryDefinitionDescriptor extends Descriptor {
 
@@ -76,6 +77,7 @@ public class JMSConnectionFactoryDefinitionDescriptor extends Descriptor {
 
     public JMSConnectionFactoryDefinitionDescriptor() {
         super();
+        super.setResourceType(JMSCFDD);
     }
 
     public String getName() {
@@ -241,7 +243,7 @@ public class JMSConnectionFactoryDefinitionDescriptor extends Descriptor {
         return theName;
     }
 
-    public void addJMSConnectionFactoryPropertyDescriptor(JMSConnectionFactoryPropertyDescriptor propertyDescriptor){
+    public void addJMSConnectionFactoryPropertyDescriptor(ResourcePropertyDescriptor propertyDescriptor){
         properties.put(propertyDescriptor.getName(), propertyDescriptor.getValue());
     }
 
