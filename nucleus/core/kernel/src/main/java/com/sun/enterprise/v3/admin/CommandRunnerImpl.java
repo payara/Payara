@@ -74,6 +74,7 @@ import org.glassfish.common.util.admin.ManPageFinder;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.GenericCrudCommand;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.MultiException;
 import org.glassfish.internal.api.*;
 import org.glassfish.internal.deployment.DeploymentTargetResolver;
 
@@ -190,7 +191,7 @@ public class CommandRunnerImpl implements CommandRunner {
         try {
             String commandServiceName = (scope != null) ? scope + commandName : commandName;
             command = habitat.getService(AdminCommand.class, commandServiceName);
-        } catch (ComponentException e) {
+        } catch (MultiException e) {
             logger.log(Level.SEVERE, "Cannot instantiate " + commandName, e);
             return null;
         }
@@ -265,7 +266,7 @@ public class CommandRunnerImpl implements CommandRunner {
         
         try {
             command = habitat.getService(AdminCommand.class, commandServiceName);
-        } catch (ComponentException e) {
+        } catch (MultiException e) {
             e.printStackTrace();
             report.setFailureCause(e);
         }
@@ -436,6 +437,39 @@ public class CommandRunnerImpl implements CommandRunner {
             childPart.setMessage(getUsageText(command, model));
             return report.getActionExitCode();
         }
+        catch (MultiException e) {
+            // If the cause is UnacceptableValueException -- we want the message
+            // from it.  It is wrapped with a less useful Exception.
+            
+            Exception exception = null;
+            for (Throwable th : e.getErrors()) {
+                Throwable cause = th;
+                while (cause != null) {
+                    if ((cause instanceof UnacceptableValueException) ||
+                            (cause instanceof IllegalArgumentException)) {
+                        exception = (Exception) th;
+                        break;
+                    }
+                    
+                    cause = cause.getCause();
+                }
+            }
+            
+            if (exception == null) {
+                // Not an UnacceptableValueException or IllegalArgumentException
+                exception = e;
+            }
+
+            logger.log(Level.SEVERE, "invocation.exception", exception);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(exception.getMessage());
+            report.setFailureCause(exception);
+            ActionReport.MessagePart childPart =
+                    report.getTopMessagePart().addChild();
+            childPart.setMessage(getUsageText(command, model));
+            return report.getActionExitCode();
+        }
+        
         checkAgainstBeanConstraints(command, model.getCommandName());
         return report.getActionExitCode();
     }
@@ -1760,7 +1794,7 @@ public class CommandRunnerImpl implements CommandRunner {
         }
 
         @Override
-        public <V> V getValue(Object component, AnnotatedElement target, Type genericType, Class<V> type) throws ComponentException {
+        public <V> V getValue(Object component, AnnotatedElement target, Type genericType, Class<V> type) {
 
             // look for the name in the list of parameters passed.
             if (target instanceof Field) {
