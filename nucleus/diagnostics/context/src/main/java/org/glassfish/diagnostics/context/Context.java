@@ -93,21 +93,6 @@ import org.glassfish.contextpropagation.Location;
 public interface Context
 {
  /**
-  * The key under which instances of Context will be created
-  * and found in the ContextMap.
-  *
-  * This key will be used by the ContextMap implementation
-  * to label the data belonging to this Context when that
-  * data is being propagated. Remote systems attempting to
-  * use that data (e.g. to construct a propagated Context)
-  * will use the value of this key to find the propagated
-  * data. Therefore the value of this key should not be
-  * changed...ever!
-  */
-  public static final String WORK_CONTEXT_KEY =
-    "org.glassfish.diagnostics.context.Context";
-
- /**
   * Get the Location of this Context.
   */
   public Location getLocation();
@@ -132,7 +117,15 @@ public interface Context
    */
   public <T> T put(String name, Number value, boolean propagates);
 
- /**
+  /**
+   * Remove the named value from this Context.
+   *
+   * @param  name The name of the item of data.
+   * @return The value being removed if there is one, otherwise null.
+   */
+  public <T> T remove(String name);
+
+  /**
   * Get a named value from this Context.
   *
   * @param  name The name of the item of data.
