@@ -109,26 +109,19 @@ public class MailSessionDeployer implements ResourceDeployer {
     public void deployResource(Object resource) throws Exception {
         final MailSessionDescriptor desc = (MailSessionDescriptor) resource;
         String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), desc.getResourceType());
-        if (desc != null) {
-            MailResource mailResource = new MyMailResource(desc,resourceName);
-            getDeployer(mailResource).deployResource(mailResource);
-            _logger.log(Level.FINE, "Mail-Session resource is deployed having resource-name [" + desc.getName() + "]");
-        } else {
-            _logger.log(Level.FINE, "Error: Mail-Session resource is not deployed.");
-        }
+        MailResource mailResource = new MyMailResource(desc,resourceName);
+        getDeployer(mailResource).deployResource(mailResource);
+        _logger.log(Level.FINE, "Mail-Session resource is deployed having resource-name [" + desc.getName() + "]");
+
     }
 
     @Override
     public void undeployResource(Object resource) throws Exception {
         final MailSessionDescriptor desc = (MailSessionDescriptor) resource;
         String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(),desc.getResourceType());
-        if (desc != null) {
-            MailResource mailResource = new MyMailResource(desc, resourceName);
-            getDeployer(mailResource).undeployResource(mailResource);
-            _logger.log(Level.FINE, "Mail-Session resource is undeployed having resource-name [" + desc.getName() + "]");
-        } else {
-            _logger.log(Level.FINE, "Error: Mail-Session resource is undeployed.");
-        }
+        MailResource mailResource = new MyMailResource(desc, resourceName);
+        getDeployer(mailResource).undeployResource(mailResource);
+        _logger.log(Level.FINE, "Mail-Session resource is undeployed having resource-name [" + desc.getName() + "]");
     }
 
     @Override
