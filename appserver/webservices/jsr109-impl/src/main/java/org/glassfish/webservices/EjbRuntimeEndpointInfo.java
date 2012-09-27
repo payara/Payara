@@ -186,122 +186,121 @@ public class EjbRuntimeEndpointInfo {
         }
 
         // Now process handlers and init jaxws RI
-        if(!handlersConfigured && doPreInvoke) {
-            synchronized(this) {
-                if(!handlersConfigured) {
-                    try {
-                        WsUtil wsu = new WsUtil();
-                        String implClassName = endpoint.getEjbComponentImpl().getEjbClassName();
-                        Class clazz = container.getEndpointClassLoader().loadClass(implClassName);
+        synchronized(this) {
+            if (!handlersConfigured && doPreInvoke) {
+                try {
+                    WsUtil wsu = new WsUtil();
+                    String implClassName = endpoint.getEjbComponentImpl().getEjbClassName();
+                    Class clazz = container.getEndpointClassLoader().loadClass(implClassName);
 
-                        // Get the proper binding using BindingID
-                        String givenBinding = endpoint.getProtocolBinding();
+                    // Get the proper binding using BindingID
+                    String givenBinding = endpoint.getProtocolBinding();
 
-                        // Get list of all wsdls and schema
-                        SDDocumentSource primaryWsdl = null;
-                        Collection docs = null;
-                        if(endpoint.getWebService().hasWsdlFile()) {
+                    // Get list of all wsdls and schema
+                    SDDocumentSource primaryWsdl = null;
+                    Collection docs = null;
+                    if(endpoint.getWebService().hasWsdlFile()) {
 
-                            WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
-                            ApplicationRegistry appRegistry = wscImpl.getApplicationRegistry();
-                            ApplicationInfo appInfo = appRegistry.get(endpoint.getBundleDescriptor().getApplication().getRegistrationName());
-                            URI deployedDir =appInfo.getSource().getURI();
+                        WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
+                        ApplicationRegistry appRegistry = wscImpl.getApplicationRegistry();
+                        ApplicationInfo appInfo = appRegistry.get(endpoint.getBundleDescriptor().getApplication().getRegistrationName());
+                        URI deployedDir =appInfo.getSource().getURI();
 
-                            URL pkgedWsdl;
-                            if(deployedDir != null) {
-                                if(endpoint.getBundleDescriptor().getApplication().isVirtual()) {
-                                    pkgedWsdl = deployedDir.resolve(endpoint.getWebService().getWsdlFileUri()).toURL();
-                                } else {
-                                    String moduleUri1 = endpoint.getBundleDescriptor().getModuleDescriptor().getArchiveUri();
-                                    
-                                    //Fix for issue 7024099
-                                    //Only replace the last "." with "_" for moduleDescriptor's archive uri
-
-                                    String moduleUri = FileUtils.makeFriendlyFilenameExtension(moduleUri1);
-                                    pkgedWsdl = deployedDir.resolve(moduleUri+"/"+endpoint.getWebService().getWsdlFileUri()).toURL();
-                                }
+                        URL pkgedWsdl;
+                        if(deployedDir != null) {
+                            if(endpoint.getBundleDescriptor().getApplication().isVirtual()) {
+                                pkgedWsdl = deployedDir.resolve(endpoint.getWebService().getWsdlFileUri()).toURL();
                             } else {
-                                pkgedWsdl = endpoint.getWebService().getWsdlFileUrl();
+                                String moduleUri1 = endpoint.getBundleDescriptor().getModuleDescriptor().getArchiveUri();
+
+                                //Fix for issue 7024099
+                                //Only replace the last "." with "_" for moduleDescriptor's archive uri
+
+                                String moduleUri = FileUtils.makeFriendlyFilenameExtension(moduleUri1);
+                                pkgedWsdl = deployedDir.resolve(moduleUri+"/"+endpoint.getWebService().getWsdlFileUri()).toURL();
                             }
-                            if (pkgedWsdl != null) {
-                                primaryWsdl = SDDocumentSource.create(pkgedWsdl);
-                                docs = wsu.getWsdlsAndSchemas(pkgedWsdl);
-                            }
-                        }
-
-                        // Create a Container to pass ServletContext and also inserting the pipe
-                        JAXWSContainer container = new JAXWSContainer(null,
-                                endpoint);
-
-                        // Get catalog info
-                        java.net.URL catalogURL = clazz.getResource('/' + endpoint.getBundleDescriptor().getDeploymentDescriptorDir() + File.separator + "jax-ws-catalog.xml");
-
-                        // Create Binding and set service side handlers on this binding
-
-                        boolean mtomEnabled = wsu.getMtom(endpoint);
-                        WSBinding binding = null;
-
-                        ArrayList<WebServiceFeature> wsFeatures = new ArrayList<WebServiceFeature>();
-                        // Only if MTOm is enabled create the Binding with the MTOMFeature
-                        if (mtomEnabled) {
-                            int mtomThreshold = endpoint.getMtomThreshold() != null ? new Integer(endpoint.getMtomThreshold()):0;
-                            MTOMFeature mtom = new MTOMFeature(true,mtomThreshold);
-                            wsFeatures.add(mtom);
-                        }
-
-                        Addressing addressing = endpoint.getAddressing();
-                        if (endpoint.getAddressing() != null) {
-                            AddressingFeature addressingFeature = new AddressingFeature(addressing.isEnabled(),
-                                addressing.isRequired(),getResponse(addressing.getResponses()));
-                            wsFeatures.add(addressingFeature);
-                        }
-                        if (wsFeatures.size()>0){
-                            binding = BindingID.parse(givenBinding).createBinding(wsFeatures.toArray
-                                    (new WebServiceFeature[wsFeatures.size()]));
                         } else {
-                            binding = BindingID.parse(givenBinding).createBinding();
+                            pkgedWsdl = endpoint.getWebService().getWsdlFileUrl();
                         }
-
-                        wsu.configureJAXWSServiceHandlers(endpoint,
-                            endpoint.getProtocolBinding(), binding);
-
-                        // Create the jaxws2.1 invoker and use this
-                        Invoker invoker = new InstanceResolverImpl(clazz).createInvoker();
-                        WSEndpoint wsep = WSEndpoint.create(
-                                clazz, // The endpoint class
-                                false, // we do not want JAXWS to process @HandlerChain
-                                new EjbInvokerImpl(clazz, invoker, webServiceEndpointServant, wsCtxt), // the invoker
-                                endpoint.getServiceName(), // the service QName
-                                endpoint.getWsdlPort(), // the port
-                                container,
-                                binding, // Derive binding
-                                primaryWsdl, // primary WSDL
-                                docs, // Collection of imported WSDLs and schema
-                                catalogURL
-                                );
-
-                        String uri = endpoint.getEndpointAddressUri();
-                        String urlPattern = uri.startsWith("/") ? uri : "/" + uri;
-
-                        // All set; Create the adapter
-                        if(adapterList == null) {
-                            adapterList = new ServletAdapterList();
+                        if (pkgedWsdl != null) {
+                            primaryWsdl = SDDocumentSource.create(pkgedWsdl);
+                            docs = wsu.getWsdlsAndSchemas(pkgedWsdl);
                         }
-                        adapter = adapterList.createAdapter(endpoint.getName(), urlPattern, wsep);
-                        handlersConfigured=true;
-                    } catch (Throwable t) {
-                        logger.log(Level.SEVERE,"Cannot initialize endpoint " + endpoint.getName() + " : error is : " , t);
-                        adapter = null;
                     }
+
+                    // Create a Container to pass ServletContext and also inserting the pipe
+                    JAXWSContainer container = new JAXWSContainer(null,
+                            endpoint);
+
+                    // Get catalog info
+                    java.net.URL catalogURL = clazz.getResource('/' + endpoint.getBundleDescriptor().getDeploymentDescriptorDir() + File.separator + "jax-ws-catalog.xml");
+
+                    // Create Binding and set service side handlers on this binding
+
+                    boolean mtomEnabled = wsu.getMtom(endpoint);
+                    WSBinding binding = null;
+
+                    ArrayList<WebServiceFeature> wsFeatures = new ArrayList<WebServiceFeature>();
+                    // Only if MTOm is enabled create the Binding with the MTOMFeature
+                    if (mtomEnabled) {
+                        int mtomThreshold = endpoint.getMtomThreshold() != null ? new Integer(endpoint.getMtomThreshold()):0;
+                        MTOMFeature mtom = new MTOMFeature(true,mtomThreshold);
+                        wsFeatures.add(mtom);
+                    }
+
+                    Addressing addressing = endpoint.getAddressing();
+                    if (endpoint.getAddressing() != null) {
+                        AddressingFeature addressingFeature = new AddressingFeature(addressing.isEnabled(),
+                            addressing.isRequired(),getResponse(addressing.getResponses()));
+                        wsFeatures.add(addressingFeature);
+                    }
+                    if (wsFeatures.size()>0){
+                        binding = BindingID.parse(givenBinding).createBinding(wsFeatures.toArray
+                                (new WebServiceFeature[wsFeatures.size()]));
+                    } else {
+                        binding = BindingID.parse(givenBinding).createBinding();
+                    }
+
+                    wsu.configureJAXWSServiceHandlers(endpoint,
+                        endpoint.getProtocolBinding(), binding);
+
+                    // Create the jaxws2.1 invoker and use this
+                    Invoker invoker = new InstanceResolverImpl(clazz).createInvoker();
+                    WSEndpoint wsep = WSEndpoint.create(
+                            clazz, // The endpoint class
+                            false, // we do not want JAXWS to process @HandlerChain
+                            new EjbInvokerImpl(clazz, invoker, webServiceEndpointServant, wsCtxt), // the invoker
+                            endpoint.getServiceName(), // the service QName
+                            endpoint.getWsdlPort(), // the port
+                            container,
+                            binding, // Derive binding
+                            primaryWsdl, // primary WSDL
+                            docs, // Collection of imported WSDLs and schema
+                            catalogURL
+                            );
+
+                    String uri = endpoint.getEndpointAddressUri();
+                    String urlPattern = uri.startsWith("/") ? uri : "/" + uri;
+
+                    // All set; Create the adapter
+                    if(adapterList == null) {
+                        adapterList = new ServletAdapterList();
+                    }
+                    adapter = adapterList.createAdapter(endpoint.getName(), urlPattern, wsep);
+                    handlersConfigured=true;
+                } catch (Throwable t) {
+                    logger.log(Level.SEVERE,"Cannot initialize endpoint " + endpoint.getName() + " : error is : " , t);
+                    adapter = null;
                 }
             }
         }
+
         //Issue 10776 The wsCtxt created using WebServiceReferenceManagerImpl
         //does not have the jaxwsContextDelegate set
         //set it using this method
         synchronized (this) {
             addWSContextInfo(wsCtxt);
-            if (inv != null) {
+            if (inv != null && inv instanceof EJBInvocation) {
                 EJBInvocation ejbInv = (EJBInvocation) inv;
                 ejbInv.setWebServiceContext(wsCtxt);
             }
@@ -337,7 +336,7 @@ public class EjbRuntimeEndpointInfo {
      * Force initialization of the endpoint runtime information
      * as well as the handlers injection
      */
-    public void initRuntimeInfo(ServletAdapterList list) throws Exception {
+    public synchronized void initRuntimeInfo(ServletAdapterList list) throws Exception {
        AdapterInvocationInfo aInfo =null;
         try {
             this.adapterList = list;

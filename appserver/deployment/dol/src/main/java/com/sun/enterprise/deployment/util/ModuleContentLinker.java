@@ -173,9 +173,8 @@ public class ModuleContentLinker extends DefaultDOLVisitor implements ComponentV
                         serviceRef.setWsdlFileUrl(new URL(wsdlFileUri));
                     } else {
                         // Given WSDL location is a relative path - append this to the module dir
-                        File wsdlFile = new File(getModuleLocation(moduleDesc), wsdlFileUri);                
                         URL wsdlFileUrl = internalGetUrl(moduleDesc, wsdlFileUri);
-                        serviceRef.setWsdlFileUrl(wsdlFile.toURI().toURL());
+                        serviceRef.setWsdlFileUrl(wsdlFileUrl);
                     }
                 }
             } else {

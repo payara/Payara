@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -220,7 +220,9 @@ public class EjbWebServiceDispatcher implements EjbMessageDispatcher {
                     // during getImplementor(), since some of the
                     // preInvoke steps might have occurred.  It's ok
                     // if implementor is null.
-                    endpointInfo.releaseImplementor(aInfo.getInv());
+                    if (aInfo != null) {
+                        endpointInfo.releaseImplementor(aInfo.getInv());
+                    }
                 }
             } else {
                 String errorMsg = "null message POSTed to ejb endpoint " +
