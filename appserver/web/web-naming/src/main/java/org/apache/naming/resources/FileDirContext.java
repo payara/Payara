@@ -109,7 +109,7 @@ public class FileDirContext extends BaseDirContext {
             "org.apache.naming.resources.LogMessages";
 
     @LoggerInfo(subsystem="WEB", description="WEB Naming Logger", publish=true)
-    public static final String WEB_NAMING_LOGGER = "org.apache.naming.resources";
+    public static final String WEB_NAMING_LOGGER = "javax.enterprise.web.naming";
 
     public static final Logger logger =
             Logger.getLogger(WEB_NAMING_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
