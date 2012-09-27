@@ -40,8 +40,6 @@
 
 package com.sun.enterprise.transaction.config;
 
-import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
-import com.sun.enterprise.config.modularity.annotation.HasCustomizationTokens;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.api.admin.config.Container;
 import org.jvnet.hk2.config.Attribute;
@@ -71,7 +69,6 @@ import javax.validation.constraints.Min;
 }) */
 
 @Configured
-@CustomConfiguration(adminConfigFileName = "admin-module-config.xml",defaultConfigFileName = "default-instance-module-config.xml")
 public interface TransactionService extends ConfigBeanProxy, Injectable, PropertyBag, ConfigExtension, Container {
 
     /**

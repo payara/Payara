@@ -114,6 +114,8 @@
       </admin-service>
       <connector-service shutdown-timeout-in-seconds="30">
       </connector-service>
+       <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" />
+       <diagnostic-service />
       <security-service>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
           <property value="${com.sun.aas.instanceRoot}/config/admin-keyfile" name="file" />
@@ -348,6 +350,7 @@
                  </provider-config>
              </message-security-config>
          </security-service>
+         <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" automatic-recovery="true" />
          <diagnostic-service />
          <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
              <jvm-options>-XX:MaxPermSize=192m</jvm-options>
