@@ -515,12 +515,5 @@ public class ProgrammaticLogin
         this.webProgrammaticLogin = habitat.getService(WebProgrammaticLogin.class);
     }
 
-    private WebProgrammaticLogin getWebProgrammaticLogin() {
-        if (this.webProgrammaticLogin != null) {
-            return this.webProgrammaticLogin;
-        }
-        //TODO: localize this.
-        throw new RuntimeException("Unresolved Reference : Could not Locate implementation class for WebProgrammaticLogin");
-    }
 
 }

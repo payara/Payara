@@ -250,6 +250,7 @@ public class WebPermissionUtil {
 				  else if (otherUrlType == PT_DEFAULT)
 				      qpVal.getValue().addQualifier(url);
 				  break;
+                              default : break;
 			  }
 		      }
 
@@ -397,7 +398,7 @@ public class WebPermissionUtil {
 				  String name) {
 	BitSet allConnectMethods = null;
 	boolean allConnectAtOther = m.otherConstraint.isConnectAllowed
-	    (ConstraintValue.ConnectTypeNone);
+	    (ConstraintValue.connectTypeNone);
 
 	for (int i=0; i<ConstraintValue.connectKeys.length; i++) {
 
@@ -667,7 +668,7 @@ class ConstraintValue {
       "CONFIDENTIAL"
     };
 
-    static int ConnectTypeNone = 1;
+    static int connectTypeNone = 1;
     static HashMap<String, Integer> connectHash = new HashMap<String, Integer>();
     static 
     {
@@ -708,7 +709,7 @@ class ConstraintValue {
     }
 
     void addConnectType(String guarantee) {
-	int b = ConnectTypeNone;
+	int b = connectTypeNone;
 	if (guarantee != null) {
 	    Integer bit = connectHash.get(guarantee);
 	    if (bit == null) 
@@ -739,7 +740,7 @@ class ConstraintValue {
 
     boolean isTransportConstrained() {
 	if (excluded || (connectSet != 0 &&
-			 !bitIsSet(connectSet,ConnectTypeNone))) {
+			 !bitIsSet(connectSet,connectTypeNone))) {
 	    return true;
 	}
 	return false;
@@ -747,7 +748,7 @@ class ConstraintValue {
 
     boolean isConnectAllowed(int cType) {
 	if (!excluded && (connectSet == 0 ||
-			  bitIsSet(connectSet,ConnectTypeNone) ||
+			  bitIsSet(connectSet,connectTypeNone) ||
 			  bitIsSet(connectSet,cType))) {
 	    return true;
 	}

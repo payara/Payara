@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -101,7 +102,8 @@ public class IORToSocketInfoImpl implements IORToSocketInfo {
             IIOPProfileTemplate iiopProfileTemplate = (IIOPProfileTemplate)ior.
                                  getProfile().getTaggedProfileTemplate();
             IIOPAddress primary = iiopProfileTemplate.getPrimaryAddress() ;
-            String host = primary.getHost().toLowerCase();
+            Locale loc = Locale.getDefault();
+            String host = primary.getHost().toLowerCase(loc);
 
             String type = null;
             int port = 0;
@@ -189,7 +191,7 @@ public class IORToSocketInfoImpl implements IORToSocketInfo {
 		AlternateIIOPAddressComponent alternate =
 		    (AlternateIIOPAddressComponent) iterator.next();
 		
-		host = alternate.getAddress().getHost().toLowerCase();
+		host = alternate.getAddress().getHost().toLowerCase(loc);
 		port = alternate.getAddress().getPort();
 		
 		result.add(createSocketInfo(

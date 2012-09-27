@@ -558,8 +558,8 @@ public final class JDBCRealm extends DigestRealmBase {
         final String dbUser = this.getProperty(PARAM_DB_USER);
         final String dbPassword = this.getProperty(PARAM_DB_PASSWORD);
         try{
-         String nonTxJndiName = dsJndi +"__nontx";
-            /*InitialContext ic = new InitialContext();
+         /*String nonTxJndiName = dsJndi +"__nontx";
+            InitialContext ic = new InitialContext();
              final DataSource dataSource = 
                 //V3 Commented (DataSource)ConnectorRuntime.getRuntime().lookupNonTxResource(dsJndi,false);
                 //replacement code suggested by jagadish

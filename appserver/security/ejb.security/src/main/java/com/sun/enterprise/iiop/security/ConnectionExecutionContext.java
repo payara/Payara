@@ -70,7 +70,7 @@ public class ConnectionExecutionContext {
        Boolean b  = (Boolean) AccessController.doPrivileged( new PrivilegedAction(){
             @Override
             public Object run() {
-                 return new Boolean(Boolean.getBoolean(IIOP_CLIENT_PER_THREAD_FLAG));
+                 return Boolean.valueOf(Boolean.getBoolean(IIOP_CLIENT_PER_THREAD_FLAG));
             }
 
        });

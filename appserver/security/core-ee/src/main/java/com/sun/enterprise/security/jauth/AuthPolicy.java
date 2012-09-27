@@ -235,6 +235,7 @@ public class AuthPolicy {
 	case SOURCE_AUTH_CONTENT:
 	    sb.append("source-auth-type = SOURCE_AUTH_CONTENT");
 	    break;
+        default : break;
 	}
 
 	if (authenticateRecipient) {

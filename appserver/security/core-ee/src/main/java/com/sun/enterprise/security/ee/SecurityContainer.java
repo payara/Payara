@@ -87,7 +87,6 @@ public class SecurityContainer implements Container, PostConstruct{
      * This has to be the same value as is in j2ee/WebModule.cpp.
      */
     public static final String DEFAULT_WEB_MODULE_NAME = "__default-web-module";
-    private static WebSecurityDeployerProbeProvider websecurityProbeProvider = new WebSecurityDeployerProbeProvider();
 
     public String getName() {
         return "Security";

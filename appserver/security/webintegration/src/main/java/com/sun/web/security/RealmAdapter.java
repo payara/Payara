@@ -1343,7 +1343,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         }
 
         if (isGranted) {
-            HashMap sharedState = null;
+            HashMap sharedState;
             boolean delegateSessionMgmt = false;
             //XXX Keep it for reference
             /*
