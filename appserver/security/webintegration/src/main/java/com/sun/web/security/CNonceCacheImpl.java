@@ -72,7 +72,7 @@ public final class CNonceCacheImpl extends LinkedHashMap<String, NonceInfo> impl
     /**
      * The string manager for this package.
      */
-    protected static final StringManager sm =
+    static final StringManager sm =
             StringManager.getManager("org.apache.catalina.util");
 
     public CNonceCacheImpl() {
@@ -83,13 +83,13 @@ public final class CNonceCacheImpl extends LinkedHashMap<String, NonceInfo> impl
      * Maximum number of client nonces to keep in the cache. If not specified,
      * the default value of 1000 is used.
      */
-    protected long cnonceCacheSize = 1000;
+    long cnonceCacheSize = 1000;
 
     /**
      * How long server nonces are valid for in milliseconds. Defaults to 5
      * minutes.
      */
-    protected long nonceValidity = 5 * 60 * 1000;
+    long nonceValidity = 5 * 60 * 1000;
 
     @Override
     protected boolean removeEldestEntry(

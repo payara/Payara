@@ -1078,7 +1078,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             for (NetworkListener nwListener : nwListeners.getNetworkListener()) {
                 //Loop through the network listeners
                 String nwAddress = nwListener.getAddress();
-                InetAddress[] localHostAdresses = new InetAddress[10];
+                InetAddress[] localHostAdresses; 
                 if (nwAddress == null || nwAddress.equals("0.0.0.0")) {
                     nwAddress = NetUtils.getCanonicalHostName();
                     if (!nwAddress.equals(hostPort[0])) {
@@ -1343,7 +1343,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         }
 
         if (isGranted) {
-            HashMap sharedState;
+            // HashMap sharedState;
             boolean delegateSessionMgmt = false;
             //XXX Keep it for reference
             /*
