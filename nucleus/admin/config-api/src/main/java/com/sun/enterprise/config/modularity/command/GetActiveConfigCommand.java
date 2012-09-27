@@ -59,6 +59,7 @@ import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -102,6 +103,10 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
+
+    @Inject
+        @Named (ServerEnvironmentImpl.DEFAULT_INSTANCE_NAME)
+        ServerEnvironmentImpl serverenv;
 
     @Param(name = "serviceName", primary = true, optional = false)
     private String serviceName;
@@ -156,7 +161,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
     private String getActiveConfigFor(Class configBeanType, Habitat habitat) throws InvocationTargetException, IllegalAccessException {
 
         if (ConfigModularityUtils.hasCustomConfig(configBeanType)) {
-            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType);
+            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType, serverenv.isDas());
             return getCompleteConfiguration(defaults);
         }
 

@@ -42,10 +42,13 @@ package com.sun.enterprise.config.modularity.parser;
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.modularity.annotation.HasNoDefaultConfiguration;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.module.bootstrap.StartupContext;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
+import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -123,7 +126,9 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
     protected <U extends ConfigBeanProxy> void addConfigBeanFor(Class<U> extensionType, C extensionOwner) {
         ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(extensionOwner)).getMasterView();
         Habitat habitat = cb.getHabitat();
-        List<ConfigBeanDefaultValue> configBeanDefaultValueList = ConfigModularityUtils.getDefaultConfigurations(extensionType);
+        StartupContext context = habitat.getService(StartupContext.class);
+        List<ConfigBeanDefaultValue> configBeanDefaultValueList =
+                ConfigModularityUtils.getDefaultConfigurations(extensionType, ConfigModularityUtils.isDas(context));
         ConfigurationParser configurationParser = new ConfigurationParser();
         configurationParser.prepareAndSetConfigBean(habitat, configBeanDefaultValueList);
     }

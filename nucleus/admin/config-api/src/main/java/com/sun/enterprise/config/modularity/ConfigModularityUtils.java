@@ -52,8 +52,10 @@ import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
+import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.config.support.GlassFishConfigBean;
@@ -92,6 +94,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -127,10 +130,9 @@ public final class ConfigModularityUtils {
      * @param configBeanClass the config bean type we want to check for its configuration snippet
      * @return A url to the file or null of not exists
      */
-    public static List<ConfigBeanDefaultValue> getDefaultConfigurations(Class configBeanClass) {
+    public static List<ConfigBeanDefaultValue> getDefaultConfigurations(Class configBeanClass, boolean isDas) {
 
         //Determine if it is DAS or instance
-        boolean isDas = true;
         CustomConfiguration c = (CustomConfiguration) configBeanClass.getAnnotation(CustomConfiguration.class);
         List<ConfigBeanDefaultValue> defaults = Collections.emptyList();
         if (c.usesOnTheFlyConfigGeneration()) {
@@ -805,5 +807,24 @@ public final class ConfigModularityUtils {
             }
             return null;
         } else return token.getDefaultValue();
+    }
+
+
+    public static boolean isDas(StartupContext startupContext) {
+
+
+        Properties args = startupContext.getArguments();
+        RuntimeType serverType = RuntimeType.getDefault();
+        String typeString = args.getProperty("-type");
+        if (typeString != null)
+            serverType = RuntimeType.valueOf(typeString);
+        LOG.info("============== ================== ==============");
+        LOG.info("============== ================== ==============");
+        LOG.info("============== ================== ==============");
+        LOG.info("============== ================== ==============");
+        LOG.info("============== ================== ==============");
+        LOG.info("this is the DAS check: " + serverType.isDas() + "   " + serverType.name());
+        return serverType.isDas();
+
     }
 }

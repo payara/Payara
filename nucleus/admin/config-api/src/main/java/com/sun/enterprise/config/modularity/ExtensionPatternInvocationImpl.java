@@ -41,12 +41,16 @@
 package com.sun.enterprise.config.modularity;
 
 import com.sun.enterprise.config.modularity.parser.ModuleConfigurationLoader;
+import org.glassfish.api.admin.config.ConfigExtension;
+import org.glassfish.config.support.GlassFishConfigBean;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigExtensionHandler;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,21 +60,36 @@ import java.util.logging.Logger;
  *
  * @author Masoud Kalali
  */
-@Service
-public class ExtensionPatternInvocationImpl {
+@Service(name = "basic-config-extension-handler")
+public class ExtensionPatternInvocationImpl implements ConfigExtensionHandler {
     //TODO to implement ExtensionPatternInvocationContract when HK2-72 available
     private static final Logger LOG = Logger.getLogger(ExtensionPatternInvocationImpl.class.getName());
     @Inject
     Habitat habitat;
 
-    <U extends ConfigBeanProxy> U getExtensionByType(U extensionOwner, Class<U> extensionType) {
-        ModuleConfigurationLoader moduleConfigurationLoader = new ModuleConfigurationLoader(extensionOwner);
+    @Override
+    public ConfigBeanProxy handleExtension(Object owner, Class ownerType, Object[] params) {
+
+        ConfigBeanProxy configExtension = null;
+        List<ConfigBeanProxy> extensions = ConfigModularityUtils.getExtensions((ConfigBeanProxy) owner);
+        for (ConfigBeanProxy extension : extensions) {
+            try {
+                configExtension = (ConfigBeanProxy) ((Class) params[0]).cast(extension);
+                return configExtension;
+            } catch (Exception e) {
+                // ignore, not the right type.
+            }
+        }
+
         try {
-            U returnValue = (U) moduleConfigurationLoader.createConfigBeanForType(extensionType);
+            ConfigBeanProxy pr = ((GlassFishConfigBean) owner).createProxy(ownerType);
+            ModuleConfigurationLoader moduleConfigurationLoader = new ModuleConfigurationLoader(pr);
+
+            ConfigBeanProxy returnValue = (ConfigBeanProxy) moduleConfigurationLoader.createConfigBeanForType((Class) params[0]);
             return returnValue;
         } catch (TransactionFailure transactionFailure) {
             LOG.log(Level.INFO, "Cannot get extension type {0} for {1} due to {2}", new Object[]{
-                    extensionOwner.getClass().getName(), extensionType.getClass().getName(),
+                    owner.getClass().getName(), ownerType.getClass().getName(),
                     transactionFailure.getMessage()});
             return null;
         }

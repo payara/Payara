@@ -62,6 +62,7 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -113,6 +114,11 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
     @Param(name = "serviceName", primary = true)
     private String serviceName;
 
+
+    @Inject
+        @Named (ServerEnvironmentImpl.DEFAULT_INSTANCE_NAME)
+        ServerEnvironmentImpl serverenv;
+
     @Override
     public void execute(AdminCommandContext context) {
         report = context.getActionReport();
@@ -147,7 +153,7 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
         }
 
         if (ConfigModularityUtils.hasCustomConfig(configBeanType)) {
-            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType);
+            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType, serverenv.isDas());
             deleteDependentConfigElements(defaults);
         } else {
             deleteTopLevelExtensionByType(config, className, configBeanType);

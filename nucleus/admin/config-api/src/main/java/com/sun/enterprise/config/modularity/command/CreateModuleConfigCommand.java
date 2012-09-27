@@ -60,6 +60,7 @@ import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 
+import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PerLookup;
@@ -106,6 +107,10 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
+
+    @Inject
+    @Named (ServerEnvironmentImpl.DEFAULT_INSTANCE_NAME)
+    ServerEnvironmentImpl serverenv;
 
     @Param(optional = true, name = "serviceName", primary = true)
     private String serviceName;
@@ -239,7 +244,8 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
         if (!ConfigModularityUtils.hasCustomConfig(configBeanType)) {
             return ConfigModularityUtils.serializeConfigBeanByType(configBeanType, habitat);
         } else {
-            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType);
+
+            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType, serverenv.isDas());
             StringBuilder builder = new StringBuilder();
             for (ConfigBeanDefaultValue value : defaults) {
                 builder.append(localStrings.getLocalString("at.location",
