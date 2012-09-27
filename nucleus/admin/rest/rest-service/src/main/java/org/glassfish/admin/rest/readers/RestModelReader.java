@@ -89,7 +89,7 @@ public class RestModelReader<T extends RestModel> implements MessageBodyReader<T
     }
 
     @Override
-    public T readFrom(Class<T> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, String> mm, InputStream entityStream) throws WebApplicationException {
+    public T readFrom(Class<T> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, String> mm, InputStream entityStream) throws WebApplicationException, IOException {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(entityStream));
             StringBuilder sb = new StringBuilder();
@@ -109,8 +109,8 @@ public class RestModelReader<T extends RestModel> implements MessageBodyReader<T
                 throw new WebApplicationException(response);
             }
             return (T) model;
-        } catch (Exception e) {
-            throw new WebApplicationException(e);
+        } catch (JSONException ex) {
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(ex.getLocalizedMessage()).build());
         }
     }
 }

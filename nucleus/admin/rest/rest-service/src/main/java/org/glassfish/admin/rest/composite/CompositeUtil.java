@@ -76,6 +76,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.RestExtension;
 import org.glassfish.admin.rest.composite.metadata.AttributeReference;
@@ -231,8 +232,7 @@ public class CompositeUtil {
      * @param json The json encoding of the object
      * @return
      */
-    public <T> T unmarshallClass(Class<T> modelClass, JSONObject json) {
-        try {
+    public <T> T unmarshallClass(Class<T> modelClass, JSONObject json) throws JSONException {
             T model = getModel(modelClass);
             for (Method setter : getSetters(modelClass)) {
                 String name = setter.getName();
@@ -256,22 +256,29 @@ public class CompositeUtil {
                                 values.add(element);
                             }
                         }
-                        setter.invoke(model, values);
+                        invoke(setter, model, values);
                     } else if (JSONObject.class.isAssignableFrom(o.getClass())) {
-                        setter.invoke(model, unmarshallClass(param0.getClass(), (JSONObject) o));
+                        invoke(setter, model, unmarshallClass(param0.getClass(), (JSONObject) o));
                     } else {
                         if ("null".equals(o.toString())) {
                             o = null;
                         }
-                        setter.invoke(model, o);
+                        invoke(setter, model, o);
                     }
                 }
             }
             return model;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
 
+    }
+
+    private void invoke(Method m, Object o, Object... args) {
+        try {
+            m.invoke(o, args);
+        } catch (IllegalArgumentException iae) {
+            throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity(iae.getLocalizedMessage()).build());
+        } catch (Exception e) {
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getLocalizedMessage()).build());
+        }
     }
 
     /**
@@ -423,9 +430,9 @@ public class CompositeUtil {
         ExitCode code = ar.getActionExitCode();
         if (code.equals(ExitCode.FAILURE) || (code.equals(ExitCode.WARNING) && throwOnWarning)) {
             if (throwBadRequest) {
-                throw new WebApplicationException(Response.status(Status.BAD_REQUEST).
-                    entity(ar.getTopMessagePart().getMessage()).
-                    build());
+                throw new WebApplicationException(Response.status(Status.BAD_REQUEST)
+                    .entity(ar.getCombinedMessage())
+                    .build());
             } else {
                 throw new WebApplicationException(Status.NOT_FOUND);
             }

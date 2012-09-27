@@ -274,7 +274,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
      * Convenience wrapper around ParameterMap constructor to make it easier to use its fluent API
      * @return ParameterMap
      */
-    protected ParameterMap newParameterMap() {
+    protected ParameterMap parameterMap() {
         return new ParameterMap();
     }
 
