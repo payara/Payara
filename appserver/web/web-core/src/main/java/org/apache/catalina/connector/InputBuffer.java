@@ -435,16 +435,16 @@ public class InputBuffer extends Reader
                     }
                 });
             }
-            // TODO We should move resume() using upgrade finished API.
-            if (request.isUpgrade()) {
-                grizzlyRequest.getResponse().resume();
-            }
         }
 
         private void processAllDataRead() {
             synchronized(lk) {
                 prevIsReady = true;
                 readListener.onAllDataRead();
+                // TODO We should move resume() using upgrade finished API.
+                if (request.isUpgrade()) {
+                    grizzlyRequest.getResponse().resume();
+                }
             }
         }
 
