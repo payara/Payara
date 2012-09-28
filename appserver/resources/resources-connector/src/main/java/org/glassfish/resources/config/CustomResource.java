@@ -49,7 +49,6 @@ import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.quality.ToDo;
 import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
@@ -73,7 +72,7 @@ import java.util.List;
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-custom-resource")
 })
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=CustomResource.class)
-public interface CustomResource extends ConfigBeanProxy, Injectable, Resource,
+public interface CustomResource extends ConfigBeanProxy, Resource,
         PropertyBag, BindableResource {
 
     /**

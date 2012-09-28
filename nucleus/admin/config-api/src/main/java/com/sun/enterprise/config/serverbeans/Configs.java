@@ -44,9 +44,6 @@ import java.util.List;
 
 import org.glassfish.api.I18n;
 import org.glassfish.config.support.Create;
-import org.glassfish.config.support.Delete;
-import org.glassfish.config.support.TypeAndNameResolver;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
@@ -54,7 +51,7 @@ import org.jvnet.hk2.config.Element;
 
 
 @Configured
-public interface Configs extends ConfigBeanProxy, Injectable {
+public interface Configs extends ConfigBeanProxy {
     /**
      * Gets the value of the config property. <p/> <p/> This accessor method returns a reference to the live list, not a
      * snapshot. Therefore any modification you make to the returned list will be present inside the JAXB object. This

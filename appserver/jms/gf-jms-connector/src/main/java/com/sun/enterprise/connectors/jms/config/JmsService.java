@@ -46,7 +46,6 @@ import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.api.admin.config.Container;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.api.admin.config.PropertyDesc;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
@@ -73,7 +72,7 @@ import java.util.List;
 @Configured
 @HasCustomizationTokens
 @CustomConfiguration
-public interface JmsService extends ConfigExtension, Injectable, PropertyBag, Container {
+public interface JmsService extends ConfigExtension, PropertyBag, Container {
 
     /**
      * Gets the value of the initTimeoutInSeconds property.

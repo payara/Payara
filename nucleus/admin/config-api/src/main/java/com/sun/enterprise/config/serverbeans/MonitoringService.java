@@ -46,7 +46,6 @@ import org.glassfish.api.monitoring.MonitoringItem;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
-import org.jvnet.hk2.component.Injectable;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -69,7 +68,7 @@ import org.glassfish.api.admin.config.ConfigExtension;
 }) */
 
 @Configured
-public interface MonitoringService extends ConfigExtension, Injectable, PropertyBag {
+public interface MonitoringService extends ConfigExtension, PropertyBag {
 
     /**
      * Gets the value of the moduleMonitoringLevels property.

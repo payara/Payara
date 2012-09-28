@@ -43,7 +43,6 @@ package com.sun.enterprise.config.serverbeans;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 
 import java.beans.PropertyVetoException;
 
@@ -67,7 +66,7 @@ import static org.glassfish.config.support.Constants.NAME_REGEX;
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-system-properties"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-system-property")
 })
-public interface SystemProperty extends ConfigBeanProxy, Injectable  {
+public interface SystemProperty extends ConfigBeanProxy  {
 
     /**
      * Gets the value of the name property.

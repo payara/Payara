@@ -43,7 +43,6 @@ package org.glassfish.connectors.config;
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
 import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 
@@ -64,7 +63,7 @@ import org.glassfish.quality.ToDo;
     "property"
 }) */
 @Configured
-public interface PersistenceManagerFactoryResource extends ConfigBeanProxy, Injectable, Resource, PropertyBag, BindableResource {
+public interface PersistenceManagerFactoryResource extends ConfigBeanProxy, Resource, PropertyBag, BindableResource {
 
     /**
      * Gets the value of the factoryClass property.

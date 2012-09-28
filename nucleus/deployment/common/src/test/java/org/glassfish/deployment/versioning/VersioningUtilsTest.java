@@ -797,12 +797,6 @@ public class VersioningUtilsTest {
         }
 
         @Override
-        public void injectedInto(Object target) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-
-        @Override
         public <T extends ConfigBeanProxy> T createChild(Class<T> type)
                throws TransactionFailure {
             throw new UnsupportedOperationException("Not supported yet.");

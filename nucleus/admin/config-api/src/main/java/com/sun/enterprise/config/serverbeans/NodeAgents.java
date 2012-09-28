@@ -43,7 +43,6 @@ package com.sun.enterprise.config.serverbeans;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 
 import java.util.List;
 
@@ -58,7 +57,7 @@ import java.util.List;
 
 // general solution needed; this is intermediate solution
 @Configured
-public interface NodeAgents extends ConfigBeanProxy, Injectable  {
+public interface NodeAgents extends ConfigBeanProxy {
 
     /**
      * Gets the value of the nodeAgent property.

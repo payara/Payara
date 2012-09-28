@@ -43,7 +43,6 @@ package org.glassfish.web.config.serverbeans;
 import com.sun.enterprise.config.serverbeans.AvailabilityServiceExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.types.Property;
@@ -65,7 +64,7 @@ import org.glassfish.quality.ToDo;
 }) */
 
 @Configured
-public interface WebContainerAvailability extends ConfigBeanProxy, Injectable,
+public interface WebContainerAvailability extends ConfigBeanProxy,
         PropertyBag, AvailabilityServiceExtension {
 
     /**

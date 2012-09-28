@@ -46,7 +46,6 @@ import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 
 import java.util.List;
 
@@ -56,7 +55,7 @@ import java.util.List;
  * active configurations.
  */
 @Configured
-public interface Clusters extends ConfigBeanProxy, Injectable {
+public interface Clusters extends ConfigBeanProxy {
 
      /**
       * Return the list of clusters currently configured

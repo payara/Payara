@@ -44,7 +44,6 @@ import java.util.List;
 import java.beans.PropertyVetoException;
 import javax.validation.constraints.NotNull;
 
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -55,7 +54,7 @@ import org.jvnet.hk2.config.Element;
  * set of security providers which are created and consumed by the service. 
  */
 @Configured
-public interface SecurityProvider extends ConfigBeanProxy, Injectable {
+public interface SecurityProvider extends ConfigBeanProxy {
     /**
      * Gets the name of the security provider.
      * The name represents the qualifier @Named given to the security provider. 

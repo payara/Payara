@@ -47,7 +47,6 @@ import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.api.admin.config.PropertyDesc;
 import org.glassfish.api.admin.config.ReferenceContainer;
 import org.glassfish.quality.ToDo;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -74,7 +73,7 @@ import java.util.logging.Logger;
  * balancers. node-agents and load balancers are SE/EE related entities only.
  *
  */
-public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, SystemPropertyBag, ConfigLoader  {
+public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag, ConfigLoader  {
 
     public static final String DOMAIN_NAME_PROPERTY = "administrative.domain.name";
 

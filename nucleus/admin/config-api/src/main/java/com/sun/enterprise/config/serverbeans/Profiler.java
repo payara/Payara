@@ -44,7 +44,6 @@ import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -78,7 +77,7 @@ import javax.validation.constraints.Pattern;
 }) */
 
 @Configured
-public interface Profiler extends ConfigBeanProxy, Injectable, PropertyBag, JvmOptionBag {
+public interface Profiler extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
 
     /**
      * Gets the value of the name property.

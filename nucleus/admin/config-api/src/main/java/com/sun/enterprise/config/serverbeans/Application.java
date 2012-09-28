@@ -56,7 +56,6 @@ import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.quality.ToDo;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
@@ -67,7 +66,7 @@ import org.jvnet.hk2.config.Element;
     @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "undeploy"),
     @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "redeploy")
 })
-public interface Application extends Injectable, ApplicationName, PropertyBag {
+public interface Application extends ApplicationName, PropertyBag {
 
     public static final String APP_LOCATION_PROP_NAME = "appLocation";
     public static final String DEPLOYMENT_PLAN_LOCATION_PROP_NAME = "deploymentPlanLocation";

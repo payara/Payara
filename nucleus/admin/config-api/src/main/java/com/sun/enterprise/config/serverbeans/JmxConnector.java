@@ -56,7 +56,6 @@ import org.glassfish.grizzly.config.dom.Ssl;
 import static org.glassfish.config.support.Constants.NAME_REGEX;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.quality.ToDo;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.*;
 
 /**
@@ -71,7 +70,7 @@ import org.jvnet.hk2.config.*;
 
 @Configured
 @ReferenceConstraint(skipDuringCreation=true, payload=JmxConnector.class)
-public interface JmxConnector extends ConfigBeanProxy, Injectable, Named, PropertyBag, Payload {
+public interface JmxConnector extends ConfigBeanProxy, Named, PropertyBag, Payload {
     final static String PORT_PATTERN = "\\$\\{[\\p{L}\\p{N}_][\\p{L}\\p{N}\\-_./;#]*\\}"
             + "|[1-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1-9][0-9][0-9][0-9]"
             + "|[1-5][0-9][0-9][0-9][0-9]|6[0-4][0-9][0-9][0-9]"

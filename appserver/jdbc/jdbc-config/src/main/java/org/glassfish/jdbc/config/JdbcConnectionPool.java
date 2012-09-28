@@ -51,7 +51,6 @@ import org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages;
 import org.glassfish.jdbc.config.validators.JdbcConnectionPoolConstraint;
 import org.glassfish.jdbc.config.validators.JdbcConnectionPoolConstraints;
 import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
@@ -90,7 +89,7 @@ import java.util.List;
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-jdbc-connection-pool")
 })
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=JdbcConnectionPool.class)
-public interface JdbcConnectionPool extends ConfigBeanProxy, Injectable, Resource, ResourcePool,
+public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourcePool,
     PropertyBag {
 
     /**

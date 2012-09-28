@@ -46,7 +46,6 @@ import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.component.Injectable;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.jvnet.hk2.config.types.PropertyBag;
 
@@ -63,7 +62,7 @@ import javax.validation.constraints.Min;
 /* @XmlType(name = "") */
 
 @Configured
-public interface ConnectorService extends ConfigExtension, ConfigBeanProxy, Injectable, PropertyBag {
+public interface ConnectorService extends ConfigExtension, ConfigBeanProxy, PropertyBag {
 
     /**
      * Gets the value of the shutdownTimeoutInSeconds property.

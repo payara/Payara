@@ -43,7 +43,6 @@ package org.glassfish.webservices.config;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 import static org.glassfish.config.support.Constants.NAME_REGEX;
 
 import java.beans.PropertyVetoException;
@@ -58,7 +57,7 @@ import javax.validation.constraints.Pattern;
 /* @XmlType(name = "") */
 
 @Configured
-public interface RegistryLocation extends ConfigBeanProxy, Injectable  {
+public interface RegistryLocation extends ConfigBeanProxy {
 
     /**
      * Gets the value of the connectorResourceJndiName property.

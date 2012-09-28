@@ -41,7 +41,6 @@
 package com.sun.enterprise.config.serverbeans;
 
 import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.component.Injectable;
 
 import java.util.*;
 
@@ -56,7 +55,7 @@ import java.util.*;
 
 
 @Configured
-public interface Resources extends ConfigBeanProxy, Injectable  {
+public interface Resources extends ConfigBeanProxy  {
 
     /**
      * Gets the value of the customResourceOrExternalJndiResourceOrJdbcResourceOrMailResourceOrAdminObjectResourceOrConnectorResourceOrResourceAdapterConfigOrJdbcConnectionPoolOrConnectorConnectionPool property.

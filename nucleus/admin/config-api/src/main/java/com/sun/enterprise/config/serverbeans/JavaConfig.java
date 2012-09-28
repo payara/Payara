@@ -44,7 +44,6 @@ import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
@@ -72,7 +71,7 @@ import org.glassfish.quality.ToDo;
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-profiler"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-profiler")
 })
-public interface JavaConfig extends ConfigBeanProxy, Injectable, PropertyBag, JvmOptionBag {
+public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
 
     /**
      * Gets the value of the javaHome property.

@@ -48,7 +48,6 @@ import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.quality.ToDo;
 import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
@@ -71,7 +70,7 @@ import java.util.List;
  * The admin-object-resource element describes a administered object
  * for a inbound resource adapter.
  */
-public interface AdminObjectResource extends ConfigBeanProxy, Injectable, BindableResource, Resource,
+public interface AdminObjectResource extends ConfigBeanProxy, BindableResource, Resource,
     PropertyBag {
 
     /**

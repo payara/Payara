@@ -56,7 +56,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.component.Injectable;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.api.admin.config.ReferenceContainer;
 
@@ -77,7 +76,7 @@ import javax.validation.constraints.Pattern;
 @Configured
 @SuppressWarnings("unused")
 @NotDuplicateTargetName(message = "{node.duplicate.name}", payload = Node.class)
-public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceContainer, RefContainer, Payload {
+public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefContainer, Payload {
     /**
      * Sets the node name
      * @param value node name

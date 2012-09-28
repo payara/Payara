@@ -47,7 +47,6 @@ import org.glassfish.config.support.Delete;
 import org.glassfish.config.support.TypeAndNameResolver;
 import org.glassfish.config.support.TypeResolver;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.DuckTyped;
@@ -59,7 +58,7 @@ import java.util.ArrayList;
  * List of configured servers.
  */
 @Configured
-public interface Servers extends ConfigBeanProxy, Injectable  {
+public interface Servers extends ConfigBeanProxy  {
 
     /**
      * Return the list of currently configured server. Servers can

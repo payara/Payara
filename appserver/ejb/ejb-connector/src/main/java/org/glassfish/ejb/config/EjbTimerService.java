@@ -42,7 +42,6 @@ package org.glassfish.ejb.config;
 
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.types.Property;
@@ -67,7 +66,7 @@ import javax.validation.constraints.Min;
 }) */
 
 @Configured
-public interface EjbTimerService extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface EjbTimerService extends ConfigBeanProxy, PropertyBag {
 
     /**
      * Gets the value of the minimumDeliveryIntervalInMillis property.

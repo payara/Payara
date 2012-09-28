@@ -43,13 +43,12 @@ package org.glassfish.connectors.config;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.component.Injectable;
 
 import javax.validation.constraints.NotNull;
 import java.beans.PropertyVetoException;
 
 @Configured
-public interface GroupMap extends ConfigBeanProxy, Injectable {
+public interface GroupMap extends ConfigBeanProxy {
 
     /**
      * Gets the value of the EISGroup - a Group in the EIS security

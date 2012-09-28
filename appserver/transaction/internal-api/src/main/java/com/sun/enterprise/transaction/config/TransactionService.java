@@ -44,7 +44,6 @@ import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.api.admin.config.Container;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.types.Property;
@@ -69,7 +68,7 @@ import javax.validation.constraints.Min;
 }) */
 
 @Configured
-public interface TransactionService extends ConfigBeanProxy, Injectable, PropertyBag, ConfigExtension, Container {
+public interface TransactionService extends ConfigBeanProxy, PropertyBag, ConfigExtension, Container {
 
     /**
      * Gets the value of the automaticRecovery property.

@@ -42,7 +42,6 @@ package org.glassfish.web.config.serverbeans;
 
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 
@@ -63,7 +62,7 @@ import org.glassfish.quality.ToDo;
 }) */
 
 @Configured
-public interface StoreProperties extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface StoreProperties extends ConfigBeanProxy, PropertyBag {
 
     /**
      * Gets the value of the directory property.

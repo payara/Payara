@@ -44,7 +44,6 @@ import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.types.PropertyBag;
-import org.jvnet.hk2.component.Injectable;
 import java.beans.PropertyVetoException;
 
 import javax.validation.constraints.Min;
@@ -56,7 +55,7 @@ import javax.validation.constraints.NotNull;
  */
 @Configured
 @SuppressWarnings("unused")
-public interface AccessLog extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface AccessLog extends ConfigBeanProxy, PropertyBag {
 
     /**
      * Gets the value of the format attribute, which specifies the format

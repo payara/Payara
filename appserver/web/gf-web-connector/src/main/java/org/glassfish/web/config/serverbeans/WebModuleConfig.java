@@ -46,7 +46,6 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.Configured;
@@ -63,7 +62,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  * @author tjquinn
  */
 @Configured
-public interface WebModuleConfig extends ConfigBeanProxy, ApplicationConfig, Injectable {
+public interface WebModuleConfig extends ConfigBeanProxy, ApplicationConfig {
 
     /**
      * Returns the env-entry objects, if any.

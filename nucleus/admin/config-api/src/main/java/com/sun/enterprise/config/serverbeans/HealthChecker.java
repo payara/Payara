@@ -43,7 +43,6 @@ package com.sun.enterprise.config.serverbeans;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
@@ -58,7 +57,7 @@ import javax.validation.constraints.Min;
 /* @XmlType(name = "") */
 
 @Configured
-public interface HealthChecker extends ConfigBeanProxy, Injectable  {
+public interface HealthChecker extends ConfigBeanProxy {
 
     /**
      * Gets the value of the url property.

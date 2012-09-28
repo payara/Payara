@@ -41,7 +41,6 @@
 package com.sun.enterprise.config.serverbeans;
 
 import java.beans.PropertyVetoException;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -57,7 +56,7 @@ import java.util.Properties;
  * @author Tim Quinn
  */
 @Configured
-public interface AppTenant extends Injectable, ConfigBeanProxy {
+public interface AppTenant extends ConfigBeanProxy {
 
     @Attribute
     String getTenant();

@@ -42,8 +42,6 @@ package com.sun.enterprise.config.serverbeans;
 
 import org.glassfish.api.Param;
 
-
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -56,7 +54,7 @@ import java.beans.PropertyVetoException;
  * applications, resources, and configuration.
  */
 @Configured
-public interface SshConnector extends ConfigBeanProxy, Injectable {
+public interface SshConnector extends ConfigBeanProxy {
 
     /**
       * Gets the value of the sshport property.

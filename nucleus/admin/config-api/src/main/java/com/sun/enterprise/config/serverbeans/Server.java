@@ -60,7 +60,6 @@ import org.glassfish.config.support.*;
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Injectable;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
@@ -101,7 +100,7 @@ import org.glassfish.api.admin.CommandRunner;
 @SuppressWarnings("unused")
 @NotDuplicateTargetName(message="{server.duplicate.name}", payload=Server.class)
 @ReferenceConstraint(skipDuringCreation=true, payload=Server.class)
-public interface Server extends ConfigBeanProxy, Injectable, PropertyBag, Named, SystemPropertyBag, ReferenceContainer, RefContainer, Payload {
+public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPropertyBag, ReferenceContainer, RefContainer, Payload {
 
     String lbEnabledSystemProperty = "org.glassfish.lb-enabled-default";
 

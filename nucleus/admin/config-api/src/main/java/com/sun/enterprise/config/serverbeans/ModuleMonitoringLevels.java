@@ -42,7 +42,6 @@ package com.sun.enterprise.config.serverbeans;
 
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 
@@ -66,7 +65,7 @@ import javax.validation.constraints.Pattern;
 }) */
 
 @Configured
-public interface ModuleMonitoringLevels extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface ModuleMonitoringLevels extends ConfigBeanProxy, PropertyBag {
 
     /**
      * Gets the value of the threadPool property.

@@ -47,7 +47,6 @@ import org.glassfish.api.admin.config.PropertiesDesc;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 import org.glassfish.quality.ToDo;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.*;
 
 import javax.validation.constraints.NotNull;
@@ -64,7 +63,7 @@ import javax.validation.constraints.Pattern;
  */
 
 @Configured
-public interface AdminService extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface AdminService extends ConfigBeanProxy, PropertyBag {
 
     /**
      * Gets the value of the type property.

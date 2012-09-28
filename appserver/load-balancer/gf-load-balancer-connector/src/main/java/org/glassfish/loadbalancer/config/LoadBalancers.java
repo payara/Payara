@@ -44,7 +44,6 @@ import org.glassfish.api.I18n;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.DuckTyped;
 
 import org.glassfish.config.support.*;
@@ -63,7 +62,7 @@ import com.sun.enterprise.config.serverbeans.DomainExtension;
 
 // general solution needed; this is intermediate solution
 @Configured
-public interface LoadBalancers extends ConfigBeanProxy, Injectable, DomainExtension {
+public interface LoadBalancers extends ConfigBeanProxy, DomainExtension {
 
     /**
      * Gets the value of the loadBalancer property.

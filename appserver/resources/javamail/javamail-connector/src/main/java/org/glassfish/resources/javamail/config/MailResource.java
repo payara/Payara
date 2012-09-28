@@ -43,7 +43,6 @@ package org.glassfish.resources.javamail.config;
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
 import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.component.Injectable;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -74,7 +73,7 @@ import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
 /**
  * The mail-resource element describes a javax.mail.Session resource 
  */
-public interface MailResource extends ConfigBeanProxy, Injectable, Resource, PropertyBag, BindableResource {
+public interface MailResource extends ConfigBeanProxy, Resource, PropertyBag, BindableResource {
 
 
     /**

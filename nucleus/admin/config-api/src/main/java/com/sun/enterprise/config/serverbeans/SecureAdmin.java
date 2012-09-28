@@ -49,7 +49,6 @@ import org.glassfish.config.support.Delete;
 import org.glassfish.config.support.Listing;
 import org.glassfish.config.support.TypeAndNameResolver;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -64,7 +63,7 @@ import org.jvnet.hk2.config.Transaction;
  * Represents the admin security settings for the domain.
  *
  */
-public interface SecureAdmin extends ConfigBeanProxy, Injectable {
+public interface SecureAdmin extends ConfigBeanProxy {
 
     @Element
     @Create(value="enable-secure-admin-principal", 

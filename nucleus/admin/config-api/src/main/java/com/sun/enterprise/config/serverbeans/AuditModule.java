@@ -42,7 +42,6 @@ package com.sun.enterprise.config.serverbeans;
 
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 
@@ -76,7 +75,7 @@ import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-audit-module"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-audit-module")
 })
-public interface AuditModule extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface AuditModule extends ConfigBeanProxy, PropertyBag {
 
     /**
      * Gets the value of the name property.

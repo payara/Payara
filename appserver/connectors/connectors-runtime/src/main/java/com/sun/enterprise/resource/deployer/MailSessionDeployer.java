@@ -493,10 +493,5 @@ public class MailSessionDeployer implements ResourceDeployer {
         public String getIdentity() {
             return name;
         }
-
-        @Override
-        public void injectedInto(Object target) {
-            //do nothing
-        }
     }
 }

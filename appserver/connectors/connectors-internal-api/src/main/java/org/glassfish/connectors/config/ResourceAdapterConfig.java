@@ -42,7 +42,6 @@ package org.glassfish.connectors.config;
 
 import com.sun.enterprise.config.serverbeans.Resource;
 import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.component.Injectable;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -76,7 +75,7 @@ import javax.validation.constraints.Pattern;
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-resource-adapter-config"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-resource-adapter-config")
 })
-public interface ResourceAdapterConfig extends ConfigBeanProxy, Injectable, Resource, PropertyBag {
+public interface ResourceAdapterConfig extends ConfigBeanProxy, Resource, PropertyBag {
 
     /**
      * Gets the value of the name property.

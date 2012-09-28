@@ -239,11 +239,6 @@ public class PathsTest {
         }
 
         @Override
-        public void injectedInto(Object o) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public String getReference() {
             throw new UnsupportedOperationException("Not supported yet.");
         }

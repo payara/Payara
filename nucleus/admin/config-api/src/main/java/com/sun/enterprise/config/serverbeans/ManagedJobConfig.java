@@ -41,7 +41,6 @@ package com.sun.enterprise.config.serverbeans;
 
 import org.glassfish.api.Param;
 import javax.validation.Payload;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 
@@ -57,7 +56,7 @@ import java.beans.PropertyVetoException;
  * @author Bhakti Mehta
  */
 @Configured
-public interface ManagedJobConfig extends DomainExtension, Injectable, PropertyBag, Payload {
+public interface ManagedJobConfig extends DomainExtension, PropertyBag, Payload {
 
     /**
      * Gets the value of jobInactivityLimit property

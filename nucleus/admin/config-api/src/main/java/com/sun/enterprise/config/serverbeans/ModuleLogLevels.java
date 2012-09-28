@@ -42,7 +42,6 @@ package com.sun.enterprise.config.serverbeans;
 
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.DuckTyped;
@@ -67,7 +66,7 @@ import org.glassfish.quality.ToDo;
 }) */
 
 @Configured
-public interface ModuleLogLevels extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface ModuleLogLevels extends ConfigBeanProxy, PropertyBag {
 
     /**
      * Gets the value of the root property.

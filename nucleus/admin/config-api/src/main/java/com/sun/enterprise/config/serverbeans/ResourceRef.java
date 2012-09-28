@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.config.serverbeans;
 
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -64,7 +63,7 @@ import org.glassfish.api.admin.RestRedirect;
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-resource-ref"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-resource-ref")
 })
-public interface ResourceRef extends ConfigBeanProxy, Injectable  {
+public interface ResourceRef extends ConfigBeanProxy  {
 
     /**
      * Determines whether the resource is active or ignored.

@@ -42,7 +42,6 @@ package com.sun.enterprise.config.serverbeans;
 
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
 import javax.validation.Payload;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.*;
 import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
@@ -63,7 +62,7 @@ import javax.validation.constraints.Pattern;
 
 @Configured
 @ReferenceConstraint(skipDuringCreation=true, payload=ClusterRef.class)
-public interface ClusterRef extends ConfigBeanProxy, Injectable, Ref, Payload  {
+public interface ClusterRef extends ConfigBeanProxy, Ref, Payload  {
     
     /**
      * Gets the value of the ref property.

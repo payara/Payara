@@ -44,7 +44,6 @@ import com.sun.enterprise.config.serverbeans.ApplicationExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
-import org.jvnet.hk2.component.Injectable;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -64,7 +63,7 @@ import javax.validation.constraints.NotNull;
 }) */
 
 @Configured
-public interface WebServiceEndpoint extends ApplicationExtension, Injectable  {
+public interface WebServiceEndpoint extends ApplicationExtension {
 
     /**
      * Gets the value of the name property.

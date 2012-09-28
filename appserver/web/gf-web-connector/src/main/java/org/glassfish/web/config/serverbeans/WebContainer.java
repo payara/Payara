@@ -46,7 +46,6 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
-import org.jvnet.hk2.component.Injectable;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -61,7 +60,7 @@ import javax.validation.constraints.NotNull;
 
 
 @Configured
-public interface WebContainer extends ConfigBeanProxy, Injectable, PropertyBag, ConfigExtension {
+public interface WebContainer extends ConfigBeanProxy, PropertyBag, ConfigExtension {
 
     /**
      * Gets the value of the sessionConfig property.

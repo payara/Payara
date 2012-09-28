@@ -52,7 +52,6 @@ import org.glassfish.config.support.DeletionDecorator;
 import org.glassfish.quality.ToDo;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Injectable;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -79,7 +78,7 @@ import java.util.logging.Logger;
 
 @Configured
 @HasNoDefaultConfiguration
-public interface LoadBalancer extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface LoadBalancer extends ConfigBeanProxy, PropertyBag {
 
     /**
      * Gets the value of the name property.

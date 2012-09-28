@@ -65,7 +65,6 @@ import org.glassfish.quality.ToDo;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
@@ -92,7 +91,7 @@ import javax.validation.Payload;
 
 @Configured
 @RefConstraint(message="{ref.invalid}", payload= RefValidator.class)
-public interface LbConfig extends ConfigBeanProxy, Injectable, PropertyBag, Payload {
+public interface LbConfig extends ConfigBeanProxy, PropertyBag, Payload {
 
     String LAST_APPLIED_PROPERTY = "last-applied";
     String LAST_EXPORTED_PROPERTY = "last-exported";

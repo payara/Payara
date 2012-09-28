@@ -59,7 +59,6 @@ import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.quality.ToDo;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
@@ -99,7 +98,7 @@ import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
 @Configured
 @NotDuplicateTargetName(message = "{config.duplicate.name}", payload = Config.class)
-public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBag, Payload, ConfigLoader, ConfigBeanProxy, RefContainer {
+public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, ConfigLoader, ConfigBeanProxy, RefContainer {
     /**
      * Name of the configured object
      *

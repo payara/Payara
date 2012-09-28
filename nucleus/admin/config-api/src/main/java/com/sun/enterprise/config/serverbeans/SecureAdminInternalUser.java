@@ -46,7 +46,6 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.config.support.CreationDecorator;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Injectable;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -63,7 +62,7 @@ import javax.inject.Inject;
  * 
  * @author Tim Quinn
  */
-public interface SecureAdminInternalUser extends Injectable, ConfigBeanProxy {
+public interface SecureAdminInternalUser extends ConfigBeanProxy {
     
     /**
      * Retrieves the username for this authorized internal admin user entry..

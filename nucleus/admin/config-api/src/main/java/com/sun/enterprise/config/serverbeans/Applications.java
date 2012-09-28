@@ -41,7 +41,6 @@
 package com.sun.enterprise.config.serverbeans;
 
 import org.glassfish.api.admin.RestRedirect;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
@@ -51,7 +50,7 @@ import java.util.*;
 import org.glassfish.api.admin.config.ApplicationName;
 
 @Configured
-public interface Applications extends ConfigBeanProxy, Injectable  {
+public interface Applications extends ConfigBeanProxy  {
 
     /**
      * Gets the value of the MbeanorApplication property.

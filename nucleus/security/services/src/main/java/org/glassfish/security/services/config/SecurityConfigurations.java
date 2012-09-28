@@ -41,7 +41,6 @@ package org.glassfish.security.services.config;
 
 import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.config.modularity.annotation.HasNoDefaultConfiguration;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
@@ -56,7 +55,7 @@ import java.util.List;
  */
 @Configured
 @HasNoDefaultConfiguration
-public interface SecurityConfigurations extends ConfigBeanProxy, Injectable, DomainExtension {
+public interface SecurityConfigurations extends ConfigBeanProxy, DomainExtension {
     /**
      * Gets the list of configured security services.
      */

@@ -55,7 +55,6 @@ import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.api.admin.config.PropertyDesc;
 import org.glassfish.config.support.datatypes.PositiveInteger;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -79,7 +78,7 @@ import org.jvnet.hk2.config.types.PropertyBag;
     @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-virtual-server"),
     @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-virtual-server")
 })
-public interface VirtualServer extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
     /**
      * Gets the value of the id property.
      *

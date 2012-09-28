@@ -42,7 +42,6 @@ package org.glassfish.connectors.config;
 
 import com.sun.enterprise.config.serverbeans.*;
 import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.component.Injectable;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -50,7 +49,7 @@ import java.beans.PropertyVetoException;
 import java.util.List;
 
 @Configured
-public interface WorkSecurityMap  extends /*Named,*/ ConfigBeanProxy, Injectable, Resource {
+public interface WorkSecurityMap  extends /*Named,*/ ConfigBeanProxy, Resource {
 
     /**
      * Gets the value of the enabled property.

@@ -45,7 +45,6 @@ import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.api.admin.config.PropertyDesc;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
@@ -75,7 +74,7 @@ import java.util.List;
  * providers.
  * For the default file provider, the param used is: file                     
  */
-public interface AuthRealm extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface AuthRealm extends ConfigBeanProxy, PropertyBag {
 
     /**
      * Gets the value of the name property.

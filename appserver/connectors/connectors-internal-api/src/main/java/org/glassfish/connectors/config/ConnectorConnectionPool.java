@@ -57,7 +57,6 @@ import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
-import org.jvnet.hk2.component.Injectable;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -102,7 +101,7 @@ import javax.validation.constraints.NotNull;
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-connector-connection-pool")
 })
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ConnectorConnectionPool.class)
-public interface ConnectorConnectionPool extends ConfigBeanProxy, Injectable, Resource, ResourcePool,
+public interface ConnectorConnectionPool extends ConfigBeanProxy, Resource, ResourcePool,
         PropertyBag {
 
     /**

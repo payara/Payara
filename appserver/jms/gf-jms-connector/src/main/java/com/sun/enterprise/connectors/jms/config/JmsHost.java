@@ -47,7 +47,6 @@ import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
-import org.jvnet.hk2.component.Injectable;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -77,7 +76,7 @@ import javax.validation.Payload;
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-jms-host"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-jms-host")
 })
-public interface JmsHost extends ConfigExtension, Injectable, PropertyBag, Payload {
+public interface JmsHost extends ConfigExtension, PropertyBag, Payload {
 
     final static String PORT_PATTERN = "\\$\\{[\\p{L}\\p{N}_][\\p{L}\\p{N}\\-_./;#]*\\}"
             + "|[1-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1-9][0-9][0-9][0-9]"

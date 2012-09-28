@@ -47,7 +47,6 @@ import org.jvnet.hk2.config.DuckTyped;
 
 import javax.validation.constraints.Pattern;
 import java.beans.PropertyVetoException;
-import java.util.List;
 
 /**
  * Tag interface for all types of resource.

@@ -44,7 +44,6 @@ import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
@@ -73,7 +72,7 @@ import static org.glassfish.config.support.Constants.NAME_REGEX;
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-message-security-provider"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-message-security-provider")
 })
-public interface MessageSecurityConfig extends ConfigBeanProxy, Injectable  {
+public interface MessageSecurityConfig extends ConfigBeanProxy  {
 
     /**
      * Gets the value of the authLayer property. Values: "SOAP" or "HttpServlet".

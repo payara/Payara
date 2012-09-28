@@ -41,7 +41,6 @@
 package com.sun.enterprise.config.serverbeans;
 
 import org.glassfish.grizzly.config.dom.Ssl;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
@@ -59,7 +58,7 @@ import java.beans.PropertyVetoException;
 }) */
 
 @Configured
-public interface SslClientConfig extends ConfigBeanProxy, Injectable  {
+public interface SslClientConfig extends ConfigBeanProxy {
 
     /**
      * Gets the value of the ssl property.

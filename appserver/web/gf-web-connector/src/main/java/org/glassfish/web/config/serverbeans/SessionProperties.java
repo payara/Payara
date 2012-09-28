@@ -45,7 +45,6 @@ import java.util.List;
 import javax.validation.constraints.Max;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.quality.ToDo;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -62,7 +61,7 @@ import org.jvnet.hk2.config.types.PropertyBag;
 }) */
 
 @Configured
-public interface SessionProperties extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface SessionProperties extends ConfigBeanProxy, PropertyBag {
 
     /**
      * Gets the value of the timeoutInSeconds property.

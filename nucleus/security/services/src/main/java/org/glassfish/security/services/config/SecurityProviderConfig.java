@@ -41,7 +41,6 @@ package org.glassfish.security.services.config;
 
 import java.beans.PropertyVetoException;
 
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -54,7 +53,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
  * security service configuration.
  */
 @Configured
-public interface SecurityProviderConfig extends ConfigBeanProxy, Injectable {
+public interface SecurityProviderConfig extends ConfigBeanProxy {
     /**
      * Gets the name of the security provider implementation.
      */

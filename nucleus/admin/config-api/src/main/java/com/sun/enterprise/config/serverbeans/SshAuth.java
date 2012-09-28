@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.config.serverbeans;
 
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -53,7 +52,7 @@ import java.beans.PropertyVetoException;
  * applications, resources, and configuration.
  */
 @Configured
-public interface SshAuth  extends ConfigBeanProxy, Injectable {
+public interface SshAuth  extends ConfigBeanProxy {
  
     
     /**

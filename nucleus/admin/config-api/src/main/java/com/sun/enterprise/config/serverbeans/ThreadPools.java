@@ -43,14 +43,13 @@ package com.sun.enterprise.config.serverbeans;
 import java.util.List;
 
 import org.glassfish.grizzly.config.dom.ThreadPool;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 
 
 @Configured
-public interface ThreadPools extends ConfigBeanProxy, Injectable {
+public interface ThreadPools extends ConfigBeanProxy {
     /**
      * Gets the value of the threadPool property. <p/> <p/> This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the returned list will be present inside the JAXB object.

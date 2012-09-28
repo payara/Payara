@@ -44,7 +44,6 @@ import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 import static org.glassfish.config.support.Constants.NAME_REGEX;
 
 import java.beans.PropertyVetoException;
@@ -66,7 +65,7 @@ import javax.validation.constraints.Pattern;
 }) */
 
 @Configured
-public interface SecurityMap extends ConfigBeanProxy, Injectable  {
+public interface SecurityMap extends ConfigBeanProxy {
 
     /**
      * Gets the value of the name property.

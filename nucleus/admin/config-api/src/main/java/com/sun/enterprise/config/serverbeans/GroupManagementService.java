@@ -43,7 +43,6 @@ package com.sun.enterprise.config.serverbeans;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.component.Injectable;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -82,7 +81,7 @@ import org.glassfish.api.admin.config.ConfigExtension;
 
 @Configured
 @SuppressWarnings({"deprecation"})
-public interface GroupManagementService extends Injectable, PropertyBag, ConfigExtension {
+public interface GroupManagementService extends PropertyBag, ConfigExtension {
 
     /**
      * Gets the value of the groupManagementService property.

@@ -50,7 +50,6 @@ import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.quality.ToDo;
 import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
@@ -77,7 +76,7 @@ import java.util.List;
 })
 @ReferenceConstraint(skipDuringCreation=true, payload=JdbcResource.class)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=JdbcResource.class)
-public interface JdbcResource extends ConfigBeanProxy, Injectable, Resource,
+public interface JdbcResource extends ConfigBeanProxy, Resource,
         PropertyBag, BindableResource, Payload {
     
     /**              

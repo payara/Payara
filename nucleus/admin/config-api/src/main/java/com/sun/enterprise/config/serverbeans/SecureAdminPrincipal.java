@@ -49,7 +49,6 @@ import org.glassfish.config.support.CreationDecorator;
 import org.glassfish.config.support.CrudResolver;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Injectable;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.Attribute;
@@ -68,7 +67,7 @@ import javax.inject.Inject;
  * authorization for admin operations. 
  *
  */
-public interface SecureAdminPrincipal extends Injectable, ConfigBeanProxy {
+public interface SecureAdminPrincipal extends ConfigBeanProxy {
 
     /**
      * Sets the DN of the SecureAdminPrincipal

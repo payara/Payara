@@ -52,13 +52,12 @@ import org.jvnet.hk2.config.types.PropertyBag;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.api.admin.config.PropertyDesc;
 import org.glassfish.config.support.datatypes.NonNegativeInteger;
-import org.jvnet.hk2.component.Injectable;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 @Configured
-public interface HttpService extends ConfigBeanProxy, Injectable, PropertyBag, ConfigExtension {
+public interface HttpService extends ConfigBeanProxy, PropertyBag, ConfigExtension {
 
     /**
      * Gets the value of the accessLog property.

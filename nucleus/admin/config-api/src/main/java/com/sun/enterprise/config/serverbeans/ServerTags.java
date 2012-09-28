@@ -41,7 +41,6 @@
 package com.sun.enterprise.config.serverbeans;
 
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 
 public class ServerTags  {
     // Tags for Element domain

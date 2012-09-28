@@ -39,7 +39,6 @@
  */
 package org.glassfish.security.services.config;
 
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -58,7 +57,7 @@ import java.util.List;
  * present and an optional list of the specific security provider plugins. 
  */
 @Configured
-public interface SecurityConfiguration extends ConfigBeanProxy, Injectable {
+public interface SecurityConfiguration extends ConfigBeanProxy {
     /**
      * Gets the name of the security service instance.
      */

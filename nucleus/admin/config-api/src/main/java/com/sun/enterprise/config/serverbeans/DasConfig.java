@@ -46,7 +46,6 @@ import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
-import org.jvnet.hk2.component.Injectable;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -66,7 +65,7 @@ import javax.validation.constraints.Min;
 }) */
 
 @Configured
-public interface DasConfig extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface DasConfig extends ConfigBeanProxy, PropertyBag {
 
     /**
      * Gets the value of the dynamicReloadEnabled property.

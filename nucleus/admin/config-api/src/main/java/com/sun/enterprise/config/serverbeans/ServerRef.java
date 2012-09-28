@@ -45,7 +45,6 @@ import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
 import java.beans.PropertyVetoException;
@@ -62,7 +61,7 @@ import javax.validation.constraints.Pattern;
 
 @Configured
 @ReferenceConstraint(skipDuringCreation=true, payload=ServerRef.class)
-public interface ServerRef extends ConfigBeanProxy, Injectable, Ref, Payload  {
+public interface ServerRef extends ConfigBeanProxy, Ref, Payload  {
 
     /**
      * Gets the value of the ref property.

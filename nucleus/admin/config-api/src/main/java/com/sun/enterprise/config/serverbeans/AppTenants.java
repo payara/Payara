@@ -41,7 +41,6 @@
 package com.sun.enterprise.config.serverbeans;
 
 import java.util.List;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
@@ -52,7 +51,7 @@ import org.jvnet.hk2.config.Element;
  * @author Tim Quinn
  */
 @Configured
-public interface AppTenants extends Injectable, ConfigBeanProxy {
+public interface AppTenants extends ConfigBeanProxy {
 
     @Element
     List<AppTenant> getAppTenant();

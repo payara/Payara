@@ -43,7 +43,6 @@ package org.glassfish.webservices.config;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
 
 import java.beans.PropertyVetoException;
 
@@ -56,7 +55,7 @@ import javax.validation.constraints.NotNull;
 /* @XmlType(name = "") */
 
 @Configured
-public interface TransformationRule extends ConfigBeanProxy, Injectable  {
+public interface TransformationRule extends ConfigBeanProxy  {
 
     /**
      * Gets the value of the name property.
