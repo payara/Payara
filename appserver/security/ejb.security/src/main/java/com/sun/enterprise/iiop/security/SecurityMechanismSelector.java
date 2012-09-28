@@ -1625,7 +1625,7 @@ as_context_mech
     public static String getSecurityMechanismString(CSIV2TaggedComponentInfo tCI,
            CompoundSecMech[] list, String name) {
         StringBuffer b = new StringBuffer();
-        b.append("\ntypeId: " + name == null ? "null" : name);
+        b.append("\ntypeId: " + (name == null ? "null" : name));
         try {
             for (int i = 0; list != null && i < list.length; i++) {
                 CompoundSecMech m = list[i];

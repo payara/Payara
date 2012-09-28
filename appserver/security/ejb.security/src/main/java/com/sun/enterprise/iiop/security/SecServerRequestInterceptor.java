@@ -401,7 +401,7 @@ public class SecServerRequestInterceptor
         sc.authcls  = PasswordCredential.class;
     }     
     
-    private void handle_null_service_context(ServerRequestInfo ri, ServiceContext sc, ORB orb) {
+    private void handle_null_service_context(ServerRequestInfo ri, ORB orb) {
         if(_logger.isLoggable(Level.FINE)){
             _logger.log(Level.FINE,"No SAS context element found in service context list for operation: " + ri.operation());
         }
@@ -411,7 +411,7 @@ public class SecServerRequestInterceptor
         if (secStatus == SecurityContextUtil.STATUS_FAILED){
             SASContextBody sasctxbody = createContextError(INVALID_MECHANISM_MAJOR,
                     INVALID_MECHANISM_MINOR);
-            sc = createSvcContext(sasctxbody, orb);
+            ServiceContext sc = createSvcContext(sasctxbody, orb);
             ri.add_reply_service_context(sc, NO_REPLACE);
             if(_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE,
@@ -425,7 +425,7 @@ public class SecServerRequestInterceptor
          throws ForwardRequest  
     {
         SecurityContext seccontext = null;   // SecurityContext to be sent
-        ServiceContext  sc = null;           // service context
+	ServiceContext sc = null;
         int status = 0;
         boolean  raise_no_perm = false;
 
@@ -437,13 +437,13 @@ public class SecServerRequestInterceptor
         ORB orb = orbHelper.getORB();
 
         try {
-            sc = ri.get_request_service_context(SECURITY_ATTRIBUTE_SERVICE_ID);
-            if (sc == null) {
-                handle_null_service_context(ri, sc, orb);
+	    sc = ri.get_request_service_context(SECURITY_ATTRIBUTE_SERVICE_ID);
+	    if (sc == null) {
+                handle_null_service_context(ri, orb);
                 return;
-            }
+	    }
         } catch (org.omg.CORBA.BAD_PARAM e) {
-            handle_null_service_context(ri,sc, orb);
+            handle_null_service_context(ri, orb);
             return;
         }
 
@@ -451,7 +451,7 @@ public class SecServerRequestInterceptor
 		_logger.log(Level.FINE,"Received a non null SAS context element");
         }
         /* Decode the service context field */
-        Any SasAny = orb.create_any();
+        Any SasAny;
         try {        
             SasAny = codec.decode_value(sc.context_data, SASContextBodyHelper.type());
         } catch (Exception e) {

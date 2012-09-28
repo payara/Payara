@@ -76,7 +76,7 @@ implements java.io.Serializable
      private static HashMap transportHash = new HashMap();
      static {
 	 for (int i=0; i<transportKeys.length; i++) 
-	     transportHash.put(transportKeys[i], new Integer(i));
+	     transportHash.put(transportKeys[i], Integer.valueOf(i));
      };
 
      private static int TT_NONE = 
@@ -525,7 +525,7 @@ implements java.io.Serializable
      * values of the serialized fields (as is done by defaultReadObject) 
      * is sufficient to initialize the permission.
      */
-    private synchronized void readObject(java.io.ObjectInputStream s)
+    private void readObject(java.io.ObjectInputStream s)
          throws IOException,ClassNotFoundException
     {
 	parseActions((String) s.readFields().get("actions",null));

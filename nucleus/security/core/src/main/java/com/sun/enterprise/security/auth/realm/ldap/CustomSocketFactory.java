@@ -69,13 +69,14 @@ import org.glassfish.internal.api.SharedSecureRandom;
  */
 public class CustomSocketFactory extends SocketFactory implements Comparator<SocketFactory> {
     private SocketFactory socketFactory;
-    private static final  CustomSocketFactory customSocketFactory = new CustomSocketFactory();
 
     public static final String SSL = "SSL";
     protected static final Logger _logger =
         LogDomains.getLogger(CustomSocketFactory.class, LogDomains.SECURITY_LOGGER);
     protected static final StringManager sm =
         StringManager.getManager(CustomSocketFactory.class);
+
+    private static final  CustomSocketFactory customSocketFactory = new CustomSocketFactory();
 
     public  CustomSocketFactory() {
         SSLUtils sslUtils = Globals.getDefaultHabitat().getService(SSLUtils.class);

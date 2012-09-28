@@ -218,33 +218,36 @@ public class PermissionCache extends Object {
 	}
 
 	wLock.lock();
-	if (loading) {
-	    // another thread started the load
-	    // release the writelock and return
-	    wLock.unlock();
-	    return false;
-	} else if (cache != null) {
-	    // another thread loaded the cache 
-	    // get readlock inside writelock. 
-	    // check permission and return
-	    rLock.lock();
-	    wLock.unlock();
-	    try {
-		// cache is loaded and readlock is held
-		// check permission and return
-		return checkLoadedCache(p,e);
-	    } finally {
-		rLock.unlock();
+        try {
+	    if (loading) {
+	        // another thread started the load
+	        // release the writelock and return
+	        return false;
+	    } else if (cache != null) {
+	        // another thread loaded the cache 
+	        // get readlock inside writelock. 
+	        // check permission and return
+	        rLock.lock();
+	        wLock.unlock();
+	        wLock = null;
+	        try {
+                    // cache is loaded and readlock is held
+		    // check permission and return
+		    return checkLoadedCache(p,e);
+	        } finally {
+		    rLock.unlock();
+	        }  
+	    } else {
+	        // set the load indicators so that readers will 
+	        // bypass the cache until it is loaded
+	        cache = null;
+	        loading = true;
 	    }
-	} else {
-	    // set the load indicators so that readers will 
-	    // bypass the cache until it is loaded
-	    // release the writelock and return
-	    cache = null;
-	    loading = true;
-	    wLock.unlock();
+        } finally {
+            if (wLock != null)
+                wLock.unlock();
+            rLock.unlock();
 	}
-	
 	// cache will be null if we proceed past this point
 	// NO LOCKS ARE HELD AT THIS POINT
 
@@ -323,17 +326,23 @@ public class PermissionCache extends Object {
 
 	// get the writelock to mark cache as loaded
  	wLock.lock();
-	cache = nextCache;
-	loading = false;
 	try {
-	    // get readlock inside writelock. 
-	    rLock.lock();
-	    wLock.unlock();
-	    // cache is loaded and readlock is held
-	    // check permission and return
-	    return checkLoadedCache(p,e);
+	    cache = nextCache;
+	    loading = false;
+	    try {
+	        // get readlock inside writelock. 
+	        rLock.lock();
+	        wLock.unlock();
+		wLock = null;
+	        // cache is loaded and readlock is held
+	        // check permission and return
+	        return checkLoadedCache(p,e);
+	    } finally {
+	        rLock.unlock();
+	    }
 	} finally {
-	    rLock.unlock();
+	    if (wLock != null)
+		wLock.unlock();
 	}
     }
     

@@ -70,7 +70,7 @@ public abstract class PolicyConfigurationFactory
     private static String FACTORY_NAME = 
 	"javax.security.jacc.PolicyConfigurationFactory.provider";
     
-    private static PolicyConfigurationFactory pcFactory;
+    private static volatile PolicyConfigurationFactory pcFactory;
 
    /**
     * This static method uses a system property to find and instantiate
@@ -157,9 +157,10 @@ public abstract class PolicyConfigurationFactory
 				    Thread.currentThread().getContextClassLoader());
           }
 
-          Object factory  = clazz.newInstance();
-
-          pcFactory  = (PolicyConfigurationFactory) factory;
+	  if (clazz != null) {
+              Object factory  = clazz.newInstance();
+              pcFactory  = (PolicyConfigurationFactory) factory;
+	  }
 
       } catch(java.lang.ClassNotFoundException cnfe){
 	  msg = "JACC:Error PolicyConfigurationFactory : cannot find class : "
