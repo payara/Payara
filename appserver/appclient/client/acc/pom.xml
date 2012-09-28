@@ -438,8 +438,8 @@
     <!-- as of EE 7, JSON needs to be available to clients -->
     <dependency>
       <scope>runtime</scope>
-      <groupId>javax.json</groupId>
-      <artifactId>javax.json-api</artifactId>
+      <groupId>org.glassfish</groupId>
+      <artifactId>javax.json</artifactId>
       <version>${json.version}</version>
     </dependency>
    </dependencies>
