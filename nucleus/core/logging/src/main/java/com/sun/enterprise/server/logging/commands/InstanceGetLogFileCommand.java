@@ -43,7 +43,6 @@ package com.sun.enterprise.server.logging.commands;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.server.logging.GFFileHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.*;
@@ -55,8 +54,6 @@ import org.glassfish.hk2.api.PerLookup;
 import java.io.File;
 import java.net.URI;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Created by IntelliJ IDEA.
@@ -78,9 +75,6 @@ import java.util.logging.Logger;
         description="_get-log-file")
 })
 public class InstanceGetLogFileCommand implements AdminCommand {
-
-    private static final Logger logger =
-            LogDomains.getLogger(InstanceGetLogFileCommand.class, LogDomains.CORE_LOGGER);
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InstanceGetLogFileCommand.class);
 
@@ -111,7 +105,6 @@ public class InstanceGetLogFileCommand implements AdminCommand {
         catch (Exception e) {
             final String errorMsg = localStrings.getLocalString(
                     "download.errDownloading", "Error while downloading generated files");
-            logger.log(Level.SEVERE, errorMsg, e);
             ActionReport report = context.getActionReport();
             boolean reportErrorsInTopReport = false;
             if (!reportErrorsInTopReport) {

@@ -127,7 +127,8 @@ public class SetLogAttributes implements AdminCommand {
             "com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles",
             "java.util.logging.FileHandler.pattern",
             "com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange",
-            "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat"};
+            "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat",
+            "com.sun.enterprise.server.logging.ODLLogFormatter.includeFields"};
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SetLogLevel.class);
 

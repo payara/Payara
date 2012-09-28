@@ -50,7 +50,6 @@ import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.EarlyLogger;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
@@ -112,7 +111,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     Domain domain;
 
     final Map<String, Handler> gfHandlers = new HashMap<String, Handler>();
-    Logger logger = LogDomains.getLogger(LogManagerService.class, LogDomains.CORE_LOGGER);
+    
+    private static final Logger LOGGER = LogFacade.LOGGING_LOGGER;
 
     PrintStream oStdOutBackup = System.out;
     PrintStream oStdErrBackup = System.err;
@@ -154,7 +154,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private final String FILEHANDLER_PATTERN_PROPERTY = "java.util.logging.FileHandler.pattern";
     private final String FILEHANDLER_FORMATTER_PROPERTY = "java.util.logging.FileHandler.formatter";
     private final String LOGFORMAT_DATEFORMAT_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat";
-
+    
+    final static String INCLUDE_FIELDS_PROPERTY = "com.sun.enterprise.server.logging.ODLLogFormatter.includeFields";
 
     private String RECORD_BEGIN_MARKER = "[#|";
     private String RECORD_END_MARKER = "|#]";
@@ -167,6 +168,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String recordDateFormat;
 
     Vector<Logger> loggerReference = new Vector<Logger>();
+
+    private String includeFields;
 
     /*
         Returns properties based on the DAS/Cluster/Instance
@@ -273,7 +276,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             System.out.println("#!## LogManagerService.postConstruct : dest=" +dest);
 
             if (!logging.exists()) {
-                Logger.getAnonymousLogger().log(Level.WARNING, logging.getAbsolutePath() + " not found, creating new file from template.");
+                LOGGER.log(Level.FINE, logging.getAbsolutePath() + " not found, creating new file from template.");
                 FileUtils.copy(src, dest);
                 logging = new File(env.getConfigDirPath(), ServerEnvironmentImpl.kLoggingPropertiesFileName);
             }
@@ -281,7 +284,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
 
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Cannot read logging configuration file : ", e);
+            LOGGER.log(Level.SEVERE, LogFacade.ERROR_READING_CONF_FILE, e);
         }
 
         FormatterDelegate agentDelegate = null;
@@ -304,22 +307,19 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                 String cname = "com.sun.enterprise.server.logging.GFFileHandler";
                 recordBeginMarker = props.get(cname + ".logFormatBeginMarker");
                 if (recordBeginMarker == null || ("").equals(recordBeginMarker)) {
-                    //logger.log(Level.WARNING,
-                    //        "Record begin marker is not a proper value so using default.");
+                    LOGGER.log(Level.FINE, "Record begin marker is not a proper value so using default.");
                     recordBeginMarker = RECORD_BEGIN_MARKER;
                 }
 
                 recordEndMarker = props.get(cname + ".logFormatEndMarker");
                 if (recordEndMarker == null || ("").equals(recordEndMarker)) {
-                    //logger.log(Level.WARNING,
-                    //        "Record end marker is not a proper value so using default.");
+                    LOGGER.log(Level.FINE, "Record end marker is not a proper value so using default.");
                     recordEndMarker = RECORD_END_MARKER;
                 }
 
                 recordFieldSeparator = props.get(cname + ".logFormatFieldSeparator");
                 if (recordFieldSeparator == null || ("").equals(recordFieldSeparator) || recordFieldSeparator.length() > 1) {
-                    //logger.log(Level.WARNING,
-                    //        "Log Format field separator is not a proper value so using default.");
+                    LOGGER.log(Level.FINE, "Log Format field separator is not a proper value so using default.");
                     recordFieldSeparator = RECORD_FIELD_SEPARATOR;
                 }
 
@@ -329,13 +329,11 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                     try {
                         sdf.format(new Date());
                     } catch (Exception e) {
-                        //logger.log(Level.WARNING,
-                        //        "Date Format specified is wrong so using default.");
+                        LOGGER.log(Level.FINE, "Date Format specified is wrong so using default.");
                         recordDateFormat = RECORD_DATE_FORMAT;
                     }
                 } else {
-                    //logger.log(Level.WARNING,
-                    //       "Date Format specified is wrong so using default.");
+                    LOGGER.log(Level.FINE, "Date Format specified is wrong so using default.");
                     recordDateFormat = RECORD_DATE_FORMAT;
                 }
 
@@ -351,6 +349,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             } else if (formatterClass.getName().equals("com.sun.enterprise.server.logging.ODLLogFormatter")) {
                 // used to support ODL formatter in GF.
                 ODLLogFormatter formatter = (ODLLogFormatter) formatterClass.newInstance();
+                includeFields  = props.get(INCLUDE_FIELDS_PROPERTY);
+                formatter.setIncludeFields(includeFields);
                 for (Handler handler : logMgr.getLogger("").getHandlers()) {
                     // only get the ConsoleHandler
                     handler.setFormatter(formatter);
@@ -375,15 +375,10 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             rotationOnDateChangeDetail = props.get(ROTATIONONDATECHANGE_PROPERTY);
             fileHandlerPatternDetail = props.get(FILEHANDLER_PATTERN_PROPERTY);
             fileHandlerFormatterDetail = props.get(FILEHANDLER_FORMATTER_PROPERTY);
-            logFormatDateFormatDetail = props.get(LOGFORMAT_DATEFORMAT_PROPERTY);
+            logFormatDateFormatDetail = props.get(LOGFORMAT_DATEFORMAT_PROPERTY);            
 
-        } catch (java.io.IOException ex) {
-            logger.log(Level.SEVERE, "logging.read.error", ex);
-
-        } catch (ClassNotFoundException exc) {
-            logger.log(Level.SEVERE, "logging.formatter.load ", formatterClassname);
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "logging.set.formatter ", e);
+            LOGGER.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
         }
 
         Collection<Handler> handlers = habitat.getAllServices(Handler.class);
@@ -397,7 +392,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                     while (loggerNames.hasMoreElements()) {
                         String loggerName = loggerNames.nextElement();
                         logMgr.getLogger(loggerName);
-                        for (Handler handler : logger.getHandlers()) {
+                        for (Handler handler : LOGGER.getHandlers()) {
                             if (handler.getFormatter() instanceof UniformLogFormatter) {
                                 ((UniformLogFormatter) handler.getFormatter()).setDelegate(agentDelegate);
                             }
@@ -432,12 +427,12 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         // redirect stderr and stdout, a better way to do this
         //http://blogs.sun.com/nickstephen/entry/java_redirecting_system_out_and
 
-        Logger _ologger = LogDomains.getLogger(LogManagerService.class, LogDomains.STD_LOGGER);
+        Logger _ologger = LogFacade.STDOUT_LOGGER;
         LoggingOutputStream los = new LoggingOutputStream(_ologger, Level.INFO);
         LoggingOutputStream.LoggingPrintStream pout = los.new LoggingPrintStream(los);
         System.setOut(pout);
 
-        Logger _elogger = LogDomains.getLogger(LogManagerService.class, LogDomains.STD_LOGGER);
+        Logger _elogger = LogFacade.STDERR_LOGGER;
         los = new LoggingOutputStream(_elogger, Level.SEVERE);
         LoggingOutputStream.LoggingPrintStream perr = los.new LoggingPrintStream(los);
         System.setErr(perr);
@@ -475,11 +470,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                 if (a.endsWith(".level")) {
                                     String n = a.substring(0, a.lastIndexOf(".level"));
                                     Level l = Level.parse(val);
-                                    Logger appLogger = logMgr.getLogger(n);
-                                    if (appLogger != null) {
-                                        appLogger.setLevel(l);
-                                        loggerReference.add(appLogger);
-                                    } else if (gfHandlers.containsKey(n)) {
+                                    if (gfHandlers.containsKey(n)) {
                                         // check if this is one of our handlers
                                         Handler h = (Handler) gfHandlers.get(n);
                                         h.setLevel(l);
@@ -491,8 +482,12 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                             if (name.contains("java.util.logging.ConsoleHandler"))
                                                 h[i].setLevel(l);
                                         }
+                                    } else {
+                                        // Assume it is a logger
+                                        Logger appLogger = Logger.getLogger(n);
+                                        appLogger.setLevel(l);
+                                        loggerReference.add(appLogger);
                                     }
-
                                 } else if (a.equals(SERVER_LOG_FILE_PROPERTY)) {
                                     //check if file name was changed and send notification
                                     if (!val.equals(serverLogFileDetail)) {
@@ -570,19 +565,25 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     if (!val.equals(logFormatDateFormatDetail)) {
                                         generateAttributeChangeEvent(LOGFORMAT_DATEFORMAT_PROPERTY, logFormatDateFormatDetail, props);
                                     }
+                                } else if (a.equals(INCLUDE_FIELDS_PROPERTY)) {
+                                    val = (val == null) ? "" : val;
+                                    includeFields = (includeFields == null) ? "" : includeFields;
+                                    if (!val.equals(includeFields)) {
+                                        generateAttributeChangeEvent(INCLUDE_FIELDS_PROPERTY, includeFields, props);
+                                    }
                                 }
                             }
 
-                            logger.log(Level.INFO, "logging.update.levels");
+                            LOGGER.log(Level.INFO, LogFacade.UPDATED_LOG_LEVELS);
                         } catch (Exception e) {
-                            logger.log(Level.SEVERE, "logging.read.error", e);
+                            LOGGER.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
                         }
                     }
 
                 }
 
                 public void deleted(File deletedFile) {
-                    logger.log(Level.INFO, "logging.properties file removed, updating log levels disabled");
+                    LOGGER.log(Level.WARNING, LogFacade.CONF_FILE_DELETED, deletedFile.getAbsolutePath());
                 }
             });
         }
@@ -592,7 +593,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
         if (!catchUp.isEmpty()) {
             for (EarlyLogger.LevelAndMessage levelAndMessage : catchUp) {
-                logger.log(levelAndMessage.level, levelAndMessage.msg);
+                LOGGER.log(levelAndMessage.level, levelAndMessage.msg);
             }
             catchUp.clear();
         }
@@ -602,7 +603,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         while (!catchEarlyMessage.isEmpty()) {
             LogRecord logRecord = catchEarlyMessage.poll();
             if (logRecord != null) {
-                logger.log(logRecord);
+                LOGGER.log(logRecord);
             }
         }
     }

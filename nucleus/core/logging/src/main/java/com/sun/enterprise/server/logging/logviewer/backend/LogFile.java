@@ -49,6 +49,8 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.server.logging.LogFacade;
+
 
 /**
  * <P>This class encapsulates the log file so that its details are not
@@ -126,7 +128,7 @@ public class LogFile implements java.io.Serializable {
                     results.add(new LogEntry(line,
                             startingRecord + results.size()));
                 } catch (IllegalArgumentException ex) {
-                    Logger.getAnonymousLogger().log(Level.INFO, "Could not read the log entry", ex);
+                    LogFacade.LOGGING_LOGGER.log(Level.FINE, "Could not read the log entry", ex);
                 }
             }
         } catch (Exception ex) {
@@ -192,14 +194,12 @@ public class LogFile implements java.io.Serializable {
                 } catch (EOFException ex) {
                     break;
                 } catch (Exception ex) {
-                    Logger.getAnonymousLogger().log(Level.INFO, "Error trying to position where we left off", ex);
-
+                    LogFacade.LOGGING_LOGGER.log(Level.FINE, "Error trying to position where we left off", ex);
                     break;
                 }
             }
         } catch (Exception ex) {
-            Logger.getAnonymousLogger().log(Level.INFO, "Error trying to position where we left off", ex);
-
+            LogFacade.LOGGING_LOGGER.log(Level.FINE, "Error trying to position where we left off", ex);
         } finally {
             if (reader != null) {
                 try {
@@ -291,7 +291,7 @@ public class LogFile implements java.io.Serializable {
             return reader;
         } catch (Exception ex) {
             if (file != null) try { file.close(); } catch (Exception ex2) {}
-            Logger.getAnonymousLogger().log(Level.INFO, "Exception in openFile...", ex);
+            LogFacade.LOGGING_LOGGER.log(Level.FINE, "Exception while opening file", ex);
         } 
         return null;
     }

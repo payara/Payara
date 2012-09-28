@@ -45,10 +45,10 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.server.logging.LogFacade;
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilterForInstance;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.logging.LogDomains;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -92,8 +92,7 @@ public class CollectLogFiles implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CollectLogFiles.class);
 
-    private static final Logger logger =
-            LogDomains.getLogger(CollectLogFiles.class, LogDomains.CORE_LOGGER);
+    private static final Logger LOGGER = LogFacade.LOGGING_LOGGER;
 
     @Param(optional = true)
     String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
@@ -136,8 +135,8 @@ public class CollectLogFiles implements AdminCommand {
             } catch (Exception ex) {
                 final String errorMsg = localStrings.getLocalString(
                         "collectlogfiles.errGettingLogFiles", "Error while getting log file attribute for {0}.", target);
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(errorMsg);
+                report.setFailureCause(ex);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -157,8 +156,8 @@ public class CollectLogFiles implements AdminCommand {
             } catch (Exception ex) {
                 final String errorMsg = localStrings.getLocalString(
                         "collectlogfiles.errInstanceDownloading", "Error while downloading log files from {0}.", target);
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(errorMsg);
+                report.setFailureCause(ex);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -170,7 +169,6 @@ public class CollectLogFiles implements AdminCommand {
                     // Failure during zip
                     final String errorMsg = localStrings.getLocalString(
                             "collectlogfiles.creatingZip", "Error while creating zip file {0}.", zipFile);
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     report.setMessage(errorMsg);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
@@ -180,8 +178,8 @@ public class CollectLogFiles implements AdminCommand {
                 // Catching Exception if any
                 final String errorMsg = localStrings.getLocalString(
                         "collectlogfiles.creatingZip", "Error while creating zip file {0}.", zipFile);
-                logger.log(Level.SEVERE, errorMsg, e);
                 report.setMessage(errorMsg);
+                report.setFailureCause(e);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -211,8 +209,8 @@ public class CollectLogFiles implements AdminCommand {
             } catch (Exception ex) {
                 final String errorMsg = localStrings.getLocalString(
                         "collectlogfiles.errGettingLogFiles", "Error while getting log file attribute for {0}.", target);
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(errorMsg);
+                report.setFailureCause(ex);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -225,13 +223,14 @@ public class CollectLogFiles implements AdminCommand {
                     copyLogFilesForLocalhost(sourceDir, targetDir.getAbsolutePath(), report, instanceName);
                 } else {
                     new LogFilterForInstance().downloadAllInstanceLogFiles(habitat, targetServer,
-                            domain, logger, instanceName, targetDir.getAbsolutePath(), logFileDetails);
+                            domain, LOGGER, instanceName, targetDir.getAbsolutePath(), logFileDetails);
                 }
             }
             catch (Exception ex) {
                 final String errorMsg = localStrings.getLocalString(
                         "collectlogfiles.errInstanceDownloading", "Error while downloading log files from {0}.", instanceName);
                 report.setMessage(errorMsg);
+                report.setFailureCause(ex);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -243,7 +242,6 @@ public class CollectLogFiles implements AdminCommand {
                     // Failure during zip
                     final String errorMsg = localStrings.getLocalString(
                             "collectlogfiles.creatingZip", "Error while creating zip file {0}.", zipFile);
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     report.setMessage(errorMsg);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
@@ -282,8 +280,8 @@ public class CollectLogFiles implements AdminCommand {
             } catch (Exception ex) {
                 final String errorMsg = localStrings.getLocalString(
                         "collectlogfiles.errGettingLogFiles", "Error while getting log file attribute for {0}.", target);
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(errorMsg);
+                report.setFailureCause(ex);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -303,8 +301,8 @@ public class CollectLogFiles implements AdminCommand {
             } catch (Exception ex) {
                 final String errorMsg = localStrings.getLocalString(
                         "collectlogfiles.errInstanceDownloading", "Error while downloading log files from {0}.", target);
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(errorMsg);
+                report.setFailureCause(ex);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -332,8 +330,8 @@ public class CollectLogFiles implements AdminCommand {
                 } catch (Exception ex) {
                     final String errorMsg = localStrings.getLocalString(
                             "collectlogfiles.errGettingLogFiles", "Error while getting log file attribute for {0}.", target);
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     report.setMessage(errorMsg);
+                    report.setFailureCause(ex);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
                 }
@@ -346,7 +344,7 @@ public class CollectLogFiles implements AdminCommand {
                         copyLogFilesForLocalhost(sourceDir, targetDir.getAbsolutePath(), report, instanceName);
                     } else {
                         new LogFilterForInstance().downloadAllInstanceLogFiles(habitat, instance,
-                                domain, logger, instanceName, targetDir.getAbsolutePath(), logFileDetails);
+                                domain, LOGGER, instanceName, targetDir.getAbsolutePath(), logFileDetails);
                     }
                 }
                 catch (Exception ex) {
@@ -372,7 +370,6 @@ public class CollectLogFiles implements AdminCommand {
                         // Failure during zip
                         final String errorMsg = localStrings.getLocalString(
                                 "collectlogfiles.creatingZip", "Error while creating zip file {0}.", zipFile);
-                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         report.setMessage(errorMsg);
                         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         return;
@@ -382,6 +379,7 @@ public class CollectLogFiles implements AdminCommand {
                     final String errorMsg = localStrings.getLocalString(
                             "collectlogfiles.creatingZip", "Error while creating zip file {0}.", zipFile);
                     report.setMessage(errorMsg);
+                    report.setFailureCause(ex);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
                 }
@@ -438,8 +436,8 @@ public class CollectLogFiles implements AdminCommand {
                 catch (Exception ex) {
                     final String errorMsg = localStrings.getLocalString(
                             "collectlogfiles.errInstanceDownloading", "Error while downloading log file from {0}.", instanceName);
-                    logger.log(Level.SEVERE, errorMsg, ex);
                     report.setMessage(errorMsg);
+                    report.setFailureCause(ex);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
                 } finally {
@@ -524,8 +522,8 @@ public class CollectLogFiles implements AdminCommand {
         catch (Exception ex) {
             final String errorMsg = localStrings.getLocalString(
                     "collectlogfiles.copyingZip", "Error while copying zip file to {0}.", retrieveFilePath);
-            logger.log(Level.SEVERE, errorMsg, ex);
             report.setMessage(errorMsg);
+            report.setFailureCause(ex);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }

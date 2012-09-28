@@ -136,7 +136,7 @@ public class Syslog {
             s.close();
         }
       } catch(IOException e) {
-        logger.log(Level.WARNING, "Error sending syslog packet", e);
+        LogFacade.LOGGING_LOGGER.log(Level.SEVERE, LogFacade.ERROR_SENDING_SYSLOG_MSG, e);
       }
     }
 

@@ -273,10 +273,24 @@ public class UniformLogFormatter extends Formatter {
             }
             recordBuffer.append(threadName);
             recordBuffer.append(NVPAIR_SEPARATOR);
+            
+            // Include the raw long time stamp value in the log
+            recordBuffer.append("_TimeMillis").append(NV_SEPARATOR);
+            recordBuffer.append(record.getMillis()).append(NVPAIR_SEPARATOR);
+            
+            // Include the integer level value in the log            
+            recordBuffer.append("_LevelValue").append(NV_SEPARATOR);
+            Level level = record.getLevel();
+            recordBuffer.append(level.intValue()).append(NVPAIR_SEPARATOR);
+            
+            String msgId = getMessageId(record);
+            if (msgId != null && !msgId.isEmpty()) {
+                recordBuffer.append("_MessageID").append(NV_SEPARATOR);
+                recordBuffer.append(msgId).append(NVPAIR_SEPARATOR);                
+            }
 
             // See 6316018. ClassName and MethodName information should be
             // included for FINER and FINEST log levels.
-            Level level = record.getLevel();
             if (LOG_SOURCE_IN_KEY_VALUE ||
                     (level.intValue() <= Level.FINE.intValue())) {
                 recordBuffer.append("ClassName").append(NV_SEPARATOR);
@@ -291,7 +305,7 @@ public class UniformLogFormatter extends Formatter {
                 recordBuffer.append("RecordNumber").append(NV_SEPARATOR);
                 recordBuffer.append(recordNumber++).append(NVPAIR_SEPARATOR);
             }
-
+            
             // Not needed as per the current logging message format. Fixing bug 16849.
             // getNameValuePairs(recordBuffer, record);
 
@@ -363,6 +377,22 @@ public class UniformLogFormatter extends Formatter {
             // return is to keep javac happy
             return "";
         }
+    }
+
+    static String getMessageId(LogRecord lr) {
+        String msg = lr.getMessage();
+        if (msg != null & !msg.isEmpty()) {
+          ResourceBundle rb = lr.getResourceBundle();
+          if (rb != null) {        
+            if (rb.containsKey(msg)) {
+              String msgBody = lr.getResourceBundle().getString(msg);
+              if (msgBody != null && !msgBody.isEmpty()) {
+                return msg;
+              }
+            }
+          }
+        }
+        return null;
     }
 
     private synchronized ResourceBundle getResourceBundle(String loggerName) {

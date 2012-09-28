@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.server.logging;
 
-import com.sun.logging.LogDomains;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.ContractsProvided;
@@ -95,9 +94,9 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
         try {
             sysLogger = new Syslog("localhost");  //for now only write to this host
         } catch ( java.net.UnknownHostException e) {
-		   Logger.getAnonymousLogger().log(Level.SEVERE,"unknown host" );
-		   return;
-		}
+		        LogFacade.LOGGING_LOGGER.log(Level.SEVERE, LogFacade.ERROR_INIT_SYSLOG, e);
+		        return;
+		    }
         
         // start the Queue consummer thread.
         pump = new Thread() {
@@ -115,7 +114,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
 
     }
     public void preDestroy() {
-        LogDomains.getLogger(SyslogHandler.class, LogDomains.CORE_LOGGER).fine("SysLog Logger handler killed");
+        LogFacade.LOGGING_LOGGER.fine("SysLog Logger handler killed");
     }
 
     /**

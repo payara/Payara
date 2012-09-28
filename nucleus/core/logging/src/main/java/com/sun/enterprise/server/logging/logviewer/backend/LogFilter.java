@@ -45,9 +45,9 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.server.logging.LogFacade;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.TranslatedConfigView;
@@ -99,9 +99,7 @@ public class LogFilter {
     @Inject
     LoggingConfigImpl loggingConfig;
 
-    private static final Logger logger =
-            LogDomains.getLogger(LogFilter.class, LogDomains.CORE_LOGGER);
-
+    private static final Logger LOGGER = LogFacade.LOGGING_LOGGER;
 
     /**
      * The public method that Log Viewer Front End will be calling on.
@@ -151,7 +149,7 @@ public class LogFilter {
             logFileDetailsForServer = TranslatedConfigView.getTranslatedValue(logFileDetailsForServer).toString();
             logFileDetailsForServer = new File(logFileDetailsForServer).getAbsolutePath();
         } catch (Exception ex) {
-            logger.log(Level.SEVERE, "logging.backend.error.fetchrecord", ex);
+            LOGGER.log(Level.SEVERE, LogFacade.ERROR_EXECUTING_LOG_QUERY, ex);
             return new AttributeList();
         }
 
@@ -204,7 +202,7 @@ public class LogFilter {
                     reqCount, fromDate, toDate, logLevel,
                     onlyLevel.booleanValue(), listOfModules, nameValueMap, anySearch);
         } catch (Exception ex) {
-            logger.log(Level.SEVERE, "logging.backend.error.fetchrecord", ex);
+            LOGGER.log(Level.SEVERE, LogFacade.ERROR_EXECUTING_LOG_QUERY, ex);
             return new AttributeList();
         }
     }
@@ -221,7 +219,7 @@ public class LogFilter {
                 logFileDetailsForServer = loggingConfig.getLoggingFileDetails();
                 logFileDetailsForServer = TranslatedConfigView.getTranslatedValue(logFileDetailsForServer).toString();
             } catch (Exception ex) {
-                logger.log(Level.SEVERE, "logging.backend.error.fetchrecord", ex);
+                LOGGER.log(Level.SEVERE, LogFacade.ERROR_EXECUTING_LOG_QUERY, ex);
                 return new Vector();
             }
 
@@ -238,9 +236,9 @@ public class LogFilter {
             try {
                 // getting log file attribute value from logging.properties file
                 String instanceLogFileDirectory = getInstanceLogFileDirectory(targetServer);
-                allInstanceFileNames = new LogFilterForInstance().getInstanceLogFileNames(habitat, targetServer, domain, logger, instanceName, instanceLogFileDirectory);
+                allInstanceFileNames = new LogFilterForInstance().getInstanceLogFileNames(habitat, targetServer, domain, LOGGER, instanceName, instanceLogFileDirectory);
             } catch (Exception ex) {
-                logger.log(Level.SEVERE, "logging.backend.error.fetchrecord", ex);
+                LOGGER.log(Level.SEVERE, LogFacade.ERROR_EXECUTING_LOG_QUERY, ex);
                 return new Vector();
             }
         }
@@ -309,7 +307,7 @@ public class LogFilter {
                 // if remote then need to download log file on DAS and returning that log file for view
                 String logFileName = logFileDetailsForInstance.substring(logFileDetailsForInstance.lastIndexOf(File.separator) + 1, logFileDetailsForInstance.length());
                 File instanceFile = null;
-                instanceFile = new LogFilterForInstance().downloadGivenInstanceLogFile(habitat, targetServer, domain, logger,
+                instanceFile = new LogFilterForInstance().downloadGivenInstanceLogFile(habitat, targetServer, domain, LOGGER,
                         targetServerName, env.getDomainRoot().getAbsolutePath(), logFileName, logFileDetailsForInstance);
 
                 return instanceFile.getAbsolutePath();
@@ -349,7 +347,7 @@ public class LogFilter {
                 // getting lof file details for given target.
                 instanceLogFileName = getInstanceLogFileDirectory(targetServer);
             } catch (Exception e) {
-                logger.log(Level.SEVERE, "logging.backend.error.instance", e);
+                LOGGER.log(Level.SEVERE, LogFacade.ERROR_EXECUTING_LOG_QUERY, e);
                 return new AttributeList();
             }
 
@@ -404,9 +402,9 @@ public class LogFilter {
                 try {
                     // this code is used when the node is not local.
                     instanceLogFile = new LogFilterForInstance().downloadGivenInstanceLogFile(habitat, targetServer,
-                            domain, logger, instanceName, env.getDomainRoot().getAbsolutePath(), logFileName, instanceLogFileName);
+                            domain, LOGGER, instanceName, env.getDomainRoot().getAbsolutePath(), logFileName, instanceLogFileName);
                 } catch (Exception e) {
-                    logger.log(Level.SEVERE, "logging.backend.error.instance", e);
+                    LOGGER.log(Level.SEVERE, LogFacade.ERROR_EXECUTING_LOG_QUERY, e);
                     return new AttributeList();
                 }
 
@@ -416,7 +414,7 @@ public class LogFilter {
         LogFile logFile = null;
         File loggingFileExists = new File(instanceLogFile.getAbsolutePath());
         if (!loggingFileExists.exists()) {
-            logger.log(Level.WARNING, "logging.backend.error.filenotfound", instanceLogFile.getAbsolutePath());
+            LOGGER.log(Level.WARNING, LogFacade.INSTANCE_LOG_FILE_NOT_FOUND, instanceLogFile.getAbsolutePath());
             return new AttributeList();
         }
         logFile = getLogFile(instanceLogFile.getAbsolutePath());
@@ -453,7 +451,7 @@ public class LogFilter {
                     reqCount, fromDate, toDate, logLevel,
                     onlyLevel.booleanValue(), listOfModules, nameValueMap, anySearch);
         } catch (Exception ex) {
-            logger.log(Level.SEVERE, "logging.backend.error.fetchrecord", ex);
+            LOGGER.log(Level.SEVERE, LogFacade.ERROR_EXECUTING_LOG_QUERY, ex);
             return new AttributeList();
         }
     }
@@ -649,7 +647,7 @@ public class LogFilter {
                         SystemPropertyConstants.INSTANCE_ROOT_PROPERTY);
 
             } catch (Exception e) {
-                logger.log(Level.WARNING, "logging.backend.error", e);
+                LOGGER.log(Level.SEVERE, LogFacade.ERROR_EXECUTING_LOG_QUERY, e);
             }
             if (parent != null) {
                 // Just use the parent directory from the other server.log

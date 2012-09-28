@@ -55,6 +55,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.*;
 import java.util.logging.Formatter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * ODLLogFormatter conforms to the logging format defined by the
@@ -70,14 +72,13 @@ import java.util.logging.Formatter;
 @PerLookup
 public class ODLLogFormatter extends Formatter {
 
+    private static final String AS_COMPONENT_NAME = "AS";
+
     // loggerResourceBundleTable caches references to all the ResourceBundle
     // and can be searched using the LoggerName as the key 
     private HashMap loggerResourceBundleTable;
 
     private LogManager logManager;
-
-    // A Dummy Container Date Object is used to format the date
-    private Date date = new Date();
 
     private static boolean LOG_SOURCE_IN_KEY_VALUE = false;
 
@@ -88,6 +89,10 @@ public class ODLLogFormatter extends Formatter {
     private static String ecID = "";
 
     private FormatterDelegate _delegate = null;
+
+    private static final String LINE_SEPARATOR =
+        (String) java.security.AccessController.doPrivileged(
+                new sun.security.action.GetPropertyAction("line.separator"));
 
     static {
         String logSource = System.getProperty(
@@ -106,22 +111,15 @@ public class ODLLogFormatter extends Formatter {
 
         userID = System.getProperty("com.sun.aas.logging.userID");
 
-        ecID = System.getProperty("com.sun.aas.logging.ecID");
+        ecID = System.getProperty("com.sun.aas.logging.ecID");        
     }
 
     private long recordNumber = 0;
 
-    private static final String LINE_SEPARATOR =
-            (String) java.security.AccessController.doPrivileged(
-                    new sun.security.action.GetPropertyAction("line.separator"));
-
-    private String recordBeginMarker;
-    private String recordEndMarker;
     private String recordFieldSeparator;
     private String recordDateFormat;
 
-    private static final String RECORD_BEGIN_MARKER = "[";
-    private static final String RECORD_END_MARKER = "]" + LINE_SEPARATOR;
+    private BitSet includeSuppAttrsBits = new BitSet();
 
     private static final String FIELD_BEGIN_MARKER = "[";
     private static final String FIELD_END_MARKER = "]";
@@ -131,6 +129,8 @@ public class ODLLogFormatter extends Formatter {
     private static final String RFC_3339_DATE_FORMAT =
             "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
+    private static enum SupplementalAttribute {TID, USERID, ECID, TIME_MILLIS, LEVEL_VALUE, MAX_VALUE};
+    
     public ODLLogFormatter() {
         super();
         loggerResourceBundleTable = new HashMap();
@@ -186,10 +186,14 @@ public class ODLLogFormatter extends Formatter {
 
             // creating message from log record using resource bundle and appending parameters
             String message = getLogMessage(record);
+            boolean multiLine = isMultiLine(message);
 
             // Starting formatting message
             // Adding record begin marker
-            StringBuilder recordBuffer = new StringBuilder(getRecordBeginMarker() != null ? getRecordBeginMarker() : RECORD_BEGIN_MARKER);
+            StringBuilder recordBuffer = new StringBuilder();
+
+            // A Dummy Container Date Object is used to format the date
+            Date date = new Date();
 
             // Adding timestamp
             SimpleDateFormat dateFormatter = new SimpleDateFormat(getRecordDateFormat() != null ? getRecordDateFormat() : RFC_3339_DATE_FORMAT);
@@ -201,7 +205,7 @@ public class ODLLogFormatter extends Formatter {
 
             // Adding organization ID
             recordBuffer.append(FIELD_BEGIN_MARKER);
-            recordBuffer.append(getComponentID(message));
+            recordBuffer.append(AS_COMPONENT_NAME);
             recordBuffer.append(FIELD_END_MARKER);
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
@@ -214,7 +218,8 @@ public class ODLLogFormatter extends Formatter {
 
             // Adding message ID
             recordBuffer.append(FIELD_BEGIN_MARKER);
-            recordBuffer.append(getMessageID(message));
+            String msgId  = UniformLogFormatter.getMessageId(record);            
+            recordBuffer.append((msgId == null) ? "" : msgId);
             recordBuffer.append(FIELD_END_MARKER);
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
@@ -225,22 +230,26 @@ public class ODLLogFormatter extends Formatter {
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
             // Adding thread ID
-            recordBuffer.append(FIELD_BEGIN_MARKER);
-            recordBuffer.append("tid: _ThreadID=");
-            recordBuffer.append(record.getThreadID());
-            String threadName;
-            if (record instanceof GFLogRecord) {
-                threadName = ((GFLogRecord)record).getThreadName();
-            } else {
-                threadName = Thread.currentThread().getName();
+            if (includeSuppAttrsBits.get(SupplementalAttribute.TID.ordinal())) {
+                recordBuffer.append(FIELD_BEGIN_MARKER);
+                recordBuffer.append("tid: _ThreadID=");
+                recordBuffer.append(record.getThreadID());
+                String threadName;
+                if (record instanceof GFLogRecord) {
+                    threadName = ((GFLogRecord)record).getThreadName();
+                } else {
+                    threadName = Thread.currentThread().getName();
+                }
+                recordBuffer.append(" _ThreadName=");
+                recordBuffer.append(threadName);
+                recordBuffer.append(FIELD_END_MARKER);
+                recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);                
             }
-            recordBuffer.append(" _ThreadName=");
-            recordBuffer.append(threadName);
-            recordBuffer.append(FIELD_END_MARKER);
-            recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
             // Adding user ID
-            if (userID != null && !("").equals(userID.trim())) {
+            if (includeSuppAttrsBits.get(SupplementalAttribute.USERID.ordinal()) && 
+                    userID != null && !("").equals(userID.trim())) 
+            {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("userId: ");
                 recordBuffer.append(userID);
@@ -249,12 +258,32 @@ public class ODLLogFormatter extends Formatter {
             }
 
             // Adding ec ID
-            if (ecID != null && !("").equals(ecID.trim())) {
+            if (includeSuppAttrsBits.get(SupplementalAttribute.ECID.ordinal()) && 
+                    ecID != null && !("").equals(ecID.trim())) 
+            {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("ecid: ");
                 recordBuffer.append(ecID);
                 recordBuffer.append(FIELD_END_MARKER);
                 recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+            }
+            
+            // Include the raw time stamp   
+            if (includeSuppAttrsBits.get(SupplementalAttribute.TIME_MILLIS.ordinal())) {
+                recordBuffer.append(FIELD_BEGIN_MARKER);
+                recordBuffer.append("timeMillis: ");
+                recordBuffer.append(record.getMillis());
+                recordBuffer.append(FIELD_END_MARKER);
+                recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);                
+            }
+
+            // Include the level value
+            if (includeSuppAttrsBits.get(SupplementalAttribute.LEVEL_VALUE.ordinal())) {
+                recordBuffer.append(FIELD_BEGIN_MARKER);
+                recordBuffer.append("levelValue: ");
+                recordBuffer.append(record.getLevel().intValue());
+                recordBuffer.append(FIELD_END_MARKER);
+                recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);                
             }
 
             // Adding extra Attributes - record number
@@ -267,6 +296,7 @@ public class ODLLogFormatter extends Formatter {
             }
 
             // Adding extra Attributes - produce ID
+            /*
             if (getProductId()!=null) {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("PRODUCTID: ");
@@ -274,6 +304,7 @@ public class ODLLogFormatter extends Formatter {
                 recordBuffer.append(FIELD_END_MARKER);
                 recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
             }
+            */
 
             // Adding extra Attributes - class name and method name for FINE and higher level messages
             Level level = record.getLevel();
@@ -295,22 +326,15 @@ public class ODLLogFormatter extends Formatter {
                 _delegate.format(recordBuffer, level);
             }
 
-            // Adding message
-            recordBuffer.append(getMessageWithoutMessageID(message));
-
-            if (record.getThrown() != null) {
-                recordBuffer.append(LINE_SEPARATOR);
-                StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);
-                record.getThrown().printStackTrace(pw);
-                pw.close();
-                recordBuffer.append(sw.toString());
-                sw.close();
+            if (multiLine) {
+                recordBuffer.append(FIELD_BEGIN_MARKER).append(FIELD_BEGIN_MARKER);    
             }
-
-            recordBuffer.append(getRecordEndMarker() != null ? getRecordEndMarker() : RECORD_END_MARKER).append(LINE_SEPARATOR);
+            recordBuffer.append(message);
+            if (multiLine) {
+                recordBuffer.append(FIELD_END_MARKER).append(FIELD_END_MARKER);    
+            }
+            recordBuffer.append(LINE_SEPARATOR);
             return recordBuffer.toString();
-
         } catch (Exception ex) {
             new ErrorManager().error(
                     "Error in formatting Logrecord", ex,
@@ -321,41 +345,52 @@ public class ODLLogFormatter extends Formatter {
         }
     }
 
+    private boolean isMultiLine(String message) {
+        if (message == null || message.isEmpty()) {
+            return false;
+        }
+        String[] lines = message.split(LINE_SEPARATOR);
+        if (lines == null) {
+            return false;
+        }
+        return (lines.length > 1);
+    }
+
     private String getLogMessage(LogRecord record) throws IOException {
         String logMessage = record.getMessage();
-        if (logMessage == null || logMessage.trim().equals("")) {
-            if (record.getThrown() != null) {
-                // case 1: Just log the exception instead of a message
-                StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);
-                record.getThrown().printStackTrace(pw);
-                pw.close();
-                logMessage = sw.toString();
-                sw.close();
-            } else {
-                // case 2: Log an error message (using original severity)
-                logMessage = "The log message is empty or null. Please log an issue against the component in the logger field.";
-            }
+        if (logMessage == null) {
+            logMessage = "";
+        }        
+        if (logMessage.indexOf("{0") >= 0 && logMessage.contains("}") && record.getParameters() != null) {
+            // If we find {0} or {1} etc., in the message, then it's most
+            // likely finer level messages for Method Entry, Exit etc.,
+            logMessage = java.text.MessageFormat.format(
+                    logMessage, record.getParameters());
         } else {
-            if (logMessage.indexOf("{0") >= 0 && logMessage.contains("}") && record.getParameters() != null) {
-                // If we find {0} or {1} etc., in the message, then it's most
-                // likely finer level messages for Method Entry, Exit etc.,
-                logMessage = java.text.MessageFormat.format(
-                        logMessage, record.getParameters());
-            } else {
-                ResourceBundle rb = getResourceBundle(record.getLoggerName());
-                if (rb != null) {
-                    try {
-                        logMessage = MessageFormat.format(
-                                rb.getString(logMessage),
-                                record.getParameters());
-                    } catch (java.util.MissingResourceException e) {
-                        // If we don't find an entry, then we are covered
-                        // because the logMessage is initialized already
-                    }
+            ResourceBundle rb = getResourceBundle(record.getLoggerName());
+            if (rb != null && rb.containsKey(logMessage)) {
+                try {
+                    logMessage = MessageFormat.format(
+                            rb.getString(logMessage),
+                            record.getParameters());
+                } catch (java.util.MissingResourceException e) {
+                    // If we don't find an entry, then we are covered
+                    // because the logMessage is initialized already
                 }
             }
-        }
+        }        
+        if (record.getThrown() != null) {
+            StringBuffer buffer = new StringBuffer();
+            buffer.append(logMessage);
+            buffer.append(LINE_SEPARATOR);
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            record.getThrown().printStackTrace(pw);
+            pw.close();
+            buffer.append(sw.toString());
+            logMessage = buffer.toString();
+            sw.close();
+        } 
         return logMessage;
     }
 
@@ -376,22 +411,6 @@ public class ODLLogFormatter extends Formatter {
         return rb;
     }
 
-    public String getRecordBeginMarker() {
-        return recordBeginMarker;
-    }
-
-    public void setRecordBeginMarker(String recordBeginMarker) {
-        this.recordBeginMarker = recordBeginMarker;
-    }
-
-    public String getRecordEndMarker() {
-        return recordEndMarker;
-    }
-
-    public void setRecordEndMarker(String recordEndMarker) {
-        this.recordEndMarker = recordEndMarker;
-    }
-
     public String getRecordFieldSeparator() {
         return recordFieldSeparator;
     }
@@ -406,26 +425,6 @@ public class ODLLogFormatter extends Formatter {
 
     public void setRecordDateFormat(String recordDateFormat) {
         this.recordDateFormat = recordDateFormat;
-    }
-
-    public String getMessageID(String message) {
-        String messageID = "";
-        if (message.contains(": ")) {
-            StringTokenizer st = new StringTokenizer(message, ":");
-            // getting message Id from message
-            messageID = st.nextToken();
-            if (messageID.contains(" "))
-                // if message ID is not proper value setting as blank
-                messageID = "";
-        } else if (message.contains("=")) {
-            StringTokenizer st = new StringTokenizer(message, "=");
-            // getting message Id from message
-            messageID = st.nextToken();
-            if (messageID.contains(" ") && !messageID.contains("-"))
-                // if message ID is not proper value setting as blank
-                messageID = "";
-        }
-        return messageID;
     }
 
     public String getMessageWithoutMessageID(String message) {
@@ -443,17 +442,6 @@ public class ODLLogFormatter extends Formatter {
             }
         }
         return message;
-    }
-
-    public String getComponentID(String message) {
-        String componentID = "AS";
-        String messageID = getMessageID(message);
-        if (messageID.contains("-")) {
-            // if message Id is AS-EJB-00001 then component id is AS so returning the same
-            StringTokenizer st = new StringTokenizer(messageID, "-");
-            componentID = st.nextToken();
-        }
-        return componentID;
     }
 
     public String getMapplingLogRecord(Level levelInRecord) {
@@ -476,5 +464,28 @@ public class ODLLogFormatter extends Formatter {
             return "TRACE";
         }
         return "";
+    }
+
+    public void setIncludeFields(String includeFields) {
+        includeSuppAttrsBits.clear();
+        if (includeFields != null) {
+            String[] fields = includeFields.split(",");
+            for (String field : fields) {
+                if (field.equals("tid")) {
+                    includeSuppAttrsBits.set(SupplementalAttribute.TID.ordinal());
+                } else if (field.equals("userId")) {
+                    includeSuppAttrsBits.set(SupplementalAttribute.USERID.ordinal());
+                } else if (field.equals("ecid")) {
+                    includeSuppAttrsBits.set(SupplementalAttribute.ECID.ordinal());
+                } else if (field.equals("timeMillis")) {
+                    includeSuppAttrsBits.set(SupplementalAttribute.TIME_MILLIS.ordinal());
+                } else if (field.equals("levelValue")) {
+                    includeSuppAttrsBits.set(SupplementalAttribute.LEVEL_VALUE.ordinal());
+                } 
+            }
+        } else {
+            includeSuppAttrsBits.set(SupplementalAttribute.TID.ordinal(), 
+                    SupplementalAttribute.MAX_VALUE.ordinal());
+        }
     }
 }

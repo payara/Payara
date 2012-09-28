@@ -45,7 +45,6 @@ import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.logging.Task;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.internal.api.ServerContext;
@@ -67,6 +66,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.ResourceBundle;
 import java.util.Vector;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -248,14 +248,18 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         };
         pump.setDaemon(true);
         pump.start();
-        LogRecord lr = new LogRecord(Level.INFO, "Running GlassFish Version: " + Version.getFullVersion());
+        LogRecord lr = new LogRecord(Level.INFO, LogFacade.GF_VERSION_INFO);
+        lr.setParameters(new Object[]{ Version.getFullVersion()});        
+        lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
         lr.setThreadID((int) Thread.currentThread().getId());
-        lr.setLoggerName(getClass().getName());
+        lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
         EarlyLogHandler.earlyMessages.add(lr);
 
-        lr = new LogRecord(Level.INFO, "GlassFis is using Log Formatter: " + manager.getProperty(cname + ".formatter"));
+        lr = new LogRecord(Level.INFO, LogFacade.LOG_FORMATTER_INFO);
+        lr .setParameters(new Object[] {manager.getProperty(cname + ".formatter")});
+        lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
         lr.setThreadID((int) Thread.currentThread().getId());
-        lr.setLoggerName(getClass().getName());
+        lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
         EarlyLogHandler.earlyMessages.add(lr);
 
 
@@ -277,10 +281,11 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                 nextDay = dateFormat.parse(nextDate);
             } catch (ParseException e) {
                 nextDay = new Date();
-                lr = new LogRecord(Level.WARNING,
-                        "Cannot parse the date.");
+                lr = new LogRecord(Level.WARNING, LogFacade.DATE_PARSING_FAILED);
+                lr.setParameters(new Object[]{nextDate});
+                lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
                 lr.setThreadID((int) Thread.currentThread().getId());
-                lr.setLoggerName(getClass().getName());
+                lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
                 EarlyLogHandler.earlyMessages.add(lr);
             }
             long nextsystime = nextDay.getTime();
@@ -297,20 +302,22 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
             LogRotationTimer.getInstance().startTimer(
                     new LogRotationTimerTask(rotationTask,
                             rotationTimeLimitValue / 60000));
-            // Disable the Size Based Rotation if the Time Based
-            // Rotation is set.
-            setLimitForRotation(0);
 
         } else {
 
             Long rotationTimeLimitValue = 0L;
+            String propValue = null;
             try {
-                rotationTimeLimitValue = Long.parseLong(manager.getProperty(cname + ".rotationTimelimitInMinutes"));
+                propValue = manager.getProperty(cname + ".rotationTimelimitInMinutes");
+                if (propValue != null) {
+                    rotationTimeLimitValue = Long.parseLong(propValue);                    
+                }
             } catch (NumberFormatException e) {
-                lr = new LogRecord(Level.SEVERE,
-                        "Can't find rotationTimelimitInMinutes property from logging config file");
+                lr = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
+                lr.setParameters(new Object[]{propValue, "rotationTimelimitInMinutes"});
+                lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
                 lr.setThreadID((int) Thread.currentThread().getId());
-                lr.setLoggerName(getClass().getName());
+                lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
                 EarlyLogHandler.earlyMessages.add(lr);
             }
 
@@ -323,34 +330,32 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                     }
                 };
 
-                // If there is a value specified for the rotation based on
-                // time we set that first, if not then we will fall back to
-                // size based rotation
-
                 LogRotationTimer.getInstance().startTimer(
                         new LogRotationTimerTask(rotationTask,
                                 rotationTimeLimitValue));
-                // Disable the Size Based Rotation if the Time Based
-                // Rotation is set.
-                setLimitForRotation(0);
-            } else {
-                Integer rotationLimitAttrValue = 0;
-
-                try {
-                    rotationLimitAttrValue = Integer.parseInt(manager.getProperty(cname + ".rotationLimitInBytes"));
-                } catch (NumberFormatException e) {
-                    lr = new LogRecord(Level.WARNING,
-                            "Can't find rotationLimitInBytes property from logging config file so using default.");
-                    lr.setThreadID((int) Thread.currentThread().getId());
-                    lr.setLoggerName(getClass().getName());
-                    EarlyLogHandler.earlyMessages.add(lr);
-                }
-                // We set the LogRotation limit here. The rotation limit is the
-                // Threshold for the number of bytes in the log file after which
-                // it will be rotated.
-                setLimitForRotation(rotationLimitAttrValue);
-            }
+            } 
         }
+
+        // Also honor the size based rotation if configured.
+        Integer rotationLimitAttrValue = 0;
+        String propValue = null;
+        try {
+            propValue = manager.getProperty(cname + ".rotationLimitInBytes");
+            if (propValue != null) {
+                rotationLimitAttrValue = Integer.parseInt(propValue);
+            }
+        } catch (NumberFormatException e) {
+            lr = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
+            lr.setParameters(new Object[]{propValue, "rotationLimitInBytes"});
+            lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
+            lr.setThreadID((int) Thread.currentThread().getId());
+            lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
+            EarlyLogHandler.earlyMessages.add(lr);
+        }
+        // We set the LogRotation limit here. The rotation limit is the
+        // Threshold for the number of bytes in the log file after which
+        // it will be rotated.
+        setLimitForRotation(rotationLimitAttrValue);        
 
         // Below snapshot of the code is used to rotate server.log file on startup. It is used to avoid different format
         // log messages logged under same server.log file.
@@ -363,18 +368,19 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
 
 
         //setLevel(Level.ALL);
-        String ff = manager.getProperty(cname + ".flushFrequency");
-        if (ff != null)
+        propValue = manager.getProperty(cname + ".flushFrequency");
+        if (propValue != null) {
             try {
-                flushFrequency = Integer.parseInt(manager.getProperty(cname + ".flushFrequency"));
+                flushFrequency = Integer.parseInt(propValue);
             } catch (NumberFormatException e) {
-                lr = new LogRecord(Level.WARNING,
-                        "Can't find flushFrequency property from logging config file so using default.");
+                lr = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
+                lr.setParameters(new Object[]{propValue, "flushFrequency"});
+                lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
                 lr.setThreadID((int) Thread.currentThread().getId());
-                lr.setLoggerName(getClass().getName());
+                lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
                 EarlyLogHandler.earlyMessages.add(lr);
-
             }
+        }
         if (flushFrequency <= 0)
             flushFrequency = 1;
 
@@ -395,28 +401,16 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
             if (formatterClass != null) {
                 recordBeginMarker = manager.getProperty(cname + ".logFormatBeginMarker");
                 if (recordBeginMarker == null || ("").equals(recordBeginMarker)) {
-                    //lr = new LogRecord(Level.WARNING,
-                    //        "Record begin marker is not a proper value so using default.");
-                    //lr.setThreadID((int) Thread.currentThread().getId());
-                    //this.publish(lr);
                     recordBeginMarker = RECORD_BEGIN_MARKER;
                 }
 
                 recordEndMarker = manager.getProperty(cname + ".logFormatEndMarker");
                 if (recordEndMarker == null || ("").equals(recordEndMarker)) {
-                    //lr = new LogRecord(Level.WARNING,
-                    //        "Record end marker is not a proper value so using default.");
-                    //lr.setThreadID((int) Thread.currentThread().getId());
-                    //this.publish(lr);
                     recordEndMarker = RECORD_END_MARKER;
                 }
 
                 recordFieldSeparator = manager.getProperty(cname + ".logFormatFieldSeparator");
                 if (recordFieldSeparator == null || ("").equals(recordFieldSeparator) || recordFieldSeparator.length() > 1) {
-                    //lr = new LogRecord(Level.WARNING,
-                    //       "Log Format field separator is not a proper value so using default.");
-                    //lr.setThreadID((int) Thread.currentThread().getId());
-                    //this.publish(lr);
                     recordFieldSeparator = RECORD_FIELD_SEPARATOR;
                 }
 
@@ -426,17 +420,9 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                     try {
                         sdf.format(new Date());
                     } catch (Exception e) {
-                        //lr = new LogRecord(Level.WARNING,
-                        //        "Date Format specified is wrong so using default.");
-                        //lr.setThreadID((int) Thread.currentThread().getId());
-                        //this.publish(lr);
                         recordDateFormat = RECORD_DATE_FORMAT;
                     }
                 } else {
-                    //lr = new LogRecord(Level.WARNING,
-                    //        "Date Format specified is wrong so using default.");
-                    //lr.setThreadID((int) Thread.currentThread().getId());
-                    //this.publish(lr);
                     recordDateFormat = RECORD_DATE_FORMAT;
                 }
 
@@ -457,38 +443,34 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                 formatterClass = new ODLLogFormatter();
                 setFormatter(formatterClass);
             }
+            String includeFields = manager.getProperty(LogManagerService.INCLUDE_FIELDS_PROPERTY);
+            formatterClass.setIncludeFields(includeFields);
         } else {
             // this loop is used for any other formatter
             try {
                 setFormatter((Formatter) this.getClass().getClassLoader().loadClass(formatterName).newInstance());
-            } catch (InstantiationException e) {
-                lr = new LogRecord(Level.SEVERE,
-                        "Cannot instantiate formatter class " + formatterName);
+            } catch (Exception e) {
+                lr = new LogRecord(Level.WARNING, LogFacade.INVALID_FORMATTER_CLASS_NAME);
+                lr.setParameters(new Object[]{formatterName});
                 lr.setThreadID((int) Thread.currentThread().getId());
-                lr.setLoggerName(getClass().getName());
+                lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
+                lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
+                lr.setThrown(e);
                 EarlyLogHandler.earlyMessages.add(lr);
-            } catch (IllegalAccessException e) {
-                lr = new LogRecord(Level.SEVERE,
-                        "Cannot instantiate formatter class " + formatterName);
-                lr.setThreadID((int) Thread.currentThread().getId());
-                lr.setLoggerName(getClass().getName());
-                EarlyLogHandler.earlyMessages.add(lr);
-            } catch (ClassNotFoundException e) {
-                lr = new LogRecord(Level.SEVERE,
-                        "Cannot load formatter class " + formatterName);
-                lr.setThreadID((int) Thread.currentThread().getId());
-                lr.setLoggerName(getClass().getName());
-                EarlyLogHandler.earlyMessages.add(lr);
-            }
+            } 
         }
 
+        propValue = manager.getProperty(cname + ".maxHistoryFiles");
         try {
-            maxHistoryFiles = Integer.parseInt(manager.getProperty(cname + ".maxHistoryFiles"));
+            if (propValue != null) {
+                maxHistoryFiles = Integer.parseInt(propValue);
+            }
         } catch (NumberFormatException e) {
-            lr = new LogRecord(Level.WARNING,
-                    "Can't find maxHistoryFiles property from logging config file so using default.");
+            lr = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
+            lr.setParameters(new Object[]{propValue, "maxHistoryFiles"});
+            lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
             lr.setThreadID((int) Thread.currentThread().getId());
-            lr.setLoggerName(getClass().getName());
+            lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
             EarlyLogHandler.earlyMessages.add(lr);
         }
         if (maxHistoryFiles < 0)
@@ -498,7 +480,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
 
     public void preDestroy() {
         // stop the Queue consummer thread.
-        LogDomains.getLogger(GFFileHandler.class, LogDomains.CORE_LOGGER).fine("Logger handler killed");
+        LogFacade.LOGGING_LOGGER.fine("Logger handler killed");
         done.tryReleaseShared(1);
         pump.interrupt();
 
@@ -670,12 +652,11 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                 File logFile = new File((String) pathes[i]);
                 boolean delFile = logFile.delete();
                 if (!delFile) {
-                    publish(new LogRecord(Level.SEVERE,
-                            "Error, could not delete log file: " + logFile.getAbsolutePath()));
+                    throw new IOException("Could not delete log file: " + logFile.getAbsolutePath());
                 }
             }
         } catch (Exception e) {
-            new ErrorManager().error("FATAL ERROR: COULD NOT DELETE LOG FILE..",
+            new ErrorManager().error("FATAL ERROR: COULD NOT DELETE LOG FILE.",
                     e, ErrorManager.GENERIC_FAILURE);
         }
     }
@@ -690,55 +671,66 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         java.security.AccessController.doPrivileged(
                 new java.security.PrivilegedAction() {
                     public Object run() {
-                        thisInstance.flush();
-                        thisInstance.close();
-                        try {
-                            if (!absoluteFile.exists()) {
-                                File creatingDeletedLogFile = new File(absoluteFile.getAbsolutePath());
-                                creatingDeletedLogFile.createNewFile();
-                                absoluteFile = creatingDeletedLogFile;
+                        synchronized (thisInstance.rotationRequested) {
+                            if (thisInstance.meter != null
+                                    && thisInstance.meter.written <= 0) {
+                                return null;
                             }
-                            File oldFile = absoluteFile;
-                            StringBuffer renamedFileName = new StringBuffer(absoluteFile + "_");
-                            logRotateDateFormatter.format(
-                                    new Date(), renamedFileName,
-                                    new FieldPosition(0));
-                            File rotatedFile = new File(renamedFileName.toString());
-                            boolean renameSuccess = oldFile.renameTo(rotatedFile);
-                            if (!renameSuccess) {
-                                // If we don't succeed with file rename which
-                                // most likely can happen on Windows because
-                                // of multiple file handles opened. We go through
-                                // Plan B to copy bytes explicitly to a renamed
-                                // file.
-                                FileUtils.copy(absoluteFile, rotatedFile);
-                                File freshServerLogFile = getLogFileName();
-                                // We do this to make sure that server.log
-                                // contents are flushed out to start from a
-                                // clean file again after the rename..
-                                FileOutputStream fo =
-                                        new FileOutputStream(freshServerLogFile);
-                                fo.close();
-                            }
-                            FileOutputStream oldFileFO = new FileOutputStream(oldFile);
-                            oldFileFO.close();
-                            openFile(getLogFileName());
-                            absoluteFile = getLogFileName();
-                            // This will ensure that the log rotation timer
-                            // will be restarted if there is a value set
-                            // for time based log rotation
-                            if (dayBasedFileRotation) {
-                                LogRotationTimer.getInstance().restartTimerForDayBasedRotation();
-                            } else {
-                                LogRotationTimer.getInstance().restartTimer();
-                            }
+                            thisInstance.flush();
+                            thisInstance.close();
+                            try {
+                                if (!absoluteFile.exists()) {
+                                    File creatingDeletedLogFile = new File(
+                                            absoluteFile.getAbsolutePath());
+                                    creatingDeletedLogFile.createNewFile();
+                                    absoluteFile = creatingDeletedLogFile;
+                                }
+                                File oldFile = absoluteFile;
+                                StringBuffer renamedFileName = new StringBuffer(
+                                        absoluteFile + "_");
+                                logRotateDateFormatter.format(new Date(),
+                                        renamedFileName, new FieldPosition(0));
+                                File rotatedFile = new File(renamedFileName
+                                        .toString());
+                                boolean renameSuccess = oldFile
+                                        .renameTo(rotatedFile);
+                                if (!renameSuccess) {
+                                    // If we don't succeed with file rename which
+                                    // most likely can happen on Windows because
+                                    // of multiple file handles opened. We go through
+                                    // Plan B to copy bytes explicitly to a renamed
+                                    // file.
+                                    FileUtils.copy(absoluteFile, rotatedFile);
+                                    File freshServerLogFile = getLogFileName();
+                                    // We do this to make sure that server.log
+                                    // contents are flushed out to start from a
+                                    // clean file again after the rename..
+                                    FileOutputStream fo = new FileOutputStream(
+                                            freshServerLogFile);
+                                    fo.close();
+                                }
+                                FileOutputStream oldFileFO = new FileOutputStream(
+                                        oldFile);
+                                oldFileFO.close();
+                                openFile(getLogFileName());
+                                absoluteFile = getLogFileName();
+                                // This will ensure that the log rotation timer
+                                // will be restarted if there is a value set
+                                // for time based log rotation
+                                if (dayBasedFileRotation) {
+                                    LogRotationTimer.getInstance()
+                                            .restartTimerForDayBasedRotation();
+                                } else {
+                                    LogRotationTimer.getInstance()
+                                            .restartTimer();
+                                }
 
-                            cleanUpHistoryLogFiles();
-                        } catch (IOException ix) {
-                            publish(new LogRecord(Level.SEVERE,
-                                    "Error, could not rotate log : " + ix.getMessage()));
+                                cleanUpHistoryLogFiles();
+                            } catch (IOException ix) {
+                                new ErrorManager().error("Error, could not rotate log file", ix, ErrorManager.GENERIC_FAILURE);
+                            }
+                            return null;
                         }
-                        return null;
                     }
                 }
         );
