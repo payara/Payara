@@ -811,19 +811,12 @@ public final class ConfigModularityUtils {
 
 
     public static boolean isDas(StartupContext startupContext) {
-
-
         Properties args = startupContext.getArguments();
         RuntimeType serverType = RuntimeType.getDefault();
         String typeString = args.getProperty("-type");
         if (typeString != null)
             serverType = RuntimeType.valueOf(typeString);
-        LOG.info("============== ================== ==============");
-        LOG.info("============== ================== ==============");
-        LOG.info("============== ================== ==============");
-        LOG.info("============== ================== ==============");
-        LOG.info("============== ================== ==============");
-        LOG.info("this is the DAS check: " + serverType.isDas() + "   " + serverType.name());
+        LOG.fine("Checking for instance type: is DAS: " + serverType.isDas() + "   type:" + serverType.name());
         return serverType.isDas();
 
     }

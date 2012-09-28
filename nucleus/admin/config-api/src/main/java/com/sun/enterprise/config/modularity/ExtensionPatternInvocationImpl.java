@@ -71,7 +71,7 @@ public class ExtensionPatternInvocationImpl implements ConfigExtensionHandler {
     public ConfigBeanProxy handleExtension(Object owner, Class ownerType, Object[] params) {
 
         ConfigBeanProxy configExtension = null;
-        List<ConfigBeanProxy> extensions = ConfigModularityUtils.getExtensions((ConfigBeanProxy) owner);
+        List<ConfigBeanProxy> extensions = ConfigModularityUtils.getExtensions(((GlassFishConfigBean) owner).createProxy(ownerType));
         for (ConfigBeanProxy extension : extensions) {
             try {
                 configExtension = (ConfigBeanProxy) ((Class) params[0]).cast(extension);
