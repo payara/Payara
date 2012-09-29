@@ -312,6 +312,9 @@ public class BundleProvisioner {
                 continue;
             }
             try {
+                if (isFrameworkExtensionBundle(bundle)) {
+                    setSystemBundleUpdationRequired(true);
+                }
                 bundle.uninstall();
                 noOfUninstalledBundles++;
                 removeBundle(jar);
