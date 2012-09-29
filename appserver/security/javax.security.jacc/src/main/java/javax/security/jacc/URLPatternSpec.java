@@ -57,6 +57,8 @@ import java.util.Arrays;
 class URLPatternSpec extends URLPattern
 {
 
+    private static String DEFAULT_PATTERN  = "/";
+
     private static String EMPTY_STRING  = "";
 
     private transient int hashCodeValue = 0;

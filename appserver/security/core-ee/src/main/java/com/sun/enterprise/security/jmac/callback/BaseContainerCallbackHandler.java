@@ -334,10 +334,7 @@ abstract class BaseContainerCallbackHandler
                     username);
             }
             // explicitly ditch the password
-            if (passwd != null) {
-                for (int i=0; i<passwd.length; i++)
-                    passwd[i]=' ';
-            }
+            passwd = null;
             pwdCallback.setResult(true);
         } catch(LoginException le) {
             // login failed

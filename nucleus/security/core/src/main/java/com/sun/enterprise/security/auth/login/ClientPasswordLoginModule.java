@@ -324,6 +324,7 @@ public class ClientPasswordLoginModule implements LoginModule {
     public boolean logout() throws LoginException {
 
 	subject.getPrincipals().remove(userPrincipal);
+	succeeded = false;
 	succeeded = commitSucceeded;
 	username = null;
 	if (password != null) {

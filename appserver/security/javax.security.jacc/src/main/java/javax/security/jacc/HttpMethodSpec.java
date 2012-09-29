@@ -77,7 +77,7 @@ final class HttpMethodSpec {
     static {
 	int b = 1;
 	for (int i=0; i<mapSize; i++) {
-	    methodHash.put(methodKeys[i], Integer.valueOf(b));
+	    methodHash.put(methodKeys[i], new Integer(b));
 	    b = b << 1;
 	}
     };
