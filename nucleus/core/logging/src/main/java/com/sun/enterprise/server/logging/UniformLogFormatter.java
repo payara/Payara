@@ -381,7 +381,7 @@ public class UniformLogFormatter extends Formatter {
 
     static String getMessageId(LogRecord lr) {
         String msg = lr.getMessage();
-        if (msg != null & !msg.isEmpty()) {
+        if (msg != null && !msg.isEmpty()) {
           ResourceBundle rb = lr.getResourceBundle();
           if (rb != null) {        
             if (rb.containsKey(msg)) {
