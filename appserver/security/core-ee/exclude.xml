@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -71,5 +71,29 @@
         <Class name="com.sun.enterprise.security.jauth.callback.PrivateKeyCallback$AliasRequest"/>
     </Or>
     <Bug pattern="NM_SAME_SIMPLE_NAME_AS_SUPERCLASS"/>
+    </Match>
+
+    <!--
+        This code uses reflection to construct an object.  The actual object
+        will be constructed for use later, this code just makes sure that
+        the constructor exists and doesn't fail.  The object is thrown away.
+    -->
+    <Match>
+        <Class name="com.sun.enterprise.security.acl.RoleMapper"/>
+        <Method name="getDefaultP2RMappingClassName"/>
+        <Bug pattern="DLS_DEAD_LOCAL_STORE"/>
+    </Match>
+
+    <!--
+        Need to keep both method getUsername in
+        com.sun.enterprise.security.auth.digest.impl.KeyDigestAlgoParamImpl
+        and method getUserName in
+        com.sun.enterprise.security.ee.auth.login.DigestCredentials
+        with names differing only in case, for compatibility.
+    -->
+    <Match>
+        <Class name="com.sun.enterprise.security.auth.digest.impl.KeyDigestAlgoParamImpl"/>
+        <Method name="getUsername"/>
+        <Bug pattern="NM_CONFUSING"/>
     </Match>
 </FindBugsFilter>
