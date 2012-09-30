@@ -414,8 +414,8 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
              Class<?>[] argClasses = new Class<?>[]{String.class};
              Object[] arg = new Object[]{"anystring"};
              Constructor<?> c = clazz.getConstructor(argClasses);
+             //To avoid a failure later make sure we can instantiate now
              Principal principal = (Principal) c.newInstance(arg);
-             //verify that this class is a Principal class and has a constructor(string)
              return className;
          } catch (Exception e) {
             _logger.log(Level.SEVERE, "pc.getDefaultP2RMappingClass: " + e);
