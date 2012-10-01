@@ -43,12 +43,6 @@
 
 <project name="appserver-base bundle creation" basedir=".">
     <target name="create.bundle">
-        <!-- force resource processing as version could change behind the scene without Ant ever noticing it -->
-	<delete dir="target/resources"/>
-        <mkdir dir="target/resources"/>
-        <mkdir dir="config/branding"/>
-        <copy file="src/main/resources/glassfish-version.properties" todir="config/branding"/>
- 
         <zip file="target/appserver-base.zip">        
             <zipfileset  dir=".">               
                 <include name="lib/**"/>   
