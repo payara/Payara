@@ -112,13 +112,31 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
             throw new RuntimeException(msg, e);
 
         }
-        
+        // Force longOpt if output option is specified
+        if (outputOpts != null) {
+            longOpt = true;
+        }      
     }
 
     @Override
     public Collection<? extends AccessCheck> getAccessChecks() {
         final Collection<AccessCheck> checks = new ArrayList<AccessCheck>();
         checks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(parentBean), "read"));
+        if (longOpt) {
+            try {
+                List<ConfigBeanProxy> children = (List<ConfigBeanProxy>) targetMethod.invoke(parentBean);
+                for (ConfigBeanProxy child : children) {
+                    checks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(child), "read"));
+                }
+            } catch (Exception ex) { 
+                String msg = localStrings.getLocalString(GenericCrudCommand.class,
+                    "GenericListCommand.accesschecks",
+                    "Exception while creating access checks for generic command {0}: {1}",
+                    commandName, ex.getMessage());
+                logger.severe(msg);
+                throw new RuntimeException(msg, ex);
+            } 
+        }
         return checks;
     }
     
@@ -143,10 +161,6 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
             report.failure(logger, msg);
             return;
         }
-        // Force longOpt if output or header option is specified
-        if (outputOpts != null) {
-            longOpt = true;
-        }
         List<ColumnInfo> cols = null;
         ColumnFormatter colfm = null;
         if (longOpt) {
@@ -165,7 +179,7 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
             Collections.sort(cols, new Comparator<ColumnInfo>() {
                 @Override
                 public int compare(ColumnInfo o1, ColumnInfo o2) {
-                    return Integer.compare(o1.order, o2.order);
+                    return Integer.valueOf(o1.order).compareTo(Integer.valueOf(o2.order));
                 }
             });
             colfm = headerOpt ? new ColumnFormatter(getColumnHeadings(cols)) : new ColumnFormatter();
