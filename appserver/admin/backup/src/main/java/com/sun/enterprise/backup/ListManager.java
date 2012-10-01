@@ -46,7 +46,7 @@
 
 package com.sun.enterprise.backup;
 
-import com.sun.enterprise.admin.util.ColumnFormatter;
+import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 import com.sun.enterprise.util.io.FileUtils;

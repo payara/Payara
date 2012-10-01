@@ -54,7 +54,7 @@ import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.admin.InstanceCommandResult;
 import org.glassfish.api.admin.ParameterMap;
-import com.sun.enterprise.admin.util.ColumnFormatter;
+import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.universal.Duration;
 import org.glassfish.api.admin.InstanceState;
 import org.glassfish.hk2.api.ServiceLocator;
