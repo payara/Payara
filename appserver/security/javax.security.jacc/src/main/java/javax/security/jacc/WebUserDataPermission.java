@@ -76,7 +76,7 @@ implements java.io.Serializable
      private static HashMap transportHash = new HashMap();
      static {
 	 for (int i=0; i<transportKeys.length; i++) 
-	     transportHash.put(transportKeys[i], new Integer(i));
+	     transportHash.put(transportKeys[i], Integer.valueOf(i));
      };
 
      private static int TT_NONE = 
