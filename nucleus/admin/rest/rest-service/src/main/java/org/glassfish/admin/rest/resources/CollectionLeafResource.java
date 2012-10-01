@@ -76,7 +76,6 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.RestService;
 import org.glassfish.admin.rest.utils.Util;
-import org.glassfish.hk2.Factory;
 import org.jvnet.hk2.config.Dom;
 
 import static org.glassfish.admin.rest.utils.Util.decode;

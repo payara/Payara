@@ -1013,8 +1013,7 @@ class ConfigBeanJMXSupport
                 for (final ConfigModel model : models)
                 {
                     final String classname = model.targetTypeName;
-                    final ClassLoader classLoader = model.classLoaderHolder.get();
-                    final Class<?> intf = classLoader.loadClass(classname);
+                    final Class<?> intf = model.classLoaderHolder.loadClass(classname);
                     interfaces[i] = intf;
                     //System.out.println( "Loaded: " + intf + " with tagName of " + model.getTagName() );
                     ++i;

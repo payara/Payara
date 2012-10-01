@@ -90,6 +90,7 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.Globals;
@@ -190,8 +191,8 @@ public class ResourceUtil {
 
         Class<? extends ConfigBeanProxy> cbp = null;
         try {
-            cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.get().loadClass(model.targetTypeName);
-        } catch (ClassNotFoundException e) {
+            cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.loadClass(model.targetTypeName);
+        } catch (MultiException e) {
             e.printStackTrace();
         }
 
@@ -396,7 +397,7 @@ public class ResourceUtil {
 
         Class<? extends ConfigBeanProxy> configBeanProxy = null;
         try {
-            configBeanProxy = (Class<? extends ConfigBeanProxy>) configBeanModel.classLoaderHolder.get()
+            configBeanProxy = (Class<? extends ConfigBeanProxy>) configBeanModel.classLoaderHolder
                     .loadClass(configBeanModel.targetTypeName);
 
             Set<String> attributeNames = configBeanModel.getAttributeNames();
@@ -430,7 +431,7 @@ public class ResourceUtil {
 
                 }
             }
-        } catch (ClassNotFoundException e) {
+        } catch (MultiException e) {
             e.printStackTrace();
         }
 
@@ -444,7 +445,7 @@ public class ResourceUtil {
 
         try {
             Class<? extends ConfigBeanProxy> configBeanProxy =
-                    (Class<? extends ConfigBeanProxy>) childModel.classLoaderHolder.get().loadClass(childModel.targetTypeName);
+                    (Class<? extends ConfigBeanProxy>) childModel.classLoaderHolder.loadClass(childModel.targetTypeName);
             getInterfaces(configBeanProxy, interfaces);
 
             Set<String> attributeNames = childModel.getAttributeNames();
@@ -494,7 +495,7 @@ public class ResourceUtil {
                 methodMetaData.putParameterMetaData(attributeName, parameterMetaData);
 
             }
-        } catch (ClassNotFoundException cnfe) {
+        } catch (MultiException cnfe) {
             throw new RuntimeException(cnfe);
         }
 
@@ -880,10 +881,10 @@ public class ResourceUtil {
      */
     static public boolean isDeprecated(ConfigModel model) {
         try {
-            Class<? extends ConfigBeanProxy> cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.get().loadClass(model.targetTypeName);
+            Class<? extends ConfigBeanProxy> cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.loadClass(model.targetTypeName);
             Deprecated dep = cbp.getAnnotation(Deprecated.class);
             return dep != null;
-        } catch (ClassNotFoundException e) {
+        } catch (MultiException e) {
             //e.printStackTrace();
         }
         return false;
@@ -953,7 +954,7 @@ public class ResourceUtil {
     public static List<ConfigModel> getRealChildConfigModels(ConfigModel childModel, DomDocument domDocument) {
         List<ConfigModel> retlist = new ArrayList<ConfigModel>();
         try {
-            Class<?> subType = childModel.classLoaderHolder.get().loadClass(childModel.targetTypeName);
+            Class<?> subType = childModel.classLoaderHolder.loadClass(childModel.targetTypeName);
             List<ConfigModel> list = domDocument.getAllModelsImplementing(subType);
 
             if (list != null) {

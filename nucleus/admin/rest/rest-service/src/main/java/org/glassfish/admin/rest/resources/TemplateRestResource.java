@@ -51,6 +51,7 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.config.support.Delete;
+import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
@@ -507,8 +508,8 @@ public class TemplateRestResource {
             //trying @Delete annotation that as a generic CRUD delete command, possibly...
             Class<? extends ConfigBeanProxy> cbp = null;
             try {
-                cbp = (Class<? extends ConfigBeanProxy>) entity.parent().model.classLoaderHolder.get().loadClass(entity.parent().model.targetTypeName);
-            } catch (ClassNotFoundException e) {
+                cbp = (Class<? extends ConfigBeanProxy>) entity.parent().model.classLoaderHolder.loadClass(entity.parent().model.targetTypeName);
+            } catch (MultiException e) {
                 return null;//
             }
             Delete del = null;

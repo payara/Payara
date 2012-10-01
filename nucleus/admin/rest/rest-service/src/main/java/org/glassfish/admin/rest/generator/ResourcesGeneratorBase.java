@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Set;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.utils.ResourceUtil;
+import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
@@ -445,12 +446,12 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
         Class<? extends ConfigBeanProxy> cbp = null;
         try {
-            cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.get().loadClass(model.targetTypeName);
+            cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.loadClass(model.targetTypeName);
             if (cbp != null) {
                 org.glassfish.config.support.Singleton sing = cbp.getAnnotation(org.glassfish.config.support.Singleton.class);
                 return (sing != null);
             }
-        } catch (ClassNotFoundException e) {
+        } catch (MultiException e) {
             e.printStackTrace();
         }
         return false;

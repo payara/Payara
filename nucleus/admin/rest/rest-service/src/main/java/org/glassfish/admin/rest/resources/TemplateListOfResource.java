@@ -65,6 +65,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 
@@ -220,8 +221,8 @@ public abstract class TemplateListOfResource {
             //last  possible case...the @Create annotation on a parent method
             Class<? extends ConfigBeanProxy> cbp = null;
             try {
-                cbp = (Class<? extends ConfigBeanProxy>) parent.model.classLoaderHolder.get().loadClass(parent.model.targetTypeName);
-            } catch (ClassNotFoundException e) {
+                cbp = (Class<? extends ConfigBeanProxy>) parent.model.classLoaderHolder.loadClass(parent.model.targetTypeName);
+            } catch (MultiException e) {
                 return null;//
             }
             Create create = null;
@@ -255,13 +256,13 @@ public abstract class TemplateListOfResource {
                 return null;
             } else {
                 ConfigModel childModel = ((ConfigModel.Node) a).getModel();
-                return (Class<? extends ConfigBeanProxy>) childModel.classLoaderHolder.get().loadClass(childModel.targetTypeName);
+                return (Class<? extends ConfigBeanProxy>) childModel.classLoaderHolder.loadClass(childModel.targetTypeName);
             }
         }
         // global lookup
         ConfigModel model = document.getModelByElementName(elementName);
         if (model != null) {
-            return (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.get().loadClass(model.targetTypeName);
+            return (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.loadClass(model.targetTypeName);
         }
 
         return null;

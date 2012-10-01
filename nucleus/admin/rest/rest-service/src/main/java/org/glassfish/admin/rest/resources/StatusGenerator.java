@@ -76,6 +76,7 @@ import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.api.admin.RestRedirects;
+import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -454,8 +455,8 @@ public class StatusGenerator {
 
             Class<? extends ConfigBeanProxy> cbp = null;
             try {
-                cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.get().loadClass(model.targetTypeName);
-            } catch (ClassNotFoundException e) {
+                cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.loadClass(model.targetTypeName);
+            } catch (MultiException e) {
                 e.printStackTrace();
                 return;
             }

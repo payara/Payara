@@ -477,7 +477,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                 }
                 // check the inheritance hierarchy
                 List<ConfigModel> subChildrenModels = document.getAllModelsImplementing(
-                        childCM.classLoaderHolder.get().loadClass(childTypeName));
+                        childCM.classLoaderHolder.loadClass(childTypeName));
                 if (subChildrenModels!=null) {
                     for (ConfigModel subChildModel : subChildrenModels) {
                         if (subChildModel.targetTypeName.equals(child.getName())) {
