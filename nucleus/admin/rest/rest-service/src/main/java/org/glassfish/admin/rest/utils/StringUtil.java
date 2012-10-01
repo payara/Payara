@@ -125,6 +125,6 @@ public class StringUtil {
      * @return true if the string is not null and has a length greater than zero, false otherwise
      */
     public static boolean notEmpty(String string) {
-        return (string != null && string.length() > 0);
+        return (string != null && !string.isEmpty());
     }
 }

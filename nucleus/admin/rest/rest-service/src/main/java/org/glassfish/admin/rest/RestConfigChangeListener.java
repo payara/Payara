@@ -101,7 +101,7 @@ public class RestConfigChangeListener implements ConfigListener {
 //                }
 //            }
 
-            r.reload();
+//            r.reload();
         } finally {
             Thread.currentThread().setContextClassLoader(originalContextClassLoader);
         }
