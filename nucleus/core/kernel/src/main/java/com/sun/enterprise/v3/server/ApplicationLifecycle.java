@@ -643,11 +643,14 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     public List<EngineInfo> setupContainerInfos(DeploymentContext context)
         throws Exception {
-
-        return setupContainerInfos(context.getArchiveHandler(), null, context);
+        return setupContainerInfos(context.getArchiveHandler(), getSniffers(context.getArchiveHandler(), null, context), context);
     }
 
     public Collection<? extends Sniffer> getSniffers(final ArchiveHandler handler, Collection<? extends Sniffer> sniffers, DeploymentContext context) {
+        if (handler == null) {
+            return Collections.EMPTY_LIST;
+        }
+
         if (sniffers==null) {
             if (handler instanceof CompositeHandler) {
                 ((CompositeHandler)handler).initCompositeMetaData(context);
