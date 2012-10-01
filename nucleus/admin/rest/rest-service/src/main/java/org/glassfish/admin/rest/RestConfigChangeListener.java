@@ -40,6 +40,8 @@
 package org.glassfish.admin.rest;
 
 import java.beans.PropertyChangeEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.admin.rest.adapter.Reloader;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.restconnector.RestConfig;
@@ -57,12 +59,11 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
  * @author Ludovic Champenois
  */
 public class RestConfigChangeListener implements ConfigListener {
-
-    private Reloader r;
+//    private Reloader r;
     private ServerContext sc;
 
     public RestConfigChangeListener(ServiceLocator habitat, Reloader reload, ResourceConfig rc, ServerContext sc) {
-        this.r = reload;
+//        this.r = reload;
         this.sc = sc;
 
 
@@ -82,6 +83,10 @@ public class RestConfigChangeListener implements ConfigListener {
             ClassLoader apiClassLoader = sc.getCommonClassLoader();
             Thread.currentThread().setContextClassLoader(apiClassLoader);
 
+            // Remove when this is been fixed.
+            Logger.getLogger(getClass().getName()).log(Level.WARNING,
+                "Changing the REST config for a running server has not yet been updated for Jersey 2.");
+
             // TODO - JERSEY2
 //            rc.getContainerResponseFilters().clear();
 //            rc.getContainerRequestFilters().clear();
@@ -96,7 +101,6 @@ public class RestConfigChangeListener implements ConfigListener {
 //                    rc.getContainerRequestFilters().add(LoggingFilter.class);
 //                }
 //                if (restConf.getWadlGeneration().equalsIgnoreCase("false")) { //disable WADL
-//
 //                    rc.getFeatures().put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.TRUE);
 //                }
 //            }
