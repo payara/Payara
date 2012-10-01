@@ -308,9 +308,8 @@ public class Util {
     }
 
     public static RestActionReporter applyChanges(Map<String, String> data, String basePath) {
-        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
         ParameterMap parameters = new ParameterMap();
-        Map<String, String> currentValues = getCurrentValues(basePath, serviceLocator);
+        Map<String, String> currentValues = getCurrentValues(basePath);
 
         for (Map.Entry<String, String> entry : data.entrySet()) {
             String currentValue = currentValues.get(basePath + entry.getKey());
@@ -349,6 +348,11 @@ public class Util {
             sb.append('.');
         }
         return sb.toString();
+    }
+
+    public static Map<String, String> getCurrentValues(String basePath) {
+        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+        return getCurrentValues(basePath, serviceLocator);
     }
 
     public static Map<String, String> getCurrentValues(String basePath, ServiceLocator habitat) {

@@ -180,27 +180,6 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
     }
 
     /**
-     * Execute an <code>AdminCommand</code> with no parameters
-     * Deprecated - will be removed soon.  Use executeReadCommand or executeWriteCommand instead.
-     * @param command
-     * @return
-     */
-    protected ActionReporter executeCommand(String command) {
-        return getCompositeUtil().executeCommand(getSubject(), command);
-    }
-
-    /**
-     * Execute an <code>AdminCommand</code> with the specified parameters.
-     * Deprecated - will be removed soon.  Use executeReadCommand or executeWriteCommand instead.
-     * @param command
-     * @param parameters
-     * @return
-     */
-    protected ActionReporter executeCommand(String command, ParameterMap parameters) {
-        return getCompositeUtil().executeCommand(getSubject(), command, parameters);
-    }
-
-    /**
      * Execute a delete <code>AdminCommand</code> with no parameters.
      * @param command
      * @return

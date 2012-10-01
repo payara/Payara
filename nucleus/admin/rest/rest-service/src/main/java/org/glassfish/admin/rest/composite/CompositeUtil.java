@@ -330,26 +330,17 @@ public class CompositeUtil {
     }
 
     /**
-     * Execute an <code>AdminCommand</code> with no parameters
-     * Deprecated - will be removed soon.  Use executeReadCommand or executeWriteCommand instead.
-     * @param subject
-     * @param command
-     * @return
+     * Apply changes to domain.xml
+     *
+     * @param changes
+     * @param basePath
      */
-    public ActionReporter executeCommand(Subject subject, String command) {
-        return executeCommand(subject, command, new ParameterMap());
-    }
-
-    /**
-     * Execute an <code>AdminCommand</code> with the specified parameters.
-     * Deprecated - will be removed soon.  Use executeReadCommand or executeWriteCommand instead.
-     * @param subject
-     * @param command
-     * @param parameters
-     * @return
-     */
-    public ActionReporter executeCommand(Subject subject, String command, ParameterMap parameters) {
-        return executeWriteCommand(subject, command, parameters);
+    public void applyChanges(Map<String,String> changes, String basePath) {
+        RestActionReporter ar = Util.applyChanges(changes, basePath);
+        if (!ar.getActionExitCode().equals(ExitCode.SUCCESS)) {
+                throw new WebApplicationException(Response.status(Status.BAD_REQUEST).
+                    entity(ar.getCombinedMessage()).build());
+        }
     }
 
     /**

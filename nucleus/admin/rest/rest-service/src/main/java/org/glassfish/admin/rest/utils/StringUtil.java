@@ -88,13 +88,15 @@ public class StringUtil {
      */
     public static String getCommaSeparatedStringList(List<String> strings) {
         StringBuilder sb = new StringBuilder();
-        boolean first = true;
-        for (String str : strings) {
-            if (!first) {
-                sb.append(",");
+        if (strings != null) {
+            boolean first = true;
+            for (String str : strings) {
+                if (!first) {
+                    sb.append(",");
+                }
+                sb.append(str);
+                first = false;
             }
-            sb.append(str);
-            first = false;
         }
         return sb.toString();
     }
@@ -108,9 +110,21 @@ public class StringUtil {
      */
     public static List<String> parseCommaSeparatedStringList(String stringList) {
         List<String> list = new ArrayList<String>();
-        for (StringTokenizer st = new StringTokenizer(stringList, ","); st.hasMoreTokens();) {
-            list.add(st.nextToken());
+        if (stringList != null) {
+            for (StringTokenizer st = new StringTokenizer(stringList, ","); st.hasMoreTokens();) {
+                list.add(st.nextToken().trim());
+            }
         }
         return list;
+    }
+
+    /**
+     * Determines if a string is null/empty or not
+     *
+     * @param string
+     * @return true if the string is not null and has a length greater than zero, false otherwise
+     */
+    public static boolean notEmpty(String string) {
+        return (string != null && string.length() > 0);
     }
 }
