@@ -205,7 +205,7 @@ public class FactoryTest {
         new FactoryTest().beforeTest();
         new FactoryTest().testOverrideForDefaultEntries();
         new FactoryTest().afterTest();
-
+        
         new FactoryTest().beforeTest();
         new FactoryTest().testRemoveRegistration();
         new FactoryTest().afterTest();
@@ -220,9 +220,16 @@ public class FactoryTest {
                 getIntOption(MAX_JOIN_SECONDS_KEY, DEFAULT_MAX_JOIN_SECONDS));
         new FactoryTest().afterTest();
 
+        new FactoryTest().beforeTest();
+        new FactoryTest().testRegistrationWithNonStringProperty();
+        new FactoryTest().afterTest();        
+
+        new FactoryTest().beforeTest();
+        new FactoryTest().testRegistrationWithNonStringPropertyAndPreviousRegistration();
+        new FactoryTest().afterTest();        
     }
 
-    @Before
+	@Before
     public void beforeTest() {
         try {
             defaultFactoryClassName = Security.getProperty(DEFAULT_FACTORY_SECURITY_PROPERTY);
@@ -263,6 +270,66 @@ public class FactoryTest {
         }
         AuthConfigFactory.setFactory(testFactory);
         assertTrue(testFactoryClassName.equals(AuthConfigFactory.getFactory().getClass().getName()));
+    }
+
+    @Test
+    public void testRegistrationWithNonStringProperty() {
+        logger.info("BEGIN Registration with NonString Property FACTORY TEST");
+        Security.setProperty(DEFAULT_FACTORY_SECURITY_PROPERTY, testFactoryClassName);
+        String className = _AuthConfigProvider.class.getName();
+        HashMap properties = new HashMap();
+        ArrayList list = new ArrayList();
+        list.add("larry was here");
+        properties.put("test", list);
+        String layer = "HttpServlet";
+        String appContext = "context";
+        String description = null;
+        String regId = null;
+        try {
+        	regId = AuthConfigFactory.getFactory().registerConfigProvider(className, properties, layer, appContext, description);
+        } catch (IllegalArgumentException iae) {
+            assertNull("Failed Registration Should Have Resulted in a NULL RegistrationID returned but did not.", regId);
+        }
+        AuthConfigProvider acp = null;
+    	acp = AuthConfigFactory.getFactory().getConfigProvider(layer, appContext, null);
+        assertNull("Registration Should Have Failed and Therefore No ACP Should Have been Found.", acp);
+    }
+
+    @Test
+    public void testRegistrationWithNonStringPropertyAndPreviousRegistration() {
+        logger.info("BEGIN Registration with NonString Property and Previous Registration FACTORY TEST");
+        Security.setProperty(DEFAULT_FACTORY_SECURITY_PROPERTY, testFactoryClassName);
+        
+        // first register a valid acp configuration
+        String className = _AuthConfigProvider.class.getName();
+        HashMap properties = null;
+        String layer = "HttpServlet";
+        String appContext = "context";
+        String description = null;
+        String regId = null;
+    	regId = AuthConfigFactory.getFactory().registerConfigProvider(className, properties, layer, appContext, description);
+    	assertNotNull("Registration Should Have Succeeded returning a nonNULL RegistrationID but did not.", regId);
+        AuthConfigProvider previousAcp = null;
+        previousAcp = AuthConfigFactory.getFactory().getConfigProvider(layer, appContext, null);
+    	assertNotNull("Registration Should Have Succeeded returning a nonNULL ACP but did not.", previousAcp);
+
+        // now for an invalid configuration
+        properties = new HashMap();
+        ArrayList list = new ArrayList();
+        list.add("larry was here");
+        properties.put("test", list);
+        layer = "HttpServlet";
+        appContext = "context";
+        description = null;
+        regId = null;
+        try {
+        	regId = AuthConfigFactory.getFactory().registerConfigProvider(className, properties, layer, appContext, description);
+        } catch (IllegalArgumentException iae) {
+            assertNull("Failed Registration Should Have Resulted in a NULL RegistrationID returned but did not.", regId);
+        }
+        AuthConfigProvider acp = null;
+    	acp = AuthConfigFactory.getFactory().getConfigProvider(layer, appContext, null);
+        assertTrue("Registration Should Have Failed for Invalid Config and Therefore returned the Previously Registered ACP", previousAcp == acp);
     }
 
     @Test

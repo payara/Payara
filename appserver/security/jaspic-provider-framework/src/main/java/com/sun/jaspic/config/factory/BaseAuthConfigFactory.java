@@ -514,7 +514,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
 
     //XXX need to update persistent state and notify effected listeners
     private String _register(AuthConfigProvider provider,
-            Map properties,
+            Map<String, Object> properties,
             String layer,
             String appContext,
             String description,
@@ -527,8 +527,17 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
         Map<String, List<RegistrationListener>> listenerMap;
         wLock.lock();
         try {
-            prevRegisContext = id2RegisContextMap.get(regisID);
+        	prevRegisContext = id2RegisContextMap.get(regisID);
             AuthConfigProvider prevProvider = id2ProviderMap.get(regisID);
+
+            // handle the persistence first - so that any exceptions occur before
+            // the actual registration happens
+            if (persistent) {
+                _storeRegistration(regisID, rc, provider, properties);
+            } else if (prevRegisContext != null && prevRegisContext.isPersistent()) {
+                _deleteStoredRegistration(regisID, prevRegisContext);
+            }
+
             boolean wasRegistered = id2ProviderMap.containsKey(regisID);
 
             if (wasRegistered) {
@@ -553,12 +562,6 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
             }
 
             listenerMap = getEffectedListeners(regisID);
-
-            if (persistent) {
-                _storeRegistration(regisID, rc, provider, properties);
-            } else if (prevRegisContext != null && prevRegisContext.isPersistent()) {
-                _deleteStoredRegistration(regisID, prevRegisContext);
-            }
 
         } finally {
             wLock.unlock();
@@ -682,10 +685,24 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
         if (p != null) {
             className = p.getClass().getName();
         }
+		if (propertiesContainAnyNonStringValues(properties)) {
+			throw new IllegalArgumentException("AuthConfigProvider cannot be registered - properties must all be of type String.");
+		}
         if (ctx.isPersistent()) {
             getRegStore().store(className, ctx, properties);
         }
     }
+
+    private boolean propertiesContainAnyNonStringValues(Map<String,Object> props) {
+    	if (props != null) {
+	    	for(Map.Entry<String, Object> entry : props.entrySet()) {
+	    		if (!(entry.getValue() instanceof String)) {
+	    			return true;
+	    		}
+	    	}
+    	}
+    	return false;
+	}
 
     private void _deleteStoredRegistration(String regId,
             RegistrationContext ctx) {
