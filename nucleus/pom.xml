@@ -131,7 +131,7 @@
         <glassfishbuild.version>3.2.3</glassfishbuild.version>
         <websocket.version>0.2</websocket.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
-        <logging-annotation-processor.version>1.1</logging-annotation-processor.version>
+        <logging-annotation-processor.version>1.2</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.1</command-security-plugin.version>
         <mail.version>1.4.5</mail.version>
         <copyright-plugin.version>1.31</copyright-plugin.version>
