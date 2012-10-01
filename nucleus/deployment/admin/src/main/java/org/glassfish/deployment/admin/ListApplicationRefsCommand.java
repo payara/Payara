@@ -40,7 +40,7 @@
 
 package org.glassfish.deployment.admin;
 
-import com.sun.enterprise.admin.util.ColumnFormatter;
+import com.sun.enterprise.util.ColumnFormatter;
 import java.util.List;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;

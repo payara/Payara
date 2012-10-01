@@ -37,20 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.util;
+
+package com.sun.enterprise.util;
+
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
- * ColumnFormatter compatibility class.  This class has been moved to the 
- * common-utils module, com.sun.enterprise.util package.
- * 
- * @author Tom Mueller
+ * Strings -- Get your Strings here.
+ * One file with Strings
+ * So one class for messing with them!
+ * Nothing in here is public protected.  Only for use by this one java package.
+ * @author Byron Nevins
  */
-public class ColumnFormatter extends com.sun.enterprise.util.ColumnFormatter {   
-    public ColumnFormatter(String headings[]) {
-        super(headings);
+
+final class Strings {
+    private Strings() {
+        // no instances allowed!
     }
 
-    public ColumnFormatter() {
-        super();
+    static String get(String indexString) {
+        return strings.get(indexString);
     }
+
+    static String get(String indexString, Object... objects) {
+        return strings.get(indexString, objects);
+    }
+
+    final private static LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
 }

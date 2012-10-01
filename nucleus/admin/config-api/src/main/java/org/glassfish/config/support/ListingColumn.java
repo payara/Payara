@@ -37,20 +37,54 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.util;
+
+package org.glassfish.config.support;
+
+import org.glassfish.api.I18n;
+import org.jvnet.hk2.config.GenerateServiceFromMethod;
+import org.jvnet.hk2.config.GeneratedServiceName;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * ColumnFormatter compatibility class.  This class has been moved to the 
- * common-utils module, com.sun.enterprise.util package.
+ * List command column annotation.
+ *
+ * This annotation works with the Listing annotation to provide additional 
+ * information about columns in the output. The annotation can be placed on 
+ * any method that takes no arguments and returns a type that can be converted to
+ * a String, including DuckTyped methods.
  * 
  * @author Tom Mueller
  */
-public class ColumnFormatter extends com.sun.enterprise.util.ColumnFormatter {   
-    public ColumnFormatter(String headings[]) {
-        super(headings);
-    }
-
-    public ColumnFormatter() {
-        super();
-    }
+@Retention(RUNTIME)
+@Target(ElementType.METHOD)
+public @interface ListingColumn {
+    /** 
+     * Determines the order of the columns from left to right. The "key" attribute
+     * is assigned order value 0. Higher order values are for columns further
+     * to the right. 
+     */
+    int order() default GenericListCommand.ColumnInfo.NONKEY_ORDER;
+    
+    /**
+     * Returns the header for the column.  The calculate dvalue is the method
+     * name converted to XML form, e.g., getSomeAttr is SOME-ATTR
+     */
+    String header() default ""; 
+     
+    /**
+     * Determines whether a column should be excluded from the output. The default
+     * is false. 
+     */
+    boolean exclude() default false;
+    
+    /** 
+     * Determines whether a column should be included in the --long output by
+     * default.  The default is true.
+     */
+    boolean inLongByDefault() default true;
 }
