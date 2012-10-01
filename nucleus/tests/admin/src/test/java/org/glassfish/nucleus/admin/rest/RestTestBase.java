@@ -212,9 +212,9 @@ public class RestTestBase {
     }
 
     protected Response get(String address, Map<String, String> payload) {
-        final WebTarget target = getClient().target(getAddress(address));
+        WebTarget target = getClient().target(getAddress(address));
         for (Map.Entry<String, String> entry : payload.entrySet()) {
-            target.queryParam(entry.getKey(), entry.getValue());
+            target = target.queryParam(entry.getKey(), entry.getValue());
         }
         return target.request(RESPONSE_TYPE)
                 .get(Response.class);
@@ -270,9 +270,9 @@ public class RestTestBase {
     }
 
     protected Response delete(String address, Map<String, String> payload) {
-        final WebTarget target = getClient().target(getAddress(address));
+        WebTarget target = getClient().target(getAddress(address));
         for (Map.Entry<String, String> entry : payload.entrySet()) {
-            target.queryParam(entry.getKey(), entry.getValue());
+            target = target.queryParam(entry.getKey(), entry.getValue());
         }
         return target.request(RESPONSE_TYPE)
                 .delete(Response.class);
