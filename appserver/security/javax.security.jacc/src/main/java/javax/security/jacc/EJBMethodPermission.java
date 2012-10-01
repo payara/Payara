@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,7 +78,7 @@ implements java.io.Serializable
     private static HashMap interfaceHash = new HashMap();
     static {
 	for (int i=0; i<interfaceKeys.length; i++) 
-	    interfaceHash.put(interfaceKeys[i], new Integer(i));
+	    interfaceHash.put(interfaceKeys[i], Integer.valueOf(i));
     };
 
     private transient int methodInterface;
