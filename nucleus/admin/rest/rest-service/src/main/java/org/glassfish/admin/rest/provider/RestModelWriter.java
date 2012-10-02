@@ -55,8 +55,8 @@ import org.glassfish.admin.rest.utils.JsonUtil;
  */
 @Provider
 @Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
-public class RestModelProvider extends BaseProvider<RestModel> {
-    public RestModelProvider() {
+public class RestModelWriter extends BaseProvider<RestModel> {
+    public RestModelWriter() {
         super(RestModel.class, MediaType.APPLICATION_JSON_TYPE);
 
     }
@@ -70,7 +70,7 @@ public class RestModelProvider extends BaseProvider<RestModel> {
             JSONObject object = (JSONObject)JsonUtil.getJsonObject(proxy);
             sb.append(object.toString(getFormattingIndentLevel()));
         } catch (JSONException ex) {
-            Logger.getLogger(RestModelProvider.class.getName()).
+            Logger.getLogger(RestModelWriter.class.getName()).
                     log(Level.SEVERE, null, ex);
         }
 
