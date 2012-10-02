@@ -57,7 +57,7 @@ public class ParamMetadata {
     private String name;
     private String type;
     private String help;
-    private String defaultValue;
+    private Object defaultValue;
     private boolean readOnly = false;
     private OptionsCapable context;
 
@@ -103,11 +103,11 @@ public class ParamMetadata {
         this.help = help;
     }
 
-    public String getDefaultValue() {
+    public Object getDefaultValue() {
         return defaultValue;
     }
 
-    public void setDefaultValue(String defaultValue) {
+    public void setDefaultValue(Object defaultValue) {
         this.defaultValue = defaultValue;
     }
 
@@ -121,7 +121,8 @@ public class ParamMetadata {
 //        o.put("name", name);
         o.put("type", type);
         o.put("help", help);
-        o.put("default", defaultValue);
+        Object defVal = (defaultValue != null) ? defaultValue : JSONObject.NULL;
+        o.put("default", defVal);
         o.put("readOnly", readOnly);
 
         return o;
@@ -132,8 +133,8 @@ public class ParamMetadata {
      * @param annos
      * @return
      */
-    private String getDefaultValue(Annotation[] annos) {
-        String defval = null;
+    private Object getDefaultValue(Annotation[] annos) {
+        Object defval = null;
         if (annos != null) {
             for (Annotation annotation : annos) {
                  if (Default.class.isAssignableFrom(annotation.getClass())) {

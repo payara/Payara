@@ -136,7 +136,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
     }
 
     @Override
-    public String getDefaultValue(String propertyName) {
+    public Object getDefaultValue(String propertyName) {
         return null;
     }
 

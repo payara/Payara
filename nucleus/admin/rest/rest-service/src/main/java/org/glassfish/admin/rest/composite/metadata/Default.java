@@ -64,7 +64,7 @@ public @interface Default {
 
     static class NoopDefaultsGenerator implements DefaultsGenerator {
     @Override
-    public String getDefaultValue(String propertyName) {
+    public Object getDefaultValue(String propertyName) {
         return null;
     }
 }

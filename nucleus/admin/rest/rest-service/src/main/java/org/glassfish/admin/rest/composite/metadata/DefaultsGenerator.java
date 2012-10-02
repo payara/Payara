@@ -52,5 +52,5 @@ public interface DefaultsGenerator {
      * @param propertyName
      * @return
      */
-    String getDefaultValue(String propertyName);
+    Object getDefaultValue(String propertyName);
 }

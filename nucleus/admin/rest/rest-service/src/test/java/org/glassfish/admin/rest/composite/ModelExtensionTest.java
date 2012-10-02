@@ -141,7 +141,7 @@ public class ModelExtensionTest {
     public static class ModelDefaultGenerator implements DefaultsGenerator {
 
         @Override
-        public String getDefaultValue(String propertyName) {
+        public Object getDefaultValue(String propertyName) {
             return "defaultData";
         }
 
