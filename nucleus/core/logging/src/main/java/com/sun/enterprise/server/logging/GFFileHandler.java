@@ -616,7 +616,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     private void openFile(File file) throws IOException {
         // check that the parent directory exists.
         File parent = file.getParentFile();
-        if (!parent.exists() && parent.mkdirs()) {
+        if (!parent.exists() && !parent.mkdirs()) {
             throw new IOException(LOCAL_STRINGS.getLocalString("parent.dir.create.failed", 
                     "Failed to create the parent dir {0}", parent.getAbsolutePath()));
         }
