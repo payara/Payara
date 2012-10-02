@@ -40,12 +40,10 @@
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
-import org.glassfish.admin.amx.util.stringifier.Stringifier;
-
 import javax.management.MBeanServerNotification;
 
 public class MBeanServerNotificationStringifier
-        extends NotificationStringifier implements Stringifier
+        extends NotificationStringifier 
 {
     public static final MBeanServerNotificationStringifier DEFAULT =
             new MBeanServerNotificationStringifier();
@@ -60,6 +58,7 @@ public class MBeanServerNotificationStringifier
         super(options);
     }
 
+    @Override
     public String stringify(Object o)
     {
         final MBeanServerNotification notif = (MBeanServerNotification) o;

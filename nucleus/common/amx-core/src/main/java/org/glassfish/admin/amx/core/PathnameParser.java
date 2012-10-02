@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,14 +48,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.management.ObjectName;
-import org.glassfish.external.arc.Stability;
-import org.glassfish.external.arc.Taxonomy;
 import org.glassfish.admin.amx.base.DomainRoot;
-import org.glassfish.admin.amx.base.Pathnames;
 import static org.glassfish.admin.amx.core.PathnameConstants.*;
 import static org.glassfish.external.amx.AMX.*;
+import org.glassfish.external.arc.Stability;
+import org.glassfish.external.arc.Taxonomy;
 /**
 Parses a pathname into parts.
 <p>
@@ -112,6 +110,7 @@ public final class PathnameParser
             return mName != null && mName.indexOf(MATCH_ZERO_OR_MORE) >= 0;
         }
 
+        @Override
         public String toString()
         {
             return pathPart(mType, mName);
@@ -119,11 +118,12 @@ public final class PathnameParser
 
     }
 
+    @Override
     public String toString()
     {
         final StringBuilder buf = new StringBuilder();
 
-        buf.append(mPath + " as " + mParts.size() + " parts: ");
+        buf.append(mPath).append(" as ").append(mParts.size()).append(" parts: ");
         buf.append("{");
         final String delim = ", ";
         for (final PathPart part : mParts)
@@ -131,7 +131,7 @@ public final class PathnameParser
             buf.append(part.toString());
             buf.append(delim);
         }
-        if (mParts.size() != 0)
+        if (!mParts.isEmpty())
         {
             buf.setLength(buf.length() - delim.length());
         }
@@ -168,7 +168,7 @@ public final class PathnameParser
     
     public boolean isRoot()
     {
-        return mParts.size() == 0;
+        return mParts.isEmpty();
     }
     
     /** return true if any part of the path includes a wildcard */
@@ -201,7 +201,7 @@ public final class PathnameParser
 
     public String parentPath()
     {
-        if (mParts.size() == 0)
+        if (mParts.isEmpty())
         {
             return null;
         }
@@ -268,7 +268,6 @@ public final class PathnameParser
         }
 
         final Pattern typePattern = TYPE_SEARCH_PATTERN;
-        final Pattern namePattern = NAME_SEARCH_PATTERN;
 
         // how to know whether to escape the name-left char if it can be any char?
         while (remaining.length() != 0)
@@ -282,7 +281,7 @@ public final class PathnameParser
             final String type = matcher.group(1);
             //debug( "PathnameParser, matched type: \"" + type + "\"" );
 
-            char matchChar = '\0';
+            char matchChar;
             if (type.length() < remaining.length())
             {
                 matchChar = remaining.charAt(type.length());
@@ -351,7 +350,7 @@ public final class PathnameParser
     {
         if (type == null)
         {
-            throw new IllegalArgumentException("Illegal type: " + type);
+            throw new IllegalArgumentException("Illegal type: null");
         }
 
         if (type.indexOf(SUBSCRIPT_LEFT) >= 0 || type.indexOf(SUBSCRIPT_RIGHT) >= 0)

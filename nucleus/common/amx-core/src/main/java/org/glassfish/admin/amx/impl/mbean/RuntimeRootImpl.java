@@ -77,6 +77,7 @@ import com.sun.enterprise.v3.admin.RestartDomainCommand;
 import com.sun.enterprise.v3.common.PlainTextActionReporter;
 import org.glassfish.api.admin.AdminCommand;
 import com.sun.enterprise.v3.admin.commands.JVMInformation;
+import java.util.Locale;
 import javax.management.MBeanServer;
 import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
 import org.glassfish.admin.amx.util.StringUtil;
@@ -87,22 +88,14 @@ AMX RealmsMgr implementation.
 Note that realms don't load until {@link #loadRealms} is called.
  */
 public final class RuntimeRootImpl extends AMXImplBase
-// implements RuntimeRoot
 {
-    private final ApplicationRegistry appRegistry;
-
     private final ServiceLocator mHabitat;
-
 
     public RuntimeRootImpl(final ObjectName parent)
     {
         super(parent, RuntimeRoot.class);
 
         mHabitat = InjectedValues.getInstance().getHabitat();
-
-        appRegistry = mHabitat.getService(ApplicationRegistry.class);
-
-
     }
 
     public ObjectName[] getServerRuntime()
@@ -321,7 +314,7 @@ public final class RuntimeRootImpl extends AMXImplBase
             {
                 if( opt.startsWith(prefix) )
                 {
-                    final String value = opt.substring( prefix.length() ).toLowerCase();
+                    final String value = opt.substring( prefix.length() ).toLowerCase(Locale.ENGLISH);
                     //System.out.println( "RuntimeRootImpl.isRunningInDebugMode(): found: " + prefix + value );
                     inDebugMode = Boolean.valueOf(value );
                     break;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -79,8 +79,6 @@ public final class AMXProxyHandler extends MBeanProxyHandler
     /** convert to specified class. */
     public <T extends AMXProxy> T as(final Class<T> intf)
     {
-        final Class<?> thisClass = this.getClass();
-
         if (this.getClass().isAssignableFrom(intf))
         {
             return intf.cast(this);
@@ -266,12 +264,6 @@ public final class AMXProxyHandler extends MBeanProxyHandler
         return result;
     }
 
-    private static String[] getStringSig(final Method method)
-    {
-        final Class[] sig = method.getParameterTypes();
-        final String[] stringSig = ClassUtil.classnamesFromSignature(sig);
-        return (stringSig);
-    }
     private static final Map<String, AMXProxy> EMPTY_String_AMX = Collections.emptyMap();
     private final static Class[] NOTIFICATION_LISTENER_SIG1 = new Class[]
     {
@@ -516,7 +508,7 @@ public final class AMXProxyHandler extends MBeanProxyHandler
             // System.out.println( "invoke: " + method.getName() + ", result = " + result );
 
             assert (result == null ||
-                    ClassUtil.IsPrimitiveClass(method.getReturnType()) ||
+                    ClassUtil.isPrimitiveClass(method.getReturnType()) ||
                     method.getReturnType().isAssignableFrom(result.getClass())) :
                     method.getName() + ": result of type " + result.getClass().getName() +
                     " not assignable to " + method.getReturnType().getName() + ", " +
@@ -705,18 +697,15 @@ public final class AMXProxyHandler extends MBeanProxyHandler
             final List<ObjectName> objectNames = tentativeObjectNameList((Collection)itemsIn);
             if ( objectNames != null )
             {
-                final ObjectName[] objectNamesA     = new ObjectName[objectNames.size()];
+                final ObjectName[] objectNamesA = new ObjectName[objectNames.size()];
                 objectNames.toArray(objectNamesA);
-                if ( objectNames != null )
+                if (Set.class.isAssignableFrom(returnType))
                 {
-                    if (Set.class.isAssignableFrom(returnType))
-                    {
-                        result = proxyFactory().toProxySet(objectNamesA, proxyClass);
-                    }
-                    else if (List.class.isAssignableFrom(returnType))
-                    {
-                        result = proxyFactory().toProxyList(objectNamesA, proxyClass);
-                    }
+                    result = proxyFactory().toProxySet(objectNamesA, proxyClass);
+                }
+                else if (List.class.isAssignableFrom(returnType))
+                {
+                    result = proxyFactory().toProxyList(objectNamesA, proxyClass);
                 }
             }
         }
@@ -725,20 +714,21 @@ public final class AMXProxyHandler extends MBeanProxyHandler
             final Map m = (Map)itemsIn;
             final Map<String,AMXProxy> proxies = new HashMap<String,AMXProxy>();
             boolean ok = true;
-            for( final Object key : m.keySet() )
+            for( final Object  meo : m.entrySet() )
             {
-                if ( ! (key instanceof String) )
+                Map.Entry me = (Map.Entry)meo;
+                if ( ! (me.getKey() instanceof String) )
                 {
                     ok = false;
                     break;
                 }
-                final Object value = m.get(key);
+                final Object value = me.getValue();
                 if ( ! (value instanceof ObjectName) )
                 {
                     ok = false;
                     break;
                 }
-                proxies.put( (String)key, proxyFactory().getProxy((ObjectName)value, proxyClass ));
+                proxies.put( (String)me.getKey(), proxyFactory().getProxy((ObjectName)value, proxyClass ));
             }
             
             if ( ok )
@@ -972,10 +962,7 @@ public final class AMXProxyHandler extends MBeanProxyHandler
         if ( mParentObjectName == null ) return null;
         
         final AMXProxy proxy = proxyFactory().getProxy(mParentObjectName);
-        if ( proxy == null )
-        {
-            //System.out.println( "AMXProxyHandler: cannot obtain parent proxy for " + objectName() + " , parent = " + mParentObjectName );
-        }
+        
         return proxy;
     }
 
@@ -1109,7 +1096,7 @@ public final class AMXProxyHandler extends MBeanProxyHandler
     public <T extends AMXProxy> Set<T> childrenSet(final String type, final Class<T> intf)
     {
         final Map<String, T> m = childrenMap(type, intf);
-        return m == null ? null : new HashSet<T>(m.values());
+        return new HashSet<T>(m.values());
     }
 
     public AMXProxy child(final String type)
@@ -1281,6 +1268,7 @@ public final class AMXProxyHandler extends MBeanProxyHandler
         return null;
     }
     
+    @Override
     public MBeanOperationInfo operationInfo(final String operationName) {
         for( final MBeanOperationInfo info: getMBeanInfo().getOperations() )
         {
@@ -1291,10 +1279,16 @@ public final class AMXProxyHandler extends MBeanProxyHandler
         }
         return null;
     }
-
+    
+    @Override
     public boolean equals(final Object rhs)
     {
         return super.equals(rhs);
+    }
+
+    @Override
+    public int hashCode() { 
+        return super.hashCode();
     }
 }
 

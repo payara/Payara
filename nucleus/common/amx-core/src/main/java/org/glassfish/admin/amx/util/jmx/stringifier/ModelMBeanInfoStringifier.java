@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,10 +40,7 @@
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
-import org.glassfish.admin.amx.util.stringifier.ArrayStringifier;
-import org.glassfish.admin.amx.util.stringifier.Stringifier;
-
-public class ModelMBeanInfoStringifier extends MBeanInfoStringifier implements Stringifier
+public class ModelMBeanInfoStringifier extends MBeanInfoStringifier
 {
     public static final ModelMBeanInfoStringifier DEFAULT = new ModelMBeanInfoStringifier();
 
@@ -57,36 +54,29 @@ public class ModelMBeanInfoStringifier extends MBeanInfoStringifier implements S
         super(options);
     }
 
-    private String stringifyArray(Object[] a, Stringifier stringifier)
-    {
-        String temp = "";
-
-        if (a.length != 0)
-        {
-            temp = "\n" + ArrayStringifier.stringify(a, "\n", stringifier);
-        }
-        return (temp);
-    }
-
     // subclass may override
+    @Override
     MBeanAttributeInfoStringifier getMBeanAttributeInfoStringifier(MBeanFeatureInfoStringifierOptions options)
     {
         return (new ModelMBeanAttributeInfoStringifier(options));
     }
 
     // subclass may override
+    @Override
     MBeanOperationInfoStringifier getMBeanOperationInfoStringifier(MBeanFeatureInfoStringifierOptions options)
     {
         return (new ModelMBeanOperationInfoStringifier(options));
     }
 
     // subclass may override
+    @Override
     MBeanConstructorInfoStringifier getMBeanConstructorInfoStringifier(MBeanFeatureInfoStringifierOptions options)
     {
         return (new ModelMBeanConstructorInfoStringifier(options));
     }
 
     // subclass may override
+    @Override
     MBeanNotificationInfoStringifier getMBeanNotificationInfoStringifier(MBeanFeatureInfoStringifierOptions options)
     {
         return (new ModelMBeanNotificationInfoStringifier(options));

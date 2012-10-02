@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,17 +40,16 @@
 
 package org.glassfish.admin.amx.util;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.ObjectName;
-import java.util.Map;
-import java.util.Set;
-import java.util.List;
-import java.util.Collection;
-import java.util.ArrayList;
-
-import java.util.concurrent.TimeUnit;
-
 import org.glassfish.admin.amx.util.jmx.JMXUtil;
 
 /**
@@ -143,7 +142,7 @@ public final class StringUtil
         {
             for (int i = 0; i < bytes.length; ++i)
             {
-                buf.append(toHexString(bytes[i]) + delim);
+                buf.append(toHexString(bytes[i])).append(delim);
             }
 
             // remove trailing delim
@@ -208,7 +207,7 @@ public final class StringUtil
 
         if (s.length() >= 1)
         {
-            result = s.substring(0, 1).toUpperCase() + s.substring(1, s.length());
+            result = s.substring(0, 1).toUpperCase(Locale.ENGLISH) + s.substring(1, s.length());
         }
 
         return (result);
@@ -216,7 +215,7 @@ public final class StringUtil
 
     public static String toString(final Object o)
     {
-        String s = null;
+        String s;
 
         if (o instanceof String)
         {
@@ -279,7 +278,7 @@ public final class StringUtil
      */
     public static String toString(final String delim, final Object... args)
     {
-        String result = null;
+        String result;
 
         if (args == null)
         {
@@ -358,24 +357,6 @@ public final class StringUtil
         return NEWLINE_STR;
     }
 
-    private static String zeroPad(final long num)
-    {
-        String result = null;
-        if (num >= 100)
-        {
-            result = "" + num;
-        }
-        else if (num >= 10)
-        {
-            result = "0" + num;
-        }
-        else
-        {
-            result = "00" + num;
-        }
-        return result;
-    }
-
     private static double micros(final long nanos)
     {
         return (double) nanos / 1000;
@@ -452,19 +433,14 @@ public final class StringUtil
      */
     public static String getTimingString(final long nanos)
     {
-        final long seconds = nanos / (1000 * 1000 * 1000);
-        final long millis = nanos % (1000 * 1000 * 1000) / (1000 * 1000);
-        final long micros = nanos % (1000 * 1000) / 1000;
-        final long nanosMod = nanos % 1000;
-
-        String runTimeString = null;
+        String runTimeString;
         final long MICROSECOND = 1000;
         final long MILLISECOND = 1000 * MICROSECOND;
-        if (nanos < 10 * 1000)
+        if (nanos < 10 * MICROSECOND)
         {
             runTimeString = nanos + " nanoseconds";
         }
-        else if (nanos < 1000 * 10 * 1000)
+        else if (nanos < 10 * MILLISECOND)
         {
             runTimeString = (nanos / MICROSECOND) + " microseconds";
         }

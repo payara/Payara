@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -113,9 +113,6 @@ public final class MBeanInfoSupport {
 
         final MBeanOperationInfo[] operationInfos = generateMBeanOperationInfos(operations);
 
-        final MBeanConstructorInfo[] constructorInfos = null;
-        final MBeanNotificationInfo[] notificationInfos = null;
-
         // might or might not have metadata
         final AMXMBeanMetadata meta = intf.getAnnotation(AMXMBeanMetadata.class);
 
@@ -148,9 +145,9 @@ public final class MBeanInfoSupport {
                 intf.getName(),
                 intf.getName(),
                 attrInfos,
-                constructorInfos,
+                null,
                 operationInfos,
-                notificationInfos,
+                null,
                 d);
         //debug( "MBeanInfoSupport.getMBeanInfo(): " + mbeanInfo );
 
@@ -165,8 +162,6 @@ public final class MBeanInfoSupport {
         final Method[] methods = intf.getMethods();
 
         for (final Method method : methods) {
-            final String methodName = method.getName();
-
             final ManagedAttribute managedAttr = method.getAnnotation(ManagedAttribute.class);
             final ManagedOperation managedOp = method.getAnnotation(ManagedOperation.class);
 
@@ -246,8 +241,6 @@ public final class MBeanInfoSupport {
             return null;
         }
 
-        final String methodName = m.getName();
-
         final Description d = m.getAnnotation(Description.class);
         final String description = d == null ? "" : d.value();
 
@@ -281,19 +274,9 @@ public final class MBeanInfoSupport {
         final List<MBeanAttributeInfo> infos = new ArrayList<MBeanAttributeInfo>();
 
         for (final Method m : methods) {
-            final String methodName = m.getName();
-
             final String description = getDescription(m);
 
             String attrName = JMXUtil.getAttributeName(m);
-            final boolean isIs = JMXUtil.isIs(m);
-
-            // methods returning AMXProxy should return ObjectName
-            Class<?> returnType = m.getReturnType();
-            if (AMXProxy.class.isAssignableFrom(returnType)) {
-                returnType = ObjectName.class;
-            }
-
             final MBeanAttributeInfo info = new MBeanAttributeInfo(
                     attrName,
                     translatedType(m.getReturnType()).getName(),
@@ -377,7 +360,6 @@ public final class MBeanInfoSupport {
             final MBeanParameterInfo[] parameterInfos = parameterInfos(m);
             final int impact = managed == null ? MBeanOperationInfo.UNKNOWN : managed.impact();
             final String description = getDescription(m);
-            final Descriptor descriptor = null;
 
             final MBeanOperationInfo info = new MBeanOperationInfo(
                     methodName,
@@ -385,11 +367,10 @@ public final class MBeanInfoSupport {
                     parameterInfos,
                     translatedType(m.getReturnType()).getName(),
                     impact,
-                    descriptor);
+                    null);
 
             infos[i] = info;
             ++i;
-
         }
 
         return (infos);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,21 +40,20 @@
 
 package org.glassfish.admin.amx.util.jmx;
 
-import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanInfo;
-import javax.management.MBeanOperationInfo;
-import javax.management.MBeanParameterInfo;
-import javax.management.MBeanNotificationInfo;
-
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Map;
 import javax.management.Descriptor;
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanInfo;
+import javax.management.MBeanNotificationInfo;
+import javax.management.MBeanOperationInfo;
+import javax.management.MBeanParameterInfo;
 import org.glassfish.admin.amx.util.ClassUtil;
-import org.glassfish.admin.amx.util.stringifier.SmartStringifier;
 import org.glassfish.admin.amx.util.jmx.stringifier.MBeanNotificationInfoStringifier;
+import org.glassfish.admin.amx.util.stringifier.SmartStringifier;
 
 /**
 Generate an MBean ".java" file.
@@ -103,11 +102,11 @@ public class MBeanInterfaceGenerator
         Integer count = counts.get(type);
         if (count == null)
         {
-            count = new Integer(1);
+            count = Integer.valueOf(1);
         }
         else
         {
-            count = new Integer(count.intValue() + 1);
+            count = Integer.valueOf(count.intValue() + 1);
         }
 
         counts.put(type, count);
@@ -185,14 +184,15 @@ public class MBeanInterfaceGenerator
     {
         final StringBuffer buf = new StringBuffer();
 
-        for (final String key : counts.keySet())
+        for (final Map.Entry<String, Integer> me : counts.entrySet())
         {
-            final Integer count = counts.get(key);
+            final String key = me.getKey();
+            final Integer count = me.getValue();
 
             // if used twice or more, generate an import statement
             if (count.intValue() >= IMPORT_THRESHOLD && !isUnqualifiedType(key))
             {
-                buf.append("import " + key + ";" + NEWLINE);
+                buf.append("import ").append(key).append(";" + NEWLINE);
             }
         }
 
@@ -226,20 +226,20 @@ public class MBeanInterfaceGenerator
 
         if (mEmitComments)
         {
-            buf.append(getHeaderComment(info) + NEWLINE + NEWLINE);
+            buf.append(getHeaderComment(info)).append(NEWLINE + NEWLINE);
         }
 
-        buf.append("package " + getPackageName(info) + ";" + NEWLINE);
+        buf.append("package ").append(getPackageName(info)).append(";" + NEWLINE);
 
         mCounts = countAllTypes(info);
-        buf.append(NEWLINE + getImportBlock(mCounts) + NEWLINE);
+        buf.append(NEWLINE).append(getImportBlock(mCounts)).append(NEWLINE);
 
         if (mEmitComments)
         {
-            buf.append(getInterfaceComment(info) + NEWLINE);
+            buf.append(getInterfaceComment(info)).append(NEWLINE);
         }
         String interfaceName = getClassname(info);
-        buf.append("public interface " + interfaceName + " \n{\n");
+        buf.append("public interface ").append(interfaceName).append(" \n{\n");
 
         final MBeanAttributeInfo[] attrInfos = info.getAttributes();
         final MBeanOperationInfo[] operationInfos = info.getOperations();
@@ -444,7 +444,6 @@ public class MBeanInterfaceGenerator
             final String name = info.getName();
             final String returnType = info.getReturnType();
             final MBeanParameterInfo[] paramInfos = info.getSignature();
-            final int impact = info.getImpact();
 
             final String[] paramTypes = new String[paramInfos.length];
             for (int p = 0; p < paramInfos.length; ++p)
@@ -620,8 +619,6 @@ public class MBeanInterfaceGenerator
     {
         return ("mbeans.generated");
     }
-
-    private static int sCounter = 0;
 
     public String getClassname(final MBeanInfo info)
     {

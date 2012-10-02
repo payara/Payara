@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,91 +37,70 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.admin.amx.impl.config;
 
-import org.glassfish.admin.amx.core.AMXProxy;
 import org.glassfish.admin.amx.config.AMXConfigProxy;
-
+import org.glassfish.external.arc.Stability;
+import org.glassfish.external.arc.Taxonomy;
 import org.jvnet.hk2.config.TranslationException;
 import org.jvnet.hk2.config.VariableResolver;
 
-import java.util.Map;
-import org.glassfish.external.arc.Stability;
-import org.glassfish.external.arc.Taxonomy;
-
-
 /**
-	Helper to resolve attribute configuration values eg ${com.sun.aas.installRoot} once they have
-    already been obtained in "raw" form.  If the goal is to fetch the attribute values in
-    already-resolved form, do so directly via @{link AttributeResolver#resolveAttribute}.
-    <p>
-    Values can be resolved into String, boolean or int.  
-    <p>
-    Example usage:</b>
-    <pre>
-    HTTPListenerConfig l = ...; // or any AMXConfigProxy sub-interface
-    AttributeResolverHelper h = new AttributeResolverHelper( l );
-    int port = h.resolveInt( l.getPort() );
-    </pre>
-    Alternately, the static method form can be used:<br>
-    <pre>
-    HTTPListenerConfig l = ...; // or any AMXConfigProxy sub-interface
-    int port = AttributeResolverHelper.resolveInt( l, value );
-    </pre>
+ * Helper to resolve attribute configuration values eg
+ * ${com.sun.aas.installRoot} once they have already been obtained in "raw"
+ * form. If the goal is to fetch the attribute values in already-resolved form,
+ * do so directly via
+ *
+ * @{link AttributeResolver#resolveAttribute}. <p> Values can be resolved into
+ * String, boolean or int. <p> Example usage:</b>
+ * <pre>
+ * HTTPListenerConfig l = ...; // or any AMXConfigProxy sub-interface
+ * AttributeResolverHelper h = new AttributeResolverHelper( l );
+ * int port = h.resolveInt( l.getPort() );
+ * </pre> Alternately, the static method form can be used:<br>
+ * <pre>
+ * HTTPListenerConfig l = ...; // or any AMXConfigProxy sub-interface
+ * int port = AttributeResolverHelper.resolveInt( l, value );
+ * </pre>
  */
-@Taxonomy( stability=Stability.UNCOMMITTED )
-public class AttributeResolverHelper extends VariableResolver
-{
-    private static void debug( final String s ) { System.out.println("##### " + s); }
-    
-    private final AMXConfigProxy mTarget;
-    
-    public AttributeResolverHelper( final AMXConfigProxy amx)
-    {
-        mTarget = amx;
+@Taxonomy( stability = Stability.UNCOMMITTED)
+public class AttributeResolverHelper extends VariableResolver {
+
+    private static void debug(final String s) {
+        System.out.println("##### " + s);
     }
-    
-        protected String
-    getVariableValue(final String varName) throws TranslationException
-    {
+
+    public AttributeResolverHelper(final AMXConfigProxy amx) {
+    }
+
+    @Override
+    protected String getVariableValue(final String varName) throws TranslationException {
         String result = varName;
-        
+
         // first look for a system property
-        final Object value = System.getProperty( varName );
-        if ( value != null )
-        {
+        final Object value = System.getProperty(varName);
+        if (value != null) {
             result = "" + value;
         }
         // Removed code that walked hierarchy since this is not called.
         return result;
     }
-    
-    
+
     /**
-        Return true if the string is a template string of the for ${...}
+     * Return true if the string is a template string of the for ${...}
      */
-        public static boolean
-    needsResolving( final String value )
-    {
-        return value != null && value.indexOf( "${" ) >= 0;
+    public static boolean needsResolving(final String value) {
+        return value != null && value.indexOf("${") >= 0;
     }
-    
-            
+
     /**
-        Resolve the String using the target resolver (MBean).
+     * Resolve the String using the target resolver (MBean).
      */
-        public String
-    resolve( final String in ) throws TranslationException
-    {
+    public String resolve(final String in) throws TranslationException {
         final String result = translate(in);
-        
+
         //debug( "AttributeResolverHelper.resolve(): " + in + " ===> " + result );
-        
+
         return result;
     }
 }
-
-
-
-

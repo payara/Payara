@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,172 +37,158 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.admin.amx.base;
 
-
 import java.util.Collections;
-import javax.management.*;
-
-import java.util.Set;
 import java.util.HashSet;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.glassfish.external.arc.Stability;
-import org.glassfish.external.arc.Taxonomy;
+import java.util.concurrent.ConcurrentMap;
+import javax.management.*;
+import org.glassfish.admin.amx.core.AMXMBeanMetadata;
 import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.util.jmx.JMXUtil;
-
-import org.glassfish.admin.amx.core.AMXMBeanMetadata;
 import org.glassfish.external.amx.AMX;
+import org.glassfish.external.arc.Stability;
+import org.glassfish.external.arc.Taxonomy;
 
 /**
-    Tracks the entire MBean parent/child hierarachy so that individual MBeans need not do so.
-    Can supply parents and children of any MBean, used by all AMX implementations.
+ * Tracks the entire MBean parent/child hierarachy so that individual MBeans
+ * need not do so. Can supply parents and children of any MBean, used by all AMX
+ * implementations.
  */
 @Taxonomy(stability = Stability.NOT_AN_INTERFACE)
-@AMXMBeanMetadata(singleton=true, globalSingleton=true, leaf=true)
-public final class MBeanTracker implements NotificationListener, MBeanRegistration, MBeanTrackerMBean
-{
-    private static void debug(final Object o)
-    {
-        System.out.println( "" + o);
+@AMXMBeanMetadata(singleton = true, globalSingleton = true, leaf = true)
+public final class MBeanTracker implements NotificationListener, MBeanRegistration, MBeanTrackerMBean {
+
+    private static void debug(final Object o) {
+        System.out.println("" + o);
     }
-    
-    /** maps a parent ObjectName to a Set of children */
-    final ConcurrentMap<ObjectName,Set<ObjectName>> mParentChildren;
-    
-    /** maps a child to its parent, needed because when unregistered we can't obtain parent */
-    final ConcurrentMap<ObjectName,ObjectName>      mChildParent;
-    
+    /**
+     * maps a parent ObjectName to a Set of children
+     */
+    final ConcurrentMap<ObjectName, Set<ObjectName>> mParentChildren;
+    /**
+     * maps a child to its parent, needed because when unregistered we can't
+     * obtain parent
+     */
+    final ConcurrentMap<ObjectName, ObjectName> mChildParent;
     private volatile MBeanServer mServer;
-    private volatile ObjectName  mObjectName;
-    
+    private volatile ObjectName mObjectName;
     private final String mDomain;
-    
     private volatile boolean mEmitMBeanStatus;
-    
-    public MBeanTracker( final String jmxDomain )
-    {
-        mParentChildren = new ConcurrentHashMap<ObjectName,Set<ObjectName>>();
-        mChildParent    = new ConcurrentHashMap<ObjectName,ObjectName>();
-        
+
+    public MBeanTracker(final String jmxDomain) {
+        mParentChildren = new ConcurrentHashMap<ObjectName, Set<ObjectName>>();
+        mChildParent = new ConcurrentHashMap<ObjectName, ObjectName>();
+
         mDomain = jmxDomain;
-        
+
         mEmitMBeanStatus = false;
     }
-    
-    public boolean getEmitMBeanStatus() { return mEmitMBeanStatus; }
-    
-    public void setEmitMBeanStatus( final boolean emit )
-    {
+
+    @Override
+    public boolean getEmitMBeanStatus() {
+        return mEmitMBeanStatus;
+    }
+
+    @Override
+    public void setEmitMBeanStatus(final boolean emit) {
         mEmitMBeanStatus = emit;
     }
-    
-    public void handleNotification(final Notification notifIn, final Object handback)
-    {
-        if ( notifIn instanceof MBeanServerNotification )
-        {
-            final MBeanServerNotification notif = (MBeanServerNotification)notifIn;
-            
+
+    @Override
+    public void handleNotification(final Notification notifIn, final Object handback) {
+        if (notifIn instanceof MBeanServerNotification) {
+            final MBeanServerNotification notif = (MBeanServerNotification) notifIn;
+
             final String type = notif.getType();
             final ObjectName objectName = notif.getMBeanName();
-            
-            if ( isRelevantMBean(objectName) )
-            {
+
+            if (isRelevantMBean(objectName)) {
                 // what happens if an MBean is removed before we can add it
                 // eg the MBeanServer uses more than one thread to deliver notifications
                 // to use? Even if we synchronize this method, the remove could still arrive
                 // first and there's nothing we could do about it.
-                if ( type.equals( MBeanServerNotification.REGISTRATION_NOTIFICATION ) )
-                {
-                    if ( mEmitMBeanStatus )
-                    {
-                        System.out.println( "AMX MBean registered: " + objectName );
+                if (type.equals(MBeanServerNotification.REGISTRATION_NOTIFICATION)) {
+                    if (mEmitMBeanStatus) {
+                        System.out.println("AMX MBean registered: " + objectName);
                     }
                     addChild(objectName);
-                }
-                else if ( type.equals( MBeanServerNotification.UNREGISTRATION_NOTIFICATION ) )
-                {
-                    if ( mEmitMBeanStatus )
-                    {
-                        System.out.println( "AMX MBean UNregistered: " + objectName );
+                } else if (type.equals(MBeanServerNotification.UNREGISTRATION_NOTIFICATION)) {
+                    if (mEmitMBeanStatus) {
+                        System.out.println("AMX MBean UNregistered: " + objectName);
                     }
                     removeChild(objectName);
                 }
             }
         }
     }
-    
-	public ObjectName preRegister(
-		final MBeanServer	server,
-		final ObjectName	nameIn)
-		throws Exception
-	{
-		mServer			= server;
-        mObjectName     = nameIn;
-		return( nameIn );
-	}
-    
-		public final void
-	postRegister( final Boolean registrationSucceeded )
-	{	
-		if ( registrationSucceeded.booleanValue() )
-		{
-            try
-            {
-                mServer.addNotificationListener( JMXUtil.getMBeanServerDelegateObjectName(), this, null, null );
-            }
-            catch( Exception e )
-            {
+
+    @Override
+    public ObjectName preRegister(
+            final MBeanServer server,
+            final ObjectName nameIn)
+            throws Exception {
+        mServer = server;
+        mObjectName = nameIn;
+        return (nameIn);
+    }
+
+    @Override
+    public final void postRegister(final Boolean registrationSucceeded) {
+        if (mServer == null) {
+            return;
+        }
+        if (registrationSucceeded.booleanValue()) {
+            try {
+                mServer.addNotificationListener(JMXUtil.getMBeanServerDelegateObjectName(), this, null, null);
+            } catch (Exception e) {
                 throw new RuntimeException("Could not register with MBeanServerDelegate", e);
             }
             //debug( "MBeanTracker: registered as " + mObjectName );
-		}
+        }
         // populate our list
-		final ObjectName	pattern	= Util.newObjectNamePattern( mDomain, "" );
-		final Set<ObjectName>	names	= JMXUtil.queryNames( mServer, pattern, null );
+        final ObjectName pattern = Util.newObjectNamePattern(mDomain, "");
+        final Set<ObjectName> names = JMXUtil.queryNames(mServer, pattern, null);
         //debug( "MBeanTracker: found MBeans: " + names.size() );
-        for( final ObjectName o : names )
-        {
+        for (final ObjectName o : names) {
             addChild(o);
         }
-	}
-    
-	public final void preDeregister() throws Exception
-    {
-        mServer.removeNotificationListener( mObjectName, this);
     }
-    
-	public final void postDeregister() {
+
+    @Override
+    public final void preDeregister() throws Exception {
+        if (mServer != null) {
+            mServer.removeNotificationListener(mObjectName, this);
+        }
     }
-    
-    private boolean isRelevantMBean(final ObjectName child)
-    {
-        return child != null && mDomain.equals( child.getDomain() );
+
+    @Override
+    public final void postDeregister() {
     }
-    
-    private void addChild(final ObjectName child)
-    {
+
+    private boolean isRelevantMBean(final ObjectName child) {
+        return child != null && mDomain.equals(child.getDomain());
+    }
+
+    private void addChild(final ObjectName child) {
+        if (mServer == null) {
+            return;
+        }
         ObjectName parent = null;
         try {
-            parent = (ObjectName)mServer.getAttribute(child, AMX.ATTR_PARENT);
-        }
-        catch( final Exception e )
-        {
+            parent = (ObjectName) mServer.getAttribute(child, AMX.ATTR_PARENT);
+        } catch (final Exception e) {
             // nothing to be done, MBean gone missing, badly implemented, etc.
             //System.out.println( "No Parent for: " + child );
         }
-        
-        if ( parent != null )
-        {
-            synchronized(this)
-            {
+
+        if (parent != null) {
+            synchronized (this) {
                 mChildParent.put(child, parent);
                 Set<ObjectName> children = mParentChildren.get(parent);
-                if ( children == null )
-                {
+                if (children == null) {
                     children = new HashSet<ObjectName>();
                     mParentChildren.put(parent, children);
                 }
@@ -211,21 +197,17 @@ public final class MBeanTracker implements NotificationListener, MBeanRegistrati
             }
         }
     }
-    
+
     /**
-        Must be 'synchronized' because we're working on two different Maps.
+     * Must be 'synchronized' because we're working on two different Maps.
      */
-    private synchronized ObjectName removeChild(final ObjectName child)
-    {
+    private synchronized ObjectName removeChild(final ObjectName child) {
         final ObjectName parent = mChildParent.remove(child);
-        if ( parent != null )
-        {
+        if (parent != null) {
             final Set<ObjectName> children = mParentChildren.get(parent);
-            if ( children != null )
-            {
+            if (children != null) {
                 children.remove(child);
-                if ( children.size() == 0 )
-                {
+                if (children.isEmpty()) {
                     mParentChildren.remove(parent);
                     //debug( "MBeanTracker: REMOVED " + child + " from parent " + parent );
                 }
@@ -233,39 +215,19 @@ public final class MBeanTracker implements NotificationListener, MBeanRegistrati
         }
         return parent;
     }
-    
-    public ObjectName getParentOf(final ObjectName child)
-    {
+
+    @Override
+    public ObjectName getParentOf(final ObjectName child) {
         return mChildParent.get(child);
     }
-    
-        public synchronized Set<ObjectName>
-    getChildrenOf(final ObjectName parent)
-    {
-        final Set<ObjectName> children = mParentChildren.get(parent) ;
-        if ( children == null )
-        {
+
+    @Override
+    public synchronized Set<ObjectName> getChildrenOf(final ObjectName parent) {
+        final Set<ObjectName> children = mParentChildren.get(parent);
+        if (children == null) {
             return Collections.emptySet();
         }
-        
+
         return new HashSet<ObjectName>(children);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

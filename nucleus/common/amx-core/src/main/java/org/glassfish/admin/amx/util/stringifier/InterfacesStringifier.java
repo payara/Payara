@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,74 +37,53 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.admin.amx.util.stringifier;
 
 /**
-	Stringifies an object based on specified interfaces.
+ * Stringifies an object based on specified interfaces.
  */
-public class InterfacesStringifier implements Stringifier
-{
-	private final StringifierRegistry	mRegistry;
-	private final Class<?>[]				mInterfaces;
-	
-		public 
-	InterfacesStringifier( Class[] interfaces  )
-	{
-		this( StringifierRegistryImpl.DEFAULT, interfaces );
-	}
-	
-		public 
-	InterfacesStringifier( StringifierRegistry registry, Class[] interfaces)
-	{
-		mRegistry	= registry;
-		mInterfaces	= interfaces;
-	}
-	
-		private <T> String
-	stringifyAs( Object o, Class<T> theClass )
-	{
-		String	result	= null;
-		if ( theClass.isAssignableFrom( o.getClass() ) )
-		{
-			final Stringifier	stringifier	= mRegistry.lookup( theClass );
-			if ( stringifier != null )
-			{
-				result	= stringifier.stringify( o );
-			}
-		}
-		return( result );
-	}
-	
-		public String
-	stringify( Object o )
-	{
-		String	result	= "";
-		
-		for( int i = 0; i < mInterfaces.length; ++i )
-		{
-			final Class<?> intf	= mInterfaces[ i ];
-			
-			final String s	= stringifyAs( o, intf );
-			if ( s != null )
-			{
-				result	= result + intf.getName() + ": " + s + "\n";
-			}
-		}
-		
-		if ( result == null || result.length() == 0)
-		{
-			result	= o.toString();
-		}
-	
-		return( result );
-	}
+public class InterfacesStringifier implements Stringifier {
+
+    private final StringifierRegistry mRegistry;
+    private final Class<?>[] mInterfaces;
+
+    public InterfacesStringifier(Class[] interfaces) {
+        this(StringifierRegistryImpl.DEFAULT, interfaces);
+    }
+
+    public InterfacesStringifier(StringifierRegistry registry, Class[] interfaces) {
+        mRegistry = registry;
+        mInterfaces = interfaces;
+    }
+
+    private <T> String stringifyAs(Object o, Class<T> theClass) {
+        String result = null;
+        if (theClass.isAssignableFrom(o.getClass())) {
+            final Stringifier stringifier = mRegistry.lookup(theClass);
+            if (stringifier != null) {
+                result = stringifier.stringify(o);
+            }
+        }
+        return (result);
+    }
+
+    @Override
+    public String stringify(Object o) {
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < mInterfaces.length; ++i) {
+            final Class<?> intf = mInterfaces[i];
+
+            final String s = stringifyAs(o, intf);
+            if (s != null) {
+                result.append(intf.getName()).append(": ").append(s).append("\n");
+            }
+        }
+
+        if (result.length() == 0) {
+            return o.toString();
+        }
+
+        return result.toString();
+    }
 }
-
-
-
-
-
-
-
-

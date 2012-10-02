@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,8 +40,11 @@
 
 package org.glassfish.admin.amx.util.jmx;
 
-import org.glassfish.admin.amx.util.SetUtil;
+import java.io.IOException;
+import java.util.Collections;
 
+import java.util.HashSet;
+import java.util.Set;
 import javax.management.InstanceNotFoundException;
 import javax.management.JMException;
 import javax.management.MBeanServer;
@@ -51,10 +54,7 @@ import javax.management.Notification;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import org.glassfish.admin.amx.util.SetUtil;
 
 /**
 Convenience base class for listening for Notifications
@@ -70,8 +70,6 @@ a listener is maintained on the MBeanServer delegate.
 public abstract class NotificationListenerBase
         implements NotificationListener
 {
-    private final String mName;
-
     private final MBeanServerConnection mConn;
 
     /** actual MBean ObjectNames, not patterns */
@@ -81,8 +79,6 @@ public abstract class NotificationListenerBase
     private final ObjectName mPattern;
 
     private final NotificationFilter mFilter;
-
-    private final Object mHandback;
 
     private RegistrationListener mDelegateListener;
 
@@ -118,11 +114,9 @@ public abstract class NotificationListenerBase
             final NotificationFilter filter)
             throws IOException
     {
-        mName = name;
         mConn = conn;
         mPattern = pattern;
         mFilter = filter;
-        mHandback = null;
         mDelegateListener = null;
         mSetupListening = false;
 
@@ -138,6 +132,7 @@ public abstract class NotificationListenerBase
     /**
     Subclass should implement this routine.
      */
+    @Override
     public abstract void handleNotification(final Notification notif, final Object handback);
 
     protected synchronized void listenToMBean(final ObjectName objectName)
@@ -171,7 +166,7 @@ public abstract class NotificationListenerBase
         }
 
 
-        Set<ObjectName> s = null;
+        Set<ObjectName> s;
 
         if (mPattern.isPattern())
         {
@@ -181,15 +176,12 @@ public abstract class NotificationListenerBase
         {
             s = SetUtil.newSet(mPattern);
         }
-
-        synchronized (this)
+       
+        for (final ObjectName objectName : s)
         {
-            for (final ObjectName objectName : s)
-            {
-                listenToMBean(objectName);
-            }
+            listenToMBean(objectName);
         }
-
+        
         mSetupListening = true;
     }
 
@@ -225,6 +217,7 @@ public abstract class NotificationListenerBase
         {
         }
 
+        @Override
         public void handleNotification(
                 final Notification notifIn,
                 final Object handback)

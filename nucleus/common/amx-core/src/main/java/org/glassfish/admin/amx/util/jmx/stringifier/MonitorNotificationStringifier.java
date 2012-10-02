@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,12 +40,9 @@
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
-import org.glassfish.admin.amx.util.stringifier.Stringifier;
-
 import javax.management.monitor.MonitorNotification;
 
-public class MonitorNotificationStringifier
-        extends NotificationStringifier implements Stringifier
+public class MonitorNotificationStringifier extends NotificationStringifier 
 {
     public static final MonitorNotificationStringifier DEFAULT =
             new MonitorNotificationStringifier();
@@ -60,6 +57,7 @@ public class MonitorNotificationStringifier
         super(options);
     }
 
+    @Override
     public String stringify(Object o)
     {
         final MonitorNotification notif = (MonitorNotification) o;

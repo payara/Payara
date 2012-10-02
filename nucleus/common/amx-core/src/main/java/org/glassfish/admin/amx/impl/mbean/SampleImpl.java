@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -193,12 +193,12 @@ public final class SampleImpl extends AMXImplBase {
 
         // generate a bunch of fields for a CompositeData, naming them with a simple type eg "Byte"
         final Map<String, Object> values = MapUtil.newMap();
-        values.put("ByteField", new Byte((byte) 0));
-        values.put("ShortField", new Short((short) 0));
-        values.put("IntegerField", new Integer(0));
-        values.put("LongField", new Long(0));
+        values.put("ByteField", Byte.valueOf((byte) 0));
+        values.put("ShortField", Short.valueOf((short) 0));
+        values.put("IntegerField", Integer.valueOf(0));
+        values.put("LongField", Long.valueOf(0));
         values.put("FloatField", new Float(0.0));
-        values.put("DoubleField", new Double(0.0));
+        values.put("DoubleField", Double.valueOf(0.0));
         values.put("BigDecimalField", new java.math.BigDecimal("999999999999999999999999999999.999999999999999999999999999999"));
         values.put("BigIntegerField", new java.math.BigInteger("999999999999999999999999999999999999999999999999999999999999"));
         values.put("CharacterField", 'x');

@@ -88,13 +88,6 @@ public final class ObjectNameBuilder {
     }
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
-    /**
-    Append the formatted props to the JMX domain and return the ObjectName
-     */
-    private ObjectName newObjectName(String props) {
-        return (Util.newObjectName(getJMXDomain(), props));
-    }
-
     public static String makeWild(String props) {
         return (Util.concatenateProps(props, JMXUtil.WILD_PROP));
     }
@@ -191,10 +184,6 @@ public final class ObjectNameBuilder {
             final ObjectName parent,
             final Class<?> intf) {
         return buildChildObjectName(server, parent, intf, null);
-    }
-
-    private static String toString(final Object o) {
-        return (SmartStringifier.toString(o));
     }
 }
 

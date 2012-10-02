@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,16 +40,9 @@
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
-import org.glassfish.admin.amx.util.stringifier.SmartStringifier;
-import org.glassfish.admin.amx.util.stringifier.Stringifier;
-import org.glassfish.admin.amx.util.TypeCast;
-
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
-import javax.management.openmbean.TabularType;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import org.glassfish.admin.amx.util.stringifier.Stringifier;
 
 public class TabularDataStringifier implements Stringifier
 {
@@ -59,13 +52,13 @@ public class TabularDataStringifier implements Stringifier
     {
     }
 
+    @Override
     public String stringify(Object o)
     {
         final StringBuffer buf = new StringBuffer();
         buf.append("Tabular data:\n");
 
         final TabularData data = (TabularData) o;
-        final TabularType type = data.getTabularType();
 
         int rowIndex = 0;
         for( final Object temp : data.values() )
@@ -74,8 +67,8 @@ public class TabularDataStringifier implements Stringifier
             final String s = CompositeDataStringifier.DEFAULT.stringify(item);
 
             // emit the row index followed by the row
-            buf.append("[" + rowIndex + "] ");
-            buf.append(s + "\n");
+            buf.append("[").append(rowIndex).append("] ");
+            buf.append(s).append("\n");
 
             ++rowIndex;
         }

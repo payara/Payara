@@ -350,7 +350,7 @@ public class AMXConfigImpl extends AMXImplBase
         Parameters for creating one or more children, each of which can (recursively) contain
         other descendants.
      */
-    class CreateParams {
+    static class CreateParams {
         final String              mType;
         final Map<String,Object>  mAttrs;
         final List<CreateParams>  mChildren;
@@ -366,10 +366,11 @@ public class AMXConfigImpl extends AMXImplBase
                 return; // null is legal, no attributes
             }
             
-            for (final String nameAsProvided : values.keySet())
+            for (final Map.Entry<String,?> me : values.entrySet())
             {
+                final String nameAsProvided = me.getKey();
                 final String xmlName = ConfigBeanJMXSupport.toXMLName(nameAsProvided);  // or type
-                final Object value   = values.get(nameAsProvided);
+                final Object value   = me.getValue();
 
                 if (value == null ||
                     (value instanceof String) ||
@@ -562,10 +563,9 @@ public class AMXConfigImpl extends AMXImplBase
      /** Create one or more children */
     private final class ChildrenCreator implements ConfigCode
     {
-        protected final List<CreateParams> mChildrenMaps;
-        protected final Map<String,Object> mAttrs;
-        
-        protected final List<ConfigBean>  mNewConfigBeans;
+        private final List<CreateParams> mChildrenMaps;
+        private final Map<String,Object> mAttrs;
+        private final List<ConfigBean>  mNewConfigBeans;
 
         ChildrenCreator( final List<CreateParams>  childrenMaps, final Map<String,Object> attrs)
         {
@@ -684,9 +684,10 @@ public class AMXConfigImpl extends AMXImplBase
     {
        final WriteableView targetW = WriteableView.class.cast(Proxy.getInvocationHandler(Proxy.class.cast(target)));
         
-        for ( final String attrName : attrs.keySet() )
+        for ( final Map.Entry<String,Object> me : attrs.entrySet() )
         {
-            final Object attrValue = attrs.get(attrName);
+            final String attrName = me.getKey();
+            final Object attrValue = me.getValue();
             final String xmlName = convertAttributeName(attrName);
             
             final ConfigBean targetCB = (ConfigBean)Dom.unwrap(target);
@@ -745,8 +746,6 @@ public class AMXConfigImpl extends AMXImplBase
         {
             final ConfigBeanJMXSupport sptRoot = ConfigBeanJMXSupportRegistry.getInstance( com.sun.enterprise.config.serverbeans.Domain.class );
         
-            final ConfigSupport configSupport = mConfigBean.getHabitat().getService(ConfigSupport.class);
-            
             recursiveCreate( item, sptRoot, mSubs );
         }
         
@@ -773,7 +772,7 @@ public class AMXConfigImpl extends AMXImplBase
                 //cdebug( "Adding child to list obtained via " + elementInfo.method().getName() + "(), " + childClass );
                 list.add( child );
             }
-            else
+            else if (elementInfo != null)
             {
                 //cdebug( "Child is a singleton, adding via setter " + elementInfo.method().getName() + "()" );
                 final ConfigModel.Property modelProp = parentBean.model.findIgnoreCase( elementInfo.xmlName() );
@@ -970,9 +969,10 @@ public class AMXConfigImpl extends AMXImplBase
         {
             final Map resultMap = (Map)result;
             Map outMap = new HashMap();
-            for( final Object key : resultMap.keySet() )
+            for( final Object meo : resultMap.entrySet() )
             {
-                outMap.put( translateResult(key), translateResult( resultMap.get(key) ) );
+                Map.Entry me = (Map.Entry)meo;
+                outMap.put( translateResult(me.getKey()), translateResult( me.getValue() ) );
             }
             out = outMap;
         }
@@ -1060,11 +1060,6 @@ public class AMXConfigImpl extends AMXImplBase
     private Class<? extends ConfigBeanProxy> getConfigBeanProxyClassForContainedType(final String type)
     {
         final ConfigBeanJMXSupport spt = getConfigBeanJMXSupport();
-        if (spt == null)
-        {
-            throw new IllegalArgumentException("Can't find ConfigBean @Configured class for AMX type " + type);
-        }
-        // return spt.getConfigBeanProxyClassFor(type);
 
         return ConfigBeanJMXSupportRegistry.getConfigBeanProxyClassFor(spt, type);
     }
@@ -1403,9 +1398,10 @@ public class AMXConfigImpl extends AMXImplBase
 
         final Map<String, MBeanAttributeInfo> attrInfos = getAttributeInfos();
 
-        for (final String amxAttrName : amxAttrs.keySet())
+        for (final Map.Entry<String, Object> me : amxAttrs.entrySet())
         {
-            final Object valueIn = amxAttrs.get(amxAttrName);
+            final String amxAttrName = me.getKey();
+            final Object valueIn = me.getValue();
 
             final MBeanAttributeInfo attrInfo = attrInfos.get(amxAttrName);
             if (attrInfo == null)

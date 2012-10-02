@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -148,8 +148,6 @@ public class ToolsImpl extends AMXImplBase // implements Tools
     }
 
     public String info(final String searchStringIn) {
-        final String domain = getObjectName().getDomain();
-
         ObjectName pattern = newObjectName(searchStringIn);
         if (pattern == null && (searchStringIn.length() == 0 || searchStringIn.equals(WILD_ALL))) {
             pattern = newObjectName("*:*");
@@ -158,7 +156,7 @@ public class ToolsImpl extends AMXImplBase // implements Tools
         if (pattern == null) {
             String temp = searchStringIn;
 
-            final boolean hasProps = temp.indexOf("=") > 0;
+            final boolean hasProps = temp.indexOf("=") >= 0;
             final boolean hasDomain = temp.indexOf(":") >= 0;
             final boolean isPattern = temp.endsWith(WILD_SUFFIX);
 

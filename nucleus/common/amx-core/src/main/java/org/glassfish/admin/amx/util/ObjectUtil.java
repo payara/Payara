@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,12 +78,12 @@ public final class ObjectUtil
 
     public static int hashCode(final double value)
     {
-        return new Double(value).hashCode();
+        return Double.valueOf(value).hashCode();
     }
 
     public static boolean equals(final Object s1, final Object s2)
     {
-        boolean equals = false;
+        boolean equals;
 
         if (s1 == s2)
         {

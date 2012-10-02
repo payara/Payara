@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,22 +40,21 @@
 
 package org.glassfish.admin.amx.util.jmx;
 
-import org.glassfish.admin.amx.util.ArrayConversion;
-import org.glassfish.admin.amx.util.ArrayUtil;
-import org.glassfish.admin.amx.util.SetUtil;
-import org.glassfish.admin.amx.util.MapUtil;
-import org.glassfish.admin.amx.util.RegexUtil;
-import org.glassfish.admin.amx.util.TypeCast;
-
-import javax.management.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Pattern;
+import javax.management.*;
 import javax.management.modelmbean.DescriptorSupport;
 import javax.management.openmbean.OpenMBeanAttributeInfo;
+import org.glassfish.admin.amx.util.ArrayConversion;
+import org.glassfish.admin.amx.util.ArrayUtil;
+import org.glassfish.admin.amx.util.MapUtil;
+import org.glassfish.admin.amx.util.RegexUtil;
+import org.glassfish.admin.amx.util.SetUtil;
 import org.glassfish.admin.amx.util.StringUtil;
+import org.glassfish.admin.amx.util.TypeCast;
 import org.glassfish.admin.amx.util.stringifier.SmartStringifier;
 
 /**
@@ -246,8 +245,6 @@ public final class JMXUtil
 
             if (objectName.isPropertyPattern())
             {
-                final String propsString = mapToProps(props);
-
                 nameWithoutKey = newObjectNamePattern(domain,
                         nameWithoutKey.getKeyPropertyListString());
             }
@@ -285,7 +282,7 @@ public final class JMXUtil
 
     public static String concatenateProps(String props1, String props2)
     {
-        String result = null;
+        String result;
 
         if (props1.length() == 0)
         {
@@ -672,7 +669,7 @@ public final class JMXUtil
             final Attribute attr = (Attribute) attrs.get(i);
 
             final Object value = attr.getValue();
-            final String s = (String) (value == null ? value : "" + value);
+            final String s = (String) (value == null ? null : "" + value);
             map.put(attr.getName(), s);
         }
 
@@ -768,11 +765,9 @@ public final class JMXUtil
     {
         final AttributeList attrList = new AttributeList();
 
-        for (final String key : m.keySet())
+        for (final Map.Entry<String, Object> me : m.entrySet())
         {
-            final Object value = m.get(key);
-
-            final Attribute attr = new Attribute(key, value);
+            final Attribute attr = new Attribute(me.getKey(), me.getValue());
 
             attrList.add(attr);
         }
@@ -1057,7 +1052,7 @@ public final class JMXUtil
         final String methodName = method.getName();
         String attrName = null;
 
-        int prefixLength = 0;
+        int prefixLength;
 
         if (methodName.startsWith(GET) || methodName.startsWith(SET))
         {
@@ -1226,8 +1221,6 @@ public final class JMXUtil
         {
             final Method method = methods[i];
 
-            final String methodName = method.getName();
-
             String attrName = null;
             if (isIsOrGetter(method))
             {
@@ -1297,16 +1290,13 @@ public final class JMXUtil
         final MBeanOperationInfo[] operationInfos =
                 generateMBeanOperationInfos(operations);
 
-        final MBeanConstructorInfo[] constructorInfos = null;
-        final MBeanNotificationInfo[] notificationInfos = null;
-
         final MBeanInfo mbeanInfo = new MBeanInfo(
                 theInterface.getName(),
                 theInterface.getName(),
                 attrInfos,
-                constructorInfos,
+                null,
                 operationInfos,
-                notificationInfos);
+                null);
 
         return (mbeanInfo);
     }
@@ -1589,7 +1579,7 @@ public final class JMXUtil
             final ObjectName pattern,
             final ObjectName candidate)
     {
-        boolean matches = false;
+        boolean matches;
 
         final String candidateDomain = candidate.getDomain();
         if (pattern.isDomainPattern())
@@ -1648,7 +1638,8 @@ public final class JMXUtil
     {
         Notification out = null;
 
-        if (in.getClass() == AttributeChangeNotification.class)
+        if (in instanceof AttributeChangeNotification &&
+                in.getClass() == AttributeChangeNotification.class)
         {
             final AttributeChangeNotification a = (AttributeChangeNotification) in;
 
@@ -1741,7 +1732,7 @@ public final class JMXUtil
     Get a Map from the user data field of a Notification.
     This variant requires Map<String,Serializable>.
      */
-    public static final <T extends Serializable> Map<String, T> getUserDataMapString_Serializable(final Notification notif)
+    public static <T extends Serializable> Map<String, T> getUserDataMapString_Serializable(final Notification notif)
     {
         final Object userData = notif.getUserData();
         if (!(userData instanceof Map))
@@ -1753,11 +1744,9 @@ public final class JMXUtil
         if (result != null)
         {
             // verify that it's a Map<String,Serializable>
-            for (final String testKey : result.keySet())
+            for (final Map.Entry<String, T> me : result.entrySet())
             {
-                final T testValue = result.get(testKey);
-
-                result.put(testKey, testValue);
+                result.put(me.getKey(), me.getValue());
             }
         }
 
@@ -1768,7 +1757,7 @@ public final class JMXUtil
     {
         final Descriptor d = info.getDescriptor();
 
-        return d == null ? (String) null : (String) d.getFieldValue("interfaceName");
+        return (String) d.getFieldValue("interfaceName");
     }
 
     /** convenience function to avoid try/catch.  A RuntimeException is thrown if there is a problem */
@@ -1816,10 +1805,10 @@ public final class JMXUtil
         final StringBuffer buf = new StringBuffer();
         if (d != null && d.getFieldNames().length != 0)
         {
-            buf.append(idt(indent) + "Descriptor  = " + NL);
+            buf.append(idt(indent)).append("Descriptor  = ").append(NL);
             for (final String fieldName : d.getFieldNames())
             {
-                buf.append(idt(indent + 2) + nvp(fieldName, d.getFieldValue(fieldName)) + NL);
+                buf.append(idt(indent + 2)).append(nvp(fieldName, d.getFieldValue(fieldName))).append(NL);
             }
             buf.append(NL);
         }
@@ -1864,10 +1853,10 @@ public final class JMXUtil
 
         final String idt = idt(indent + 2);
 
-        buf.append(idt(indent) + title(info) + NL);
-        buf.append(idt + nvp("Impact", impactStr(info.getImpact())) + NL);
-        buf.append(idt + nvp("ReturnType", info.getReturnType()) + NL);
-        buf.append(idt + nvp("Param count", info.getSignature().length) + NL);
+        buf.append(idt(indent)).append(title(info)).append(NL);
+        buf.append(idt).append(nvp("Impact", impactStr(info.getImpact()))).append(NL);
+        buf.append(idt).append(nvp("ReturnType", info.getReturnType())).append(NL);
+        buf.append(idt).append(nvp("Param count", info.getSignature().length)).append(NL);
 
         final Descriptor d = info.getDescriptor();
         if (d != null)
@@ -1895,9 +1884,9 @@ public final class JMXUtil
             rw = rw + ",is";
         }
 
-        buf.append(idt(indent) + title(info) + NL);
-        buf.append(idt + nvp("Type", info.getType()) + NL);
-        buf.append(idt + nvp("Access", rw) + NL);
+        buf.append(idt(indent)).append(title(info)).append(NL);
+        buf.append(idt).append(nvp("Type", info.getType())).append(NL);
+        buf.append(idt).append(nvp("Access", rw)).append(NL);
         final Descriptor d = info.getDescriptor();
         if (d != null)
         {
@@ -1907,15 +1896,15 @@ public final class JMXUtil
         if (info instanceof OpenMBeanAttributeInfo)
         {
             final OpenMBeanAttributeInfo open = (OpenMBeanAttributeInfo) info;
-            buf.append(idt + nvp("OpenType", open.getOpenType().toString()) + NL);
-            buf.append(idt + nvp("hasLegalValues", open.hasLegalValues()) + NL);
-            buf.append(idt + nvp("hasDefaultValue", open.hasDefaultValue()) + NL);
-            buf.append(idt + nvp("hasMinValue", open.hasMinValue()) + NL);
-            buf.append(idt + nvp("hasMaxValue", open.hasMaxValue()) + NL);
+            buf.append(idt).append(nvp("OpenType", open.getOpenType().toString())).append(NL);
+            buf.append(idt).append(nvp("hasLegalValues", open.hasLegalValues())).append(NL);
+            buf.append(idt).append(nvp("hasDefaultValue", open.hasDefaultValue())).append(NL);
+            buf.append(idt).append(nvp("hasMinValue", open.hasMinValue())).append(NL);
+            buf.append(idt).append(nvp("hasMaxValue", open.hasMaxValue())).append(NL);
 
             if (open.hasDefaultValue())
             {
-                buf.append(idt + nvp("DefaultValue", open.getDefaultValue()) + NL);
+                buf.append(idt).append(nvp("DefaultValue", open.getDefaultValue())).append(NL);
             }
         }
 
@@ -1931,16 +1920,16 @@ public final class JMXUtil
         final String NL = NL();
 
         int indent = 2;
-        buf.append("Classname: " + info.getClassName() + NL);
-        buf.append("Description: " + info.getDescription() + NL);
+        buf.append("Classname: ").append(info.getClassName()).append(NL);
+        buf.append("Description: ").append(info.getDescription()).append(NL);
 
         buf.append(toString(info.getDescriptor(), indent + 2));
 
-        buf.append(idt(indent) + "Attributes" + NL);
+        buf.append(idt(indent)).append("Attributes").append(NL);
         final MBeanAttributeInfo[] attrInfos = info.getAttributes();
         if (attrInfos.length == 0)
         {
-            buf.append(idt(indent + 2) + "<none>");
+            buf.append(idt(indent + 2)).append("<none>");
         }
         else
         {
@@ -1951,11 +1940,11 @@ public final class JMXUtil
             }
         }
 
-        buf.append(idt(indent) + "Operations" + NL);
+        buf.append(idt(indent)).append("Operations").append(NL);
         final MBeanOperationInfo[] opInfos = info.getOperations();
         if (info.getOperations().length == 0)
         {
-            buf.append(idt(indent + 2) + "<none>");
+            buf.append(idt(indent + 2)).append("<none>");
         }
         else
         {

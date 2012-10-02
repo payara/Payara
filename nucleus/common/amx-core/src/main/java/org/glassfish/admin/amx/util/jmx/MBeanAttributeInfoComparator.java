@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,15 +40,15 @@
 
 package org.glassfish.admin.amx.util.jmx;
 
+import java.io.Serializable;
+import javax.management.MBeanAttributeInfo;
 import org.glassfish.admin.amx.util.jmx.stringifier.MBeanAttributeInfoStringifier;
 import org.glassfish.admin.amx.util.jmx.stringifier.MBeanFeatureInfoStringifierOptions;
-
-import javax.management.MBeanAttributeInfo;
 
 /**
 Caution: this Comparator may be inconsistent with equals() because it ignores the description.
  */
-public final class MBeanAttributeInfoComparator implements java.util.Comparator<MBeanAttributeInfo>
+public final class MBeanAttributeInfoComparator implements java.util.Comparator<MBeanAttributeInfo>, Serializable
 {
     private static final MBeanAttributeInfoStringifier ATTRIBUTE_INFO_STRINGIFIER =
             new MBeanAttributeInfoStringifier(new MBeanFeatureInfoStringifierOptions(false, ","));
@@ -59,6 +59,7 @@ public final class MBeanAttributeInfoComparator implements java.util.Comparator<
     {
     }
 
+    @Override
     public int compare(final MBeanAttributeInfo o1, final MBeanAttributeInfo o2)
     {
         final String s1 = ATTRIBUTE_INFO_STRINGIFIER.stringify(o1);
@@ -67,14 +68,16 @@ public final class MBeanAttributeInfoComparator implements java.util.Comparator<
         return (s1.compareTo(s2));
     }
 
+    @Override
     public boolean equals(Object other)
     {
         return (other instanceof MBeanAttributeInfoComparator);
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
+    }
+
 }
-	
-	
-
-
-

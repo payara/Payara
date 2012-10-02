@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,13 +39,6 @@
  */
 
 package org.glassfish.admin.amx.util;
-
-import org.glassfish.admin.amx.util.DebugOutImpl;
-import org.glassfish.admin.amx.util.FileOutput;
-import org.glassfish.admin.amx.util.SetUtil;
-import org.glassfish.admin.amx.util.Output;
-import org.glassfish.admin.amx.util.OutputIgnore;
-import org.glassfish.admin.amx.util.StringUtil;
 
 import java.io.File;
 import java.util.HashSet;
@@ -244,7 +237,8 @@ public final class AMXDebug
     {
         final java.util.Properties props = System.getProperties();
 
-        final String[] keys = props.keySet().toArray(new String[0]);
+        Set<Object> keyset = props.keySet();
+        final String[] keys = keyset.toArray(new String[keyset.size()]);
         java.util.Arrays.sort(keys);
         for (final String key : keys)
         {
@@ -257,8 +251,9 @@ public final class AMXDebug
     {
         if (!mMadeDebugDir)
         {
-            mDir.mkdirs();
-            mMadeDebugDir = true;
+            if (mDir.mkdirs()) {
+                mMadeDebugDir = true;
+            }
         }
     }
 
@@ -281,22 +276,14 @@ public final class AMXDebug
     {
         final String value = System.getProperty(AMX_DEBUG_DIR_SPROP);
 
-        File debugDir = null;
-
+        File debugDir;
 
         if (value == null)
         {
             final String instanceRoot = System.getProperty("com.sun.aas.instanceRoot");
 
-            File parentDir = null;
-            if (instanceRoot != null)
-            {
-                parentDir = new File(instanceRoot);
-            }
-            else
-            {
-                parentDir = new File(System.getProperty("user.home"));
-            }
+            File parentDir = instanceRoot != null ? 
+                new File(instanceRoot) : new File(System.getProperty("user.home"));
             debugDir = new File(parentDir, AMX_DEBUG_SUBDIR);
         }
         else
@@ -498,7 +485,7 @@ public final class AMXDebug
         {
             // Did not exist at the time of the 'if' test above.
             // It might now exist; create a new WrapOutput optimistically.
-            output = new WrapOutput(getOutputFile(id), mDefaultDebug);
+            output = new WrapOutput(this, getOutputFile(id), mDefaultDebug);
 
             // retain existing output if already present
             // Note that ConcurrentHashMap guarantees "happens before" for put/get
@@ -540,7 +527,7 @@ public final class AMXDebug
     {
         if (id == null)
         {
-            throw new IllegalArgumentException(id);
+            throw new IllegalArgumentException("id is null");
         }
 
         final StringBuilder s = new StringBuilder();
@@ -566,7 +553,7 @@ public final class AMXDebug
     debug may be dynamically enabled or disabled without any
     users of the Output having to be aware of it.
      */
-    public final class WrapOutput implements Output
+    public final static class WrapOutput implements Output
     {
         private volatile Output mWrapped;
 
@@ -578,12 +565,12 @@ public final class AMXDebug
         // can be changed at any time
         private volatile boolean mDebug;
 
-        private WrapOutput(final File file, final boolean debug)
+        private WrapOutput(final AMXDebug adebug, final File file, final boolean debug)
         {
             mDebug = debug;
             mWrapped = OutputIgnore.INSTANCE;
             mFile = file;
-            mFileOutput = new FileOutput(file, mAppend);
+            mFileOutput = new FileOutput(file, adebug.mAppend);
             checkStatus();
         }
 
@@ -606,21 +593,25 @@ public final class AMXDebug
             checkStatus();
         }
 
+        @Override
         public void print(final Object o)
         {
             mWrapped.print(o);
         }
 
+        @Override
         public void println(final Object o)
         {
             mWrapped.println(o);
         }
 
+        @Override
         public void printError(final Object o)
         {
             mWrapped.printError(o);
         }
 
+        @Override
         public void printDebug(final Object o)
         {
             mWrapped.printDebug(o);
@@ -640,6 +631,7 @@ public final class AMXDebug
             checkStatus();
         }
 
+        @Override
         public void close()
         {
             reset();

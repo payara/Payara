@@ -89,7 +89,7 @@ public class MBeanOperationInfoStringifier
 
     public static String getSignature(MBeanOperationInfo info, MBeanFeatureInfoStringifierOptions options)
     {
-        return (ParamsToString(info.getSignature(), options));
+        return (paramsToString(info.getSignature(), options));
     }
 
     public static String getDescription(MBeanOperationInfo info)

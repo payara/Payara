@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -143,9 +143,8 @@ public class DomainRootImpl extends AMXImplBase // implements DomainRoot
                 mCompliance.getComplianceFailures();
         final Map<ObjectName, List<String>> result = MapUtil.newMap();
 
-        for (final ObjectName failed : failures.keySet()) {
-            final AMXValidator.ProblemList problems = failures.get(failed);
-            result.put(failed, problems.getProblems());
+        for (final Map.Entry<ObjectName, AMXValidator.ProblemList> me : failures.entrySet()) {
+            result.put(me.getKey(), me.getValue().getProblems());
         }
 
         return result;

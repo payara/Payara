@@ -170,7 +170,7 @@ public final class RealmsImpl extends AMXImplBase
             try
             {
                 final String defaultRealm = getSecurityService().getDefaultRealm();
-                final Realm r = Realm.getInstance(defaultRealm);
+                Realm.getInstance(defaultRealm);
                 Realm.setDefaultRealm(defaultRealm);
             }
             catch (final Exception e)

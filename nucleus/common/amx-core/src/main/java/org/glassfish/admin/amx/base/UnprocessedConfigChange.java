@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,11 +41,10 @@
 package org.glassfish.admin.amx.base;
 
 import java.beans.PropertyChangeEvent;
-
+import org.glassfish.admin.amx.util.ObjectUtil;
+import org.glassfish.admin.amx.util.StringUtil;
 import org.glassfish.external.arc.Stability;
 import org.glassfish.external.arc.Taxonomy;
-import org.glassfish.admin.amx.util.StringUtil;
-import org.glassfish.admin.amx.util.ObjectUtil;
 
 /**
 <em>Note: this API is highly volatile and subject to change<em>.
@@ -141,6 +140,7 @@ public final class UnprocessedConfigChange
         return mNewValue;
     }
 
+    @Override
     public String toString()
     {
         return "UnprocessedConfigChange: name = " + getPropertyName() +
@@ -157,10 +157,11 @@ public final class UnprocessedConfigChange
             return true;
         }
 
-        return lhs != null ? lhs.equals(rhs) : rhs.equals(lhs);
+        return lhs != null ? lhs.equals(rhs) : false;
 
     }
 
+    @Override
     public boolean equals(final Object rhs)
     {
         if (!(rhs instanceof UnprocessedConfigChange))

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -212,9 +212,10 @@ public final class MapUtil
         {
             equal = true;
 
-            for (final Object key : m1.keySet())
+            for (final Map.Entry<?,?> me : m1.entrySet())
             {
-                final Object value1 = m1.get(key);
+                final Object key = me.getKey();
+                final Object value1 = me.getValue();
                 final Object value2 = m2.get(key);
 
                 if (!CompareUtil.objectsEqual(value1, value2))
@@ -232,13 +233,13 @@ public final class MapUtil
     {
         final Map<K, V> result = new HashMap<K, V>();
 
-        for (final K key : m.keySet())
+        for (final Map.Entry<K, V> me : m.entrySet())
         {
-            final V value = m.get(key);
+            final V value = me.getValue();
 
             if (value != null)
             {
-                result.put(key, value);
+                result.put(me.getKey(), value);
             }
         }
 
@@ -282,11 +283,11 @@ public final class MapUtil
     {
         final Set<K> s = new HashSet<K>();
 
-        for (final K key : m.keySet())
+        for (final Map.Entry<K, ?> me : m.entrySet())
         {
-            if (m.get(key) == null)
+            if (me.getValue() == null)
             {
-                s.add(key);
+                s.add(me.getKey());
             }
         }
         return (s);
@@ -325,7 +326,7 @@ public final class MapUtil
             return null;
         }
 
-        Map<String, String> result = null;
+        Map<String, String> result;
 
         if (isAllStrings(m))
         {
@@ -335,9 +336,10 @@ public final class MapUtil
         {
             result = new HashMap<String, String>();
 
-            for (final Object key : m.keySet())
+            for (final Map.Entry<?, ?> me : m.entrySet())
             {
-                final Object value = m.get(key);
+                final Object key = me.getKey();
+                final Object value = me.getValue();
 
                 if ((key instanceof String) && (value instanceof String))
                 {

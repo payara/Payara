@@ -189,22 +189,6 @@ class ConfigBeanJMXSupport
 
     public Class<? extends ConfigBeanProxy> getIntf() { return mIntf; }
     
-    
-    private static Class<?> findDuck(final Class<?> intf)
-    {
-        final Class<?>[] candidates = intf.getClasses();
-        Class<?> duck = null;
-        for (final Class<?> c : candidates)
-        {
-            if (c.getName().endsWith("$Duck"))
-            {
-                debug("ConfigBeanJMXSupport: found Duck class: " + c.getName());
-                duck = c;
-            }
-        }
-        return duck;
-    }
-
     public String toString()
     {
         final StringBuilder buf = new StringBuilder();
@@ -359,7 +343,6 @@ class ConfigBeanJMXSupport
 
         final String classname = mIntf.getName();
         final String description = "ConfigBean " + mIntf.getName();
-        final MBeanConstructorInfo[] constructors = null;
         final MBeanOperationInfo[] operations = toMBeanOperationInfos();
         final Descriptor descriptor = descriptor();
         final MBeanNotificationInfo[] notifications = new MBeanNotificationInfo[] {ATTRIBUTE_CHANGE_NOTIF_INFO};
@@ -368,7 +351,7 @@ class ConfigBeanJMXSupport
                 classname,
                 description,
                 attrs,
-                constructors,
+                null,
                 operations,
                 notifications,
                 descriptor);
@@ -762,8 +745,7 @@ class ConfigBeanJMXSupport
             final String paramName = "p" + i;
             final String paramType = remoteType(paramClass).getName();
             final String paramDescription = "parameter " + i;
-            final Descriptor paramDescriptor = null;
-            final MBeanParameterInfo paramInfo = new MBeanParameterInfo(paramName, paramType, paramDescription, paramDescriptor);
+            final MBeanParameterInfo paramInfo = new MBeanParameterInfo(paramName, paramType, paramDescription, null);
             paramInfos.add(paramInfo);
             ++i;
         }
@@ -864,12 +846,7 @@ class ConfigBeanJMXSupport
         descriptor.setField(DESC_NOT_NULL, "" + info.notNull());
 
         Class type = info.returnType();
-        final Attribute a = info.attribute();
-        if (a != null && a.dataType() != String.class && type == String.class)
-        {
-            // FIXME
-        }
-
+        
         String description = "@Attribute " + name;
         final boolean isReadable = true;
         // we assume that all getters are writeable for now

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,19 +55,16 @@ public final class ThrowableMapper
 {
     final Throwable mOriginal;
 
-    final Set<String> mOKPackages;
-
     /**
     By default, any Throwable whose package does not start with one
     of these packages must be mapped to something standard.
      */
-    protected final static Set<String> OK_PACKAGES =
+    private final static Set<String> OK_PACKAGES =
             SetUtil.newUnmodifiableStringSet("java.", "javax.");
 
     public ThrowableMapper(final Throwable t)
     {
         mOriginal = t;
-        mOKPackages = OK_PACKAGES;
     }
 
     private static boolean shouldMap(final Throwable t)

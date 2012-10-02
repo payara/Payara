@@ -735,7 +735,7 @@ public class AMXImplBase extends MBeanImplBase
         Class[] sig = new Class[]{valueClass};
         Method setter = findMethod(methodName, sig);
 
-        final Class primitiveClass = ClassUtil.ObjectClassToPrimitiveClass(valueClass);
+        final Class primitiveClass = ClassUtil.objectClassToPrimitiveClass(valueClass);
         if (setter == null && primitiveClass != valueClass) {
             //trace( "findSetter: retrying for primitive class: " + primitiveClass );
             // the Attribute value is always an object.  But it may be

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,11 +40,10 @@
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
+import java.lang.reflect.Array;
+import javax.management.MBeanParameterInfo;
 import org.glassfish.admin.amx.util.ClassUtil;
 import org.glassfish.admin.amx.util.stringifier.ArrayStringifier;
-
-import javax.management.MBeanParameterInfo;
-import java.lang.reflect.Array;
 
 public class MBeanFeatureInfoStringifier
 {
@@ -70,9 +69,9 @@ public class MBeanFeatureInfoStringifier
         return (ClassUtil.getFriendlyClassname(type));
     }
 
-    static String ParamsToString(final MBeanParameterInfo[] params, final MBeanFeatureInfoStringifierOptions options)
+    static String paramsToString(final MBeanParameterInfo[] params, final MBeanFeatureInfoStringifierOptions options)
     {
-        String result = "";
+        String result;
 
         if (Array.getLength(params) != 0)
         {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,8 +40,14 @@
 
 package org.glassfish.admin.amx.util.jmx;
 
-import org.glassfish.admin.amx.util.ListUtil;
-
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.management.AttributeChangeNotification;
 import javax.management.AttributeChangeNotificationFilter;
 import javax.management.ListenerNotFoundException;
@@ -52,16 +58,7 @@ import javax.management.NotificationFilter;
 import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.relation.MBeanServerNotificationFilter;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.CountDownLatch;
+import org.glassfish.admin.amx.util.ListUtil;
 
 /**
 Features:
@@ -168,7 +165,7 @@ public final class NotificationEmitterSupport
         MBeanServerNotification.UNREGISTRATION_NOTIFICATION,
     };
 
-    private final Integer COUNT_1 = new Integer(1);
+    private final Integer COUNT_1 = Integer.valueOf(1);
 
     private void incrementListenerCountForType(final String type)
     {
@@ -176,7 +173,7 @@ public final class NotificationEmitterSupport
         {
             final Integer count = mListenerTypeCounts.get(type);
 
-            final Integer newCount = (count == null) ? COUNT_1 : new Integer(count.intValue() + 1);
+            final Integer newCount = (count == null) ? COUNT_1 : Integer.valueOf(count.intValue() + 1);
 
             mListenerTypeCounts.put(type, newCount);
         }
@@ -199,7 +196,7 @@ public final class NotificationEmitterSupport
             }
             else
             {
-                mListenerTypeCounts.put(type, new Integer(oldValue - 1));
+                mListenerTypeCounts.put(type, Integer.valueOf(oldValue - 1));
             }
         }
     }
@@ -207,7 +204,7 @@ public final class NotificationEmitterSupport
     private String[] getTypes(
             final NotificationFilter filter)
     {
-        String[] types = NO_TYPES;
+        String[] types;
 
         if (filter instanceof NotificationFilterSupport)
         {
@@ -260,6 +257,7 @@ public final class NotificationEmitterSupport
         }
     }
 
+    @Override
     public void addNotificationListener(
             final NotificationListener listener,
             final NotificationFilter filter,
@@ -271,6 +269,7 @@ public final class NotificationEmitterSupport
         addFilterTypeCounts(filter);
     }
 
+    @Override
     public void removeNotificationListener(final NotificationListener listener)
             throws ListenerNotFoundException
     {
@@ -281,6 +280,7 @@ public final class NotificationEmitterSupport
         removeFilterTypeCounts(infos);
     }
 
+    @Override
     public void removeNotificationListener(
             final NotificationListener listener,
             final NotificationFilter filter,
@@ -307,6 +307,7 @@ public final class NotificationEmitterSupport
     then this routine returns immediately and the Notification is sent
     on a separate Thread.
      */
+    @Override
     public synchronized void sendNotification(final Notification notif)
     {
         if (getListenerCount() != 0)
@@ -323,7 +324,7 @@ public final class NotificationEmitterSupport
         }
     }
 
-    private static Object SenderThreadLock = new Object();
+    private static final Object senderThreadLock = new Object();
 
     private static SenderThread getSenderThread(final boolean asyncDelivery)
     {
@@ -333,7 +334,7 @@ public final class NotificationEmitterSupport
             return sSenderThread;
         }
 
-        synchronized (SenderThreadLock)
+        synchronized (senderThreadLock)
         {
             if (sSenderThread == null)
             {
@@ -354,7 +355,7 @@ public final class NotificationEmitterSupport
 
         private final LinkedBlockingQueue<QueueItem> mPendingNotifications;
 
-        private final class QueueItem
+        private static final class QueueItem
         {
             private final Notification mNotif;
 
@@ -395,7 +396,7 @@ public final class NotificationEmitterSupport
         {
             private static final long serialVersionUID = 0xDEADBEEF; // never serialized
 
-            final CountDownLatch mLatch = new CountDownLatch(1);
+            final transient CountDownLatch mLatch = new CountDownLatch(1);
 
             CountDownLatchNofication(final Object source)
             {
@@ -423,6 +424,7 @@ public final class NotificationEmitterSupport
             }
         }
 
+        @Override
         public void run()
         {
             while (!mQuit)

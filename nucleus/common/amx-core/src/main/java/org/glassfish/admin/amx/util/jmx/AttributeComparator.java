@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,10 @@
 
 package org.glassfish.admin.amx.util.jmx;
 
+import java.io.Serializable;
 import javax.management.Attribute;
 
-public final class AttributeComparator implements java.util.Comparator<Attribute>
+public final class AttributeComparator implements java.util.Comparator<Attribute>, Serializable
 {
     public static final AttributeComparator INSTANCE = new AttributeComparator();
 
@@ -50,6 +51,7 @@ public final class AttributeComparator implements java.util.Comparator<Attribute
     {
     }
 
+    @Override
     public int compare(Attribute attr1, Attribute attr2)
     {
         int result = attr1.getName().compareTo(attr2.getName());
@@ -61,11 +63,15 @@ public final class AttributeComparator implements java.util.Comparator<Attribute
         return (result);
     }
 
+    @Override
     public boolean equals(Object other)
     {
         return (other instanceof AttributeComparator);
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
+    }
 }
-
-

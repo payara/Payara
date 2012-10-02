@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,13 +40,11 @@
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
-import org.glassfish.admin.amx.util.stringifier.SmartStringifier;
-import org.glassfish.admin.amx.util.stringifier.Stringifier;
-
 import javax.management.AttributeChangeNotification;
+import org.glassfish.admin.amx.util.stringifier.SmartStringifier;
 
 public class AttributeChangeNotificationStringifier
-        extends NotificationStringifier implements Stringifier
+        extends NotificationStringifier 
 {
     public static final AttributeChangeNotificationStringifier DEFAULT =
             new AttributeChangeNotificationStringifier();

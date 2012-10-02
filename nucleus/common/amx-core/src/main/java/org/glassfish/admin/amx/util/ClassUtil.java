@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,8 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -247,7 +249,7 @@ public final class ClassUtil
      */
     public static String getArrayMemberClassName(String classname)
     {
-        String result = null;
+        String result;
 
         if (!classnameIsArray(classname))
         {
@@ -335,7 +337,7 @@ public final class ClassUtil
     public static Class<?> classForName(String name)
             throws ClassNotFoundException
     {
-        Class<?> c = null;
+        Class<?> c;
 
         try
         {
@@ -409,7 +411,7 @@ public final class ClassUtil
     @param		theClass	the class to map
     @return	the corresponding Object class or the original Class if not a primitive.
      */
-    public static Class PrimitiveClassToObjectClass(final Class theClass)
+    public static Class primitiveClassToObjectClass(final Class theClass)
     {
         Class result = theClass;
 
@@ -434,7 +436,7 @@ public final class ClassUtil
     @param		theClass	the class to map
     @return	the corresponding Object class or the original Class if not a primitive.
      */
-    public static Class ObjectClassToPrimitiveClass(final Class theClass)
+    public static Class objectClassToPrimitiveClass(final Class theClass)
     {
         Class result = theClass;
 
@@ -459,7 +461,7 @@ public final class ClassUtil
     @param		theClass	the class to test
     @return	true if it's a primitive class, false otherwise.
      */
-    public static boolean IsPrimitiveClass(final Class theClass)
+    public static boolean isPrimitiveClass(final Class theClass)
     {
         boolean isSimple = false;
 
@@ -484,9 +486,9 @@ public final class ClassUtil
     @param		primitive	the primitive character code
     @return		the corresponding classname
      */
-    public static String PrimitiveLetterToClassName(final char primitive)
+    public static String primitiveLetterToClassName(final char primitive)
     {
-        String result = "" + primitive;
+        String result;
 
         // see JavaDoc on Class.getName()
         switch (primitive)
@@ -515,9 +517,12 @@ public final class ClassUtil
             case 'Z':
                 result = "boolean";
                 break;
+            default:
+                result = "" + primitive;
+                break;
         }
 
-        return (result);
+        return result;
     }
 
     /**
@@ -678,13 +683,18 @@ public final class ClassUtil
                     case 'D':
                         result = "double";
                         break;
+                    default:
+                        result = "unknown";
+                        break;
                 }
             }
 
+            StringBuilder sb = new StringBuilder(result);
             for (int i = 0; i < depth; ++i)
             {
-                result = result + "[]";
+                sb.append("[]");
             }
+            result = sb.toString();
         }
 
         if (result.startsWith(javaLang))
@@ -738,7 +748,7 @@ public final class ClassUtil
             else if (name.length() == 1)
             {
                 // may be a primitive type
-                name = PrimitiveLetterToClassName(name.charAt(0));
+                name = primitiveLetterToClassName(name.charAt(0));
             }
         }
         else
@@ -773,14 +783,14 @@ public final class ClassUtil
         return (elementClass);
     }
 
-    private static Object InstantiateObject(final String theString)
+    private static Object instantiateObject(final String theString)
             throws Exception
     {
-        Object result = null;
+        Object result;
 
         try
         {
-            result = InstantiateNumber(theString);
+            result = instantiateNumber(theString);
         }
         catch (NumberFormatException e)
         {
@@ -820,7 +830,7 @@ public final class ClassUtil
     /**
     Find all methods that match the name.
      */
-    public static final Method findMethod(
+    public static Method findMethod(
             final Class<?> theClass,
             final String methodName,
             final Class<?>[] sig)
@@ -841,7 +851,7 @@ public final class ClassUtil
     /**
     Find all methods that match the name.
      */
-    public static final Set<Method> findMethods(
+    public static Set<Method> findMethods(
             final Method[] candidates,
             final String methodName)
     {
@@ -866,7 +876,7 @@ public final class ClassUtil
     @param theClass	the Class of the desired Object
     @param args		the argument list for the constructor
      */
-    public static <T> T InstantiateObject(final Class<T> theClass, final Object[] args)
+    public static <T> T instantiateObject(final Class<T> theClass, final Object[] args)
             throws Exception
     {
         final Class[] signature = new Class[args.length];
@@ -940,7 +950,7 @@ public final class ClassUtil
     @param theString	the string for a String constructor
     @return the resulting Object
      */
-    public static <T> T InstantiateObject(final Class<T> theClass, final String theString)
+    public static <T> T instantiateObject(final Class<T> theClass, final String theString)
             throws Exception
     {
         final Class[] signature = new Class[]
@@ -986,28 +996,28 @@ public final class ClassUtil
     @param theString	String representation of the number
     @return the resulting Object
      */
-    private static Object InstantiateNumber(final String theString)
+    private static Object instantiateNumber(final String theString)
             throws Exception
     {
-        Object result = null;
+        Object result;
 
         if (theString.indexOf('.') >= 0)
         {
-            result = InstantiateObject(Double.class, theString);
+            result = instantiateObject(Double.class, theString);
         }
         else
         {
             try
             {
-                result = InstantiateObject(Integer.class, theString);
+                result = instantiateObject(Integer.class, theString);
             }
             catch (NumberFormatException e)
             {
                 // perhaps it wouldn't fit; try it as a long
-                result = InstantiateObject(Long.class, theString);
+                result = instantiateObject(Long.class, theString);
             }
         }
-        return (result);
+        return result;
     }
 
     /**
@@ -1018,21 +1028,21 @@ public final class ClassUtil
     @param theString	the string to be supplied to the constructor
     @return the resulting Object
      */
-    public static Object InstantiateFromString(final Class<?> theClass, final String theString)
+    public static Object instantiateFromString(final Class<?> theClass, final String theString)
             throws Exception
     {
-        Object result = null;
+        Object result;
 
         // char and Character do not have a String constructor, so we must special-case it
         if (theClass == Object.class)
         {
             // special case, apply rules to create an object
-            result = InstantiateObject(theString);
+            result = instantiateObject(theString);
         }
         else if (theClass == Number.class)
         {
             // special case, apply rules to create a number
-            result = InstantiateNumber(theString);
+            result = instantiateNumber(theString);
         }
         else if (theClass == Character.class || theClass == char.class)
         {
@@ -1041,16 +1051,16 @@ public final class ClassUtil
                 throw new IllegalArgumentException("not a character: " + theString);
             }
 
-            result = new Character(theString.charAt(0));
+            result = Character.valueOf(theString.charAt(0));
         }
         else
         {
-            final Class<?> objectClass = PrimitiveClassToObjectClass(theClass);
+            final Class<?> objectClass = primitiveClassToObjectClass(theClass);
 
-            result = InstantiateObject(objectClass, theString);
+            result = instantiateObject(objectClass, theString);
         }
 
-        return (result);
+        return result;
     }
 
     /**
@@ -1061,24 +1071,24 @@ public final class ClassUtil
     @param inClass		the class from which an instance should be instantiated
     @return the resulting Object
      */
-    public static Object InstantiateDefault(final Class<?> inClass)
+    public static Object instantiateDefault(final Class<?> inClass)
             throws Exception
     {
-        Object result = null;
+        Object result;
 
-        final Class<?> objectClass = PrimitiveClassToObjectClass(inClass);
+        final Class<?> objectClass = primitiveClassToObjectClass(inClass);
 
         if (Number.class.isAssignableFrom(objectClass))
         {
-            result = InstantiateFromString(objectClass, "0");
+            result = instantiateFromString(objectClass, "0");
         }
         else if (objectClass == Boolean.class)
         {
-            result = new Boolean("true");
+            result = Boolean.TRUE;
         }
         else if (objectClass == Character.class)
         {
-            result = new Character('X');
+            result = Character.valueOf('X');
         }
         else if (classIsArray(objectClass))
         {
@@ -1086,11 +1096,11 @@ public final class ClassUtil
         }
         else if (objectClass == Object.class)
         {
-            result = new String("anyObject");
+            result = "anyObject";
         }
         else if (objectClass == String.class)
         {
-            result = new String("");
+            result = "";
         }
         else if (objectClass == java.net.URL.class)
         {
@@ -1110,7 +1120,7 @@ public final class ClassUtil
             result = objectClass.newInstance();
             //result	= InstantiateFromString( objectClass, "0" );
         }
-        return (result);
+        return result;
     }
 
     final static String[] sJavaLangTypes =
@@ -1125,7 +1135,7 @@ public final class ClassUtil
 
     Turn "Integer" into "java.lang.Integer", etc.
      */
-    public static String ExpandClassName(final String name)
+    public static String expandClassName(final String name)
     {
         String fullName = name;
 
@@ -1164,7 +1174,7 @@ public final class ClassUtil
 
         }
 
-        return (fullName);
+        return fullName;
     }
 
     /**
@@ -1205,6 +1215,7 @@ public final class ClassUtil
             super(cl);
         }
 
+        @Override
         public Package[] getPackages()
         {
             return (super.getPackages());
@@ -1214,12 +1225,22 @@ public final class ClassUtil
 
     public static Package[] getPackages()
     {
-        return (new MyClassLoader().getPackages());
+        return AccessController.doPrivileged(new PrivilegedAction<MyClassLoader>() {
+            @Override
+            public MyClassLoader run() {
+                return new MyClassLoader();
+            }
+        }).getPackages();
     }
 
-    public static Package[] getPackages(ClassLoader cl)
+    public static Package[] getPackages(final ClassLoader cl)
     {
-        return (new MyClassLoader(cl).getPackages());
+        return AccessController.doPrivileged(new PrivilegedAction<MyClassLoader>() {
+            @Override
+            public MyClassLoader run() {
+                return new MyClassLoader(cl);
+            }
+        }).getPackages();
     }
 
     /**
@@ -1228,7 +1249,7 @@ public final class ClassUtil
             final Class<?> theInterface,
             final String name)
     {
-        Object value = null;
+        Object value;
 
         try
         {
@@ -1240,7 +1261,7 @@ public final class ClassUtil
             value = null;
         }
 
-        return (value);
+        return value;
     }
 
     public static String stripPackagePrefix(final String classname)
@@ -1253,7 +1274,7 @@ public final class ClassUtil
             result = classname.substring(index + 1, classname.length());
         }
 
-        return (result);
+        return result;
     }
 
     ;
@@ -1268,7 +1289,7 @@ public final class ClassUtil
             result = classname.substring(0, index);
         }
 
-        return (result);
+        return result;
     }
 
     ;

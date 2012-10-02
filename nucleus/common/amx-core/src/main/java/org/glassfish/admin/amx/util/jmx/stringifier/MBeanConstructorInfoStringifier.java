@@ -68,7 +68,7 @@ public class MBeanConstructorInfoStringifier extends MBeanFeatureInfoStringifier
         final String abbreviatedName = name.substring(lastDot + 1, name.length());
 
         final String params = "(" +
-                              ParamsToString(constructor.getSignature(), mOptions) + ")";
+                              paramsToString(constructor.getSignature(), mOptions) + ")";
 
         return (abbreviatedName + params);
     }

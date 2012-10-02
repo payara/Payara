@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,16 +40,16 @@
 
 package org.glassfish.admin.amx.util.jmx;
 
+import java.io.Serializable;
+import javax.management.MBeanOperationInfo;
 import org.glassfish.admin.amx.util.jmx.stringifier.MBeanFeatureInfoStringifierOptions;
 import org.glassfish.admin.amx.util.jmx.stringifier.MBeanOperationInfoStringifier;
-
-import javax.management.MBeanOperationInfo;
 
 /**
 Caution: this Comparator may be inconsistent with equals() because it ignores the description.
  */
 public final class MBeanOperationInfoComparator
-        implements java.util.Comparator<MBeanOperationInfo>
+        implements java.util.Comparator<MBeanOperationInfo>, Serializable
 {
     private static final MBeanOperationInfoStringifier OPERATION_INFO_STRINGIFIER =
             new MBeanOperationInfoStringifier(new MBeanFeatureInfoStringifierOptions(false, ","));
@@ -60,10 +60,9 @@ public final class MBeanOperationInfoComparator
     {
     }
 
+    @Override
     public int compare(final MBeanOperationInfo info1, final MBeanOperationInfo info2)
     {
-        final MBeanOperationInfoStringifier sf = OPERATION_INFO_STRINGIFIER;
-
         // we just want to sort based on name and signature; there can't be two operations with the
         // same name and same signature, so as long as we include the name and signature the
         // sorting will always be consistent.
@@ -75,7 +74,8 @@ public final class MBeanOperationInfoComparator
             if (c == 0)
             {
                 // names the same, subsort on signature, first by number of params
-                c = sf.getSignature(info1).compareTo(sf.getSignature(info2));
+                c = MBeanOperationInfoStringifier.getSignature(info1).compareTo(
+                        MBeanOperationInfoStringifier.getSignature(info2));
             }
 
         }
@@ -83,13 +83,16 @@ public final class MBeanOperationInfoComparator
         return (c);
     }
 
+    @Override
     public boolean equals(Object other)
     {
         return (other instanceof MBeanOperationInfoComparator);
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        return hash;
+    }
+
 }
-
-
-
-

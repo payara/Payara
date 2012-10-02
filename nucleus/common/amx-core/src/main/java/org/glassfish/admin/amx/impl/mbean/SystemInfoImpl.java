@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,16 +39,14 @@
  */
 package org.glassfish.admin.amx.impl.mbean;
 
-import org.glassfish.admin.amx.base.SystemInfo;
-import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
-
-import javax.management.MBeanServer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.management.MBeanServer;
+import org.glassfish.admin.amx.base.SystemInfo;
 import org.glassfish.external.amx.AMXGlassfish;
 
 /**
@@ -56,16 +54,12 @@ Loaded as MBean "amx:j2eeType=X-SystemInfo,name=na"
  */
 public final class SystemInfoImpl extends AMXImplBase //implements SystemInfo
 {
-
-    private final MBeanServer mServer;
-    //public static final String	NAME_PROP_VALUE	= "system-info";
     private final ConcurrentMap<String, Boolean> mFeatures;
 
     public SystemInfoImpl(
             final MBeanServer server) {
 
         super(AMXGlassfish.DEFAULT.domainRoot(), SystemInfo.class);
-        mServer = server;
 
         // must be thread-safe, because features can be added at a later time
         mFeatures = new ConcurrentHashMap<String, Boolean>();
@@ -117,44 +111,8 @@ public final class SystemInfoImpl extends AMXImplBase //implements SystemInfo
     changes, additions, or removal at any time, except as otherwise documented.
     Even documented items should be used only for informational purposes,
     such as assessing performance.
-
-    @return Map<String,Long>
-    public Map<String,Long>
-    getPerformanceMillis()
-    {
-    final Map<String,Long> data = SystemInfoData.getInstance().getPerformanceMillis();
-
-    // By copying, we ensure that we return a copy which is both serializable and standard
-    // We are also in effect taking a "snapshot", the desired semantics.
-    final HashMap<String,Long>  result = new HashMap<String,Long>( data );
-
-    return result;
-    }
      */
     public Map<String, Long> getPerformanceMillis() {
         return new HashMap<String, Long>();
     }
-
-    private void _refresh() {
-    }
-    private static long LAST_REFRESH = 0;
-
-    /**
-    How will this ever be called?
-     */
-    private synchronized void refresh() {
-        final long REFRESH_MILLIS = 5 * 1000; // 5 seconds
-        final long elapsed = System.currentTimeMillis() - LAST_REFRESH;
-        if (elapsed > REFRESH_MILLIS) {
-            _refresh();
-        }
-    }
 }
-
-
-
-
-
-
-
-
