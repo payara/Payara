@@ -130,7 +130,7 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
         r.add(org.glassfish.admin.rest.provider.ActionReportResultXmlProvider.class);
 
         r.add(org.glassfish.admin.rest.provider.RestCollectionProvider.class);
-        r.add(org.glassfish.admin.rest.provider.RestModelProvider.class);
+        r.add(org.glassfish.admin.rest.provider.RestModelWriter.class);
 //        r.add(ProxyMessageBodyWriter.class);
 
 
