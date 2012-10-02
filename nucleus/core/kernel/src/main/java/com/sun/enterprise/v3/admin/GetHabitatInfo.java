@@ -39,16 +39,12 @@
  */
 package com.sun.enterprise.v3.admin;
 
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.universal.collections.ManifestUtils;
-import com.sun.enterprise.v3.common.PropsFileActionReporter;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import static java.lang.annotation.ElementType.TYPE;
 import java.lang.annotation.Retention;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,11 +52,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
 import javax.inject.Inject;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.Payload;
 import javax.validation.constraints.Pattern;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.Param;
@@ -68,13 +66,18 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
-
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
+import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.universal.collections.ManifestUtils;
+import com.sun.enterprise.v3.common.PropsFileActionReporter;
 
 /**
  * Dumps a sorted list of all registered Contract's in the Habitat
@@ -82,6 +85,7 @@ import org.glassfish.hk2.utilities.BuilderHelper;
  * <p>
  * Useful for debugging and developing new Contract's
  * @author Byron Nevins
+ * @param <i>
  */
 @Service(name = "_get-habitat-info")
 @PerLookup
@@ -94,7 +98,8 @@ import org.glassfish.hk2.utilities.BuilderHelper;
 @GetHabitatInfo.Constraint
 public class GetHabitatInfo implements AdminCommand {
     @Inject
-    Habitat habitat;
+    ServiceLocator serviceLocator;
+    
     @Inject
     ModulesRegistry modulesRegistry;
     
@@ -134,7 +139,7 @@ public class GetHabitatInfo implements AdminCommand {
         // user-called command...
 
         sb.append("\n*********** Sorted List of all Registered Contracts in the Habitat **************\n");
-        List<ActiveDescriptor<?>> allDescriptors = habitat.getDescriptors(BuilderHelper.allFilter());
+        List<ActiveDescriptor<?>> allDescriptors = serviceLocator.getDescriptors(BuilderHelper.allFilter());
         
         SortedSet<String> allContracts = new TreeSet<String>();
         for (ActiveDescriptor<?> aDescriptor : allDescriptors) {
@@ -151,7 +156,7 @@ public class GetHabitatInfo implements AdminCommand {
 
     private void dumpInhabitantsImplementingContractPattern(String pattern, StringBuilder sb) {
         sb.append("\n*********** List of all services for contract named like " + contract + " **************\n");
-        List<ActiveDescriptor<?>> allDescriptors = habitat.getDescriptors(BuilderHelper.allFilter());
+        List<ActiveDescriptor<?>> allDescriptors = serviceLocator.getDescriptors(BuilderHelper.allFilter());
         HashSet<String> allContracts = new HashSet<String>();
         for (ActiveDescriptor<?> aDescriptor : allDescriptors) {
             allContracts.addAll(aDescriptor.getAdvertisedContracts());
@@ -163,12 +168,14 @@ public class GetHabitatInfo implements AdminCommand {
             if (cn.toLowerCase(Locale.ENGLISH).indexOf(pattern.toLowerCase(Locale.ENGLISH)) < 0)
                 continue;
             sb.append("\n-----------------------------\n");
-            for (Inhabitant i : habitat.getInhabitantsByContract(cn)) {
-                sb.append("Inhabitant-Metadata: " + i.getMetadata());
+            for ( ActiveDescriptor<?> descriptor : serviceLocator.getDescriptors(BuilderHelper.createContractFilter(cn))) {
+                sb.append("Inhabitant-Metadata: " + descriptor.getMetadata());
                 sb.append("\n");
                 boolean isStarted = Boolean.parseBoolean(started);
                 if (isStarted) {
-                    sb.append((i.isActive() ? " started" : " not started"));
+                	ServiceHandle<?> handle = serviceLocator.getServiceHandle(descriptor);
+                    
+                    sb.append((handle.isActive() ? " started" : " not started"));
                 }
             }
         }
@@ -176,7 +183,7 @@ public class GetHabitatInfo implements AdminCommand {
 
     private void dumpTypes(StringBuilder sb) {
         sb.append("\n\n*********** Sorted List of all Types in the Habitat **************\n\n");
-        List<ActiveDescriptor<?>> allDescriptors = habitat.getDescriptors(BuilderHelper.allFilter());
+        List<ActiveDescriptor<?>> allDescriptors = serviceLocator.getDescriptors(BuilderHelper.allFilter());
         HashSet<String> allTypes = new HashSet<String>();
         for (ActiveDescriptor<?> aDescriptor : allDescriptors) {
             allTypes.add(aDescriptor.getImplementation());

@@ -46,8 +46,8 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jvnet.hk2.config.TranslationException;
 import org.jvnet.hk2.config.VariableResolver;
 import org.glassfish.internal.api.DelegatingClassLoader;
@@ -200,8 +200,8 @@ public class ClassLoaderHierarchyImpl implements ClassLoaderHierarchy {
             String requestedWiring = m.getMainAttributes().getValue(org.glassfish.api.ManifestConstants.GLASSFISH_REQUIRE_SERVICES);
             if (requestedWiring!=null) {
                 for (String token : new Tokenizer(requestedWiring, ",")) {
-                    for (Inhabitant<?> impl : habitat.getInhabitantsByContract(token)) {
-                        Module wiredBundle = modulesRegistry.find(impl.get().getClass());
+                    for (Object impl : habitat.getAllServices(BuilderHelper.createContractFilter(token))) {
+                        Module wiredBundle = modulesRegistry.find(impl.getClass());
                         if (wiredBundle!=null) {
                             defs.add(wiredBundle.getModuleDefinition());
                         }

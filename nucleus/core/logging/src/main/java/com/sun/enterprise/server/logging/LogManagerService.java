@@ -53,7 +53,9 @@ import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.glassfish.server.ServerEnvironmentImpl;
@@ -64,7 +66,6 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
@@ -631,8 +632,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     public void preDestroy() {
         //destroy the handlers
         try {
-            for (Inhabitant<? extends Handler> i : habitat.getInhabitants(Handler.class)) {
-                i.release();
+            for (ServiceHandle<?> i : habitat.getAllServiceHandles(BuilderHelper.createContractFilter(Handler.class.getName()))) {
+                i.destroy();
             }
             System.setOut(oStdOutBackup);
             System.setErr(oStdErrBackup);

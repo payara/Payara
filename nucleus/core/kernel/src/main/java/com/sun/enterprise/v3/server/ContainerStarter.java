@@ -40,23 +40,6 @@
 
 package com.sun.enterprise.v3.server;
 
-import com.sun.enterprise.module.Module;
-import com.sun.enterprise.util.StringUtils;
-import org.glassfish.api.container.Container;
-import org.glassfish.api.container.Sniffer;
-import org.glassfish.hk2.api.ServiceHandle;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.data.ContainerRegistry;
-import org.glassfish.internal.data.EngineInfo;
-import org.glassfish.server.ServerEnvironmentImpl;
-import javax.inject.Inject;
-import javax.inject.Provider;
-
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
-
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
@@ -65,6 +48,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
+
+import org.glassfish.api.container.Container;
+import org.glassfish.api.container.Sniffer;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.data.ContainerRegistry;
+import org.glassfish.internal.data.EngineInfo;
+import org.glassfish.server.ServerEnvironmentImpl;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
+
+import com.sun.enterprise.module.Module;
 
 /**
  * This class is responsible for starting containers.

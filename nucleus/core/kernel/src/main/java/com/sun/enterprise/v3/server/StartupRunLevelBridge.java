@@ -40,18 +40,18 @@
 package com.sun.enterprise.v3.server;
 
 
-import com.sun.enterprise.util.Result;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
+
 import org.glassfish.api.FutureProvider;
 import org.glassfish.api.Startup;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Inhabitant;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Future;
+import com.sun.enterprise.util.Result;
 
 
 /**
