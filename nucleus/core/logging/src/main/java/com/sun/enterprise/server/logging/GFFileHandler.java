@@ -617,14 +617,13 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         // check that the parent directory exists.
         File parent = file.getParentFile();
         if (!parent.exists() && parent.mkdirs()) {
-            FileOutputStream fout = new FileOutputStream(file, true);
-            BufferedOutputStream bout = new BufferedOutputStream(fout);
-            meter = new MeteredStream(bout, file.length());
-            setOutputStream(meter);            
-        } else {
             throw new IOException(LOCAL_STRINGS.getLocalString("parent.dir.create.failed", 
                     "Failed to create the parent dir {0}", parent.getAbsolutePath()));
         }
+        FileOutputStream fout = new FileOutputStream(file, true);
+        BufferedOutputStream bout = new BufferedOutputStream(fout);
+        meter = new MeteredStream(bout, file.length());
+        setOutputStream(meter);        
     }
 
     /**
