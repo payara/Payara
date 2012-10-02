@@ -43,6 +43,7 @@ package com.sun.enterprise.server.logging;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 import org.glassfish.api.logging.Task;
@@ -84,7 +85,9 @@ import java.util.logging.*;
 @ContractsProvided({GFFileHandler.class, java.util.logging.Handler.class})
 public class GFFileHandler extends StreamHandler implements PostConstruct, PreDestroy {
 
-
+    private final static LocalStringManagerImpl LOCAL_STRINGS = 
+        new LocalStringManagerImpl(GFFileHandler.class);
+            
     @Inject
     ServerContext serverContext;
 
@@ -128,6 +131,8 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     // For mechanisms 2 and 3 we will use this flag. The rotate() will always
     // be fired from the publish( ) method for consistency
     private AtomicBoolean rotationRequested = new AtomicBoolean(false);
+    
+    private Object rotationLock = new Object();
 
     private static final String LOG_ROTATE_DATE_FORMAT =
             "yyyy-MM-dd'T'HH-mm-ss";
@@ -164,10 +169,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         LogManager manager = LogManager.getLogManager();
         String cname = getClass().getName();
 
-        if(manager!=null) {
-            logFileProperty = manager.getProperty(cname + ".file");
-        }
-
+        logFileProperty = manager.getProperty(cname + ".file");
         if(logFileProperty==null || logFileProperty.trim().equals("")) {
             logFileProperty = env.getInstanceRoot().getAbsolutePath() + File.separator + LOGS_DIR + File.separator +
                     logFileName;
@@ -184,7 +186,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         changeFileName(serverLog);
 
         // Reading just few lines of log file to get the log fomatter used.
-        FileInputStream fs = null;
+        BufferedReader br = null;
         String strLine = "";
         int odlFormatter = 0;
         int uflFormatter = 0;
@@ -192,8 +194,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         boolean mustRotate = false;
 
         try {
-            fs = new FileInputStream(serverLog);
-            BufferedReader br = new BufferedReader(new InputStreamReader(fs));
+            br = new BufferedReader(new FileReader(serverLog));            
             while ((strLine = br.readLine()) != null) {
                 strLine = strLine.trim();
                 if (!strLine.equals("")) {
@@ -224,7 +225,16 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            ErrorManager em = getErrorManager();
+            if (em != null) {
+                em.error(e.getMessage(), e, ErrorManager.GENERIC_FAILURE);
+            }
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch(Exception e) {}
+            }
         }
 
         if (odlFormatter > 0) {
@@ -233,7 +243,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
             currentgffileHandlerFormatter = "com.sun.enterprise.server.logging.UniformLogFormatter";
         }
 
-        // start the Queue consummer thread.
+        // start the Queue consumer thread.
 
         pump = new Thread() {
             public void run() {
@@ -255,16 +265,13 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
         EarlyLogHandler.earlyMessages.add(lr);
 
-        lr = new LogRecord(Level.INFO, LogFacade.LOG_FORMATTER_INFO);
-        lr .setParameters(new Object[] {manager.getProperty(cname + ".formatter")});
-        lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-        lr.setThreadID((int) Thread.currentThread().getId());
-        lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-        EarlyLogHandler.earlyMessages.add(lr);
-
-
-        String rotationOnDateChange = manager.getProperty(cname + ".rotationOnDateChange");
-        if (rotationOnDateChange != null && !("").equals(rotationOnDateChange.trim()) && Boolean.parseBoolean(rotationOnDateChange)) {
+        String propValue = null;
+        propValue = manager.getProperty(cname + ".rotationOnDateChange");
+        boolean rotationOnDateChange = false;
+        if (propValue != null) {
+            rotationOnDateChange = Boolean.parseBoolean(propValue);
+        }
+        if (rotationOnDateChange) {
 
             dayBasedFileRotation = true;
 
@@ -306,7 +313,6 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         } else {
 
             Long rotationTimeLimitValue = 0L;
-            String propValue = null;
             try {
                 propValue = manager.getProperty(cname + ".rotationTimelimitInMinutes");
                 if (propValue != null) {
@@ -338,7 +344,6 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
 
         // Also honor the size based rotation if configured.
         Integer rotationLimitAttrValue = 0;
-        String propValue = null;
         try {
             propValue = manager.getProperty(cname + ".rotationLimitInBytes");
             if (propValue != null) {
@@ -385,8 +390,15 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
             flushFrequency = 1;
 
         String formatterName = manager.getProperty(cname + ".formatter");
+        formatterName = (formatterName == null) ? UniformLogFormatter.class.getName() : formatterName; 
+        lr = new LogRecord(Level.INFO, LogFacade.LOG_FORMATTER_INFO);        
+        lr .setParameters(new Object[] {formatterName});
+        lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
+        lr.setThreadID((int) Thread.currentThread().getId());
+        lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
+        EarlyLogHandler.earlyMessages.add(lr);
 
-        if (formatterName == null || UniformLogFormatter.class.getName().equals(formatterName)) {
+        if (UniformLogFormatter.class.getName().equals(formatterName)) {
             // this loop is used for UFL formatter
             UniformLogFormatter formatterClass = null;
             // set the formatter
@@ -506,7 +518,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         if (file.equals(absoluteFile)) {
             return;
         }
-        synchronized (this) {
+        synchronized (rotationLock) {
             super.flush();
             super.close();
             try {
@@ -604,13 +616,15 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     private void openFile(File file) throws IOException {
         // check that the parent directory exists.
         File parent = file.getParentFile();
-        if (!parent.exists()) {
-            parent.mkdirs();
+        if (!parent.exists() && parent.mkdirs()) {
+            FileOutputStream fout = new FileOutputStream(file, true);
+            BufferedOutputStream bout = new BufferedOutputStream(fout);
+            meter = new MeteredStream(bout, file.length());
+            setOutputStream(meter);            
+        } else {
+            throw new IOException(LOCAL_STRINGS.getLocalString("parent.dir.create.failed", 
+                    "Failed to create the parent dir {0}", parent.getAbsolutePath()));
         }
-        FileOutputStream fout = new FileOutputStream(file, true);
-        BufferedOutputStream bout = new BufferedOutputStream(fout);
-        meter = new MeteredStream(bout, file.length());
-        setOutputStream(meter);
     }
 
     /**
@@ -630,34 +644,37 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     public void cleanUpHistoryLogFiles() {
         if (maxHistoryFiles == 0)
             return;
-
-        File dir = absoluteFile.getParentFile();
-        if (dir == null) return;
-
-        File[] fset = dir.listFiles();
-        ArrayList candidates = new ArrayList();
-        for (int i = 0; fset != null && i < fset.length; i++) {
-            if (!logFileName.equals(fset[i].getName()) &&
-                    fset[i].isFile() &&
-                    fset[i].getName().startsWith(logFileName)) {
-                candidates.add(fset[i].getAbsolutePath());
-            }
-        }
-        if (candidates.size() <= maxHistoryFiles) return;
-
-        Object[] pathes = candidates.toArray();
-        java.util.Arrays.sort(pathes);
-        try {
-            for (int i = 0; i < pathes.length - maxHistoryFiles; i++) {
-                File logFile = new File((String) pathes[i]);
-                boolean delFile = logFile.delete();
-                if (!delFile) {
-                    throw new IOException("Could not delete log file: " + logFile.getAbsolutePath());
+        
+        synchronized (rotationLock) {
+            File dir = absoluteFile.getParentFile();
+            if (dir == null)
+                return;
+            File[] fset = dir.listFiles();
+            ArrayList candidates = new ArrayList();
+            for (int i = 0; fset != null && i < fset.length; i++) {
+                if (!logFileName.equals(fset[i].getName()) && fset[i].isFile()
+                        && fset[i].getName().startsWith(logFileName)) {
+                    candidates.add(fset[i].getAbsolutePath());
                 }
             }
-        } catch (Exception e) {
-            new ErrorManager().error("FATAL ERROR: COULD NOT DELETE LOG FILE.",
-                    e, ErrorManager.GENERIC_FAILURE);
+            if (candidates.size() <= maxHistoryFiles)
+                return;
+            Object[] pathes = candidates.toArray();
+            java.util.Arrays.sort(pathes);
+            try {
+                for (int i = 0; i < pathes.length - maxHistoryFiles; i++) {
+                    File logFile = new File((String) pathes[i]);
+                    boolean delFile = logFile.delete();
+                    if (!delFile) {
+                        throw new IOException("Could not delete log file: "
+                                + logFile.getAbsolutePath());
+                    }
+                }
+            } catch (Exception e) {
+                new ErrorManager().error(
+                        "FATAL ERROR: COULD NOT DELETE LOG FILE.", e,
+                        ErrorManager.GENERIC_FAILURE);
+            }
         }
     }
 
@@ -671,7 +688,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         java.security.AccessController.doPrivileged(
                 new java.security.PrivilegedAction() {
                     public Object run() {
-                        synchronized (thisInstance.rotationRequested) {
+                        synchronized (thisInstance.rotationLock) {
                             if (thisInstance.meter != null
                                     && thisInstance.meter.written <= 0) {
                                 return null;
@@ -682,50 +699,52 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                                 if (!absoluteFile.exists()) {
                                     File creatingDeletedLogFile = new File(
                                             absoluteFile.getAbsolutePath());
-                                    creatingDeletedLogFile.createNewFile();
-                                    absoluteFile = creatingDeletedLogFile;
-                                }
-                                File oldFile = absoluteFile;
-                                StringBuffer renamedFileName = new StringBuffer(
-                                        absoluteFile + "_");
-                                logRotateDateFormatter.format(new Date(),
-                                        renamedFileName, new FieldPosition(0));
-                                File rotatedFile = new File(renamedFileName
-                                        .toString());
-                                boolean renameSuccess = oldFile
-                                        .renameTo(rotatedFile);
-                                if (!renameSuccess) {
-                                    // If we don't succeed with file rename which
-                                    // most likely can happen on Windows because
-                                    // of multiple file handles opened. We go through
-                                    // Plan B to copy bytes explicitly to a renamed
-                                    // file.
-                                    FileUtils.copy(absoluteFile, rotatedFile);
-                                    File freshServerLogFile = getLogFileName();
-                                    // We do this to make sure that server.log
-                                    // contents are flushed out to start from a
-                                    // clean file again after the rename..
-                                    FileOutputStream fo = new FileOutputStream(
-                                            freshServerLogFile);
-                                    fo.close();
-                                }
-                                FileOutputStream oldFileFO = new FileOutputStream(
-                                        oldFile);
-                                oldFileFO.close();
-                                openFile(getLogFileName());
-                                absoluteFile = getLogFileName();
-                                // This will ensure that the log rotation timer
-                                // will be restarted if there is a value set
-                                // for time based log rotation
-                                if (dayBasedFileRotation) {
-                                    LogRotationTimer.getInstance()
-                                            .restartTimerForDayBasedRotation();
+                                    if (creatingDeletedLogFile.createNewFile()) { 
+                                        absoluteFile = creatingDeletedLogFile;
+                                    } 
                                 } else {
-                                    LogRotationTimer.getInstance()
-                                            .restartTimer();
-                                }
+                                    File oldFile = absoluteFile;
+                                    StringBuffer renamedFileName = new StringBuffer(
+                                            absoluteFile + "_");
+                                    logRotateDateFormatter.format(new Date(),
+                                            renamedFileName, new FieldPosition(0));
+                                    File rotatedFile = new File(renamedFileName
+                                            .toString());
+                                    boolean renameSuccess = oldFile
+                                            .renameTo(rotatedFile);
+                                    if (!renameSuccess) {
+                                        // If we don't succeed with file rename which
+                                        // most likely can happen on Windows because
+                                        // of multiple file handles opened. We go through
+                                        // Plan B to copy bytes explicitly to a renamed
+                                        // file.
+                                        FileUtils.copy(absoluteFile, rotatedFile);
+                                        File freshServerLogFile = getLogFileName();
+                                        // We do this to make sure that server.log
+                                        // contents are flushed out to start from a
+                                        // clean file again after the rename..
+                                        FileOutputStream fo = new FileOutputStream(
+                                                freshServerLogFile);
+                                        fo.close();
+                                    }
+                                    FileOutputStream oldFileFO = new FileOutputStream(
+                                            oldFile);
+                                    oldFileFO.close();
+                                    openFile(getLogFileName());
+                                    absoluteFile = getLogFileName();
+                                    // This will ensure that the log rotation timer
+                                    // will be restarted if there is a value set
+                                    // for time based log rotation
+                                    if (dayBasedFileRotation) {
+                                        LogRotationTimer.getInstance()
+                                                .restartTimerForDayBasedRotation();
+                                    } else {
+                                        LogRotationTimer.getInstance()
+                                                .restartTimer();
+                                    }
 
-                                cleanUpHistoryLogFiles();
+                                    cleanUpHistoryLogFiles();                                    
+                                }
                             } catch (IOException ix) {
                                 new ErrorManager().error("Error, could not rotate log file", ix, ErrorManager.GENERIC_FAILURE);
                             }
@@ -767,7 +786,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
             // If we have written more than the limit set for the
             // file, or rotation requested from the Timer Task or LogMBean
             // start fresh with a new file after renaming the old file.
-            synchronized (rotationRequested) {
+            synchronized (rotationLock) {
                 rotate();
                 rotationRequested.set(false);
             }
