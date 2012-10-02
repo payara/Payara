@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -290,7 +290,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
         } finally {
             wLock.unlock();
         }
-        return list.toArray(new String[0]);
+        return list.toArray(new String[list.size()]);
     }
 
     /**
@@ -609,11 +609,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
 // the following methods implement the factory's persistence layer
     protected void _loadFactory() {
         try {
-            id2ProviderMap = new HashMap<String, AuthConfigProvider>();
-            id2RegisContextMap = new HashMap<String, RegistrationContext>();
-            id2RegisListenersMap =
-                    new HashMap<String, List<RegistrationListener>>();
-            provider2IdsMap = new HashMap<AuthConfigProvider, List<String>>();
+            initializeMaps();
 
             List<EntryInfo> entryList = getRegStore().getPersistedEntries();
 
@@ -642,6 +638,17 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
             }
         }
     }
+
+	/**
+	 * Initialize the static maps in a static method
+	 */
+	private static void initializeMaps() {
+		id2ProviderMap = new HashMap<String, AuthConfigProvider>();
+		id2RegisContextMap = new HashMap<String, RegistrationContext>();
+		id2RegisListenersMap =
+		        new HashMap<String, List<RegistrationListener>>();
+		provider2IdsMap = new HashMap<AuthConfigProvider, List<String>>();
+	}
 
     private static String _loadRegistration(AuthConfigProvider provider,
             String layer,
@@ -749,18 +756,17 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
     }
 
     private static void notifyListeners(Map<String, List<RegistrationListener>> map) {
-        Set<String> regisIDSet = map.keySet();
-
-        for (String regisID : regisIDSet) {
-            List<RegistrationListener> listeners = map.get(regisID);
+    	Set<Map.Entry<String, List<RegistrationListener>>> entrySet = map.entrySet();
+    	for (Map.Entry<String, List<RegistrationListener>> entry : entrySet) {
+            List<RegistrationListener> listeners = map.get(entry.getKey());
 
             if (listeners != null && listeners.size() > 0) {
-                String[] dIds = decomposeRegisID(regisID);
+                String[] dIds = decomposeRegisID(entry.getKey());
 
                 for (RegistrationListener listener : listeners) {
                     listener.notify(dIds[0], dIds[1]);
                 }
             }
-        }
+    	}
     }
 }

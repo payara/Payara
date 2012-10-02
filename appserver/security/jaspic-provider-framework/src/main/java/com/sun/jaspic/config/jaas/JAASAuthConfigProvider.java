@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,7 @@ import com.sun.jaspic.config.helper.AuthContextHelper;
 import com.sun.jaspic.config.helper.AuthConfigProviderHelper;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Locale;
 import java.util.Map;
 import javax.security.auth.message.AuthException;
 import javax.security.auth.message.config.AuthConfigFactory;
@@ -99,7 +100,7 @@ public abstract class JAASAuthConfigProvider extends AuthConfigProviderHelper {
 
         final String layer = getLayer();
         final String appContext;
-        if (id.toLowerCase().equals(DEFAULT_JAAS_APP_NAME)) {
+        if (id.toLowerCase(Locale.getDefault()).equals(DEFAULT_JAAS_APP_NAME)) {
             appContext = ALL_APPS;
         } else {
             appContext = id;
