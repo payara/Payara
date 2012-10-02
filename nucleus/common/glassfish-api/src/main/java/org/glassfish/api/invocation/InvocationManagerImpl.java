@@ -41,6 +41,7 @@
 package org.glassfish.api.invocation;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import java.util.HashMap;
@@ -136,8 +137,10 @@ public class InvocationManagerImpl
         // if ejb call EJBSecurityManager, for servlet call RealmAdapter
         ComponentInvocationType invType = inv.getInvocationType();
 
+        List<ComponentInvocationHandler> usedHandlers = new LinkedList<ComponentInvocationHandler>();
         if (invHandlers!=null) {
             for (ComponentInvocationHandler handler : invHandlers) {
+                usedHandlers.add(handler);
                 handler.beforePreInvoke(invType, prevInv, inv);
             }
         }
@@ -154,10 +157,8 @@ public class InvocationManagerImpl
         //push this invocation on the stack
         v.add(inv);
 
-        if (invHandlers!=null) {
-            for (ComponentInvocationHandler handler : invHandlers) {
-                handler.afterPreInvoke(invType, prevInv, inv);
-            }
+        for (ComponentInvocationHandler handler : usedHandlers) {
+            handler.afterPreInvoke(invType, prevInv, inv);
         }
         
         if (setCIH != null) {
@@ -186,11 +187,13 @@ public class InvocationManagerImpl
         ComponentInvocation prevInv = beforeSize > 1 ? v.get(beforeSize - 2) : null;
         ComponentInvocation curInv = v.get(beforeSize - 1);
 
+        List<ComponentInvocationHandler> usedHandlers = new LinkedList<ComponentInvocationHandler>();
         try {
             ComponentInvocationType invType = inv.getInvocationType();
 
             if (invHandlers!=null) {
                 for (ComponentInvocationHandler handler : invHandlers) {
+                    usedHandlers.add(handler);
                     handler.beforePostInvoke(invType, prevInv, curInv);
                 }
             }                       
@@ -208,11 +211,10 @@ public class InvocationManagerImpl
             // pop the stack
             v.remove(beforeSize - 1);
 
-            if (invHandlers!=null) {
-                for (ComponentInvocationHandler handler : invHandlers) {
-                    handler.afterPostInvoke(inv.getInvocationType(), prevInv, inv);
-                }
+            for (ComponentInvocationHandler handler : usedHandlers) {
+                handler.afterPostInvoke(inv.getInvocationType(), prevInv, inv);
             }
+            
             ComponentInvocationType invType = inv.getInvocationType();
             
 
