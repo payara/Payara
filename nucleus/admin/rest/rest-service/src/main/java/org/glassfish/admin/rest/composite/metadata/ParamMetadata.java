@@ -60,6 +60,7 @@ public class ParamMetadata {
     private Object defaultValue;
     private boolean readOnly = false;
     private OptionsCapable context;
+    private Class<?> paramType;
 
     public ParamMetadata() {
 
@@ -67,7 +68,8 @@ public class ParamMetadata {
     public ParamMetadata(OptionsCapable context, Class<?> paramType, String name, Annotation[] annotations) {
         this.name = name;
         this.context = context;
-        type = paramType.getSimpleName();
+        this.type = paramType.getSimpleName();
+        this.paramType = paramType;
         final CompositeUtil instance = CompositeUtil.instance();
         help = instance.getHelpText(annotations);
         defaultValue = getDefaultValue(annotations);
@@ -141,19 +143,19 @@ public class ParamMetadata {
                     try {
                         Default def = (Default)annotation;
                         Class clazz = def.generator();
-                        boolean useContext = def.useContext();
-                        if (useContext) {
+                        if (def.useContext()) {
                             defval = ((DefaultsGenerator) context).getDefaultValue(name);
-                            break;
-                        } else {
+                        } else if (clazz != null) {
                             if (DefaultsGenerator.class.isAssignableFrom(clazz)) {
                                 defval = ((DefaultsGenerator) clazz.newInstance()).getDefaultValue(name);
                             } else {
                                 Logger.getLogger(ParamMetadata.class.getName()).log(Level.SEVERE, null, 
                                     "The class specified by generator does not implement DefaultsGenerator"); //i18n
                             }
-                            break;
+                        } else {
+                            defval = parseValue(def.value());
                         }
+                        break;
                     } catch (Exception ex) {
                         Logger.getLogger(ParamMetadata.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -165,5 +167,35 @@ public class ParamMetadata {
             }
         }
         return defval;
+    }
+
+    private Object parseValue(String value) {
+        try {
+            if (paramType.equals(String.class)) {
+                return value;
+            }
+            if (paramType.equals(Boolean.TYPE) || paramType.equals(Boolean.class)) {
+                return Boolean.valueOf(value);
+            }
+            if (paramType.equals(Integer.TYPE) || paramType.equals(Integer.class)) {
+                return new Integer(value);
+            }
+            if (paramType.equals(Long.TYPE) || paramType.equals(Long.class)) {
+                return new Long(value);
+            }
+            if (paramType.equals(Double.TYPE) || paramType.equals(Double.class)) {
+                return new Double(value);
+            }
+            if (paramType.equals(Float.TYPE) || paramType.equals(Float.class)) {
+                return new Float(value);
+            }
+            // TBD - arrays/lists of values
+            Logger.getLogger(ParamMetadata.class.getName()).log(Level.SEVERE, null, 
+                "Unsupported fixed value.  Supported types are String, boolean, Boolean, int, Integer, long, Long, double, Double, float, and Float"); //i18n
+        } catch (NumberFormatException e) {
+            Logger.getLogger(ParamMetadata.class.getName()).log(Level.SEVERE, null, 
+                "Fixed value type does not match the property type"); //i18n
+        }
+        return null;
     }
 }

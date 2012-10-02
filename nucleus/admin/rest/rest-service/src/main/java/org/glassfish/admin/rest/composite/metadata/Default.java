@@ -61,6 +61,7 @@ public @interface Default {
     // Class<? extends DefaultsGenerator> generator() default NoopDefaultsGenerator.class;
     Class<?> generator() default Void.class;
     boolean useContext() default false;
+    String value() default "";
 
     static class NoopDefaultsGenerator implements DefaultsGenerator {
     @Override
