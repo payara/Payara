@@ -151,9 +151,11 @@ public class IIOPSSLUtilImpl implements IIOPSSLUtil {
         org.omg.CORBA.ORB orb = orbHelper.getORB();
         int sslMutualAuthPort = -1;
         try {
+	    if (iorInfo instanceof com.sun.corba.ee.spi.legacy.interceptor.IORInfoExt) {
             sslMutualAuthPort = 
 	       ((com.sun.corba.ee.spi.legacy.interceptor.IORInfoExt)iorInfo).
                 getServerPort("SSL_MUTUALAUTH");
+	    }
         } catch (com.sun.corba.ee.spi.legacy.interceptor.UnknownType ute) {
             _logger.log(Level.FINE,".isnert: UnknownType exception", ute);
         }

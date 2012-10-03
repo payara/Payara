@@ -469,7 +469,7 @@ public class SecClientRequestInterceptor extends    org.omg.CORBA.LocalObject
 	    return;
 	}
 
-        Any a = orb.create_any();
+        Any a;
         try {
             a = codec.decode_value(sc.context_data, SASContextBodyHelper.type()); //decode the CDR encoding
         } catch (Exception e) {

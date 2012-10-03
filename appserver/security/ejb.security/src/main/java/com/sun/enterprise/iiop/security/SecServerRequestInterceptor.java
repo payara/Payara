@@ -451,7 +451,7 @@ public class SecServerRequestInterceptor
 		_logger.log(Level.FINE,"Received a non null SAS context element");
         }
         /* Decode the service context field */
-        Any SasAny = orb.create_any();
+        Any SasAny;
         try {        
             SasAny = codec.decode_value(sc.context_data, SASContextBodyHelper.type());
         } catch (Exception e) {
@@ -625,8 +625,10 @@ public class SecServerRequestInterceptor
         cntr.increment();
 
         Socket s = null;
-        Connection c = ((RequestInfoExt)ri).connection();
-        
+	Connection c = null;
+	if (ri instanceof RequestInfoExt) {
+            c = ((RequestInfoExt)ri).connection();
+        }
         ServerConnectionContext scc = null;
         if (c != null) {
             s = c.getSocket();
