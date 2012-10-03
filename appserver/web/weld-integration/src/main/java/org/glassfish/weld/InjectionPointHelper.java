@@ -48,6 +48,7 @@ import org.glassfish.api.naming.GlassfishNamingManager;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.annotation.Annotation;
+import java.util.Locale;
 
 
 public class InjectionPointHelper {
@@ -67,12 +68,19 @@ public class InjectionPointHelper {
     public Object resolveInjectionPoint(java.lang.reflect.Member member, Application app)
         throws javax.naming.NamingException {
 
+        if ( member == null ) {
+          throw new IllegalArgumentException("Member cannot be null.");
+        }
+
+        if ( app == null ) {
+          throw new IllegalArgumentException("Application cannot be null.");
+        }
+
         Object result = null;
 
         Field field = null;
         Method method = null;
         Annotation[] annotations;
-
 
         if( member instanceof Field ) {
             field = (Field) member;
@@ -93,10 +101,8 @@ public class InjectionPointHelper {
 
         String envAnnotationName = null;
         try {
-
             Method m = envAnnotation.annotationType().getDeclaredMethod("name");
             envAnnotationName = (String) m.invoke(envAnnotation);
-
         } catch(Exception e) {
             throw new IllegalArgumentException("Invalid annotation : must have name() attribute " +
                            envAnnotation.toString(), e);
@@ -114,13 +120,10 @@ public class InjectionPointHelper {
             }
         }
 
-        if( envAnnotationName.startsWith("java:global/") ) {
-
+        if( envAnnotationName != null && envAnnotationName.startsWith("java:global/") ) {
             javax.naming.Context ic = namingManager.getInitialContext();
             result = ic.lookup(envAnnotationName);
-
         } else {
-
             BundleDescriptor matchingBundle = null;
 
             for(BundleDescriptor bundle : app.getBundleDescriptors()) {
@@ -154,7 +157,6 @@ public class InjectionPointHelper {
             String lookupName = envDependencyName.startsWith("java:") ?
                     envDependencyName : "java:comp/env/" + envDependencyName;
             result = namingManager.lookup(componentId, lookupName);
-
         }
 
         return result;
@@ -164,13 +166,13 @@ public class InjectionPointHelper {
     private String getInjectionMethodPropertyName(Method method)
     {
         String methodName = method.getName();
-        String propertyName = methodName;
+        String propertyName;
 
         if( (methodName.length() > 3) &&
             methodName.startsWith("set") ) {
             // Derive javabean property name.
             propertyName =
-                methodName.substring(3, 4).toLowerCase() +
+                methodName.substring(3, 4).toLowerCase( Locale.ENGLISH ) +
                 methodName.substring(4);
         } else {
            throw new IllegalArgumentException("Illegal env dependency setter name" +

@@ -47,7 +47,7 @@ import org.glassfish.ejb.api.EjbContainerServices;
 
 /**
  */
-public class SessionObjectReferenceImpl implements SessionObjectReference
+public class  SessionObjectReferenceImpl implements SessionObjectReference
 {
     private EjbContainerServices ejbContainerServices;
     private Object ejbRef;

@@ -43,7 +43,6 @@ package org.glassfish.weld.connector;
 import java.io.IOException;
 import java.util.Enumeration;
 
-import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.internal.deployment.GenericSniffer;
@@ -57,7 +56,7 @@ import javax.enterprise.deploy.shared.ModuleType;
  */
 @Service(name="weld")
 @Singleton
-public class WeldSniffer extends GenericSniffer implements Sniffer {
+public class WeldSniffer extends GenericSniffer {
 
     private static final String[] containers = { "org.glassfish.weld.WeldContainer" };
 

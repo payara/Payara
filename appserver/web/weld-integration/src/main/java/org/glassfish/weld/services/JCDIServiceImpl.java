@@ -290,7 +290,7 @@ public class JCDIServiceImpl implements JCDIService
     }
 
     @SuppressWarnings("rawtypes")
-    private class JCDIInjectionContextImpl implements JCDIInjectionContext {
+    private static class JCDIInjectionContextImpl implements JCDIInjectionContext {
 
         InjectionTarget it;
         CreationalContext cc;

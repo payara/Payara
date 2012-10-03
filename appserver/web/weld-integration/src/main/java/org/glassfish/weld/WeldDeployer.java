@@ -222,7 +222,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             }
 
             String shutdown = appInfo.getTransientAppMetaData(WELD_SHUTDOWN, String.class);
-            if (Boolean.valueOf(shutdown) == Boolean.TRUE) {
+            if (Boolean.valueOf(shutdown).equals(Boolean.TRUE)) {
                 return;
             }
             WeldBootstrap bootstrap = appInfo.getTransientAppMetaData(WELD_BOOTSTRAP, 
