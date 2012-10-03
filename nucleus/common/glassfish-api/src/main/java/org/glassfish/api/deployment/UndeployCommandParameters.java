@@ -76,6 +76,9 @@ public class UndeployCommandParameters extends OpsParams {
     @Param(optional=true, defaultValue="false", name="_ignoreCascade")
     public Boolean _ignoreCascade = false;
 
+    // used for internal purpose to carry the archive type information
+    public String _type = null;
+
     @Param(optional=true, separator=':')
     public Properties properties=null;
     public Properties getProperties() {

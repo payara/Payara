@@ -70,6 +70,7 @@ public interface Application extends ApplicationName, PropertyBag {
 
     public static final String APP_LOCATION_PROP_NAME = "appLocation";
     public static final String DEPLOYMENT_PLAN_LOCATION_PROP_NAME = "deploymentPlanLocation";
+    public static final String ARCHIVE_TYPE_PROP_NAME = "archiveType";
     public static final String ALT_DD_LOCATION_PROP_NAME = "altDDLocation";
     public static final String RUNTIME_ALT_DD_LOCATION_PROP_NAME = "runtimeAltDDLocation";
 
@@ -302,9 +303,6 @@ public interface Application extends ApplicationName, PropertyBag {
     boolean isLifecycleModule();
 
     @DuckTyped
-    boolean isOSGiModule();
-
-    @DuckTyped
     void recordFileLocations(File app, File plan);
 
     @DuckTyped
@@ -314,10 +312,7 @@ public interface Application extends ApplicationName, PropertyBag {
     File deploymentPlan();
 
     @DuckTyped
-    File altDD();
-
-    @DuckTyped
-    File runtimeAltDD();
+    String archiveType();
 
     class Duck {
 
@@ -386,7 +381,10 @@ public interface Application extends ApplicationName, PropertyBag {
                 deploymentParams.virtualservers = appRef.getVirtualServers();
             }
             for (Property prop : app.getProperty()) {
-                if (prop.getName().equals(ALT_DD_LOCATION_PROP_NAME)) {
+                if (prop.getName().equals(ARCHIVE_TYPE_PROP_NAME)) {
+                    deploymentParams.type = prop.getValue();
+                }
+                else if (prop.getName().equals(ALT_DD_LOCATION_PROP_NAME)) {
                     URI altDDUri = null;
                     try {
                         altDDUri = new URI(prop.getValue());
@@ -441,10 +439,6 @@ public interface Application extends ApplicationName, PropertyBag {
             return Boolean.valueOf(me.getDeployProperties().getProperty(ServerTags.IS_LIFECYCLE));
         }
 
-        public static boolean isOSGiModule(Application me) {
-            return me.containsSnifferType(ServerTags.OSGI);
-        }
-
         public static boolean containsSnifferType(Application app,
                 String snifferType) {
             List<Engine> engineList = new ArrayList<Engine>();
@@ -480,6 +474,15 @@ public interface Application extends ApplicationName, PropertyBag {
 
         public static File runtimeAltDD(final Application instance) {
             return fileForProp(instance, RUNTIME_ALT_DD_LOCATION_PROP_NAME);
+        }
+
+        public static String archiveType(final Application instance) {
+            for (Property p : instance.getProperty()) {
+                if (p.getName().equals(ARCHIVE_TYPE_PROP_NAME)) {
+                    return p.getValue();
+                }
+            }
+            return null;
         }
 
         private static File fileForProp(final Application instance,

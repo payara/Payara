@@ -378,9 +378,6 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                             deploymentParams.target = deployment.getDefaultTarget(appName, deploymentParams.origin, deploymentParams._classicstyle);
                         }
                     }
-                    if (app.containsSnifferType(ServerTags.OSGI)) {
-                        deploymentParams.type = DeploymentProperties.OSGI;
-                    }
 
                     archive = archiveFactoryProvider.get().openArchive(sourceFile, deploymentParams);
 

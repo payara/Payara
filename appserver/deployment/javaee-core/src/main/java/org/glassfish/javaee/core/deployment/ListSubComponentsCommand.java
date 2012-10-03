@@ -158,7 +158,7 @@ public class ListSubComponentsCommand implements AdminCommand {
 
         Application application = applications.getApplication(applicationName);
 
-        if (application.isLifecycleModule() || application.isOSGiModule()) {
+        if (application.isLifecycleModule()) {
             if (!terse) {
                 part.setMessage(localStrings.getLocalString("listsubcomponents.no.elements.to.list", "Nothing to List."));
             }
@@ -172,6 +172,13 @@ public class ListSubComponentsCommand implements AdminCommand {
         }
 
         com.sun.enterprise.deployment.Application app = appInfo.getMetaData(com.sun.enterprise.deployment.Application.class);
+
+        if (app == null) {
+            if (!terse) {
+                part.setMessage(localStrings.getLocalString("listsubcomponents.no.elements.to.list", "Nothing to List."));
+            }
+            return;
+        }
 
         Map<String, String> subComponents ;
         Map<String, String> subComponentsMap = new HashMap<String, String>();

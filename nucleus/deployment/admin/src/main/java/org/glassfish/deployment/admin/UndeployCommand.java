@@ -319,6 +319,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
 
             // now start the normal undeploying
             this.name = appName;
+            this._type = application.archiveType();
 
             ExtendedDeploymentContext deploymentContext = null;
             try {

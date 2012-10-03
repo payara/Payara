@@ -695,7 +695,6 @@ public class ServerTags  {
     //static public final String OBJECT_TYPE = "object-type";
     //static public final String ENABLED = "enabled";
     public static final String IS_LIFECYCLE = "isLifecycle";
-    public static final String OSGI = "osgi";
     public static final String LOAD_SYSTEM_APP_ON_STARTUP = 
         "load-system-app-on-startup";
     // Tags for Element j2ee-application

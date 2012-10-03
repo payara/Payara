@@ -265,9 +265,7 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
                     if(lbenabled != null){
                         commandParams.lbenabled = lbenabled;
                     }
-                    if (app.containsSnifferType(ServerTags.OSGI)) {
-                        commandParams.type = DeploymentProperties.OSGI;
-                    }
+                    commandParams.type = app.archiveType();
 
                     contextProps = app.getDeployProperties();
                     modulePropsMap = app.getModulePropertiesMap();

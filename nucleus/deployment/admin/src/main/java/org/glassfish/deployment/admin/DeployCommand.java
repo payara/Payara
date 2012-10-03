@@ -472,6 +472,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 appProps.setProperty(ServerTags.CONTEXT_ROOT, contextroot);
             }
             appProps.setProperty(ServerTags.DIRECTORY_DEPLOYED, String.valueOf(isDirectoryDeployed));
+            if (type != null) {
+                appProps.setProperty(Application.ARCHIVE_TYPE_PROP_NAME, type);
+            }
 
             savedAppConfig.store(appProps);
 

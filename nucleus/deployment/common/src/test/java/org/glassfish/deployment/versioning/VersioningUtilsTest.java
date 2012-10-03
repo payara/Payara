@@ -732,11 +732,6 @@ public class VersioningUtilsTest {
         }
 
         @Override
-        public boolean isOSGiModule() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public boolean containsSnifferType(String snifferType) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -757,12 +752,7 @@ public class VersioningUtilsTest {
         }
 
         @Override
-        public File altDD() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public File runtimeAltDD() {
+        public String archiveType() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

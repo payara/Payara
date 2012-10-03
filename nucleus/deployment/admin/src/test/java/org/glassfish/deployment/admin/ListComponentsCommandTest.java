@@ -229,7 +229,6 @@ public class ListComponentsCommandTest {
         public Module getModule(String moduleName) {return null;}
         public boolean isStandaloneModule() {return false;}
         public boolean isLifecycleModule() {return false;}
-        public boolean isOSGiModule() {return false;}
         public boolean containsSnifferType(String snifferType) {return false;}
         public List<Module> getModule() {
             return modules;
@@ -249,8 +248,7 @@ public class ListComponentsCommandTest {
         
         public File application() {return null;}
         public File deploymentPlan() {return null;}
-        public File altDD() {return null;}
-        public File runtimeAltDD() {return null;}
+        public String archiveType() {return null;}
         public void recordFileLocations(File appFile, File deploymentPlanFile) {}
 
         @Override
