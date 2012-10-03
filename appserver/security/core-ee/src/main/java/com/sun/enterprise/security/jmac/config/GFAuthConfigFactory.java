@@ -57,7 +57,7 @@ import java.util.logging.Logger;
 public class GFAuthConfigFactory extends BaseAuthConfigFactory {
 
  // MUST "hide" regStore in derived class.
-    protected static RegStoreFileParser regStore = null;
+     static RegStoreFileParser regStore = null;
 
     /**
      * to specialize the defaultEntries passed to the RegStoreFileParser
