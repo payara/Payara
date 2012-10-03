@@ -96,7 +96,6 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 
 /**
- *
  * @author jdlee
  */
 public class CompositeUtil {
@@ -120,13 +119,12 @@ public class CompositeUtil {
     /**
      * This method will return a generated concrete class that implements the interface requested, as well as any
      * interfaces intended to extend the base model interface.  Model extensions must be annotated with
-     * @RestModelExtension, and must be compiled with rest-annotation-processor library on the compile classpath
-     * for metadata generation.
      *
-     * @param modelIface The base interface for the desired data model
-     * @param similarClass the Class for the calling code, used to load the generated class into the ClassLoader
+     * @param modelIface   The base interface for the desired data model
      * @return An instance of a concrete class implementing the requested interfaces
      * @throws Exception
+     * @RestModelExtension, and must be compiled with rest-annotation-processor library on the compile classpath
+     * for metadata generation.
      */
     public synchronized <T> T getModel(Class<T> modelIface) {
         String className = modelIface.getName() + "Impl";
@@ -162,7 +160,7 @@ public class CompositeUtil {
             generatedClasses.put(className, newClass);
         }
         try {
-            return (T)generatedClasses.get(className).newInstance();
+            return (T) generatedClasses.get(className).newInstance();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -228,50 +226,51 @@ public class CompositeUtil {
 
     /**
      * Convert the given <code>RestModel</code> encoded as JSON to a live Java Object.
+     *
      * @param modelClass The target <code>RestModel</code> type
-     * @param json The json encoding of the object
+     * @param json       The json encoding of the object
      * @return
      */
     public <T> T unmarshallClass(Class<T> modelClass, JSONObject json) throws JSONException {
-            T model = getModel(modelClass);
-            for (Method setter : getSetters(modelClass)) {
-                String name = setter.getName();
-                String attribute = name.substring(3, 4).toLowerCase(Locale.getDefault()) + name.substring(4);
-                Type param0 = setter.getGenericParameterTypes()[0];
-                if (json.has(attribute)) {
-                    java.lang.Object o = json.get(attribute);
-                    if (JSONArray.class.isAssignableFrom(o.getClass())) {
-                        JSONArray array = (JSONArray) o;
-                        List values = new ArrayList();
-                        Type type = Object.class;
-                        if (ParameterizedType.class.isAssignableFrom(param0.getClass())) {
-                            type = ((ParameterizedType) param0).getActualTypeArguments()[0];
-                        }
-
-                        for (int i = 0; i < array.length(); i++) {
-                            Object element = array.get(i);
-                            if (JSONObject.class.isAssignableFrom(element.getClass())) {
-                                values.add(unmarshallClass((Class) type, (JSONObject) element));
-                            } else {
-                                values.add(element);
-                            }
-                        }
-                        invoke(setter, model, values);
-                    } else if (JSONObject.class.isAssignableFrom(o.getClass())) {
-                        invoke(setter, model, unmarshallClass(param0.getClass(), (JSONObject) o));
-                    } else {
-                        if ("null".equals(o.toString())) {
-                            o = null;
-                        }
-                        invoke(setter, model, o);
+        T model = getModel(modelClass);
+        for (Method setter : getSetters(modelClass)) {
+            String name = setter.getName();
+            String attribute = name.substring(3, 4).toLowerCase(Locale.getDefault()) + name.substring(4);
+            Type param0 = setter.getGenericParameterTypes()[0];
+            if (json.has(attribute)) {
+                java.lang.Object o = json.get(attribute);
+                if (JSONArray.class.isAssignableFrom(o.getClass())) {
+                    JSONArray array = (JSONArray) o;
+                    List values = new ArrayList();
+                    Type type = Object.class;
+                    if (ParameterizedType.class.isAssignableFrom(param0.getClass())) {
+                        type = ((ParameterizedType) param0).getActualTypeArguments()[0];
                     }
+
+                    for (int i = 0; i < array.length(); i++) {
+                        Object element = array.get(i);
+                        if (JSONObject.class.isAssignableFrom(element.getClass())) {
+                            values.add(unmarshallClass((Class) type, (JSONObject) element));
+                        } else {
+                            values.add(element);
+                        }
+                    }
+                    invoke(setter, attribute, model, values);
+                } else if (JSONObject.class.isAssignableFrom(o.getClass())) {
+                    invoke(setter, attribute, model, unmarshallClass(param0.getClass(), (JSONObject) o));
+                } else {
+                    if ("null".equals(o.toString())) {
+                        o = null;
+                    }
+                    invoke(setter, attribute, model, o);
                 }
             }
-            return model;
+        }
+        return model;
 
     }
 
-    private void invoke(Method m, Object o, Object... args) {
+    private void invoke(Method m, String attribute, Object o, Object... args) {
         try {
             m.invoke(o, args);
         } catch (IllegalArgumentException iae) {
@@ -284,6 +283,7 @@ public class CompositeUtil {
     /**
      * If the <code>HelpText</code> annotation is in the list of <code>Annotation</code>s, return the value from the
      * specified bundle for the given key.
+     *
      * @param annos
      * @return
      */
@@ -319,7 +319,7 @@ public class CompositeUtil {
                 model.getClass().getSimpleName()));
         String sep = "";
         String violationMsg = adminStrings.getLocalString("rest.model.validationFailure.reason",
-                                                          "on property [ {1} ] violation reason [ {0} ]");
+                "on property [ {1} ] violation reason [ {0} ]");
         for (ConstraintViolation cv : constraintViolations) {
             msg.append(sep)
                     .append(MessageFormat.format(violationMsg, cv.getMessage(), cv.getPropertyPath()));
@@ -335,16 +335,17 @@ public class CompositeUtil {
      * @param changes
      * @param basePath
      */
-    public void applyChanges(Map<String,String> changes, String basePath) {
+    public void applyChanges(Map<String, String> changes, String basePath) {
         RestActionReporter ar = Util.applyChanges(changes, basePath);
         if (!ar.getActionExitCode().equals(ExitCode.SUCCESS)) {
-                throw new WebApplicationException(Response.status(Status.BAD_REQUEST).
+            throw new WebApplicationException(Response.status(Status.BAD_REQUEST).
                     entity(ar.getCombinedMessage()).build());
         }
     }
 
     /**
      * Execute a delete <code>AdminCommand</code> with no parameters.
+     *
      * @param subject
      * @param command
      * @return
@@ -355,6 +356,7 @@ public class CompositeUtil {
 
     /**
      * Execute a delete <code>AdminCommand</code> with the specified parameters.
+     *
      * @param subject
      * @param command
      * @param parameters
@@ -366,6 +368,7 @@ public class CompositeUtil {
 
     /**
      * Execute a writing <code>AdminCommand</code> with no parameters.
+     *
      * @param subject
      * @param command
      * @return
@@ -376,6 +379,7 @@ public class CompositeUtil {
 
     /**
      * Execute a writing <code>AdminCommand</code> with the specified parameters.
+     *
      * @param subject
      * @param command
      * @param parameters
@@ -387,9 +391,9 @@ public class CompositeUtil {
 
     /**
      * Execute a read-only <code>AdminCommand</code> with the specified parameters.
+     *
      * @param subject
      * @param command
-     * @param parameters
      * @return
      */
     public ActionReporter executeReadCommand(Subject subject, String command) {
@@ -398,6 +402,7 @@ public class CompositeUtil {
 
     /**
      * Execute a read-only <code>AdminCommand</code> with no parameters.
+     *
      * @param subject
      * @param command
      * @param parameters
@@ -409,10 +414,11 @@ public class CompositeUtil {
 
     /**
      * Execute an <code>AdminCommand</code> with the specified parameters.
+     *
      * @param command
      * @param parameters
      * @param throwBadRequest (vs. NOT_FOUND)
-     * @param throwOnWarning (vs.ignore warning)
+     * @param throwOnWarning  (vs.ignore warning)
      * @return
      */
     public ActionReporter executeCommand(Subject subject, String command, ParameterMap parameters, boolean throwBadRequest, boolean throwOnWarning) {
@@ -422,8 +428,8 @@ public class CompositeUtil {
         if (code.equals(ExitCode.FAILURE) || (code.equals(ExitCode.WARNING) && throwOnWarning)) {
             if (throwBadRequest) {
                 throw new WebApplicationException(Response.status(Status.BAD_REQUEST)
-                    .entity(ar.getCombinedMessage())
-                    .build());
+                        .entity(ar.getCombinedMessage())
+                        .build());
             } else {
                 throw new WebApplicationException(Status.NOT_FOUND);
             }
@@ -436,15 +442,15 @@ public class CompositeUtil {
      ******************************************************************************************************************/
     /**
      * Find and return all <code>interface</code>s that extend <code>baseModel</code>
-     * @param similarClass
+     *
      * @param baseModel
      * @return
      */
-    private Set<Class<?>> getModelExtensions (Class<?> baseModel) {
+    private Set<Class<?>> getModelExtensions(Class<?> baseModel) {
         Set<Class<?>> exts = new HashSet<Class<?>>();
 
         if (!extensionsLoaded) {
-            synchronized(modelExtensions) {
+            synchronized (modelExtensions) {
                 if (!extensionsLoaded) {
                     loadModelExtensionMetadata(baseModel);
                 }
@@ -468,6 +474,7 @@ public class CompositeUtil {
 
     /**
      * Locate and process all <code>RestModelExtension</code> metadata files
+     *
      * @param similarClass
      */
     private void loadModelExtensionMetadata(Class<?> similarClass) {
@@ -485,8 +492,8 @@ public class CompositeUtil {
                     if (line.charAt(0) != '#') {
                         if (!line.contains(":")) {
                             Logger.getLogger(CompositeUtil.class.getName()).log(Level.INFO,
-                                "Incorrectly formatted entry in {0}: {1}",
-                                new String[] {"META-INF/restmodelextensions", line}); // TODO: i18n
+                                    "Incorrectly formatted entry in {0}: {1}",
+                                    new String[]{"META-INF/restmodelextensions", line}); // TODO: i18n
                         }
                         String[] entry = line.split(":");
                         String base = entry[0];
@@ -540,15 +547,15 @@ public class CompositeUtil {
 
                 AttributeReference ar = method.getAnnotation(AttributeReference.class);
                 if (ar != null) {
-                    property.put("annotations", gatherReferencedAttributes((AttributeReference)ar));
+                    property.put("annotations", gatherReferencedAttributes((AttributeReference) ar));
                 }
                 Attribute attr = method.getAnnotation(Attribute.class);
                 if (attr != null) {
                     property.put("defaultValue", attr.defaultValue());
                 }
                 Class<?> type = isGetter
-                                ? method.getReturnType()
-                                : method.getParameterTypes()[0];
+                        ? method.getReturnType()
+                        : method.getParameterTypes()[0];
                 property.put("type", type);
             }
         }
@@ -598,19 +605,19 @@ public class CompositeUtil {
      */
     private String getInternalTypeString(Class<?> type) {
         return type.isPrimitive()
-               ? Primitive.getPrimitive(type.getName()).getInternalType()
-               : ("L" + getInternalName(type.getName()) + ";");
+                ? Primitive.getPrimitive(type.getName()).getInternalType()
+                : ("L" + getInternalName(type.getName()) + ";");
     }
 
     private String getPropertyName(String name) {
-        return name.substring(0,1).toLowerCase(Locale.getDefault()) + name.substring(1);
+        return name.substring(0, 1).toLowerCase(Locale.getDefault()) + name.substring(1);
     }
 
     /**
      * This method starts the class definition, adding the JAX-B annotations to allow for marshalling via JAX-RS
      */
     private void visitClass(ClassWriter classWriter, String className, Set<Class<?>> ifaces, Map<String, Map<String, Object>> properties) {
-        String[] ifaceNames = new String[ifaces.size()+1];
+        String[] ifaceNames = new String[ifaces.size() + 1];
         int i = 1;
         ifaceNames[0] = getInternalName(RestModel.class.getName());
         for (Class<?> iface : ifaces) {
@@ -618,9 +625,9 @@ public class CompositeUtil {
         }
         className = getInternalName(className);
         classWriter.visit(V1_6, ACC_PUBLIC + ACC_SUPER, className,
-                          null,
-                          "java/lang/Object",
-                          ifaceNames);
+                null,
+                "org/glassfish/admin/rest/composite/RestModelImpl",
+                ifaceNames);
 
         // Add @XmlRootElement
         classWriter.visitAnnotation("Ljavax/xml/bind/annotation/XmlRootElement;", true).visitEnd();
@@ -634,13 +641,13 @@ public class CompositeUtil {
     /**
      * This method creates the default constructor for the class. Default values are set for any @Attribute defined with
      * a defaultValue.
+     *
      */
     private void createConstructor(ClassWriter cw, String className, Map<String, Map<String, Object>> properties) {
-        // Create the ctor
         MethodVisitor method = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
         method.visitCode();
         method.visitVarInsn(ALOAD, 0);
-        method.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V");
+        method.visitMethodInsn(INVOKESPECIAL, "org/glassfish/admin/rest/composite/RestModelImpl", "<init>", "()V");
 
         for (Map.Entry<String, Map<String, Object>> property : properties.entrySet()) {
             String fieldName = property.getKey();
@@ -661,7 +668,7 @@ public class CompositeUtil {
      * appropriate wrapper class is called to generate the value. If the field is not a primitive, a one-arg, String
      * constructor is requested to build the value. If both of these attempts fail, the default value is set using the
      * String representation as given via the @Attribute annotation.
-     *
+     * <p/>
      * TODO: it may make sense to treat primitives here as non-String types.
      */
     private void setDefaultValue(MethodVisitor method, String className, String fieldName, Class<?> fieldClass, String defaultValue) {
@@ -728,7 +735,7 @@ public class CompositeUtil {
      * Create getters and setters for the given field
      */
     private void createGettersAndSetters(ClassWriter cw, Class c, String className, String name, Map<String, Object> props) {
-        Class<?> type = (Class<?>)props.get("type");
+        Class<?> type = (Class<?>) props.get("type");
         String internalType = getInternalTypeString(type);
         className = getInternalName(className);
 
@@ -738,11 +745,11 @@ public class CompositeUtil {
         getter.visitVarInsn(ALOAD, 0);
         getter.visitFieldInsn(GETFIELD, className, getPropertyName(name), internalType);
         getter.visitInsn(type.isPrimitive()
-                         ? Primitive.getPrimitive(internalType).getReturnOpcode()
-                         : ARETURN);
+                ? Primitive.getPrimitive(internalType).getReturnOpcode()
+                : ARETURN);
         getter.visitMaxs(0, 0);
         getter.visitEnd();
-        Map<String, Map<String, Object>> annotations = (Map<String, Map<String, Object>>)props.get("annotations");
+        Map<String, Map<String, Object>> annotations = (Map<String, Map<String, Object>>) props.get("annotations");
         if (annotations != null) {
             for (Map.Entry<String, Map<String, Object>> entry : annotations.entrySet()) {
                 String annotationClass = entry.getKey();
@@ -768,9 +775,12 @@ public class CompositeUtil {
         setter.visitCode();
         setter.visitVarInsn(ALOAD, 0);
         setter.visitVarInsn(type.isPrimitive()
-                            ? Primitive.getPrimitive(internalType).getSetOpCode()
-                            : ALOAD, 1);
+                ? Primitive.getPrimitive(internalType).getSetOpCode()
+                : ALOAD, 1);
         setter.visitFieldInsn(PUTFIELD, className, getPropertyName(name), internalType);
+        setter.visitVarInsn(ALOAD, 0);
+        setter.visitLdcInsn(name);
+        setter.visitMethodInsn(INVOKEVIRTUAL, className, "fieldSet", "(Ljava/lang/String;)V");
         setter.visitInsn(RETURN);
         setter.visitMaxs(0, 0);
         setter.visitEnd();
@@ -812,14 +822,14 @@ public class CompositeUtil {
                     });
 
             Logger.getLogger(CompositeUtil.class.getName()).log(Level.FINE, "Loading bytecode for {0}", className);
-            final ClassLoader classLoader = 
+            final ClassLoader classLoader =
                     similarClass.getClassLoader();
-                    //Thread.currentThread().getContextClassLoader();
+            //Thread.currentThread().getContextClassLoader();
 //                    Thread.currentThread().getContextClassLoader();
             try {
                 clM.invoke(classLoader, className, byteContent, 0, byteContent.length, pd);
             } catch (Exception e) {
-                 throw new RuntimeException(e);
+                throw new RuntimeException(e);
             }
 
             try {
@@ -837,8 +847,8 @@ public class CompositeUtil {
             return;
         }
         ClassLoader cl = System.getSecurityManager() == null
-                         ? Thread.currentThread().getContextClassLoader()
-                         : AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                ? Thread.currentThread().getContextClassLoader()
+                : AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
             @Override
             public ClassLoader run() {
                 return Thread.currentThread().getContextClassLoader();

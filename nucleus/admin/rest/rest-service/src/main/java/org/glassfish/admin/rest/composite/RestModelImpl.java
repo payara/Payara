@@ -39,10 +39,23 @@
  */
 package org.glassfish.admin.rest.composite;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 /**
+ * All RestModel implementations will extend this base class, which will provide the functionality for dirty field
+ * field checking. It is an implementation detail, and should not be accessed directly.
  *
  * @author jdlee
  */
-public interface RestModel<T> {
-    boolean isSet(String fieldName);
+public class RestModelImpl {
+    private Set<String> setFields = new TreeSet<String>();
+
+    public boolean isSet(String fieldName) {
+        return setFields.contains(fieldName.toLowerCase());
+    }
+
+    public void fieldSet(String fieldName) {
+        setFields.add(fieldName.toLowerCase());
+    }
 }

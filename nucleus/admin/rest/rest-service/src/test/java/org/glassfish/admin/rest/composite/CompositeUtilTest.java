@@ -46,6 +46,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
+
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.composite.metadata.AttributeReference;
 import org.glassfish.admin.rest.model.BaseModel;
@@ -96,5 +98,17 @@ public class CompositeUtilTest {
         Assert.assertEquals(fromCluster.length, fromRestModel.length);
         Assert.assertEquals(clusterMethod.getAnnotation(ReferenceConstraint.RemoteKey.class).message(),
                             modelMethod.getAnnotation(ReferenceConstraint.RemoteKey.class).message());
+    }
+
+    @Test
+    public void testDirtyFieldDetection() throws JSONException {
+        JSONObject o = new JSONObject(json);
+        BaseModel model = CompositeUtil.instance().unmarshallClass(BaseModel.class, o);
+        RestModel rmi = (RestModel)model;
+
+        Assert.assertTrue(rmi.isSet("name"));
+        Assert.assertTrue(rmi.isSet("count"));
+        Assert.assertTrue(rmi.isSet("related"));
+        Assert.assertFalse(rmi.isSet("size"));
     }
 }
