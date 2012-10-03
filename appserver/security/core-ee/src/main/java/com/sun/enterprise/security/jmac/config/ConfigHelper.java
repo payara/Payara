@@ -350,8 +350,8 @@ public abstract class ConfigHelper /*implements RegistrationListener*/ {
             try {
                 setEnabled(false);
             } finally {
-                data = null;
                 this.wLock.unlock();
+                data = null;
             }
             if (factory != null) {
                 String[] ids = factory.detachListener(this.listener,layer,appCtxt);

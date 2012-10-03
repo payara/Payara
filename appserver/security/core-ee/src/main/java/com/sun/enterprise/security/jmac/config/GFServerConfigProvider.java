@@ -134,7 +134,7 @@ public class GFServerConfigProvider implements AuthConfigProvider {
     static AuthConfigFactory slaveFactory = null;
 
     // keep the slave from being visible outside
-    protected static AuthConfigProvider slaveProvider = null;
+    static AuthConfigProvider slaveProvider = null;
 
     protected AuthConfigFactory factory = null;
     private WebServicesDelegate wsdelegate = null;
@@ -455,8 +455,6 @@ public class GFServerConfigProvider implements AuthConfigProvider {
         private MessagePolicy requestPolicy;
         private MessagePolicy responsePolicy;
         private Map options;
-        Object module;        // convenience location to store instance -
-                        // package private for AuthContext
 
         /**
          * Construct a ConfigFile entry.

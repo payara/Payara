@@ -89,15 +89,22 @@ public class GFAuthConfigFactory extends BaseAuthConfigFactory {
         wLock.lock();
         try {
             if (regStore == null) {
-                regStore = new RegStoreFileParser(userDir,
-                        BaseAuthConfigFactory.CONF_FILE_NAME,
-                        getDefaultProviders());
+            	initializeRegStore(userDir);
                 _loadFactory();
             }
         } finally {
             wLock.unlock();
         }
     }
+
+	/**
+	 * @param userDir
+	 */
+	private static void initializeRegStore(String userDir) {
+		regStore = new RegStoreFileParser(userDir,
+		        BaseAuthConfigFactory.CONF_FILE_NAME,
+		        getDefaultProviders());
+	}
 
     @Override
     protected RegStoreFileParser getRegStore() {
