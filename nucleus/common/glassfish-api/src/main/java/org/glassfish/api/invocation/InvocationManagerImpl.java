@@ -70,10 +70,30 @@ public class InvocationManagerImpl
     private Map<ComponentInvocationType,List<RegisteredComponentInvocationHandler>>  regCompInvHandlerMap
             = new HashMap<ComponentInvocationType, List<RegisteredComponentInvocationHandler>>();
 
-    @Inject @Optional
-    private IterableProvider<ComponentInvocationHandler> invHandlers=null;
-
+    private final ComponentInvocationHandler[] invHandlers;
+    
     public InvocationManagerImpl() {
+        this(null);
+    }
+
+    @Inject
+    private InvocationManagerImpl(@Optional IterableProvider<ComponentInvocationHandler> handlers) {
+        if (handlers == null) {
+            invHandlers = null;
+        }
+        else {
+            LinkedList<ComponentInvocationHandler> localHandlers = new LinkedList<ComponentInvocationHandler>();
+            for (ComponentInvocationHandler handler : handlers) {
+                localHandlers.add(handler);
+            }
+            
+            if (localHandlers.size() > 0) {
+                invHandlers = localHandlers.toArray(new ComponentInvocationHandler[localHandlers.size()]);
+            }
+            else {
+                invHandlers = null;
+            }
+        }
 
         frames = new InheritableThreadLocal<InvocationArray<ComponentInvocation>>() {
             protected InvocationArray initialValue() {
@@ -137,10 +157,8 @@ public class InvocationManagerImpl
         // if ejb call EJBSecurityManager, for servlet call RealmAdapter
         ComponentInvocationType invType = inv.getInvocationType();
 
-        List<ComponentInvocationHandler> usedHandlers = new LinkedList<ComponentInvocationHandler>();
-        if (invHandlers!=null) {
+        if (invHandlers != null) {
             for (ComponentInvocationHandler handler : invHandlers) {
-                usedHandlers.add(handler);
                 handler.beforePreInvoke(invType, prevInv, inv);
             }
         }
@@ -157,8 +175,10 @@ public class InvocationManagerImpl
         //push this invocation on the stack
         v.add(inv);
 
-        for (ComponentInvocationHandler handler : usedHandlers) {
-            handler.afterPreInvoke(invType, prevInv, inv);
+        if (invHandlers != null) {
+            for (ComponentInvocationHandler handler : invHandlers) {
+                handler.afterPreInvoke(invType, prevInv, inv);
+            }
         }
         
         if (setCIH != null) {
@@ -187,16 +207,14 @@ public class InvocationManagerImpl
         ComponentInvocation prevInv = beforeSize > 1 ? v.get(beforeSize - 2) : null;
         ComponentInvocation curInv = v.get(beforeSize - 1);
 
-        List<ComponentInvocationHandler> usedHandlers = new LinkedList<ComponentInvocationHandler>();
         try {
             ComponentInvocationType invType = inv.getInvocationType();
 
-            if (invHandlers!=null) {
+            if (invHandlers != null) {
                 for (ComponentInvocationHandler handler : invHandlers) {
-                    usedHandlers.add(handler);
                     handler.beforePostInvoke(invType, prevInv, curInv);
                 }
-            }                       
+            }
 
             List<RegisteredComponentInvocationHandler> setCIH = regCompInvHandlerMap.get(invType);
             if (setCIH != null) {
@@ -211,8 +229,10 @@ public class InvocationManagerImpl
             // pop the stack
             v.remove(beforeSize - 1);
 
-            for (ComponentInvocationHandler handler : usedHandlers) {
-                handler.afterPostInvoke(inv.getInvocationType(), prevInv, inv);
+            if (invHandlers != null) {
+                for (ComponentInvocationHandler handler : invHandlers) {
+                    handler.afterPostInvoke(inv.getInvocationType(), prevInv, inv);
+                }
             }
             
             ComponentInvocationType invType = inv.getInvocationType();
