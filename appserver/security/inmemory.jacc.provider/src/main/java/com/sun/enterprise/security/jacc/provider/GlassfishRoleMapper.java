@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -185,9 +185,10 @@ public class GlassfishRoleMapper implements JACCRoleMapper {
         SecurityRoleMapper srm = getInternalMapper(pcid);
         Set<String> roleNames = getDeclaredRoles(srm);
 
-        if (roleNames == null) {
-            return null;
-        }
+        //Comment out for now to supress FindBugs warning, getDeclaredRoles(srm) always throw UnsupportedOperationException currently so roleNames cannot be null, when getDeclaredRoles is fixed we can uncomment this
+        //if (roleNames == null) {
+        //    return null;
+        //}
 
         HashSet<String> roles = new HashSet<String>();
         Iterator<String> it = roleNames.iterator();
