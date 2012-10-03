@@ -662,12 +662,6 @@ public class RemoteAdminCommand {
         boolean shouldTryCommandAgain;
         
         /*
-         * Do not send caller-provided credentials the first time unless
-         * we know we will send the first request securely.
-         */
-        boolean shouldSendCredentials = secure;
-        
-        /*
          * If the DAS challenges us for credentials and we've already sent
          * the caller-provided ones, we might ask the user for a new set
          * and use them.  But we want to ask only once.
@@ -720,11 +714,6 @@ public class RemoteAdminCommand {
                     urlConnection.setRequestProperty("X-passwords", passwordOptions.toString());
                 }
 
-                if (shouldSendCredentials) {
-                    urlConnection.setRequestProperty(
-                            HttpConnectorAddress.AUTHORIZATION_KEY,
-                            url.getBasicAuthString());
-                }
                 if (authToken != null) {
                     /*
                      * If this request is for metadata then we expect to reuse
@@ -776,13 +765,6 @@ public class RemoteAdminCommand {
                      */
                     secure = true;
                     
-                    /*
-                     * If we have been redirected to https then we can send
-                     * the credentials - if we have them - on the next 
-                     * request we send because the request and therefore the
-                     * credentials will be encrypted.
-                     */
-                    shouldSendCredentials = shouldUseSecure;
                     urlConnection.disconnect();
 
                     continue;
@@ -810,7 +792,6 @@ public class RemoteAdminCommand {
                 if ( ! usedCallerProvidedCredentials) {
                     logger.log(Level.FINER, "Have not tried caller-supplied credentials yet; will do that next");
                     usedCallerProvidedCredentials = true;
-                    shouldSendCredentials = true;
                     shouldTryCommandAgain = true;
                     continue;
                 }
@@ -845,7 +826,6 @@ public class RemoteAdminCommand {
                  */
                 logger.log(Level.FINER, "Was able to update the credentials so will retry with the updated ones");
                 askedUserForCredentials = true;
-                shouldSendCredentials = true;
                 shouldTryCommandAgain = true;
                 continue;
 
@@ -868,7 +848,6 @@ public class RemoteAdminCommand {
                         if (retryUsingSecureConnection(host, port)) {
                             // retry using secure connection
                             shouldUseSecure = true;
-                            shouldSendCredentials = true;
                             usedCallerProvidedCredentials = true;
                             shouldTryCommandAgain = true;
                             continue;

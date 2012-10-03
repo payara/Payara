@@ -991,12 +991,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         boolean shouldTryCommandAgain;
 
         /*
-         * Do not send caller-provided credentials the first time unless
-         * we know we will send the first request securely.
-         */
-        boolean shouldSendCredentials = secure;
-
-        /*
          * If the DAS challenges us for credentials and we've already sent
          * the caller-provided ones, we might ask the user for a new set
          * and use them.  But we want to ask only once.
@@ -1036,7 +1030,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                             new Object[]{user, ok(password) ? "<non-null>" : "<null>"});
                 }
                 final AuthenticationInfo authInfo = authenticationInfo();
-                if (authInfo != null && shouldSendCredentials) {
+                if (authInfo != null) {
                     HttpBasicAuthFilter besicAuth = new HttpBasicAuthFilter(authInfo.getUser(), authInfo.getPassword() == null ? "" : authInfo.getPassword());
                     target.configuration().register(besicAuth);
                 }
@@ -1140,14 +1134,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                      */
                     secure = true;
 
-                    /*
-                     * If we have been redirected to https then we can send
-                     * the credentials - if we have them - on the next
-                     * request we send because the request and therefore the
-                     * credentials will be encrypted.
-                     */
-                    shouldSendCredentials = shouldUseSecure;
-
                     continue;
                 }
                 processHeaders(response);
@@ -1167,7 +1153,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 if ( ! usedCallerProvidedCredentials) {
                     logger.log(Level.FINER, "Have not tried caller-supplied credentials yet; will do that next");
                     usedCallerProvidedCredentials = true;
-                    shouldSendCredentials = true;
                     shouldTryCommandAgain = true;
                     continue;
                 }
@@ -1202,7 +1187,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                  */
                 logger.log(Level.FINER, "Was able to update the credentials so will retry with the updated ones");
                 askedUserForCredentials = true;
-                shouldSendCredentials = true;
                 shouldTryCommandAgain = true;
                 continue;
 
@@ -1231,7 +1215,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                         if (retryUsingSecureConnection(host, port)) {
                             // retry using secure connection
                             shouldUseSecure = true;
-                            shouldSendCredentials = true;
                             usedCallerProvidedCredentials = true;
                             shouldTryCommandAgain = true;
                             continue;
