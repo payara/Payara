@@ -108,9 +108,11 @@ public class SecurityIIOPInterceptorFactory implements IIOPInterceptorFactory{
                 ret = getServerInterceptorInstance(codec);
             }
             //also register the IOR Interceptor here
-            com.sun.corba.ee.spi.legacy.interceptor.ORBInitInfoExt infoExt = (com.sun.corba.ee.spi.legacy.interceptor.ORBInitInfoExt)info;
-            IORInterceptor secIOR = getSecIORInterceptorInstance(codec, infoExt.getORB());
-            info.add_ior_interceptor(secIOR);
+	    if (info instanceof com.sun.corba.ee.spi.legacy.interceptor.ORBInitInfoExt) {
+                com.sun.corba.ee.spi.legacy.interceptor.ORBInitInfoExt infoExt = (com.sun.corba.ee.spi.legacy.interceptor.ORBInitInfoExt)info;
+                IORInterceptor secIOR = getSecIORInterceptorInstance(codec, infoExt.getORB());
+                info.add_ior_interceptor(secIOR);
+	    }
             
         } catch (DuplicateName ex) {
             _logger.log(Level.SEVERE, null, ex);
