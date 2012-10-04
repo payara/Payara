@@ -90,7 +90,7 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
                 public Object run(ConfigBeanProxy parent) throws PropertyVetoException, TransactionFailure {
                     U child = parent.createChild(childElement);
                     Dom unwrappedChild = Dom.unwrap(child);
-                    boolean writeDefaultElementsToXml = Boolean.parseBoolean(System.getProperty("writeDefaultElementsToXml"));
+                    boolean writeDefaultElementsToXml = Boolean.parseBoolean(System.getProperty("writeDefaultElementsToXml","true"));
                     if (!writeDefaultElementsToXml) {
                         //Do not write default snippets to the domain.xml
                         unwrappedChild.skipFromXml();

@@ -115,7 +115,7 @@ public class ConfigurationParser<C extends ConfigLoader> {
                 final ConfigBeanProxy pr = doc.getRoot().createProxy(configBeanClass);
                 ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
                     public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
-                        boolean writeDefaultElementsToXml = Boolean.parseBoolean(System.getProperty("writeDefaultElementsToXml"));
+                        boolean writeDefaultElementsToXml = Boolean.parseBoolean(System.getProperty("writeDefaultElementsToXml","true"));
                         if (!writeDefaultElementsToXml) {
                             //Do not write default snippets to domain.xml
                             doc.getRoot().skipFromXml();
