@@ -51,6 +51,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilderException;
 import javax.ws.rs.core.UriInfo;
 import org.codehaus.jettison.json.JSONException;
@@ -83,6 +84,9 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
     protected Ref<Subject> subjectRef;
     @Inject
     protected Habitat habitat;
+    @Context
+    private SecurityContext sc;
+
     private String authenticatedUser;
     protected CompositeUtil compositeUtil = CompositeUtil.instance();
 
@@ -164,9 +168,10 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
         try {
             T resource = clazz.newInstance();
             CompositeResource cr = (CompositeResource)resource;
-            cr.setHabitat(habitat);
-            cr.setSubjectRef(subjectRef);
-            cr.setUriInfo(uriInfo);
+            cr.habitat = habitat;
+            cr.subjectRef = subjectRef;
+            cr.uriInfo = uriInfo;
+            cr.sc = sc;
             
             return resource;
         } catch (Exception ex) {
