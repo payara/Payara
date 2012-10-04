@@ -66,9 +66,9 @@ import javax.management.ObjectName;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.resources.api.PoolInfo;
 import org.glassfish.jms.admin.cli.JMSDestination;
 import org.glassfish.jms.admin.cli.MQJMXConnectorInfo;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 /**
  *

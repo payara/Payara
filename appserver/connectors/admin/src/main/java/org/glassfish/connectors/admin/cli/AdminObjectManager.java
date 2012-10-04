@@ -48,13 +48,10 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.connectors.config.AdminObjectResource;
-import org.glassfish.resources.admin.cli.ResourceManager;
-import org.glassfish.resources.admin.cli.ResourceUtil;
-import org.glassfish.resources.api.ResourceStatus;
-import org.glassfish.resources.util.BindableResourcesHelper;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.resources.admin.cli.ResourceManager;
+import org.glassfish.resourcebase.resources.api.ResourceStatus;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -88,10 +85,10 @@ public class AdminObjectManager implements ResourceManager {
     private ConnectorRuntime connectorRuntime;
 
     @Inject
-    private ResourceUtil resourceUtil;
+    private org.glassfish.resourcebase.resources.admin.cli.ResourceUtil resourceUtil;
 
     @Inject
-    private BindableResourcesHelper resourcesHelper;
+    private org.glassfish.resourcebase.resources.util.BindableResourcesHelper resourcesHelper;
 
     private static final String DESCRIPTION = ServerTags.DESCRIPTION;
 

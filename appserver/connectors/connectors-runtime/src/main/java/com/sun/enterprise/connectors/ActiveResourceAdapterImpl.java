@@ -40,25 +40,29 @@
 
 package com.sun.enterprise.connectors;
 
-import com.sun.appserv.connectors.spi.*;
-import com.sun.appserv.connectors.internal.api.*;
-import com.sun.enterprise.connectors.util.*;
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.appserv.connectors.spi.ConfigurableTransactionSupport;
+import com.sun.appserv.connectors.spi.TransactionSupport;
+import com.sun.enterprise.connectors.util.ConnectionPoolObjectsUtils;
+import com.sun.enterprise.connectors.util.ConnectorDDTransformUtils;
+import com.sun.enterprise.connectors.util.PrintWriterAdapter;
+import com.sun.enterprise.connectors.util.SetMethodAction;
 import com.sun.enterprise.deployment.ConnectionDefDescriptor;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.runtime.connector.ResourceAdapter;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
-
-import javax.resource.spi.ManagedConnectionFactory;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.Set;
-
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.jvnet.hk2.annotations.Service;
 
-import org.glassfish.hk2.api.PerLookup;
+import javax.resource.spi.ManagedConnectionFactory;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**

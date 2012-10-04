@@ -53,17 +53,16 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.resources.config.ExternalJndiResource;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.resources.config.ExternalJndiResource;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-
-import java.beans.PropertyVetoException;
+import org.glassfish.resourcebase.resources.admin.cli.ResourceUtil;
 
 import javax.inject.Inject;
+import java.beans.PropertyVetoException;
 
 /**
  * Delete Jndi Resource object

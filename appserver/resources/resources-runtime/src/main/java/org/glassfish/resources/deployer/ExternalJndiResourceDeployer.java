@@ -50,11 +50,14 @@ import org.glassfish.resources.api.*;
 import org.glassfish.resources.config.ExternalJndiResource;
 import org.glassfish.resources.naming.JndiProxyObjectFactory;
 import org.glassfish.resources.naming.ProxyRefAddr;
-import org.glassfish.resources.naming.ResourceNamingService;
+import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
 import org.glassfish.resources.naming.SerializableObjectRefAddr;
-import org.glassfish.resources.util.BindableResourcesHelper;
-import org.glassfish.resources.util.ResourceUtil;
-
+import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
+import org.glassfish.resourcebase.resources.util.ResourceUtil;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
+import org.glassfish.resourcebase.resources.api.ResourceDeployerInfo;
+import org.glassfish.resourcebase.resources.api.ResourceConflictException;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 import org.jvnet.hk2.config.types.Property;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,21 +38,33 @@
  * holder.
  */
 
-package org.glassfish.resources.api;
+package org.glassfish.resourcebase.resources.naming;
 
-import com.sun.enterprise.config.serverbeans.Resource;
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.naming.JNDIBinding;
 
-import javax.inject.Singleton;
 
-@Service
-@Singleton
-public class DefaultResourceDeployerValidator implements
-        ResourceDeployerValidator {
+/**
+ * resource binding for module scoped resources
+ * @author Jagadish Ramu
+ *
+ */
+public class ModuleScopedResourceBinding implements JNDIBinding {
 
-    @Override
-    public boolean isEnabledLocally(Resource res) {
-        return false;
+    private String name;
+    private Object value;
+    public ModuleScopedResourceBinding(String name, Object value){
+        if(!(name.contains(ResourceNamingService.JAVA_MODULE_SCOPE_PREFIX)
+                /*|| name.contains(ResourceNamingService.JAVA_GLOBAL_SCOPE_PREFIX)*/)){
+            name = ResourceNamingService.JAVA_MODULE_SCOPE_PREFIX + name;
+        }
+        this.name = name;
+        this.value = value;
+    }
+    public String getName() {
+        return name;
     }
 
+    public Object getValue() {
+        return value;
+    }
 }

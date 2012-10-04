@@ -40,29 +40,27 @@
 
 package org.glassfish.jdbc.admin.cli;
 
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.ServerTags;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.ActionReport;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.resources.admin.cli.ResourceConstants;
-import org.glassfish.resources.api.ResourceStatus;
+import org.glassfish.resourcebase.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Service;
 
-import org.glassfish.hk2.api.PerLookup;
-import com.sun.enterprise.config.serverbeans.ServerTags;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-
+import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Properties;
-
-import javax.inject.Inject;
 
 /**
  * Create JDBC Resource Command

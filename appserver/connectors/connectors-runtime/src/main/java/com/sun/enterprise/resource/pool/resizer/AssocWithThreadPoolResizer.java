@@ -40,18 +40,18 @@
 
 package com.sun.enterprise.resource.pool.resizer;
 
-import com.sun.enterprise.resource.ResourceState;
 import com.sun.enterprise.resource.AssocWithThreadResourceHandle;
 import com.sun.enterprise.resource.ResourceHandle;
+import com.sun.enterprise.resource.ResourceState;
 import com.sun.enterprise.resource.pool.PoolProperties;
 import com.sun.enterprise.resource.pool.ResourceHandler;
 import com.sun.enterprise.resource.pool.datastructure.DataStructure;
-import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 
+import javax.resource.ResourceException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
-import javax.resource.ResourceException;
 
 /**
  * Resizer for Associate With Thread type pools to remove unusable connections

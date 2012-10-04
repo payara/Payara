@@ -38,14 +38,18 @@
  * holder.
  */
 
-package org.glassfish.resources.naming;
+package org.glassfish.resourcebase.resources.naming;
 
 import com.sun.logging.LogDomains;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.naming.ComponentNamingUtil;
 import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.api.naming.JNDIBinding;
+import org.glassfish.resourcebase.resources.api.GenericResourceInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
@@ -54,11 +58,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.glassfish.resources.util.ResourceUtil;
-import org.jvnet.hk2.annotations.Service;
-
-import javax.inject.Inject;
 
 /**
  * Resource naming service which helps to bind resources and internal resource objects
@@ -88,11 +87,11 @@ public class ResourceNamingService {
     public static final String JAVA_GLOBAL_SCOPE_PREFIX = "java:global/";
 
 
-    public void publishObject(org.glassfish.resources.api.GenericResourceInfo resourceInfo, String jndiName, Object object,boolean rebind)
+    public void publishObject(GenericResourceInfo resourceInfo, String jndiName, Object object,boolean rebind)
             throws NamingException{
         String applicationName = resourceInfo.getApplicationName();
         String moduleName = resourceInfo.getModuleName();
-        moduleName = ResourceUtil.getActualModuleName(moduleName);
+        moduleName = org.glassfish.resourcebase.resources.util.ResourceUtil.getActualModuleName(moduleName);
 
         if(!isGlobalName(resourceInfo.getName()) && applicationName != null && moduleName != null ){
 
@@ -117,7 +116,7 @@ public class ResourceNamingService {
                 }
             }
 
-            JNDIBinding bindings = new org.glassfish.resources.naming.ModuleScopedResourceBinding(getModuleScopedName(jndiName), object);
+            JNDIBinding bindings = new ModuleScopedResourceBinding(getModuleScopedName(jndiName), object);
             List<JNDIBinding> list = new ArrayList<JNDIBinding>();
             list.add(bindings);
             if(_logger.isLoggable(Level.FINEST)){
@@ -146,7 +145,7 @@ public class ResourceNamingService {
                 }
             }
 
-            JNDIBinding bindings = new org.glassfish.resources.naming.ApplicationScopedResourceBinding(getAppScopedName(jndiName), object);
+            JNDIBinding bindings = new ApplicationScopedResourceBinding(getAppScopedName(jndiName), object);
             List<JNDIBinding> list = new ArrayList<JNDIBinding>();
             list.add(bindings);
             if(_logger.isLoggable(Level.FINEST)){
@@ -159,7 +158,7 @@ public class ResourceNamingService {
         }
     }
 
-    public void publishObject(org.glassfish.resources.api.ResourceInfo resourceInfo, Object object,boolean rebind) throws NamingException{
+    public void publishObject(ResourceInfo resourceInfo, Object object,boolean rebind) throws NamingException{
         String jndiName = resourceInfo.getName();
         publishObject(resourceInfo, jndiName, object, rebind);
     }
@@ -175,10 +174,10 @@ public class ResourceNamingService {
     }
 
 
-    public void unpublishObject(org.glassfish.resources.api.GenericResourceInfo resourceInfo, String jndiName) throws NamingException {
+    public void unpublishObject(GenericResourceInfo resourceInfo, String jndiName) throws NamingException {
         String applicationName = resourceInfo.getApplicationName();
         String moduleName = resourceInfo.getModuleName();
-        moduleName = ResourceUtil.getActualModuleName(moduleName);
+        moduleName = org.glassfish.resourcebase.resources.util.ResourceUtil.getActualModuleName(moduleName);
 
         if(!isGlobalName(resourceInfo.getName()) && applicationName != null && moduleName != null){
             namingManager.unbindModuleObject(applicationName, moduleName, getModuleScopedName(jndiName));
@@ -202,10 +201,10 @@ public class ResourceNamingService {
                 !jndiName.startsWith(JAVA_MODULE_SCOPE_PREFIX));
     }
 
-    public Object lookup(org.glassfish.resources.api.GenericResourceInfo resourceInfo, String name, Hashtable env) throws NamingException{
+    public Object lookup(GenericResourceInfo resourceInfo, String name, Hashtable env) throws NamingException{
         String applicationName = resourceInfo.getApplicationName();
         String moduleName = resourceInfo.getModuleName();
-        moduleName = ResourceUtil.getActualModuleName(moduleName);
+        moduleName = org.glassfish.resourcebase.resources.util.ResourceUtil.getActualModuleName(moduleName);
 
         if(!isGlobalName(resourceInfo.getName()) && applicationName != null && moduleName != null){
             return namingManager.lookupFromModuleNamespace(applicationName, moduleName, getModuleScopedName(name), env);
@@ -230,8 +229,7 @@ public class ResourceNamingService {
         }
     }
 
-
-    public Object lookup(org.glassfish.resources.api.GenericResourceInfo resourceInfo, String name) throws NamingException{
+    public Object lookup(GenericResourceInfo resourceInfo, String name) throws NamingException{
         return lookup(resourceInfo, name, null);
     }
 

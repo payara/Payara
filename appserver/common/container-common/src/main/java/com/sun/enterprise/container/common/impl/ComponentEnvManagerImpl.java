@@ -59,8 +59,8 @@ import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.javaee.services.CommonResourceProxy;
-import org.glassfish.resources.api.ResourceDeployer;
-import org.glassfish.resources.util.ResourceManagerFactory;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
+import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;

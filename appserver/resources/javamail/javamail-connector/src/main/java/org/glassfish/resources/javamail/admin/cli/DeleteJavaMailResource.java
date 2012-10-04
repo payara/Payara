@@ -53,17 +53,16 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.resources.javamail.config.MailResource;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.resources.javamail.config.MailResource;
+import org.glassfish.resourcebase.resources.util.ResourceUtil;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import java.beans.PropertyVetoException;
-
 import javax.inject.Inject;
+import java.beans.PropertyVetoException;
 
 /**
  * Delete Mail Resource object
@@ -93,7 +92,7 @@ public class DeleteJavaMailResource implements AdminCommand {
     private ServerEnvironment environment;
 
     @Inject
-    private org.glassfish.resources.admin.cli.ResourceUtil resourceUtil;
+    private org.glassfish.resourcebase.resources.admin.cli.ResourceUtil resourceUtil;
 
     /**
      * Executes the command with the command parameters passed as Properties
@@ -155,7 +154,7 @@ public class DeleteJavaMailResource implements AdminCommand {
                 public Object run(Resources param) throws PropertyVetoException,
                         TransactionFailure {
                     MailResource resource = (MailResource)
-                            org.glassfish.resources.util.ResourceUtil.getBindableResourceByName(domain.getResources(), jndiName);
+                            ResourceUtil.getBindableResourceByName(domain.getResources(), jndiName);
                     return param.getResources().remove(resource);
                 }
             }, domain.getResources());
@@ -175,6 +174,6 @@ public class DeleteJavaMailResource implements AdminCommand {
     }
 
     private boolean isResourceExists(Resources resources, String jndiName) {
-        return org.glassfish.resources.util.ResourceUtil.getBindableResourceByName(resources, jndiName) != null;
+        return ResourceUtil.getBindableResourceByName(resources, jndiName) != null;
     }
 }

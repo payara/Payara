@@ -41,28 +41,29 @@
 package org.glassfish.resources.api;
 
 import com.sun.enterprise.repository.ResourceProperty;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
-import java.util.*;
 import java.io.Serializable;
+import java.util.*;
 
 /**
  * Base class for common JavaEE Resource implementation.
  */
 public abstract class JavaEEResourceBase implements JavaEEResource, Serializable {
 
-    org.glassfish.resources.api.ResourceInfo resourceInfo;
+    ResourceInfo resourceInfo;
     Map properties_;
     // START OF IASRI #4626188
     boolean enabled_;
     String description_;
     // END OF IASRI #4626188
 
-    public JavaEEResourceBase(org.glassfish.resources.api.ResourceInfo resourceInfo) {
+    public JavaEEResourceBase(ResourceInfo resourceInfo) {
         this.resourceInfo = resourceInfo;
         properties_ = new HashMap();
     }
 
-    public org.glassfish.resources.api.ResourceInfo getResourceInfo() {
+    public ResourceInfo getResourceInfo() {
         return resourceInfo;
     }
 
@@ -109,7 +110,7 @@ public abstract class JavaEEResourceBase implements JavaEEResource, Serializable
         return (ResourceProperty) properties_.get(propertyName);
     }
 
-    public JavaEEResource makeClone(org.glassfish.resources.api.ResourceInfo resourceInfo) {
+    public JavaEEResource makeClone(ResourceInfo resourceInfo) {
         JavaEEResource clone = doClone(resourceInfo);
         Set entrySet = properties_.entrySet();
         for (Iterator iter = entrySet.iterator(); iter.hasNext();) {
@@ -145,5 +146,5 @@ public abstract class JavaEEResourceBase implements JavaEEResource, Serializable
         return propsBuffer.toString();
     }
 
-    protected abstract JavaEEResource doClone(org.glassfish.resources.api.ResourceInfo resourceInfo);
+    protected abstract JavaEEResource doClone(ResourceInfo resourceInfo);
 }

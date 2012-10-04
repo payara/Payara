@@ -52,17 +52,15 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.connectors.config.ConnectorResource;
-import org.glassfish.resources.admin.cli.ResourceUtil;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.resourcebase.resources.admin.cli.ResourceUtil;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import java.beans.PropertyVetoException;
-
 import javax.inject.Inject;
+import java.beans.PropertyVetoException;
 
 /**
  * Delete Connector Resource command

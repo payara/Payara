@@ -42,6 +42,7 @@ package org.glassfish.resources.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Resources;
 import org.glassfish.resources.api.Resource;
+import org.glassfish.resourcebase.resources.api.ResourceStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,13 +81,13 @@ public class ResourcesManager {
 
             Properties props = resource.getProperties();
 
-            org.glassfish.resources.api.ResourceStatus rs;
+            ResourceStatus rs;
             try {
                 org.glassfish.resources.admin.cli.ResourceManager rm = resourceFactory.getResourceManager(resource);
                 rs = rm.create(resources, attrList, props, target);
             } catch (Exception e) {
                 String msg = e.getMessage();
-                rs = new org.glassfish.resources.api.ResourceStatus(org.glassfish.resources.api.ResourceStatus.FAILURE, msg);
+                rs = new ResourceStatus(ResourceStatus.FAILURE, msg);
             }
             results.add(rs);
         }
@@ -102,13 +103,13 @@ public class ResourcesManager {
 
             Properties props = resource.getProperties();
 
-            org.glassfish.resources.api.ResourceStatus rs;
+            ResourceStatus rs;
             try {
                 org.glassfish.resources.admin.cli.ResourceManager rm = resourceFactory.getResourceManager(resource);
                 rs = rm.create(resources, attrList, props, target);
             } catch (Exception e) {
                 String msg = e.getMessage();
-                rs = new org.glassfish.resources.api.ResourceStatus(org.glassfish.resources.api.ResourceStatus.FAILURE, msg);
+                rs = new ResourceStatus(ResourceStatus.FAILURE, msg);
             }
             results.add(rs);
         }

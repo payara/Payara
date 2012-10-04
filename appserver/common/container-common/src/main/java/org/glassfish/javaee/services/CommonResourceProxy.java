@@ -45,8 +45,8 @@ import org.glassfish.api.naming.NamingObjectProxy;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.resources.api.ResourceDeployer;
-import org.glassfish.resources.util.ResourceManagerFactory;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
+import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 

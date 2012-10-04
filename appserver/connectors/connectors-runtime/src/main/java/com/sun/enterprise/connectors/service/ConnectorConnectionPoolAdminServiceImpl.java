@@ -40,41 +40,39 @@
 
 package com.sun.enterprise.connectors.service;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.logging.Level;
-import javax.naming.NamingException;
-import javax.resource.ResourceException;
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.resource.spi.TransactionSupport;
-import javax.security.auth.Subject;
-
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.appserv.connectors.internal.api.PoolingException;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
-import org.glassfish.connectors.config.SecurityMap;
-import com.sun.enterprise.connectors.ActiveResourceAdapter;
 import com.sun.enterprise.connectors.*;
 import com.sun.enterprise.connectors.authentication.ConnectorSecurityMap;
 import com.sun.enterprise.connectors.authentication.RuntimeSecurityMap;
 import com.sun.enterprise.connectors.util.*;
 import com.sun.enterprise.deployment.ConnectionDefDescriptor;
+import com.sun.enterprise.deployment.ConnectorConfigProperty;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
-import com.sun.enterprise.deployment.ConnectorConfigProperty ;
 import com.sun.enterprise.deployment.ResourcePrincipal;
 import com.sun.enterprise.resource.listener.UnpooledConnectionEventListener;
 import com.sun.enterprise.resource.pool.PoolManager;
+import com.sun.enterprise.util.i18n.StringManager;
+import org.glassfish.connectors.config.SecurityMap;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.RelativePathResolver;
-import com.sun.enterprise.util.i18n.StringManager;
-import javax.resource.spi.ConnectionRequestInfo;
-
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.jvnet.hk2.config.types.Property;
+
+import javax.naming.NamingException;
+import javax.resource.ResourceException;
+import javax.resource.spi.ConnectionRequestInfo;
+import javax.resource.spi.ManagedConnection;
+import javax.resource.spi.ManagedConnectionFactory;
+import javax.resource.spi.TransactionSupport;
+import javax.security.auth.Subject;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.logging.Level;
 
 
 /**
@@ -457,7 +455,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
      * @return
      * @throws javax.resource.ResourceException
      */
-    protected Subject getDefaultSubject(PoolInfo poolInfo, ManagedConnectionFactory mcf, 
+    protected Subject getDefaultSubject(PoolInfo poolInfo, ManagedConnectionFactory mcf,
             ResourcePrincipal prin) throws ResourceException {
         ResourcePrincipal resourcePrincipal = null;
         if (prin == null) {

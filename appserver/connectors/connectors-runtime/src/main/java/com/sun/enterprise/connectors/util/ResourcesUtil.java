@@ -44,29 +44,29 @@ import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.connectors.ConnectorRuntimeExtension;
-import org.glassfish.connectors.config.*;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceInfo;
-import org.glassfish.resources.api.ResourcesRegistry;
-import com.sun.enterprise.connectors.DeferredResourceConfig;
 import com.sun.enterprise.connectors.ConnectorRuntime;
-import org.glassfish.internal.api.ServerContext;
-import com.sun.enterprise.util.i18n.StringManager;
-import org.glassfish.internal.api.RelativePathResolver;
+import com.sun.enterprise.connectors.ConnectorRuntimeExtension;
+import com.sun.enterprise.connectors.DeferredResourceConfig;
+import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.archivist.ApplicationArchivist;
-import com.sun.enterprise.deploy.shared.FileArchive;
+import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
+import org.glassfish.connectors.config.*;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.RelativePathResolver;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.resources.api.ResourcesRegistry;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.util.List;
-import java.net.URI;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class ResourcesUtil {

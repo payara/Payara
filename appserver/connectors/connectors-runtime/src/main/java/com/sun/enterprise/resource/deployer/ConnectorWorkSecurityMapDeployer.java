@@ -41,8 +41,8 @@
 package com.sun.enterprise.resource.deployer;
 
 import org.glassfish.connectors.config.WorkSecurityMap;
-import org.glassfish.resources.api.ResourceDeployer;
-import org.glassfish.resources.api.ResourceDeployerInfo;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
+import org.glassfish.resourcebase.resources.api.ResourceDeployerInfo;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Singleton;

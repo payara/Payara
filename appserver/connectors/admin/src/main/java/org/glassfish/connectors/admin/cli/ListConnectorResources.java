@@ -51,14 +51,11 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.connectors.config.ConnectorResource;
-import org.glassfish.resources.util.BindableResourcesHelper;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
-
-import java.util.Collection;
+import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
+import java.util.Collection;
 
 /**
  * List Connector Resources command
@@ -88,7 +85,7 @@ public class ListConnectorResources implements AdminCommand {
     private String target ;
 
     @Inject
-    private BindableResourcesHelper bindableResourcesHelper;
+    private org.glassfish.resourcebase.resources.util.BindableResourcesHelper bindableResourcesHelper;
 
     /**
      * Executes the command with the command parameters passed as Properties

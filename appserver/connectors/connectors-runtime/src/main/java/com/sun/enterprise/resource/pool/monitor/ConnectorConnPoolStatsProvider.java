@@ -43,21 +43,23 @@ package com.sun.enterprise.resource.pool.monitor;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.resource.pool.PoolLifeCycleListenerRegistry;
 import com.sun.enterprise.resource.pool.PoolStatus;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.glassfish.external.statistics.CountStatistic;
-import org.glassfish.external.statistics.RangeStatistic;
-import org.glassfish.external.statistics.impl.CountStatisticImpl;
-import org.glassfish.external.statistics.impl.RangeStatisticImpl;
 import org.glassfish.external.probe.provider.annotations.ProbeListener;
 import org.glassfish.external.probe.provider.annotations.ProbeParam;
+import org.glassfish.external.statistics.CountStatistic;
+import org.glassfish.external.statistics.RangeStatistic;
 import org.glassfish.external.statistics.annotations.Reset;
+import org.glassfish.external.statistics.impl.CountStatisticImpl;
+import org.glassfish.external.statistics.impl.RangeStatisticImpl;
 import org.glassfish.external.statistics.impl.StatisticImpl;
 import org.glassfish.gmbal.AMXMetadata;
 import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
-import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 /**
  * StatsProvider object for Jdbc pool monitoring.
@@ -73,7 +75,7 @@ import org.glassfish.resources.api.PoolInfo;
 public class ConnectorConnPoolStatsProvider {
     
     private Logger logger;
-    private PoolInfo poolInfo;    
+    private PoolInfo poolInfo;
 
     
     //Registry that stores all listeners to this object
@@ -139,7 +141,7 @@ public class ConnectorConnPoolStatsProvider {
             "Number of connection requests in the queue waiting to be serviced.");    
     private static final String JCA_PROBE_LISTENER = "glassfish:jca:connection-pool:";
 
-    public ConnectorConnPoolStatsProvider(PoolInfo poolInfo, Logger logger) {    
+    public ConnectorConnPoolStatsProvider(PoolInfo poolInfo, Logger logger) {
         this.poolInfo = poolInfo;
         this.logger = logger;
     }

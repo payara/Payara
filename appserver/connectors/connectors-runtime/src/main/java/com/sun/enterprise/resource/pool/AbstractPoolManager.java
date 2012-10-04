@@ -41,7 +41,7 @@
 package com.sun.enterprise.resource.pool;
 
 import com.sun.enterprise.resource.ResourceSpec;
-import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 import java.util.concurrent.ConcurrentHashMap;
 

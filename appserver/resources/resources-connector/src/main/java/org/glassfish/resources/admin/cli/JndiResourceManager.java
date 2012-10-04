@@ -44,9 +44,10 @@ import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.I18n;
-import org.glassfish.resources.api.ResourceStatus;
 import org.glassfish.resources.config.ExternalJndiResource;
-import org.glassfish.resources.util.BindableResourcesHelper;
+import org.glassfish.resourcebase.resources.api.ResourceStatus;
+import org.glassfish.resourcebase.resources.admin.cli.ResourceUtil;
+import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;

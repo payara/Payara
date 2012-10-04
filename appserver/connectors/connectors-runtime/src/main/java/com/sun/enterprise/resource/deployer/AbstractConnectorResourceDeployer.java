@@ -46,11 +46,11 @@ import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
+import org.glassfish.resourcebase.resources.api.ResourceConflictException;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resources.api.GlobalResourceDeployer;
-import org.glassfish.resources.api.ResourceConflictException;
-import org.glassfish.resources.api.ResourceConstants;
-import org.glassfish.resources.api.ResourceDeployer;
-import org.glassfish.resources.util.ResourceUtil;
+import org.glassfish.resourcebase.resources.api.ResourceConstants;
+import org.glassfish.resourcebase.resources.util.ResourceUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,7 +82,7 @@ public abstract class AbstractConnectorResourceDeployer extends GlobalResourceDe
      */
     public void validatePreservedResource(Application oldApp, Application newApp, Resource resource,
                                           Resources allResources)
-            throws ResourceConflictException{
+            throws ResourceConflictException {
 
         //check whether old app has any RAR
         List<Module> oldRARModules = new ArrayList<Module>();

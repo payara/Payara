@@ -42,7 +42,7 @@ package com.sun.enterprise.resource.pool;
 
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.resource.listener.PoolLifeCycleListener;
-import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 import java.util.ArrayList;
 import java.util.List;

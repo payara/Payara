@@ -44,7 +44,7 @@ import com.sun.enterprise.config.serverbeans.Resources;
 import org.glassfish.resources.api.Resource;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.i18n.StringManager;
-import org.glassfish.resources.api.ResourceConflictException;
+import org.glassfish.resourcebase.resources.api.ResourceConflictException;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;

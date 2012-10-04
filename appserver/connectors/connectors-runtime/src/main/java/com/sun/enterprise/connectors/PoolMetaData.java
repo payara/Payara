@@ -42,7 +42,7 @@ package com.sun.enterprise.connectors;
 
 import com.sun.enterprise.connectors.authentication.RuntimeSecurityMap;
 import com.sun.enterprise.deployment.ResourcePrincipal;
-import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.security.auth.Subject;

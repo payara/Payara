@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.resources.api;
+package org.glassfish.resourcebase.resources.api;
 
 /**
  *

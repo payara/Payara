@@ -52,16 +52,15 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.resourcebase.resources.api.ResourceStatus;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.inject.Inject;
 
 /**
  * Create Java Mail Resource
@@ -147,7 +146,7 @@ public class CreateJavaMailResource implements AdminCommand {
         attributes.put(org.glassfish.resources.admin.cli.ResourceConstants.ENABLED, enabled.toString());
         attributes.put(ServerTags.DESCRIPTION, description);
 
-        org.glassfish.resources.api.ResourceStatus rs;
+        ResourceStatus rs;
 
         try {
             rs = mailResMgr.create(domain.getResources(), attributes, properties, target);
@@ -162,7 +161,7 @@ public class CreateJavaMailResource implements AdminCommand {
             return;
         }
         ActionReport.ExitCode ec = ActionReport.ExitCode.SUCCESS;
-        if (rs.getStatus() == org.glassfish.resources.api.ResourceStatus.FAILURE) {
+        if (rs.getStatus() == ResourceStatus.FAILURE) {
             ec = ActionReport.ExitCode.FAILURE;
             if (rs.getMessage() == null) {
                  report.setMessage(localStrings.getLocalString("create.mail.resource.fail",

@@ -44,30 +44,29 @@ import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.config.serverbeans.Resource;
-import org.glassfish.jdbc.util.JdbcResourcesUtil;
-import org.glassfish.jdbc.config.JdbcConnectionPool;
-import org.glassfish.resources.api.*;
-import com.sun.enterprise.connectors.ConnectorRegistry;
-import com.sun.enterprise.resource.DynamicallyReconfigurableResource;
-import com.sun.enterprise.resource.pool.ResourcePool;
-import com.sun.enterprise.resource.pool.waitqueue.PoolWaitQueue;
-import org.jvnet.hk2.annotations.Service;
-
-import org.jvnet.hk2.annotations.Optional;
-import javax.inject.Singleton;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
 import com.sun.enterprise.connectors.ConnectorDescriptorInfo;
+import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.connectors.util.ConnectionPoolObjectsUtils;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.deployment.ConnectionDefDescriptor;
-import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.ConnectorConfigProperty;
+import com.sun.enterprise.deployment.ConnectorDescriptor;
+import com.sun.enterprise.resource.DynamicallyReconfigurableResource;
+import com.sun.enterprise.resource.pool.ResourcePool;
+import com.sun.enterprise.resource.pool.waitqueue.PoolWaitQueue;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
+import org.glassfish.jdbc.config.JdbcConnectionPool;
+import org.glassfish.jdbc.util.JdbcResourcesUtil;
+import org.glassfish.resourcebase.resources.api.*;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.types.Property;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -75,8 +74,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.inject.Inject;
 
 /**
  * Handles Jdbc connection pool events in the server instance. When user adds a

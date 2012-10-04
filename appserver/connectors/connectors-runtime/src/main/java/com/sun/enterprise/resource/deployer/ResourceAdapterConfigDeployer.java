@@ -40,20 +40,18 @@
 
 package com.sun.enterprise.resource.deployer;
 
-import org.glassfish.connectors.config.ResourceAdapterConfig;
-import org.glassfish.resources.api.ResourceDeployer;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.logging.LogDomains;
-
-import java.util.logging.*;
+import org.glassfish.connectors.config.ResourceAdapterConfig;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
+import org.glassfish.resourcebase.resources.api.ResourceDeployerInfo;
+import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-
-import org.glassfish.resources.api.ResourceDeployerInfo;
-import org.jvnet.hk2.annotations.Service;
-
 import javax.inject.Singleton;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Srikanth P

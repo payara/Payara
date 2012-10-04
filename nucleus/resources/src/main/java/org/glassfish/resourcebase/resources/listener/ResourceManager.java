@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.resources.listener;
+package org.glassfish.resourcebase.resources.listener;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -50,22 +50,14 @@ import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
-import org.glassfish.resources.api.ResourceDeployer;
-import org.glassfish.resources.api.ResourceDeployerInfo;
-import org.glassfish.resources.api.ResourceDeployerValidator;
-import org.glassfish.resources.api.ResourceInfo;
-import org.glassfish.resources.api.ResourcesBinder;
-import org.glassfish.resources.util.BindableResourcesHelper;
-import org.glassfish.resources.util.ResourceManagerFactory;
-import org.glassfish.resources.util.ResourceUtil;
-
+import org.glassfish.resourcebase.resources.api.*;
+import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.List;
@@ -94,7 +86,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
     private ResourcesBinder resourcesBinder;
 
     @Inject
-    private BindableResourcesHelper bindableResourcesHelper;
+    private org.glassfish.resourcebase.resources.util.BindableResourcesHelper bindableResourcesHelper;
 
     @Inject
     private IterableProvider<ResourceManagerLifecycleListener> resourceManagerLifecycleListenerProviders;
@@ -159,7 +151,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                 try {
                     getResourceDeployer(resource).deployResource(resource);
                 } catch (Exception e) {
-                    Object[] params = {ResourceUtil.getGenericResourceInfo(resource), e};
+                    Object[] params = {org.glassfish.resourcebase.resources.util.ResourceUtil.getGenericResourceInfo(resource), e};
                     logger.log(Level.WARNING, "resources.resource-manager.deploy-resource-failed", params);
                 }
             }
@@ -188,7 +180,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                 deployer.deployResource(resource);
         } catch (Exception e) {
             Object[] params = {
-                    ResourceUtil.getGenericResourceInfo(resource), e };
+                    org.glassfish.resourcebase.resources.util.ResourceUtil.getGenericResourceInfo(resource), e };
             logger.log(
                     Level.WARNING,
                     "resources.resource-manager.deploy-resource-failed",
@@ -200,7 +192,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
             ResourceDeployer deployer) {
         ResourceDeployerInfo annotation = deployer.getClass().
         	getAnnotation(ResourceDeployerInfo.class);
-        ResourceDeployerValidator deployerValidator = 
+        ResourceDeployerValidator deployerValidator =
         	locator.getService(annotation.validator());
         return deployerValidator;
     }
@@ -249,7 +241,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                             params);
                 }
             } catch (Exception e) {
-                Object[] params = {ResourceUtil.getGenericResourceInfo(resource), e};
+                Object[] params = {org.glassfish.resourcebase.resources.util.ResourceUtil.getGenericResourceInfo(resource), e};
                 logger.log(Level.WARNING, "resources.resource-manager.undeploy-resource-failed", params);
             } finally {
                 removeListenerForResource(resource);
@@ -325,7 +317,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
             NotProcessed np = null;
             //TODO V3 handle enabled / disabled / resource-ref / redeploy ?
             try {
-                if (ResourceUtil.isValidEventType(instance)) {
+                if (org.glassfish.resourcebase.resources.util.ResourceUtil.isValidEventType(instance)) {
                     ResourceDeployer deployer = getResourceDeployer(instance);
                     boolean enabledAttributeChange = false;
                     if (instance instanceof BindableResource ||
@@ -368,7 +360,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                             deployer.redeployResource(instance);
                         }
                     }
-                } else if (ResourceUtil.isValidEventType(instance.getParent())) {
+                } else if (org.glassfish.resourcebase.resources.util.ResourceUtil.isValidEventType(instance.getParent())) {
                     //Added in case of a property change
                     //check for validity of the property's parent and redeploy
                     ResourceDeployer deployer = getResourceDeployer(instance);
@@ -398,7 +390,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                         //method on deployer.
                         if ("enabled".equalsIgnoreCase(propertyName)) {
                             bindableResource = (BindableResource)
-                                    ResourceUtil.getBindableResourceByName(domain.getResources(), refName);
+                                    org.glassfish.resourcebase.resources.util.ResourceUtil.getBindableResourceByName(domain.getResources(), refName);
                             deployer = getResourceDeployer(bindableResource);
                             if (deployer != null) {
                                 //both cannot be true or false
@@ -446,7 +438,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                 try {
                     getResourceDeployer(instance).deployResource(instance);
                 } catch (Exception e) {
-                    Object params[] = {ResourceUtil.getGenericResourceInfo((Resource) instance), e};
+                    Object params[] = {org.glassfish.resourcebase.resources.util.ResourceUtil.getGenericResourceInfo((Resource) instance), e};
                     logger.log(Level.WARNING, "resources.resource-manager.deploy-resource-failed", params);
                 }
             } else if (instance instanceof Property) {
@@ -455,7 +447,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
             } else if (instance instanceof ResourceRef) {
                 //create-resource-ref
                 ResourceRef ref = (ResourceRef) instance;
-                Resource resource = ResourceUtil.getResourceByIdentity(domain.getResources(), ref.getRef());
+                Resource resource = org.glassfish.resourcebase.resources.util.ResourceUtil.getResourceByIdentity(domain.getResources(), ref.getRef());
                 if (resource instanceof BindableResource) {
                     BindableResource br = (BindableResource) resource;
                     if (Boolean.valueOf(ref.getEnabled()) && Boolean.valueOf(br.getEnabled())) {
@@ -472,7 +464,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                             deployer.deployResource(resource);
                         }
                       } catch (Exception e) {
-                        Object params[] = {ResourceUtil.getGenericResourceInfo((Resource) instance), e};
+                        Object params[] = {org.glassfish.resourcebase.resources.util.ResourceUtil.getGenericResourceInfo((Resource) instance), e};
                         logger.log(Level.WARNING, "resources.resource-manager.deploy-resource-failed", params);
                       }
                 }
@@ -494,7 +486,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                     ResourceDeployer resourceDeployer = getResourceDeployer(instance);
                     if (resourceDeployer != null)
                       resourceDeployer.undeployResource(instance);
-                } else if (ResourceUtil.isValidEventType(instance.getParent())) {
+                } else if (org.glassfish.resourcebase.resources.util.ResourceUtil.isValidEventType(instance.getParent())) {
                     //Added in case of a property remove
                     //check for validity of the property's parent and redeploy
                     if (instance.getParent() instanceof BindableResource) {
@@ -517,14 +509,14 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                 } else if (instance instanceof ResourceRef) {
                     //delete-resource-ref
                     ResourceRef ref = (ResourceRef) instance;
-                    Resource resource = (Resource) ResourceUtil.getResourceByName(
+                    Resource resource = (Resource) org.glassfish.resourcebase.resources.util.ResourceUtil.getResourceByName(
                             Resource.class, domain.getResources(), ref.getRef());
 //                    BindableResource resource = (BindableResource)
 //                            ResourceUtil.getBindableResourceByName(domain.getResources(), ref.getRef());
                     //get appropriate deployer and undeploy resource
                     boolean resourceEnabled = isResourceEnabled(resource);
                     if (resourceEnabled && Boolean.valueOf(ref.getEnabled())) {
-                        ResourceDeployer resourceDeployer = 
+                        ResourceDeployer resourceDeployer =
                             getResourceDeployer(resource);
                         if (resourceDeployer != null)
                             resourceDeployer.undeployResource(resource);

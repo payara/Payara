@@ -38,18 +38,17 @@
  * holder.
  */
 
-package org.glassfish.resources.util;
+package org.glassfish.resourcebase.resources.util;
 
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.resources.api.ResourceDeployer;
-import org.glassfish.resources.api.ResourceDeployerInfo;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
+import org.glassfish.resourcebase.resources.api.ResourceDeployerInfo;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
 import java.lang.reflect.Proxy;
 import java.util.List;
 

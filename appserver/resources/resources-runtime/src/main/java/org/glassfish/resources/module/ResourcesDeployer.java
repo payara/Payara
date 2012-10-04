@@ -62,8 +62,13 @@ import org.glassfish.resources.admin.cli.ResourceManager;
 import org.glassfish.resources.admin.cli.ResourcesXMLParser;
 import org.glassfish.resources.admin.cli.SunResourcesXML;
 import org.glassfish.resources.api.*;
-import org.glassfish.resources.util.ResourceManagerFactory;
+import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resources.util.ResourceUtil;
+import org.glassfish.resourcebase.resources.api.ResourcesBinder;
+import org.glassfish.resourcebase.resources.api.ResourceConflictException;
+import org.glassfish.resourcebase.resources.api.ResourceConstants;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
@@ -83,7 +88,7 @@ import java.util.logging.Logger;
 
 import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 import static org.glassfish.resources.api.Resource.*;
-import static org.glassfish.resources.api.ResourceConstants.*;
+import static org.glassfish.resourcebase.resources.api.ResourceConstants.*;
 
 /**
  * ResourcesDeployer to handle "glassfish-resources.xml(s)" bundled in the application.
@@ -198,7 +203,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
                     String fileName = entry.getValue();
                     debug("GlassFish Resources XML : " + fileName);
 
-                    moduleName = ResourceUtil.getActualModuleNameWithExtension(moduleName);
+                    moduleName = org.glassfish.resourcebase.resources.util.ResourceUtil.getActualModuleNameWithExtension(moduleName);
                     String scope;
                     if (appName.equals(moduleName)) {
                         scope = JAVA_APP_SCOPE_PREFIX;
@@ -257,7 +262,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
                     String fileName = entry.getValue();
                     debug("Sun Resources XML : " + fileName);
 
-                    moduleName = ResourceUtil.getActualModuleNameWithExtension(moduleName);
+                    moduleName = org.glassfish.resourcebase.resources.util.ResourceUtil.getActualModuleNameWithExtension(moduleName);
                     String scope ;
                     if(appName.equals(moduleName)){
                         scope = JAVA_APP_SCOPE_PREFIX;
@@ -385,7 +390,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
             List<Module> modules = app.getModule();
             if (modules != null) {
                 for (Module module : modules) {
-                    String actualModuleName = ResourceUtil.getActualModuleNameWithExtension(module.getName());
+                    String actualModuleName = org.glassfish.resourcebase.resources.util.ResourceUtil.getActualModuleNameWithExtension(module.getName());
                     //create resources for modules, ignore standalone applications where
                     //module name will be the same as app name
                     if(!appName.equals(actualModuleName)){
@@ -788,7 +793,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
      * @param allResources all resources (app scoped, module scoped)
      * @param oldApp Old Application config
      * @param newApp New Applicatoin config
-     * @throws org.glassfish.resources.api.ResourceConflictException when it is not possible to map any of the resource(s) to
+     * @throws org.glassfish.resourcebase.resources.api.ResourceConflictException when it is not possible to map any of the resource(s) to
      * new application/its modules
      */
     private void validatePreservedResources(Map<String, Resources> allResources, Application oldApp,

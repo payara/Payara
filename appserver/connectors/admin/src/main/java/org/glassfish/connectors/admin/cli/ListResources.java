@@ -43,25 +43,19 @@ package org.glassfish.connectors.admin.cli;
 import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.*;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
-import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.connectors.config.ResourceAdapterConfig;
 import org.glassfish.connectors.config.WorkSecurityMap;
-import org.glassfish.resources.util.BindableResourcesHelper;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.jdbc.config.JdbcConnectionPool;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.glassfish.api.admin.*;
-
-import javax.inject.Inject;
 
 @Service(name="_list-resources")
 @PerLookup
@@ -84,7 +78,7 @@ public class ListResources implements AdminCommand {
     private String moduleName;
 
     @Inject
-    BindableResourcesHelper bindableResourcesHelper;
+    org.glassfish.resourcebase.resources.util.BindableResourcesHelper bindableResourcesHelper;
 
     /**
      * Executes the command with the command parameters passed as Properties

@@ -51,6 +51,8 @@ import com.sun.enterprise.deployment.runtime.connector.ResourceAdapter;
 import com.sun.enterprise.deployment.runtime.connector.SunConnector;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.jvnet.hk2.config.types.Property;
 
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.security.PasswordCredential;
@@ -64,9 +66,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.glassfish.resources.api.PoolInfo;
-import org.jvnet.hk2.config.types.Property;
 
 
 /**

@@ -43,10 +43,6 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
 import com.sun.enterprise.connectors.ConnectionPoolMonitoringExtension;
 import com.sun.enterprise.connectors.ConnectorRuntime;
-import org.glassfish.jdbc.pool.monitor.JdbcConnPoolAppProbeProvider;
-import org.glassfish.jdbc.pool.monitor.JdbcConnPoolAppStatsProvider;
-import org.glassfish.jdbc.pool.monitor.JdbcConnPoolProbeProvider;
-import org.glassfish.jdbc.pool.monitor.JdbcConnPoolStatsProvider;
 import com.sun.enterprise.resource.pool.PoolLifeCycleListenerRegistry;
 import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.resource.pool.monitor.ConnectionPoolAppProbeProvider;
@@ -56,7 +52,12 @@ import com.sun.logging.LogDomains;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
-import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.jdbc.pool.monitor.JdbcConnPoolAppProbeProvider;
+import org.glassfish.jdbc.pool.monitor.JdbcConnPoolAppStatsProvider;
+import org.glassfish.jdbc.pool.monitor.JdbcConnPoolProbeProvider;
+import org.glassfish.jdbc.pool.monitor.JdbcConnPoolStatsProvider;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -64,7 +65,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
-import org.jvnet.hk2.annotations.Service;
 
 /**
  * @author Shalini M

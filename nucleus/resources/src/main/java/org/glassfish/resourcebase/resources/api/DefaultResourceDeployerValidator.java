@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,30 +38,21 @@
  * holder.
  */
 
-package org.glassfish.resources.api;
+package org.glassfish.resourcebase.resources.api;
 
+import com.sun.enterprise.config.serverbeans.Resource;
+import org.jvnet.hk2.annotations.Service;
 
-/**
- * This exception is thrown when a resource conflict is detected in sun-resources.xml
- */
-public class ResourceConflictException extends Exception{
+import javax.inject.Singleton;
 
-    /*Constructs a new ResourceConflictException with null as its detail message.*/
-    public ResourceConflictException() {
+@Service
+@Singleton
+public class DefaultResourceDeployerValidator implements
+        ResourceDeployerValidator {
+
+    @Override
+    public boolean isEnabledLocally(Resource res) {
+        return false;
     }
 
-    /*Constructs a new exception with the specified detail message. */
-    public ResourceConflictException(String msg) {
-        super(msg);
-    }
-
-    /* Constructs a new exception with the specified cause.*/
-    public ResourceConflictException(Throwable t) {
-        super(t);
-    }
-
-    /*Constructs a new exception with the specified detail message and cause.*/
-    public ResourceConflictException(String msg, Throwable t) {
-        super(msg, t);
-    }
 }

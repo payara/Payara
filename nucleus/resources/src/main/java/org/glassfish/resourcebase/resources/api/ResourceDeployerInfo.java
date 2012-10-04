@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,33 +38,28 @@
  * holder.
  */
 
-package org.glassfish.resources.naming;
+package org.glassfish.resourcebase.resources.api;
 
-import org.glassfish.api.naming.JNDIBinding;
+import org.glassfish.hk2.api.Metadata;
 
+import javax.inject.Qualifier;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * resource binding for module scoped resources
- * @author Jagadish Ramu
  *
+ * @author Jagadish Ramu
  */
-public class ModuleScopedResourceBinding implements JNDIBinding {
-
-    private String name;
-    private Object value;
-    public ModuleScopedResourceBinding(String name, Object value){
-        if(!(name.contains(ResourceNamingService.JAVA_MODULE_SCOPE_PREFIX)
-                /*|| name.contains(ResourceNamingService.JAVA_GLOBAL_SCOPE_PREFIX)*/)){
-            name = ResourceNamingService.JAVA_MODULE_SCOPE_PREFIX + name;
-        }
-        this.name = name;
-        this.value = value;
-    }
-    public String getName() {
-        return name;
-    }
-
-    public Object getValue() {
-        return value;
-    }
+@Qualifier
+@Retention(RUNTIME)
+@Target(ElementType.TYPE)
+public @interface ResourceDeployerInfo {
+    @Metadata(org.glassfish.resourcebase.resources.util.ResourceManagerFactory.METADATA_KEY)
+    Class<?> value();
+    
+    Class<? extends ResourceDeployerValidator> validator() default
+    	org.glassfish.resourcebase.resources.api.DefaultResourceDeployerValidator.class;
 }

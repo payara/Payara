@@ -38,15 +38,12 @@
  * holder.
  */
 
-package org.glassfish.resources.api;
+package org.glassfish.resourcebase.resources.api;
 
 import com.sun.enterprise.config.serverbeans.Resource;
 import org.glassfish.api.naming.NamingObjectProxy;
-import org.glassfish.resources.naming.ResourceNamingService;
-import org.glassfish.resources.util.ResourceManagerFactory;
-import org.jvnet.hk2.annotations.Service;
-
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -67,14 +64,14 @@ import javax.naming.NamingException;
 public class ResourceProxy implements NamingObjectProxy.InitializationNamingObjectProxy {
 
     @Inject
-    private Provider<ResourceManagerFactory> resourceManagerFactoryProvider;
+    private Provider<org.glassfish.resourcebase.resources.util.ResourceManagerFactory> resourceManagerFactoryProvider;
 
     @Inject
-    private ResourceNamingService namingService;
+    private org.glassfish.resourcebase.resources.naming.ResourceNamingService namingService;
 
     private Resource resource = null;
     private Object result = null;
-    private org.glassfish.resources.api.ResourceInfo resourceInfo = null;
+    private org.glassfish.resourcebase.resources.api.ResourceInfo resourceInfo = null;
 
     public Object create(Context ic) throws NamingException {
         //this is a per-lookup object and once we have the resource,
@@ -108,11 +105,11 @@ public class ResourceProxy implements NamingObjectProxy.InitializationNamingObje
      * Name by which the proxy (or the resource) will be bound in JNDI
      * @param resourceInfo resource-info
      */
-    public void setResourceInfo(org.glassfish.resources.api.ResourceInfo resourceInfo) {
+    public void setResourceInfo(org.glassfish.resourcebase.resources.api.ResourceInfo resourceInfo) {
         this.resourceInfo = resourceInfo;
     }
 
-    protected Object throwResourceNotFoundException(Exception e, org.glassfish.resources.api.ResourceInfo resourceInfo) throws NamingException {
+    protected Object throwResourceNotFoundException(Exception e, org.glassfish.resourcebase.resources.api.ResourceInfo resourceInfo) throws NamingException {
         NamingException ne = new NamingException("Unable to lookup resource : " + resourceInfo);
         ne.initCause(e);
         throw ne;
@@ -124,7 +121,7 @@ public class ResourceProxy implements NamingObjectProxy.InitializationNamingObje
      * @param resource resource instance
      * @return ResourceDeployer
      */
-    protected ResourceDeployer getResourceDeployer(Object resource){
+    protected org.glassfish.resourcebase.resources.api.ResourceDeployer getResourceDeployer(Object resource){
         return resourceManagerFactoryProvider.get().getResourceDeployer(resource);
     }
 }

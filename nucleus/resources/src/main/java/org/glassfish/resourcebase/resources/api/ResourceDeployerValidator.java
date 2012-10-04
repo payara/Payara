@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,32 +38,13 @@
  * holder.
  */
 
-package org.glassfish.resources.api;
+package org.glassfish.resourcebase.resources.api;
 
-import java.io.Serializable;
+import com.sun.enterprise.config.serverbeans.Resource;
+import org.jvnet.hk2.annotations.Service;
 
-/**
- * Represents resource information
- * A resource may be defined in "java:app" scope or "java:module" scope
- * @author Jagadish Ramu
- */
-public interface GenericResourceInfo extends Serializable {
+@Service
+public interface ResourceDeployerValidator {
 
-    /**
-     * name of the resource
-     * @return String name
-     */
-    public String getName() ;
-
-    /**
-     * application in which the resource is defined
-     * @return String application-name
-     */
-    public String getApplicationName() ;
-
-    /**
-     * module in which the resource is defined
-     * @return String module-name
-     */
-    public String getModuleName() ;
+    boolean isEnabledLocally(Resource res);
 }

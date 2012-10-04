@@ -44,10 +44,10 @@ import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
 import com.sun.enterprise.connectors.ConnectorDescriptorInfo;
 import com.sun.enterprise.connectors.ConnectorRuntime;
-import com.sun.enterprise.deployment.ResourcePrincipal;
 import com.sun.enterprise.deployment.ConnectorConfigProperty;
-import org.glassfish.resources.api.GenericResourceInfo;
-import org.glassfish.resources.api.PoolInfo;
+import com.sun.enterprise.deployment.ResourcePrincipal;
+import org.glassfish.resourcebase.resources.api.GenericResourceInfo;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 import javax.naming.Context;
 import javax.naming.NamingException;

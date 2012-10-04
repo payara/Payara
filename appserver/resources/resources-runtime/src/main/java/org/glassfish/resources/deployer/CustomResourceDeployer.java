@@ -48,12 +48,15 @@ import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import org.glassfish.resources.api.*;
 import org.glassfish.resources.config.CustomResource;
-import org.glassfish.resources.util.BindableResourcesHelper;
-import org.glassfish.resources.util.ResourceUtil;
-
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.types.Property;
-
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
+import org.glassfish.resourcebase.resources.api.ResourceConflictException;
+import org.glassfish.resourcebase.resources.api.ResourceDeployerInfo;
+import org.glassfish.resourcebase.resources.util.ResourceUtil;
+import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
+import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.naming.NamingException;
@@ -99,7 +102,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
             StringManager.getManager(CustomResourceDeployer.class);
 
     @Inject
-    private org.glassfish.resources.naming.ResourceNamingService cns;
+    private ResourceNamingService cns;
     /**
      * logger for this deployer
      */

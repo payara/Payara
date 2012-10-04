@@ -40,37 +40,40 @@
 
 package com.sun.enterprise.connectors;
 
-import com.sun.appserv.connectors.internal.api.*;
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.appserv.connectors.internal.api.PoolingException;
 import com.sun.appserv.connectors.internal.spi.ConnectionManager;
 import com.sun.enterprise.config.serverbeans.BindableResource;
-import com.sun.enterprise.connectors.util.ConnectionPoolObjectsUtils;
 import com.sun.enterprise.connectors.authentication.AuthenticationService;
+import com.sun.enterprise.connectors.util.ConnectionPoolObjectsUtils;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.ResourcePrincipal;
 import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
 import com.sun.enterprise.resource.ClientSecurityInfo;
 import com.sun.enterprise.resource.ResourceSpec;
+import com.sun.enterprise.resource.allocator.ConnectorAllocator;
+import com.sun.enterprise.resource.allocator.LocalTxConnectorAllocator;
 import com.sun.enterprise.resource.allocator.NoTxConnectorAllocator;
 import com.sun.enterprise.resource.allocator.ResourceAllocator;
-import com.sun.enterprise.resource.allocator.LocalTxConnectorAllocator;
-import com.sun.enterprise.resource.allocator.ConnectorAllocator;
 import com.sun.enterprise.resource.pool.PoolManager;
-import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.security.SecurityContext;
+import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.*;
 import javax.resource.spi.IllegalStateException;
 import javax.security.auth.Subject;
 import java.io.Serializable;
+import java.security.Principal;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Set;
-import java.security.Principal;
 
 
 /**

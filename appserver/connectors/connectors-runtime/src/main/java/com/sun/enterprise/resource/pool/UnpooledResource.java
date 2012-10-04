@@ -40,14 +40,14 @@
 
 package com.sun.enterprise.resource.pool;
 
-import com.sun.enterprise.resource.ResourceState;
 import com.sun.appserv.connectors.internal.api.PoolingException;
-import com.sun.enterprise.resource.allocator.ResourceAllocator;
-import com.sun.enterprise.resource.ResourceSpec;
 import com.sun.enterprise.resource.ResourceHandle;
-import org.glassfish.resources.api.PoolInfo;
+import com.sun.enterprise.resource.ResourceSpec;
+import com.sun.enterprise.resource.ResourceState;
+import com.sun.enterprise.resource.allocator.ResourceAllocator;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 
-import javax.transaction.*;
+import javax.transaction.Transaction;
 import java.util.Hashtable;
 
 /**

@@ -46,11 +46,11 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.PostStartup;
-import org.glassfish.resources.api.ResourceDeployer;
-import org.glassfish.resources.api.ResourceInfo;
-import org.glassfish.resources.api.ResourcesBinder;
-import org.glassfish.resources.util.ResourceManagerFactory;
-import org.glassfish.resources.util.ResourceUtil;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
+import org.glassfish.resourcebase.resources.api.ResourcesBinder;
+import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
+import org.glassfish.resourcebase.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 

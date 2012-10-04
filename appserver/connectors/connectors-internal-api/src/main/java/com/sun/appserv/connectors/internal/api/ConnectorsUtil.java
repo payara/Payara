@@ -57,11 +57,11 @@ import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.loader.util.ASClassLoaderUtil;
-import org.glassfish.resources.api.GenericResourceInfo;
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceConstants;
-import org.glassfish.resources.api.ResourceInfo;
-import org.glassfish.resources.util.ResourceUtil;
+import org.glassfish.resourcebase.resources.api.GenericResourceInfo;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceConstants;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
+import org.glassfish.resourcebase.resources.util.ResourceUtil;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 
@@ -881,7 +881,7 @@ public class ConnectorsUtil {
     }
 
     public static ResourceInfo getResourceInfo(BindableResource resource){
-        return ResourceUtil.getResourceInfo(resource);
+        return org.glassfish.resourcebase.resources.util.ResourceUtil.getResourceInfo(resource);
     }
 
 
@@ -899,7 +899,7 @@ public class ConnectorsUtil {
     }
 
     public static boolean isApplicationScopedResource(GenericResourceInfo resourceInfo){
-        return ResourceUtil.isApplicationScopedResource(resourceInfo);
+        return org.glassfish.resourcebase.resources.util.ResourceUtil.isApplicationScopedResource(resourceInfo);
     }
 
     public static boolean isModuleScopedResource(GenericResourceInfo resourceInfo){

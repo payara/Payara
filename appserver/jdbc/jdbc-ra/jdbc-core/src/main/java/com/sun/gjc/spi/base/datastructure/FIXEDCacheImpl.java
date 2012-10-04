@@ -42,7 +42,7 @@ package com.sun.gjc.spi.base.datastructure;
 
 import com.sun.gjc.spi.base.CacheObjectKey;
 import com.sun.gjc.spi.base.PreparedStatementWrapper;
-import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 /**
  * This ia a FIXED size cache implementation.

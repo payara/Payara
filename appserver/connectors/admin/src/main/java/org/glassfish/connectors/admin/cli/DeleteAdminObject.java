@@ -53,17 +53,14 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.connectors.config.AdminObjectResource;
-import org.glassfish.resources.admin.cli.ResourceUtil;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import java.beans.PropertyVetoException;
-
 import javax.inject.Inject;
+import java.beans.PropertyVetoException;
 
 /**
  * Delete Admin Object command
@@ -85,7 +82,7 @@ public class DeleteAdminObject implements AdminCommand {
     private String jndiName;
 
     @Inject
-    private ResourceUtil resourceUtil;
+    private org.glassfish.resourcebase.resources.admin.cli.ResourceUtil resourceUtil;
 
     @Inject
     private Domain domain;

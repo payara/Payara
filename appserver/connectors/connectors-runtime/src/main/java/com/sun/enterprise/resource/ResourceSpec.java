@@ -42,7 +42,7 @@ package com.sun.enterprise.resource;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.enterprise.connectors.PoolMetaData;
-import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 import java.io.Serializable;
 

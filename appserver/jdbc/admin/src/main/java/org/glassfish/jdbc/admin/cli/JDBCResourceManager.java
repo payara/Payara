@@ -40,30 +40,34 @@
 
 package org.glassfish.jdbc.admin.cli;
 
-import java.beans.PropertyVetoException;
-import java.util.*;
-
-import static org.glassfish.resources.admin.cli.ResourceConstants.*;
-
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.config.serverbeans.*;
-import org.glassfish.api.admin.ServerEnvironment;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.ResourcePool;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.config.serverbeans.ServerTags;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.I18n;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.jdbc.config.JdbcResource;
 import org.glassfish.resources.admin.cli.ResourceManager;
-import org.glassfish.resources.admin.cli.ResourceUtil;
-import org.glassfish.resources.api.ResourceStatus;
-import org.glassfish.resources.util.BindableResourcesHelper;
+import org.glassfish.resourcebase.resources.admin.cli.ResourceUtil;
+import org.glassfish.resourcebase.resources.api.ResourceStatus;
+import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.ConfiguredBy;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.jvnet.hk2.config.ConfiguredBy;
 
 import javax.inject.Inject;
 import javax.resource.ResourceException;
+import java.beans.PropertyVetoException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 
 /**
  *

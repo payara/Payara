@@ -52,17 +52,15 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.connectors.config.ResourceAdapterConfig;
-import org.glassfish.resources.api.ResourceStatus;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.resourcebase.resources.api.ResourceStatus;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.inject.Inject;
 
 import static org.glassfish.connectors.admin.cli.CLIConstants.*;
 import static org.glassfish.connectors.admin.cli.CLIConstants.RAC.*;

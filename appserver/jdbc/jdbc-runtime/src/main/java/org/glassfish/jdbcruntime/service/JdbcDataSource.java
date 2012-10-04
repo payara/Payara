@@ -44,7 +44,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import org.glassfish.jdbc.config.JdbcResource;
-import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;

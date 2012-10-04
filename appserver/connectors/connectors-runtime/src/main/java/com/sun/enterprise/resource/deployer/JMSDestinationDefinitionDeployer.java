@@ -40,6 +40,20 @@
 
 package com.sun.enterprise.resource.deployer;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.deployment.JMSDestinationDefinitionDescriptor;
+import com.sun.logging.LogDomains;
+import org.glassfish.connectors.config.AdminObjectResource;
+import org.glassfish.resourcebase.resources.api.ResourceConflictException;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
+import org.glassfish.resourcebase.resources.api.ResourceDeployerInfo;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.types.Property;
+
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.beans.PropertyVetoException;
@@ -48,31 +62,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.logging.Logger;
 import java.util.logging.Level;
-
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.deployment.JMSDestinationDefinitionDescriptor;
-import com.sun.enterprise.config.serverbeans.Resource;
-import com.sun.enterprise.config.serverbeans.Resources;
-import com.sun.logging.LogDomains;
-
-import org.glassfish.connectors.config.AdminObjectResource;
-import org.glassfish.resources.api.ResourceDeployerInfo;
-import org.glassfish.resources.api.ResourceConflictException;
-import org.glassfish.resources.api.ResourceDeployer;
-import org.glassfish.resources.util.ResourceManagerFactory;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.config.types.Property;
+import java.util.logging.Logger;
 
 @Service
 @ResourceDeployerInfo(JMSDestinationDefinitionDescriptor.class)
 public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
 
     @Inject
-    private Provider<ResourceManagerFactory> resourceManagerFactoryProvider;
+    private Provider<org.glassfish.resourcebase.resources.util.ResourceManagerFactory> resourceManagerFactoryProvider;
 
     private static Logger _logger = LogDomains.getLogger(JMSDestinationDefinitionDeployer.class, LogDomains.RSR_LOGGER);
     final static String PROPERTY_PREFIX = "org.glassfish.jms-destination.";

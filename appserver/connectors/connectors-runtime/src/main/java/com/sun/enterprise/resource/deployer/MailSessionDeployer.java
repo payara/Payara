@@ -40,17 +40,6 @@
 
 package com.sun.enterprise.resource.deployer;
 
-import java.beans.PropertyVetoException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.naming.NamingException;
-
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Application;
@@ -62,17 +51,25 @@ import com.sun.logging.LogDomains;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.javaee.services.CommonResourceProxy;
-import org.glassfish.resources.api.ResourceConflictException;
-import org.glassfish.resources.api.ResourceDeployer;
-import org.glassfish.resources.api.ResourceDeployerInfo;
-import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.glassfish.resources.javamail.config.MailResource;
-import org.glassfish.resources.naming.ResourceNamingService;
-import org.glassfish.resources.util.ResourceManagerFactory;
+import org.glassfish.resourcebase.resources.api.ResourceConflictException;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
+import org.glassfish.resourcebase.resources.api.ResourceDeployerInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.naming.NamingException;
+import java.beans.PropertyVetoException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by IntelliJ IDEA.
@@ -87,13 +84,13 @@ import org.jvnet.hk2.config.types.Property;
 public class MailSessionDeployer implements ResourceDeployer {
 
     @Inject
-    private Provider<ResourceManagerFactory> resourceManagerFactoryProvider;
+    private Provider<org.glassfish.resourcebase.resources.util.ResourceManagerFactory> resourceManagerFactoryProvider;
 
     @Inject
     private Provider<CommonResourceProxy> mailSessionProxyProvider;
 
     @Inject
-    private Provider<ResourceNamingService> resourceNamingServiceProvider;
+    private Provider<org.glassfish.resourcebase.resources.naming.ResourceNamingService> resourceNamingServiceProvider;
 
     @Inject
     private ConnectorRuntime runtime;
@@ -235,7 +232,7 @@ public class MailSessionDeployer implements ResourceDeployer {
 
         if (!msd.isDeployed()) {
             CommonResourceProxy proxy = mailSessionProxyProvider.get();
-            ResourceNamingService resourceNamingService = resourceNamingServiceProvider.get();
+            org.glassfish.resourcebase.resources.naming.ResourceNamingService resourceNamingService = resourceNamingServiceProvider.get();
             proxy.setDescriptor(msd);
 
             String moduleName = null;

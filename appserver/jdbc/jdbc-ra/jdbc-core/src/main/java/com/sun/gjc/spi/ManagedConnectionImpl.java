@@ -43,7 +43,13 @@ package com.sun.gjc.spi;
 import com.sun.appserv.connectors.internal.spi.BadConnectionEventListener;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.gjc.common.DataSourceObjectBuilder;
+import com.sun.gjc.spi.base.*;
+import com.sun.gjc.spi.base.datastructure.Cache;
+import com.sun.gjc.spi.base.datastructure.CacheFactory;
+import com.sun.gjc.util.SQLTraceDelegator;
+import com.sun.gjc.util.StatementLeakDetector;
 import com.sun.logging.LogDomains;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 import javax.resource.NotSupportedException;
 import javax.resource.ResourceException;
@@ -55,22 +61,15 @@ import javax.sql.PooledConnection;
 import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
 import java.io.PrintWriter;
+import java.sql.CallableStatement;
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.sql.PreparedStatement;
-import java.sql.CallableStatement;
-import java.sql.DatabaseMetaData;
-import com.sun.gjc.spi.base.*;
-import com.sun.gjc.spi.base.CacheObjectKey;
-import com.sun.gjc.spi.base.datastructure.Cache;
-import com.sun.gjc.spi.base.datastructure.CacheFactory;
-import com.sun.gjc.util.SQLTraceDelegator;
-import com.sun.gjc.util.StatementLeakDetector;
-import org.glassfish.resources.api.PoolInfo;
 
 /**
  * <code>ManagedConnection</code> implementation for Generic JDBC Connector.

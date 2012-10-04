@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.resources.admin.cli;
+package org.glassfish.resourcebase.resources.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.SystemPropertyConstants;

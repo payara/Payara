@@ -42,8 +42,8 @@ package org.glassfish.resources.beans;
 
 import org.glassfish.resources.api.JavaEEResource;
 import org.glassfish.resources.api.JavaEEResourceBase;
-import org.glassfish.resources.api.ResourceConstants;
-import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resourcebase.resources.api.ResourceConstants;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
 /**
  * Resource info for ExternalJndiResource.

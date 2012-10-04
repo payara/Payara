@@ -40,8 +40,9 @@
 
 package com.sun.enterprise.connectors;
 
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceInfo;
+
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.LazyAssociatableConnectionManager;

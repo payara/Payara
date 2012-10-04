@@ -40,34 +40,33 @@
 
 package com.sun.enterprise.resource.naming;
 
-import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.connectors.ConnectionManagerImpl;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
-import com.sun.enterprise.connectors.ConnectionManagerImpl;
 import com.sun.enterprise.connectors.service.ConnectorAdminServiceUtils;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
-import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
-import com.sun.appserv.connectors.internal.api.ConnectorConstants;
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.resource.DynamicallyReconfigurableResource;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
+import org.glassfish.api.naming.GlassfishNamingManager;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
 import javax.naming.*;
 import javax.naming.spi.ObjectFactory;
 import javax.resource.spi.ManagedConnectionFactory;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Hashtable;
-
-import org.glassfish.api.naming.GlassfishNamingManager;
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceDeployer;
-import org.glassfish.resources.api.ResourceInfo;
 
 /**
  * An object factory to handle creation of Connection Factories

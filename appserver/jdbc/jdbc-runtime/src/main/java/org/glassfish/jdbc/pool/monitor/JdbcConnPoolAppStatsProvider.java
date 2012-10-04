@@ -48,11 +48,11 @@ import org.glassfish.external.statistics.impl.CountStatisticImpl;
 import org.glassfish.external.statistics.impl.RangeStatisticImpl;
 import org.glassfish.external.statistics.impl.StatisticImpl;
 import org.glassfish.gmbal.AMXMetadata;
-import org.glassfish.gmbal.ManagedObject;
 import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
-import org.glassfish.resources.api.PoolInfo;
-import com.sun.enterprise.resource.pool.monitor.*;
+import org.glassfish.gmbal.ManagedObject;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+
 /**
  * StatsProvider object for Jdbc pool monitoring grouped by application names.
  *

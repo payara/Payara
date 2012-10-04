@@ -41,29 +41,28 @@
 package com.sun.enterprise.connectors.module;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.connectors.ConnectorRuntime;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.deployment.*;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
-import org.glassfish.api.ActionReport;
-import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.connectors.config.AdminObjectResource;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.resources.listener.ApplicationScopedResourcesManager;
-import org.glassfish.resources.listener.ResourceManager;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Represents a connector application, one per resource-adapter.
@@ -77,7 +76,7 @@ public class ConnectorApplication implements ApplicationContainer, EventListener
     private String moduleName = "";
     //indicates the "application" (ear) name if its embedded rar
     private String applicationName = null;
-    private ResourceManager resourceManager;
+    private org.glassfish.resourcebase.resources.listener.ResourceManager resourceManager;
     private ApplicationScopedResourcesManager asrManager;
     private ClassLoader loader;
     private ConnectorRuntime runtime;
@@ -86,7 +85,7 @@ public class ConnectorApplication implements ApplicationContainer, EventListener
     private static StringManager localStrings = StringManager.getManager(ConnectorRuntime.class);
     private ResourcesUtil resourcesUtil;
 
-    public ConnectorApplication(String moduleName, String appName, ResourceManager resourceManager,
+    public ConnectorApplication(String moduleName, String appName, org.glassfish.resourcebase.resources.listener.ResourceManager resourceManager,
                                 ApplicationScopedResourcesManager asrManager, ClassLoader loader,
                                 ConnectorRuntime runtime, Events event, ConnectorDescriptor descriptor) {
         this.setModuleName(moduleName);

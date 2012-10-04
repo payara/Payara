@@ -38,21 +38,20 @@
  * holder.
  */
 
-package org.glassfish.resources.util;
-
-import javax.inject.Inject;
-import java.lang.reflect.Proxy;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+package org.glassfish.resourcebase.resources.util;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.resources.api.ResourceConstants;
-import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resourcebase.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
+
+import javax.inject.Inject;
+import java.lang.reflect.Proxy;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 
@@ -114,19 +113,19 @@ public class BindableResourcesHelper {
      * @param resourceTypeToValidate type of resource
      * @return ResourceStatus indicating Success or Failure
      */
-    public org.glassfish.resources.api.ResourceStatus validateBindableResourceForDuplicates(Resources resources, String jndiName,
+    public ResourceStatus validateBindableResourceForDuplicates(Resources resources, String jndiName,
                                                           boolean validateResourceRef, String target,
                                                           Class<? extends BindableResource> resourceTypeToValidate){
         // ensure we don't already have one of this name
         BindableResource duplicateResource =
-                org.glassfish.resources.util.ResourceUtil.getBindableResourceByName(resources,jndiName);
+                ResourceUtil.getBindableResourceByName(resources, jndiName);
         if (duplicateResource != null) {
             String msg ;
             if(validateResourceRef && (getResourceByClass(duplicateResource).equals(resourceTypeToValidate))){
                 if(target.equals("domain")){
                     msg = localStrings.getLocalString("duplicate.resource.found",
                             "A {0} by name {1} already exists.", getResourceTypeName(duplicateResource), jndiName);
-                } else if (habitat.<org.glassfish.resources.admin.cli.ResourceUtil>getService(org.glassfish.resources.admin.cli.ResourceUtil.class).getTargetsReferringResourceRef(jndiName).contains(target)) {
+                } else if (habitat.<org.glassfish.resourcebase.resources.admin.cli.ResourceUtil>getService(ResourceUtil.class).getTargetsReferringResourceRef(jndiName).contains(target)) {
                     msg = localStrings.getLocalString("duplicate.resource.found.in.target",
                             "A {0} by name {1} already exists with resource-ref in target {2}.",
                             getResourceTypeName(duplicateResource), jndiName, target);
@@ -141,9 +140,9 @@ public class BindableResourcesHelper {
                 msg = localStrings.getLocalString("duplicate.resource.found",
                         "A {0} by name {1} already exists.", getResourceTypeName(duplicateResource), jndiName);
             }
-            return new org.glassfish.resources.api.ResourceStatus(org.glassfish.resources.api.ResourceStatus.FAILURE, msg, true);
+            return new ResourceStatus(ResourceStatus.FAILURE, msg, true);
         }else{
-            return new org.glassfish.resources.api.ResourceStatus(org.glassfish.resources.api.ResourceStatus.SUCCESS, "Validation Successful");
+            return new ResourceStatus(ResourceStatus.SUCCESS, "Validation Successful");
         }
     }
 

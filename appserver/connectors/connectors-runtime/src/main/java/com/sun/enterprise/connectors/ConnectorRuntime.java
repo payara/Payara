@@ -47,7 +47,6 @@ import com.sun.enterprise.connectors.authentication.AuthenticationService;
 import com.sun.enterprise.connectors.connector.module.RarType;
 import com.sun.enterprise.connectors.deployment.util.ConnectorArchivist;
 import com.sun.enterprise.connectors.module.ConnectorApplication;
-import com.sun.enterprise.connectors.naming.ConnectorNamingEventNotifier;
 import com.sun.enterprise.connectors.service.*;
 import com.sun.enterprise.connectors.util.*;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
@@ -78,15 +77,13 @@ import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.ConnectorClassLoaderService;
 import org.glassfish.internal.api.DelegatingClassLoader;
 import org.glassfish.internal.data.ApplicationRegistry;
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceDeployer;
-import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resources.api.ResourcesRegistry;
-import org.glassfish.resources.listener.ResourceManager;
-import org.glassfish.resources.naming.ResourceNamingService;
-import org.glassfish.resources.util.ResourceManagerFactory;
 import org.glassfish.server.ServerEnvironmentImpl;
-
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
+import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
+import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.types.Property;
@@ -218,7 +215,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     private Provider<Domain> domainProvider;
 
     @Inject
-    private Provider<ResourceManager> resourceManagerProvider;
+    private Provider<org.glassfish.resourcebase.resources.listener.ResourceManager> resourceManagerProvider;
 
     @Inject
     private ProcessEnvironment processEnvironment;
@@ -1573,7 +1570,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
         resourceAdapterAdmService.associateResourceAdapter(rarName,raa);
     }
 
-    public ResourceManager getGlobalResourceManager(){
+    public org.glassfish.resourcebase.resources.listener.ResourceManager getGlobalResourceManager(){
         return resourceManagerProvider.get();
     }
 }

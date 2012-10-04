@@ -45,7 +45,10 @@ import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.I18n;
+import org.glassfish.resourcebase.resources.api.ResourceStatus;
+import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
 import org.glassfish.resources.javamail.config.MailResource;
+import org.glassfish.resourcebase.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -83,31 +86,31 @@ public class JavaMailResourceManager implements org.glassfish.resources.admin.cl
     private String description = null;
 
     @Inject
-    private org.glassfish.resources.admin.cli.ResourceUtil resourceUtil;
+    private org.glassfish.resourcebase.resources.admin.cli.ResourceUtil resourceUtil;
 
     @Inject
-    private org.glassfish.resources.util.BindableResourcesHelper resourcesHelper;
+    private BindableResourcesHelper resourcesHelper;
 
     public String getResourceType() {
         return ServerTags.MAIL_RESOURCE;
     }
 
-    public org.glassfish.resources.api.ResourceStatus create(Resources resources, HashMap attributes, final Properties properties,
+    public ResourceStatus create(Resources resources, HashMap attributes, final Properties properties,
                                  String target) throws Exception {
         setAttributes(attributes, target);
 
-        org.glassfish.resources.api.ResourceStatus validationStatus = isValid(resources, true, target);
-        if(validationStatus.getStatus() == org.glassfish.resources.api.ResourceStatus.FAILURE){
+        ResourceStatus validationStatus = isValid(resources, true, target);
+        if(validationStatus.getStatus() == ResourceStatus.FAILURE){
             return validationStatus;
         }
 
         // ensure we don't already have one of this name
-        if (org.glassfish.resources.util.ResourceUtil.getBindableResourceByName(resources, jndiName) != null) {
+        if (ResourceUtil.getBindableResourceByName(resources, jndiName) != null) {
             String msg = localStrings.getLocalString(
                     "create.mail.resource.duplicate.1",
                     "A Mail Resource named {0} already exists.",
                     jndiName);
-            return new org.glassfish.resources.api.ResourceStatus(org.glassfish.resources.api.ResourceStatus.FAILURE, msg, true);
+            return new ResourceStatus(ResourceStatus.FAILURE, msg, true);
         }
 
         try {
@@ -126,40 +129,40 @@ public class JavaMailResourceManager implements org.glassfish.resources.admin.cl
             String msg = localStrings.getLocalString(
                     "create.mail.resource.success",
                     "Mail Resource {0} created.", jndiName);
-            return new org.glassfish.resources.api.ResourceStatus(org.glassfish.resources.api.ResourceStatus.SUCCESS, msg, true);
+            return new ResourceStatus(ResourceStatus.SUCCESS, msg, true);
         } catch (TransactionFailure tfe) {
             String msg = localStrings.getLocalString("" +
                     "create.mail.resource.fail",
                     "Unable to create Mail Resource {0}.", jndiName) +
                     " " + tfe.getLocalizedMessage();
-            return new org.glassfish.resources.api.ResourceStatus(org.glassfish.resources.api.ResourceStatus.FAILURE, msg, true);
+            return new ResourceStatus(ResourceStatus.FAILURE, msg, true);
         }
     }
 
-    private org.glassfish.resources.api.ResourceStatus isValid(Resources resources, boolean validateResourceRef, String target){
-        org.glassfish.resources.api.ResourceStatus status ;
+    private ResourceStatus isValid(Resources resources, boolean validateResourceRef, String target){
+        ResourceStatus status ;
         if (mailHost == null) {
             String msg = localStrings.getLocalString("create.mail.resource.noHostName",
                     "No host name defined for Mail Resource.");
-            return new org.glassfish.resources.api.ResourceStatus(org.glassfish.resources.api.ResourceStatus.FAILURE, msg, true);
+            return new ResourceStatus(ResourceStatus.FAILURE, msg, true);
         }
 
         if (mailUser == null) {
             String msg = localStrings.getLocalString("create.mail.resource.noUserName",
                     "No user name defined for Mail Resource.");
-            return new org.glassfish.resources.api.ResourceStatus(org.glassfish.resources.api.ResourceStatus.FAILURE, msg, true);
+            return new ResourceStatus(ResourceStatus.FAILURE, msg, true);
         }
 
         if (fromAddress == null) {
             String msg = localStrings.getLocalString("create.mail.resource.noFrom",
                     "From not defined for Mail Resource.");
-            return new org.glassfish.resources.api.ResourceStatus(org.glassfish.resources.api.ResourceStatus.FAILURE, msg, true);
+            return new ResourceStatus(ResourceStatus.FAILURE, msg, true);
         }
 
 
         status = resourcesHelper.validateBindableResourceForDuplicates(resources, jndiName, validateResourceRef,
                 target, MailResource.class);
-        if(status.getStatus() == org.glassfish.resources.api.ResourceStatus.FAILURE){
+        if(status.getStatus() == ResourceStatus.FAILURE){
             return status;
         }
 
@@ -216,13 +219,13 @@ public class JavaMailResourceManager implements org.glassfish.resources.admin.cl
     public Resource createConfigBean(Resources resources, HashMap attributes, Properties properties, boolean validate)
             throws Exception {
         setAttributes(attributes, null);
-        org.glassfish.resources.api.ResourceStatus status = null;
+        ResourceStatus status = null;
         if(!validate){
-            status = new org.glassfish.resources.api.ResourceStatus(org.glassfish.resources.api.ResourceStatus.SUCCESS,"");
+            status = new ResourceStatus(ResourceStatus.SUCCESS,"");
         }else{
             status = isValid(resources, false, null);
         }
-        if(status.getStatus() == org.glassfish.resources.api.ResourceStatus.SUCCESS){
+        if(status.getStatus() == ResourceStatus.SUCCESS){
             return createConfigBean(resources, properties);
         }else{
             throw new ResourceException(status.getMessage());

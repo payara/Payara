@@ -48,35 +48,29 @@ import com.sun.gjc.monitoring.JdbcStatsProvider;
 import com.sun.gjc.util.SQLTraceDelegator;
 import com.sun.gjc.util.SecurityUtils;
 import com.sun.logging.LogDomains;
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.ResourceAllocationException;
-import javax.resource.spi.security.PasswordCredential;
-import javax.sql.PooledConnection;
-import java.sql.Connection;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.Timer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.resource.spi.ConfigProperty;
-import javax.resource.spi.ResourceAdapterAssociation;
 import org.glassfish.api.jdbc.ConnectionValidation;
 import org.glassfish.api.jdbc.SQLTraceListener;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
-import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+
+import javax.resource.ResourceException;
+import javax.resource.spi.ConfigProperty;
+import javax.resource.spi.ConnectionRequestInfo;
+import javax.resource.spi.ResourceAdapterAssociation;
+import javax.resource.spi.ResourceAllocationException;
+import javax.resource.spi.security.PasswordCredential;
+import javax.sql.PooledConnection;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * <code>ManagedConnectionFactory</code> implementation for Generic JDBC Connector.

@@ -40,28 +40,29 @@
 
 package com.sun.enterprise.connectors;
 
-import com.sun.appserv.connectors.internal.api.*;
-import org.glassfish.connectors.config.ResourceAdapterConfig;
-import org.glassfish.resources.api.ResourceInfo;
-import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.annotations.Service;
-
-import org.glassfish.hk2.api.PerLookup;
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
+import com.sun.appserv.connectors.internal.api.WorkContextHandler;
 import com.sun.enterprise.connectors.util.ConnectorDDTransformUtils;
-import com.sun.enterprise.connectors.util.SetMethodAction;
 import com.sun.enterprise.connectors.util.ConnectorJavaBeanValidator;
-import com.sun.enterprise.deployment.ConnectorDescriptor;
+import com.sun.enterprise.connectors.util.SetMethodAction;
 import com.sun.enterprise.deployment.AdminObject;
 import com.sun.enterprise.deployment.ConnectorConfigProperty;
-import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.resource.beans.AdministeredObjectResource;
+import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
+import org.glassfish.connectors.config.ResourceAdapterConfig;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.types.Property;
 
 import javax.inject.Inject;
+import javax.naming.NamingException;
+import javax.naming.Reference;
 import javax.resource.ResourceException;
 import javax.resource.spi.*;
-import javax.naming.Reference;
-import javax.naming.NamingException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;

@@ -48,16 +48,14 @@ import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.logging.LogDomains;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.glassfish.connectors.config.ConnectorResource;
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceDeployer;
-import org.glassfish.resources.api.ResourceDeployerInfo;
-import org.glassfish.resources.api.ResourceInfo;
-
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
+import org.glassfish.resourcebase.resources.api.ResourceDeployerInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

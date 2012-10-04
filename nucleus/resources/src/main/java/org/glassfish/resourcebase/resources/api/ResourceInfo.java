@@ -38,14 +38,14 @@
  * holder.
  */
 
-package org.glassfish.resources.api;
+package org.glassfish.resourcebase.resources.api;
 
 
 /**
  * Represents resource information (typically, bindable-resource)
  * @author Jagadish Ramu
  */
-public class ResourceInfo implements org.glassfish.resources.api.GenericResourceInfo {
+public class ResourceInfo implements org.glassfish.resourcebase.resources.api.GenericResourceInfo {
 
     private String name;
     private String applicationName = null;

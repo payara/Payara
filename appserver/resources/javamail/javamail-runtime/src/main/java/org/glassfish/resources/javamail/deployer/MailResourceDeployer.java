@@ -52,7 +52,12 @@ import org.glassfish.resources.api.*;
 import org.glassfish.resources.javamail.config.MailResource;
 import org.glassfish.resources.javamail.naming.MailNamingObjectFactory;
 import org.glassfish.resources.naming.SerializableObjectRefAddr;
-import org.glassfish.resources.util.ResourceUtil;
+import org.glassfish.resourcebase.resources.api.ResourceDeployer;
+import org.glassfish.resourcebase.resources.api.ResourceDeployerInfo;
+import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
+import org.glassfish.resourcebase.resources.api.ResourceConflictException;
+import org.glassfish.resourcebase.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.types.Property;
 
@@ -84,7 +89,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
 
 
     @Inject
-    private org.glassfish.resources.naming.ResourceNamingService namingService;
+    private ResourceNamingService namingService;
 
     // StringManager for this deployer
     private static final StringManager localStrings =

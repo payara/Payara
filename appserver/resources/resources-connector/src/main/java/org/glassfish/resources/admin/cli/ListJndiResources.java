@@ -50,17 +50,15 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.resources.config.ExternalJndiResource;
-import org.glassfish.resources.util.BindableResourcesHelper;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.resources.config.ExternalJndiResource;
+import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import javax.inject.Inject;
 
 /**
  * List Jndi Resources command

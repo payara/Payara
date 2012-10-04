@@ -47,8 +47,8 @@ import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.connectors.config.WorkSecurityMap;
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.jvnet.hk2.annotations.Contract;
 
 import javax.naming.NamingException;

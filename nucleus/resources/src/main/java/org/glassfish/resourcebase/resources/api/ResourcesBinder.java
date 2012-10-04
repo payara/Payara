@@ -38,18 +38,17 @@
  * holder.
  */
 
-package org.glassfish.resources.api;
+package org.glassfish.resourcebase.resources.api;
 
 import com.sun.enterprise.config.serverbeans.Resource;
-import org.glassfish.resources.naming.ResourceNamingService;
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.naming.GlassfishNamingManager;
+import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.naming.NamingException;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Binds proxy objects in the jndi namespace for all the resources and pools defined in the
@@ -68,17 +67,17 @@ public class ResourcesBinder {
     private Logger logger;
 
     @Inject
-    private Provider<ResourceProxy> resourceProxyProvider;
+    private Provider<org.glassfish.resourcebase.resources.api.ResourceProxy> resourceProxyProvider;
 
     @Inject
-    private ResourceNamingService resourceNamingService;
+    private org.glassfish.resourcebase.resources.naming.ResourceNamingService resourceNamingService;
 
     /**
      * deploy proxy for the resource
      * @param resourceInfo   jndi name with which the resource need to be deployed
      * @param resource config object of the resource
      */
-    public void deployResource( org.glassfish.resources.api.ResourceInfo resourceInfo, Resource resource){
+    public void deployResource(org.glassfish.resourcebase.resources.api.ResourceInfo resourceInfo, Resource resource){
         try{
             bindResource(resourceInfo, resource);
         }catch(NamingException ne){
@@ -93,8 +92,8 @@ public class ResourcesBinder {
      * @param jndiName jndi name with which the resource need to be deployed
      * @throws NamingException
      */
-    private void bindResource(org.glassfish.resources.api.ResourceInfo resourceInfo, Resource resource) throws NamingException {
-        ResourceProxy proxy = resourceProxyProvider.get();
+    private void bindResource(org.glassfish.resourcebase.resources.api.ResourceInfo resourceInfo, Resource resource) throws NamingException {
+        org.glassfish.resourcebase.resources.api.ResourceProxy proxy = resourceProxyProvider.get();
         proxy.setResource(resource);
         proxy.setResourceInfo(resourceInfo);
         resourceNamingService.publishObject(resourceInfo, proxy, true);

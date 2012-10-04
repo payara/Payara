@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,33 +38,16 @@
  * holder.
  */
 
-package org.glassfish.resources.naming;
-
-import org.glassfish.api.naming.JNDIBinding;
+package org.glassfish.resourcebase.resources.listener;
 
 
-/**
- * resource binding for application scoped resource
- * @author Jagadish Ramu
- *
- */
-public class ApplicationScopedResourceBinding implements JNDIBinding {
+import org.jvnet.hk2.annotations.Contract;
 
-    private String name;
-    private Object value;
-    public ApplicationScopedResourceBinding(String name, Object value){
-        if(!(name.contains(ResourceNamingService.JAVA_APP_SCOPE_PREFIX)
-                /*|| name.contains(ResourceNamingService.JAVA_GLOBAL_SCOPE_PREFIX)*/)){
-            name = ResourceNamingService.JAVA_APP_SCOPE_PREFIX + name;
-        }
-        this.name = name;
-        this.value = value;
-    }
-    public String getName() {
-        return name;
-    }
 
-    public Object getValue() {
-        return value;
-    }
+@Contract
+
+public interface ResourceManagerLifecycleListener {
+    public enum EVENT {STARTUP, SHUTDOWN}
+
+    void resourceManagerLifecycleEvent(EVENT event);
 }

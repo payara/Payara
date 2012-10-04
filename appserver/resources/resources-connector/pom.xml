@@ -93,7 +93,12 @@
             <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
+	<dependency>
+            <groupId>org.glassfish.main.resourcebase.resources</groupId>
+            <artifactId>nucleus-resources</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+	<dependency>
             <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>

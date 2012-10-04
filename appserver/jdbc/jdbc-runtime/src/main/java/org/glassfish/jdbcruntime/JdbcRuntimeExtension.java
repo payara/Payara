@@ -45,25 +45,22 @@ import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Resource;
-import com.sun.enterprise.config.serverbeans.ResourcePool;
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.connectors.ConnectorRuntime;
+import com.sun.enterprise.connectors.ConnectorRuntimeExtension;
 import com.sun.enterprise.connectors.DeferredResourceConfig;
-import org.glassfish.jdbcruntime.service.JdbcDataSource;
 import com.sun.enterprise.connectors.util.ClassLoadingUtility;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.ResourcePrincipal;
-import org.glassfish.jdbc.deployer.DataSourceDefinitionDeployer;
-import com.sun.enterprise.resource.pool.PoolLifeCycleListenerRegistry;
-import com.sun.enterprise.resource.pool.PoolManager;
-import org.glassfish.jdbc.pool.monitor.*;
 import com.sun.logging.LogDomains;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.jdbc.config.JdbcResource;
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.jdbc.deployer.DataSourceDefinitionDeployer;
+import org.glassfish.jdbcruntime.service.JdbcDataSource;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -72,8 +69,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import com.sun.enterprise.connectors.ConnectorRuntimeExtension;
 
 /**
  * @author Shalini M

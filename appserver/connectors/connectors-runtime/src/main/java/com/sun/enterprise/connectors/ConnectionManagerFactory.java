@@ -40,10 +40,10 @@
 
 package com.sun.enterprise.connectors;
 
-import com.sun.logging.LogDomains;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceInfo;
+import com.sun.logging.LogDomains;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
 import javax.resource.spi.ConnectionManager;
 import java.util.logging.Level;

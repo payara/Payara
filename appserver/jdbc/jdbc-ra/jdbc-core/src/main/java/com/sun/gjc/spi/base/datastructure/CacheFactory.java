@@ -43,14 +43,14 @@ package com.sun.gjc.spi.base.datastructure;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.gjc.common.DataSourceObjectBuilder;
 import com.sun.logging.LogDomains;
-import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 
+import javax.resource.ResourceException;
 import java.lang.reflect.Constructor;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.resource.ResourceException;
 
 /**
  * Creates an appropriate statement cache datastructure used in the 

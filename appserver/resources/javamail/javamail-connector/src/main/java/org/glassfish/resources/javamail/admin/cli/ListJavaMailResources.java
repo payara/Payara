@@ -50,16 +50,15 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.resources.javamail.config.MailResource;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.resources.javamail.config.MailResource;
+import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import javax.inject.Inject;
 
 /**
  * List Mail Resources command
@@ -89,7 +88,7 @@ public class ListJavaMailResources implements AdminCommand {
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;
 
     @Inject
-    private org.glassfish.resources.util.BindableResourcesHelper bindableResourcesHelper;
+    private BindableResourcesHelper bindableResourcesHelper;
 
     @Inject
     private Domain domain;

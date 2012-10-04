@@ -40,19 +40,23 @@
 
 package com.sun.enterprise.resource.beans;
 
-import com.sun.enterprise.deployment.AdminObject;
-import com.sun.enterprise.deployment.ConnectorConfigProperty ;
-import com.sun.enterprise.connectors.util.SetMethodAction;
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.appserv.connectors.internal.api.PoolingException;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
-import com.sun.appserv.connectors.internal.api.PoolingException;
-import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.enterprise.connectors.util.SetMethodAction;
+import com.sun.enterprise.deployment.AdminObject;
+import com.sun.enterprise.deployment.ConnectorConfigProperty;
 import com.sun.logging.LogDomains;
 import org.glassfish.resources.api.JavaEEResource;
 import org.glassfish.resources.api.JavaEEResourceBase;
-import org.glassfish.resources.api.ResourceInfo;
 import org.glassfish.resources.naming.SerializableObjectRefAddr;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
+import javax.naming.Reference;
+import javax.resource.ResourceException;
+import javax.resource.spi.ResourceAdapter;
+import javax.resource.spi.ResourceAdapterAssociation;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
@@ -60,10 +64,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.naming.Reference;
-import javax.resource.spi.ResourceAdapterAssociation;
-import javax.resource.spi.ResourceAdapter;
-import javax.resource.ResourceException;
 
 /**
  * Resource infor for Connector administered objects

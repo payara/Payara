@@ -42,12 +42,10 @@ package com.sun.enterprise.connectors;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.enterprise.config.serverbeans.Resource;
-import com.sun.enterprise.resource.pool.monitor.ConnectionPoolAppProbeProvider;
-import com.sun.enterprise.resource.pool.monitor.ConnectionPoolProbeProvider;
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceInfo;
-import org.jvnet.hk2.annotations.Contract;
 import com.sun.enterprise.deployment.Application;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
+import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import java.util.Collection;

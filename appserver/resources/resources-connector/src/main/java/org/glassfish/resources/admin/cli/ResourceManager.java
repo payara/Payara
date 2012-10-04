@@ -42,11 +42,11 @@ package org.glassfish.resources.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
+import org.glassfish.resourcebase.resources.api.ResourceStatus;
+import org.jvnet.hk2.annotations.Contract;
 
 import java.util.HashMap;
 import java.util.Properties;
-
-import org.jvnet.hk2.annotations.Contract;
 
 /**
  * Contract for all ResourceManagers
@@ -65,7 +65,7 @@ public interface ResourceManager {
      * @return ResourceStatus indicating the status of resource creation
      * @throws Exception when unable to create the resource
      */
-    org.glassfish.resources.api.ResourceStatus create(Resources resources, HashMap attributes, final Properties properties, String target)
+    ResourceStatus create(Resources resources, HashMap attributes, final Properties properties, String target)
             throws Exception ;
 
     /**

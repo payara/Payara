@@ -41,33 +41,32 @@
 package com.sun.enterprise.resource.pool.monitor;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
-import com.sun.enterprise.config.serverbeans.*;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.ResourcePool;
+import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.connectors.ConnectionPoolMonitoringExtension;
-import com.sun.enterprise.connectors.util.ResourcesUtil;
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.connectors.ConnectorRuntime;
+import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.resource.listener.PoolLifeCycle;
 import com.sun.enterprise.resource.pool.PoolLifeCycleListenerRegistry;
 import com.sun.enterprise.resource.pool.PoolLifeCycleRegistry;
 import com.sun.enterprise.resource.pool.PoolManager;
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.sun.logging.LogDomains;
+import org.glassfish.connectors.config.ConnectorConnectionPool;
+import org.glassfish.external.probe.provider.PluginPoint;
+import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
-
-import org.glassfish.connectors.config.ConnectorConnectionPool;
-import org.glassfish.resources.api.PoolInfo;
-
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.glassfish.external.probe.provider.PluginPoint;
-import org.glassfish.external.probe.provider.StatsProviderManager;
-import org.glassfish.hk2.api.PostConstruct;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Bootstrap operations of stats provider objects are done by this class.

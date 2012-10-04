@@ -43,7 +43,7 @@ package org.glassfish.persistence.common;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.OpsParams;
-import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;

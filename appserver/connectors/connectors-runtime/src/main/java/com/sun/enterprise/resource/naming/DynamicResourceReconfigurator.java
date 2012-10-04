@@ -46,8 +46,8 @@ import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.resource.DynamicallyReconfigurableResource;
 import com.sun.logging.LogDomains;
-import org.glassfish.resources.api.ResourceInfo;
-import org.glassfish.resources.naming.ResourceNamingService;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
+import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.RetryableUnavailableException;
@@ -98,7 +98,7 @@ public class DynamicResourceReconfigurator implements InvocationHandler, Dynamic
                 Hashtable env = new Hashtable();
                 env.put(ConnectorConstants.DYNAMIC_RECONFIGURATION_PROXY_CALL, "TRUE");
                 //TODO ASR : resource-naming-service need to support "env" for module/app scope also
-                ResourceNamingService  namingService = ConnectorRuntime.getRuntime().getResourceNamingService();
+                ResourceNamingService namingService = ConnectorRuntime.getRuntime().getResourceNamingService();
                 actualObject = namingService.lookup(resourceInfo, resourceInfo.getName(), env);
                 proxies.put(this, true);
                 debug("actualObject : " + actualObject);

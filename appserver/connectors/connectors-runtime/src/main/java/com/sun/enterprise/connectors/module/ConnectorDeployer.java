@@ -41,37 +41,36 @@
 package com.sun.enterprise.connectors.module;
 
 import com.sun.appserv.connectors.internal.api.ConnectorClassFinder;
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.appserv.connectors.internal.api.ConnectorConstants;
-import com.sun.enterprise.connectors.ConnectorRuntime;
-import com.sun.enterprise.connectors.ConnectorRegistry;
-import com.sun.enterprise.connectors.util.ResourcesUtil;
-import com.sun.enterprise.deployment.ConnectorDescriptor;
-import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.connectors.ConnectorRegistry;
+import com.sun.enterprise.connectors.ConnectorRuntime;
+import com.sun.enterprise.connectors.util.ResourcesUtil;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.MetaData;
-import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.deployment.OpsParams;
+import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.connectors.config.*;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.internal.api.ClassLoaderHierarchy;
+import org.glassfish.internal.api.DelegatingClassLoader;
 import org.glassfish.internal.api.Target;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.javaee.core.deployment.JavaEEDeployer;
-import org.glassfish.internal.api.ClassLoaderHierarchy;
-import org.glassfish.internal.api.DelegatingClassLoader;
 import org.glassfish.resources.listener.ApplicationScopedResourcesManager;
-import org.glassfish.resources.listener.ResourceManager;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.PreDestroy;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -79,11 +78,11 @@ import org.jvnet.hk2.config.TransactionFailure;
 import javax.inject.Inject;
 import javax.validation.*;
 import javax.validation.bootstrap.GenericBootstrap;
+import java.beans.PropertyVetoException;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.beans.PropertyVetoException;
 
 /**
  * Deployer for a resource-adapter.
@@ -101,7 +100,7 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
     private ClassLoaderHierarchy clh;
 
     @Inject
-    private ResourceManager resourceManager;
+    private org.glassfish.resourcebase.resources.listener.ResourceManager resourceManager;
 
     @Inject
     private ApplicationScopedResourcesManager asrManager;

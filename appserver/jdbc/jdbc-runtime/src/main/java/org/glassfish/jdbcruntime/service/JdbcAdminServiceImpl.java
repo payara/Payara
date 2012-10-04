@@ -41,30 +41,28 @@
 package org.glassfish.jdbcruntime.service;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
-import com.sun.enterprise.connectors.ConnectorRuntime;
-import com.sun.enterprise.connectors.util.DriverLoader;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
+import com.sun.enterprise.connectors.ConnectorRuntime;
+import com.sun.enterprise.connectors.service.ConnectorAdminServiceUtils;
+import com.sun.enterprise.connectors.service.ConnectorAdminServicesFactory;
+import com.sun.enterprise.connectors.service.ConnectorConnectionPoolAdminServiceImpl;
+import com.sun.enterprise.connectors.service.ConnectorService;
 import com.sun.enterprise.connectors.util.ConnectionPoolObjectsUtils;
-import org.glassfish.resources.api.PoolInfo;
-
+import com.sun.enterprise.connectors.util.DriverLoader;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
 
+import javax.inject.Singleton;
+import javax.naming.NamingException;
+import javax.resource.ResourceException;
+import javax.resource.spi.ManagedConnection;
+import javax.resource.spi.ManagedConnectionFactory;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.DatabaseMetaData;
 import java.util.*;
 import java.util.logging.Level;
-import javax.naming.NamingException;
-import javax.resource.ResourceException;
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.security.auth.Subject;
-import com.sun.enterprise.connectors.service.ConnectorService;
-import com.sun.enterprise.connectors.service.ConnectorConnectionPoolAdminServiceImpl;
-import com.sun.enterprise.connectors.service.ConnectorAdminServiceUtils;
-import com.sun.enterprise.connectors.service.ConnectorAdminServicesFactory;
 
 /**
  * Jdbc admin service performs Jdbc related operations for administration.

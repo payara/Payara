@@ -43,6 +43,7 @@ package org.glassfish.resources.javamail.beans;
 import com.sun.enterprise.deployment.interfaces.MailResourceIntf;
 import org.glassfish.resources.api.JavaEEResource;
 import org.glassfish.resources.api.JavaEEResourceBase;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
 /**
  * Resource info for MailResource.
@@ -64,11 +65,11 @@ public class MailResource extends JavaEEResourceBase implements MailResourceIntf
     private String mailFrom_;
     private boolean debug_;
 
-    public MailResource(org.glassfish.resources.api.ResourceInfo resourceInfo) {
+    public MailResource(ResourceInfo resourceInfo) {
         super(resourceInfo);
     }
 
-    protected JavaEEResource doClone(org.glassfish.resources.api.ResourceInfo resourceInfo) {
+    protected JavaEEResource doClone(ResourceInfo resourceInfo) {
         MailResource clone = new MailResource(resourceInfo);
         clone.setResType(getResType());
         clone.setFactoryClass(getFactoryClass());

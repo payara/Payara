@@ -40,26 +40,24 @@
 
 package com.sun.enterprise.connectors.service;
 
-import com.sun.appserv.connectors.internal.api.*;
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.appserv.connectors.internal.spi.ConnectorNamingEvent;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
 import com.sun.enterprise.connectors.ConnectorDescriptorInfo;
-import com.sun.enterprise.connectors.ConnectorRuntime;
-import com.sun.enterprise.connectors.naming.ConnectorResourceNamingEventNotifier;
-import com.sun.appserv.connectors.internal.spi.ConnectorNamingEvent;
 import com.sun.enterprise.connectors.naming.ConnectorNamingEventNotifier;
-import com.sun.enterprise.connectors.util.ResourcesUtil;
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceInfo;
-import org.glassfish.resources.naming.*;
+import com.sun.enterprise.connectors.naming.ConnectorResourceNamingEventNotifier;
+import org.glassfish.resources.naming.SerializableObjectRefAddr;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
+import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
 
-import javax.naming.*;
-import javax.sql.DataSource;
-import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+import javax.naming.RefAddr;
+import javax.naming.StringRefAddr;
 import java.util.Hashtable;
-import java.util.logging.Logger;
 import java.util.logging.Level;
 
 /**

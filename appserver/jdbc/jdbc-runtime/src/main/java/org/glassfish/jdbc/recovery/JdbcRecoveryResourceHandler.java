@@ -40,41 +40,39 @@
 
 package org.glassfish.jdbc.recovery;
 
+import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
-
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jdbc.util.JdbcResourcesUtil;
-import com.sun.enterprise.transaction.config.TransactionService;
+import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.deployment.ResourcePrincipal;
 import com.sun.enterprise.transaction.api.XAResourceWrapper;
+import com.sun.enterprise.transaction.config.TransactionService;
 import com.sun.enterprise.transaction.spi.RecoveryResourceHandler;
 import com.sun.logging.LogDomains;
-import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
-import com.sun.enterprise.connectors.util.ResourcesUtil;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.jdbc.config.JdbcResource;
-import org.glassfish.resources.api.PoolInfo;
-import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.jdbc.util.JdbcResourcesUtil;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.types.Property;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.security.PasswordCredential;
 import javax.resource.ResourceException;
+import javax.resource.spi.ManagedConnection;
+import javax.resource.spi.ManagedConnectionFactory;
+import javax.resource.spi.security.PasswordCredential;
 import javax.security.auth.Subject;
 import javax.transaction.xa.XAResource;
+import java.security.Principal;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.*;
-import java.security.Principal;
-import org.glassfish.api.admin.ServerEnvironment;
-
-import org.jvnet.hk2.annotations.Service;
 
 /**
  * Recovery Handler for Jdbc Resources

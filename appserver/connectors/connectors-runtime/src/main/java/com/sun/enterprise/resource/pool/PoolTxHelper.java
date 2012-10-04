@@ -40,18 +40,18 @@
 
 package com.sun.enterprise.resource.pool;
 
-import com.sun.enterprise.resource.ResourceState;
-import com.sun.enterprise.resource.ResourceHandle;
 import com.sun.enterprise.connectors.ConnectorRuntime;
+import com.sun.enterprise.resource.ResourceHandle;
+import com.sun.enterprise.resource.ResourceState;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.logging.LogDomains;
-import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.*;
 
 
 /**

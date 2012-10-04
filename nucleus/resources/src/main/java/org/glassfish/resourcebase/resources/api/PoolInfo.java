@@ -38,14 +38,14 @@
  * holder.
  */
 
-package org.glassfish.resources.api;
+package org.glassfish.resourcebase.resources.api;
 
 
 /**
  * Represents pool information.
  * @author Jagadish Ramu
  */
-public class PoolInfo implements org.glassfish.resources.api.GenericResourceInfo {
+public class PoolInfo implements org.glassfish.resourcebase.resources.api.GenericResourceInfo {
 
     private String name;
     private String applicationName = null;

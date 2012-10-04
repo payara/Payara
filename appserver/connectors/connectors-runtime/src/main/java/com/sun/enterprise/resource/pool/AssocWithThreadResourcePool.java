@@ -40,15 +40,15 @@
 
 package com.sun.enterprise.resource.pool;
 
-import com.sun.enterprise.resource.allocator.ResourceAllocator;
+import com.sun.appserv.connectors.internal.api.PoolingException;
 import com.sun.enterprise.resource.AssocWithThreadResourceHandle;
 import com.sun.enterprise.resource.ResourceHandle;
 import com.sun.enterprise.resource.ResourceSpec;
-import com.sun.appserv.connectors.internal.api.PoolingException;
+import com.sun.enterprise.resource.allocator.ResourceAllocator;
 import com.sun.enterprise.resource.pool.datastructure.DataStructureFactory;
 import com.sun.enterprise.resource.pool.resizer.AssocWithThreadPoolResizer;
 import com.sun.enterprise.resource.pool.resizer.Resizer;
-import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 import javax.transaction.Transaction;
 import java.util.Hashtable;

@@ -43,15 +43,13 @@ package org.glassfish.resources.module;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.container.Container;
 import org.glassfish.api.deployment.Deployer;
-import org.glassfish.resources.api.ResourceConstants;
+import org.glassfish.resourcebase.resources.api.ResourceConstants;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.inject.Inject;
 
 
 @Service(name = "org.glassfish.resources.module.ResourcesContainer")

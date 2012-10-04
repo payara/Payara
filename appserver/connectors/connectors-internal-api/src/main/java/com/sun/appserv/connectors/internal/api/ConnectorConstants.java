@@ -40,11 +40,11 @@
 
 package com.sun.appserv.connectors.internal.api;
 
-import org.glassfish.resources.api.ResourceConstants;
+import org.glassfish.resourcebase.resources.api.ResourceConstants;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Arrays;
 
 
 /** 

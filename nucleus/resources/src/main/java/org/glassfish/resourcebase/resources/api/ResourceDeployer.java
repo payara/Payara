@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.resources.api;
+package org.glassfish.resourcebase.resources.api;
 
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Resource;
@@ -156,5 +156,5 @@ public interface ResourceDeployer {
 
 
     void validatePreservedResource(Application oldApp, Application newApp, Resource resource, Resources allResources)
-            throws ResourceConflictException;
+            throws org.glassfish.resourcebase.resources.api.ResourceConflictException;
 }

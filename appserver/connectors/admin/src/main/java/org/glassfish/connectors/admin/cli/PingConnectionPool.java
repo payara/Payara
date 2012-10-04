@@ -48,11 +48,10 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.jdbc.config.JdbcConnectionPool;
-import org.glassfish.resources.api.PoolInfo;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.jdbc.config.JdbcConnectionPool;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 
