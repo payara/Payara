@@ -40,34 +40,46 @@
 
 package com.sun.appserv.connectors.internal;
 
-import com.sun.appserv.connectors.internal.api.ConnectorConstants;
-import com.sun.appserv.connectors.internal.api.ConnectorDescriptorProxy;
-import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.logging.LogDomains;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.naming.GlassfishNamingManager;
-import org.glassfish.internal.api.ClassLoaderHierarchy;
-import org.glassfish.resourcebase.resources.api.PoolInfo;
-import org.glassfish.resourcebase.resources.util.ResourceUtil;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
-import org.jvnet.hk2.config.*;
+import java.beans.PropertyChangeEvent;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import javax.naming.NamingException;
-import java.beans.PropertyChangeEvent;
-import java.util.Collection;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.naming.GlassfishNamingManager;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.ClassLoaderHierarchy;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.util.ResourceUtil;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.Changed;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.NotProcessed;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.appserv.connectors.internal.api.ConnectorDescriptorProxy;
+import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Module;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.ResourcePool;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.logging.LogDomains;
 
 
 /**
@@ -102,7 +114,7 @@ public class ConnectorResourceManagerLifecycleListener implements org.glassfish.
     private Applications applications;
 
     @Inject
-    private Habitat connectorRuntimeHabitat;
+    private ServiceLocator connectorRuntimeHabitat;
 
     private ConnectorRuntime runtime;
 
@@ -147,9 +159,9 @@ public class ConnectorResourceManagerLifecycleListener implements org.glassfish.
      * @return boolean representing connector-runtime initialization status.
      */
     public boolean isConnectorRuntimeInitialized() {
-        Collection<Inhabitant<? extends ConnectorRuntime>> inhabitants =
-                connectorRuntimeHabitat.getInhabitants(ConnectorRuntime.class);
-        for(Inhabitant inhabitant : inhabitants){
+        List<ServiceHandle<?>> serviceHandles =
+                connectorRuntimeHabitat.getAllServiceHandles(ConnectorRuntime.class);
+        for(ServiceHandle<?> inhabitant : serviceHandles){
             // there will be only one implementation of connector-runtime
             return inhabitant.isActive();
         }

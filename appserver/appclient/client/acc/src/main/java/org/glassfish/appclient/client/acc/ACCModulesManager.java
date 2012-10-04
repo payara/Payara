@@ -63,7 +63,6 @@ import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
 
 /**
  * Encapsulates details of preparing the HK2 habitat while also providing
