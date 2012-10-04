@@ -39,42 +39,43 @@
  */
 package org.glassfish.flashlight.impl.client;
 
-//import org.glassfish.external.probe.provider.annotations.ProbeListener;
-
-/* BOOBY TRAP SITTING RIGHT HERE!!!  There is a ProbeListener in org.glassfish.flashlight.client
- * -- don't use that one or everything will fail!
- * Do not use this import --> import org.glassfish.flashlight.client.* --> import individually instead!!
+/*
+ * BOOBY TRAP SITTING RIGHT HERE!!! There is a ProbeListener in
+ * org.glassfish.flashlight.client -- don't use that one or everything will
+ * fail! Do not use this import --> import org.glassfish.flashlight.client.* -->
+ * import individually instead!!
  */
-import java.lang.annotation.*;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.reflect.ReflectUtils;
+import com.sun.logging.LogDomains;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import org.glassfish.external.probe.provider.annotations.ProbeListener;
+import org.glassfish.flashlight.FlashlightUtils;
 import org.glassfish.flashlight.client.ProbeClientInvoker;
 import org.glassfish.flashlight.client.ProbeClientInvokerFactory;
 import org.glassfish.flashlight.client.ProbeClientMediator;
 import org.glassfish.flashlight.client.ProbeClientMethodHandle;
+import org.glassfish.flashlight.impl.core.FlashlightProbeProvider;
 import org.glassfish.flashlight.provider.FlashlightProbe;
 import org.glassfish.flashlight.provider.ProbeRegistry;
-import org.glassfish.flashlight.transformer.ProbeProviderClassFileTransformer;
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
-import com.sun.logging.LogDomains;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.reflect.ReflectUtils;
+import org.jvnet.hk2.annotations.Service;
 
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
-import java.lang.reflect.Method;
-import java.util.logging.Logger;
-import org.glassfish.flashlight.impl.core.FlashlightProbeProvider;
-import org.glassfish.flashlight.FlashlightUtils;
 /**
- * @author Mahesh Kannan
- *         Date: Jan 27, 2008
+ * @author Mahesh Kannan Date: Jan 27, 2008
  * @author Byron Nevins, significant rewrite/refactor August 2009
  */
 @Service
 public class FlashlightProbeClientMediator
         implements ProbeClientMediator, PostConstruct {
+
     private static final ProbeRegistry probeRegistry = ProbeRegistry.getInstance();
     private static final Logger logger =
             LogDomains.getLogger(FlashlightProbeClientMediator.class, LogDomains.MONITORING_LOGGER);
@@ -86,6 +87,7 @@ public class FlashlightProbeClientMediator
     private static ConcurrentHashMap<Integer, Object> clients =
             new ConcurrentHashMap<Integer, Object>();
 
+    @Override
     public void postConstruct() {
         FlashlightProbeClientMediator.initMe(this);
     }
@@ -102,10 +104,12 @@ public class FlashlightProbeClientMediator
         return clients.get(id);
     }
 
+    @Override
     public Collection<ProbeClientMethodHandle> registerListener(Object listener) {
         return (registerListener(listener, null));
     }
 
+    @Override
     public Collection<ProbeClientMethodHandle> registerListener(Object listener, String invokerId) {
 
         List<ProbeClientMethodHandle> pcms = new ArrayList<ProbeClientMethodHandle>();
@@ -179,6 +183,7 @@ public class FlashlightProbeClientMediator
         return listener;
     }
 
+    @Override
     public void transformProbes(Object listener, List<FlashlightProbe> probes) {
         if (probes.isEmpty())
             return;
@@ -186,33 +191,26 @@ public class FlashlightProbeClientMediator
         int clientID = clientIdGenerator.incrementAndGet();
         clients.put(clientID, listener);
 
-        HashMap<Class, ProbeProviderClassFileTransformer> transformers = new HashMap<Class, ProbeProviderClassFileTransformer>();
-
         for (FlashlightProbe probe : probes) {
             Class clz = probe.getProviderClazz();
-            ProbeProviderClassFileTransformer transformer = transformers.get(clz);
-            if (transformer == null) {
-                transformer = new ProbeProviderClassFileTransformer(clz);
-                transformers.put(clz, transformer);
-            }
+            ProbeProviderClassFileTransformer transformer =
+                    ProbeProviderClassFileTransformer.getInstance(clz);
             try {
-                transformer.regProbe(probe);
+                transformer.addProbe(probe);
             }
-            catch (NoSuchMethodException ex) {
+            catch (Exception ex) {
                 logger.severe(localStrings.getLocalString("bad.transform",
                         "MNTG0505:Error transforming Probe: {0}", ex));
             }
         }
-
-        for (ProbeProviderClassFileTransformer t : transformers.values()) {
-            t.transform();
-        }
+        ProbeProviderClassFileTransformer.transformAll();
     }
 
     /**
-     * Pick out all methods in the listener with the correct annotation, look
-     * up the referenced Probe and return a list of all such pairs.
-     * Validate that the methods really do matchup properly.
+     * Pick out all methods in the listener with the correct annotation, look up
+     * the referenced Probe and return a list of all such pairs. Validate that
+     * the methods really do matchup properly.
+     *
      * @throws RuntimeException if there is any serious problem.
      * @param listenerClass
      * @return
@@ -255,15 +253,15 @@ public class FlashlightProbeClientMediator
     // It throws RuntimeException because this module was specifically architected
     // to *not* use the Java Exception mechanism for errors.
     private static class MethodProbe {
+
         MethodProbe(Method m, FlashlightProbe p) {
             method = m;
             probe = p;
             String err = ReflectUtils.equalSignatures(method, p.getProbeMethod());
 
-            if(err != null)
+            if (err != null)
                 throw new RuntimeException(Strings.get("method_mismatch", err));
         }
-
         Method method;
         FlashlightProbe probe;
     }

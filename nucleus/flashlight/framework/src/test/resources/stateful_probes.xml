@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<!--
+
+    Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+
+-->
+
+<probe-providers>
+    <probe-provider moduleProviderName="MyModuleProviderName"
+                moduleName="MyModuleName"
+                probeProviderName="MyStatefulProbeProviderName"
+                class="com.sun.enterprise.web.WebModule">
+                       
+        <!--  Stateful Probes -->
+        <probe name="StatefulProbeDefaultsStringParam" stateful="true" >
+            <method>MyProbeMethodName</method>
+            <probe-param type="String" name="MyStringParam" />
+        </probe>
+        <probe name="StatefulProbeStringParamsProfiles" profileNames="OFF,MyProfile">
+            <method>MySecondProbeMethodName</method>
+            <probe-param type="String" name="s1" />
+            <probe-param type="String" name="s2" />
+            <probe-param type="String" name="s3" />
+            <probe-param type="String" name="s4" />
+            <probe-param type="String" name="s5" />
+        </probe>
+        <probe name="StatefulProbeStringParamReturnException" stateful="true" statefulReturn="true" statefulException="true">
+            <method>MyProbeMethodName</method>
+            <probe-param type="String" name="s1" />
+        </probe>
+        <probe name="StatefulProbeStringParamNoreturnException" stateful="true" statefulReturn="false" statefulException="true">
+            <method>MyProbeMethodName</method>
+            <probe-param type="String" name="s1" />
+        </probe>
+        <probe name="StatefulProbeStringParamsNoreturnNoexception" stateful="true" statefulReturn="false" statefulException="false">
+            <method>MyProbeMethodName</method>
+            <probe-param type="String" name="s1" />
+        </probe>
+        <probe name="StatefulProbeDefaultsNoparams" stateful="true" >
+            <method>MyProbeMethodName</method>
+        </probe>
+
+    </probe-provider>
+</probe-providers>

@@ -37,25 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.flashlight.impl.client;
 
-import org.glassfish.flashlight.client.ProbeClientMethodHandle;
 import org.glassfish.flashlight.client.ProbeClientInvoker;
+import org.glassfish.flashlight.client.ProbeClientMethodHandle;
 import org.glassfish.flashlight.provider.FlashlightProbe;
 
 /**
  * @author Mahesh Kannan
+ * @author Byron Nevins
  */
 public class ProbeClientMethodHandleImpl
-    implements ProbeClientMethodHandle {
+        implements ProbeClientMethodHandle {
 
     private int clientMethodId;
-
     private boolean enabled = true;
-
     private ProbeClientInvoker clientMethodInvoker;
-
     private FlashlightProbe probe;
 
     public ProbeClientMethodHandleImpl(int id, ProbeClientInvoker invoker, FlashlightProbe probe) {
@@ -64,21 +61,27 @@ public class ProbeClientMethodHandleImpl
         this.probe = probe;
     }
 
+    @Override
     public int getId() {
         return clientMethodId;
     }
 
+    @Override
     public synchronized boolean isEnabled() {
         return enabled;
     }
 
-    public synchronized  void enable() {
+    @Override
+    public synchronized void enable() {
         probe.addInvoker(clientMethodInvoker);
         enabled = true;
+        ProbeProviderClassFileTransformer.transform(probe.getProviderClazz());
     }
 
+    @Override
     public synchronized void disable() {
         probe.removeInvoker(clientMethodInvoker);
         enabled = false;
+        ProbeProviderClassFileTransformer.untransform(probe.getProviderClazz());
     }
 }
