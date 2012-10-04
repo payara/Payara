@@ -85,7 +85,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
     @Inject
     protected Habitat habitat;
     @Context
-    private SecurityContext sc;
+    protected SecurityContext sc;
 
     private String authenticatedUser;
     protected CompositeUtil compositeUtil = CompositeUtil.instance();
