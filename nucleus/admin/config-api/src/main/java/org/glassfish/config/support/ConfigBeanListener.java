@@ -40,7 +40,7 @@
 
 package org.glassfish.config.support;
 
-import org.glassfish.hk2.Provider;
+import org.glassfish.hk2.api.ActiveDescriptor;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.config.ConfigBean;
 
@@ -58,6 +58,6 @@ public interface ConfigBeanListener {
      *
      * @param bean the new config bean
      */
-    public void onEntered(Provider<ConfigBean> bean);
+    public void onEntered(ActiveDescriptor<ConfigBean> bean);
 
 }

@@ -48,7 +48,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import javax.inject.Inject;
 import org.glassfish.config.support.ConfigBeanListener;
-import org.glassfish.hk2.Provider;
+import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
@@ -106,7 +106,7 @@ public class PendingConfigBeans implements ConfigBeanListener, PostConstruct, Tr
     }
 
     @Override
-    public void onEntered(final Provider<ConfigBean> provider)
+    public void onEntered(final ActiveDescriptor<ConfigBean> provider)
     {
         //debug( "PendingConfigBeansNew.onEntered(): " + inhabitant);
 

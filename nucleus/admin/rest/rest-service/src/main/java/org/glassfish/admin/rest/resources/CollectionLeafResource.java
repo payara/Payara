@@ -122,7 +122,7 @@ public abstract class CollectionLeafResource {
         if (parent!=null){
             entity = parent.leafElements(tagName);
 
-            if (parent.type().equals(JavaConfig.class)) {
+            if (parent.getImplementationClass().equals(JavaConfig.class)) {
                 target = parent.parent().attribute("name");
             } else {
                 target = parent.parent().parent().attribute("name");

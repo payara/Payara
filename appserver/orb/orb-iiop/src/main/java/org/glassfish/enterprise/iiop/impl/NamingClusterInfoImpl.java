@@ -43,7 +43,6 @@ package org.glassfish.enterprise.iiop.impl;
 import com.sun.corba.ee.spi.folb.GroupInfoService;
 import org.glassfish.api.naming.NamingClusterInfo;
 import org.glassfish.api.naming.NamingObjectsProvider;
-import org.glassfish.hk2.Provider;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.internal.api.ORBLocator;
