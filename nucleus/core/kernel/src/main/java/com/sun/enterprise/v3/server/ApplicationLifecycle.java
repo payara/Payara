@@ -369,6 +369,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
 
             context.createDeploymentClassLoader(clh, handler);
+            events.send(new Event<DeploymentContext>(Deployment.AFTER_DEPLOYMENT_CLASSLOADER_CREATION, context), false);
+            
             if (tracing!=null) {
                 tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_CREATED);
             }
@@ -423,6 +425,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 events.send(new Event<DeploymentContext>(Deployment.DEPLOYMENT_BEFORE_CLASSLOADER_CREATION, context), false);
 
                 context.createApplicationClassLoader(clh, handler);
+                
+                events.send(new Event<DeploymentContext>(Deployment.AFTER_APPLICATION_CLASSLOADER_CREATION, context), false);
+                
                 if (tracing!=null) {
                     tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_CREATED);
                 }
