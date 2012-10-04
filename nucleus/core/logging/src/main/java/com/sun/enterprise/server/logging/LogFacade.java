@@ -70,50 +70,50 @@ public class LogFacade {
     @LogMessageInfo(message = "Cannot read logging configuration file.", level="SEVERE",
             cause="An exception has occurred while reading the logging configuration file.",
             action="Take appropriate action based on the exception message.")
-    public static final String ERROR_READING_CONF_FILE = "AS-LOGGING-00001";
+    public static final String ERROR_READING_CONF_FILE = "NCLS-LOGGING-00001";
 
     @LogMessageInfo(message = "Could not apply the logging configuration changes.", level="SEVERE",
             cause="There was an exception thrown while applying the logging configuration changes.",
             action="Take appropriate action based on the exception message.")
-    public static final String ERROR_APPLYING_CONF = "AS-LOGGING-00002";
+    public static final String ERROR_APPLYING_CONF = "NCLS-LOGGING-00002";
 
     @LogMessageInfo(message = "Updated logger levels successfully.", level="INFO")
-    public static final String UPDATED_LOG_LEVELS = "AS-LOGGING-00003";
+    public static final String UPDATED_LOG_LEVELS = "NCLS-LOGGING-00003";
 
     @LogMessageInfo(message = "The logging configuration file {0} has been deleted.", level="WARNING")
-    public static final String CONF_FILE_DELETED = "AS-LOGGING-00004";
+    public static final String CONF_FILE_DELETED = "NCLS-LOGGING-00004";
 
     @LogMessageInfo(message = "Error executing query to fetch log records.", level="SEVERE",
             cause="There was an exception thrown while executing log query.",
             action="Take appropriate action based on the exception message.")
-    public static final String ERROR_EXECUTING_LOG_QUERY = "AS-LOGGING-00005";
+    public static final String ERROR_EXECUTING_LOG_QUERY = "NCLS-LOGGING-00005";
     
     @LogMessageInfo(message = "The syslog handler could not be initialized.", level="SEVERE",
             cause="There was an exception thrown while initializing the syslog handler.",
             action="Take appropriate action based on the exception message.")
-    public static final String ERROR_INIT_SYSLOG = "AS-LOGGING-00006";
+    public static final String ERROR_INIT_SYSLOG = "NCLS-LOGGING-00006";
 
     @LogMessageInfo(message = "There was an error sending a log message to syslog.", level="SEVERE",
             cause="There was an exception thrown while sending a log message to the syslog.",
             action="Take appropriate action based on the exception message.")
-    public static final String ERROR_SENDING_SYSLOG_MSG = "AS-LOGGING-00007";
+    public static final String ERROR_SENDING_SYSLOG_MSG = "NCLS-LOGGING-00007";
 
     @LogMessageInfo(message = "The log file {0} for the instance does not exist.", level="WARNING")
-    public static final String INSTANCE_LOG_FILE_NOT_FOUND = "AS-LOGGING-00008";
+    public static final String INSTANCE_LOG_FILE_NOT_FOUND = "NCLS-LOGGING-00008";
 
     @LogMessageInfo(message = "Running GlassFish Version: {0}", level="INFO")
-    public static final String GF_VERSION_INFO = "AS-LOGGING-00009";
+    public static final String GF_VERSION_INFO = "NCLS-LOGGING-00009";
     
     @LogMessageInfo(message = "Server log file is using Formatter class: {0}", level="INFO")
-    public static final String LOG_FORMATTER_INFO = "AS-LOGGING-00010";
+    public static final String LOG_FORMATTER_INFO = "NCLS-LOGGING-00010";
 
     @LogMessageInfo(message = "Failed to parse the date: {0}", level="WARNING")
-    public static final String DATE_PARSING_FAILED = "AS-LOGGING-00011";
+    public static final String DATE_PARSING_FAILED = "NCLS-LOGGING-00011";
     
     @LogMessageInfo(message = "An invalid value {0} has been specified for the {1} attribute in the logging configuration.", level="WARNING")
-    public static final String INVALID_ATTRIBUTE_VALUE = "AS-LOGGING-00012";    
+    public static final String INVALID_ATTRIBUTE_VALUE = "NCLS-LOGGING-00012";    
 
     @LogMessageInfo(message = "The formatter class {0} could not be instantiated.", level="WARNING")
-    public static final String INVALID_FORMATTER_CLASS_NAME = "AS-LOGGING-00013";    
+    public static final String INVALID_FORMATTER_CLASS_NAME = "NCLS-LOGGING-00013";    
 
 }
