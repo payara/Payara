@@ -88,7 +88,8 @@
                             <includeScope>runtime</includeScope>
                             <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
                             <includeGroupIds>
-                                org.apache.felix
+                                org.apache.felix,
+                                org.glassfish.main.osgi
                             </includeGroupIds>
                          </configuration>
                     </execution>
@@ -125,6 +126,19 @@
            <groupId>org.apache.felix</groupId>
            <artifactId>org.apache.felix.scr</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.osgi-platforms</groupId>
+            <artifactId>osgi-cli-remote</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!--
+        <dependency>
+            <groupId>org.glassfish.main.osgi</groupId>
+            <artifactId>osgi-cli-interactive</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        -->
+
     </dependencies>
 
 </project>

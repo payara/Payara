@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,28 +39,52 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Author: Ancoron Luciferis
 -->
-
-<!--
-  A parent project that contains modules which are distribution fragements.
-  Each sub-module contain distribution details about exactly one OSGi runtime.
--->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-      <groupId>org.glassfish.main</groupId>
-      <artifactId>glassfish-nucleus-parent</artifactId>
-      <version>4.0-SNAPSHOT</version>
-      <relativePath>../pom.xml</relativePath>
+        <groupId>org.glassfish.main.osgi-platforms</groupId>
+        <artifactId>osgi-platforms</artifactId>
+        <version>4.0-SNAPSHOT</version>
     </parent>
-    <packaging>pom</packaging>
-    <groupId>org.glassfish.main.osgi-platforms</groupId>
-    <artifactId>osgi-platforms</artifactId>
-    <name>Distribution Fragments for various OSGi platforms</name>
-    <modules>
-        <module>felix</module>
-        <module>osgi-cli-remote</module>
-    </modules>
-</project>
 
+    <groupId>org.glassfish.main.osgi-platforms</groupId>
+    <artifactId>osgi-cli-remote</artifactId>
+
+    <name>Admin CLI bridge command to the OSGi Shell</name>
+    <description>${project.name}}</description>
+    <developers>
+        <developer>
+            <name>Ancoron Luciferis</name>
+            <email>ancoron@java.net</email>
+        </developer>
+    </developers>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>admin-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.shell</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.gogo.runtime</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>
