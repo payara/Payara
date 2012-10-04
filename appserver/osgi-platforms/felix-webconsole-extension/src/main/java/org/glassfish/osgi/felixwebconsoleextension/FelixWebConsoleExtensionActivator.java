@@ -42,6 +42,7 @@
 package org.glassfish.osgi.felixwebconsoleextension;
 
 import org.apache.felix.webconsole.BrandingPlugin;
+import org.apache.felix.webconsole.WebConsoleSecurityProvider;
 import org.osgi.framework.*;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.util.tracker.ServiceTracker;
@@ -58,14 +59,19 @@ import java.util.logging.Logger;
  * a) Registers a BrandingPlugin service to customize the look and feel.
  * See http://felix.apache.org/site/branding-the-web-console.html for more details.
  * b) Registers configuration object to select the right HttpService.
+ * c) Registers a SecurityProvider to integrate with GlassFish security service.
  *
  * @author sanjeeb.sahoo@oracle.com
+ * @author tangyong@cn.fujitsu.com
  */
 public class FelixWebConsoleExtensionActivator implements BundleActivator {
+	
     private Logger logger = Logger.getLogger(getClass().getPackage().getName());
     private BundleContext context;
     private static final String WEBCONSOLE_PID = "org.apache.felix.webconsole.internal.servlet.OsgiManager";
     private static final String PROP_HTTP_SERVICE_SELECTOR = "http.service.filter";
+    private static final String PROP_REALM = "realm";
+    private static final String REALM="GlassFish Server";
     private static final String HTTP_SERVICE_SELECTOR = "VirtualServer=server"; // We bind to default virtual host
     private ServiceTracker tracker;
 
@@ -74,9 +80,17 @@ public class FelixWebConsoleExtensionActivator implements BundleActivator {
         this.context = context;
         registerBrandingPlugin();
         configureConsole();
+        registerWebConsoleSecurityProvider(); // GLASSFISH-12975
     }
 
-    private void configureConsole() {
+    private void registerWebConsoleSecurityProvider() {   	   	 
+    	 final GlassFishSecurityProvider secprovider = new GlassFishSecurityProvider();
+    	 secprovider.setBundleContext(context);
+         ServiceRegistration reg = context.registerService(WebConsoleSecurityProvider.class.getName(), secprovider, null);
+         logger.logp(Level.INFO, "FelixWebConsoleExtensionActivator", "start", "Registered {0}", new Object[]{secprovider});
+	}
+
+	private void configureConsole() {
         tracker = new ServiceTracker(context, ConfigurationAdmin.class.getName(), null) {
             @Override
             public Object addingService(ServiceReference reference) {
@@ -87,6 +101,7 @@ public class FelixWebConsoleExtensionActivator implements BundleActivator {
                     Dictionary old = config.getProperties();
                     Dictionary newProps = new Hashtable();
                     newProps.put(PROP_HTTP_SERVICE_SELECTOR, HTTP_SERVICE_SELECTOR);
+                    newProps.put(PROP_REALM, REALM);
                     if (old != null) {
                         old.remove( Constants.SERVICE_PID );
                     }

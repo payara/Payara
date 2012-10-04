@@ -50,13 +50,29 @@
         <version>4.0-SNAPSHOT</version>
     </parent>
     <artifactId>felix-webconsole-extension</artifactId>
-    
-
     <name>Felix Web Console Extension for GlassFish</name>
     <description>
-        Felix Web Console Extension for GlassFish.
-        This customizes branding as well as HttpService selection.
+        Felix Web Console Extension for GlassFish. 
+        This custoimizes branding, HttpService selection and provides security integration.
     </description>
+    <developers>
+        <developer>
+            <name>Sahoo</name>
+            <email>sanjeeb.sahoo@oracle.com</email>
+            <roles>
+                <role>lead</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Tang Yong</name>
+            <email>tangyong@cn.fujitsu.com</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
     <dependencies>
         <dependency>
             <groupId>org.osgi</groupId>
@@ -70,5 +86,17 @@
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.webconsole</artifactId>
         </dependency>
+        <!-- TangYong's contribution towards Glassfish-12975 begins -->
+        <dependency>
+            <groupId>org.glassfish.main.security</groupId>
+            <artifactId>security-services</artifactId>
+             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main</groupId>
+            <artifactId>simple-glassfish-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- TangYong's contribution towards Glassfish-12975 ends -->
     </dependencies>
 </project>
