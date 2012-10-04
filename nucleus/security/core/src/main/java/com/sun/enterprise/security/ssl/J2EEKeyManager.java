@@ -132,7 +132,7 @@ public final class J2EEKeyManager /*implements X509KeyManager */ extends X509Ext
         if(this.alias == null){
             //InvocationManager im = Switch.getSwitch().getInvocationManager();
             //if (im == null) {
-            if(Util.getInstance().isNotServerORACC()) {
+            if(Util.getInstance().isNotServerOrACC()) {
                 // standalone client
                 clientAlias = mgr.chooseClientAlias(keyType, issuers, socket);
             } else {

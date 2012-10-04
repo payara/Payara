@@ -93,7 +93,7 @@ public class Util {
     public boolean isServer() {
         return penv.getProcessType().isServer();
     }
-    public boolean isNotServerORACC() {
+    public boolean isNotServerOrACC() {
         return penv.getProcessType().equals(ProcessType.Other);
     }
 
@@ -166,7 +166,9 @@ public class Util {
                 oStream.write(iStream.read());
             }
         } finally {
-            oStream.close();
+	    if (oStream != null) {
+                oStream.close();
+	    }
             if  (iStream != null) {
                 iStream.close();
             }

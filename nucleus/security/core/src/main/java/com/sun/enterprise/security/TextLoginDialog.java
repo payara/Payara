@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -134,15 +134,17 @@ public final class TextLoginDialog implements LoginDialog {
                     for (cnt = 0; cnt < 3; cnt++) {
                         // Let the user try putting password thrice
                         System.out.println(lbl + " : ");
-                        char[] kp =
-                                (new BufferedReader(new InputStreamReader(System.in))).readLine().toCharArray();
-                        if (sslUtils.verifyMasterPassword(kp)) {
-                            break;
-                        } else {
-                            String errmessage = localStrings.getLocalString("enterprise.security.IncorrectKeystorePassword", "Incorrect Keystore Password");
-                            System.err.println(errmessage);
-                        }
-                        Arrays.fill(kp, ' ');
+			String s = (new BufferedReader(new InputStreamReader(System.in))).readLine();
+			if (s != null) {
+                            char[] kp = s.toCharArray();
+                            if (sslUtils.verifyMasterPassword(kp)) {
+                                break;
+                            } else {
+                                String errmessage = localStrings.getLocalString("enterprise.security.IncorrectKeystorePassword", "Incorrect Keystore Password");
+                                System.err.println(errmessage);
+                            }
+                            Arrays.fill(kp, ' ');
+			}
                     }
                     if (cnt >= 3) {
                         cc.setSelectedIndex(-1);
@@ -157,9 +159,10 @@ public final class TextLoginDialog implements LoginDialog {
                         String line =
                                 (new BufferedReader(new InputStreamReader(System.in))).readLine();
 
-                        int sel = new Integer(line).intValue();
-                        // System.out.println("SELECTED VAL:" + sel);
-                        cc.setSelectedIndex(sel);
+			if (line != null) {
+                            int sel = new Integer(line).intValue();
+                            cc.setSelectedIndex(sel);
+			}
                     }
                 }
             }

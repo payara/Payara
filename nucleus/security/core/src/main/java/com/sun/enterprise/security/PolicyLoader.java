@@ -91,7 +91,7 @@ public class PolicyLoader{
         "javax.security.jacc.PolicyConfigurationFactory.provider";
     private static final String POLICY_PROP_PREFIX =
         "com.sun.enterprise.jaccprovider.property.";
-    private static boolean isPolicyInstalled = false;
+    private boolean isPolicyInstalled = false;
 
     
     /**

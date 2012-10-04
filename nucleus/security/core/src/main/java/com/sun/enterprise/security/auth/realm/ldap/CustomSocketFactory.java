@@ -83,10 +83,10 @@ public class CustomSocketFactory extends SocketFactory implements Comparator<Soc
         try {
             sc = SSLContext.getInstance(SSL);
             sc.init(sslUtils.getKeyManagers(), sslUtils.getTrustManagers(), SharedSecureRandom.get());
+            socketFactory = sc.getSocketFactory();
         } catch (Exception ex) {
             _logger.log(Level.WARNING, "security.exception", ex);
         }        
-        socketFactory = sc.getSocketFactory();
     }
     
     /**

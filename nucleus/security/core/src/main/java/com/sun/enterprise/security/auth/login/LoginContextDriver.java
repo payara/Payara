@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -713,8 +713,8 @@ public class LoginContextDriver  {
                 }
             } else {            
                 _logger.warning("certlogin.badrealm");            
-                setSecurityContext(user, s, realm_name);
                 realm_name = realm.getName();
+                setSecurityContext(user, s, realm_name);
             }
         
             if (_logger.isLoggable(Level.FINE)) {

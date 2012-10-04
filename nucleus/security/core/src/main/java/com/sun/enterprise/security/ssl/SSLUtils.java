@@ -320,7 +320,7 @@ public final class SSLUtils implements PostConstruct {
         try {
             // Checking a random permission to check if it is server.
             if(Util.isEmbeddedServer() || Util.getDefaultHabitat() == null
-                    || Util.getInstance().isACC() || Util.getInstance().isNotServerORACC()){
+                    || Util.getInstance().isACC() || Util.getInstance().isNotServerOrACC()){
                 return;
             }
             Permission perm = new RuntimePermission("SSLPassword");

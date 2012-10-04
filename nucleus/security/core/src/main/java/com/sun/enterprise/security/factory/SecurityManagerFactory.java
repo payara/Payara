@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -180,7 +180,7 @@ public class SecurityManagerFactory {
 
             ArrayList<String> ctxList = app2iDmap.get(appName);
             if (ctxList != null && !ctxList.isEmpty()) {
-                ctxIds = ctxList.toArray(new String[0]);
+                ctxIds = ctxList.toArray(new String[ctxList.size()]);
             }
             if (remove) {
                 app2iDmap.remove(appName);

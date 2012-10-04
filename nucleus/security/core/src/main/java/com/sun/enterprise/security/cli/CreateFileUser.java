@@ -255,7 +255,7 @@ public class CreateFileUser implements /*UndoableCommand*/ AdminCommand {
         secureAdmin = domain.getSecureAdmin();
         if ((SecureAdmin.Util.isEnabled(secureAdmin))
                 && (authRealmName.equals(adminService.getAuthRealmName()))) {
-            if ((password == null) || (password.isEmpty())) {
+            if (password.isEmpty()) {
                 report.setMessage(localStrings.getLocalString(
                         "null_empty_password","The admin user password is null or empty"));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
