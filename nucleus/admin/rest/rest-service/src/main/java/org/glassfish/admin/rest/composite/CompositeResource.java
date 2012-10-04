@@ -50,7 +50,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilderException;
 import javax.ws.rs.core.UriInfo;
@@ -59,12 +58,8 @@ import org.glassfish.admin.rest.OptionsCapable;
 import org.glassfish.admin.rest.RestResource;
 import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
-import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
-import org.glassfish.admin.rest.utils.xml.RestActionReporter;
-import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.security.services.common.SubjectUtil;
 import org.jvnet.hk2.component.Habitat;
@@ -247,14 +242,6 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
      */
     protected ActionReporter executeCommand(String command, ParameterMap parameters, boolean throwBadRequest, boolean throwOnWarning) {
         return getCompositeUtil().executeCommand(getSubject(), command, parameters, throwBadRequest, throwOnWarning);
-    }
-
-    /**
-     * Convenience wrapper around ParameterMap constructor to make it easier to use its fluent API
-     * @return ParameterMap
-     */
-    protected ParameterMap parameterMap() {
-        return new ParameterMap();
     }
 
     /**

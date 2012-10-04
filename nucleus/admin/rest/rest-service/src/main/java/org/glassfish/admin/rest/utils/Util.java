@@ -576,4 +576,20 @@ public class Util {
         return true;
 //                requestHeaders.getHeaderString(Constants.HEADER_LEGACY_FORMAT) != null;
     }
+
+   /**
+     * Convenience wrapper around ParameterMap constructor to make it easier to use its fluent API
+     * @return ParameterMap
+     */
+    public static ParameterMap parameterMap() {
+        return new ParameterMap();
+    }
+
+   /**
+     * Convenience wrapper around ResponseBodyImpl constructor to make it easier to use its fluent API
+     * @return ResponseBodyImpl
+     */
+    public static ResponseBodyImpl responseBody() {
+        return new ResponseBodyImpl();
+    }
 }
