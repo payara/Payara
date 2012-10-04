@@ -41,18 +41,17 @@
 package com.sun.enterprise.admin.util;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.security.store.AsadminSecurityUtil;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
+import com.sun.enterprise.security.store.AsadminSecurityUtil;
 import com.sun.enterprise.util.io.ServerDirs;
-import com.sun.logging.LogDomains;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.security.cert.Certificate;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -87,8 +86,7 @@ import org.jvnet.hk2.config.DomDocument;
  */
 public class SecureAdminClientManager {
 
-    private static final Logger logger = LogDomains.getLogger(SecureAdminClientManager.class,
-            LogDomains.ADMIN_LOGGER);
+    private static final Logger logger = AdminLoggerInfo.getLogger();
 
     /**
      * the hk2-managed instance - used only by the static accessors

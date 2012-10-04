@@ -95,14 +95,8 @@ public interface AdminConstants {
     public static final String ATTRIBUTE_NAMES      = "attributeNames";
     public static final String CLIENT_JAR           = "Client.jar";
     
-    /** The name of the admin logger as registered in the LogDomains. */
-    /* The reason to hardcode this here is that LogDomains class may
-     * not be available for SOM or other parts of admin framework.
-     * Make sure that the string is same as that in LogDomains.java.
-    */
-    public static final String kLoggerName = 
-            "javax.enterprise.system.tools.admin";
-
+    public static final String kLoggerName = AdminLoggerInfo.ADMIN_LOGGER;
+    
 
     /* Some additional values for 8.0 PE */
 

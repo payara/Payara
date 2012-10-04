@@ -39,9 +39,8 @@
  */
 package com.sun.enterprise.admin.util.cache;
 
+import com.sun.enterprise.admin.util.AdminLoggerInfo;
 import com.sun.enterprise.security.store.AsadminSecurityUtil;
-import com.sun.enterprise.util.io.FileUtils;
-import com.sun.logging.LogDomains;
 import java.io.*;
 import java.util.Date;
 import java.util.logging.Level;
@@ -57,8 +56,7 @@ public class AdminCacheFileStore implements AdminCache {
     private static final String DEFAULT_FILENAME = "#default#.cache";
     private static final AdminCacheFileStore instance = new AdminCacheFileStore();
     
-    private static final Logger logger = LogDomains.getLogger(AdminCacheFileStore.class,
-            LogDomains.ADMIN_LOGGER);
+    private static final Logger logger = AdminLoggerInfo.getLogger();
     
     private AdminCacheUtils adminCahceUtils = AdminCacheUtils.getInstance();
     
@@ -80,13 +78,14 @@ public class AdminCacheFileStore implements AdminCache {
         // @todo Java SE 7 - use try with resources
         InputStream is = null;
         try {
-            is = getInputStram(key);
+            is = getInputStream(key);
             return (A) provider.toInstance(is, clazz);
         } catch (FileNotFoundException ex) {
             return null;
         } catch (IOException ex) {
             if (logger.isLoggable(Level.WARNING)) {
-                logger.log(Level.WARNING, "Can not read admin cache file for {0}", key); //TODO localise
+                logger.log(Level.WARNING, AdminLoggerInfo.mCannotReadCache, 
+                        new Object[] { key });
             }
             return null;
         } finally {
@@ -95,7 +94,7 @@ public class AdminCacheFileStore implements AdminCache {
             
     }
     
-    private InputStream getInputStram(String key) throws FileNotFoundException {
+    private InputStream getInputStream(String key) throws FileNotFoundException {
         if (key == null || key.isEmpty()) {
             throw new IllegalArgumentException("Attribute key must be unempty.");
         }
@@ -148,13 +147,15 @@ public class AdminCacheFileStore implements AdminCache {
             cacheFile.delete();
             if (!tempFile.renameTo(cacheFile)) {
                 if (logger.isLoggable(Level.WARNING)) {
-                    logger.log(Level.WARNING, "Can not write data to cache file: {0}", cacheFile.getPath());
+                    logger.log(Level.WARNING, AdminLoggerInfo.mCannotWriteCache,
+                            new Object[] { cacheFile.getPath() });
                 }
                 tempFile.delete();
             }
         } catch (IOException e) {
             if (logger.isLoggable(Level.WARNING)) {
-                logger.log(Level.WARNING, "Can not write data to cache file: {0}", cacheFile.getPath());
+                logger.log(Level.WARNING, AdminLoggerInfo.mCannotWriteCache,
+                            new Object[] { cacheFile.getPath() });
             }
         } finally {
             try { os.close(); } catch (Exception ex) {}

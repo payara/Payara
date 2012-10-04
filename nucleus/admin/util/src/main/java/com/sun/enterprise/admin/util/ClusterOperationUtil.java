@@ -44,9 +44,7 @@ import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import java.io.File;
-
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -58,13 +56,15 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  *
  */
 public class ClusterOperationUtil {
-    private static final Logger logger = LogDomains.getLogger(ClusterOperationUtil.class,
-                                        LogDomains.ADMIN_LOGGER);
+    private static final Logger logger = AdminLoggerInfo.getLogger();
+    
+    
     private static final LocalStringManagerImpl strings =
                         new LocalStringManagerImpl(ClusterOperationUtil.class);
 
@@ -214,9 +214,8 @@ public class ClusterOperationUtil {
                     }
                     f = instanceState.submitJob(svr, ice, aResult);
                 }
-                if(f==null) {
-                    logger.severe(strings.getLocalString("clusterutil.instancehasnostate",
-                            "Could not find state of instance registered in the state service"));
+                if (f == null) {
+                    logger.severe(AdminLoggerInfo.stateNotFound);
                     continue;
                 }
                 futures.put(svr.getName(), f);
@@ -231,9 +230,7 @@ public class ClusterOperationUtil {
             aReport.setActionExitCode(finalResult);
             aReport.setMessage(strings.getLocalString("clusterutil.replicationfailed",
                     "Error during command replication: {0}", ex.getLocalizedMessage()));
-            context.getLogger().log(Level.SEVERE, strings.getLocalString("clusterutil.replicationfailed",
-                    "Error during command replication: {0}", 
-                    ex.getLocalizedMessage()));
+            logger.log(Level.SEVERE, AdminLoggerInfo.replicationError, ex.getLocalizedMessage());
             if(returnValue ==ActionReport.ExitCode.SUCCESS) {
                 returnValue = finalResult;
             }
@@ -386,9 +383,4 @@ public class ClusterOperationUtil {
             }
         }
     }
-
-//    private static File subdirectoryForInstance(final File dir,
-//            final InstanceCommandExecutor exec) {
-//        return new File(dir, exec.getServer().getName());
-//    }
 }

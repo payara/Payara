@@ -111,10 +111,8 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     @LoggerInfo(subsystem="ADMSEC", description="Admin security")
     private static final String ADMSEC_LOGGER_NAME = "javax.enterprise.system.tools.admin.security";
 
-    @LogMessagesResourceBundle
-    private static final String LOG_MESSAGES_RB = "com.sun.enterprise.admin.util.LogMessages";
-
-    static final Logger ADMSEC_LOGGER = Logger.getLogger(ADMSEC_LOGGER_NAME, LOG_MESSAGES_RB);
+    static final Logger ADMSEC_LOGGER = Logger.getLogger(ADMSEC_LOGGER_NAME, 
+            AdminLoggerInfo.SHARED_LOGMESSAGE_RESOURCE);
     
     @Inject
     ServiceLocator habitat;
@@ -167,14 +165,13 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                     String adminKeyFilePath = ar.getPropertyValue("file");
                     FileRealm fr = new FileRealm(adminKeyFilePath);
                     if (!fr.hasAuthenticatableUser()) {
-                        String emsg = lsm.getLocalString("secure.admin.empty.password",
-                            "The server requires a valid admin password to be set before it can start. Please set a password using the change-admin-password command.");
-                        ADMSEC_LOGGER.log(Level.SEVERE, emsg);
-                        throw new IllegalStateException(emsg);
+                        ADMSEC_LOGGER.log(Level.SEVERE, AdminLoggerInfo.mSecureAdminEmptyPassword);
+                        throw new IllegalStateException(ADMSEC_LOGGER.getResourceBundle()
+                                .getString(AdminLoggerInfo.mSecureAdminEmptyPassword));
                     }
                 }
             } catch (Exception ex) {
-                ADMSEC_LOGGER.log(Level.SEVERE, ex.getMessage());
+                ADMSEC_LOGGER.log(Level.SEVERE, AdminLoggerInfo.mUnexpectedException, ex);
                 throw new RuntimeException(ex);
             }
 
@@ -405,7 +402,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
             ADMSEC_LOGGER.log(Level.FINE, "There are no admin users so we cannot use any as a default");
             return null;
         } catch(Exception e) {
-            ADMSEC_LOGGER.log(Level.WARNING, "Error searching for a default admin user", e);
+            ADMSEC_LOGGER.log(Level.WARNING, AdminLoggerInfo.mAdminUserSearchError, e);
             return null;
         }
     }

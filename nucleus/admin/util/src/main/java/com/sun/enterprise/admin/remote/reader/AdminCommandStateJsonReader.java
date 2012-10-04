@@ -40,8 +40,8 @@
 package com.sun.enterprise.admin.remote.reader;
 
 import com.sun.enterprise.admin.remote.AdminCommandStateImpl;
+import com.sun.enterprise.admin.util.AdminLoggerInfo;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.logging.LogDomains;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,9 +70,8 @@ public class AdminCommandStateJsonReader implements MessageBodyReader<AdminComma
     
     private static final JsonFactory factory = new JsonFactory();
     
-    private static final Logger logger =
-            LogDomains.getLogger(AdminCommandStateJsonReader.class, LogDomains.ADMIN_LOGGER);
-    
+    private static final Logger logger = AdminLoggerInfo.getLogger();
+            
     @Override
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return type.isAssignableFrom(AdminCommandState.class);
@@ -89,7 +88,7 @@ public class AdminCommandStateJsonReader implements MessageBodyReader<AdminComma
             JSONObject json = new JSONObject(str);
             return readAdminCommandState(json);
         } catch (JSONException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, AdminLoggerInfo.mUnexpectedException, ex);
             throw new IOException(ex);
         }
     }

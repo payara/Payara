@@ -286,9 +286,8 @@ public class AdminLoginModule implements LoginModule {
                     _result = SpecialAdminIndicatorChecker.Result.MATCHED;
                     logger.log(dumpLevel, "Admin request contains expected domain ID");
                 } else {
-                    final String msg = Strings.get("foreign.domain.ID", 
-                            originHost, actualIndicator, expectedIndicator);
-                    logger.log(Level.WARNING, msg);
+                    logger.log(Level.WARNING, AdminLoggerInfo.mForeignDomainID, 
+                            new Object[] { originHost, actualIndicator, expectedIndicator});
                     _result = SpecialAdminIndicatorChecker.Result.MISMATCHED;
                 }
             } else {

@@ -68,9 +68,6 @@ public class ProgressStatusEventJsonReader implements MessageBodyReader<Progress
     
     private static final JsonFactory factory = new JsonFactory();
     
-//    private static final Logger logger =
-//            LogDomains.getLogger(ProgressStatusEventJsonReader.class, LogDomains.ADMIN_LOGGER);
-    
     @Override
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return type.isAssignableFrom(ProgressStatusEvent.class);

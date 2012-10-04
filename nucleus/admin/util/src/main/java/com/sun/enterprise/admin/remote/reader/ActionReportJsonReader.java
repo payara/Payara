@@ -39,8 +39,8 @@
  */
 package com.sun.enterprise.admin.remote.reader;
 
+import com.sun.enterprise.admin.util.AdminLoggerInfo;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.logging.LogDomains;
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -73,9 +73,8 @@ import org.glassfish.api.ActionReport.MessagePart;
 @Consumes({MediaType.APPLICATION_JSON, "application/x-javascript"})
 public class ActionReportJsonReader implements MessageBodyReader<ActionReport> {
     
-    private static final Logger logger =
-            LogDomains.getLogger(ActionReportJsonReader.class, LogDomains.ADMIN_LOGGER);
-
+    private static final Logger logger = AdminLoggerInfo.getLogger();
+            
     @Override
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return type.isAssignableFrom(ActionReport.class);
@@ -93,7 +92,7 @@ public class ActionReportJsonReader implements MessageBodyReader<ActionReport> {
             fillActionReport(result, json);
             return result;
         } catch (JSONException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, AdminLoggerInfo.mUnexpectedException, ex);
             throw new IOException(ex);
         }
     }

@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.admin.remote;
 
+import com.sun.enterprise.admin.util.AdminLoggerInfo;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import java.io.*;
 import java.net.*;
@@ -863,8 +864,8 @@ public class RemoteAdminCommand {
                 try {
                     boolean serverAppearsSecure = NetUtils.isSecurePort(host, port);
                     if (!serverAppearsSecure && secure) {
-                        logger.severe(strings.get("ServerIsNotSecure",
-                                                    host, port + ""));
+                        logger.log(Level.SEVERE, AdminLoggerInfo.mServerIsNotSecure, 
+                                new Object[] { host, port });
                     }
                     throw new CommandException(se);
                 } catch(IOException io) {
@@ -1059,8 +1060,8 @@ public class RemoteAdminCommand {
                 append(QUERY_STRING_SEPARATOR);
         } catch (UnsupportedEncodingException e) {
             // XXX - should never happen
-            logger.severe("Error encoding value for: " + name +
-                    ", Value:" + option + ", parameter value will be ignored");
+            throw new RuntimeException("Error encoding value for: " + name 
+                    + ", value:" + option, e);
         }
         return uriString;
     }
@@ -1257,7 +1258,8 @@ public class RemoteAdminCommand {
                     AdminCacheUtils.getCache().put(createCommandCacheKey(), commandModel);
                 } catch (Exception ex) {
                     if (logger.isLoggable(Level.WARNING)) {
-                        logger.log(Level.WARNING, strings.get("CantPutToCache", createCommandCacheKey()));
+                        logger.log(Level.WARNING, AdminLoggerInfo.mCantPutToCache, 
+                                new Object[] { createCommandCacheKey() });
                     }
                 }
             //}

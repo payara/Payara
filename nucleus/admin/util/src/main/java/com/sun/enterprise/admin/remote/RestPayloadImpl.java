@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.admin.remote;
 
+import com.sun.enterprise.admin.util.AdminLoggerInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -51,12 +52,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ParameterMap;
@@ -67,8 +66,6 @@ import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
-
-import com.sun.logging.LogDomains;
 
 
 /** Payload implementation for ReST interface.
@@ -228,7 +225,7 @@ public class RestPayloadImpl extends PayloadImpl {
 
         public static ActionReport fillFromMultipart(MultiPart mp, Inbound inb, Logger logger) throws WebApplicationException {
             if (logger == null) {
-                logger = LogDomains.getLogger(RestPayloadImpl.class, LogDomains.ADMIN_LOGGER);
+                logger = AdminLoggerInfo.getLogger();
             }
             if (mp == null) {
                 return null;

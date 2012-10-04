@@ -148,7 +148,7 @@ public class CommandSecurityChecker {
             }
             return result;
         } catch (Exception ex) {
-            ADMSEC_AUTHZ_LOGGER.log(Level.SEVERE, command.getClass().getName(), ex);
+            ADMSEC_AUTHZ_LOGGER.log(Level.SEVERE, AdminLoggerInfo.mUnexpectedException, ex);
             throw new SecurityException(ex);
         }
     }

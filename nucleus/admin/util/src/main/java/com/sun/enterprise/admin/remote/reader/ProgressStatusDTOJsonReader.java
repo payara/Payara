@@ -64,10 +64,7 @@ import org.glassfish.api.admin.progress.ProgressStatusDTO.ChildProgressStatusDTO
 public class ProgressStatusDTOJsonReader implements MessageBodyReader<ProgressStatusDTO> {
     
     private static final JsonFactory factory = new JsonFactory();
-    
-//    private static final Logger logger =
-//            LogDomains.getLogger(ProgressStatusJsonReader.class, LogDomains.ADMIN_LOGGER);
-    
+       
     @Override
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return type.isAssignableFrom(ProgressStatusDTO.class);
