@@ -78,70 +78,54 @@
                 <executions>
                     <execution>
                         <goals>
-                           <goal>copy</goal>
+                           <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
                             <stripVersion>true</stripVersion>
-                            <artifactItems>
-                             <artifactItem>
-                               <groupId>org.apache.felix</groupId>
-                               <artifactId>org.apache.felix.shell.remote</artifactId>
-                               <version>1.1.2</version>
-                               <type>jar</type>
-                               <outputDirectory>${temp.stagedir}</outputDirectory>
-                             </artifactItem>
-                             <artifactItem>
-                               <groupId>org.apache.felix</groupId>
-                               <artifactId>org.apache.felix.gogo.runtime</artifactId>
-                               <version>0.8.0</version>
-                               <type>jar</type>
-                               <outputDirectory>${temp.stagedir}</outputDirectory>
-                             </artifactItem>
-                             <artifactItem>
-                               <groupId>org.apache.felix</groupId>
-                               <artifactId>org.apache.felix.gogo.shell</artifactId>
-                               <version>0.8.0</version>
-                               <type>jar</type>
-                               <outputDirectory>${temp.stagedir}</outputDirectory>
-                             </artifactItem>
-                             <artifactItem>
-                               <groupId>org.apache.felix</groupId>
-                               <artifactId>org.apache.felix.gogo.command</artifactId>
-                               <version>0.8.0</version>
-                               <type>jar</type>
-                               <outputDirectory>${temp.stagedir}</outputDirectory>
-                             </artifactItem>
-                             <!-- We install fileinstall bundle which monitors modules
-                                  dir and autodeploy dir for addition/removal/updation of bundles -->
-                             <artifactItem>
-                               <groupId>org.apache.felix</groupId>
-                               <artifactId>org.apache.felix.fileinstall</artifactId>
-                               <version>3.1.10</version>
-                               <type>jar</type>
-                               <outputDirectory>${temp.stagedir}</outputDirectory>
-                             </artifactItem>
-                             <!-- fileinstall needs configadmin service -->
-                             <artifactItem>
-                               <groupId>org.apache.felix</groupId>
-                               <artifactId>org.apache.felix.configadmin</artifactId>
-                               <version>1.2.4</version>
-                               <type>jar</type>
-                               <outputDirectory>${temp.stagedir}</outputDirectory>
-                             </artifactItem>
-                             <artifactItem>
-                               <groupId>org.apache.felix</groupId>
-                               <artifactId>org.apache.felix.scr</artifactId>
-                               <version>1.4.0</version>
-                               <type>jar</type>
-                               <outputDirectory>${temp.stagedir}</outputDirectory>
-                             </artifactItem>                          
-                           </artifactItems>
+                            <excludeTransitive>true</excludeTransitive>
+                            <outputDirectory>${temp.stagedir}</outputDirectory>
+                            <includeScope>compile</includeScope>
+                            <includeScope>runtime</includeScope>
+                            <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
+                            <includeGroupIds>
+                                org.apache.felix
+                            </includeGroupIds>
                          </configuration>
                     </execution>
                 </executions>
             </plugin>         
         </plugins>
     </build>
+    <dependencies>
+
+        <dependency>
+           <groupId>org.apache.felix</groupId>
+           <artifactId>org.apache.felix.gogo.runtime</artifactId>
+        </dependency>
+        <dependency>
+           <groupId>org.apache.felix</groupId>
+           <artifactId>org.apache.felix.gogo.shell</artifactId>
+        </dependency>
+        <dependency>
+           <groupId>org.apache.felix</groupId>
+           <artifactId>org.apache.felix.gogo.command</artifactId>
+        </dependency>
+        <!-- We install fileinstall bundle which monitors modules
+              dir and autodeploy dir for addition/removal/updation of bundles -->
+        <dependency>
+           <groupId>org.apache.felix</groupId>
+           <artifactId>org.apache.felix.fileinstall</artifactId>
+        </dependency>
+        <!-- fileinstall needs configadmin service -->
+        <dependency>
+           <groupId>org.apache.felix</groupId>
+           <artifactId>org.apache.felix.configadmin</artifactId>
+        </dependency>
+        <dependency>
+           <groupId>org.apache.felix</groupId>
+           <artifactId>org.apache.felix.scr</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>
 

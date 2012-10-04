@@ -1045,6 +1045,41 @@
                 <artifactId>logging-annotation-processor</artifactId>
                 <version>${logging-annotation-processor.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>org.apache.felix.shell</artifactId>
+                <version>1.4.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>org.apache.felix.gogo.runtime</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+            <dependency>
+               <groupId>org.apache.felix</groupId>
+               <artifactId>org.apache.felix.gogo.shell</artifactId>
+               <version>0.8.0</version>
+            </dependency>
+            <dependency>
+               <groupId>org.apache.felix</groupId>
+               <artifactId>org.apache.felix.gogo.command</artifactId>
+               <version>0.8.0</version>
+            </dependency>
+            <dependency>
+               <groupId>org.apache.felix</groupId>
+               <artifactId>org.apache.felix.fileinstall</artifactId>
+               <version>3.1.10</version>
+            </dependency>
+            <dependency>
+               <groupId>org.apache.felix</groupId>
+               <artifactId>org.apache.felix.configadmin</artifactId>
+               <version>1.2.4</version>
+            </dependency>
+            <dependency>
+               <groupId>org.apache.felix</groupId>
+               <artifactId>org.apache.felix.scr</artifactId>
+               <version>1.4.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     
