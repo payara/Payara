@@ -53,4 +53,18 @@
         <Method name="getUsername"/>
         <Bug pattern="NM_CONFUSING"/>
     </Match>
+
+    <!--
+        These public fields of SecurityContext are set and read by code in
+	other modules.
+    -->
+    <Match>
+        <Class name="com.sun.enterprise.common.iiop.security.SecurityContext"/>
+	<Or>
+	    <Field name="authcls"/>
+	    <Field name="identcls"/>
+	    <Field name="subject"/>
+	</Or>
+        <Bug pattern="UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD"/>
+    </Match>
 </FindBugsFilter>
