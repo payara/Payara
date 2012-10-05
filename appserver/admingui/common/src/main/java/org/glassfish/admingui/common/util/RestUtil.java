@@ -89,6 +89,8 @@ import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+import javax.ws.rs.client.ClientRequestContext;
+import javax.ws.rs.client.ClientRequestFilter;
 import org.glassfish.jersey.client.SslConfig;
 
 /**
@@ -107,7 +109,10 @@ public class RestUtil {
     public static Client getJerseyClient() {
         if (JERSEY_CLIENT == null) {
             JERSEY_CLIENT = ClientFactory.newClient();
-            JERSEY_CLIENT.configuration().register(new CsrfProtectionFilter()).register(new JacksonFeature());
+            JERSEY_CLIENT.configuration()
+                    .register(new CsrfProtectionFilter())
+                    .register(new RequiredHeadersFilter())
+                    .register(new JacksonFeature());
         }
 
         return JERSEY_CLIENT;
@@ -950,6 +955,14 @@ public class RestUtil {
                 .post(Entity.entity(formData, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
         RestResponse rr = RestResponse.getRestResponse(cr);
         parseResponse(rr, null, endpoint, attrs, quiet, throwException);
+    }
+
+    private static class RequiredHeadersFilter implements ClientRequestFilter {
+        @Override
+        public void filter(ClientRequestContext requestContext) throws IOException {
+            requestContext.getHeaders().add("X-GlassFish-3", "true");
+        }
+
     }
 
     private static class BasicHostnameVerifier implements HostnameVerifier {
