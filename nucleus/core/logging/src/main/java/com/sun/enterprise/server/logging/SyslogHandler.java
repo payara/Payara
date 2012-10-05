@@ -156,7 +156,9 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
         msg = msg +" [ " + slLvl +" glassfish ] " +record.getMessage();
 
          //send message
-        sysLogger.log(Syslog.DAEMON, Syslog.WARNING, msg);
+        if (sysLogger != null) {
+            sysLogger.log(Syslog.DAEMON, Syslog.WARNING, msg);
+        }
 
     }
 

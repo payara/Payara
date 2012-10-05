@@ -809,9 +809,6 @@ public class LogFilter {
     static final String[] LOG_LEVELS = {"SEVERE", "WARNING",
             "INFO", "CONFIG", "FINE", "FINER", "FINEST"};
 
-    private static SimpleDateFormat SIMPLE_DATE_FORMAT =
-            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-
     private static String[] serverLogElements =
             {System.getProperty("com.sun.aas.instanceRoot"), "logs", "server.log"};
 

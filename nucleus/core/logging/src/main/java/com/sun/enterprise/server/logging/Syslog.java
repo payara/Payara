@@ -90,7 +90,6 @@ public class Syslog {
     private static final int PACKET_SIZE=514;
 
     private final InetAddress addr;
-      Logger logger = Logger.global.getParent();
 
     /**
      * Log to a particular log host.

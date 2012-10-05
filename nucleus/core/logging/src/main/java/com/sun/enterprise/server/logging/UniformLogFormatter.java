@@ -386,7 +386,7 @@ public class UniformLogFormatter extends Formatter {
           if (rb != null) {        
             if (rb.containsKey(msg)) {
               String msgBody = lr.getResourceBundle().getString(msg);
-              if (msgBody != null && !msgBody.isEmpty()) {
+              if (!msgBody.isEmpty()) {
                 return msg;
               }
             }

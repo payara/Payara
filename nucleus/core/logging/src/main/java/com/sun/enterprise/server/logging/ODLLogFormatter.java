@@ -350,9 +350,6 @@ public class ODLLogFormatter extends Formatter {
             return false;
         }
         String[] lines = message.split(LINE_SEPARATOR);
-        if (lines == null) {
-            return false;
-        }
         return (lines.length > 1);
     }
 

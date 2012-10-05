@@ -42,6 +42,7 @@ package com.sun.enterprise.server.logging.commands;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.server.logging.GFFileHandler;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -75,17 +76,23 @@ public class RotateLog implements AdminCommand {
 
     @Inject
     Domain domain;
+    
+    @Inject
+    ServerEnvironment env;
 
     @Param(optional = true)
-    String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
+    String target = SystemPropertyConstants.DAS_SERVER_NAME;
 
+    final private static LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(RotateLog.class);
 
     public void execute(AdminCommandContext context) {
 
-        final ActionReport report = context.getActionReport();
-
+        final ActionReport report = context.getActionReport();        
+        
         gf.rotate();
-
+        
+        String msg = LOCAL_STRINGS.getLocalString("rotated.log.message", "Rotated log for server instance {0}.", env.getInstanceName());
+        report.setMessage(msg);
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 }

@@ -164,11 +164,12 @@ public class CollectLogFiles implements AdminCommand {
 
 
             try {
-                zipFile = loggingConfig.createZipFile(getZipFilePath().getAbsolutePath());
+                String zipFilePath = getZipFilePath().getAbsolutePath();
+                zipFile = loggingConfig.createZipFile(zipFilePath);
                 if (zipFile == null || new File(zipFile) == null) {
                     // Failure during zip
                     final String errorMsg = localStrings.getLocalString(
-                            "collectlogfiles.creatingZip", "Error while creating zip file {0}.", zipFile);
+                            "collectlogfiles.creatingZip", "Error while creating zip file {0}.", zipFilePath);
                     report.setMessage(errorMsg);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
@@ -237,11 +238,12 @@ public class CollectLogFiles implements AdminCommand {
 
             try {
                 // Creating zip file and returning zip file absolute path.
-                zipFile = loggingConfig.createZipFile(getZipFilePath().getAbsolutePath());
+                String zipFilePath = getZipFilePath().getAbsolutePath();
+                zipFile = loggingConfig.createZipFile(zipFilePath);
                 if (zipFile == null || new File(zipFile) == null) {
                     // Failure during zip
                     final String errorMsg = localStrings.getLocalString(
-                            "collectlogfiles.creatingZip", "Error while creating zip file {0}.", zipFile);
+                            "collectlogfiles.creatingZip", "Error while creating zip file {0}.", zipFilePath);
                     report.setMessage(errorMsg);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
@@ -364,12 +366,13 @@ public class CollectLogFiles implements AdminCommand {
 
             if (instanceCount != errorCount) {
                 try {
+                    String zipFilePath = getZipFilePath().getAbsolutePath();
                     // Creating zip file and returning zip file absolute path.
-                    zipFile = loggingConfig.createZipFile(getZipFilePath().getAbsolutePath());
+                    zipFile = loggingConfig.createZipFile(zipFilePath);
                     if (zipFile == null || new File(zipFile) == null) {
                         // Failure during zip
                         final String errorMsg = localStrings.getLocalString(
-                                "collectlogfiles.creatingZip", "Error while creating zip file {0}.", zipFile);
+                                "collectlogfiles.creatingZip", "Error while creating zip file {0}.", zipFilePath);
                         report.setMessage(errorMsg);
                         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         return;

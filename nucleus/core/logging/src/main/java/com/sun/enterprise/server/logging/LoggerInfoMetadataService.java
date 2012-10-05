@@ -158,7 +158,7 @@ public class LoggerInfoMetadataService implements LoggerInfoMetadata, ModuleChan
     
     // If a module changed in any way, reset the valid flag so meta-data will be
     // recomputed when subsequently requested.
-    public void changed(Module sender)  {
+    public synchronized void changed(Module sender)  {
         valid = false;
     }
     

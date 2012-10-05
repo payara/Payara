@@ -110,6 +110,7 @@ public class LogFile implements java.io.Serializable {
         try {
             while (results.size() < maxRecords) {
                 // Get a line from the log file
+                StringBuffer buffer = new StringBuffer();
                 String line = reader.readLine();
                 if (line == null) {
                     break;
@@ -119,13 +120,16 @@ public class LogFile implements java.io.Serializable {
                 }
 
                 // Read the whole record
-                while (!line.endsWith(RECORD_END_MARKER)) {
-                    line += "\n" + reader.readLine();
+                buffer.append(line);
+                while (line !=null && !line.endsWith(RECORD_END_MARKER)) {
+                    buffer.append("\n");
+                    line = reader.readLine();
+                    buffer.append(line);
                 }
 
                 // Read the LogEntry
                 try {
-                    results.add(new LogEntry(line,
+                    results.add(new LogEntry(buffer.toString(),
                             startingRecord + results.size()));
                 } catch (IllegalArgumentException ex) {
                     LogFacade.LOGGING_LOGGER.log(Level.FINE, "Could not read the log entry", ex);
@@ -285,13 +289,24 @@ public class LogFile implements java.io.Serializable {
         FileInputStream file = null;
         try {
             file = new FileInputStream(getLogFileName());
-            file.skip(fromFilePosition);
+            long bytesSkipped = file.skip(fromFilePosition);
+            if (bytesSkipped != fromFilePosition) {
+                if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) { 
+                    LogFacade.LOGGING_LOGGER.log(Level.FINE, "Did not skip exact bytes while positioning reader in " + getLogFileName());
+                }
+            }
             BufferedReader reader =
                     new BufferedReader(new InputStreamReader(file));
             return reader;
         } catch (Exception ex) {
-            if (file != null) try { file.close(); } catch (Exception ex2) {}
-            LogFacade.LOGGING_LOGGER.log(Level.FINE, "Exception while opening file", ex);
+            if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) { 
+                LogFacade.LOGGING_LOGGER.log(Level.FINE, "Error reading from file: " + getLogFileName(), ex);
+            }
+            if (file != null) try { file.close(); } catch (Exception ex2) {
+                if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) { 
+                    LogFacade.LOGGING_LOGGER.log(Level.FINE, "Error closing file: " + getLogFileName(), ex2);
+                }                
+            }            
         } 
         return null;
     }

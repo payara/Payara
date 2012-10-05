@@ -69,8 +69,6 @@ import java.util.logging.Logger;
  */
 public class LogFilterForInstance {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LogFilterForInstance.class);
-
     public File downloadGivenInstanceLogFile(ServiceLocator habitat, Server targetServer, Domain domain, Logger logger,
                                              String instanceName, String domainRoot, String logFileName, String instanceLogFileName)
             throws IOException {
@@ -282,7 +280,7 @@ public class LogFilterForInstance {
         // helper method to get all log file names for given instance
         String sNode = targetServer.getNodeRef();
         Node node = domain.getNodes().getNode(sNode);
-        Vector instanceLogFileNames = new Vector();
+        Vector instanceLogFileNames = null;
         Vector instanceLogFileNamesAsString = new Vector();
 
         // this code is used when DAS and instances are running on the same machine
@@ -397,14 +395,7 @@ public class LogFilterForInstance {
     }
 
     private SSHLauncher getSSHL(ServiceLocator habitat) {
-        SSHLauncher sshL = null;
-        try {
-            sshL = habitat.getService(SSHLauncher.class);
-        } catch (NoClassDefFoundError ex) {
-            throw new NoClassDefFoundError(localStrings.getLocalString(
-                    "collectlogfiles.missingclusterlibraries", "Missing Cluster libraries in your ClassPath."));
-        }
-        return sshL;
+        return habitat.getService(SSHLauncher.class);
     }
 
     private File makingDirectory(String path) {

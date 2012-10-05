@@ -56,6 +56,7 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -107,6 +108,9 @@ public class SetLogFileFormat implements AdminCommand {
 
     @Inject
     Clusters clusters;
+    
+    @Inject
+    ServerEnvironment env;
 
     final private static LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(
             SetLogFileFormat.class);
@@ -180,9 +184,9 @@ public class SetLogFileFormat implements AdminCommand {
             }
             
             String successMsg = LOCAL_STRINGS.getLocalString("set.log.file.format.success",
-                    "The log file formatter is set to {0} for target {1}.",
+                    "The log file formatter is set to {0} for {1}.",
                     formatterClassName,
-                    target);
+                    env.getInstanceName());
            report.setMessage(successMsg);
            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);            
 
