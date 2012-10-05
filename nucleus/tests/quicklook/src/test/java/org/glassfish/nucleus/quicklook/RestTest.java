@@ -40,6 +40,7 @@
 
 package org.glassfish.nucleus.quicklook;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import static org.testng.AssertJUnit.*;
@@ -49,7 +50,7 @@ import org.testng.annotations.Test;
 public class RestTest {
     public void testManagementEndpoint() {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:4848/management/domain.xml").openConnection();
+            HttpURLConnection connection = getConnection("http://localhost:4848/management/domain.xml");
             assertEquals(200, connection.getResponseCode());
         } catch (Exception e) {
             fail(e.getMessage());
@@ -58,7 +59,7 @@ public class RestTest {
 
     public void testMonitoringEndpoint() {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:4848/monitoring/domain.xml").openConnection();
+            HttpURLConnection connection = getConnection("http://localhost:4848/monitoring/domain.xml");
             assertEquals(200, connection.getResponseCode());
         } catch (Exception e) {
             fail(e.getMessage());
@@ -67,7 +68,7 @@ public class RestTest {
 
     public void testAdminCommandEndpoint() {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:4848/management/domain/version.xml").openConnection();
+            HttpURLConnection connection = getConnection("http://localhost:4848/management/domain/version.xml");
             assertEquals(200, connection.getResponseCode());
         } catch (Exception e) {
             fail(e.getMessage());
@@ -76,10 +77,16 @@ public class RestTest {
 
     public void testChildConfigBeanEndpoint() {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:4848/management/domain/applications.xml").openConnection();
+            HttpURLConnection connection = getConnection("http://localhost:4848/management/domain/applications.xml");
             assertEquals(200, connection.getResponseCode());
         } catch (Exception e) {
             fail(e.getMessage());
         }
+    }
+
+    protected HttpURLConnection getConnection(String url) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        connection.setRequestProperty("X-GlassFish-3", "true");
+        return connection;
     }
 }
