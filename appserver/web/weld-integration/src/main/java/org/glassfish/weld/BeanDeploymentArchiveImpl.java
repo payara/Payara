@@ -220,7 +220,11 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         }
         return s;
     }
-    
+
+    public Collection<Class<?>> getModuleBeanClassObjects(){
+        return moduleClasses;
+    }
+
     public void addBeanClass(String beanClassName){
         boolean added = false;
         for (Iterator<Class<?>> iterator = moduleClasses.iterator(); iterator.hasNext();) {
@@ -509,7 +513,9 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         } else if (entry.endsWith("beans.xml")) {
             try {
                 URL beansXmlUrl = Thread.currentThread().getContextClassLoader().getResource(entry);
-                wUris.add(beansXmlUrl.toURI());
+                if (beansXmlUrl != null) {  // http://java.net/jira/browse/GLASSFISH-17157
+                    wUris.add(beansXmlUrl.toURI());
+                }
             } catch (URISyntaxException use) {
                 logger.log(Level.WARNING, "Error handling beans.xml at " + entry, use);
             }

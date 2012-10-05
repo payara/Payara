@@ -48,16 +48,7 @@ import static org.glassfish.weld.connector.WeldUtils.SEPARATOR_CHAR;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Logger;
 
@@ -277,12 +268,12 @@ public class DeploymentImpl implements Deployment {
     public BeanDeploymentArchive loadBeanDeploymentArchive(Class<?> beanClass) {
         logger.log(FINE, "DeploymentImpl::loadBDA:"+ beanClass);
         List<BeanDeploymentArchive> beanDeploymentArchives = getBeanDeploymentArchives();
-        
-        ListIterator<BeanDeploymentArchive> lIter = beanDeploymentArchives.listIterator(); 
+
+        ListIterator<BeanDeploymentArchive> lIter = beanDeploymentArchives.listIterator();
         while (lIter.hasNext()) {
             BeanDeploymentArchive bda = lIter.next();
             logger.log(FINE, "checking for " + beanClass + " in root BDA" + bda.getId());
-            if (((BeanDeploymentArchiveImpl)bda).getModuleBeanClasses().contains(beanClass.getName())) {
+            if (((BeanDeploymentArchiveImpl)bda).getModuleBeanClassObjects().contains(beanClass)) {
                 //don't stuff this Bean Class into the BDA's beanClasses, 
                 //as Weld automatically add theses classes to the BDA's bean Classes
                 logger.log(FINE, "DeploymentImpl(as part of loadBDA)::An " +
@@ -299,9 +290,9 @@ public class DeploymentImpl implements Deployment {
             //and get the right BDA for the beanClass
             if (bda.getBeanDeploymentArchives().size() > 0) {
                 for(BeanDeploymentArchive subBda: bda.getBeanDeploymentArchives()){
-                    Collection<String> s = ((BeanDeploymentArchiveImpl)subBda).getModuleBeanClasses();
+                    Collection<Class<?>> moduleBeanClasses = ((BeanDeploymentArchiveImpl)subBda).getModuleBeanClassObjects();
                     logger.log(FINE, "checking for " + beanClass + " in subBDA" + subBda.getId());
-                    boolean match = s.contains(beanClass.getName());
+                    boolean match = moduleBeanClasses.contains(beanClass);
                     if (match) {
                         //don't stuff this Bean Class into the BDA's beanClasses, 
                         //as Weld automatically add theses classes to the BDA's bean Classes
