@@ -52,7 +52,7 @@
     <version>4.0-SNAPSHOT</version>
     <artifactId>utils-ng</artifactId>
     <packaging>jar</packaging>
-    <name>Nucleus TestNG-based utilities</name>
+    <name>nucleus.tests.utils-ng</name>
 
     <developers>
         <developer>
