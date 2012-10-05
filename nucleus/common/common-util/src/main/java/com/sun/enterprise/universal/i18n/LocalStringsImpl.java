@@ -187,7 +187,7 @@ public class LocalStringsImpl {
      */
     public boolean getBoolean(String indexString, boolean defaultValue) {
         try {
-            return new Boolean(getBundle().getString(indexString));
+            return Boolean.valueOf(getBundle().getString(indexString));
         }
         catch (Exception e) {
             // it is not an error to have no key...

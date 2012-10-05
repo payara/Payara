@@ -58,14 +58,14 @@ public class Jps {
         Set<Map.Entry<Integer, String>> set = getProcessTable().entrySet();
         System.out.println("** Got " + set.size() + " process entries");
         for (Map.Entry<Integer, String> e : set) {
-            System.out.printf("%d %s\n", e.getKey(), e.getValue());
+            System.out.printf("%d %s%n", e.getKey(), e.getValue());
         }
         if(args.length > 0) {
             System.out.printf("Jps.isPid(%s) ==> %b\n", args[0], Jps.isPid(Integer.parseInt(args[0])));
         }
     }
 
-    final static public Map<Integer, String> getProcessTable() {
+    static public Map<Integer, String> getProcessTable() {
         return new Jps().pidMap;
     }
 
@@ -76,7 +76,7 @@ public class Jps {
      * E.g. com.sun.enterprise.glassfish.bootstrap.ASMain and ASMain work the same.
      * @return the process id if possible otherwise 0
      */
-    final static public List<Integer> getPid(String mainClassName) {
+    static public List<Integer> getPid(String mainClassName) {
         if (mainClassName == null)
             return Collections.emptyList();
 

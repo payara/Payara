@@ -59,12 +59,16 @@ import java.util.logging.Logger;
 public class ProcessManager {
     public ProcessManager(String... cmds) {
         cmdline = cmds;
+        sb_out = new StringBuffer();
+        sb_err = new StringBuffer();
     }
 
     ////////////////////////////////////////////////////////////////////////////
     public ProcessManager(List<String> Cmdline) {
         cmdline = new String[Cmdline.size()];
         cmdline = (String[]) Cmdline.toArray(cmdline);
+        sb_out = new StringBuffer();
+        sb_err = new StringBuffer();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -98,9 +102,6 @@ public class ProcessManager {
     ////////////////////////////////////////////////////////////////////////////
     public final int execute() throws ProcessManagerException {
         try {
-            sb_out = new StringBuffer();
-            sb_err = new StringBuffer();
-
             Runtime rt = Runtime.getRuntime();
             process = rt.exec(cmdline);
             readStream("stderr", process.getErrorStream(), sb_err);
@@ -153,6 +154,7 @@ public class ProcessManager {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    @Override
     public String toString() {
         return Arrays.toString(cmdline);
     }
@@ -164,6 +166,9 @@ public class ProcessManager {
         }
 
         PrintWriter pipe = null;
+
+        if(process == null)
+            throw new ProcessManagerException(Strings.get("null.process"));
 
         try {
             pipe = new PrintWriter(new BufferedWriter(new OutputStreamWriter(process.getOutputStream())));
@@ -195,7 +200,7 @@ public class ProcessManager {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    private void await() throws InterruptedException {
+    private void await() throws InterruptedException, ProcessManagerException {
         if (timeout <= 0) {
             waitForever();
         }
@@ -205,7 +210,10 @@ public class ProcessManager {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    private void waitForever() throws InterruptedException {
+    private void waitForever() throws InterruptedException, ProcessManagerException {
+        if(process == null)
+            throw new ProcessManagerException(Strings.get("null.process"));
+
         process.waitFor();
     }
 
@@ -286,7 +294,9 @@ public class ProcessManager {
             this.echo = echo;
         }
 
-        public void run() {
+        @Override
+        public void run
+                () {
             try {
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                     sb.append(line).append('\n');
@@ -309,6 +319,7 @@ public class ProcessManager {
             process = p;
         }
 
+        @Override
         public void run() {
             try {
                 process.waitFor();
