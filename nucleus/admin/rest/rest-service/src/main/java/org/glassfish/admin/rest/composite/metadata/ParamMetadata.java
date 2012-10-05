@@ -145,7 +145,7 @@ public class ParamMetadata {
                         Class clazz = def.generator();
                         if (def.useContext()) {
                             defval = ((DefaultsGenerator) context).getDefaultValue(name);
-                        } else if (clazz != null) {
+                        } else if (clazz != null && clazz != Void.class) {
                             if (DefaultsGenerator.class.isAssignableFrom(clazz)) {
                                 defval = ((DefaultsGenerator) clazz.newInstance()).getDefaultValue(name);
                             } else {
