@@ -576,7 +576,7 @@ public class CompositeUtil {
                 annos.put(a.annotationType().getName(), anno);
             }
         } catch (Exception ex) {
-            Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex.getLocalizedMessage());
         }
 
         return annos;
