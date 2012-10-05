@@ -69,7 +69,6 @@ import java.io.ObjectStreamField;
  */
 
 public final class EJBMethodPermission extends Permission
-implements java.io.Serializable
 {
 
     private static final String interfaceKeys[] =
@@ -471,7 +470,7 @@ implements java.io.Serializable
      * values of the serialized fields (as is done by defaultReadObject) 
      * is sufficient to initialize the permission.
      */
-    private synchronized void readObject(java.io.ObjectInputStream s)
+    private void readObject(java.io.ObjectInputStream s)
          throws IOException,ClassNotFoundException
     {
 	setMethodSpec((String) s.readFields().get("actions",null));
