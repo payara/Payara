@@ -346,7 +346,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                 Enumeration<String> entries = archive.entries();
                 while (entries.hasMoreElements()) {
                     String entry = entries.nextElement();
-                    if (entry.endsWith(CLASS_SUFFIX)) {
+                    if (legalClassName(entry)) {
                         if (entry.contains(WEB_INF_CLASSES)) { 
                             //Workaround for incorrect WARs that bundle classes above WEB-INF/classes
                             //[See. GLASSFISH-16706]
@@ -496,7 +496,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     }
 
     private void handleEntry(String entry, boolean isBeanArchive) throws ClassNotFoundException {
-        if (entry.endsWith(CLASS_SUFFIX)) {
+        if (legalClassName(entry)) {
             String className = filenameToClassname(entry);
             try {
                 if (isBeanArchive) {
@@ -520,6 +520,10 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                 logger.log(Level.WARNING, "Error handling beans.xml at " + entry, use);
             }
         }
+    }
+
+    private boolean legalClassName( String className ) {
+        return className.endsWith(CLASS_SUFFIX) && ! className.startsWith(WEB_INF_LIB);
     }
 
     private void collectRarInfo(ReadableArchive archive) throws IOException,
