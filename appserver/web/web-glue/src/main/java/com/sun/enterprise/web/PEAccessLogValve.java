@@ -48,15 +48,17 @@ import com.sun.enterprise.web.accesslog.CommonAccessLogFormatterImpl;
 import com.sun.enterprise.web.accesslog.DefaultAccessLogFormatterImpl;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.logging.LogDomains;
 import org.apache.catalina.*;
 import org.apache.catalina.valves.ValveBase;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.String;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -86,10 +88,62 @@ public final class PEAccessLogValve
     extends ValveBase
     implements Runnable {
 
-    private static final Logger _logger =
-        LogDomains.getLogger(PEAccessLogValve.class, LogDomains.WEB_LOGGER);
+    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
 
     private static final ResourceBundle _rb = _logger.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Unable to write access log file {0}",
+            level = "SEVERE",
+            cause = "An exception occurred writing to access log file",
+            action = "Check the exception for the error")
+    public static final String ACCESS_LOG_UNABLE_TO_WRITE = "AS-WEB-00283";
+
+    @LogMessageInfo(
+            message = "Setting accesslog directory for virtual server '{0}' to {1}",
+            level = "FINE")
+    public static final String ACCESS_LOG_DIRECTORY_SET = "AS-WEB-00284";
+
+    @LogMessageInfo(
+            message = "Invalid accessLogWriterInterval value [{0}]",
+            level = "WARNING")
+    public static final String INVALID_ACCESS_LOG_WRITER_INTERVAL = "AS-WEB-00285";
+
+    @LogMessageInfo(
+            message = "Invalid accessLogBufferSize value [{0}]",
+            level = "WARNING")
+    public static final String INVALID_ACCESS_LOG_BUFFER_SIZE = "AS-WEB-00286";
+
+    @LogMessageInfo(
+            message = "Unable to parse max-history-files access log configuration [{0}]",
+            level = "WARNING")
+    public static final String INVALID_MAX_HISTORY_FILES = "AS-WEB-00287";
+
+    @LogMessageInfo(
+            message = "Unable to create {0}",
+            level = "WARNING")
+    public static final String UNABLE_TO_CREATE = "AS-WEB-00288";
+
+    @LogMessageInfo(
+            message = "Unable to rename access log file {0} to {1}",
+            level = "WARNING")
+    public static final String UNABLE_TO_RENAME_LOG_FILE = "AS-WEB-00289";
+
+    @LogMessageInfo(
+            message = "Unable to remove access log file {0}",
+            level = "WARNING")
+    public static final String UNABLE_TO_REMOVE_LOG_FILE = "AS-WEB-00290";
+
+    @LogMessageInfo(
+            message = "Access logger has already been started",
+            level = "WARNING")
+    public static final String ACCESS_LOG_ALREADY_STARTED = "AS-WEB-00291";
+
+    @LogMessageInfo(
+            message = "Access logger has not yet been started",
+            level = "WARNING")
+    public static final String ACCESS_LOG_NOT_STARTED = "AS-WEB-00292";
+
 
     // Predefined patterns
     private static final String COMMON_PATTERN = "common";
@@ -605,7 +659,7 @@ public final class PEAccessLogValve
                     if (i+1 == 2){
                         _logger.log(
                             Level.SEVERE,
-                            "peaccesslogvalve.unableToWrite",
+                            ACCESS_LOG_UNABLE_TO_WRITE,
                             new Object[] {ex});   
                         return;
                     }
@@ -746,9 +800,8 @@ public final class PEAccessLogValve
             
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE,
-                        "Setting accesslog directory for virtual "
-                        + "server '" + vsId + "' to "
-                        + dir.getAbsolutePath());
+                    ACCESS_LOG_DIRECTORY_SET,
+                    new Object[]{vsId, dir.getAbsolutePath()});
         }
 
         setDirectory(dir.getAbsolutePath());
@@ -766,7 +819,7 @@ public final class PEAccessLogValve
                 setWriterInterval(Integer.parseInt(acWriteInterval));
             } catch (NumberFormatException ex){
                 _logger.log(Level.WARNING,
-                    "pewebcontainer.invalid_accessLog_writerInterval",
+                    INVALID_ACCESS_LOG_WRITER_INTERVAL,
                     acWriteInterval);
             }
         }
@@ -783,7 +836,7 @@ public final class PEAccessLogValve
                 setBufferSize(Integer.parseInt(acBufferSize));
             } catch (NumberFormatException ex){
                 _logger.log(Level.WARNING,
-                    "pewebcontainer.invalid_accessLog_bufferSize",
+                    INVALID_ACCESS_LOG_BUFFER_SIZE,
                     acBufferSize);
             }
         }
@@ -871,9 +924,7 @@ public final class PEAccessLogValve
                 try {
                     maxHistoryFiles = Integer.parseInt(prop);
                 } catch (NumberFormatException e) {
-                    String msg = _rb.getString(
-                        "accesslog.invalidMaxHistoryFiles");
-                    msg = MessageFormat.format(msg, prop);
+                    String msg = MessageFormat.format(_rb.getString(INVALID_MAX_HISTORY_FILES), prop);
                     _logger.log(Level.WARNING, msg, e);   
                 }
             }
@@ -882,9 +933,7 @@ public final class PEAccessLogValve
                 maxHistoryFiles = Integer.parseInt(
                     accessLogConfig.getMaxHistoryFiles());
             } catch (NumberFormatException e) {
-                String msg = _rb.getString(
-                    "accesslog.invalidMaxHistoryFiles");
-                msg = MessageFormat.format(msg,
+                String msg = MessageFormat.format(_rb.getString(INVALID_MAX_HISTORY_FILES),
                     accessLogConfig.getMaxHistoryFiles());
                 _logger.log(Level.WARNING, msg, e);   
             }
@@ -934,7 +983,7 @@ public final class PEAccessLogValve
             dir = new File(System.getProperty("catalina.base"), directory);
         if (!FileUtils.mkdirsMaybe(dir)) {
             _logger.log(Level.WARNING,
-                    "webcontainer.unableToCreate",
+                    UNABLE_TO_CREATE,
                     dir.toString());
         }
 
@@ -967,9 +1016,8 @@ public final class PEAccessLogValve
                 if (!logFile.renameTo(renameToFile)) {
                     _logger.log(
                         Level.WARNING,
-                        "peaccesslogvalve.unableToRenameLogFile",
-                        new Object[] {
-                            logFile.toString(), dateStampedPathname });
+                            UNABLE_TO_RENAME_LOG_FILE,
+                            new Object[] {logFile.toString(), dateStampedPathname });
                 }
                 File removeFile = null;
                 if (deleteAllHistoryFiles) {
@@ -984,7 +1032,7 @@ public final class PEAccessLogValve
                 }
                 if (removeFile != null && !removeFile.delete()) {
                     _logger.log(Level.WARNING,
-                                "peaccesslogvalve.unableToRemoveLogFile",
+                                UNABLE_TO_REMOVE_LOG_FILE,
                                 removeFile.toString());
                 }
             }
@@ -1054,8 +1102,7 @@ public final class PEAccessLogValve
 
         // Validate and update our current component state
         if (started) {
-            throw new LifecycleException
-                (_rb.getString("peaccesslogvalve.alreadyStarted"));
+            throw new LifecycleException(_rb.getString(ACCESS_LOG_ALREADY_STARTED));
         }
 
         lifecycle.fireLifecycleEvent(START_EVENT, null);
@@ -1110,8 +1157,7 @@ public final class PEAccessLogValve
 
         // Validate and update our current component state
         if (!started) {
-            throw new LifecycleException
-                (_rb.getString("peaccesslogvalve.notStarted"));
+            throw new LifecycleException(_rb.getString(ACCESS_LOG_NOT_STARTED));
         }
 
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);

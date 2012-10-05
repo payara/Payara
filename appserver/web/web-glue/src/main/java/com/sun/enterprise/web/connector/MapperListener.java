@@ -59,6 +59,7 @@
 package com.sun.enterprise.web.connector;
 
 import javax.management.*;
+import java.lang.String;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
@@ -67,7 +68,6 @@ import java.util.logging.Logger;
 import com.sun.enterprise.web.WebContainer;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
-import com.sun.logging.LogDomains;
 import org.apache.catalina.*;
 import org.apache.catalina.core.ContainerBase;
 import org.apache.catalina.core.StandardContext;
@@ -77,6 +77,8 @@ import org.apache.catalina.util.RequestUtil;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.grizzly.http.util.DataChunk;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 
 /**
@@ -98,10 +100,50 @@ public class MapperListener implements NotificationListener, NotificationFilter{
 
     public transient HttpService httpService;
 
-    protected static final Logger logger = LogDomains.getLogger(
-            MapperListener.class, LogDomains.WEB_LOGGER);
+    protected static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
 
     protected static final ResourceBundle rb = logger.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Cannot find WebContainer implementation",
+            level = "SEVERE",
+            cause = "Web container is null",
+            action = "Check if the mapper listener is initialized correctly")
+    public static final String CANNOT_FIND_WEB_CONTAINER = "AS-WEB-00273";
+
+    @LogMessageInfo(
+            message = "Cannot find Engine implementation",
+            level = "SEVERE",
+            cause = "Engine is null",
+            action = "Check if the mapper listener is initialized correctly")
+    public static final String CANNOT_FIND_ENGINE = "AS-WEB-00274";
+
+    @LogMessageInfo(
+            message = "Error registering contexts",
+            level = "WARNING")
+    public static final String ERROR_REGISTERING_CONTEXTS = "AS-WEB-00275";
+
+    @LogMessageInfo(
+            message = "HTTP listener with network listener name {0} ignoring registration of host " +
+                    "with object name {1}, because none of the host's associated HTTP listeners matches " +
+                    "this network listener name",
+            level = "FINE")
+    public static final String IGNORE_HOST_REGISTRATIONS = "AS-WEB-00276";
+
+    @LogMessageInfo(
+            message = "Register Context {0}",
+            level = "FINE")
+    public static final String REGISTER_CONTEXT = "AS-WEB-00277";
+
+    @LogMessageInfo(
+            message = "Unregister Context {0}",
+            level = "FINE")
+    public static final String UNREGISTER_CONTEXT = "AS-WEB-00278";
+
+    @LogMessageInfo(
+            message = "Register Wrapper {0} in Context {1}",
+            level = "FINE")
+    public static final String REGISTER_WRAPPER = "AS-WEB-00279";
 
     protected transient Mapper mapper = null;
 
@@ -166,7 +208,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
     public void init() {
 
         if (webContainer == null)  {
-            logger.log(Level.SEVERE, rb.getString("mapperListener.cannotfindWebContainer"));
+            logger.log(Level.SEVERE, rb.getString(CANNOT_FIND_WEB_CONTAINER));
             return;
         }
 
@@ -175,7 +217,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
             httpService = webContainer.getHttpService();
             engine = webContainer.getEngine();
             if (engine == null) {
-                logger.log(Level.SEVERE, rb.getString("mapperListener.cannotfindEngine"));
+                logger.log(Level.SEVERE, rb.getString(CANNOT_FIND_ENGINE));
                 return;
             }
 
@@ -201,7 +243,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
             }
 
         } catch (Exception e) {
-            logger.log(Level.WARNING, "Error registering contexts", e);
+            logger.log(Level.WARNING, ERROR_REGISTERING_CONTEXTS, e);
         }
 
     }
@@ -335,11 +377,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
             }
             if (!nameMatch) {
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("HTTP listener with network listener name " + networkListenerName
-                             + " ignoring registration of host with object "
-                             + "name " + name + ", because none of the "
-                             + "host's associated HTTP listeners matches "
-                             + "this network listener name");
+                    logger.log(Level.FINE, IGNORE_HOST_REGISTRATIONS, new Object[]{networkListenerName, name});
                 }
                 return;
             }
@@ -414,8 +452,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
         if (contextName.equals("/")) {
             contextName = "";
         }
-        String msg = rb.getString("mapperListener.registerContext");
-        msg = MessageFormat.format(msg, contextName);
+        String msg = MessageFormat.format(REGISTER_CONTEXT, contextName);
         if (logger.isLoggable(Level.FINE)) {
             logger.fine(msg);
         }
@@ -467,8 +504,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
             return;
         }
 
-        String msg = rb.getString("mapperListener.unregisterContext");
-        msg = MessageFormat.format(msg, contextName);
+        String msg = MessageFormat.format(UNREGISTER_CONTEXT, contextName);
         if (logger.isLoggable(Level.FINE)) {
             logger.fine(msg);
         }
@@ -510,8 +546,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
             contextName = "";
         }
 
-        String msg = rb.getString("mapperListener.registerWrapper");
-        msg = MessageFormat.format(msg, wrapperName, contextName);
+        String msg = MessageFormat.format(REGISTER_WRAPPER, wrapperName, contextName);
         if (logger.isLoggable(Level.FINE)) {
             logger.fine(msg);
         }

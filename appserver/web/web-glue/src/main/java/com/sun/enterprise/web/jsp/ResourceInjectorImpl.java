@@ -43,11 +43,13 @@ package com.sun.enterprise.web.jsp;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.web.WebModule;
-import com.sun.logging.LogDomains;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jsp.api.ResourceInjector;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.servlet.jsp.tagext.JspTag;
+import java.lang.String;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -60,9 +62,17 @@ import java.util.logging.Logger;
  */
 public class ResourceInjectorImpl implements ResourceInjector {
 
-    protected static final Logger _logger = LogDomains.getLogger(
-            ResourceInjectorImpl.class, LogDomains.WEB_LOGGER);
-    protected static final ResourceBundle _rb = _logger.getResourceBundle(); 
+    protected static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
+
+    @LogMessageInfo(
+            message = "Exception during invocation of PreDestroy-annotated method on JSP tag handler [{0}]",
+            level = "WARNING")
+    public static final String EXCEPTION_DURING_JSP_TAG_HANDLER_PREDESTROY = "AS-WEB-00281";
+
+    @LogMessageInfo(
+            message = "ServerContext is null for ResourceInjector",
+            level = "INFO")
+    public static final String NO_SERVERT_CONTEXT = "AS-WEB-00282";
 
     private InjectionManager injectionMgr;
     private JndiNameEnvironment desc;
@@ -73,8 +83,7 @@ public class ResourceInjectorImpl implements ResourceInjector {
         this.desc = webModule.getWebBundleDescriptor();
         ServerContext serverContext = webModule.getServerContext();
         if (serverContext == null) {
-            throw new IllegalStateException(
-                    _rb.getString("resource.injector.noservercontext"));
+            throw new IllegalStateException(NO_SERVERT_CONTEXT);
         }
         this.injectionMgr = serverContext.getDefaultServices().getService(
             InjectionManager.class);
@@ -106,9 +115,7 @@ public class ResourceInjectorImpl implements ResourceInjector {
             try {
                 injectionMgr.invokeInstancePreDestroy(handler, desc);
             } catch (Exception e) {
-                String msg = _rb.getString(
-                    "webcontainer.exceptionDuringJspTagHandlerPredestroy");
-                msg = MessageFormat.format(msg, handler);
+                String msg = MessageFormat.format(EXCEPTION_DURING_JSP_TAG_HANDLER_PREDESTROY, handler);
                 _logger.log(Level.WARNING, msg, e);
             }
         }

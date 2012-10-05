@@ -41,7 +41,6 @@
 package com.sun.appserv.web.taglibs.cache;
 
 import com.sun.appserv.util.cache.Cache;
-import com.sun.logging.LogDomains;
 
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
@@ -49,6 +48,9 @@ import javax.servlet.jsp.tagext.TagSupport;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 /**
  * FlushTag is a JSP tag that is used with the CacheTag. The FlushTag
@@ -73,13 +75,17 @@ public class FlushTag extends TagSupport {
     /**
      * The logger to use for logging ALL web container related messages.
      */
-    private static final Logger _logger = LogDomains.getLogger(FlushTag.class,
-        LogDomains.WEB_LOGGER);
+    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
 
-    /**
-     * The resource bundle containing the localized message strings.
-     */
-    private static final ResourceBundle _rb = _logger.getResourceBundle();
+    @LogMessageInfo(
+            message = "FlushTag: clear [{0}]",
+            level = "FINE")
+    private static final String FLUSH_TAG_CLEAR_KEY = "AS-WEB-00217";
+
+    @LogMessageInfo(
+            message = "FlushTag: clear cache",
+            level = "FINE")
+    private static final String FLUSH_TAG_CLEAR_CACHE = "AS-WEB-00218";
 
     // ---------------------------------------------------------------------
     // Tag logic
@@ -106,13 +112,13 @@ public class FlushTag extends TagSupport {
             cache.remove(key);
 
             if (_logger.isLoggable(Level.FINE))
-                _logger.fine("FlushTag: clear ["+ key +"]");
+                _logger.log(Level.FINE, FLUSH_TAG_CLEAR_KEY, key);
         } else {
             // clear the entire cache
             cache.clear();
 
             if (_logger.isLoggable(Level.FINE))
-                _logger.fine("FlushTag: clear cache");
+                _logger.log(Level.FINE, FLUSH_TAG_CLEAR_CACHE);
         }
 
         return SKIP_BODY;

@@ -62,11 +62,12 @@ import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.web.InitializationParameter;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.logging.LogDomains;
 import org.apache.jasper.JspC;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.runtime.JspConfig;
 import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.web.deployment.runtime.WebProperty;
@@ -76,6 +77,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class JSPCompiler {
@@ -128,7 +130,7 @@ public final class JSPCompiler {
 		jspc.setOutputDir(outWebDir.getAbsolutePath());
 		jspc.setUriroot(inWebDir.getAbsolutePath());
 		jspc.setCompile(true);
-		logger.info(startMessage);
+		logger.log(Level.INFO, START_MESSAGE);
 
 		try {
 			jspc.execute();
@@ -147,11 +149,11 @@ public final class JSPCompiler {
 
             if(files == null || files.length <= 0) {
                 if (!outWebDir.delete()) {
-                    logger.fine("Cannot delete file: " + outWebDir);
+                    logger.log(Level.FINE, CANNOT_DELETE_FILE, outWebDir);
                 }
             }
-			
-			logger.info(finishMessage);
+
+            logger.log(Level.INFO, FINISH_MESSAGE);
 		}
 	}
 
@@ -165,7 +167,7 @@ public final class JSPCompiler {
 	 
         if (!FileUtils.safeIsDirectory(outWebDir)) {
             if (!outWebDir.mkdirs()) {
-                logger.fine("Cannot delete file: " + outWebDir);
+                logger.log(Level.FINE, CANNOT_DELETE_FILE, outWebDir);
             }
 		
 			if (!FileUtils.safeIsDirectory(outWebDir)) {
@@ -321,13 +323,23 @@ public final class JSPCompiler {
 
 
 	////////////////////////////////////////////////////////////////////////////
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(JSPCompiler.class);    	
-	private static final String startMessage =
-        localStrings.getLocalString("org.glassfish.web.start_jspc", "Beginning JSP Precompile...");
-	private static final String finishMessage =
-        localStrings.getLocalString("org.glassfish.web.finish_jspc", "Finished JSP Precompile");
-	private static final Logger logger = LogDomains.getLogger(JSPCompiler.class, LogDomains.WEB_LOGGER);
 
+    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
+
+    @LogMessageInfo(
+            message = "Beginning JSP Precompile...",
+            level = "INFO")
+    public static final String START_MESSAGE = "AS-WEB-00352";
+
+    @LogMessageInfo(
+            message = "Finished JSP Precompile...",
+            level = "INFO")
+    public static final String FINISH_MESSAGE = "AS-WEB-00353";
+
+    @LogMessageInfo(
+            message = "Cannot delete file: {0}",
+            level = "FINE")
+    public static final String CANNOT_DELETE_FILE = "AS-WEB-00354";
 
 	////////////////////////////////////////////////////////////////////////////
 

@@ -42,9 +42,10 @@ package com.sun.enterprise.web;
 
 
 import com.sun.enterprise.web.session.PersistenceType;
-import com.sun.logging.LogDomains;
 import org.apache.catalina.Context;
 import org.jvnet.hk2.component.Habitat;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,12 +55,34 @@ import java.util.logging.Logger;
   */
 
 public class PersistenceStrategyBuilderFactory {
-    
-    private static final Logger _logger = LogDomains.getLogger(
-            PersistenceStrategyBuilderFactory.class, LogDomains.WEB_LOGGER);
+
+
+    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
+
+    @LogMessageInfo(
+            message = "PersistenceStrategyBuilderFactory>>createPersistenceStrategyBuilder: " +
+                    "resolvedPersistenceType = {0}, resolvedPersistenceFrequency = {1} " +
+                    "resolvedPersistenceScope = {2}",
+            level = "FINEST")
+    public static final String CREATE_PERSISTENCE_STRATEGY_BUILDER_INFO = "AS-WEB-00293";
+
+    @LogMessageInfo(
+            message = "Could not find PersistentStrategyBuilder for persistenceType {0}",
+            level = "FINEST")
+    public static final String PERSISTENT_STRATEGY_BUILDER_NOT_FOUND = "AS-WEB-00294";
+
+    @LogMessageInfo(
+            message = "PersistenceStrategyBuilderFactory>>createPersistenceStrategyBuilder: " +
+                    "CandidateBuilderClassName = {0}",
+            level = "FINEST")
+    public static final String CREATE_PERSISTENCE_STRATEGY_BUILDER_CLASS_NAME = "AS-WEB-00295";
+
+    @LogMessageInfo(
+            message = "resolvedPersistenceType = {0}",
+            level = "FINEST")
+    public static final String ACCESS_LOG_DIRECTORY_SET = "AS-WEB-00296";
 
     Habitat services;
-
 
 
     /**
@@ -93,25 +116,19 @@ public class PersistenceStrategyBuilderFactory {
         }
 
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.finest("resolvedPersistenceType = " +
-                           persistenceType);
-            _logger.finest("resolvedPersistenceFrequency = " +
-                           resolvedPersistenceFrequency);
-            _logger.finest("resolvedPersistenceScope = " +
-                           resolvedPersistenceScope);
+            _logger.log(Level.FINEST, CREATE_PERSISTENCE_STRATEGY_BUILDER_INFO,
+                    new Object[] {persistenceType, resolvedPersistenceFrequency, resolvedPersistenceScope});
         }
 
         PersistenceStrategyBuilder builder = services.getService(PersistenceStrategyBuilder.class, persistenceType);
         if (builder == null) {
             builder = new MemoryStrategyBuilder();
             if (_logger.isLoggable(Level.FINEST)) {
-                _logger.finest("Could not find PersistentStrategyBuilder for persistenceType  " + persistenceType);
+                _logger.log(Level.FINEST, PERSISTENT_STRATEGY_BUILDER_NOT_FOUND, persistenceType);
             }
         } else {
                 if (_logger.isLoggable(Level.FINEST)) {
-                    _logger.finest(
-                    "PersistenceStrategyBuilderFactory>>createPersistenceStrategyBuilder: "
-                    + "CandidateBuilderClassName = " + builder.getClass());
+                    _logger.log(Level.FINEST, CREATE_PERSISTENCE_STRATEGY_BUILDER_CLASS_NAME, builder.getClass());
                 }
 
               builder.setPersistenceFrequency(frequency);

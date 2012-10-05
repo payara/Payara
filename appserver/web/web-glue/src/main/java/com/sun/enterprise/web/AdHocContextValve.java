@@ -40,10 +40,11 @@
 
 package com.sun.enterprise.web;
 
-import com.sun.logging.LogDomains;
 import org.apache.catalina.Request;
 import org.apache.catalina.Response;
 import org.apache.catalina.Wrapper;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.valve.GlassFishValve;
 
 import javax.servlet.Servlet;
@@ -70,13 +71,22 @@ import java.util.logging.Logger;
  */
 public class AdHocContextValve implements GlassFishValve {
 
-    private static final Logger LOGGER =
-        LogDomains.getLogger(AdHocContextValve.class,LogDomains.WEB_LOGGER);
+    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
 
-    private static final ResourceBundle rb = LOGGER.getResourceBundle();
+    private static final ResourceBundle rb = logger.getResourceBundle();
 
     private static final String VALVE_INFO =
         "com.sun.enterprise.web.AdHocContextValve";
+
+    @LogMessageInfo(
+            message = "Error processing request received on ad-hoc path {0}",
+            level = "WARNING")
+    private static final String ADHOC_SERVLET_SERVICE_ERROR = "AS-WEB-00366";
+
+    @LogMessageInfo(
+            message = "No ad-hoc servlet configured to process ad-hoc path {0}",
+            level = "WARNING")
+    private static final String NO_ADHOC_SERVLET = "AS-WEB-00367";
 
     // The web module with which this valve is associated
     private WebModule context;
@@ -123,14 +133,13 @@ public class AdHocContextValve implements GlassFishValve {
                 adHocServlet.service(hreq, hres);
             } catch (Throwable t) {
                 hres.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                String msg = rb.getString(
-                    "webmodule.adHocContextValve.adHocServletServiceError");
+                String msg = rb.getString(ADHOC_SERVLET_SERVICE_ERROR);
                 msg = MessageFormat.format(
                             msg,
                             new Object[] { hreq.getServletPath() });
                 response.setDetailMessage(msg);
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, msg, t);
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, msg, t);
                 }
                 return END_PIPELINE;
             } finally {
@@ -140,8 +149,7 @@ public class AdHocContextValve implements GlassFishValve {
             }
         } else {
             hres.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            String msg = rb.getString(
-                "webmodule.adHocContextValve.noAdHocServlet");
+            String msg = rb.getString(NO_ADHOC_SERVLET);
             msg = MessageFormat.format(
                             msg,
                             new Object[] { hreq.getServletPath() });

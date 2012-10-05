@@ -49,10 +49,11 @@ import com.sun.enterprise.deployment.web.InitializationParameter;
 import com.sun.enterprise.util.net.JarURIPattern;
 import com.sun.enterprise.web.jsp.JspProbeEmitterImpl;
 import com.sun.enterprise.web.jsp.ResourceInjectorImpl;
-import com.sun.logging.LogDomains;
 import org.apache.catalina.*;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.web.TldProvider;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.runtime.WebProperty;
 import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.web.deployment.util.WebValidatorWithCL;
@@ -87,7 +88,37 @@ final class WebModuleListener
     /**
      * The logger used to log messages
      */
-    private static final Logger _logger = LogDomains.getLogger(WebModuleListener.class, LogDomains.WEB_LOGGER);
+    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
+
+    @LogMessageInfo(
+            message = "Lifecycle event data object [{0}] is not a WebModule",
+            level = "WARNING")
+    public static final String CLASS_CAST_EXCEPTION = "AS-WEB-00336";
+
+    @LogMessageInfo(
+            message = "jsp-config property for {0} ",
+            level = "FINE")
+    public static final String JSP_CONFIG_PROPERTY = "AS-WEB-00337";
+
+    @LogMessageInfo(
+            message = "sysClasspath for {0} ",
+            level = "FINE")
+    public static final String SYS_CLASSPATH = "AS-WEB-00338";
+
+    @LogMessageInfo(
+            message = "Error creating cache manager and configuring the servlet caching subsystem",
+            level = "WARNING")
+    public static final String CACHE_MRG_EXCEPTION = "AS-WEB-00339";
+
+    @LogMessageInfo(
+            message = "Cache Manager started",
+            level = "FINE")
+    public static final String CACHE_MANAGER_STARTED = "AS-WEB-00340";
+
+    @LogMessageInfo(
+            message = "Cache Manager stopped",
+            level = "FINE")
+    public static final String CACHE_MANAGER_STOPPED = "AS-WEB-00341";
 
     /**
      * Descriptor object associated with this web application.
@@ -130,8 +161,7 @@ final class WebModuleListener
         try {
             webModule = (WebModule) event.getLifecycle();
         } catch (ClassCastException e) {
-            _logger.log(Level.WARNING, "webmodule.listener.classcastException",
-                                        event.getLifecycle());
+            _logger.log(Level.WARNING, CLASS_CAST_EXCEPTION, event.getLifecycle());
             return;
         }
 
@@ -247,9 +277,9 @@ final class WebModuleListener
                 String pname = props[i].getAttributeValue("name");
                 String pvalue = props[i].getAttributeValue("value");
                 if (_logger.isLoggable(Level.FINE)) {
-                    _logger.fine("jsp-config property for [" +
-                                 webModule.getID() + "] is [" + pname +
-                                 "] = [" + pvalue + "]");
+                    _logger.log(Level.FINE,
+                            JSP_CONFIG_PROPERTY,
+                            "[" + webModule.getID() + "] is [" + pname + "] = [" + pvalue + "]");
                 }
                 wrapper.addInitParameter(pname, pvalue);
             }
@@ -283,8 +313,7 @@ final class WebModuleListener
         // TODO: combine with classpath from
         // servletContext.getAttribute(("org.apache.catalina.jsp_classpath")
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.fine(" sysClasspath for " + webModule.getID() + " is \n"  +
-                sysClassPath + "\n");
+            _logger.log(Level.FINE, SYS_CLASSPATH, webModule.getID() + " is " + sysClassPath);
         }
         if (sysClassPath.equals("")) {
             // In embedded mode, services returns SingleModulesRegistry and
@@ -418,8 +447,7 @@ final class WebModuleListener
             try {
                 cm = CacheModule.configureResponseCache(webModule, bean);
             } catch (Exception ee) {
-                _logger.log(Level.WARNING,
-                           "webmodule.listener.cachemgrException", ee);
+                _logger.log(Level.WARNING, CACHE_MRG_EXCEPTION, ee);
             }
         
             if (cm != null) {
@@ -427,7 +455,7 @@ final class WebModuleListener
                     // first start the CacheManager, if enabled
                     cm.start();
                     if (_logger.isLoggable(Level.FINE)) {
-                        _logger.fine("Cache Manager started");
+                        _logger.log(Level.FINE, CACHE_MANAGER_STARTED);
                     }
                     // set this manager as a context attribute so that 
                     // caching filters/tags can find it
@@ -450,7 +478,7 @@ final class WebModuleListener
             try {
                 cm.stop();
                 if (_logger.isLoggable(Level.FINE)) {
-                    _logger.fine("Cache Manager stopped");
+                    _logger.log(Level.FINE, CACHE_MANAGER_STOPPED);
                 }
                 ctxt.removeAttribute(CacheManager.CACHE_MANAGER_ATTR_NAME);
             } catch (LifecycleException ee) {

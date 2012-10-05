@@ -41,7 +41,6 @@
 package com.sun.appserv.web.taglibs.cache;
 
 import com.sun.appserv.util.cache.Cache;
-import com.sun.logging.LogDomains;
 
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
@@ -49,6 +48,9 @@ import javax.servlet.jsp.tagext.BodyTagSupport;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 /**
  * CacheTag is a JSP tag that allows server-side caching of JSP page
@@ -115,13 +117,23 @@ public class CacheTag extends BodyTagSupport
     /**
      * The logger to use for logging ALL web container related messages.
      */
-    private static final Logger _logger = LogDomains.getLogger(
-        CacheTag.class, LogDomains.WEB_LOGGER);
+    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
 
     /**
      * The resource bundle containing the localized message strings.
      */
     private static final ResourceBundle _rb = _logger.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "CacheTag[{0}]: Timeout = {1}",
+            level = "FINE")
+    private static final String CACHETAG_TIMEOUT = "AS-WEB-00215";
+
+    @LogMessageInfo(
+            message = "Cache not found in the specified scope",
+            level = "INFO")
+    private static final String TAGLIBS_CACHE_NO_CACHE = "AS-WEB-00216";
+
 
     // ---------------------------------------------------------------------
     // Tag logic
@@ -153,7 +165,7 @@ public class CacheTag extends BodyTagSupport
         _key = CacheUtil.generateKey(_keyExpr, pageContext);
 
         if (_logger.isLoggable(Level.FINE))
-            _logger.fine("CacheTag["+ _key +"]: Timeout = "+ _timeout);
+            _logger.log(Level.FINE, CACHETAG_TIMEOUT, new Object[] {_key, _timeout});
 
         // if useCachedResponse is false, we do not check for any
         // cached response and just evaluate the tag body
@@ -161,7 +173,7 @@ public class CacheTag extends BodyTagSupport
 
             _cache = CacheUtil.getCache(pageContext, _scope);
             if (_cache == null)
-                throw new JspException(_rb.getString("taglibs.cache.nocache"));
+                throw new JspException(_rb.getString(TAGLIBS_CACHE_NO_CACHE));
 
             // if refreshCache is true, we want to re-evaluate the
             // tag body and refresh the cached entry

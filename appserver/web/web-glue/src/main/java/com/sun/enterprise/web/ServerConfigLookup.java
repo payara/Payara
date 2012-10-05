@@ -42,11 +42,12 @@ package com.sun.enterprise.web;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.web.session.PersistenceType;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.config.serverbeans.*;
 import org.glassfish.web.config.serverbeans.WebContainer;
 import javax.inject.Inject;
@@ -64,8 +65,42 @@ import java.util.logging.Logger;
 @PerLookup
 public class ServerConfigLookup {
 
-    protected static final Logger _logger = LogDomains.getLogger(
-            ServerConfigLookup.class, LogDomains.WEB_LOGGER);
+    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
+
+    @LogMessageInfo(
+            message = "AvailabilityService was not defined - check domain.xml",
+            level = "FINEST")
+    public static final String AVAILABILITY_SERVICE_NOT_DEFINED = "AS-WEB-00301";
+
+    @LogMessageInfo(
+            message = "WebContainerAvailability not defined - check domain.xml",
+            level = "FINEST")
+    public static final String WEB_CONTAINER_AVAILABILITY_NOT_DEFINED = "AS-WEB-00302";
+
+    @LogMessageInfo(
+            message = "globalAvailability = {0}",
+            level = "FINEST")
+    public static final String GLOBAL_AVAILABILITY= "AS-WEB-00303";
+
+    @LogMessageInfo(
+            message = "webContainerAvailability = {0}",
+            level = "FINEST")
+    public static final String WEB_CONTAINER_AVAILABILITY = "AS-WEB-00304";
+
+    @LogMessageInfo(
+            message = "webModuleAvailability = {0}",
+            level = "FINEST")
+    public static final String WEB_MODULE_AVAILABILITY = "AS-WEB-00305";
+
+    @LogMessageInfo(
+            message = "SERVER.XML persistenceType= {0}",
+            level = "FINEST")
+    public static final String PERSISTENCE_TYPE = "AS-WEB-00306";
+
+    @LogMessageInfo(
+            message = "SERVER.XML persistenceType missing",
+            level = "FINEST")
+    public static final String PERSISTENCE_TYPE_MISSING = "AS-WEB-00307";
 
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -166,7 +201,7 @@ public class ServerConfigLookup {
         AvailabilityService as = this.getAvailabilityService();
         if (as == null) {
             if (_logger.isLoggable(Level.FINEST)) {
-                _logger.finest("AvailabilityService was not defined - check domain.xml");
+                _logger.log(Level.FINEST, AVAILABILITY_SERVICE_NOT_DEFINED);
             }
             return false;
         }        
@@ -238,7 +273,7 @@ public class ServerConfigLookup {
         WebContainerAvailability was = getWebContainerAvailability();
         if (was == null) {
             if (_logger.isLoggable(Level.FINEST)) {
-                _logger.finest("WebContainerAvailability not defined - check domain.xml");
+                _logger.log(Level.FINEST, WEB_CONTAINER_AVAILABILITY_NOT_DEFINED);
             }
             return globalAvailabilityEnabled;
         }
@@ -276,7 +311,7 @@ public class ServerConfigLookup {
         // global availability from <availability-service> element
         boolean globalAvailability = getAvailabilityEnabledFromConfig();
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.finest("globalAvailability = " + globalAvailability);
+            _logger.log(Level.FINEST, GLOBAL_AVAILABILITY, globalAvailability);
         }
 
         // web container availability from <web-container-availability>
@@ -285,7 +320,7 @@ public class ServerConfigLookup {
         boolean webContainerAvailability =
             getWebContainerAvailabilityEnabledFromConfig();
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.finest("webContainerAvailability = " + webContainerAvailability);
+            _logger.log(Level.FINEST, WEB_CONTAINER_AVAILABILITY, webContainerAvailability);
         }
 
         return globalAvailability && webContainerAvailability;
@@ -313,7 +348,7 @@ public class ServerConfigLookup {
 
 
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.finest("webModuleAvailability = " + webModuleAvailability);
+            _logger.log(Level.FINEST, WEB_MODULE_AVAILABILITY, webModuleAvailability);
         }
         return waEnabled && webModuleAvailability;
     }
@@ -352,11 +387,11 @@ public class ServerConfigLookup {
         }
         if (persistenceType != null) {
             if (_logger.isLoggable(Level.FINEST)) {
-                _logger.finest("SERVER.XML persistenceType= " + persistenceType.getType());
+                _logger.log(Level.FINEST, PERSISTENCE_TYPE, persistenceType.getType());
             }
         } else {
             if (_logger.isLoggable(Level.FINEST)) {
-                _logger.finest("SERVER.XML persistenceType missing");
+                _logger.log(Level.FINEST, PERSISTENCE_TYPE_MISSING);
             }
         }
 

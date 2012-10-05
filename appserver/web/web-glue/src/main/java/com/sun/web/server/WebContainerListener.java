@@ -43,12 +43,14 @@ package com.sun.web.server;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.web.WebComponentInvocation;
 import com.sun.enterprise.web.WebModule;
-import com.sun.logging.LogDomains;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.ContainerListener;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 
+import java.lang.String;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.ResourceBundle;
@@ -64,12 +66,19 @@ import java.util.logging.Logger;
 public final class WebContainerListener 
     implements ContainerListener {
 
-    // START OF IASRI 4660742
-    private static final Logger _logger=LogDomains.getLogger(
-        WebContainerListener.class, LogDomains.WEB_LOGGER);
-    // END OF IASRI 4660742
+    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
 
-    private static final ResourceBundle rb = _logger.getResourceBundle();
+    @LogMessageInfo(
+            message = "ContainerEvent: {0}",
+            level = "FINEST")
+    public static final String CONTAINER_EVENT = "AS-WEB-00347";
+
+    @LogMessageInfo(
+            message = "Exception during invocation of InjectionManager.destroyManagedObject on {0} of web module {1}",
+            level = "SEVERE",
+            cause = "An exception occurred during destroyManagedObject",
+            action = "Check the exception for the error")
+    public static final String EXCEPTION_DURING_DESTROY_MANAGED_OBJECT = "AS-WEB-00348";
 
     static private HashSet<String> beforeEvents = new HashSet<String>();
     static private HashSet<String> afterEvents = new HashSet<String>();
@@ -123,7 +132,7 @@ public final class WebContainerListener
 
     public void containerEvent(ContainerEvent event) {
         if(_logger.isLoggable(Level.FINEST)) {
-	    _logger.log(Level.FINEST,"ContainerEvent: " +
+	    _logger.log(Level.FINEST, CONTAINER_EVENT,
                         event.getType() + "," +
                         event.getContainer() + "," +
                         event.getData());
@@ -147,9 +156,7 @@ public final class WebContainerListener
                 postInvoke(wm);
             }
         } catch (Throwable t) {
-            String msg = rb.getString(
-                "containerListener.exceptionDuringHandleEvent");
-            msg = MessageFormat.format(msg,
+            String msg = MessageFormat.format(J2EEInstanceListener.EXCEPTION_DURING_HANDLE_EVENT,
                 new Object[] { type, event.getContainer() });
             _logger.log(Level.SEVERE, msg, t);
         }
@@ -176,9 +183,7 @@ public final class WebContainerListener
         try {
             injectionMgr.destroyManagedObject(event.getData());
         } catch (Throwable t) {
-            String msg = rb.getString(
-                "containerListener.exceptionDuringDestroyManagedObject");
-            msg = MessageFormat.format(msg,
+            String msg = MessageFormat.format(EXCEPTION_DURING_DESTROY_MANAGED_OBJECT,
                 new Object[] { event.getData(), event.getContainer() });
             _logger.log(Level.SEVERE, msg, t);
         }

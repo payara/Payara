@@ -48,7 +48,6 @@ import com.sun.enterprise.security.integration.SecurityConstants;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.web.WebComponentInvocation;
 import com.sun.enterprise.web.WebModule;
-import com.sun.logging.LogDomains;
 import org.apache.catalina.*;
 import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.servlets.DefaultServlet;
@@ -58,6 +57,8 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletRequest;
@@ -65,6 +66,7 @@ import javax.servlet.ServletRequestWrapper;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.lang.String;
 import java.security.*;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
@@ -80,10 +82,34 @@ import java.util.logging.Logger;
  */
 public final class J2EEInstanceListener implements InstanceListener {
 
-    // START OF IASRI 4660742
-    private static final Logger _logger=LogDomains.getLogger(J2EEInstanceListener.class, LogDomains.WEB_LOGGER);
-    // END OF IASRI 4660742
-    private static final ResourceBundle _rb = _logger.getResourceBundle();
+    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
+
+    @LogMessageInfo(
+            message = "*** InstanceEvent: {0}",
+            level = "FINEST")
+    public static final String INSTANCE_EVENT = "AS-WEB-00342";
+
+    @LogMessageInfo(
+            message = "Obtained securityContext implementation class {0}",
+            level = "FINE")
+    public static final String SECURITY_CONTEXT_OBTAINED = "AS-WEB-00343";
+
+    @LogMessageInfo(
+            message = "Failed to obtain securityContext implementation class",
+            level = "FINE")
+    public static final String SECURITY_CONTEXT_FAILED = "AS-WEB-00344";
+
+    @LogMessageInfo(
+            message = "Exception during processing of event of type {0} for web module {1}",
+            level = "SEVERE",
+            cause = "An exception occurred during processing event type",
+            action = "Check the exception for the error")
+    public static final String EXCEPTION_DURING_HANDLE_EVENT = "AS-WEB-00345";
+
+    @LogMessageInfo(
+            message = "No ServerContext in WebModule [{0}]",
+            level = "WARNING")
+    public static final String NO_SERVER_CONTEXT = "AS-WEB-00346";
 
     private InvocationManager im;
     private JavaEETransactionManager tm;
@@ -105,7 +131,7 @@ public final class J2EEInstanceListener implements InstanceListener {
 
         InstanceEvent.EventType eventType = event.getType();
         if(_logger.isLoggable(Level.FINEST)) {
-            _logger.log(Level.FINEST,"*** InstanceEvent: " + eventType);
+            _logger.log(Level.FINEST, INSTANCE_EVENT, eventType);
         }
         if (eventType.isBefore) {
             handleBeforeEvent(event, eventType);
@@ -120,8 +146,7 @@ public final class J2EEInstanceListener implements InstanceListener {
         }
         ServerContext serverContext = wm.getServerContext();
         if (serverContext == null) {
-            String msg = _rb.getString("webmodule.noservercontext");
-            msg = MessageFormat.format(msg, wm.getName());
+            String msg = MessageFormat.format(NO_SERVER_CONTEXT, wm.getName());
             throw new IllegalStateException(msg);
         }
         ServiceLocator services = serverContext.getDefaultServices();
@@ -133,11 +158,11 @@ public final class J2EEInstanceListener implements InstanceListener {
         securityContext = serverContext.getDefaultServices().getService(AppServSecurityContext.class);
         if (securityContext != null) {
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "Obtained securityContext implementation class " + securityContext);
+                _logger.log(Level.FINE, SECURITY_CONTEXT_OBTAINED, securityContext);
             }
         } else {
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "Failed to obtain securityContext implementation class ");
+                _logger.log(Level.FINE, SECURITY_CONTEXT_FAILED);
             }
         }
     }
@@ -255,10 +280,8 @@ public final class J2EEInstanceListener implements InstanceListener {
                 }
             }
         } catch (Exception ex) {
-            im.postInvoke(inv); // See CR 6920895 
-            String msg = _rb.getString(
-                "containerListener.exceptionDuringHandleEvent");
-            msg = MessageFormat.format(msg, new Object[] { eventType, wm });
+            im.postInvoke(inv); // See CR 6920895
+            String msg = MessageFormat.format(EXCEPTION_DURING_HANDLE_EVENT, new Object[] { eventType, wm });
             throw new RuntimeException(msg, ex);
         }
     }
@@ -325,9 +348,7 @@ public final class J2EEInstanceListener implements InstanceListener {
                 injectionMgr.destroyManagedObject(instance, false);
             }
         } catch (InjectionException ie) {
-            String msg = _rb.getString(
-                "containerListener.exceptionDuringHandleEvent");
-            msg = MessageFormat.format(msg, new Object[] { eventType, wm });
+            String msg = MessageFormat.format(EXCEPTION_DURING_HANDLE_EVENT, new Object[] { eventType, wm });
             _logger.log(Level.SEVERE, msg, ie);
         }
 
@@ -335,9 +356,7 @@ public final class J2EEInstanceListener implements InstanceListener {
         try {
             im.postInvoke(inv);
         } catch (Exception ex) {
-            String msg = _rb.getString(
-                "containerListener.exceptionDuringHandleEvent");
-            msg = MessageFormat.format(msg, new Object[] { eventType, wm });
+            String msg = MessageFormat.format(EXCEPTION_DURING_HANDLE_EVENT, new Object[] { eventType, wm });
             throw new RuntimeException(msg, ex);
         } finally {
             if (eventType == InstanceEvent.EventType.AFTER_DESTROY_EVENT) {
@@ -370,9 +389,7 @@ public final class J2EEInstanceListener implements InstanceListener {
                             //securityContext.setCurrentSecurityContext(null);
                         }
                     } catch (Exception ex) {
-                        String msg = _rb.getString(
-                            "containerListener.exceptionDuringHandleEvent");
-                        msg = MessageFormat.format(msg,
+                        String msg = MessageFormat.format(EXCEPTION_DURING_HANDLE_EVENT,
                             new Object[] { eventType, wm });
                         _logger.log(Level.SEVERE, msg,  ex);
                     }

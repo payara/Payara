@@ -40,9 +40,11 @@
 
 package com.sun.enterprise.web;
 
-import com.sun.logging.LogDomains;
+import com.sun.enterprise.web.WebContainer;
 import org.apache.catalina.Context;
 import org.apache.catalina.core.StandardContext;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.config.serverbeans.SessionProperties;
 import org.glassfish.web.deployment.runtime.ManagerProperties;
 import org.glassfish.web.deployment.runtime.SessionManager;
@@ -61,9 +63,59 @@ import java.util.logging.Logger;
 public abstract class BasePersistenceStrategyBuilder
         implements PersistenceStrategyBuilder {
 
-    protected static final Logger _logger = LogDomains.getLogger(
-            BasePersistenceStrategyBuilder.class, LogDomains.WEB_LOGGER);
-    protected static final ResourceBundle _rb = _logger.getResourceBundle();
+    public static final Logger _logger = WebContainer.logger;
+
+    public static final ResourceBundle _rb = _logger.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "mgr reapInterval set = {0}",
+            level = "FINEST")
+    public static final String MANAGER_REAP_INTERVAL_SET = "AS-WEB-00239";
+
+    @LogMessageInfo(
+            message = "no instance level value set for mgr reapInterval",
+            level = "FINEST")
+    public static final String NO_INSTANCE_LEVEL_VALUE_SET_MGR_REAP_INTERVAL = "AS-WEB-00240";
+
+    @LogMessageInfo(
+            message = "maxSessions set = {0}",
+            level = "FINEST")
+    public static final String MAX_SESSIONS_SET = "AS-WEB-00241";
+
+    @LogMessageInfo(
+            message = "no instance level value set for maxSessions",
+            level = "FINEST")
+    public static final String NO_INSTANCE_LEVEL_VALUE_SET_MAX_SESSIONS = "AS-WEB-00242";
+
+    @LogMessageInfo(
+            message = "sessionFilename set = {0}",
+            level = "FINEST")
+    public static final String SESSION_FILENAME_SET = "AS-WEB-00243";
+
+    @LogMessageInfo(
+            message = "sessionIdGeneratorClassname set = {0}",
+            level = "FINEST")
+    public static final String SESSION_ID_GENERATOR_CLASSNAME_SET = "AS-WEB-00244";
+
+    @LogMessageInfo(
+            message = "storeReapInterval set = {0}",
+            level = "FINEST")
+    public static final String STORE_REAP_INTERVAL_SET = "AS-WEB-00245";
+
+    @LogMessageInfo(
+            message = "directory set = {0}",
+            level = "FINEST")
+    public static final String DIRECTORY_SET = "AS-WEB-00246";
+
+    @LogMessageInfo(
+            message = "sessionMaxInactiveInterval set = {0}",
+            level = "FINEST")
+    public static final String SESSION_MAX_INACTIVE_INTERVAL_SET = "AS-WEB-00247";
+
+    @LogMessageInfo(
+            message = "no instance level value set for sessionMaxInactiveInterval",
+            level = "FINEST")
+    public static final String NO_INSTANCE_LEVEL_VALUE_SET_SESSION_MAX_INACTIVE_INTERVAL = "AS-WEB-00248";
 
     protected String directory = null;
     // START GLASSFISH-15745
@@ -159,15 +211,14 @@ public abstract class BasePersistenceStrategyBuilder
                     try {
                         reapInterval = Integer.parseInt(reapIntervalInSecondsString);
                         if (_logger.isLoggable(Level.FINEST)) {
-                            _logger.finest("mgr reapInterval set = " +
-                                           reapInterval);
+                            _logger.log(Level.FINEST, MANAGER_REAP_INTERVAL_SET, reapInterval);
                         }
                     } catch (NumberFormatException e) {
                         // XXX need error message
                     }                        
                 } else {
                     if (_logger.isLoggable(Level.FINEST)) {
-                        _logger.finest("no instance level value set for mgr reapInterval");
+                        _logger.log(Level.FINEST, NO_INSTANCE_LEVEL_VALUE_SET_MGR_REAP_INTERVAL);
                     }
                 }                               
                 //max-sessions
@@ -176,14 +227,14 @@ public abstract class BasePersistenceStrategyBuilder
                     try {
                         maxSessions = Integer.parseInt(maxSessionsString);
                         if (_logger.isLoggable(Level.FINEST)) {
-                            _logger.finest("maxSessions set = " + maxSessions);
+                            _logger.log(Level.FINEST, MAX_SESSIONS_SET, maxSessions);
                         }
                     } catch (NumberFormatException e) {
                         // XXX need error message
                     }                        
                 } else {
                     if (_logger.isLoggable(Level.FINEST)) {
-                        _logger.finest("no instance level value set for maxSessions");
+                        _logger.log(Level.FINEST, NO_INSTANCE_LEVEL_VALUE_SET_MAX_SESSIONS);
                     }
                 } 
 
@@ -192,8 +243,7 @@ public abstract class BasePersistenceStrategyBuilder
                 if (sessionFilenameString != null) {
                     sessionFilename = sessionFilenameString;
                     if (_logger.isLoggable(Level.FINEST)) {
-                        _logger.finest("sessionFilename set = " +
-                                       sessionFilename);
+                        _logger.log(Level.FINEST, SESSION_FILENAME_SET, sessionFilename);
                     }
                 }
 
@@ -202,8 +252,7 @@ public abstract class BasePersistenceStrategyBuilder
                     mgrBean.getSessionIdGeneratorClassname();
                 if (sessionIdGeneratorClassname != null
                         && _logger.isLoggable(Level.FINEST)) {
-                    _logger.finest("sessionIdGeneratorClassname set = " +
-                                   sessionIdGeneratorClassname);
+                    _logger.log(Level.FINEST, SESSION_ID_GENERATOR_CLASSNAME_SET, sessionIdGeneratorClassname);
                 }
                 // END CR 6275709
                 
@@ -235,8 +284,7 @@ public abstract class BasePersistenceStrategyBuilder
                     try {
                         storeReapInterval = Integer.parseInt(reapIntervalInSecondsString);
                         if (_logger.isLoggable(Level.FINEST)) {
-                            _logger.finest("storeReapInterval set = " +
-                                           storeReapInterval);
+                            _logger.log(Level.FINEST, STORE_REAP_INTERVAL_SET, storeReapInterval);
                         }
                     } catch (NumberFormatException e) {
                         // XXX need error message
@@ -247,7 +295,7 @@ public abstract class BasePersistenceStrategyBuilder
                 if (directoryString != null) {
                     directory = directoryString;
                     if (_logger.isLoggable(Level.FINEST)) {
-                        _logger.finest("directory set = " + directoryString);
+                        _logger.log(Level.FINEST, DIRECTORY_SET, directoryString);
                     }
                 }                                                     
             }                     
@@ -262,15 +310,14 @@ public abstract class BasePersistenceStrategyBuilder
                 try {
                     sessionMaxInactiveInterval = Integer.parseInt(timeoutSecondsString);
                     if (_logger.isLoggable(Level.FINEST)) {
-                        _logger.finest("sessionMaxInactiveInterval set = " +
-                                       sessionMaxInactiveInterval);
+                        _logger.log(Level.FINEST, SESSION_MAX_INACTIVE_INTERVAL_SET, sessionMaxInactiveInterval);
                     }
                 } catch (NumberFormatException e) {
                     // XXX need error message
                 }                        
             } else {
                 if (_logger.isLoggable(Level.FINEST)) {
-                    _logger.finest("no instance level value set for sessionMaxInactiveInterval");
+                    _logger.log(Level.FINEST, NO_INSTANCE_LEVEL_VALUE_SET_SESSION_MAX_INACTIVE_INTERVAL);
                 }                
             }            
         }
@@ -313,7 +360,7 @@ public abstract class BasePersistenceStrategyBuilder
                     } else {
                         if (_logger.isLoggable(Level.INFO)) {
                             Object[] params = { name };
-                            _logger.log(Level.INFO, "webcontainer.notYet", params);
+                            _logger.log(Level.INFO, WebContainer.PROPERTY_NOT_YET_SUPPORTED, params);
                         }
                     }
                 }
@@ -339,7 +386,7 @@ public abstract class BasePersistenceStrategyBuilder
                     } else {
                         if (_logger.isLoggable(Level.INFO)) {
                             Object[] params = { name };
-                            _logger.log(Level.INFO, "webcontainer.notYet", params);
+                            _logger.log(Level.INFO, WebContainer.PROPERTY_NOT_YET_SUPPORTED, params);
                         }
                     }
                 }

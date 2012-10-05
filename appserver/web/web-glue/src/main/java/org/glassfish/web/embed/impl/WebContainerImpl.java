@@ -43,6 +43,7 @@ package org.glassfish.web.embed.impl;
 import java.beans.PropertyVetoException;
 import java.io.File;
 
+import java.lang.System;
 import java.util.*;
 import java.util.logging.*;
 
@@ -273,6 +274,7 @@ public class WebContainerImpl implements WebContainer {
                     public Object run(Protocol param) throws TransactionFailure {
                         Ssl newSsl = param.createChild(Ssl.class);
                         populateSslElement(newSsl, listener);
+                        System.out.println("SSL "+newSsl.getKeyStore()+" "+newSsl.getKeyStorePassword()+" "+newSsl.getTrustStore()+" "+newSsl.getTrustStorePassword());
                         param.setSsl(newSsl);
                         return newSsl;
                     }

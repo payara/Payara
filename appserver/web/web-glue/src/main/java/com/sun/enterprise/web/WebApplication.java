@@ -47,7 +47,6 @@ import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.EnvironmentEntry;
 import com.sun.enterprise.util.Result;
 import com.sun.enterprise.web.session.PersistenceType;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeployCommandParameters;
@@ -56,12 +55,15 @@ import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.deployment.common.ApplicationConfigInfo;
 import org.glassfish.deployment.common.DeploymentProperties;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.config.serverbeans.ContextParam;
 import org.glassfish.web.config.serverbeans.EnvEntry;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.web.deployment.runtime.SessionManager;
 import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 
+import java.lang.String;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.*;
@@ -70,10 +72,42 @@ import java.util.logging.Logger;
 
 public class WebApplication implements ApplicationContainer<WebBundleDescriptorImpl> {
 
-    protected static final Logger logger = LogDomains.getLogger(
-            WebApplication.class, LogDomains.WEB_LOGGER);
+    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
 
     protected static final ResourceBundle rb = logger.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Unknown error, loadWebModule returned null, file a bug",
+            level = "SEVERE",
+            cause = "An exception occurred writing to access log file",
+            action = "Check the exception for the error")
+    public static final String WEBAPP_UNKNOWN_ERROR = "AS-WEB-00323";
+
+    @LogMessageInfo(
+            message = "Loading application [{0}] at [{1}]",
+            level = "INFO")
+    public static final String LOADING_APP = "AS-WEB-00324";
+
+    @LogMessageInfo(
+            message = "App config customization specified to ignore descriptor's {0} {1} " +
+                    "so it will not be present for the application",
+            level = "FINER")
+    public static final String IGNORE_DESCRIPTOR = "AS-WEB-00325";
+
+    @LogMessageInfo(
+            message = "Overriding descriptor {0}",
+            level = "FINER")
+    public static final String OVERIDE_DESCRIPTOR = "AS-WEB-00326";
+
+    @LogMessageInfo(
+            message = "Creating new {0}",
+            level = "FINER")
+    public static final String CREATE_DESCRIPTOR = "AS-WEB-00327";
+
+    @LogMessageInfo(
+            message = "Exception during Coherence*Web shutdown for application [{0}]",
+            level = "WARNING")
+    public static final String EXCEPTION_SHUTDOWN_COHERENCE_WEB = "AS-WEB-00328";
 
     private final WebContainer container;
     private final WebModuleConfig wmInfo;
@@ -139,7 +173,7 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
         }
 
         if (logger.isLoggable(Level.INFO)) {
-            logger.log(Level.INFO, "webApplication.loadingApplication", new Object[] {wmInfo.getDescriptor().getName(), wmInfo.getDescriptor().getContextRoot()});
+            logger.log(Level.INFO, LOADING_APP, new Object[] {wmInfo.getDescriptor().getName(), wmInfo.getDescriptor().getContextRoot()});
         }
         
         return true;
@@ -446,10 +480,9 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
                              */
                             it.remove();
                             if (isFiner) {
-                                logger.finer("App config customization specified to ignore descriptor's " +
-                                        descriptorItemName +
-                                        getName(descriptorItem) +
-                                        " so it will not be present for the application");
+                                logger.log(Level.FINER,
+                                        IGNORE_DESCRIPTOR,
+                                        new Object[]{descriptorItemName, getName(descriptorItem)});
                             }
                         } else {
                             /*
@@ -460,7 +493,7 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
                             try {
                                 setDescriptorItemValue(descriptorItem, customization);
                                 if (isFiner) {
-                                    logger.finer("Overriding descriptor " +
+                                    logger.log(Level.FINER, OVERIDE_DESCRIPTOR,
                                             descriptorItemName + " " +
                                             getName(descriptorItem) + "=" +
                                             oldValue +
@@ -484,9 +517,9 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
                 try {
                     T newItem = addDescriptorItem(customization);
                     if (isFiner) {
-                        logger.finer("Creating new " + descriptorItemName +
-                                getName(newItem) + "=" +
-                                getValue(newItem));
+                        logger.log(Level.FINER,
+                                CREATE_DESCRIPTOR,
+                                descriptorItemName + getName(newItem) + "=" + getValue(newItem));
                     }
                 } catch (Exception e) {
                     logger.warning(toString(customization) + " " + e.getLocalizedMessage());
@@ -631,7 +664,7 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
                         }
                     } catch(Exception ex) {
                         if (logger.isLoggable(Level.WARNING)) {
-                            String msg = rb.getString("webApplication.exceptionShutdownCoherenceWeb");
+                            String msg = rb.getString(EXCEPTION_SHUTDOWN_COHERENCE_WEB);
                             msg = MessageFormat.format(msg, wmInfo.getDescriptor().getName());
                             logger.log(Level.WARNING, msg, ex);
                         }

@@ -44,6 +44,8 @@ import org.apache.catalina.Context;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.session.FileStore;
 import org.apache.catalina.session.PersistentManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.runtime.SessionManager;
 import org.jvnet.hk2.annotations.Service;
 
@@ -51,14 +53,19 @@ import java.util.logging.Level;
 
 @Service(name="file")
 public class FileStrategyBuilder extends BasePersistenceStrategyBuilder {
-    
+
+    @LogMessageInfo(
+            message = "Enabling file-based persistence for web module [{0}]''s sessions",
+            level = "INFO")
+    public static final String FILE_PERSISTENCE = "AS-WEB-00280";
+
     public void initializePersistenceStrategy(
             Context ctx,
             SessionManager smBean,
             ServerConfigLookup serverConfigLookup) {
 
         if (_logger.isLoggable(Level.INFO)) {
-            _logger.log(Level.INFO, "webcontainer.filePersistence", ctx.getPath());
+            _logger.log(Level.INFO, FILE_PERSISTENCE, ctx.getPath());
         }
 
         super.initializePersistenceStrategy(ctx, smBean, serverConfigLookup);

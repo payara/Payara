@@ -42,11 +42,12 @@ package com.sun.enterprise.web.accesslog;
 
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.web.Constants;
-import com.sun.logging.LogDomains;
 import org.apache.catalina.Container;
 import org.apache.catalina.HttpResponse;
 import org.apache.catalina.Request;
 import org.apache.catalina.Response;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
@@ -64,10 +65,28 @@ import java.util.logging.Logger;
  */
 public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
 
-    private static final Logger _logger =
-        LogDomains.getLogger(DefaultAccessLogFormatterImpl.class, LogDomains.WEB_LOGGER);
+    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
 
-    private static final ResourceBundle _rb = _logger.getResourceBundle();
+    @LogMessageInfo(
+            message = "Illegal access log pattern [{0}], is not a valid nickname and does not contain any ''%''",
+            level = "SEVERE",
+            cause = "The pattern is either null or does not contain '%'",
+            action = "Check the pattern for validity")
+    public static final String ACCESS_LOG_VALVE_INVALID_ACCESS_LOG_PATTERN = "AS-WEB-00236";
+
+    @LogMessageInfo(
+            message = "Missing end delimiter in access log pattern: {0}",
+            level = "SEVERE",
+            cause = "An end delimiter ismissing in the access log pattern",
+            action = "Check the pattern for validity")
+    public static final String MISSING_ACCESS_LOG_PATTERN_END_DELIMITER = "AS-WEB-00237";
+
+    @LogMessageInfo(
+            message = "Invalid component: {0} in access log pattern: {1}",
+            level = "SEVERE",
+            cause = "Access log pattern containds invalid component",
+            action = "Check the pattern for validity")
+    public static final String INVALID_ACCESS_LOG_PATTERN_COMPONENT = "AS-WEB-00238";
 
     private static final String QUOTE = "\"";
 
@@ -319,7 +338,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
 
         if (pattern == null || pattern.indexOf('%') < 0) {
             _logger.log(Level.SEVERE,
-                        "peaccesslogvalve.invalidAccessLogPattern",
+                        ACCESS_LOG_VALVE_INVALID_ACCESS_LOG_PATTERN,
                         pattern);
             errorInPattern = true;
         }
@@ -329,7 +348,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
             if (end < 0) {
                 _logger.log(
                     Level.SEVERE,
-                    "peaccesslogvalve.missingAccessLogPatternEndDelimiter",
+                    MISSING_ACCESS_LOG_PATTERN_END_DELIMITER,
                     pattern);
                 errorInPattern = true;
                 break;
@@ -371,7 +390,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
                     && !component.startsWith(RESPONSE_HEADERS_BY_NAME_PREFIX)) {
                 _logger.log(
                     Level.SEVERE,
-                    "peaccesslogvalve.invalidAccessLogPatternComponent",
+                    INVALID_ACCESS_LOG_PATTERN_COMPONENT,
                     new Object[] { component, pattern });
                 errorInPattern = true;
             }

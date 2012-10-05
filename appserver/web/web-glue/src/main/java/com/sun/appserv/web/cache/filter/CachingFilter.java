@@ -45,7 +45,8 @@ import com.sun.appserv.web.cache.CacheHelper;
 import com.sun.appserv.web.cache.CacheManager;
 import com.sun.appserv.web.cache.CacheManagerListener;
 import com.sun.appserv.web.cache.DefaultCacheHelper;
-import com.sun.logging.LogDomains;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.servlet.*;
 import javax.servlet.http.Cookie;
@@ -75,8 +76,42 @@ public class CachingFilter implements Filter, CacheManagerListener {
 
     boolean isEnabled = false;
 
-    private static final Logger _logger = LogDomains.getLogger(
-        CachingFilter.class, LogDomains.WEB_LOGGER);
+    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
+
+    @LogMessageInfo(
+            message = "CachingFilter {0} ready; isEnabled = {1} manager = {2}",
+            level = "FINE")
+    private static final String CACHING_FILTER_READY = "AS-WEB-00204";
+
+    @LogMessageInfo(
+            message = "CachingFilter {0} request is cacheable; key {1} index = {2}",
+            level = "FINE")
+    private static final String CACHING_FILTER_CACHEABLE = "AS-WEB-00205";
+
+    @LogMessageInfo(
+            message = "CachingFilter {0} request needs a refresh; key {1}",
+            level = "FINE")
+    private static final String CACHING_FILTER_NEEDS_REFRESH = "AS-WEB-00206";
+
+    @LogMessageInfo(
+            message = "CachingFilter {0} serving response from the cache  {1}",
+            level = "FINE")
+    private static final String CACHING_FILTER_SERVING_RESPONSE = "AS-WEB-00207";
+
+    @LogMessageInfo(
+            message = "CachingFilter {0} pass thru; isEnabled = {1}",
+            level = "FINE")
+    private static final String CACHING_FILTER_PASS_THRU = "AS-WEB-00208";
+
+    @LogMessageInfo(
+            message = "CachingFilter {0} received cacheManager enabled event",
+            level = "FINE")
+    private static final String CACHING_FILTER_ENABLED_EVENT = "AS-WEB-00209";
+
+    @LogMessageInfo(
+            message = "CachingFilter {0} received cacheManager disabled event",
+            level = "FINE")
+    private static final String CACHING_FILTER_DISABLED_EVENT = "AS-WEB-00210";
 
     /** 
      * Called by the web container to indicate to a filter that it is being 
@@ -106,7 +141,7 @@ public class CachingFilter implements Filter, CacheManagerListener {
         }
 
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.fine("CachingFilter " + filterName + " ready; isEnabled = " + isEnabled + " manager = " + manager);
+            _logger.log(Level.FINE, CACHING_FILTER_READY, new Object[]{filterName, isEnabled, manager});
         }
     }
     
@@ -159,8 +194,7 @@ public class CachingFilter implements Filter, CacheManagerListener {
             int index = cache.getIndex(key);
 
             if (isFine) {
-                _logger.fine("CachingFilter " + request.getServletPath() + 
-                                " request is cacheable; key " + key + " index = " + index);
+                _logger.log(Level.FINE, CACHING_FILTER_CACHEABLE, new Object[]{request.getServletPath(), key, index});
             }
 
             HttpCacheEntry entry = null;
@@ -188,16 +222,14 @@ public class CachingFilter implements Filter, CacheManagerListener {
                 } while (waitForRefresh);
             } else {
                 if (isFine) {
-                    _logger.fine("CachingFilter " + request.getServletPath() + 
-                                " request needs a refresh; key " + key);
+                    _logger.log(Level.FINE, CACHING_FILTER_NEEDS_REFRESH, new Object[]{request.getServletPath(), key});
                 }
             }
 
             // do we have a valid response?
             if (entryReady) {
                 if (isFine) {
-                    _logger.fine("CachingFilter " + request.getServletPath() + 
-                                " serving response from the cache " + key);
+                    _logger.log(Level.FINE, CACHING_FILTER_SERVING_RESPONSE, new Object[]{request.getServletPath(), key});
                 }
                 sendCachedResponse(entry, response);
             } else {
@@ -278,8 +310,7 @@ public class CachingFilter implements Filter, CacheManagerListener {
              */
         } else {
             if (isFine) {
-                _logger.fine("CachingFilter " + request.getServletPath() + 
-                             " pass thru; isEnabled = " + isEnabled);
+                _logger.log(Level.FINE, CACHING_FILTER_PASS_THRU, new Object[]{request.getServletPath(), isEnabled});
             }
             request.removeAttribute(DefaultCacheHelper.ATTR_CACHING_FILTER_NAME);
             request.removeAttribute(CacheHelper.ATTR_CACHE_MAPPED_SERVLET_NAME);
@@ -390,8 +421,7 @@ public class CachingFilter implements Filter, CacheManagerListener {
      */
     public void cacheManagerEnabled() {
         if (_logger.isLoggable(Level.FINE))
-            _logger.fine("CachingFilter " + filterName +
-                " received cacheManager enabled event.");
+            _logger.log(Level.FINE, CACHING_FILTER_ENABLED_EVENT, filterName);
 
         this.isEnabled = true;
     }
@@ -401,8 +431,7 @@ public class CachingFilter implements Filter, CacheManagerListener {
      */
     public void cacheManagerDisabled() {
         if (_logger.isLoggable(Level.FINE))
-            _logger.fine("CachingFilter " + filterName +
-                " received cacheManager disabled event.");
+            _logger.log(Level.FINE, CACHING_FILTER_DISABLED_EVENT, filterName);
 
         this.isEnabled = false;
     }

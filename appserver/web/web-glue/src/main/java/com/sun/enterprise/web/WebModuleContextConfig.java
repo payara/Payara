@@ -45,7 +45,6 @@ import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.web.ContextParameter;
-import com.sun.logging.LogDomains;
 import org.apache.catalina.*;
 import org.apache.catalina.authenticator.DigestAuthenticator;
 import org.apache.catalina.core.ContainerBase;
@@ -55,12 +54,15 @@ import org.apache.catalina.deploy.ContextResource;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.startup.ContextConfig;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.web.valve.GlassFishValve;
 
 import javax.naming.NamingException;
 import java.io.File;
+import java.lang.String;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
@@ -76,10 +78,36 @@ import java.util.logging.Logger;
 public class WebModuleContextConfig extends ContextConfig {
 
     private static final String DEFAULT_DIGEST_ALGORITHM = "default-digest-algorithm";
-    private static final Logger logger = LogDomains.getLogger(
-        WebModuleContextConfig.class, LogDomains.WEB_LOGGER);
-    
+
+    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
+
     protected static final ResourceBundle rb = logger.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Configured an authenticator for method {0}",
+            level = "FINEST")
+    public static final String AUTHENTICATOR_CONFIGURED = "AS-WEB-00331";
+
+    @LogMessageInfo(
+            message = "[{0}] failed to unbind namespace",
+            level = "WARNING")
+    public static final String UNBIND_NAME_SPACE_ERROR = "AS-WEB-00332";
+
+    @LogMessageInfo(
+            message = "No Realm with name [{0}] configured to authenticate against",
+            level = "WARNING")
+    public static final String MISSING_REALM = "AS-WEB-00333";
+
+    @LogMessageInfo(
+            message = "Cannot configure an authenticator for method {0}",
+            level = "WARNING")
+    public static final String AUTHENTICATOR_MISSING = "AS-WEB-00334";
+
+    @LogMessageInfo(
+            message = "Cannot instantiate an authenticator of class {0}",
+            level = "WARNING")
+    public static final String AUTHENTICATOR_INSTANTIATE_ERROR = "AS-WEB-00335";
+
 
     public final static int CHILDREN = 0;
     public final static int SERVLET_MAPPINGS = 1;
@@ -313,10 +341,9 @@ public class WebModuleContextConfig extends ContextConfig {
             String realmName = (context.getLoginConfig() != null) ?
                 context.getLoginConfig().getRealmName() : null;
             if (realmName != null && !realmName.isEmpty()) {
-                String msg = rb.getString(
-                    "webModuleContextConfig.missingRealm");
+                String msg = rb.getString(MISSING_REALM);
                 throw new LifecycleException(
-                    MessageFormat.format(msg, realmName));
+                        MessageFormat.format(msg, realmName));
             }
             return;
         }
@@ -358,8 +385,7 @@ public class WebModuleContextConfig extends ContextConfig {
             */
 
             if (authenticatorName == null) {
-                String msg = rb.getString(
-                    "webModuleContextConfig.authenticatorMissing");
+                String msg = rb.getString(AUTHENTICATOR_MISSING);
                 throw new LifecycleException(MessageFormat.format(msg,
                     loginConfig.getAuthMethod()));
             }
@@ -370,8 +396,7 @@ public class WebModuleContextConfig extends ContextConfig {
                 authenticator = (GlassFishValve)
                     authenticatorClass.newInstance();
             } catch (Exception e) {
-                String msg = rb.getString(
-                    "webModuleContextConfig.authenticatorInstantiate");
+                    String msg = rb.getString(AUTHENTICATOR_INSTANTIATE_ERROR);
                 throw new LifecycleException(
                     MessageFormat.format(msg, authenticatorName),
                     e);
@@ -384,7 +409,7 @@ public class WebModuleContextConfig extends ContextConfig {
                 ((ContainerBase) context).addValve(authenticator);
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST,
-                        "webModuleContextConfig.authenticatorConfigured",
+                        AUTHENTICATOR_CONFIGURED,
                         loginConfig.getAuthMethod());
                 }
             }
@@ -433,8 +458,7 @@ public class WebModuleContextConfig extends ContextConfig {
             try {
                 namingMgr.unbindFromComponentNamespace(webBundleDescriptor);
             } catch (javax.naming.NamingException ex) {
-                String msg = rb.getString(
-                    "webModuleContextConfig.unbindNamespaceError");
+                String msg = rb.getString(UNBIND_NAME_SPACE_ERROR);
                 msg = MessageFormat.format(msg, context.getName());
                 logger.log(Level.WARNING, msg, ex);
             }        

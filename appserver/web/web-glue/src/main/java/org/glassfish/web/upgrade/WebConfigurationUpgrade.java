@@ -45,10 +45,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
@@ -62,8 +63,12 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name="webConfigurationUpgrade")
 public class WebConfigurationUpgrade implements ConfigurationUpgrade, PostConstruct {
 
-    protected static final Logger _logger = LogDomains.getLogger(
-            WebConfigurationUpgrade.class, LogDomains.WEB_LOGGER);
+    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
+
+    @LogMessageInfo(
+            message = "Unable to delete {0}",
+            level = "WARNING")
+    public static final String UNABLE_TO_DELETE = "AS-WEB-00355";
 
     @Inject
     private ServerEnvironment serverEnvironment;
@@ -81,7 +86,7 @@ public class WebConfigurationUpgrade implements ConfigurationUpgrade, PostConstr
                 } else if (f.getName().endsWith("SESSIONS.ser")) {
                     if (!FileUtils.deleteFileMaybe(f)) {
                         _logger.log(Level.WARNING,
-                                "webcontainer.unableToDelete",
+                                UNABLE_TO_DELETE,
                                 f.toString());
                     }
                 }

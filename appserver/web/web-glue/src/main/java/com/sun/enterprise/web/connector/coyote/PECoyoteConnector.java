@@ -49,9 +49,10 @@ import com.sun.enterprise.web.connector.MapperListener;
 import com.sun.enterprise.web.connector.extension.GrizzlyConfig;
 import com.sun.enterprise.web.connector.grizzly.DummyConnectorLauncher;
 import com.sun.enterprise.web.pwc.connector.coyote.PwcCoyoteRequest;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.grizzly.config.dom.*;
 import org.glassfish.web.util.IntrospectionUtils;
-import com.sun.logging.LogDomains;
 import org.apache.catalina.*;
 import org.apache.catalina.connector.Connector;
 import org.glassfish.security.common.CipherInfo;
@@ -61,6 +62,8 @@ import javax.management.Notification;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
+import java.lang.Object;
+import java.lang.String;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -75,10 +78,89 @@ public class PECoyoteConnector extends Connector {
 
     private static final String DUMMY_CONNECTOR_LAUNCHER = DummyConnectorLauncher.class.getName();
 
-    protected static final Logger _logger = LogDomains.getLogger(
-            PECoyoteConnector.class, LogDomains.WEB_LOGGER);
+    protected static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
 
     protected static final ResourceBundle _rb = _logger.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Invalid max-pending-count attribute value [{0}], using default [{1}]",
+            level = "WARNING")
+    public static final String INVALID_MAX_PENDING_COUNT = "AS-WEB-00256";
+
+    @LogMessageInfo(
+            message = "Unable to parse proxy port component ({0}) of server-name attribute of network-listener {1}",
+            level = "SEVERE",
+            cause = "The String does not contain a parsable integer",
+            action = "Check the proxy port string")
+    public static final String INVALID_PROXY_PORT = "AS-WEB-00257";
+
+    @LogMessageInfo(
+            message = "Unable to parse redirect-port ({0}) attribute of network-listener {1}, using default: {2}",
+            level = "WARNING")
+    public static final String INVALID_REDIRECT_PORT = "AS-WEB-00258";
+
+    @LogMessageInfo(
+            message = "Unable to parse acceptor-threads attribute ({0}) of network-listener {1}, using default: {2}",
+            level = "WARNING")
+    public static final String INVALID_ACCEPTOR_THREADS = "AS-WEB-00259";
+
+    @LogMessageInfo(
+            message = "The jk properties configuration file is not defined",
+            level = "FINEST")
+    public static final String JK_PROPERTIES_NOT_DEFINED = "AS-WEB-00260";
+
+    @LogMessageInfo(
+            message = "JK properties file {0} does not exist",
+            level = "WARNING")
+    public static final String MISSING_JK_PROPERTIES = "AS-WEB-00261";
+
+    @LogMessageInfo(
+            message = "Loading glassfish-jk.properties from {0}",
+            level = "FINEST")
+    public static final String LOADING_JK_PROPERTIED = "AS-WEB-00262";
+
+    @LogMessageInfo(
+            message = "Unable to configure JK properties {0} for connector listening to {1}",
+            level = "SEVERE",
+            cause = "Failed to load JK properties file",
+            action = "Check if the properties file exists and is readable")
+    public static final String UNABLE_TO_CONFIGURE_JK = "AS-WEB-00263";
+
+    @LogMessageInfo(
+            message = "Invalid attribute [{0}] in thread-pool configuration",
+            level = "WARNING")
+    public static final String INVALID_THREAD_POOL_ATTRIBUTE = "AS-WEB-00264";
+
+    @LogMessageInfo(
+            message = "Unable to load ProxyHandler implementation class {0}",
+            level = "SEVERE",
+            cause = "An exception occurred during creating a new instance ",
+            action = "Check the exception for the error")
+    public static final String PROXY_HANDLER_CLASS_LOAD_ERROR = "AS-WEB-00265";
+
+    @LogMessageInfo(
+            message = "{0} not an instance of com.sun.appserv.ProxyHandler",
+            level = "SEVERE",
+            cause = "Invalid proxy handler",
+            action = "Check to see if the proxy handler is an instance of com.sun.appserv.ProxyHandler")
+    public static final String PROXY_HANDLER_CLASS_INVALID = "AS-WEB-00266";
+
+    @LogMessageInfo(
+            message = "All SSL protocol variants disabled for network-listener {0}, " +
+                    "using SSL implementation specific defaults",
+            level = "WARNING")
+    public static final String ALL_SSL_PROTOCOLS_DISABLED = "AS-WEB-00267";
+
+    @LogMessageInfo(
+            message = "All SSL cipher suites disabled for network-listener(s) {0}. " +
+                    "Using SSL implementation specific defaults",
+            level = "FINE")
+    public static final String ALL_CIPHERS_DISABLED  = "AS-WEB-00268";
+
+    @LogMessageInfo(
+            message = "Unrecognized cipher: {0}",
+            level = "WARNING")
+    public static final String UNRECOGNIZED_CIPHER = "AS-WEB-00269";
 
     /**
      * Are we recycling objects
@@ -887,9 +969,8 @@ public class PECoyoteConnector extends Connector {
             setSocketServerBacklog(
                 Integer.parseInt(transport.getMaxConnectionsCount()));
         } catch (NumberFormatException ex) {
-            String msg = _rb.getString("pewebcontainer.invalidMaxPendingCount");
-            msg = MessageFormat.format(
-                msg, transport.getMaxConnectionsCount(),
+            String msg = MessageFormat.format(
+                _rb.getString(INVALID_MAX_PENDING_COUNT), transport.getMaxConnectionsCount(),
                 Integer.toString(getSocketServerBacklog()));
             _logger.log(Level.WARNING, msg, ex);
         }
@@ -938,7 +1019,7 @@ public class PECoyoteConnector extends Connector {
                         setProxyPort(Integer.parseInt(serverPort));
                     } catch (NumberFormatException nfe) {
                         _logger.log(Level.SEVERE,
-                            "pewebcontainer.invalid_proxy_port",
+                            INVALID_PROXY_PORT,
                             new Object[] { serverPort, listener.getName() });
 		    }
                 }
@@ -954,7 +1035,7 @@ public class PECoyoteConnector extends Connector {
                 setRedirectPort(Integer.parseInt(redirectPort));
             } catch (NumberFormatException nfe) {
                 _logger.log(Level.WARNING,
-                    "pewebcontainer.invalid_redirect_port",
+                    INVALID_REDIRECT_PORT,
                     new Object[] {
                         redirectPort,
                         listener.getName(),
@@ -972,7 +1053,7 @@ public class PECoyoteConnector extends Connector {
                     acceptorThreads));
             } catch (NumberFormatException nfe) {
                 _logger.log(Level.WARNING,
-                    "pewebcontainer.invalid_acceptor_threads",
+                    INVALID_ACCEPTOR_THREADS,
                     new Object[] {
                         acceptorThreads,
                         listener.getName(),
@@ -1007,19 +1088,18 @@ public class PECoyoteConnector extends Connector {
         }
         if (propertiesFile==null) {
             if (_logger.isLoggable(Level.FINEST)) {
-                _logger.finest("jk properties configuration file not defined");
+                _logger.log(Level.FINEST, JK_PROPERTIES_NOT_DEFINED);
             }
             return;
         }
 
         if (!propertiesFile.exists()) {
-            _logger.log(Level.WARNING, MessageFormat.format(_rb.getString("pewebcontainer.missingJKProperties"),
-                propertiesFile.getAbsolutePath()));
+            _logger.log(Level.WARNING, MISSING_JK_PROPERTIES, propertiesFile.getAbsolutePath());
             return;
         }
         
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.finest("Loading glassfish-jk.properties from " + propertiesFile.getAbsolutePath());
+            _logger.log(Level.FINEST, _rb.getString(LOADING_JK_PROPERTIED), propertiesFile.getAbsolutePath());
         }
 
         Properties properties = null;
@@ -1029,9 +1109,9 @@ public class PECoyoteConnector extends Connector {
             is = new BufferedInputStream(new FileInputStream(propertiesFile));
             properties = new Properties();
             properties.load(is);
-
         } catch (Exception ex) {
-            _logger.log(Level.SEVERE, MessageFormat.format(_rb.getString("pewebcontainer.configureJK"), getPort()), ex);
+            String msg = MessageFormat.format(_rb.getString(UNABLE_TO_CONFIGURE_JK), new Object[]{propertiesFile, getPort()});
+            _logger.log(Level.SEVERE, msg, ex);
         } finally {
             if (is != null) {
                 try {
@@ -1084,27 +1164,21 @@ public class PECoyoteConnector extends Connector {
                 setMaxProcessors(Integer.parseInt(
                     pool.getMaxThreadPoolSize()));
             } catch (NumberFormatException ex) {
-                String msg = _rb.getString(
-                    "webcontainer.invalidThreadPoolAttribute");
-                msg = MessageFormat.format(msg, "max-thread-pool-size");
+                String msg = MessageFormat.format(_rb.getString(INVALID_THREAD_POOL_ATTRIBUTE), "max-thread-pool-size");
                 _logger.log(Level.WARNING, msg, ex);
             }
             try {
                 setMinProcessors(Integer.parseInt(
                     pool.getMinThreadPoolSize()));
             } catch (NumberFormatException ex) {
-                String msg = _rb.getString(
-                    "webcontainer.invalidThreadPoolAttribute");
-                msg = MessageFormat.format(msg, "min-thread-pool-size");
+                String msg = MessageFormat.format(_rb.getString(INVALID_THREAD_POOL_ATTRIBUTE), "min-thread-pool-size");
                 _logger.log(Level.WARNING, msg, ex);
             }
             try {
                 setQueueSizeInBytes(Integer.parseInt(
                     pool.getMaxQueueSize()));
             } catch (NumberFormatException ex) {
-                String msg = _rb.getString(
-                    "webcontainer.invalidThreadPoolAttribute");
-                msg = MessageFormat.format(msg, "max-queue-size");
+                String msg = MessageFormat.format(_rb.getString(INVALID_THREAD_POOL_ATTRIBUTE), "max-queue-size");
                 _logger.log(Level.WARNING, msg, ex);
             }
         }
@@ -1177,16 +1251,14 @@ public class PECoyoteConnector extends Connector {
             Class handlerClass = webContainer.loadCommonClass(className);
             handler = handlerClass.newInstance();
         } catch (Exception e) {
-            String msg = _rb.getString(
-                "pewebcontainer.proxyHandlerClassLoadError");
-            msg = MessageFormat.format(msg, className);
+            String msg = MessageFormat.format(_rb.getString(PROXY_HANDLER_CLASS_LOAD_ERROR), className);
             _logger.log(Level.SEVERE, msg, e);
         }
         if (handler != null) {
             if (!(handler instanceof ProxyHandler)) {
                 _logger.log(
                     Level.SEVERE,
-                    "pewebcontainer.proxyHandlerClassInvalid",
+                    PROXY_HANDLER_CLASS_INVALID,
                     className);
             } else {
                 setProxyHandler((ProxyHandler) handler);
@@ -1301,8 +1373,7 @@ public class PECoyoteConnector extends Connector {
         }
 
         if (sslProtocolsBuf.length() == 0) {
-            _logger.log(Level.WARNING,
-                "pewebcontainer.all_ssl_protocols_disabled", listener.getName());
+            _logger.log(Level.WARNING, ALL_SSL_PROTOCOLS_DISABLED, listener.getName());
         } else {
             setSslProtocols(sslProtocolsBuf.toString());
         }
@@ -1319,7 +1390,7 @@ public class PECoyoteConnector extends Connector {
             String jsseCiphers = getJSSECiphers(ciphers);
             if (jsseCiphers == null) {
                 if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE, "pewebcontainer.all_ciphers_disabled", listener.getName());
+                    _logger.log(Level.FINE, ALL_CIPHERS_DISABLED, listener.getName());
                 }
             } else {
                 setCiphers(jsseCiphers);
@@ -1419,7 +1490,7 @@ public class PECoyoteConnector extends Connector {
                     String jsseCipher = getJSSECipher(cipher);
                     if (jsseCipher == null) {
                         _logger.log(Level.WARNING,
-                            "pewebcontainer.unrecognized_cipher", cipher);
+                            UNRECOGNIZED_CIPHER, cipher);
                     } else {
                         if (enabledCiphers == null) {
                             enabledCiphers = new StringBuilder();
@@ -1448,7 +1519,7 @@ public class PECoyoteConnector extends Connector {
                 String jsseCipher = getJSSECipher(cipher);
                 if (jsseCipher == null) {
                     _logger.log(Level.WARNING,
-                        "pewebcontainer.unrecognized_cipher", cipher);
+                        UNRECOGNIZED_CIPHER, cipher);
                 } else {
                     if (enabledCiphers == null) {
                         enabledCiphers = new StringBuilder();

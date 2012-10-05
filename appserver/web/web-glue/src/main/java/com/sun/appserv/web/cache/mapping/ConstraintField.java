@@ -40,12 +40,13 @@
 
 package com.sun.appserv.web.cache.mapping;
 
-import com.sun.logging.LogDomains;
-
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 /** ConstraintField class represents a single Field and constraints on its 
  *  values; Field name and its scope are inherited from the Field class. 
@@ -58,8 +59,29 @@ public class ConstraintField extends Field {
         "session.id"
     };
 
-    private static final Logger _logger = LogDomains.getLogger(
-        ConstraintField.class, LogDomains.WEB_LOGGER);
+    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
+
+    @LogMessageInfo(
+            message = "The constraint field {0} is not found in the scope {1}; returning cache-on-match-failure: {2}",
+            level = "FINE")
+    private static final String CONSTRAINT_FIELD_NOT_FOUND = "AS-WEB-00211";
+
+    @LogMessageInfo(
+            message = "The constraint field {0} value = {1} is found in scope {2}; returning cache-on-match: {3}",
+            level = "FINE")
+    private static final String CONSTRAINT_FIELD_FOUND = "AS-WEB-00212";
+
+    @LogMessageInfo(
+            message = "The constraint field {0} value = {1} is found in scope {2}; and matches with a value {3}; " +
+                    "returning cache-on-match: {4}",
+            level = "FINE")
+    private static final String CONSTRAINT_FIELD_MATCH = "AS-WEB-00213";
+
+    @LogMessageInfo(
+            message = "The constraint field {0} value = {1} is found in scope {2}; " + "" +
+                    "but didn't match any of the value constraints; returning cache-on-match-failure = {3}",
+            level = "FINE")
+    private static final String CONSTRAINT_FIELD_NOT_MATCH = "AS-WEB-00214";
 
     // whether to cache if there was a match
     boolean cacheOnMatch = true;
@@ -149,21 +171,15 @@ public class ConstraintField extends Field {
         if (value == null) {
             // the field is not present in the request
             if (isFine) {
-                _logger.fine(
-                    "The constraint field " + name
-                    + " is not found in the scope " + SCOPE_NAMES[scope]
-                    + "; returning cache-on-match-failure: "
-                    + cacheOnMatchFailure);
+                _logger.log(Level.FINE, CONSTRAINT_FIELD_NOT_FOUND,
+                        new Object[] {name, SCOPE_NAMES[scope], cacheOnMatchFailure});
             }
             return cacheOnMatchFailure;
         } else if (constraints.length == 0) {
             // the field is present but has no value constraints
             if (isFine) {
-                _logger.fine(
-                    "The constraint field " + name + " value = "
-                    + value.toString() + " is found in scope "
-                    + SCOPE_NAMES[scope] + "; returning cache-on-match: "
-                    + cacheOnMatch);
+                _logger.log(Level.FINE, CONSTRAINT_FIELD_FOUND,
+                        new Object[] {name, value.toString(), SCOPE_NAMES[scope], cacheOnMatch});
             }
             return cacheOnMatch;
         }
@@ -175,12 +191,8 @@ public class ConstraintField extends Field {
             // one of the values matched
             if (c.matches(value)) {
                 if (isFine) {
-                    _logger.fine(
-                        "The constraint field " + name + " value = "
-                        + value.toString() + " is found in scope "
-                        + SCOPE_NAMES[scope] + "; and matches with a value "
-                        + c.toString() + "; returning cache-on-match: "
-                        + cacheOnMatch);
+                    _logger.log(Level.FINE, CONSTRAINT_FIELD_MATCH,
+                            new Object[] {name, value.toString(), SCOPE_NAMES[scope], cacheOnMatch});
                 }
                 return cacheOnMatch;
             }
@@ -188,12 +200,8 @@ public class ConstraintField extends Field {
 
         // none of the values matched; should we cache?
         if (isFine) {
-            _logger.fine(
-                "The constraint field " + name + " value = "
-                + value.toString() + " is found in scope " + SCOPE_NAMES[scope]
-                + "; but didn't match any of the value constraints; "
-                + "returning cache-on-match-failure = "
-                + cacheOnMatchFailure);
+            _logger.log(Level.FINE, CONSTRAINT_FIELD_NOT_MATCH,
+                    new Object[] {name, value.toString(), SCOPE_NAMES[scope], cacheOnMatchFailure});
         }
         return cacheOnMatchFailure;
     }

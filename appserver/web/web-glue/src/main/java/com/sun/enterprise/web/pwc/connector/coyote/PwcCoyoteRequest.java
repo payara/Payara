@@ -43,17 +43,19 @@ package com.sun.enterprise.web.pwc.connector.coyote;
 import com.sun.enterprise.web.pwc.PwcWebModule;
 import com.sun.enterprise.web.session.WebSessionCookieConfig;
 import com.sun.enterprise.web.session.WebSessionCookieConfig.CookieSecureType;
-import com.sun.logging.LogDomains;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.servlet.http.Cookie;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.String;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
@@ -70,10 +72,20 @@ import java.util.logging.Logger;
  */
 public class PwcCoyoteRequest extends Request {
 
-    private static final Logger logger = LogDomains.getLogger(
-        PwcCoyoteRequest.class, LogDomains.WEB_LOGGER);
+    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
 
     private static final ResourceBundle rb = logger.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Unable to set request encoding [{0}] determined from sun-web.xml " +
+                    "deployment descriptor of web application [{1}]",
+            level = "WARNING")
+    public static final String UNABLE_TO_SET_ENCODING = "AS-WEB-00297";
+
+    @LogMessageInfo(
+            message = "POST data too large",
+            level = "WARNING")
+    public static final String POST_TOO_LARGE = "AS-WEB-00298";
 
     // Have we already determined request encoding from sun-web.xml?
     private boolean sunWebXmlChecked = false;
@@ -201,9 +213,7 @@ public class PwcCoyoteRequest extends Request {
             try {
                 setCharacterEncoding(encoding);
             } catch (UnsupportedEncodingException uee) {
-                String msg = rb.getString(
-                    "request.unableToSetEncodingFromSunWebXml");
-                msg = MessageFormat.format(msg, encoding, wm.getID());
+                String msg = MessageFormat.format(rb.getString(UNABLE_TO_SET_ENCODING) , encoding, wm.getID());
                 logger.log(Level.WARNING, msg, uee);
             }
         }
@@ -270,8 +280,7 @@ public class PwcCoyoteRequest extends Request {
         }
         int maxPostSize = ((Connector) connector).getMaxPostSize();
         if ((maxPostSize > 0) && (len > maxPostSize)) {
-            throw new IllegalStateException(
-                rb.getString("request.postTooLarge"));
+            throw new IllegalStateException(rb.getString(POST_TOO_LARGE));
         }
 
         String encoding = null;

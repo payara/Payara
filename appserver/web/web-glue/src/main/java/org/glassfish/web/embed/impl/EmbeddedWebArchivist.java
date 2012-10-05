@@ -47,16 +47,20 @@ import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.internal.embedded.*;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.archivist.WebArchivist;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.IOException;
 import java.io.File;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 
@@ -65,6 +69,13 @@ import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
  */
 @Service @PerLookup
 public class EmbeddedWebArchivist extends WebArchivist {
+
+    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
+
+    @LogMessageInfo(
+            message = "Cannot load class {0}",
+            level = "FINER")
+    public static final String CANNOT_LOAD_CLASS = "AS-WEB-00349";
 
     private final ModuleScanner scanner = new ModuleScanner() {
 
@@ -81,7 +92,7 @@ public class EmbeddedWebArchivist extends WebArchivist {
                         try {
                             elements.add(classLoader.loadClass(toClassName(entry)));
                         } catch (ClassNotFoundException e) {
-                            logger.log(Level.FINER, "Cannot load class " + entry, e);
+                            logger.log(Level.FINER, MessageFormat.format(CANNOT_LOAD_CLASS, entry), e);
                         }
                     }
                 }

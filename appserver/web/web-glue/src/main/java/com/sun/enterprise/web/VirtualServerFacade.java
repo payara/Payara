@@ -49,7 +49,6 @@ import javax.servlet.*;
 import javax.servlet.descriptor.JspConfigDescriptor;
 
 import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.logging.LogDomains;
 import org.apache.catalina.core.*;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
@@ -69,10 +68,6 @@ import org.glassfish.internal.api.Globals;
  * @author Amy Roh
  */
 public class VirtualServerFacade implements org.glassfish.embeddable.web.VirtualServer {
-
-
-    private static final Logger DEFAULT_LOGGER =
-        LogDomains.getLogger(VirtualServerFacade.class, LogDomains.WEB_LOGGER);
 
         
     // ----------------------------------------------------------- Constructors
@@ -102,8 +97,6 @@ public class VirtualServerFacade implements org.glassfish.embeddable.web.Virtual
     private VirtualServer vs = null;
 
     private List<WebListener> webListeners = null;
-
-    protected volatile Logger _logger = DEFAULT_LOGGER;
 
     // ----------------------------------------------------- embedded methods
 

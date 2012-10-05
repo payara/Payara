@@ -44,7 +44,6 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.container.RequestDispatcher;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -54,6 +53,8 @@ import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.javaee.core.deployment.JavaEEDeployer;
 import org.glassfish.loader.util.ASClassLoaderUtil;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.jsp.JSPCompiler;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import javax.inject.Inject;
@@ -61,6 +62,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 
 import java.io.File;
+import java.lang.String;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -75,11 +77,22 @@ import java.util.logging.Logger;
 @Service
 public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
 
-    private static final Logger logger = LogDomains.getLogger(
-            WebDeployer.class, LogDomains.WEB_LOGGER);
+    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
 
     private static final ResourceBundle rb = logger.getResourceBundle();
-    
+
+    @LogMessageInfo(
+            message = "Unable to load configuration of web module [{0}]",
+            level = "WARNING")
+    public static final String UNABLE_TO_LOAD_CONFIG = "AS-WEB-00329";
+
+    @LogMessageInfo(
+            message = "Failed to precompile JSP pages of web module [{0}]",
+            level = "SEVERE",
+            cause = "An exception occurred precompiling JSP pages",
+            action = "Check the exception for the error")
+    public static final String JSPC_FAILED = "AS-WEB-00330";
+
     @Inject
     ServerContext sc;
 
@@ -156,7 +169,7 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
             wmInfo.setLocation(dc.getSourceDir());
             wmInfo.setObjectType(dc.getAppProps().getProperty(ServerTags.OBJECT_TYPE));
         } catch (Exception ex) {
-            String msg = rb.getString("webdeployer.loadWebModuleConfig");
+            String msg = rb.getString(UNABLE_TO_LOAD_CONFIG);
             msg = MessageFormat.format(msg, wmInfo.getName());
             logger.log(Level.WARNING, msg, ex);
         }
@@ -220,7 +233,7 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
                         DeployCommandParameters.class).libraries)); 
             JSPCompiler.compile(inDir, outDir, wbd, classpath.toString(), sc);
         } catch (DeploymentException de) {
-            String msg = rb.getString("webdeployer.jspc");
+            String msg = rb.getString(JSPC_FAILED);
             msg = MessageFormat.format(msg, wbd.getApplication().getName());
             logger.log(Level.SEVERE, msg, de);
             throw de;

@@ -47,8 +47,9 @@ import com.sun.appserv.web.cache.mapping.Field;
 import com.sun.appserv.web.cache.mapping.ValueConstraint;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.runtime.*;
-import com.sun.logging.LogDomains;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 
@@ -67,6 +68,34 @@ public final class CacheModule {
     public final static String DEFAULT_CACHE_HELPER_CLASSNAME =
                             "com.sun.appserv.web.cache.DefaultCacheHelper";
 
+    public static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
+
+    @LogMessageInfo(
+            message = "Configuring cache for web application",
+            level = "FINE")
+    public static final String CONFIGURE_CACHE = "AS-WEB-00251";
+
+    @LogMessageInfo(
+            message = "Added a caching filter for servlet-name = {0} url-pattern = {1}",
+            level = "FINE")
+    public static final String CACHING_FILTER_ADDED = "AS-WEB-00252";
+
+    @LogMessageInfo(
+            message = "Added a key-field : name = {0} scope = {1}",
+            level = "FINE")
+    public static final String KEY_FIELD_ADDED = "AS-WEB-00253";
+
+    @LogMessageInfo(
+            message = "Added a constraint: {0}",
+            level = "FINE")
+    public static final String CONSTRAINT_ADDED = "AS-WEB-00254";
+
+    @LogMessageInfo(
+            message = "Added a constraint-field name = {0} scope = {1}" +
+                    "cache-on-match = {2} cache-on-match-failure = {3}",
+            level = "FINE")
+    public static final String CONSTRAINT_FIELD_ADDED = "AS-WEB-00255";
+
     private static String trim(String str) {
         if (str != null)
             return str.trim();
@@ -84,7 +113,6 @@ public final class CacheModule {
      */
     public static CacheManager configureResponseCache(WebModule app, 
                                 SunWebApp bean) throws Exception  {
-        Logger logger = LogDomains.getLogger(CacheModule.class, LogDomains.WEB_LOGGER);
 
         Cache cacheConfig = ((SunWebAppImpl)bean).getCache();
 
@@ -94,7 +122,7 @@ public final class CacheModule {
         }
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("configuring cache for web application " + app.getPath());
+            logger.log(Level.FINE, CONFIGURE_CACHE, app.getPath());
         }
 
         // create the CacheManager object for this app
@@ -230,7 +258,9 @@ public final class CacheModule {
             app.addFilterMap(filterMap);
 
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine("added a caching filter for servlet-name = " + mapping.getServletName() + " url-pattern = " + mapping.getURLPattern());
+                logger.log(Level.FINE,
+                        CACHING_FILTER_ADDED,
+                        new Object[] {mapping.getServletName(), mapping.getURLPattern()});
             }
         }
         
@@ -323,8 +353,7 @@ public final class CacheModule {
                 mapping.addKeyField(new Field(name, scope));
 
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("added a key-field : name = " + name
-                                + " scope = " + scope);
+                    logger.log(Level.FINE, KEY_FIELD_ADDED, new Object[]{name, scope});
                 }
             }
         }
@@ -373,14 +402,20 @@ public final class CacheModule {
                 constraintField.addConstraint(constraint);
 
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("added a constraint: " + constraint.toString());
+                    logger.log(Level.FINE, CONSTRAINT_ADDED, constraint.toString());
                 }
             }
 
             mapping.addConstraintField(constraintField);
 
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine("added a constraint-field name = " + name + " scope = " + scope +  " cache-on-match = " + constraintField.getCacheOnMatch() + " cache-on-match-failure = " + constraintField.getCacheOnMatchFailure());
+                logger.log(Level.FINE,
+                        CONSTRAINT_FIELD_ADDED,
+                        new Object[]{
+                                name,
+                                scope,
+                                constraintField.getCacheOnMatch(),
+                                constraintField.getCacheOnMatchFailure()});
             }
         }
     }

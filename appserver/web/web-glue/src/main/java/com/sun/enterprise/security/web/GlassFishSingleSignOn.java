@@ -40,11 +40,12 @@
 
 package com.sun.enterprise.security.web;
 
-import com.sun.logging.LogDomains;
 import org.apache.catalina.*;
 import org.apache.catalina.authenticator.Constants;
 import org.apache.catalina.authenticator.SingleSignOn;
 import org.apache.catalina.authenticator.SingleSignOnEntry;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -81,8 +82,92 @@ public class GlassFishSingleSignOn
     /**
      * The log used by this class.
      */
-    private static final Logger logger = LogDomains.getLogger(
-        GlassFishSingleSignOn.class, LogDomains.WEB_LOGGER);
+    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
+
+    @LogMessageInfo(
+            message = "Process session destroyed on {0}",
+            level = "FINE")
+    private static final String SESSION_DESTROYED = "AS-WEB-00219";
+
+    @LogMessageInfo(
+            message = "Process request for '{0}'",
+            level = "FINE")
+    private static final String REQUEST_PROCESSED = "AS-WEB-00220";
+
+    @LogMessageInfo(
+            message = "Principal '{0}' has already been authenticated",
+            level = "FINE")
+    private static final String PRINCIPAL_ALREADY_AUTHENTICATED = "AS-WEB-00221";
+
+    @LogMessageInfo(
+            message = "Checking for SSO cookie",
+            level = "FINE")
+    private static final String CHECKING_SSO_COOKIE = "AS-WEB-00222";
+
+    @LogMessageInfo(
+            message = "SSO cookie is not present",
+            level = "FINE")
+    private static final String SSO_COOKIE_NOT_PRESENT = "AS-WEB-00223";
+
+    @LogMessageInfo(
+            message = "No realm configured for this application, SSO does not apply",
+            level = "FINE")
+    private static final String NO_REALM_CONFIGURED = "AS-WEB-00224";
+
+    @LogMessageInfo(
+            message = "This application uses realm '{0}'",
+            level = "FINE")
+    private static final String APP_REALM = "AS-WEB-00225";
+
+    @LogMessageInfo(
+            message = "Checking for cached principal for {0}",
+            level = "FINE")
+    private static final String CHECKING_CACHED_PRINCIPAL = "AS-WEB-00226";
+
+    @LogMessageInfo(
+            message = "Found cached principal '{0}' with auth type '{1}' in realm '{2}'",
+            level = "FINE")
+    private static final String FOUND_CACHED_PRINCIPAL = "AS-WEB-00227";
+
+    @LogMessageInfo(
+            message = "Ignoring SSO entry which does not match application realm '{0}'",
+            level = "FINE")
+    private static final String IGNORING_SSO = "AS-WEB-00228";
+
+    @LogMessageInfo(
+            message = "No cached principal found, erasing SSO cookie",
+            level = "FINE")
+    private static final String NO_CACHED_PRINCIPAL_FOUND = "AS-WEB-00229";
+
+    @LogMessageInfo(
+            message = "Deregistering sso id '{0}'",
+            level = "FINE")
+    private static final String DEREGISTER_SSO = "AS-WEB-00230";
+
+    @LogMessageInfo(
+            message = "SSO expiration started. Current entries: {0}",
+            level = "FINE")
+    private static final String SSO_EXPIRATION_STARTED = "AS-WEB-00231";
+
+    @LogMessageInfo(
+            message = "SSO cache will expire {0} entries",
+            level = "FINE")
+    private static final String SSO_CACHE_EXPIRE = "AS-WEB-00232";
+
+    @LogMessageInfo(
+            message = "SSO expiration removing entry: {0}",
+            level = "FINE")
+    private static final String SSO_EXPRIRATION_REMOVING_ENTRY = "AS-WEB-00233";
+
+    @LogMessageInfo(
+            message = "Caught exception during SingleSignOn expiration",
+            level = "WARNING")
+    private static final String EXCEPTION_DURING_SSO_EXPIRATION = "AS-WEB-00234";
+
+    @LogMessageInfo(
+            message = "Removing session {0} from sso id {1}",
+            level = "FINE")
+    private static final String REMOVE_SESSION_FROM_SSO = "AS-WEB-00235";
 
     /**
      * The background thread.
@@ -233,7 +318,7 @@ public class GlassFishSingleSignOn
         Session session = event.getSession();
         //S1AS8 6155481 START
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Process session destroyed on " + session);
+            logger.log(Level.FINE, SESSION_DESTROYED, session);
         }
         //S1AS8 6155481 END
         String ssoId = session.getSsoId();
@@ -301,13 +386,12 @@ public class GlassFishSingleSignOn
         // Has a valid user already been authenticated?
         //S1AS8 6155481 START
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Process request for '" + hreq.getRequestURI() + "'");
+            logger.log(Level.FINE, PRINCIPAL_ALREADY_AUTHENTICATED, hreq.getRequestURI());
         }
         if (hreq.getUserPrincipal() != null) {
             //S1AS8 6155481 START            
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine(" Principal '" + hreq.getUserPrincipal().getName()
-                            + "' has already been authenticated");
+                logger.log(Level.FINE, REQUEST_PROCESSED, hreq.getUserPrincipal().getName());
             }
             // START OF IASRI 4665318
             // context.invokeNext(request, response);
@@ -319,7 +403,7 @@ public class GlassFishSingleSignOn
         // Check for the single sign on cookie
         //S1AS8 6155481 START
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine(" Checking for SSO cookie");
+            logger.log(Level.FINE, CHECKING_SSO_COOKIE);
         }
         Cookie cookies[] = hreq.getCookies();
         if (cookies == null) {
@@ -341,7 +425,7 @@ public class GlassFishSingleSignOn
         if (cookie == null) {
             //S1AS8 6155481 START    
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine(" SSO cookie is not present");
+                logger.log(Level.FINE, SSO_COOKIE_NOT_PRESENT);
             }
             //S1AS8 6155481 END
             // START OF IASRI 4665318
@@ -357,8 +441,7 @@ public class GlassFishSingleSignOn
         if (realm == null) {
             //S1AS8 6155481 START             
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine(" No realm configured for this application, SSO "
-                            + "does not apply.");
+                logger.log(Level.FINE, NO_REALM_CONFIGURED);
             }
             //S1AS8 6155481 END            
             // START OF IASRI 4665318
@@ -372,8 +455,7 @@ public class GlassFishSingleSignOn
         if (realmName == null) {
             //S1AS8 6155481 START             
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine(" No realm configured for this application, SSO "
-                            + "does not apply.");
+                logger.log(Level.FINE, NO_REALM_CONFIGURED);
             }
             //S1AS8 6155481 END            
             // START OF IASRI 4665318
@@ -386,7 +468,7 @@ public class GlassFishSingleSignOn
         if (debug >= 1) {
             //S1AS8 6155481 START             
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine("This application uses realm '" + realmName + "'");
+                logger.log(Level.FINE, APP_REALM);
             }
          }
         //S1AS8 6155481 END         
@@ -394,8 +476,7 @@ public class GlassFishSingleSignOn
         // Look up the cached Principal associated with this cookie value
         //S1AS8 6155481 START         
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine(" Checking for cached principal for "
-                        + cookie.getValue());
+            logger.log(Level.FINE, CHECKING_CACHED_PRINCIPAL);
         }
 
         long version = 0;
@@ -405,10 +486,8 @@ public class GlassFishSingleSignOn
         SingleSignOnEntry entry = lookup(cookie.getValue(), version);
         if (entry != null) {
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine(" Found cached principal '"
-                            + entry.getPrincipal().getName()
-                            + "' with auth type '" + entry.getAuthType()
-                            + "' in realm '" + entry.getRealmName() + "'");
+                logger.log(Level.FINE, FOUND_CACHED_PRINCIPAL,
+                        new Object[]{entry.getPrincipal().getName(), entry.getAuthType(), entry.getRealmName()});
             }
             //S1AS8 6155481 END            
 
@@ -429,15 +508,14 @@ public class GlassFishSingleSignOn
             } else {
                 //S1AS8 6155481 START                 
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.fine(" Ignoring SSO entry which does not match "
-                                + "application realm '" + realmName + "'");
+                    logger.log(Level.FINE, IGNORING_SSO, realmName);
                 }
                 // consider this a cache miss, update atomic counter
                 missCount.incrementAndGet();
             }
         } else {
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine(" No cached principal found, erasing SSO cookie");
+                logger.log(Level.FINE, NO_CACHED_PRINCIPAL_FOUND);
             }
             cookie.setMaxAge(0);
             hres.addCookie(cookie);
@@ -468,7 +546,7 @@ public class GlassFishSingleSignOn
 
         //S1AS8 6155481 START        
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Deregistering sso id '" + ssoId + "'");
+            logger.log(Level.FINE, DEREGISTER_SSO);
         }
         //S1AS8 6155481 END 
         // Look up and remove the corresponding SingleSignOnEntry
@@ -505,8 +583,7 @@ public class GlassFishSingleSignOn
         long tooOld = System.currentTimeMillis() - ssoMaxInactive * 1000L;
         //S1AS8 6155481 START
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("SSO expiration started. Current entries: "
-                        + cache.size());
+            logger.log(Level.FINE, SSO_EXPIRATION_STARTED, cache.size());
         }
         //S1AS8 6155481 END 
         ArrayList<String> removals = new ArrayList<String>(cache.size()/2);
@@ -534,23 +611,20 @@ public class GlassFishSingleSignOn
             int removalCount = removals.size();
             //S1AS8 6155481 START            
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine("SSO cache will expire " + removalCount
-                            + " entries.");
+                logger.log(Level.FINE, SSO_CACHE_EXPIRE, removalCount);
             }
             //S1AS8 6155481 END
             // deregister any elegible sso entries
             for (int i=0; i < removalCount; i++) {
                 //S1AS8 6155481 START                
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("SSO expiration removing entry: "
-                                + removals.get(i));
+                    logger.log(Level.FINE, SSO_EXPRIRATION_REMOVING_ENTRY, removals.get(i));
                 }
                 deregister(removals.get(i));
             }
             //S1AS8 6155481 END
         } catch (Throwable e) { // don't let thread die
-            logger.warning("Caught exception during SingleSignOn expiration: "
-                           + e);
+            logger.log(Level.WARNING, EXCEPTION_DURING_SSO_EXPIRATION, e);
         }
     }
 
@@ -636,8 +710,7 @@ public class GlassFishSingleSignOn
     protected void removeSession(String ssoId, Session session) {
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Removing session " + session.toString() 
-                        + " from sso id " + ssoId );
+            logger.log(Level.FINE, REMOVE_SESSION_FROM_SSO, new Object[]{session.toString(), ssoId});
         }
 
         // Get a reference to the SingleSignOn

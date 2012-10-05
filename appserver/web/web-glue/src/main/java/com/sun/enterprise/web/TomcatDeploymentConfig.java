@@ -45,11 +45,12 @@ import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.web.*;
 import com.sun.enterprise.web.deploy.*;
 import com.sun.enterprise.web.session.WebSessionCookieConfig;
-import com.sun.logging.LogDomains;
 import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardWrapper;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.descriptor.*;
 
 import javax.servlet.SessionCookieConfig;
@@ -70,9 +71,24 @@ import java.util.logging.Logger;
  */
 public class TomcatDeploymentConfig {
 
-    private static final Logger logger = LogDomains.getLogger(
-        TomcatDeploymentConfig.class, LogDomains.WEB_LOGGER);
-    
+    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
+
+    @LogMessageInfo(
+            message = "Security role name {0} used in an <auth-constraint> without being defined in a <security-role>",
+            level = "WARNING")
+    public static final String ROLE_AUTH = "AS-WEB-00317";
+
+    @LogMessageInfo(
+            message = "Security role name {0} used in a <run-as> without being defined in a <security-role>",
+            level = "WARNING")
+    public static final String ROLE_RUNAS = "AS-WEB-00318";
+
+    @LogMessageInfo(
+            message = "Security role name {0} used in a <role-link> without being defined in a <security-role>",
+            level = "WARNING")
+    public static final String ROLE_LINK = "AS-WEB-00319";
+
+
     /**
      * Configure a <code>WebModule</code> by applying web.xml information
      * contained in <code>WebBundleDescriptor</code>. This astatic void calling
@@ -599,7 +615,7 @@ public class TomcatDeploymentConfig {
                 if (!"*".equals(roles[j]) &&
                         !webModule.hasSecurityRole(roles[j])) {
                     logger.log(Level.WARNING,
-                        "tomcatDeploymentConfig.role.auth", roles[j]);
+                        ROLE_AUTH, roles[j]);
                     webModule.addSecurityRole(roles[j]);
                 }
             }
@@ -612,7 +628,7 @@ public class TomcatDeploymentConfig {
             String runAs = wrapper.getRunAs();
             if ((runAs != null) && !webModule.hasSecurityRole(runAs)) {
                 logger.log(Level.WARNING,
-                    "tomcatDeploymentConfig.role.runas", runAs);
+                    ROLE_RUNAS, runAs);
                 webModule.addSecurityRole(runAs);
             }
             String names[] = wrapper.findSecurityReferences();
@@ -620,7 +636,7 @@ public class TomcatDeploymentConfig {
                 String link = wrapper.findSecurityReference(names[j]);
                 if ((link != null) && !webModule.hasSecurityRole(link)) {
                     logger.log(Level.WARNING,
-                        "tomcatDeploymentConfig.role.link", link);
+                        ROLE_LINK, link);
                     webModule.addSecurityRole(link);
                 }
             }

@@ -42,7 +42,8 @@ package com.sun.enterprise.web;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.web.session.PersistenceType;
-import com.sun.logging.LogDomains;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.runtime.ManagerProperties;
 import org.glassfish.web.deployment.runtime.SessionManager;
 import org.glassfish.web.deployment.runtime.StoreProperties;
@@ -58,10 +59,65 @@ import java.util.logging.Logger;
  */
 public class SessionManagerConfigurationHelper {
 
-    protected static final Logger _logger = LogDomains.getLogger(
-            SessionManagerConfigurationHelper.class, LogDomains.WEB_LOGGER);
+    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
 
-    protected WebModule _ctx = null;
+    @LogMessageInfo(
+            message = "Web App Distributable {0}: {1}",
+            level = "FINEST")
+    public static final String WEB_APP_DISTRIBUTABLE = "AS-WEB-00308";
+
+    @LogMessageInfo(
+            message = "AvailabilityGloballyEnabled = {0}",
+            level = "FINEST")
+    public static final String AVAILABILITY_GLOBALLY_ENABLED = "AS-WEB-00309";
+
+    @LogMessageInfo(
+            message = "instance-level persistence-type = {0} instance-level persistenceFrequency = {1} " +
+                    "instance-level persistenceScope = {2}",
+            level = "FINEST")
+    public static final String INSTANCE_LEVEL_INFO = "AS-WEB-00310";
+
+    @LogMessageInfo(
+            message = "webAppLevelPersistenceType = {0} webAppLevelPersistenceFrequency = {1} " +
+                    "webAppLevelPersistenceScope = {2}",
+            level = "FINEST")
+    public static final String WEB_APP_LEVEL_INFO = "AS-WEB-00311";
+
+    @LogMessageInfo(
+            message = "IN WebContainer>>ConfigureSessionManager after web level check" +
+                    "AFTER_WEB_PERSISTENCE-TYPE IS = {0} " +
+                    "AFTER_WEB_PERSISTENCE_FREQUENCY IS = {1} " +
+                    "AFTER_WEB_PERSISTENCE_SCOPE IS = {2}",
+            level = "FINEST")
+    public static final String AFTER_WEB_LEVEL_CHECK_INFO = "AS-WEB-00312";
+
+    @LogMessageInfo(
+            message = "Is {0} a system app: {1}",
+            level = "FINEST")
+    public static final String IS_SYSTEM_APP = "AS-WEB-00313";
+
+    @LogMessageInfo(
+            message = "SessionConfigurationHelper: Is AppDistributable {0}",
+            level = "FINEST")
+    public static final String IS_APP_DISTRIBUTABLE = "AS-WEB-00314";
+
+    @LogMessageInfo(
+            message = "Invalid Session Management Configuration for non-distributable app [{0}] - " +
+                    "defaulting to memory: persistence-type = [{1}] / persistenceFrequency = [{2}] / " +
+                    "persistenceScope = [{3}]",
+            level = "INFO")
+    public static final String INVALID_SESSION_MANAGER_CONFIG = "AS-WEB-00315";
+
+    @LogMessageInfo(
+            message = "IN WebContainer>>ConfigureSessionManager before builder factory" +
+                    "FINAL_PERSISTENCE-TYPE IS = {0} " +
+                    "FINAL_PERSISTENCE_FREQUENCY IS = {1} " +
+                    "FINAL_PERSISTENCE_SCOPE IS = {2}",
+            level = "FINEST")
+    public static final String CONFIGURE_SESSION_MANAGER_FINAL = "AS-WEB-00316";
+
+
+protected WebModule _ctx = null;
     protected SessionManager _smBean = null; 
     protected WebBundleDescriptor _wbd = null;
     protected WebModuleConfig _wmInfo = null;
@@ -100,10 +156,10 @@ public class SessionManagerConfigurationHelper {
             isAppDistributable = _wbd.isDistributable();
         }
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.finest("Web App Distributable (" + getApplicationId(_ctx)
-                           + "): " + isAppDistributable);    
+            _logger.log(Level.FINEST,
+                    WEB_APP_DISTRIBUTABLE,
+                    new Object[] {getApplicationId(_ctx), isAppDistributable});
         }
-
 
         PersistenceType persistence = PersistenceType.MEMORY;
         String persistenceFrequency = null;
@@ -112,8 +168,7 @@ public class SessionManagerConfigurationHelper {
         boolean isAvailabilityEnabled = 
             serverConfigLookup.calculateWebAvailabilityEnabledFromConfig(_ctx);
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.finest("AvailabilityGloballyEnabled = " +
-                           isAvailabilityEnabled);
+            _logger.log(Level.FINEST, AVAILABILITY_GLOBALLY_ENABLED, isAvailabilityEnabled);
         }
         if (isAvailabilityEnabled) {
             // These are the global defaults if nothing is
@@ -137,12 +192,9 @@ public class SessionManagerConfigurationHelper {
             insLevelPersistenceTypeString = persistence.getType();
         }
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.finest("instance-level persistence-type = " +
-                           insLevelPersistenceTypeString);
-            _logger.finest("instance-level persistenceFrequency = " +
-                           persistenceFrequency);
-            _logger.finest("instance-level persistenceScope = " +
-                           persistenceScope);
+            _logger.log(Level.FINEST,
+                    INSTANCE_LEVEL_INFO,
+                    new Object[] {insLevelPersistenceTypeString, persistenceFrequency, persistenceScope});
         }
         
         String webAppLevelPersistenceFrequency = null;
@@ -152,18 +204,14 @@ public class SessionManagerConfigurationHelper {
             // The persistence-type controls what properties of the 
             // session manager can be configured
             String pType = _smBean.getAttributeValue(SessionManager.PERSISTENCE_TYPE);
-            if (_logger.isLoggable(Level.FINEST)) {
-                _logger.finest("webAppLevelPersistenceType = " + pType);
-            }
             persistence = PersistenceType.parseType(pType, persistence);
 
             webAppLevelPersistenceFrequency = getPersistenceFrequency(_smBean);           
             webAppLevelPersistenceScope = getPersistenceScope(_smBean);
             if (_logger.isLoggable(Level.FINEST)) {
-                _logger.finest("webAppLevelPersistenceFrequency = " +
-                               webAppLevelPersistenceFrequency);
-                _logger.finest("webAppLevelPersistenceScope = " +
-                               webAppLevelPersistenceScope);
+                _logger.log(Level.FINEST,
+                        WEB_APP_LEVEL_INFO,
+                        new Object[] {pType, webAppLevelPersistenceFrequency, webAppLevelPersistenceScope});
             }
         }
         
@@ -175,13 +223,8 @@ public class SessionManagerConfigurationHelper {
             persistenceScope = webAppLevelPersistenceScope;
         }
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.finest("IN WebContainer>>ConfigureSessionManager after web level check");
-            _logger.finest("AFTER_WEB_PERSISTENCE-TYPE IS = " +
-                           persistence.getType());
-            _logger.finest("AFTER_WEB_PERSISTENCE_FREQUENCY IS = " +
-                           persistenceFrequency);
-            _logger.finest("AFTER_WEB_PERSISTENCE_SCOPE IS = " +
-                           persistenceScope); 
+            _logger.log(Level.FINEST, AFTER_WEB_LEVEL_CHECK_INFO,
+                    new Object[] {persistence.getType(), persistenceFrequency, persistenceScope});
         }
         
         // Delegate remaining initialization to builder
@@ -201,12 +244,11 @@ public class SessionManagerConfigurationHelper {
         if (!isAppDistributable && persistence != PersistenceType.MEMORY) {
             String wmName = getApplicationId(_ctx);
             if (_logger.isLoggable(Level.FINEST)) {
-                _logger.finest("is " + wmName + " a system app: " +
-                               isSystemApp(wmName));
+                _logger.log(Level.FINEST, IS_SYSTEM_APP, new Object[] {wmName, isSystemApp(wmName)});
             }
 
             if (_logger.isLoggable(Level.FINEST)) {
-                _logger.finest("SessionConfigurationHelper: Is AppDistributable " + isAppDistributable);
+                _logger.log(Level.FINEST, IS_APP_DISTRIBUTABLE, isAppDistributable);
             }
             // Suppress log error msg for default-web-module
             // log message only if availabilityenabled = true is attempted
@@ -217,7 +259,7 @@ public class SessionManagerConfigurationHelper {
                 if (_logger.isLoggable(Level.INFO)) {
                     Object[] params = { getApplicationId(_ctx), persistence.getType(), frequency, scope };
                     _logger.log(Level.INFO,
-                                "webcontainer.invalidSessionManagerConfig2",
+                                INVALID_SESSION_MANAGER_CONFIG,
                                 params); 
                 }
             }    
@@ -238,11 +280,9 @@ public class SessionManagerConfigurationHelper {
         }
         
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.finest("IN WebContainer>>ConfigureSessionManager before builder factory");
-            _logger.finest("FINAL_PERSISTENCE-TYPE IS = " +
-                           persistence.getType());
-            _logger.finest("FINAL_PERSISTENCE_FREQUENCY IS = " + frequency);
-            _logger.finest("FINAL_PERSISTENCE_SCOPE IS = " + scope); 
+            _logger.log(Level.FINEST,
+                    CONFIGURE_SESSION_MANAGER_FINAL,
+                    new Object[] {persistence.getType(), frequency, scope});
         }
         
         _persistence = persistence;

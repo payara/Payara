@@ -40,11 +40,12 @@
 
 package com.sun.appserv.web.cache.mapping;
 
-import com.sun.logging.LogDomains;
-
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 /** ValueConstraint class represents a field's value constraint; 
  *  supports common matching expressions. 
@@ -55,13 +56,52 @@ public class ValueConstraint {
         "", "'equals'", "'greater'", "'lesser'", "'not-equals'", "'in-range'"
     };
 
-    private static final Logger _logger = LogDomains.getLogger(
-        ValueConstraint.class, LogDomains.WEB_LOGGER);
+    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
 
     /**
      * The resource bundle containing the localized message strings.
      */
     private static final ResourceBundle _rb = _logger.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "''greater'' expression requires a numeric value; please check your value {0}",
+            level = "WARNING")
+    private static final String GREATER_EXP_REQ_NUMERIC = "AS-WEB-00357";
+
+    @LogMessageInfo(
+            message = "''lesser'' expression requires a numeric value; please check your value [{0}]",
+            level = "WARNING")
+    private static final String LESSER_EXP_REQ_NUMERIC = "AS-WEB-00358";
+
+    @LogMessageInfo(
+            message = "illegal value [{0}] expr [{1}]",
+            level = "WARNING")
+    private static final String ILLEGAL_VALUE_EXP = "AS-WEB-00359";
+
+    @LogMessageInfo(
+            message = "illegal in-range constraint; specify a valid range (xxx-yyy) value [{0}]",
+            level = "WARNING")
+    private static final String ILLEGAL_VALUE_RANGE = "AS-WEB-00360";
+
+    @LogMessageInfo(
+            message = "missing separator in the ''in-range'' constraint; [{0}]",
+            level = "WARNING")
+    private static final String MISSING_RANGE_SEP = "AS-WEB-00361";
+
+    @LogMessageInfo(
+            message = "''in-range'' constraint requires numeric values for the lower bound [{0}]",
+            level = "WARNING")
+    private static final String LOWER_RANGE_REQ_NUMBER = "AS-WEB-00362";
+
+    @LogMessageInfo(
+            message = "''in-range'' constraint requires a value for the upper bound of the range; check your value [{0}]",
+            level = "WARNING")
+    private static final String RANGE_REQ_UPPER_BOUND= "AS-WEB-00363";
+
+    @LogMessageInfo(
+            message = "''in-range'' constraint requires numeric values for the upper bound [{0}]",
+            level = "WARNING")
+    private static final String UPPER_RANGE_REQ_NUMBER = "AS-WEB-00364";
 
     // field values to match 
     private String matchValue = null; 
@@ -94,7 +134,7 @@ public class ValueConstraint {
             try {
                 minValue = Float.parseFloat(value);
             } catch (NumberFormatException nfe) {
-                String msg = _rb.getString("cache.mapping.greaterExpRequiresNumeric");
+                String msg = _rb.getString(GREATER_EXP_REQ_NUMERIC);
                 Object[] params = { value };
                 msg = MessageFormat.format(msg, params);
 
@@ -106,7 +146,7 @@ public class ValueConstraint {
             try {
                 maxValue = Float.parseFloat(value);
             } catch (NumberFormatException nfe) {
-                String msg = _rb.getString("cache.mapping.lesserExpRequiresNumeric");
+                String msg = _rb.getString(LESSER_EXP_REQ_NUMERIC);
                 Object[] params = { value };
                 msg = MessageFormat.format(msg, params);
 
@@ -120,7 +160,7 @@ public class ValueConstraint {
             parseRangeValue(value);
         }
         else {
-            String msg = _rb.getString("cache.mapping.illegalValueExpr");
+            String msg = _rb.getString(ILLEGAL_VALUE_EXP);
             Object[] params = { value, expr };
             msg = MessageFormat.format(msg, params);
 
@@ -146,7 +186,7 @@ public class ValueConstraint {
         float val1, val2;
 
         if (value == null || value.length() <= 2) {
-            String msg = _rb.getString("cache.mapping.illegalValueRange");
+            String msg = _rb.getString(ILLEGAL_VALUE_RANGE);
             Object[] params = { value };
             msg = MessageFormat.format(msg, params);
 
@@ -161,7 +201,7 @@ public class ValueConstraint {
            separator = value.indexOf('-', 0); 
         }
         if (separator == -1) {
-            String msg = _rb.getString("cache.mapping.missingRangeSep");
+            String msg = _rb.getString(MISSING_RANGE_SEP);
             Object[] params = { value };
             msg = MessageFormat.format(msg, params);
 
@@ -173,7 +213,7 @@ public class ValueConstraint {
         try {
             val1 = Float.parseFloat(sval1);
         } catch (NumberFormatException nfe) {
-            String msg = _rb.getString("cache.mapping.lowerRangeRequiresNumber");
+            String msg = _rb.getString(LOWER_RANGE_REQ_NUMBER);
             Object[] params = { sval1 };
             msg = MessageFormat.format(msg, params);
 
@@ -182,7 +222,7 @@ public class ValueConstraint {
 
         // is max value specified at all?
         if (separator == value.length()){
-            String msg = _rb.getString("cache.mapping.rangeRequiresUpperBound");
+            String msg = _rb.getString(RANGE_REQ_UPPER_BOUND);
             Object[] params = { value };
             msg = MessageFormat.format(msg, params);
 
@@ -193,7 +233,7 @@ public class ValueConstraint {
         try {
             val2 = Float.parseFloat(sval2);
         } catch (NumberFormatException nfe) {
-            String msg = _rb.getString("cache.mapping.upperRangeRequiresNumber");
+            String msg = _rb.getString(UPPER_RANGE_REQ_NUMBER);
             Object[] params = { sval2 };
             msg = MessageFormat.format(msg, params);
 

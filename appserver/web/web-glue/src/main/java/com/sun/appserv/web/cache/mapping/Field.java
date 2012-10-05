@@ -40,7 +40,8 @@
 
 package com.sun.appserv.web.cache.mapping;
 
-import com.sun.logging.LogDomains;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
@@ -52,14 +53,17 @@ import java.util.logging.Logger;
 
 public class Field {
 
-    // PWC_LOGGER
-    private static final Logger _logger = LogDomains.getLogger(
-        Field.class, LogDomains.WEB_LOGGER);
+    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
 
     /**
      * The resource bundle containing the localized message strings.
      */
     private static final ResourceBundle _rb = _logger.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Incorrect scope value [{0}] for web application cache field name [{1}]",
+            level = "WARNING")
+    public static final String CACHE_MAPPING_INCORRECT_SCOPE = "AS-WEB-00356";
 
     // field name and scope 
     protected String name; 
@@ -114,7 +118,7 @@ public class Field {
         else if ("session.id".equals(value))
             scope = Constants.SCOPE_SESSION_ID;
         else  {
-            String msg = _rb.getString("cache.mapping.incorrectScope");
+            String msg = _rb.getString(CACHE_MAPPING_INCORRECT_SCOPE);
             Object[] params = { value, name };
             msg = MessageFormat.format(msg, params);
 

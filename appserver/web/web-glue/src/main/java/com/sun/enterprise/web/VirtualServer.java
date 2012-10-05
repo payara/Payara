@@ -280,14 +280,7 @@ public class VirtualServer extends StandardHost
             level = "SEVERE",
             cause = "HttpCodecFilter is either NULL or empty",
             action = "Verify the NetworkListener is valid")
-    public static final String CODE_FILTERS_NULL = "AS-WEB-0016";
-
-    @LogMessageInfo(
-            message = "Error adding HttpProbes. NetworkListener {0}'s GrizzlyProxy is {1}",
-            level = "SEVERE",
-            cause = "GrizzlyProxy is NULL",
-            action = "Verify the NetworkListener is valid")
-    public static final String PROXY_NULL = "AS-WEB-00116";
+    public static final String CODE_FILTERS_NULL = "AS-WEB-00116";
 
     @LogMessageInfo(
             message = "Error adding HttpProbes",
@@ -371,6 +364,13 @@ public class VirtualServer extends StandardHost
             message = "Modifying web.xml {0}",
             level = "FINE")
     public static final String MODIFYING_WEB_XML = "AS-WEB-00131";
+
+    @LogMessageInfo(
+            message = "Error adding HttpProbes. NetworkListener {0}'s GrizzlyProxy is NULL",
+            level = "SEVERE",
+            cause = "GrizzlyProxy is NULL",
+            action = "Verify the NetworkListener is valid")
+    public static final String PROXY_NULL = "AS-WEB-00132";
 
 
     // ------------------------------------------------------------ Constructor
@@ -1901,7 +1901,7 @@ public class VirtualServer extends StandardHost
                     });
 
                 } else {
-                    logger.log(Level.SEVERE, PROXY_NULL, new Object[] {listener.getName(), proxy});
+                    logger.log(Level.SEVERE, PROXY_NULL, new Object[] {listener.getName()});
                 }
 
             } catch (Exception ex) {

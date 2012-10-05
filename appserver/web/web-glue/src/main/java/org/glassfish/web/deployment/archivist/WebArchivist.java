@@ -53,13 +53,14 @@ import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.util.*;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.archive.Archive;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.WarType;
 import org.glassfish.web.deployment.descriptor.*;
 import org.glassfish.web.deployment.io.WebDeploymentDescriptorFile;
@@ -78,6 +79,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -90,6 +93,13 @@ import java.net.URL;
 @Service @PerLookup
 @ArchivistFor(WarType.ARCHIVE_TYPE)
 public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
+
+    private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
+
+    @LogMessageInfo(
+            message = "Error in parsing default-web.xml",
+            level = "WARNING")
+    private static final String ERROR_PARSING = "AS-WEB-00368";
 
 
     private static final String DEFAULT_WEB_XML = "default-web.xml";
@@ -212,8 +222,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
                 defaultWebBundleDesc.addWebBundleDescriptor(wddf.read(fis));
             }
         } catch (Exception e) {
-            LogDomains.getLogger(WebArchivist.class, LogDomains.WEB_LOGGER).
-                warning("Error in parsing default-web.xml");
+            logger.log(Level.WARNING, ERROR_PARSING);
         } finally {
             try {
                 if (fis != null) {

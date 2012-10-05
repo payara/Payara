@@ -45,15 +45,30 @@ import com.sun.enterprise.web.session.PersistenceType;
 import org.apache.catalina.Context;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.session.StandardManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.runtime.SessionManager;
 import org.jvnet.hk2.annotations.Service;
 
+import java.lang.String;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 
 @Service(name="memory")
 public class MemoryStrategyBuilder extends BasePersistenceStrategyBuilder {
-    
+
+    @LogMessageInfo(
+            message = "Enabling no persistence for web module [{0}]''s sessions: persistence-type = [{1}]",
+            level = "FINE")
+    public static final String NO_PERSISTENCE = "AS-WEB-00249";
+
+    @LogMessageInfo(
+            message = "Unable to load session uuid generator [{0}]",
+            level = "SEVERE",
+            cause = "An exception occurred during loading session uuid generator",
+            action = "Check the Exception for the error")
+    public static final String UNABLE_TO_LOAD_SESSION_UUID_GENERATOR = "AS-WEB-00250";
+
     public void initializePersistenceStrategy(
             Context ctx,
             SessionManager smBean,
@@ -67,7 +82,7 @@ public class MemoryStrategyBuilder extends BasePersistenceStrategyBuilder {
         if(ctxPath != null && !ctxPath.equals("")) {    
             if (_logger.isLoggable(Level.FINE)) {
                 Object[] params = { ctx.getPath(), persistenceType };
-                _logger.log(Level.FINE, "webcontainer.noPersistence", params); 
+                _logger.log(Level.FINE, NO_PERSISTENCE, params);
             }
         }
 
@@ -95,7 +110,7 @@ public class MemoryStrategyBuilder extends BasePersistenceStrategyBuilder {
                         sessionIdGeneratorClassname).newInstance();
                 mgr.setUuidGenerator(generator);
             } catch (Exception ex) {
-                String msg = _rb.getString("webcontainer.unableLoadSessionUUIdGenerator");
+                String msg = _rb.getString(UNABLE_TO_LOAD_SESSION_UUID_GENERATOR);
                 msg = MessageFormat.format(msg, sessionIdGeneratorClassname);
                 _logger.log(Level.SEVERE, msg, ex);
             }
