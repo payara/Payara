@@ -572,9 +572,7 @@ public class Util {
     }
 
     public static boolean useLegacyResponseFormat(HttpHeaders requestHeaders) {
-        // TODO: default to legacy for now
-        return true;
-//                requestHeaders.getHeaderString(Constants.HEADER_LEGACY_FORMAT) != null;
+        return requestHeaders.getHeaderString(Constants.HEADER_LEGACY_FORMAT) != null;
     }
 
    /**
