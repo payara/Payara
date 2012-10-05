@@ -72,6 +72,8 @@ public class GrizzlyConfig implements MonitoringLevelListener{
 
     private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
 
+    private static final ResourceBundle rb = logger.getResourceBundle();
+
     @LogMessageInfo(
             message = "Exception when initializing monitoring for network-listener [{0}]",
             level = "WARNING")
@@ -168,7 +170,8 @@ public class GrizzlyConfig implements MonitoringLevelListener{
                 "disableMonitoring";
             invokeGrizzly(methodToInvoke);
         } catch (Exception ex) {
-            String msg = MessageFormat.format(INIT_MONITORING_EXCEPTION, Integer.valueOf(port));
+            String msg = rb.getString(INIT_MONITORING_EXCEPTION);
+            msg = MessageFormat.format(msg, Integer.valueOf(port));
             logger.log(Level.WARNING, msg, ex);
         }
     } 
@@ -233,7 +236,8 @@ public class GrizzlyConfig implements MonitoringLevelListener{
             }
             
         } catch ( Exception ex ){
-            String msg = MessageFormat.format(INVOKE_MBEAN_EXCEPTION, methodToInvoke);
+            String msg = rb.getString(INVOKE_MBEAN_EXCEPTION);
+            msg = MessageFormat.format(msg, methodToInvoke);
             logger.log(Level.SEVERE, msg, ex);
             //throw new RuntimeException(ex);
         }

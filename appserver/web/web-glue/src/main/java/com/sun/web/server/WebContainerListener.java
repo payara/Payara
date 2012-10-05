@@ -68,6 +68,8 @@ public final class WebContainerListener
 
     private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
 
+    private static final ResourceBundle rb = _logger.getResourceBundle();
+
     @LogMessageInfo(
             message = "ContainerEvent: {0}",
             level = "FINEST")
@@ -156,7 +158,8 @@ public final class WebContainerListener
                 postInvoke(wm);
             }
         } catch (Throwable t) {
-            String msg = MessageFormat.format(J2EEInstanceListener.EXCEPTION_DURING_HANDLE_EVENT,
+            String msg = rb.getString(J2EEInstanceListener.EXCEPTION_DURING_HANDLE_EVENT);
+            msg = MessageFormat.format(msg,
                 new Object[] { type, event.getContainer() });
             _logger.log(Level.SEVERE, msg, t);
         }
@@ -183,7 +186,8 @@ public final class WebContainerListener
         try {
             injectionMgr.destroyManagedObject(event.getData());
         } catch (Throwable t) {
-            String msg = MessageFormat.format(EXCEPTION_DURING_DESTROY_MANAGED_OBJECT,
+            String msg = rb.getString(EXCEPTION_DURING_DESTROY_MANAGED_OBJECT);
+            msg = MessageFormat.format(msg,
                 new Object[] { event.getData(), event.getContainer() });
             _logger.log(Level.SEVERE, msg, t);
         }

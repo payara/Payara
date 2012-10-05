@@ -58,6 +58,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.ResourceBundle;
 
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
@@ -195,8 +196,11 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     @LoggerInfo(subsystem="WEB", description="Main WEB Logger", publish=true)
     public static final String WEB_MAIN_LOGGER = "javax.enterprise.web";
+
     public static final Logger logger =
             Logger.getLogger(WEB_MAIN_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+
+    protected static final ResourceBundle rb = logger.getResourceBundle();
 
     @LogMessageInfo(
             message = "Loading web module {0} in virtual server {1} at {2}",
@@ -1084,7 +1088,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         try {
             port = Integer.parseInt(listener.getPort());
         } catch (NumberFormatException nfe) {
-            String msg = logger.getResourceBundle().getString(HTTP_LISTENER_INVALID_PORT);
+            String msg = rb.getString(HTTP_LISTENER_INVALID_PORT);
             msg = MessageFormat.format(msg, listener.getPort(),
                     listener.getName());
             throw new IllegalArgumentException(msg);
@@ -1345,7 +1349,8 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 } else if ("proxyHandler".equals(propName)) {
                     connector.setProxyHandler(propValue);
                 } else {
-                    logger.log(Level.WARNING, INVALID_HTTP_SERVICE_PROPERTY, httpServiceProp.getName());
+                    String msg = rb.getString(INVALID_HTTP_SERVICE_PROPERTY);
+                    logger.log(Level.WARNING, MessageFormat.format(msg, httpServiceProp.getName()));;
                 }
             }
         }
@@ -1513,7 +1518,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
         boolean isValid = new File(docroot).exists();
         if (!isValid) {
-            String msg = logger.getResourceBundle().getString(VIRTUAL_SERVER_INVALID_DOCROOT);
+            String msg = rb.getString(VIRTUAL_SERVER_INVALID_DOCROOT);
             msg = MessageFormat.format(msg, vs_id, docroot);
             throw new IllegalArgumentException(msg);
         }
@@ -1551,9 +1556,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 }
             }
             if (!found) {
-                logger.log(Level.SEVERE,
-                        LISTENER_REFERENCED_BY_HOST_NOT_EXIST,
-                        new Object[]{listener, vs.getName()});
+                String msg = rb.getString(LISTENER_REFERENCED_BY_HOST_NOT_EXIST);
+                msg = MessageFormat.format(msg, listener, vs.getName());
+                logger.log(Level.SEVERE, msg);
             }
         }
 
@@ -1589,7 +1594,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             } else {
                 if (vs.getName().equalsIgnoreCase(
                         org.glassfish.api.web.Constants.ADMIN_VS)) {
-                    String msg = logger.getResourceBundle().getString(MUST_NOT_DISABLE);
+                    String msg = rb.getString(MUST_NOT_DISABLE);
                     msg = MessageFormat.format(msg, listener.getName(),
                             vs.getName());
                     throw new IllegalArgumentException(msg);
@@ -1651,7 +1656,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     public void stop() throws LifecycleException {
         // Validate and update our current component state
         if (!_started) {
-            String msg = logger.getResourceBundle().getString(WEB_CONTAINER_NOT_STARTED);
+            String msg = rb.getString(WEB_CONTAINER_NOT_STARTED);
             throw new LifecycleException(msg);
         }
 
@@ -1751,7 +1756,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                     try {
                         updateDefaultWebModule(vs, vs.getNetworkListenerNames(), wmInfo);
                     } catch (LifecycleException le) {
-                        String msg = logger.getResourceBundle().getString(DEFAULT_WEB_MODULE_ERROR);
+                        String msg = rb.getString(DEFAULT_WEB_MODULE_ERROR);
                         msg = MessageFormat.format(msg, defaultPath,
                                 vs.getName());
                         logger.log(Level.SEVERE, msg, le);
@@ -1802,7 +1807,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             try {
                 updateDefaultWebModule(vs, vs.getNetworkListenerNames(), wmInfo);
             } catch (LifecycleException le) {
-                String msg = logger.getResourceBundle().getString(DEFAULT_WEB_MODULE_ERROR);
+                String msg = rb.getString(DEFAULT_WEB_MODULE_ERROR);
                 msg = MessageFormat.format(msg, defaultPath, vs.getName());
                 logger.log(Level.SEVERE, msg, le);
             }
@@ -1835,7 +1840,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         try {
             loadWebModule(vs, wmInfo, "null", null);
         } catch (Throwable t) {
-            String msg = logger.getResourceBundle().getString(LOAD_WEB_MODULE_ERROR);
+            String msg = rb.getString(LOAD_WEB_MODULE_ERROR);
             msg = MessageFormat.format(msg, wmInfo.getName());
             logger.log(Level.SEVERE, msg, t);
         }
@@ -2005,7 +2010,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             try {
                 RequestUtil.urlDecode(wmContextPath, "UTF-8");
             } catch (Exception e) {
-                String msg = logger.getResourceBundle().getString(INVALID_ENCODED_CONTEXT_ROOT);
+                String msg = rb.getString(INVALID_ENCODED_CONTEXT_ROOT);
                 msg = MessageFormat.format(msg, wmName, wmContextPath);
                 throw new Exception(msg);
             }
@@ -2013,7 +2018,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
         if (wmContextPath.length() == 0 &&
                 vs.getDefaultWebModuleID() != null) {
-            String msg = logger.getResourceBundle().getString(DEFAULT_WEB_MODULE_CONFLICT);
+            String msg = rb.getString(DEFAULT_WEB_MODULE_CONFLICT);
             msg = MessageFormat.format(msg,
                     new Object[]{wmName, vs.getID()});
             throw new Exception(msg);
@@ -2072,7 +2077,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 ctx.setAvailable(true);
                 return ctx;
             } else {
-                String msg = logger.getResourceBundle().getString(DUPLICATE_CONTEXT_ROOT);
+                String msg = rb.getString(DUPLICATE_CONTEXT_ROOT);
                 throw new Exception(MessageFormat.format(msg, vs.getID(),
                         ctx.getModuleName(), displayContextPath, wmName));
             }
@@ -2453,7 +2458,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                             context.destroy();
                         }
                     } catch (Exception ex) {
-                        String msg = logger.getResourceBundle().getString(EXCEPTION_DURING_DESTROY);
+                        String msg = rb.getString(EXCEPTION_DURING_DESTROY);
                         msg = MessageFormat.format(msg, contextRoot,
                                 host.getName());
                         logger.log(Level.WARNING, msg, ex);
@@ -2770,7 +2775,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 try {
                     wm.destroy();
                 } catch (Exception ex) {
-                    String msg = logger.getResourceBundle().getString(EXCEPTION_DURING_DESTROY);
+                    String msg = rb.getString(EXCEPTION_DURING_DESTROY);
                     msg = MessageFormat.format(msg, wm.getPath(), vs.getName());
                     logger.log(Level.WARNING, msg, ex);
                 }
@@ -2893,7 +2898,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             String propValue = prop.getValue();
             if (propName == null || propValue == null) {
                 throw new IllegalArgumentException(
-                        logger.getResourceBundle().getString(NULL_WEB_PROPERTY));
+                        rb.getString(NULL_WEB_PROPERTY));
             }
 
             if (propName.equalsIgnoreCase("enableCookies")) {
@@ -2955,7 +2960,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 try {
                     virtualServer.destroy();
                 } catch (Exception e) {
-                    String msg = logger.getResourceBundle().getString(DESTROY_VS_ERROR);
+                    String msg = rb.getString(DESTROY_VS_ERROR);
                     msg = MessageFormat.format(msg, virtualServer.getID());
                     logger.log(Level.WARNING, msg, e);
                 }
@@ -3063,9 +3068,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                     }
                 }
                 if (!found) {
-                    logger.log(Level.SEVERE,
-                            LISTENER_REFERENCED_BY_HOST_NOT_EXIST,
-                            new Object[]{listener, vs.getName()});
+                    String msg = rb.getString(LISTENER_REFERENCED_BY_HOST_NOT_EXIST);
+                    msg = MessageFormat.format(msg, listener, vs.getName());
+                    logger.log(Level.SEVERE, msg);
                 }
             }
             // Update the port numbers with which the virtual server is
@@ -3639,7 +3644,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      */
     private void validateJSR299Scope(Class<?> clazz) {
         if (jcdiService != null && jcdiService.isCDIScoped(clazz)) {
-            String msg = logger.getResourceBundle().getString(INVALID_ANNOTATION_SCOPE);
+            String msg = rb.getString(INVALID_ANNOTATION_SCOPE);
             msg = MessageFormat.format(msg, clazz.getName());
             throw new IllegalArgumentException(msg);
         }

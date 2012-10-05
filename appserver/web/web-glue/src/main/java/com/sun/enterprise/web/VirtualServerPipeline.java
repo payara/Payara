@@ -72,6 +72,8 @@ public class VirtualServerPipeline extends StandardPipeline {
 
     private static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
 
+    private static final ResourceBundle rb = logger.getResourceBundle();
+
     @LogMessageInfo(
             message = "Virtual server {0} has been turned off",
             level = "FINE")
@@ -120,7 +122,8 @@ public class VirtualServerPipeline extends StandardPipeline {
             throws IOException, ServletException {
 
         if (isOff) {
-            String msg = MessageFormat.format(VS_VALVE_OFF, new Object[] { vs.getName() });
+            String msg = rb.getString(VS_VALVE_OFF);
+            msg = MessageFormat.format(msg, new Object[] { vs.getName() });
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, msg);
             }
@@ -128,7 +131,8 @@ public class VirtualServerPipeline extends StandardPipeline {
                                             HttpServletResponse.SC_NOT_FOUND,
                                             msg);
         } else if (isDisabled) {
-            String msg = MessageFormat.format(VS_VALVE_DISABLED, new Object[] { vs.getName() });
+            String msg = rb.getString(VS_VALVE_DISABLED);
+            msg = MessageFormat.format(msg, new Object[] { vs.getName() });
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, msg);
             }

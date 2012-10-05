@@ -1094,12 +1094,16 @@ public class PECoyoteConnector extends Connector {
         }
 
         if (!propertiesFile.exists()) {
-            _logger.log(Level.WARNING, MISSING_JK_PROPERTIES, propertiesFile.getAbsolutePath());
+            _logger.log(Level.WARNING,
+                    MessageFormat.format(_rb.getString("pewebcontainer.missingJKProperties"),
+                            propertiesFile.getAbsolutePath()));
             return;
         }
         
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.log(Level.FINEST, _rb.getString(LOADING_JK_PROPERTIED), propertiesFile.getAbsolutePath());
+            _logger.log(Level.FINEST,
+                    MessageFormat.format(_rb.getString(LOADING_JK_PROPERTIED),
+                            propertiesFile.getAbsolutePath()));
         }
 
         Properties properties = null;

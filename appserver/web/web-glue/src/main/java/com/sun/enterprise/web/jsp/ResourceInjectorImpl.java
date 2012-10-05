@@ -64,6 +64,8 @@ public class ResourceInjectorImpl implements ResourceInjector {
 
     protected static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
 
+    protected static final ResourceBundle _rb = _logger.getResourceBundle();
+
     @LogMessageInfo(
             message = "Exception during invocation of PreDestroy-annotated method on JSP tag handler [{0}]",
             level = "WARNING")
@@ -83,7 +85,8 @@ public class ResourceInjectorImpl implements ResourceInjector {
         this.desc = webModule.getWebBundleDescriptor();
         ServerContext serverContext = webModule.getServerContext();
         if (serverContext == null) {
-            throw new IllegalStateException(NO_SERVERT_CONTEXT);
+            throw new IllegalStateException(
+                    _rb.getString(NO_SERVERT_CONTEXT));
         }
         this.injectionMgr = serverContext.getDefaultServices().getService(
             InjectionManager.class);
@@ -115,7 +118,8 @@ public class ResourceInjectorImpl implements ResourceInjector {
             try {
                 injectionMgr.invokeInstancePreDestroy(handler, desc);
             } catch (Exception e) {
-                String msg = MessageFormat.format(EXCEPTION_DURING_JSP_TAG_HANDLER_PREDESTROY, handler);
+                String msg = _rb.getString(EXCEPTION_DURING_JSP_TAG_HANDLER_PREDESTROY);
+                msg = MessageFormat.format(msg, handler);
                 _logger.log(Level.WARNING, msg, e);
             }
         }

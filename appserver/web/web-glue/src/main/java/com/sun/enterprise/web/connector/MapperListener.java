@@ -208,7 +208,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
     public void init() {
 
         if (webContainer == null)  {
-            logger.log(Level.SEVERE, rb.getString(CANNOT_FIND_WEB_CONTAINER));
+            logger.log(Level.SEVERE, CANNOT_FIND_WEB_CONTAINER);
             return;
         }
 
@@ -217,7 +217,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
             httpService = webContainer.getHttpService();
             engine = webContainer.getEngine();
             if (engine == null) {
-                logger.log(Level.SEVERE, rb.getString(CANNOT_FIND_ENGINE));
+                logger.log(Level.SEVERE, CANNOT_FIND_ENGINE);
                 return;
             }
 
@@ -452,9 +452,8 @@ public class MapperListener implements NotificationListener, NotificationFilter{
         if (contextName.equals("/")) {
             contextName = "";
         }
-        String msg = MessageFormat.format(REGISTER_CONTEXT, contextName);
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine(msg);
+            logger.log(Level.FINE, REGISTER_CONTEXT, contextName);
         }
 
         javax.naming.Context resources = context.findStaticResources();
@@ -504,9 +503,8 @@ public class MapperListener implements NotificationListener, NotificationFilter{
             return;
         }
 
-        String msg = MessageFormat.format(UNREGISTER_CONTEXT, contextName);
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine(msg);
+            logger.log(Level.FINE, UNREGISTER_CONTEXT, contextName);
         }
 
         mapper.removeContext(hostName, contextName);

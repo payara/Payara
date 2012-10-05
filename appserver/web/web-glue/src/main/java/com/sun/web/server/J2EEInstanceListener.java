@@ -84,6 +84,8 @@ public final class J2EEInstanceListener implements InstanceListener {
 
     private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
 
+    private static final ResourceBundle _rb = _logger.getResourceBundle();
+
     @LogMessageInfo(
             message = "*** InstanceEvent: {0}",
             level = "FINEST")
@@ -146,7 +148,8 @@ public final class J2EEInstanceListener implements InstanceListener {
         }
         ServerContext serverContext = wm.getServerContext();
         if (serverContext == null) {
-            String msg = MessageFormat.format(NO_SERVER_CONTEXT, wm.getName());
+            String msg = _rb.getString(NO_SERVER_CONTEXT);
+            msg = MessageFormat.format(msg, wm.getName());
             throw new IllegalStateException(msg);
         }
         ServiceLocator services = serverContext.getDefaultServices();
@@ -281,7 +284,8 @@ public final class J2EEInstanceListener implements InstanceListener {
             }
         } catch (Exception ex) {
             im.postInvoke(inv); // See CR 6920895
-            String msg = MessageFormat.format(EXCEPTION_DURING_HANDLE_EVENT, new Object[] { eventType, wm });
+            String msg = _rb.getString(EXCEPTION_DURING_HANDLE_EVENT);
+            msg = MessageFormat.format(msg, new Object[] { eventType, wm });
             throw new RuntimeException(msg, ex);
         }
     }
@@ -348,7 +352,8 @@ public final class J2EEInstanceListener implements InstanceListener {
                 injectionMgr.destroyManagedObject(instance, false);
             }
         } catch (InjectionException ie) {
-            String msg = MessageFormat.format(EXCEPTION_DURING_HANDLE_EVENT, new Object[] { eventType, wm });
+            String msg = _rb.getString(EXCEPTION_DURING_HANDLE_EVENT);
+            msg = MessageFormat.format(msg, new Object[] { eventType, wm });
             _logger.log(Level.SEVERE, msg, ie);
         }
 
@@ -356,7 +361,8 @@ public final class J2EEInstanceListener implements InstanceListener {
         try {
             im.postInvoke(inv);
         } catch (Exception ex) {
-            String msg = MessageFormat.format(EXCEPTION_DURING_HANDLE_EVENT, new Object[] { eventType, wm });
+            String msg = _rb.getString(EXCEPTION_DURING_HANDLE_EVENT);
+            msg = MessageFormat.format(msg, new Object[] { eventType, wm });
             throw new RuntimeException(msg, ex);
         } finally {
             if (eventType == InstanceEvent.EventType.AFTER_DESTROY_EVENT) {
@@ -389,8 +395,8 @@ public final class J2EEInstanceListener implements InstanceListener {
                             //securityContext.setCurrentSecurityContext(null);
                         }
                     } catch (Exception ex) {
-                        String msg = MessageFormat.format(EXCEPTION_DURING_HANDLE_EVENT,
-                            new Object[] { eventType, wm });
+                        String msg = _rb.getString(EXCEPTION_DURING_HANDLE_EVENT);
+                        msg = MessageFormat.format(msg, new Object[] { eventType, wm });
                         _logger.log(Level.SEVERE, msg,  ex);
                     }
 
