@@ -77,6 +77,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
+import javax.servlet.http.HttpSession;
 
 /**
  * Provides basic CSRF protection for a web application. The filter assumes
@@ -194,16 +195,19 @@ public class CsrfPreventionFilter extends FilterBase {
                 }
             }
 
+            HttpSession session = req.getSession(false);
+
             @SuppressWarnings("unchecked")
-            LruCache<String> nonceCache =
-                (LruCache<String>) req.getSession(true).getAttribute(
-                    Constants.CSRF_NONCE_SESSION_ATTR_NAME);
+            LruCache<String> nonceCache = (session == null) ? null
+                    : (LruCache<String>) session.getAttribute(
+                            Constants.CSRF_NONCE_SESSION_ATTR_NAME);
 
             if (!skipNonceCheck) {
                 String previousNonce =
                     req.getParameter(Constants.CSRF_NONCE_REQUEST_PARAM);
 
-                if (nonceCache != null && !nonceCache.contains(previousNonce)) {
+                if (nonceCache == null || previousNonce == null ||
+                        !nonceCache.contains(previousNonce)) {
                     res.sendError(HttpServletResponse.SC_FORBIDDEN);
                     return;
                 }
@@ -211,7 +215,10 @@ public class CsrfPreventionFilter extends FilterBase {
 
             if (nonceCache == null) {
                 nonceCache = new LruCache<String>(nonceCacheSize);
-                req.getSession().setAttribute(
+                if (session == null) {
+                    session = req.getSession(true);
+                }
+                session.setAttribute(
                         Constants.CSRF_NONCE_SESSION_ATTR_NAME, nonceCache);
             }
 
