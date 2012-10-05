@@ -148,11 +148,13 @@ public class RestMethodMetadata {
         if (path != null) {
             o.put("path", path);
         }
-        JSONArray array = new JSONArray();
+        
+        JSONObject queryParamJson = new JSONObject();
         for (ParamMetadata pmd : queryParameters) {
-            array.put(pmd.toJson());
+            queryParamJson.put(pmd.getName(), pmd.toJson());
         }
-        o.put("queryParams", array);
+
+        o.put("queryParams", queryParamJson);
 
         if (requestPayload != null) {
             JSONObject requestProps = new JSONObject();
@@ -227,7 +229,10 @@ public class RestMethodMetadata {
                     isPathParam = true;
                 }
                 if (QueryParam.class.isAssignableFrom(annotation.getClass())) {
-                    queryParameters.add(new ParamMetadata(context, (Class<?>)paramType, ((QueryParam)annotation).value(), paramAnnos[i]));
+                    queryParameters.add(new ParamMetadata(context,
+                            (Class<?>)paramType,
+                            ((QueryParam)annotation).value(),
+                            paramAnnos[i]));
                     processed = true;
                 }
 
