@@ -253,7 +253,7 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
                     if("asadmin-osgi-shell".equals(cmdName)) {
                         out.println("gogo");
                     } else {
-                        CommandSession session = cp.createSession(null, out, err);
+                        CommandSession session = cp.createSession(System.in, out, err);
                         session.execute(cmd);
                         session.close();
                     }
