@@ -134,36 +134,4 @@ public class ProbeRegistry {
     		probe.fireProbe(args);
     	}
     }
-
-   public static Object invokeProbeBefore(int id, Object[] args) {
-       FlashlightProbe probe = probeMap.get(id);
-       if (probe != null) {
-           return probe.fireProbeBefore(args);
-       }
-       return null;
-   }
-
-   public static void invokeProbeAfter(Object returnValue, int id,
-                        Object states) {
-       FlashlightProbe probe = probeMap.get(id);
-       if (probe != null) {
-           try {
-               probe.fireProbeAfter(returnValue, (ArrayList<FlashlightProbe.ProbeInvokeState>)states);
-           } catch (ClassCastException e) {
-               // Make sure the state we got was really ok, internal error if that happens
-           }
-       }
-   }
-
-   public static void invokeProbeOnException(Object exceptionValue, int id,
-                        Object states) {
-       FlashlightProbe probe = probeMap.get(id);
-       if (probe != null) {
-           try {
-               probe.fireProbeOnException(exceptionValue, (ArrayList<FlashlightProbe.ProbeInvokeState>)states);
-           } catch (ClassCastException e) {
-               // Make sure the state we got was really ok, internal error if that happens
-           }
-       }
-   }
 }

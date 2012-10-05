@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,7 +46,6 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 import org.glassfish.flashlight.client.ProbeClientInvoker;
 import org.glassfish.flashlight.client.ProbeHandle;
-import org.glassfish.flashlight.client.StatefulProbeClientInvoker;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.List;
@@ -63,10 +62,8 @@ public class FlashlightProbe
         implements ProbeHandle, ProbeInfo{
 
     public FlashlightProbe(int id, Class providerClazz, String moduleProviderName,
-            String moduleName, String probeProviderName, String probeName,
-            String[] probeParamNames, Class[] paramTypes, boolean self, boolean hidden,
-            boolean stateful, boolean statefulReturn, boolean statefulException,
-            String [] profileNames) {
+    		String moduleName, String probeProviderName, String probeName,
+                 String[] probeParamNames, Class[] paramTypes, boolean self, boolean hidden) {
         this.id = id;
         this.providerClazz = providerClazz;
         this.moduleProviderName = moduleProviderName;
@@ -77,10 +74,6 @@ public class FlashlightProbe
                 probeProviderName + ":" + probeName;
         this.hasSelf = self;
         this.hidden = hidden;
-        this.stateful = stateful;
-        this.statefulReturn = statefulReturn;
-        this.statefulException = statefulException;
-        this.profileNames = profileNames;
         
         if (self) {
             if (isMethodStatic()) {
@@ -182,75 +175,6 @@ public class FlashlightProbe
         } 
     }
 
-    public ArrayList<ProbeInvokeState> fireProbeBefore(Object[] params) {
-        if(!listenerEnabled.get()) {
-            return null;
-        }
-
-        ArrayList<ProbeInvokeState> probeInvokeStates = new ArrayList<ProbeInvokeState> (); 
-        
-        if (parent != null) {
-            ArrayList <ProbeInvokeState> parentStates = parent.fireProbeBefore(params);
-            probeInvokeStates.addAll(parentStates);
-        }
-
-        int sz = invokerList.size();
-
-        for (int i=0; i<sz; i++) {
-            StatefulProbeClientInvoker invoker = (StatefulProbeClientInvoker) invokerList.get(i);
-            if(invoker != null) {
-                probeInvokeStates.add(new ProbeInvokeState(invoker.getId(),
-                                               invoker.invokeBefore(params)));
-            }
-        } 
-        
-        return probeInvokeStates;
-    }
-
-    public void fireProbeAfter(Object returnValue, ArrayList<ProbeInvokeState> states) {
-        if(!listenerEnabled.get()) {
-            return;
-        }
-       
-        if (parent != null) {
-            parent.fireProbeAfter(returnValue, states);
-        }
-
-        int sz = invokerList.size();
-
-        int stateIndex = -1;
-        for (int i=0; i<sz; i++) {
-            StatefulProbeClientInvoker invoker = (StatefulProbeClientInvoker)invokerList.get(i);
-            if(invoker != null) {
-                stateIndex = findStateIndex(invoker.getId(), states);
-                if (stateIndex >= 0)
-                    invoker.invokeAfter(states.get(stateIndex).getState(), returnValue);
-            }
-        } 
-    }
-    
-    public void fireProbeOnException(Object exceptionValue, ArrayList<ProbeInvokeState> states) {
-        if(!listenerEnabled.get()) {
-            return;
-        }
-       
-        if (parent != null) {
-            parent.fireProbeOnException(exceptionValue, states);
-        }
-
-        int sz = invokerList.size();
-
-        int stateIndex = -1;
-        for (int i=0; i<sz; i++) {
-            StatefulProbeClientInvoker invoker = (StatefulProbeClientInvoker)invokerList.get(i);
-            if(invoker != null) {
-                stateIndex = findStateIndex(invoker.getId(), states);
-                if (stateIndex >= 0)
-                    invoker.invokeOnException(states.get(stateIndex).getState(), exceptionValue);
-            }
-        } 
-    }
-    
     public boolean isEnabled() {
         return listenerEnabled.get();
     }
@@ -348,64 +272,21 @@ public class FlashlightProbe
     }
 
     public void setParent(FlashlightProbe parent) {
-        // Only setting the parent here if both are stateful or both are stateless (no mixing) 
-        if (stateful != parent.getStateful())
-            return;
         this.parent = parent;
     }
-    
-    public boolean getStateful() { return stateful; }
-    public boolean getStatefulReturn() { return statefulReturn; }
-    public boolean getStatefulException() { return statefulException; }
-    public String [] getProfileNames() { return profileNames; } 
-   
+
     private void initInvokerList() {
         Set<Map.Entry<Integer, ProbeClientInvoker>> entries = invokers.entrySet();
+
         List<ProbeClientInvoker> invList = new ArrayList(2);
-        if (stateful) {
-            // If this is a stateful probe, we only want invokers in the list that actually can handle stateful
-            // invokes
-            for (Map.Entry<Integer, ProbeClientInvoker> entry : entries) {
-                ProbeClientInvoker invoker = entry.getValue();
-                if (invoker instanceof StatefulProbeClientInvoker)
-                    invList.add(invoker);
-            }
-        } else {
-            for (Map.Entry<Integer, ProbeClientInvoker> entry : entries) {
-                ProbeClientInvoker invoker = entry.getValue();
-                invList.add(invoker);
-            }
+        for (Map.Entry<Integer, ProbeClientInvoker> entry : entries) {
+            ProbeClientInvoker invoker = entry.getValue();
+            invList.add(invoker);
         }
 
         invokerList = invList;
     }
 
-    private int findStateIndex(int invokerId, ArrayList <ProbeInvokeState> states) {
-        if (states == null)
-            return -1;
-
-        int size = states.size();
-        ProbeInvokeState state = null;
-        for (int stateIndex=0; stateIndex<size; stateIndex++) {
-            state = states.get(stateIndex);
-            if (invokerId == state.getInvokerId())
-                return stateIndex;
-        }
-        return -1;
-    }
-    
-    public static final class ProbeInvokeState {
-        private int invokerId;
-        private Object state = null;
-        /* package */ ProbeInvokeState() {}
-        /* package */ ProbeInvokeState(int invokerId, Object state) {
-            this.invokerId = invokerId;
-            this.state = state;
-        }
-        /* package */ final Object getState() { return state; }
-        /* package */ final int getInvokerId() { return invokerId; }
-    }
-    
     private Method probeMethod;
     public static final String SELF = "@SELF";
     private int id;
@@ -431,9 +312,5 @@ public class FlashlightProbe
     public final static LocalStringManagerImpl localStrings =
                             new LocalStringManagerImpl(FlashlightProbe.class);
     private FlashlightProbe parent = null;
-    private boolean stateful = false;
-    private boolean statefulReturn = false;
-    private boolean statefulException = false;
-    private String [] profileNames = null;
 }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -67,10 +67,8 @@ public class ProbeProviderStaxParserTest {
         ClassLoader cl = ProbeProviderStaxParserTest.class.getClassLoader();
         oneProbeStream = cl.getResourceAsStream("one_probe.xml");
         twoProbeStream = cl.getResourceAsStream("two_probe.xml");
-        statefulProbeStream = cl.getResourceAsStream("stateful_probes.xml");
         assertNotNull(oneProbeStream);
         assertNotNull(twoProbeStream);
-        assertNotNull(statefulProbeStream);
     }
 
     @AfterClass
@@ -95,28 +93,10 @@ public class ProbeProviderStaxParserTest {
         ProbeProviderStaxParser ppsp = new ProbeProviderStaxParser(oneProbeStream);
         List<Provider> providers = ppsp.getProviders();
 
-        System.out.println("oneProbeStream:");
-        for(Provider p : providers) {
-            System.out.println("******** PROVIDER: *******\n" + p);
-        }
-
-        System.out.println("\n\ntwoProbeStream:");
-        ppsp = new ProbeProviderStaxParser(twoProbeStream);
-        providers = ppsp.getProviders();
-
-        for(Provider p : providers) {
-            System.out.println("******** PROVIDER: *******\n" + p);
-        }
-
-        System.out.println("\n\nstatefulProbeStream:");
-        ppsp = new ProbeProviderStaxParser(statefulProbeStream);
-        providers = ppsp.getProviders();
-
         for(Provider p : providers) {
             System.out.println("******** PROVIDER: *******\n" + p);
         }
     }
    private static InputStream oneProbeStream;
    private static InputStream twoProbeStream;
-   private static InputStream statefulProbeStream;
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,7 +53,6 @@ import javax.xml.stream.XMLStreamException;
 import static org.glassfish.flashlight.xml.XmlConstants.*;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
 
 /**
  * Read the XML file, parse it and return a list of ProbeProvider objects
@@ -125,26 +124,20 @@ public class ProbeProviderStaxParser extends StaxParser{
         List<XmlProbe> probes = new ArrayList<XmlProbe>();
 
         boolean done = false;
-        
-        // Prime the pump here, and advance to the next start. Note that further advances
-        // will be done as the elements within a probe are handled, not at this level.
-        try {
-            nextStart();
-        }
-        catch (EndDocumentException ex) {
-            // ignore -- this must be the last START_ELEMENT in the doc
-            // that's normal
-            done = true;
-        }
-
         while(!done) {
-            // If we've been advanced to the end of the document, we' done...
-            if (parser.getEventType() == END_DOCUMENT)
-                break;
-            if(parser.getLocalName().equals(PROBE))
-                probes.add(parseProbe());  // Note that this will advance to the next probe if there is one
-            else
-                done = true;  // Done at this level, bounce out.
+            try {
+                nextStart();
+
+                if(parser.getLocalName().equals(PROBE))
+                    probes.add(parseProbe());
+                else
+                    done = true;
+            }
+            catch (EndDocumentException ex) {
+                // ignore -- this must be the last START_ELEMENT in the doc
+                // that's normal
+                done = true;
+            }
         }
         return probes;
     }
@@ -166,10 +159,8 @@ public class ProbeProviderStaxParser extends StaxParser{
         String name = atts.get(PROBE_NAME);
         boolean self = Boolean.parseBoolean(atts.get(PROBE_SELF));
         boolean hidden = Boolean.parseBoolean(atts.get(PROBE_HIDDEN));
-        boolean stateful = Boolean.parseBoolean(atts.get(PROBE_STATEFUL));
-        boolean statefulReturn = Boolean.parseBoolean(atts.get(PROBE_STATEFUL_RETURN));
-        boolean statefulException = Boolean.parseBoolean(atts.get(PROBE_STATEFUL_EXCEPTION));
-        String profileNames = atts.get(PROBE_PROFILE_NAMES);
+
+
         boolean done = false;
         while(!done) {
             try {
@@ -188,7 +179,7 @@ public class ProbeProviderStaxParser extends StaxParser{
                 done = true;
             }
         }
-        return new XmlProbe(name, method, params, self, hidden, stateful, statefulReturn, statefulException, profileNames);
+        return new XmlProbe(name, method, params, self, hidden);
     }
     private XmlProbeParam parseParam() throws XMLStreamException {
         if(!parser.getLocalName().equals(PROBE_PARAM)){

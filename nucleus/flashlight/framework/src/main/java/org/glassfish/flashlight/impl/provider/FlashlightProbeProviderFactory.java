@@ -44,6 +44,7 @@ import org.glassfish.external.probe.provider.annotations.*;
 import org.glassfish.flashlight.xml.ProbeProviderStaxParser;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 import com.sun.enterprise.util.ObjectAnalyzer;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -55,19 +56,24 @@ import org.glassfish.flashlight.provider.*;
 import org.glassfish.flashlight.impl.core.*;
 import org.glassfish.flashlight.provider.ProbeProviderFactory;
 import org.jvnet.hk2.annotations.Service;
+import org.glassfish.external.probe.provider.annotations.*;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.text.MessageFormat;
+import org.glassfish.api.admin.ServerEnvironment;
 
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * @author Mahesh Kannan
@@ -275,9 +281,7 @@ public class FlashlightProbeProviderFactory
 
                 createProbe(origProbeProviderName, genericProvider, provider,
                         probeName, self, hidden, m, moduleProviderName, moduleName, probeProviderName,
-                        invokerId, providerClazz, pnameAnn.stateful(), pnameAnn.statefulReturn(),
-                        pnameAnn.statefulException(), pnameAnn.profileNames());
-
+                        invokerId, providerClazz);
             }
         }
 
@@ -287,8 +291,7 @@ public class FlashlightProbeProviderFactory
 
                 createProbe(origProbeProviderName, genericProvider, provider,
                         methodName, false, false, m, moduleProviderName, moduleName, probeProviderName,
-                        invokerId, providerClazz,
-                        false, false, false, null); // Not stateful and no profile names for these
+                        invokerId, providerClazz);
             }
         }
 
@@ -338,14 +341,12 @@ public class FlashlightProbeProviderFactory
             FlashlightProbeProvider provider, String probeName, boolean self, boolean hidden,
             Method m, String moduleProviderName, String moduleName,
     		String probeProviderName, String invokerId,
-    		Class providerClazz, boolean stateful, boolean statefulReturn,
-    		boolean statefulException, String profileNames) {
+    		Class providerClazz) {
 
             String[] probeParamNames = FlashlightUtils.getParamNames(m);
             FlashlightProbe probe = ProbeFactory.createProbe(
                     providerClazz, moduleProviderName, moduleName, probeProviderName, probeName,
-                    probeParamNames, m.getParameterTypes(), self, hidden,
-                    stateful, statefulReturn, statefulException, splitProfileNames(profileNames));
+                    probeParamNames, m.getParameterTypes(), self, hidden);
             probe.setProviderJavaMethodName(m.getName());
             probe.setProbeMethod(m);
             provider.addProbe(probe);
@@ -580,9 +581,7 @@ public class FlashlightProbeProviderFactory
             }
             FlashlightProbe flProbe = ProbeFactory.createProbe( providerClazz,
                     moduleProviderName, moduleName, probeProviderName, probeName,
-                    probeParams, paramTypes, hasSelf, isHidden,
-                    probe.getStateful(), probe.getStatefulReturn(), probe.getStatefulException(),
-                    splitProfileNames(probe.getProfileNames()));
+                    probeParams, paramTypes, hasSelf, isHidden);
             flProbe.setProviderJavaMethodName(probeMethod);
             if (logger.isLoggable(Level.FINE))
                 logger.fine(" Constructed probe = " + flProbe.toString());
@@ -636,14 +635,5 @@ public class FlashlightProbeProviderFactory
             return true;
         }
         return false;
-    }
-    
-    private String [] splitProfileNames(String profileNamesAll) {
-        if (profileNamesAll == null)
-            return null;
-        String [] profileNames = profileNamesAll.split(",");
-        for (int i=0; i<profileNames.length; i++)
-            profileNames[i] = (profileNames[i] == null ? null : profileNames[i].trim());
-        return profileNames;
     }
 }

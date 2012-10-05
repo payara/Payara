@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,38 +38,30 @@
  * holder.
  */
 
-package org.glassfish.flashlight.impl.core;
+package org.glassfish.flashlight.transformer;
 
-import org.glassfish.flashlight.provider.FlashlightProbe;
-import org.glassfish.flashlight.provider.ProbeRegistry;
-
-import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
-
-import java.util.concurrent.atomic.AtomicInteger;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
- * @author Mahesh Kannan
+ * Strings -- Get your Strings here.
+ * One file with Strings
+ * So one class for messing with them!
+ * Nothing in here is public protected.  Only for use by this one java package.
+ * @author Byron Nevins
  */
-@Service
-@Singleton
-public class ProbeFactory {
 
-	private static AtomicInteger counter = new AtomicInteger();
+final class Strings {
+    private Strings() {
+        // no instances allowed!
+    }
 
-	static ProbeRegistry probeRegistry = ProbeRegistry.getInstance();
+    static String get(String indexString) {
+        return strings.get(indexString);
+    }
 
-	public static FlashlightProbe createProbe(Class providerClazz,
-			String moduleProviderName, String moduleName,
-			String probeProviderName, String probeName, String[] paramNames,
-			Class[] paramTypes, boolean self, boolean hidden) {
-		int id = counter.incrementAndGet();
-		FlashlightProbe probe = new FlashlightProbe(id, providerClazz,
-				moduleProviderName, moduleName, probeProviderName, probeName,
-				paramNames, paramTypes, self, hidden);
+    static String get(String indexString, Object... objects) {
+        return strings.get(indexString, objects);
+    }
 
-		probeRegistry.registerProbe(probe);
-		return probe;
-	}
-
+    final private static LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,8 +43,10 @@ package org.glassfish.flashlight.client;
 import org.glassfish.flashlight.FlashlightUtils;
 import org.glassfish.flashlight.impl.client.ReflectiveClientInvoker;
 import org.glassfish.flashlight.provider.FlashlightProbe;
+import org.glassfish.external.probe.provider.annotations.ProbeParam;
 import org.jvnet.hk2.annotations.Service;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.glassfish.flashlight.impl.client.DTraceClientInvoker;
@@ -58,10 +60,6 @@ public class ProbeClientInvokerFactory {
     private static AtomicInteger clientMethodIdCounter =
             new AtomicInteger();
 
-    protected static int getNextId() {
-    	return clientMethodIdCounter.incrementAndGet();
-    }
-    
     public static ProbeClientInvoker createInvoker(Object target, Method method,
                                                    FlashlightProbe probe, String[] paramNames) {
         int invokerId = clientMethodIdCounter.incrementAndGet();
