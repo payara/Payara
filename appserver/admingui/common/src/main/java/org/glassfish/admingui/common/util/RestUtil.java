@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.admingui.common.util;
 
 import java.io.IOException;
@@ -91,20 +90,21 @@ import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import org.glassfish.jersey.client.SslConfig;
+
 /**
  *
  * @author anilam
  */
 public class RestUtil {
+
     public static final String FORM_ENCODING = "application/x-www-form-urlencoded";
     //default to .json instead of .xml
     public static final String RESPONSE_TYPE = "application/json";
     public static final String GUI_TOKEN_FOR_EMPTY_PROPERTY_VALUE = "()";
-
     public static final String REST_TOKEN_COOKIE = "gfresttoken";
     private static Client JERSEY_CLIENT;
 
-   public static Client getJerseyClient() {
+    public static Client getJerseyClient() {
         if (JERSEY_CLIENT == null) {
             JERSEY_CLIENT = ClientFactory.newClient();
             JERSEY_CLIENT.configuration().register(new CsrfProtectionFilter()).register(new JacksonFeature());
@@ -113,13 +113,13 @@ public class RestUtil {
         return JERSEY_CLIENT;
     }
 
-    public static String getPropValue(String endpoint, String propName, HandlerContext handlerCtx){
-        Map responseMap = (Map) restRequest(endpoint+"/property.json", null, "GET", handlerCtx, false);
-        Map extraPropertiesMap = (Map)((Map)responseMap.get("data")).get("extraProperties");
-        if (extraPropertiesMap != null){
-            List<Map> props = (List)extraPropertiesMap.get("properties");
-            for(Map oneProp: props){
-                if (oneProp.get("name").equals(propName)){
+    public static String getPropValue(String endpoint, String propName, HandlerContext handlerCtx) {
+        Map responseMap = (Map) restRequest(endpoint + "/property.json", null, "GET", handlerCtx, false);
+        Map extraPropertiesMap = (Map) ((Map) responseMap.get("data")).get("extraProperties");
+        if (extraPropertiesMap != null) {
+            List<Map> props = (List) extraPropertiesMap.get("properties");
+            for (Map oneProp : props) {
+                if (oneProp.get("name").equals(propName)) {
                     return (String) oneProp.get("value");
                 }
             }
@@ -130,14 +130,17 @@ public class RestUtil {
     public static String resolveToken(String endpoint, String token) {
         String tokenStartMarker = "${", tokenEndMarker = "}";
 
-        if (!token.trim().startsWith(tokenStartMarker))
+        if (!token.trim().startsWith(tokenStartMarker)) {
             return token;
+        }
         int start = token.indexOf(tokenStartMarker);
-        if (start < 0)
+        if (start < 0) {
             return token;
+        }
         int end = token.lastIndexOf(tokenEndMarker);
-        if (end < 0)
+        if (end < 0) {
             return token;
+        }
 
         Map attrMap = new HashMap();
         String str = token.substring(start + tokenStartMarker.length(), end - tokenEndMarker.length() + 1);
@@ -145,7 +148,7 @@ public class RestUtil {
 
         try {
             Map result = restRequest(endpoint + "/resolve-tokens.json", attrMap, "GET", null, true);
-            return (String)GuiUtil.getMapValue(result, "data,extraProperties,tokens," + str);
+            return (String) GuiUtil.getMapValue(result, "data,extraProperties,tokens," + str);
         } catch (Exception ex) {
             GuiUtil.getLogger().info(ex.getMessage());
         }
@@ -180,11 +183,11 @@ public class RestUtil {
         if (logger.isLoggable(Level.FINEST)) {
             Map maskedAttr = maskOffPassword(attrs);
             logger.log(Level.FINEST,
-                    GuiUtil.getCommonMessage("LOG_REST_REQUEST_INFO",
-                            new Object[]{
-                                    endpoint,
-                                    (useData && "post".equals(method))? data: attrs, method
-                            }));
+                       GuiUtil.getCommonMessage("LOG_REST_REQUEST_INFO",
+                                                new Object[]{
+                        endpoint,
+                        (useData && "post".equals(method)) ? data : attrs, method
+                    }));
         }
 
         // Execute the request...
@@ -210,10 +213,10 @@ public class RestUtil {
         // invalidate the session and force the the user to log back in.
         if (restResponse.getResponseCode() == 401) {
             FacesContext fc = FacesContext.getCurrentInstance();
-            HttpSession session = (HttpSession)fc.getExternalContext().getSession(false);
+            HttpSession session = (HttpSession) fc.getExternalContext().getSession(false);
 
-            HttpServletRequest request = (HttpServletRequest)fc.getExternalContext().getRequest();
-            HttpServletResponse response = (HttpServletResponse)fc.getExternalContext().getResponse();
+            HttpServletRequest request = (HttpServletRequest) fc.getExternalContext().getRequest();
+            HttpServletResponse response = (HttpServletResponse) fc.getExternalContext().getResponse();
             if (!"/login.jsf".equals(request.getServletPath())) {
                 try {
                     response.sendRedirect("/");
@@ -227,7 +230,7 @@ public class RestUtil {
             }
         }
 
-        return parseResponse(restResponse, handlerCtx, endpoint, (useData && "post".equals(method))? data: attrs, quiet, throwException);
+        return parseResponse(restResponse, handlerCtx, endpoint, (useData && "post".equals(method)) ? data : attrs, quiet, throwException);
     }
 
 //    public static <T> T restRequest(String endpoint,
@@ -293,18 +296,17 @@ public class RestUtil {
 //
 //        return restResponse.;
 //    }
-
-    public static Map maskOffPassword(Map<String, Object> attrs){
+    public static Map maskOffPassword(Map<String, Object> attrs) {
         Map masked = new HashMap();
-        if (attrs == null){
+        if (attrs == null) {
             return masked;
         }
 
-        for(Map.Entry<String,Object> e : attrs.entrySet()){
+        for (Map.Entry<String, Object> e : attrs.entrySet()) {
             String key = e.getKey().toLowerCase(GuiUtil.guiLocale);
-            if (pswdAttrList.contains(key)){
+            if (pswdAttrList.contains(key)) {
                 masked.put(key, "*******");
-            }else{
+            } else {
                 masked.put(key, e.getValue());
             }
         }
@@ -316,7 +318,7 @@ public class RestUtil {
 
         RestResponse response = options(endpoint, "application/json");
         //System.out.println("=========== response.getResponse():\n " + response.getResponse());
-        Map<String, Object> data = (Map<String, Object>)response.getResponse().get("data");
+        Map<String, Object> data = (Map<String, Object>) response.getResponse().get("data");
         List<Map<String, Object>> methods = null;
         Map<String, Object> extraProperties = (Map<String, Object>) data.get("extraProperties");
         methods = (List<Map<String, Object>>) extraProperties.get("methods");
@@ -375,12 +377,12 @@ public class RestUtil {
         return valueMap;
     }
 
-    private static String getMessage(Map aMap){
+    private static String getMessage(Map aMap) {
         String message = "";
-        if (aMap != null){
+        if (aMap != null) {
             message = (String) aMap.get("message");
         }
-        return (message==null)? "" : message;
+        return (message == null) ? "" : message;
     }
 
     public static Map<String, Object> parseResponse(RestResponse response, HandlerContext handlerCtx, String endpoint,
@@ -390,31 +392,31 @@ public class RestUtil {
         ExitCode exitCode = ExitCode.FAILURE;
         Object maskedAttr = attrs;
         if ((attrs != null) && (attrs instanceof Map)) {
-            maskedAttr = maskOffPassword((Map<String, Object>)attrs);
+            maskedAttr = maskOffPassword((Map<String, Object>) attrs);
         }
         if (response != null) {
             try {
                 //int status = response.getResponseCode();
                 Map responseMap = response.getResponse();
-                if (responseMap.get("data") != null){
-                    String exitCodeStr = (String)((Map)responseMap.get("data")).get("exit_code");
+                if (responseMap.get("data") != null) {
+                    String exitCodeStr = (String) ((Map) responseMap.get("data")).get("exit_code");
                     exitCode = (exitCodeStr != null) ? ExitCode.valueOf(exitCodeStr) : ExitCode.SUCCESS;
                 }
 
                 //Get the message for both WARNING and FAILURE exit_code
-                if (exitCode != ExitCode.SUCCESS){
-                    Map dataMap = (Map)responseMap.get("data");
+                if (exitCode != ExitCode.SUCCESS) {
+                    Map dataMap = (Map) responseMap.get("data");
                     if (dataMap != null) {
                         message = getMessage(dataMap);
-                        List<Map> subReports = (List<Map>)dataMap.get("subReports");
-                        if (subReports != null){
+                        List<Map> subReports = (List<Map>) dataMap.get("subReports");
+                        if (subReports != null) {
                             StringBuilder sb = new StringBuilder("");
-                            for( Map oneSubReport : subReports){
+                            for (Map oneSubReport : subReports) {
                                 sb.append(" ").append(getMessage(oneSubReport));
                             }
                             message = message + sb.toString();
                         }
-                    }else{
+                    } else {
                         Object msgs = responseMap.get("message");
                         if (msgs == null) {
                             //According to security guideline, we shouldn't expose the endpoint to user for the error.
@@ -436,8 +438,8 @@ public class RestUtil {
                         }
                     }
                 }
-                switch(exitCode){
-                    case FAILURE :  {
+                switch (exitCode) {
+                    case FAILURE: {
                         // If this is called from jsf, stop processing/show error.
                         if (throwException) {
                             if (handlerCtx != null) {
@@ -477,7 +479,7 @@ public class RestUtil {
                     //If this is called from the jsf as handler, we want to stop processing and show error
                     //instead of dumping the exception on screen.
                     if (throwException) {
-                        if ("".equals(message) || message == null ) {
+                        if ("".equals(message) || message == null) {
                             GuiUtil.handleException(handlerCtx, ex);
                         } else {
                             GuiUtil.handleError(handlerCtx, message);
@@ -485,9 +487,9 @@ public class RestUtil {
                     }
                 } else {
                     //if this is called by other java handler, we tell the called handle the exception.
-                    if ("".equals(message) || message == null ) {
+                    if ("".equals(message) || message == null) {
                         throw new RuntimeException(ex);
-                    }else{
+                    } else {
                         throw new RuntimeException(message, ex);
                     }
                 }
@@ -496,17 +498,18 @@ public class RestUtil {
         return null;
     }
 
-    public static boolean hasWarning(Map responseMap){
-        if (responseMap.get("data") != null){
-            String exitCodeStr = (String)((Map)responseMap.get("data")).get("exit_code");
+    public static boolean hasWarning(Map responseMap) {
+        if (responseMap.get("data") != null) {
+            String exitCodeStr = (String) ((Map) responseMap.get("data")).get("exit_code");
             ExitCode exitCode = (exitCodeStr != null) ? ExitCode.valueOf(exitCodeStr) : ExitCode.SUCCESS;
-            return  (exitCode == ExitCode.WARNING);
+            return (exitCode == ExitCode.WARNING);
         }
         return false;
     }
 
     /**
      * This method will encode append segment to base, encoding it so that a correct URL is returned.
+     *
      * @param base
      * @param segment
      * @return
@@ -537,7 +540,7 @@ public class RestUtil {
                         Logger logger = GuiUtil.getLogger();
                         if (logger.isLoggable(Level.FINEST)) {
                             logger.log(Level.FINEST,
-                                    GuiUtil.getCommonMessage("LOG_BUILD_MULTI_VALUE_MAP_ERROR", new Object[]{key, obj}));
+                                       GuiUtil.getCommonMessage("LOG_BUILD_MULTI_VALUE_MAP_ERROR", new Object[]{key, obj}));
                         }
 
                         // Allow it to continue b/c this property most likely
@@ -552,7 +555,7 @@ public class RestUtil {
                     Logger logger = GuiUtil.getLogger();
                     if (logger.isLoggable(Level.FINEST)) {
                         logger.log(Level.FINEST,
-                                GuiUtil.getCommonMessage("LOG_BUILD_MULTI_VALUE_MAP_ERROR" , new Object[]{key, value}));
+                                   GuiUtil.getCommonMessage("LOG_BUILD_MULTI_VALUE_MAP_ERROR", new Object[]{key, value}));
                     }
                     // Allow it to continue b/c this property most likely
                     // should have been excluded for this request
@@ -673,9 +676,9 @@ public class RestUtil {
     }
 
     /**
-     * Given the parent URL and the desired childType, this method will build a List of Maps that
-     * contains each child entities values.  In addition to the entity values, each row will
-     * have a field, 'selected', set to false, as well as the URL encoded entity name ('encodedName').
+     * Given the parent URL and the desired childType, this method will build a List of Maps that contains each child
+     * entities values. In addition to the entity values, each row will have a field, 'selected', set to false, as well
+     * as the URL encoded entity name ('encodedName').
      *
      * @param parent
      * @param childType
@@ -685,7 +688,7 @@ public class RestUtil {
      */
     public static List<Map> buildChildEntityList(String parent, String childType, List skipList, List includeList, String id) throws Exception {
 
-        String endpoint = parent.endsWith("/") ?  parent + childType : parent + "/" + childType;
+        String endpoint = parent.endsWith("/") ? parent + childType : parent + "/" + childType;
         boolean hasSkip = (skipList != null);
         boolean hasInclude = (includeList != null);
         boolean convert = childType.equals("property");
@@ -706,7 +709,7 @@ public class RestUtil {
                 }
 
                 oneRow.put("selected", false);
-                for(Map.Entry<String,Object> e : entity.entrySet()){
+                for (Map.Entry<String, Object> e : entity.entrySet()) {
                     oneRow.put(e.getKey(), getA(entity, e.getKey(), convert));
                 }
                 oneRow.put("encodedName", URLEncoder.encode(entity.get(id).toString(), "UTF-8"));
@@ -719,17 +722,17 @@ public class RestUtil {
         return childElements;
     }
 
-    private static String getA(Map<String, Object> attrs,  String key, boolean convert){
+    private static String getA(Map<String, Object> attrs, String key, boolean convert) {
         Object val = attrs.get(key);
-        if (val == null){
+        if (val == null) {
             return "";
         }
         return (convert && (val.equals(""))) ? GUI_TOKEN_FOR_EMPTY_PROPERTY_VALUE : val.toString();
     }
 
     /**
-     * Given the parent URL and the desired childType, this method will build a List of Strings that
-     * contains child entity names.
+     * Given the parent URL and the desired childType, this method will build a List of Strings that contains child
+     * entity names.
      *
      * @param endpoint
      * @return
@@ -782,8 +785,7 @@ public class RestUtil {
     }
 
     /**
-     *        <p> This method returns the value of the REST token if it is
-     *            successfully set in session scope.</p>
+     * <p> This method returns the value of the REST token if it is successfully set in session scope.</p>
      */
     public static String getRestToken() {
         String token = null;
@@ -824,11 +826,9 @@ public class RestUtil {
         return target;
     }
 
-
     //******************************************************************************************************************
     // Jersey client methods
     //******************************************************************************************************************
-
     public static RestResponse get(String address) {
         return get(address, new HashMap<String, Object>());
     }
@@ -851,11 +851,11 @@ public class RestUtil {
             contentType = MediaType.APPLICATION_JSON;
         }
         if (payload instanceof Map) {
-            payload = buildMultivalueMap((Map<String, Object>)payload);
+            payload = buildMultivalueMap((Map<String, Object>) payload);
         }
         Response cr = target.request(RESPONSE_TYPE).header("Content-Type", contentType)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
-//                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
+                //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
                 .post(Entity.entity(payload, contentType), Response.class);
         RestResponse rr = RestResponse.getRestResponse(cr);
         return rr;
@@ -865,7 +865,7 @@ public class RestUtil {
         WebTarget target = getJerseyClient().target(address);
         MultivaluedMap formData = buildMultivalueMap(payload);
         Response cr = target
-//                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
+                //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
                 .post(Entity.entity(formData, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
@@ -877,7 +877,7 @@ public class RestUtil {
         WebTarget target = getJerseyClient().target(address);
         MultivaluedMap formData = buildMultivalueMap(payload);
         Response cr = target
-//                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
+                //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
                 .put(Entity.entity(formData, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
@@ -912,18 +912,19 @@ public class RestUtil {
     //******************************************************************************************************************
     // Jersey client methods
     //******************************************************************************************************************
-    public static void initialize(Client client){
-        if (client == null){
+
+    public static void initialize(Client client) {
+        if (client == null) {
             client = getJerseyClient();
         }
-        try{
+        try {
             ServiceLocator habitat = SecurityServicesUtil.getInstance().getHabitat();
             SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
             client.configuration().setProperty(ClientProperties.SSL_CONFIG, new SslConfig(new BasicHostnameVerifier(),
-                    habitat.<SSLUtils>getService(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), null)));
+                                                                                          habitat.<SSLUtils>getService(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), null)));
             client.configuration().register(CsrfProtectionFilter.class);
 
-        }catch(Exception ex){
+        } catch (Exception ex) {
             Throwable cause = ex;
             int lcv = 0;
             while (cause != null) {
@@ -933,7 +934,7 @@ public class RestUtil {
             }
 
             GuiUtil.getLogger().warning("RestUtil.initialize() failed");
-            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
+            if (GuiUtil.getLogger().isLoggable(Level.FINE)) {
                 ex.printStackTrace();
             }
         }
@@ -952,16 +953,18 @@ public class RestUtil {
     }
 
     private static class BasicHostnameVerifier implements HostnameVerifier {
+
         final HostnameVerifier defaultVerifier = javax.net.ssl.HttpsURLConnection.getDefaultHostnameVerifier();
-        public BasicHostnameVerifier(){
+
+        public BasicHostnameVerifier() {
         }
 
         public boolean verify(String host, SSLSession sslSession) {
-            if (host.equals("localhost")){
+            if (host.equals("localhost")) {
                 return true;
             }
             boolean result = defaultVerifier.verify(host, sslSession);
-            return (result) ? true :  host.equals(sslSession.getPeerHost());
+            return (result) ? true : host.equals(sslSession.getPeerHost());
         }
     }
 
@@ -970,15 +973,14 @@ public class RestUtil {
      */
     private static final List<String> pswdAttrList =
             Arrays.asList(
-                    "sshpassword",            /* create-node-ssh , setup-ssh , update-node, update-node-ssh */
-                    "windowspassword",        /* create-node-dcom, validate-dcom, update-node-dcom,  */
-                    "dbpassword",             /* jms-availability-service */
-                    "jmsdbpassword",          /* configure-jms-cluster */
-                    "password",                 /* change-admin-password */
-                    "newpassword" ,             /* change-admin-password */
-                    "jmsdbpassword",             /* configure-jms-cluster */
-                    "mappedpassword",            /* create-connector-security-map, update-connector-security-map */
-                    "userpassword",             /* create-file-user , update-file-user */
-                    "aliaspassword"        /* create-password-alias , update-password-alias */
-            );
+            "sshpassword", /* create-node-ssh , setup-ssh , update-node, update-node-ssh */
+            "windowspassword", /* create-node-dcom, validate-dcom, update-node-dcom,  */
+            "dbpassword", /* jms-availability-service */
+            "jmsdbpassword", /* configure-jms-cluster */
+            "password", /* change-admin-password */
+            "newpassword", /* change-admin-password */
+            "jmsdbpassword", /* configure-jms-cluster */
+            "mappedpassword", /* create-connector-security-map, update-connector-security-map */
+            "userpassword", /* create-file-user , update-file-user */
+            "aliaspassword" /* create-password-alias , update-password-alias */);
 }
