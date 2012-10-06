@@ -43,6 +43,8 @@ import com.sun.enterprise.admin.remote.ServerRemoteAdminCommand;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
@@ -248,12 +250,37 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
                 }
             } else {
                 // try with gogo...
+
+                // GLASSFISH-19126 - prepare fake input stream...
+                InputStream in = new InputStream() {
+
+                    @Override
+                    public int read() throws IOException {
+                        return -1;
+                    }
+
+                    @Override
+                    public int available() throws IOException {
+                        return 0;
+                    }
+
+                    @Override
+                    public int read(byte[] b) throws IOException {
+                        return -1;
+                    }
+
+                    @Override
+                    public int read(byte[] b, int off, int len) throws IOException {
+                        return -1;
+                    }
+                };
+
                 CommandProcessor cp = (CommandProcessor) shell;
                 if(sessionOp == null) {
                     if("asadmin-osgi-shell".equals(cmdName)) {
                         out.println("gogo");
                     } else {
-                        CommandSession session = cp.createSession(System.in, out, err);
+                        CommandSession session = cp.createSession(in, out, err);
                         session.execute(cmd);
                         session.close();
                     }
@@ -272,12 +299,12 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
                     }
                 } else if("execute".equals(sessionOp)) {
                     RemoteCommandSession remote = sessions.get(sessionId);
-                    CommandSession session = remote.attach(null, out, err);
+                    CommandSession session = remote.attach(in, out, err);
                     session.execute(cmd);
                     remote.detach();
                 } else if("stop".equals(sessionOp)) {
                     RemoteCommandSession remote = sessions.remove(sessionId);
-                    CommandSession session = remote.attach(null, out, err);
+                    CommandSession session = remote.attach(in, out, err);
                     session.close();
 
                     log.log(Level.FINE, "Remote session closed: {0}",
