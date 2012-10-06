@@ -811,7 +811,7 @@ public final class ConfigModularityUtils {
         String typeString = args.getProperty("-type");
         if (typeString != null)
             serverType = RuntimeType.valueOf(typeString);
-        LOG.info("server type is: " + serverType.name());
+        LOG.fine("server type is: " + serverType.name());
         if (serverType.isEmbedded() || serverType.isSingleInstance() || serverType.isDas()) return true;
         return false;
     }
