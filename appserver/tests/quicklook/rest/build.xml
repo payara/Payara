@@ -49,7 +49,7 @@
     <import file="${ws.root}/gfproject/build-impl.xml"/>   
     <import file="${ws.root}/gfproject/${deploy.platform}-targets.xml"/>
     
-    <target name="all"/>
+    <target name="all" depends="build,runtest"/>
     <target name="build">
       <antcall target="compile-tests">
       </antcall>

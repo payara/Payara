@@ -40,6 +40,7 @@
 
 package test.admin;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import org.testng.Assert;
@@ -56,7 +57,7 @@ public class RestTests {
     @Test
     public void testManagementEndpoint() {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:4848/management/domain.xml").openConnection();
+            HttpURLConnection connection = getConnection("http://localhost:4848/management/domain.xml");
             Assert.assertEquals(200, connection.getResponseCode());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
@@ -66,7 +67,7 @@ public class RestTests {
     @Test
     public void testMonitoringEndpoint() {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:4848/monitoring/domain.xml").openConnection();
+            HttpURLConnection connection = getConnection("http://localhost:4848/monitoring/domain.xml");
             Assert.assertEquals(200, connection.getResponseCode());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
@@ -76,7 +77,7 @@ public class RestTests {
     @Test
     public void testEndpointWithEncodedSlash() {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:4848/management/domain/resources/jdbc-resource/jdbc%2F__TimerPool.xml").openConnection();
+            HttpURLConnection connection = getConnection("http://localhost:4848/management/domain/resources/jdbc-resource/jdbc%2F__TimerPool.xml");
             Assert.assertEquals(200, connection.getResponseCode());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
@@ -86,7 +87,7 @@ public class RestTests {
     @Test
     public void testAdminCommandEndpoint() {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:4848/management/domain/version.xml").openConnection();
+            HttpURLConnection connection = getConnection("http://localhost:4848/management/domain/version.xml");
             Assert.assertEquals(200, connection.getResponseCode());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
@@ -96,10 +97,16 @@ public class RestTests {
     @Test
     public void testChildConfigBeanEndpoint() {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:4848/management/domain/applications.xml").openConnection();
+            HttpURLConnection connection = getConnection("http://localhost:4848/management/domain/applications.xml");
             Assert.assertEquals(200, connection.getResponseCode());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         }
+    }
+
+    protected HttpURLConnection getConnection(String url) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        connection.setRequestProperty("X-GlassFish-3", "true");
+        return connection;
     }
 }
