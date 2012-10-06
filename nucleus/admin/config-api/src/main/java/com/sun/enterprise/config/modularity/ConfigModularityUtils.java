@@ -108,18 +108,6 @@ import java.util.logging.Logger;
 public final class ConfigModularityUtils {
     private static final Logger LOG = Logger.getLogger(ConfigModularityUtils.class.getName());
 
-    /**
-     * If exists, locate and return a URL to the configuration snippet for the given config bean class.
-     *
-     * @param configBeanClass the config bean type we want to check for its configuration snippet
-     * @param <U>             the type of the config bean we want to check
-     * @return A url to the file or null of not exists
-     */
-    public static <U extends ConfigBeanProxy> URL getConfigurationFileUrl(Class<U> configBeanClass) {
-        String defaultConfigurationFileName = configBeanClass.getSimpleName() + ".xml";
-        return getConfigurationFileUrl(configBeanClass, defaultConfigurationFileName);
-    }
-
     private static <U extends ConfigBeanProxy> URL getConfigurationFileUrl(Class<U> configBeanClass, String fileName) {
         return configBeanClass.getClassLoader().getResource("META-INF/configuration/" + fileName);
     }
@@ -333,7 +321,8 @@ public final class ConfigModularityUtils {
                     componentName = resolveExpression(componentName, habitat);
                     return getNamedConfigBeanFromCollection(col, componentName, childClass);
                 } catch (Exception e) {
-                    LOG.log(Level.INFO, "The provided path is not valid: " + childElement, e);
+                    LOG.log(Level.INFO, "The provided path is not valid: " + childElement + " resolved to component name: " + componentName, e);
+
                 }
             }
             return null;
@@ -404,9 +393,9 @@ public final class ConfigModularityUtils {
             }
 
         } catch (InvocationTargetException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            LOG.log(Level.INFO, "Cannot set config bean dues to: ", e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            LOG.log(Level.INFO, "Cannot set config bean dues to:", e);
         }
 
 
@@ -437,7 +426,8 @@ public final class ConfigModularityUtils {
                             }
                         }
                     } catch (Exception ex) {
-                        LOG.log(Level.INFO, "could not remove a config bean named " + finalConfigBean.getClass().getName() + " as it does not exist", ex);
+                        LOG.log(Level.INFO, "could not remove a config bean named " + finalConfigBean.getClass().getName() + "  as it does not exist", ex);
+
                     }
                 }
                 if (configBeanClass.getAnnotation(HasCustomizationTokens.class) != null) {
@@ -579,6 +569,11 @@ public final class ConfigModularityUtils {
         for (Method method : methods) {
             Attribute attributeAnnotation = method.getAnnotation(Attribute.class);
             if ((attributeAnnotation != null) && attributeAnnotation.key()) {
+                if (configBean != null) {
+                    LOG.log(Level.INFO, "getting the component name for: {0} ", configBean.getClass().getName());
+                } else {
+                    LOG.log(Level.INFO, "cannot get name for null configbean object of type: {0}", configBeanType.getName());
+                }
                 return (String) method.invoke(configBean);
             }
         }
@@ -816,8 +811,8 @@ public final class ConfigModularityUtils {
         String typeString = args.getProperty("-type");
         if (typeString != null)
             serverType = RuntimeType.valueOf(typeString);
-        LOG.fine("Checking for instance type: is DAS: " + serverType.isDas() + "   type:" + serverType.name());
-        return serverType.isDas();
-
+        LOG.info("server type is: " + serverType.name());
+        if (serverType.isEmbedded() || serverType.isSingleInstance() || serverType.isDas()) return true;
+        return false;
     }
 }

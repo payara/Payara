@@ -59,7 +59,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Qualifier
 public @interface CustomConfiguration {
-    String defaultConfigFileName() default "module-configuration.xml";
-    String adminConfigFileName() default "module-configuration.xml";
+    String defaultConfigFileName() ;
+    String adminConfigFileName() ;
     boolean usesOnTheFlyConfigGeneration() default false;
 }

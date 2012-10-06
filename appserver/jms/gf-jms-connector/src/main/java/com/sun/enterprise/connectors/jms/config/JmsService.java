@@ -71,7 +71,7 @@ import java.util.List;
 
 @Configured
 @HasCustomizationTokens
-@CustomConfiguration
+@CustomConfiguration(adminConfigFileName = "jms-module-conf.xml", defaultConfigFileName = "jms-module-conf.xml")
 public interface JmsService extends ConfigExtension, PropertyBag, Container {
 
     /**

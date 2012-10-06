@@ -83,6 +83,7 @@ public class ConfigurationParser<C extends ConfigLoader> {
         final DomDocument doc = new DomDocument<GlassFishConfigBean>(habitat) {
             public Dom make(final Habitat habitat, XMLStreamReader xmlStreamReader, GlassFishConfigBean dom, ConfigModel configModel) {
                 // by default, people get the translated view.
+            LOG.info("at prepareAndSet: " + dom + "  " + configModel.getProxyType().getName() + "  " +configModel.getTagName());
                 return new GlassFishConfigBean(habitat, this, dom, configModel, xmlStreamReader);
             }
         };
@@ -90,6 +91,7 @@ public class ConfigurationParser<C extends ConfigLoader> {
         //TODO requires rework to put all the changes that a service may introduce into one transaction
         //the solution is to put the loop into the apply method...  But it would be some fine amount of work
         for (final ConfigBeanDefaultValue configBeanDefaultValue : values) {
+            LOG.info("getting the parent for: " +configBeanDefaultValue.getLocation() + " habitat: " +habitat.getName() );
             final ConfigBeanProxy parent = ConfigModularityUtils.getOwningObject(configBeanDefaultValue.getLocation(), habitat);
             ConfigurationPopulator populator = null;
             if (replaceSystemProperties)
@@ -107,6 +109,7 @@ public class ConfigurationParser<C extends ConfigLoader> {
                     LOG.log(Level.SEVERE, msg, e);
                 }
             else {
+                LOG.info("invoking the populator: Location: " + configBeanDefaultValue.getLocation() + "  Doc value: " + " Parent:  " +parent.getClass().getSimpleName());
                 populator = new ConfigurationPopulator(configBeanDefaultValue.getXmlConfiguration(), doc, parent);
             }
             populator.run(configParser);
