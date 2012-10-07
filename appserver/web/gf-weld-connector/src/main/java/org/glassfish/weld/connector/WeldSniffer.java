@@ -76,7 +76,8 @@ public class WeldSniffer extends GenericSniffer {
         // a Weld archive
         //
         if (isEntryPresent(archive, WeldUtils.WEB_INF)) {
-            isWeldArchive = isEntryPresent(archive, WeldUtils.WEB_INF_BEANS_XML);
+            isWeldArchive = isEntryPresent(archive, WeldUtils.WEB_INF_BEANS_XML) ||
+                            isEntryPresent(archive, WeldUtils.WEB_INF_CLASSES_META_INF_BEANS_XML);
 
             if (!isWeldArchive) {
                 // Check jars under WEB_INF/lib

@@ -47,11 +47,11 @@ public class WeldUtils {
     public static final String WEB_INF_CLASSES = WEB_INF + SEPARATOR_CHAR
             + "classes";
     public static final String WEB_INF_LIB = WEB_INF + SEPARATOR_CHAR + "lib";
-    public static final String WEB_INF_BEANS_XML = "WEB-INF" + SEPARATOR_CHAR
-            + "beans.xml";
 
-    public static final String META_INF_BEANS_XML = "META-INF" + SEPARATOR_CHAR
-            + "beans.xml";
+    public static final String BEANS_XML_FILENAME = "beans.xml";
+    public static final String WEB_INF_BEANS_XML = WEB_INF + SEPARATOR_CHAR + BEANS_XML_FILENAME;
+    public static final String META_INF_BEANS_XML = "META-INF" + SEPARATOR_CHAR + BEANS_XML_FILENAME;
+    public static final String WEB_INF_CLASSES_META_INF_BEANS_XML = WEB_INF_CLASSES + SEPARATOR_CHAR + META_INF_BEANS_XML;
 
     private static final String SERVICES_DIR = "services";
 

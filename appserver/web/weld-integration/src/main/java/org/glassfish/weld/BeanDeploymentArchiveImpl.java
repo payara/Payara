@@ -43,6 +43,7 @@ package org.glassfish.weld;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.SEVERE;
+import static org.glassfish.weld.connector.WeldUtils.BEANS_XML_FILENAME;
 import static org.glassfish.weld.connector.WeldUtils.CLASS_SUFFIX;
 import static org.glassfish.weld.connector.WeldUtils.EXPANDED_RAR_SUFFIX;
 import static org.glassfish.weld.connector.WeldUtils.JAR_SUFFIX;
@@ -51,6 +52,7 @@ import static org.glassfish.weld.connector.WeldUtils.META_INF_SERVICES_EXTENSION
 import static org.glassfish.weld.connector.WeldUtils.RAR_SUFFIX;
 import static org.glassfish.weld.connector.WeldUtils.SEPARATOR_CHAR;
 import static org.glassfish.weld.connector.WeldUtils.WEB_INF_BEANS_XML;
+import static org.glassfish.weld.connector.WeldUtils.WEB_INF_CLASSES_META_INF_BEANS_XML;
 import static org.glassfish.weld.connector.WeldUtils.WEB_INF_CLASSES;
 import static org.glassfish.weld.connector.WeldUtils.WEB_INF_LIB;
 
@@ -79,6 +81,7 @@ import javax.enterprise.inject.spi.InjectionTarget;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.weld.connector.WeldUtils;
 import org.glassfish.weld.connector.WeldUtils.BDAType;
 import org.glassfish.weld.ejb.EjbDescriptorImpl;
 import org.jboss.weld.bootstrap.WeldBootstrap;
@@ -339,9 +342,9 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     private void populate(Collection<com.sun.enterprise.deployment.EjbDescriptor> ejbs) {
         try {
-            if (archive.exists(WEB_INF_BEANS_XML)) {
+            if (archive.exists(WEB_INF_BEANS_XML) || archive.exists(WEB_INF_CLASSES_META_INF_BEANS_XML)) {
                 logger.log(FINE, "-processing " + archive.getURI() 
-                                        + " as it has WEB-INF/beans.xml");
+                                        + " as it has " + WEB_INF_BEANS_XML + " or " + WEB_INF_CLASSES_META_INF_BEANS_XML);
                 bdaType = BDAType.WAR;
                 Enumeration<String> entries = archive.entries();
                 while (entries.hasMoreElements()) {
@@ -360,7 +363,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                             logger.log(Level.WARNING, "Error while trying to " +
                             		"load Bean Class" + className + " : " + t.toString());
                         }
-                    } else if (entry.endsWith("beans.xml")) {
+                    } else if (entry.endsWith(BEANS_XML_FILENAME)) {
                         URI uri = archive.getURI();
                         File file = new File(uri.getPath() + entry);
                         URI beansXmlUri = file.toURI();
