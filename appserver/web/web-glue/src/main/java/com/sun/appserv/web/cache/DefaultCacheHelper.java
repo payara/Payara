@@ -117,7 +117,11 @@ public class DefaultCacheHelper implements CacheHelper {
      */
     private CacheMapping lookupCacheMapping(HttpServletRequest request) {
         String name = (String)request.getAttribute(ATTR_CACHING_FILTER_NAME);
-        return manager.getCacheMapping(name);
+        if (manager != null) {
+            return manager.getCacheMapping(name);
+        } else {
+            return null;
+        }
     }
 
     /** getCacheKey: generate the key to be used to cache this request 

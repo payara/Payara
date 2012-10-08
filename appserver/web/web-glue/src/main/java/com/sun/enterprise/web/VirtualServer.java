@@ -414,7 +414,7 @@ public class VirtualServer extends StandardHost
     /**
      * The logger to use for logging this virtual server
      */
-    protected Logger logger = DEFAULT_LOGGER;
+    protected Logger _logger = DEFAULT_LOGGER;
 
     /**
      * The descriptive information about this implementation.
@@ -442,15 +442,11 @@ public class VirtualServer extends StandardHost
 
     private String[] cacheControls;
 
-    private CommandRunner runner;
-
     private ClassLoaderHierarchy clh;
 
     private Domain domain;
 
     private Habitat services;
-
-    private ServerEnvironment instance;
 
     // Is this virtual server active?
     private boolean isActive;
@@ -605,10 +601,6 @@ public class VirtualServer extends StandardHost
         this.cacheControls = cacheControls;
     }
 
-    public void setCommandRunner(CommandRunner runner) {
-        this.runner = runner;
-    }
-
     public void setServices(Habitat services) {
         this.services = services;
     }
@@ -623,10 +615,6 @@ public class VirtualServer extends StandardHost
 
     public void setFileLoggerHandlerFactory(FileLoggerHandlerFactory factory) {
         fileLoggerHandlerFactory = factory;
-    }
-
-    public void setServerEnvironment(ServerEnvironment instance) {
-        this.instance = instance;
     }
 
     public void setClassLoaderHierarchy(ClassLoaderHierarchy clh) {
@@ -766,7 +754,7 @@ public class VirtualServer extends StandardHost
 
             if (contextRoot == null) {
                 Object[] params = { wmID, getID() };
-                logger.log(Level.SEVERE, VS_DEFAULT_WEB_MODULE_NOT_FOUND, params);
+                _logger.log(Level.SEVERE, VS_DEFAULT_WEB_MODULE_NOT_FOUND, params);
             }
         }
 
@@ -813,7 +801,7 @@ public class VirtualServer extends StandardHost
             }
 
             if (wmInfo == null) {
-                logger.log(Level.SEVERE, VS_DEFAULT_WEB_MODULE_NOT_FOUND, new Object[] {wmID, getID()});
+                _logger.log(Level.SEVERE, VS_DEFAULT_WEB_MODULE_NOT_FOUND, new Object[] {wmID, getID()});
             }
         }
 
@@ -883,9 +871,9 @@ public class VirtualServer extends StandardHost
         if ("".equals(wmID)) {
             wmID = null;
         }
-        if (wmID != null && logger.isLoggable(Level.FINE)) {
+        if (wmID != null && _logger.isLoggable(Level.FINE)) {
             Object[] params = { wmID, _id };
-            logger.log(Level.FINE, VS_DEFAULT_WEB_MODULE, params);
+            _logger.log(Level.FINE, VS_DEFAULT_WEB_MODULE, params);
         }
 
         return wmID;
@@ -932,7 +920,7 @@ public class VirtualServer extends StandardHost
                 } else {
                     // XXX ApplicaionInfo is NULL after restart
                     Object[] params = { id, getID() };
-                    logger.log(Level.SEVERE, VS_DEFAULT_WEB_MODULE_DISABLED,
+                    _logger.log(Level.SEVERE, VS_DEFAULT_WEB_MODULE_DISABLED,
                             params);
                     return wmInfo;
                 }
@@ -962,7 +950,7 @@ public class VirtualServer extends StandardHost
                 }
             } else {
                 Object[] params = { id, getID() };
-                logger.log(Level.SEVERE, VS_DEFAULT_WEB_MODULE_DISABLED,
+                _logger.log(Level.SEVERE, VS_DEFAULT_WEB_MODULE_DISABLED,
                             params);
             }
         }
@@ -1029,7 +1017,7 @@ public class VirtualServer extends StandardHost
     }
 
     private void setLogger(Logger newLogger, String logLevel) {
-        logger = newLogger;
+        _logger = newLogger;
         // wrap into a cataline logger
         CatalinaLogger catalinaLogger = new CatalinaLogger(newLogger);
         catalinaLogger.setLevel(logLevel);
@@ -1115,7 +1103,7 @@ public class VirtualServer extends StandardHost
             String propName = prop.getName();
             String propValue = prop.getValue();
             if (propName == null || propValue == null) {
-                logger.log(Level.WARNING,
+                _logger.log(Level.WARNING,
                         NULL_VIRTUAL_SERVER_PROPERTY,
                         getName());
             }
@@ -1195,15 +1183,15 @@ public class VirtualServer extends StandardHost
         FileLoggerHandler oldHandler = fileLoggerHandler;
         //remove old handler
         if (oldHandler != null) {
-            logger.removeHandler(oldHandler);
+            _logger.removeHandler(oldHandler);
         }
 
         if (noCustomLog) {
             fileLoggerHandler = null;
-            newLogger = logger;
+            newLogger = _logger;
         } else {
-            // append the logger name with "._vs.<virtual-server-id>"
-            String lname = logger.getName() + "._vs." + getID();
+            // append the _logger name with "._vs.<virtual-server-id>"
+            String lname = _logger.getName() + "._vs." + getID();
             newLogger = LogManager.getLogManager().getLogger(lname);
             if (newLogger == null) {
                 newLogger = new Logger(lname, null) {
@@ -1345,7 +1333,7 @@ public class VirtualServer extends StandardHost
                         }
 
                         if (realm == null) {
-                            logger.log(Level.SEVERE, INVALID_AUTH_REALM,
+                            _logger.log(Level.SEVERE, INVALID_AUTH_REALM,
                                 new Object[] {getID(), authRealmName});
                         }
                     }
@@ -1378,7 +1366,7 @@ public class VirtualServer extends StandardHost
         } else if (valve instanceof GlassFishValve) {
             addValve((GlassFishValve) valve);
         } else {
-            logger.log(Level.WARNING, NOT_A_VALVE, valveName);
+            _logger.log(Level.WARNING, NOT_A_VALVE, valveName);
         }
     }
 
@@ -1398,7 +1386,7 @@ public class VirtualServer extends StandardHost
         } else if (listener instanceof LifecycleListener){
             addLifecycleListener((LifecycleListener)listener);
         } else {
-            logger.log(Level.SEVERE, INVALID_LISTENER,
+            _logger.log(Level.SEVERE, INVALID_LISTENER,
                 new Object[] {listenerName, getID()});
         }
     }
@@ -1414,7 +1402,7 @@ public class VirtualServer extends StandardHost
         try{
             return loadInstance(className);
         } catch (Throwable ex){
-            logger.log(Level.SEVERE, UNABLE_TO_LOAD_EXTENSION, ex);
+            _logger.log(Level.SEVERE, UNABLE_TO_LOAD_EXTENSION, ex);
         }
         return null;
     }
@@ -1435,7 +1423,7 @@ public class VirtualServer extends StandardHost
             String propName = prop.getName();
             String propValue = prop.getValue();
             if (propName == null || propValue == null) {
-                logger.log(Level.WARNING,
+                _logger.log(Level.WARNING,
                         NULL_VIRTUAL_SERVER_PROPERTY,
                         getID());
                 continue;
@@ -1457,7 +1445,7 @@ public class VirtualServer extends StandardHost
 
                 if (errorParams[j].startsWith("path=")) {
                     if (path != null) {
-                        logger.log(Level.WARNING,
+                        _logger.log(Level.WARNING,
                                 SEND_ERROR_MULTIPLE_ELEMENT,
                                 new Object[] { propValue, getID(), "path" });
                     }
@@ -1466,7 +1454,7 @@ public class VirtualServer extends StandardHost
 
                 if (errorParams[j].startsWith("reason=")) {
                     if (reason != null) {
-                        logger.log(Level.WARNING,
+                        _logger.log(Level.WARNING,
                                 SEND_ERROR_MULTIPLE_ELEMENT,
                                 new Object[] { propValue, getID(), "reason" });
                     }
@@ -1475,7 +1463,7 @@ public class VirtualServer extends StandardHost
 
                 if (errorParams[j].startsWith("code=")) {
                     if (status != null) {
-                        logger.log(Level.WARNING,
+                        _logger.log(Level.WARNING,
                                 SEND_ERROR_MULTIPLE_ELEMENT,
                                 new Object[] { propValue, getID(), "code" });
                     }
@@ -1484,7 +1472,7 @@ public class VirtualServer extends StandardHost
             }
 
             if (path == null || path.length() == 0) {
-                logger.log(Level.WARNING, SEND_ERROR_MISSING_PATH, new Object[] { propValue, getID() });
+                _logger.log(Level.WARNING, SEND_ERROR_MISSING_PATH, new Object[] { propValue, getID() });
             }
 
             errorPage = new ErrorPage();
@@ -1514,7 +1502,7 @@ public class VirtualServer extends StandardHost
             String propName = prop.getName();
             String propValue = prop.getValue();
             if (propName == null || propValue == null) {
-                logger.log(Level.WARNING,
+                _logger.log(Level.WARNING,
                         NULL_VIRTUAL_SERVER_PROPERTY,
                         getID());
                 continue;
@@ -1537,7 +1525,7 @@ public class VirtualServer extends StandardHost
 
                 if (redirectParams[j].startsWith("from=")) {
                     if (from != null) {
-                        logger.log(Level.WARNING,
+                        _logger.log(Level.WARNING,
                                 REDIRECT_MULTIPLE_ELEMENT,
                                 new Object[] { propValue, getID(), "from" });
                     }
@@ -1546,7 +1534,7 @@ public class VirtualServer extends StandardHost
 
                 if (redirectParams[j].startsWith("url=")) {
                     if (url != null) {
-                        logger.log(Level.WARNING,
+                        _logger.log(Level.WARNING,
                                 REDIRECT_MULTIPLE_ELEMENT,
                                 new Object[] { propValue, getID(), "url" });
                     }
@@ -1555,7 +1543,7 @@ public class VirtualServer extends StandardHost
 
                 if (redirectParams[j].startsWith("url-prefix=")) {
                     if (urlPrefix != null) {
-                        logger.log(Level.WARNING,
+                        _logger.log(Level.WARNING,
                                 REDIRECT_MULTIPLE_ELEMENT,
                                 new Object[] { propValue, getID(), "url-prefix" });
                     }
@@ -1565,7 +1553,7 @@ public class VirtualServer extends StandardHost
 
                 if (redirectParams[j].startsWith("escape=")) {
                     if (escape != null) {
-                        logger.log(Level.WARNING,
+                        _logger.log(Level.WARNING,
                                 REDIRECT_MULTIPLE_ELEMENT,
                                 new Object[] { propValue, getID(), "escape" });
                     }
@@ -1574,7 +1562,7 @@ public class VirtualServer extends StandardHost
             }
 
             if (from == null || from.length() == 0) {
-                logger.log(Level.WARNING,
+                _logger.log(Level.WARNING,
                         REDIRECT_MULTIPLE_ELEMENT,
                         new Object[] { propValue, getID() });
             }
@@ -1582,13 +1570,13 @@ public class VirtualServer extends StandardHost
             // Either url or url-prefix (but not both!) must be present
             if ((url == null || url.length() == 0)
                     && (urlPrefix == null || urlPrefix.length() == 0)) {
-                logger.log(Level.WARNING,
+                _logger.log(Level.WARNING,
                         REDIRECT_MISSING_URL_OR_URL_PREFIX,
                         new Object[] { propValue, getID() });
             }
             if (url != null && url.length() > 0
                     && urlPrefix != null && urlPrefix.length() > 0) {
-                logger.log(Level.WARNING,
+                _logger.log(Level.WARNING,
                         REDIRECT_BOTH_URL_AND_URL_PREFIX,
                         new Object[] { propValue, getID() });
             }
@@ -1600,7 +1588,7 @@ public class VirtualServer extends StandardHost
                 } else if ("no".equalsIgnoreCase(escape)) {
                     escapeURI = false;
                 } else {
-                    logger.log(Level.WARNING,
+                    _logger.log(Level.WARNING,
                         REDIRECT_INVALID_ESCAPE,
                         new Object[] { propValue, getID() });
                 }
@@ -1631,8 +1619,8 @@ public class VirtualServer extends StandardHost
             /*
              * Disable SSO
              */
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, DISABLE_SSO, getID());
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, DISABLE_SSO, getID());
             }
 
             boolean hasExistingSSO = false;
@@ -1654,8 +1642,8 @@ public class VirtualServer extends StandardHost
             /*
              * Enable SSO
              */
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, ENABLE_SSO, getID());
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, ENABLE_SSO, getID());
             }
 
             GlassFishSingleSignOn sso = null;
@@ -1687,8 +1675,8 @@ public class VirtualServer extends StandardHost
             // set max idle time if given
             Property idle = vsBean.getProperty(SSO_MAX_IDLE);
             if (idle != null && idle.getValue() != null) {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, SSO_MAX_INACTIVE_SET, new Object[]{idle.getValue(), getID()});
+                if (_logger.isLoggable(Level.FINE)) {
+                    _logger.log(Level.FINE, SSO_MAX_INACTIVE_SET, new Object[]{idle.getValue(), getID()});
                 }
                 sso.setMaxInactive(Integer.parseInt(idle.getValue()));
             }
@@ -1696,8 +1684,8 @@ public class VirtualServer extends StandardHost
             // set expirer thread sleep time if given
             Property expireTime = vsBean.getProperty(SSO_REAP_INTERVAL);
             if (expireTime !=null && expireTime.getValue() != null) {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, SSO_REAP_INTERVAL_SET);
+                if (_logger.isLoggable(Level.FINE)) {
+                    _logger.log(Level.FINE, SSO_REAP_INTERVAL_SET);
                 }
                 sso.setReapInterval(Integer.parseInt(expireTime.getValue()));
             }
@@ -1768,15 +1756,15 @@ public class VirtualServer extends StandardHost
         }
 
         if (allow != null) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, ALLOW_ACCESS, new Object[]{getID(), allow});
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, ALLOW_ACCESS, new Object[]{getID(), allow});
             }
             remoteAddrValve.setAllow(allow);
         }
 
         if (deny != null) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, DENY_ACCESS, new Object[]{getID(), deny});
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, DENY_ACCESS, new Object[]{getID(), deny});
             }
             remoteAddrValve.setDeny(deny);
         }
@@ -1824,14 +1812,14 @@ public class VirtualServer extends StandardHost
             remoteHostValve = new RemoteHostValve();
         }
         if (allow != null) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, ALLOW_ACCESS, new Object[]{getID(), allow});
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, ALLOW_ACCESS, new Object[]{getID(), allow});
             }
             remoteHostValve.setAllow(allow);
         }
         if (deny != null) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, DENY_ACCESS, new Object[]{getID(), deny});
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, DENY_ACCESS, new Object[]{getID(), deny});
             }
             remoteHostValve.setDeny(deny);
         }
@@ -1872,7 +1860,7 @@ public class VirtualServer extends StandardHost
                     GenericGrizzlyListener grizzlyListener = (GenericGrizzlyListener) proxy.getUnderlyingListener();
                     List<HttpCodecFilter> codecFilters = grizzlyListener.getFilters(HttpCodecFilter.class);
                     if (codecFilters == null || codecFilters.isEmpty()) {
-                        logger.log(Level.SEVERE, CODE_FILTERS_NULL, new Object[] {listener.getName(), codecFilters});
+                        _logger.log(Level.SEVERE, CODE_FILTERS_NULL, new Object[] {listener.getName(), codecFilters});
                     } else {
                         for (HttpCodecFilter codecFilter : codecFilters) {
                             if (codecFilter.getMonitoringConfig().getProbes().length == 0) {
@@ -1901,11 +1889,11 @@ public class VirtualServer extends StandardHost
                     });
 
                 } else {
-                    logger.log(Level.SEVERE, PROXY_NULL, new Object[] {listener.getName()});
+                    _logger.log(Level.SEVERE, PROXY_NULL, new Object[] {listener.getName()});
                 }
 
             } catch (Exception ex) {
-                logger.log(Level.SEVERE, ADD_HTTP_PROBES_ERROR, ex);
+                _logger.log(Level.SEVERE, ADD_HTTP_PROBES_ERROR, ex);
             }
         }
     }
@@ -1933,7 +1921,7 @@ public class VirtualServer extends StandardHost
                 disableAccessLogging();
             }
         } catch (LifecycleException le) {
-            logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG, le);
+            _logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG, le);
         }
     }
 
@@ -1960,7 +1948,7 @@ public class VirtualServer extends StandardHost
                     httpProbe.enableAccessLogging();
             }
         } catch (LifecycleException le) {
-            logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG, le);
+            _logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG, le);
         }
     }
 
@@ -1988,7 +1976,7 @@ public class VirtualServer extends StandardHost
                 if (httpProbe != null)
                     httpProbe.enableAccessLogging();
             } catch (LifecycleException le) {
-                logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG, le);
+                _logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG, le);
             }
         }
     }
@@ -2083,7 +2071,7 @@ public class VirtualServer extends StandardHost
     @Override
     public void setRealm(Realm realm) {
         if ((realm != null) && !(realm instanceof RealmAdapter)) {
-            logger.log(Level.SEVERE, IGNORE_INVALID_REALM,
+            _logger.log(Level.SEVERE, IGNORE_INVALID_REALM,
                     new Object[] { realm.getClass().getName(),
                         RealmAdapter.class.getName()});
         } else {
@@ -2101,7 +2089,7 @@ public class VirtualServer extends StandardHost
                 !"false".equalsIgnoreCase(cookieSecure) &&
                 !cookieSecure.equalsIgnoreCase(
                     SessionCookieConfig.DYNAMIC_SECURE)) {
-            logger.log(Level.WARNING, INVALID_SSO_COOKIE_SECURE,
+            _logger.log(Level.WARNING, INVALID_SSO_COOKIE_SECURE,
                         new Object[] {cookieSecure, getID()});
         } else {
             ssoCookieSecure = cookieSecure;
@@ -2201,8 +2189,8 @@ public class VirtualServer extends StandardHost
     public void addContext(Context context, String contextRoot)
         throws ConfigException, GlassFishException {
 
-        if (logger.isLoggable(Level.FINE)) {
-           logger.log(Level.FINE, VS_ADDED_CONTEXT);
+        if (_logger.isLoggable(Level.FINE)) {
+           _logger.log(Level.FINE, VS_ADDED_CONTEXT);
         }
 
         if (!(context instanceof ContextFacade)) {
@@ -2237,7 +2225,7 @@ public class VirtualServer extends StandardHost
             params.target = "server";
 
             ExtendedDeploymentContext initialContext =
-                    new DeploymentContextImpl(report, logger, archive, params, env);
+                    new DeploymentContextImpl(report, _logger, archive, params, env);
 
             if (deployment==null)
                 deployment = services.getService(Deployment.class);
@@ -2262,15 +2250,15 @@ public class VirtualServer extends StandardHost
                     virtualServers = virtualServers + ","+getName();
                     params.virtualservers = virtualServers;
                     params.force = Boolean.TRUE;
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE, "Virtual server "+getName()+" added to context "+params.name);
+                    if (_logger.isLoggable(Level.FINE)) {
+                        _logger.log(Level.FINE, "Virtual server "+getName()+" added to context "+params.name);
                     }
                     return;
                 }
             }
 
             deploymentContext = deployment.getBuilder(
-                    logger, params, report).source(archive).archiveHandler(
+                    _logger, params, report).source(archive).archiveHandler(
                     archiveHandler).build(initialContext);
 
             Properties properties = new Properties();
@@ -2299,8 +2287,8 @@ public class VirtualServer extends StandardHost
 
             if (appInfo!=null) {
                 facade.setAppName(appInfo.getName());
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, VS_ADDED_CONTEXT, new Object[]{getName(), appInfo.getName()});
+                if (_logger.isLoggable(Level.FINE)) {
+                    _logger.log(Level.FINE, VS_ADDED_CONTEXT, new Object[]{getName(), appInfo.getName()});
                 }
                 deployment.registerAppInDomainXML(appInfo, deploymentContext, t);
             } else {
@@ -2320,7 +2308,7 @@ public class VirtualServer extends StandardHost
                 }
                 updateWebXml(facade, file);
             } else {
-                logger.log(Level.SEVERE, APP_NOT_FOUND);
+                _logger.log(Level.SEVERE, APP_NOT_FOUND);
             }
 
             ReadableArchive source = appInfo.getSource();
@@ -2328,13 +2316,13 @@ public class VirtualServer extends StandardHost
             undeployParams.origin = UndeployCommandParameters.Origin.undeploy;
             undeployParams.target = "server";
             ExtendedDeploymentContext undeploymentContext =
-                    deployment.getBuilder(logger, undeployParams, report).source(source).build();
+                    deployment.getBuilder(_logger, undeployParams, report).source(source).build();
             deployment.undeploy(params.name, undeploymentContext);
 
             params.origin = DeployCommandParameters.Origin.load;
             params.enabled = Boolean.TRUE;
             archive = factory.openArchive(docRoot);
-            deploymentContext = deployment.getBuilder(logger, params, report).source(archive).build();
+            deploymentContext = deployment.getBuilder(_logger, params, report).source(archive).build();
 
             if (classLoader != null) {
                 ClassLoader parentCL = clh.createApplicationParentCL(classLoader, deploymentContext);
@@ -2349,15 +2337,15 @@ public class VirtualServer extends StandardHost
             // We can't use Deployment.enable since it doesn't take DeploymentContext with custom class loader
             deployment.updateAppEnabledAttributeInDomainXML(params.name, params.target, true);
 
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, VS_ENABLED_CONTEXT, new Object[]{getName(), params.name()});
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, VS_ENABLED_CONTEXT, new Object[]{getName(), params.name()});
             }
 
             if (delete) {
                 if (file != null) {
                     if (file.exists() && !file.delete()) {
                         String path = file.toString();
-                        logger.log(Level.WARNING, UNABLE_TO_DELETE, path);
+                        _logger.log(Level.WARNING, UNABLE_TO_DELETE, path);
                     }
                 }
             }
@@ -2424,11 +2412,11 @@ public class VirtualServer extends StandardHost
         ExtendedDeploymentContext deploymentContext = null;
 
         try {
-            deploymentContext = deployment.getBuilder(logger, params, report).source(source).build();
+            deploymentContext = deployment.getBuilder(_logger, params, report).source(source).build();
             deployment.undeploy(name, deploymentContext);
             deployment.unregisterAppFromDomainXML(name, "server");
         } catch (IOException e) {
-            logger.log(Level.SEVERE, REMOVE_CONTEXT_ERROR, e);
+            _logger.log(Level.SEVERE, REMOVE_CONTEXT_ERROR, e);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             throw new GlassFishException("Cannot create context for undeployment ", e);
         } catch (TransactionFailure e) {
@@ -2439,8 +2427,8 @@ public class VirtualServer extends StandardHost
             }
         }
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, REMOVED_CONTEXT, name);
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, REMOVED_CONTEXT, name);
         }
     }
 
@@ -2508,11 +2496,11 @@ public class VirtualServer extends StandardHost
     @Override
     public synchronized void stop() throws LifecycleException {
         if (fileLoggerHandler != null) {
-           logger.removeHandler(fileLoggerHandler);
+           _logger.removeHandler(fileLoggerHandler);
            close(fileLoggerHandler);
            fileLoggerHandler = null;
         }
-        setLogger(logger, "INFO");
+        setLogger(_logger, "INFO");
         
         super.stop();
     }
@@ -2527,8 +2515,8 @@ public class VirtualServer extends StandardHost
         Map<String, String> urlPatternFilterMappings = facade.getUrlPatternFilterMappings();
 
         if (!filters.isEmpty() || !listeners.isEmpty() || !servlets.isEmpty()) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, MODIFYING_WEB_XML, file.getAbsolutePath());
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, MODIFYING_WEB_XML, file.getAbsolutePath());
             }
 
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -2818,13 +2806,13 @@ public class VirtualServer extends StandardHost
                         try {
                             accessLogValve.postInvoke(req, res);
                         } catch (IOException ex) {
-                            logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG, ex);
+                            _logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG, ex);
                         }
                     } else {
-                        logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG);
+                        _logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG);
                     }
                 } else {
-                    logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG);
+                    _logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG);
                 }
             }
         }

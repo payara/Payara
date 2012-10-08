@@ -408,7 +408,9 @@ public class CacheManager {
         disable();
 
         try {
-            defaultHelper.destroy();
+            if (defaultHelper != null) {
+                defaultHelper.destroy();
+            }
         } catch (Exception e) {
             // XXX: ignore
         }

@@ -125,12 +125,6 @@ final class WebModuleListener
      * Used for loading persistence units.
      */
     private WebBundleDescriptor wbd;
-
-    /**
-     * The exploded location for this web module.
-     * Note this is not the generated location.
-     */
-    private File explodedLocation;
     
     private WebContainer webContainer;
 
@@ -142,11 +136,9 @@ final class WebModuleListener
      * @param wbd descriptor for this module.
      */
     public WebModuleListener(WebContainer webContainer,
-                             File explodedLocation,
                              WebBundleDescriptor wbd) {
         this.webContainer = webContainer;
         this.wbd = wbd;
-        this.explodedLocation = explodedLocation;
     }
 
 

@@ -541,7 +541,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * the Servlet Container temporary Naming cache is used when loading the
      * resources.
      */
-    protected boolean catalinaCachingAllowed = true;
+    //protected boolean catalinaCachingAllowed = true;
 
     @Inject
     protected ServerEnvironment instance = null;
@@ -637,7 +637,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     private SecurityService securityService = null;
 
-    private HttpServiceStatsProviderBootstrap httpStatsProviderBootstrap = null;
+    protected HttpServiceStatsProviderBootstrap httpStatsProviderBootstrap = null;
 
     private WebStatsProviderBootstrap webStatsProviderBootstrap = null;
 
@@ -1491,9 +1491,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
          * whether a new Host needs to be added to the HTTP listener's Mapper.
          */
         configureHost(vs, securityService);
-        vs.setServerEnvironment(instance);
         vs.setDomain(domain);
-        vs.setCommandRunner(runner);
         vs.setServices(habitat);
         vs.setClassLoaderHierarchy(clh);
 

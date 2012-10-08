@@ -235,8 +235,7 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
         context.addLifecycleListener(config);
 
         // TODO: should any of those become WebModuleDecorator, too?
-        context.addLifecycleListener(new WebModuleListener(webContainer,
-                location, wmInfo.getDescriptor()));
+        context.addLifecycleListener(new WebModuleListener(webContainer, wmInfo.getDescriptor()));
 
         context.addContainerListener(
                 new WebContainerListener(invocationManager, injectionManager));

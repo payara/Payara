@@ -125,11 +125,6 @@ public class WebModuleContextConfig extends ContextConfig {
     public final static int MIME_MAPPINGS = 13;
     
     protected Habitat services;
-    
-    /**
-     * The <code>File</code> reffering to the default-web.xml 
-     */
-    protected File file; 
         
     
     /**

@@ -617,7 +617,7 @@ public final class PEAccessLogValve
      */ 
     public int invoke(Request request, Response response) {
 
-        if (formatter.needTimeTaken()) {
+        if (formatter!=null && formatter.needTimeTaken()) {
             request.setNote(Constants.REQUEST_START_TIME_NOTE, System.currentTimeMillis());
         }
 
@@ -645,13 +645,15 @@ public final class PEAccessLogValve
             // Now process the current request
             for (int i=0; i < 2; i++){
                 try {
-                    formatter.appendLogEntry(request, response, charBuffer);
-                    charBuffer.put("\n");
+                    if (formatter!=null) {
+                        formatter.appendLogEntry(request, response, charBuffer);
+                        charBuffer.put("\n");
 
-                    if (flushRealTime){
-                        log();
+                        if (flushRealTime){
+                            log();
+                        }
+                        break;
                     }
-                    break;
                  } catch (BufferOverflowException ex) {
                     charBuffer.position(pos);
                     log();

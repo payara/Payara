@@ -134,7 +134,7 @@ public abstract class BasePersistenceStrategyBuilder
     protected int reapInterval = DEFAULT_REAP_INTERVAL;
     protected int storeReapInterval = DEFAULT_REAP_INTERVAL;
     protected static final int DEFAULT_MAX_IDLE_BACKUP = -1;   // never save
-    protected int maxIdleBackup = DEFAULT_MAX_IDLE_BACKUP;
+    //protected int maxIdleBackup = DEFAULT_MAX_IDLE_BACKUP;
     protected static final int DEFAULT_SESSION_TIMEOUT = 1800;   // 30 minute
     protected int sessionMaxInactiveInterval = DEFAULT_SESSION_TIMEOUT;
     protected String persistentCookieName = "GLASSFISHCOOKIE";
@@ -263,13 +263,14 @@ public abstract class BasePersistenceStrategyBuilder
                         String name = prop.getName();
                         String value = prop.getValue();
                         // maxIdleBackupSeconds
+                        /*
                         if (name.equalsIgnoreCase("maxIdleBackupSeconds")) {
                             try {
                                 maxIdleBackup = Integer.parseInt(value);
                             } catch (NumberFormatException e) {
                                 // XXX need error message
                             }
-                        }
+                        }*/
                     }
                 }
             }            
@@ -345,13 +346,13 @@ public abstract class BasePersistenceStrategyBuilder
                         } catch (NumberFormatException e) {
                             // XXX need error message
                         }
-                    } else if (name.equalsIgnoreCase("maxIdleBackupSeconds")) {
+                    } /*else if (name.equalsIgnoreCase("maxIdleBackupSeconds")) {
                         try {
                             maxIdleBackup = Integer.parseInt(value);
                         } catch (NumberFormatException e) {
                             // XXX need error message
                         }                        
-                    }  else if (name.equalsIgnoreCase("relaxCacheVersionSemantics")) {
+                    } */else if (name.equalsIgnoreCase("relaxCacheVersionSemantics")) {
                         relaxCacheVersionSemantics = Boolean.parseBoolean(value);
                     } else if (name.equalsIgnoreCase("sessionFilename")) {
                         sessionFilename = value;                        

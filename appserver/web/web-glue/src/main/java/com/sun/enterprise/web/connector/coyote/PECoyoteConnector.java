@@ -217,7 +217,7 @@ public class PECoyoteConnector extends Connector {
     
     
     // Are we using the NIO Connector or the CoyoteConnector
-    private boolean coyoteOn = false;
+    //private boolean coyoteOn = false;
     
     /*
      * Number of seconds before idle keep-alive connections expire
@@ -417,6 +417,16 @@ public class PECoyoteConnector extends Connector {
      */
     public int getKeepAliveThreadCount() {
         return keepAliveThreadCount;
+    }
+
+    /**
+     * Sets the number of keep-alive threads
+     *
+     * @param number Number of keep-alive threads
+     */
+    public void setKeepAliveThreadCount(int number) {
+        keepAliveThreadCount = number;
+        setProperty("KeepAliveThreadCount", String.valueOf(number));
     }
 
     /**
