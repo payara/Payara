@@ -323,7 +323,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
                     conflictConnectorResourceDefinition = true;
                 }
             } else {
-                addConnectorResourceDefinitionDescriptor(null);
+                addConnectorResourceDefinitionDescriptor(crdd);
             }
         }
     }
@@ -337,7 +337,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
                     conflictAdminObjectDefinition = true;
                 }
             } else {
-                addAdministeredObjectDefinitionDescriptor(desc);
+                addAdministeredObjectDefinitionDescriptor(aodd);
             }
         }
     }
@@ -351,7 +351,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
                     conflictJMSConnectionFactoryDefinition = true;
                 }
             } else {
-                addJMSConnectionFactoryDefinitionDescriptor(null);
+                addJMSConnectionFactoryDefinitionDescriptor(jmscfdd);
             }
         }
     }
@@ -365,7 +365,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
                     conflictJMSDestinationDefinition = true;
                 }
             } else {
-                addJMSDestinationDefinitionDescriptor(null);
+                addJMSDestinationDefinitionDescriptor(jmsddd);
             }
         }
     }
