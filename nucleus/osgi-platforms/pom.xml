@@ -61,6 +61,7 @@
     <modules>
         <module>felix</module>
         <module>osgi-cli-remote</module>
+        <module>osgi-cli-interactive</module>
     </modules>
 </project>
 
