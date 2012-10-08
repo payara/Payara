@@ -83,7 +83,7 @@ public class ConfigurationPopulator {
             parser.parse(reader, doc, Dom.unwrap((ConfigBeanProxy) parent));
         } catch (XMLStreamException e) {
             LocalStringManager localStrings =
-                    new LocalStringManagerImpl(ConfigurationParser.class);
+                    new LocalStringManagerImpl(ConfigurationPopulator.class);
             final String msg = localStrings.getLocalString(
                     "can.not.get.default.configuration.for",
                     "Can not read default configuration");

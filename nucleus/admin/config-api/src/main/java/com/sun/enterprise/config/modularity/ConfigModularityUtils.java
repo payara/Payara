@@ -286,7 +286,7 @@ public final class ConfigModularityUtils {
             location = location.substring(location.indexOf("/", "domain/configs".length()) + 1);
             tokenizer = new StringTokenizer(location, "/", false);
             String curLevel = tokenizer.nextToken();
-            String expression = curLevel.substring(curLevel.lastIndexOf("[") + 1, curLevel.length());
+            String expression = curLevel.substring(curLevel.lastIndexOf("[") + 1, curLevel.length()-1);
             String configName = resolveExpression(expression, habitat);
             ConfigBeanProxy parent = habitat.<Domain>getService(Domain.class).getConfigNamed(configName);
 
@@ -612,7 +612,7 @@ public final class ConfigModularityUtils {
 
     public static Class getClassFor(String serviceName, Habitat habitat) {
         serviceName = getServiceTypeNameIfNamedComponent(serviceName);
-        ConfigInjector injector = habitat.getService(ConfigInjector.class, serviceName);
+        ConfigInjector injector = habitat.getService(ConfigInjector.class, serviceName.toLowerCase());
 
         if (injector != null) {
             String clzName = injector.getClass().getName().substring(0, injector.getClass().getName().length() - 8);
