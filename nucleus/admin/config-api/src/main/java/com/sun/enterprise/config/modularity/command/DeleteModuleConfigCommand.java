@@ -62,7 +62,6 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -85,7 +84,7 @@ import java.util.logging.Logger;
  * @author Masoud Kalali
  */
 @TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTER,
-                     CommandTarget.CONFIG, CommandTarget.STANDALONE_INSTANCE})
+        CommandTarget.CONFIG, CommandTarget.STANDALONE_INSTANCE})
 @ExecuteOn(RuntimeType.ALL)
 @Service(name = "delete-module-config")
 @PerLookup
@@ -116,8 +115,7 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
 
 
     @Inject
-        @Named (ServerEnvironmentImpl.DEFAULT_INSTANCE_NAME)
-        ServerEnvironmentImpl serverenv;
+    ServerEnvironment serverenv;
 
     @Override
     public void execute(AdminCommandContext context) {

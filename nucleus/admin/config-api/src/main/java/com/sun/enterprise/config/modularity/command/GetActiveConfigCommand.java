@@ -77,7 +77,7 @@ import java.util.logging.Logger;
  * @author Masoud Kalali
  */
 @TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTER,
-                     CommandTarget.CONFIG, CommandTarget.STANDALONE_INSTANCE})
+        CommandTarget.CONFIG, CommandTarget.STANDALONE_INSTANCE})
 @ExecuteOn(RuntimeType.ALL)
 @Service(name = "get-active-config")
 @PerLookup
@@ -105,8 +105,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
     Config config;
 
     @Inject
-        @Named (ServerEnvironmentImpl.DEFAULT_INSTANCE_NAME)
-        ServerEnvironmentImpl serverenv;
+    ServerEnvironmentImpl serverenv;
 
     @Param(name = "serviceName", primary = true, optional = false)
     private String serviceName;
@@ -121,9 +120,9 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
             return;
         }
         if (target != null) {
-            Config newConfig =getConfigForName(target,habitat,domain);
-            if (newConfig!=null){
-                config= newConfig;
+            Config newConfig = getConfigForName(target, habitat, domain);
+            if (newConfig != null) {
+                config = newConfig;
             }
             if (config == null) {
                 report.setMessage(localStrings.getLocalString("get.active.config.target.name.invalid",
@@ -133,29 +132,29 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
             }
         }
 
-            String className = ConfigModularityUtils.convertConfigElementNameToClassName(serviceName);
-            Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, habitat);
-            if (configBeanType == null) {
-                String msg = localStrings.getLocalString("get.active.config.not.such.a.service.found",
-                        DEFAULT_FORMAT, className, serviceName);
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setMessage(msg);
-                return;
+        String className = ConfigModularityUtils.convertConfigElementNameToClassName(serviceName);
+        Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, habitat);
+        if (configBeanType == null) {
+            String msg = localStrings.getLocalString("get.active.config.not.such.a.service.found",
+                    DEFAULT_FORMAT, className, serviceName);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
+        try {
+            String serviceDefaultConfig = getActiveConfigFor(configBeanType, habitat);
+            if (serviceDefaultConfig != null) {
+                report.setMessage(serviceDefaultConfig);
+                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             }
-            try {
-                String serviceDefaultConfig = getActiveConfigFor(configBeanType, habitat);
-                if (serviceDefaultConfig != null) {
-                    report.setMessage(serviceDefaultConfig);
-                    report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                }
-            } catch (Exception e) {
-                String msg = localStrings.getLocalString("get.active.config.getting.active.config.for.service.failed",
-                        DEFAULT_FORMAT, serviceName, target, e.getMessage());
-                LOG.log(Level.INFO, msg, e);
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setMessage(msg);
-                report.setFailureCause(e);
-            }
+        } catch (Exception e) {
+            String msg = localStrings.getLocalString("get.active.config.getting.active.config.for.service.failed",
+                    DEFAULT_FORMAT, serviceName, target, e.getMessage());
+            LOG.log(Level.INFO, msg, e);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            report.setFailureCause(e);
+        }
     }
 
     private String getActiveConfigFor(Class configBeanType, Habitat habitat) throws InvocationTargetException, IllegalAccessException {
@@ -186,7 +185,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
         for (ConfigBeanDefaultValue value : defaults) {
             builder.append(localStrings.getLocalString("at.location",
                     "At Location:"));
-            builder.append(replaceExpressionsWithValues(value.getLocation(),habitat));
+            builder.append(replaceExpressionsWithValues(value.getLocation(), habitat));
             builder.append(System.getProperty("line.separator"));
             String substituted = ConfigModularityUtils.replacePropertiesWithCurrentValue(
                     getDependentConfigElement(value), value, habitat);

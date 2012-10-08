@@ -78,7 +78,7 @@ import java.util.logging.Logger;
  * @author Masoud Kalali
  */
 @TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTER,
-                     CommandTarget.CONFIG, CommandTarget.STANDALONE_INSTANCE})
+        CommandTarget.CONFIG, CommandTarget.STANDALONE_INSTANCE})
 @ExecuteOn(RuntimeType.ALL)
 @Service(name = "create-module-config")
 @PerLookup
@@ -109,7 +109,6 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
     Config config;
 
     @Inject
-    @Named (ServerEnvironmentImpl.DEFAULT_INSTANCE_NAME)
     ServerEnvironmentImpl serverenv;
 
     @Param(optional = true, name = "serviceName", primary = true)
@@ -250,7 +249,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
             for (ConfigBeanDefaultValue value : defaults) {
                 builder.append(localStrings.getLocalString("at.location",
                         "At Location:"));
-                builder.append(replaceExpressionsWithValues(value.getLocation(),habitat));
+                builder.append(replaceExpressionsWithValues(value.getLocation(), habitat));
                 builder.append(System.getProperty("line.separator"));
                 String substituted = replacePropertiesWithDefaultValues(value.getCustomizationTokens(),
                         value.getXmlConfiguration());
