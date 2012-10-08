@@ -64,7 +64,7 @@ import java.util.logging.Level;
 public final class BootstrapContextImpl implements BootstrapContext, Serializable {
 
     private String poolId;
-    private WorkManager wm;
+    private transient WorkManager wm;
     private XATerminator xa;
     private String moduleName;
     private String threadPoolId;

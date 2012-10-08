@@ -271,9 +271,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("Adding pool " + pool.getPoolInfo() + "to pooltable");
         }
-        synchronized (poolTable) {
-            poolTable.put(pool.getPoolStatus().getPoolInfo(), pool);
-        }
+        poolTable.put(pool.getPoolStatus().getPoolInfo(), pool);
     }
 
 
@@ -469,10 +467,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.fine("Removing pool " + pool + " from pooltable");
             }
-            synchronized (poolTable) {
-                poolTable.remove(poolInfo);
-
-            }
+            poolTable.remove(poolInfo);
             if (listener != null){
                 listener.poolDestroyed(poolInfo);
             }

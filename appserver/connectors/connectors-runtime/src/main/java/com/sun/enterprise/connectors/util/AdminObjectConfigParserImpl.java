@@ -161,13 +161,13 @@ public class AdminObjectConfigParserImpl implements AdminObjectConfigParser {
             }
             throw new ConnectorRuntimeException(msg);
         }
-        mergedVals = getMergedValues(adminObject, mergedVals, rarName);
+        mergedVals = getMergedValues(adminObject, rarName);
 
 
         return mergedVals;
     }
 
-    private Properties getMergedValues(AdminObject adminObject, Properties mergedVals, String raName) throws ConnectorRuntimeException {
+    private Properties getMergedValues(AdminObject adminObject, String raName) throws ConnectorRuntimeException {
         /* ddVals           -> Properties present in ra.xml
         *  introspectedVals -> All properties with values
         *                                 obtained by introspection of resource
@@ -177,6 +177,7 @@ public class AdminObjectConfigParserImpl implements AdminObjectConfigParser {
         */
         Set ddVals = adminObject.getConfigProperties();
         String className = adminObject.getAdminObjectClass();
+        Properties mergedVals = null;
         if (className != null && className.length() != 0) {
             Properties introspectedVals =
                     configParserUtil.introspectJavaBean(className, ddVals, false, raName);

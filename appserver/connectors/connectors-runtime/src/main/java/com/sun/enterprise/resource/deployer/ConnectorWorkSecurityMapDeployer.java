@@ -50,7 +50,7 @@ import javax.inject.Singleton;
 @Service
 @ResourceDeployerInfo(WorkSecurityMap.class)
 @Singleton
-public class ConnectorWorkSecurityMapDeployer  extends AbstractConnectorResourceDeployer implements ResourceDeployer {
+public class ConnectorWorkSecurityMapDeployer  extends AbstractConnectorResourceDeployer {
 
     public synchronized void deployResource(Object resource, String applicationName, String moduleName)
             throws Exception {

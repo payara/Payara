@@ -58,16 +58,16 @@ import java.util.Set;
 
 public final class ConnectorDescriptorInfo implements Serializable {
 
-    protected String rarName_;
-    protected String resourceAdapterClass_;
-    protected String connectionDefinitionName_;
-    protected String managedConnectionFactoryClass_;
-    protected String connectionFactoryClass_;
-    protected String connectionFactoryInterface_;
-    protected String connectionClass_;
-    protected String connectionInterface_;
-    protected Set<ConnectorConfigProperty> mcfConfigProperties_;
-    protected Set<ConnectorConfigProperty > resourceAdapterConfigProperties_;
+    private String rarName_;
+    private String resourceAdapterClass_;
+    private String connectionDefinitionName_;
+    private String managedConnectionFactoryClass_;
+    private String connectionFactoryClass_;
+    private String connectionFactoryInterface_;
+    private String connectionClass_;
+    private String connectionInterface_;
+    private Set<ConnectorConfigProperty> mcfConfigProperties_;
+    private Set<ConnectorConfigProperty > resourceAdapterConfigProperties_;
 
     /**
      * Default constructor

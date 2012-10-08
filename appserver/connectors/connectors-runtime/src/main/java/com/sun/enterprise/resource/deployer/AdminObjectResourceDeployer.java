@@ -65,8 +65,7 @@ import java.util.logging.Logger;
 @Service
 @ResourceDeployerInfo(AdminObjectResource.class)
 @Singleton
-public class AdminObjectResourceDeployer extends AbstractConnectorResourceDeployer
-        implements ResourceDeployer {
+public class AdminObjectResourceDeployer extends AbstractConnectorResourceDeployer {
 
     @Inject
     private ConnectorRuntime runtime;

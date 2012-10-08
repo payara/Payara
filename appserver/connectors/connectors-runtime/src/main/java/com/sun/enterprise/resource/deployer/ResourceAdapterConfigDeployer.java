@@ -60,7 +60,7 @@ import java.util.logging.Logger;
 @Service
 @ResourceDeployerInfo(ResourceAdapterConfig.class)
 @Singleton
-public class ResourceAdapterConfigDeployer extends AbstractConnectorResourceDeployer implements ResourceDeployer {
+public class ResourceAdapterConfigDeployer extends AbstractConnectorResourceDeployer {
 
     @Inject
     private Provider<ConnectorRuntime> connectorRuntimeProvider;

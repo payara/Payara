@@ -74,8 +74,7 @@ import java.util.logging.Logger;
 @Service
 @ResourceDeployerInfo(org.glassfish.connectors.config.ConnectorConnectionPool.class)
 @Singleton
-public class ConnectorConnectionPoolDeployer extends AbstractConnectorResourceDeployer
-        implements ResourceDeployer {
+public class ConnectorConnectionPoolDeployer extends AbstractConnectorResourceDeployer{
 
     @Inject
     private ConnectorRuntime runtime;
