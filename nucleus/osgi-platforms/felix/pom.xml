@@ -95,14 +95,12 @@
                              <artifactItem>
                                <groupId>org.apache.felix</groupId>
                                <artifactId>org.apache.felix.main</artifactId>
-                               <version>4.0.2</version>
                                <outputDirectory>${felix.outdir}/bin</outputDirectory>
                                <destFileName>felix.jar</destFileName>
                              </artifactItem>
                              <artifactItem>
                                <groupId>org.apache.felix</groupId>
                                <artifactId>org.apache.felix.bundlerepository</artifactId>
-                               <version>1.6.6</version>
                                <type>jar</type>
                                <outputDirectory>${glassfish.modulesdir}</outputDirectory>
                              </artifactItem>
@@ -130,16 +128,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <dependencies>
-        <!--
-            add it as a test scope dependency so that IDEs can recognize this as a dependency
-            and show the source code during the debugging
-        -->
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.main</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
 </project>
