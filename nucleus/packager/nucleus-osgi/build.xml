@@ -47,14 +47,8 @@
     <target name="create.package">
         <property name="package.name" value="nucleus-osgi"/> 
 
-        <stage-module-jars/>
+        <stage-module-autostart-jars/>
        
-        <!-- BEGIN: move osgi-web-container and its dependencies to autostart -->
-        <mkdir dir="target/stage/${install.dir.name}/modules/autostart"/>
-       
-        <move file="target/stage/${install.dir.name}/modules/org.apache.felix.scr.jar" todir="target/stage/${install.dir.name}/modules/autostart" failonerror="false"/>
-        <!-- END: move osgi-web-container and its dependencies to autostart -->
-
         <if test="${compression}">
 	       <antcall target="pack.compression" />
 	</if>

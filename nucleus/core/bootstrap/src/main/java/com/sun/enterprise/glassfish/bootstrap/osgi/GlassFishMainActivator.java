@@ -112,8 +112,6 @@ public class GlassFishMainActivator implements BundleActivator {
             "modules/endorsed/",
             "modules/osgi-resource-locator.jar",
             "modules/osgi-adapter.jar",
-            "modules/org.apache.felix.configadmin.jar",
-            "modules/org.apache.felix.fileinstall.jar",
             "modules/autostart/"
     };
     /**
