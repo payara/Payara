@@ -111,10 +111,6 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
             logger.severe(msg);
             throw new RuntimeException(msg, e);
 
-        }
-        // Force longOpt if output option is specified
-        if (outputOpts != null) {
-            longOpt = true;
         }      
     }
 
@@ -160,6 +156,10 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
                     resolver.getClass().toString(), parentType, targetType);
             report.failure(logger, msg);
             return;
+        }
+        // Force longOpt if output option is specified
+        if (outputOpts != null) {
+            longOpt = true;
         }
         List<ColumnInfo> cols = null;
         ColumnFormatter colfm = null;
