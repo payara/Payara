@@ -222,10 +222,9 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
             
         ContextConfig config;
         if (useDOLforDeployment) {            
-            config = new WebModuleContextConfig();  
+            config = new WebModuleContextConfig(services);
             ((WebModuleContextConfig)config).setDescriptor(
                 wmInfo.getDescriptor());
-            ((WebModuleContextConfig)config).setServices(services);
         } else {
             config = new ContextConfig();
         }
