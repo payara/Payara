@@ -39,7 +39,7 @@
   -->
 <service-config>
     <config-bundle
-            location="domain/configs/config[server-config]"
+            location="domain/configs/config[server-config]/simple-config-extension[simple-config-name]"
             replace-if-exist="true">
         <customization-tokens>
             <customization-token
@@ -48,11 +48,10 @@
                     description="$token.description"/>
         </customization-tokens>
         <configuration-element
-                config-bean-class-name="com.sun.enterprise.config.modularity.tests.SimpleConfigExtensionWithCustomConfiguration">
+                config-bean-class-name="com.sun.enterprise.config.modularity.tests.SimpleExtensionTypeOne">
             <![CDATA[
-        <simple-config-extension-with-custom-configuration custom-token="${CUSTOM_TOKEN}">
-        <property name="prop.foo" value="prop.foo.value.default"></property>
-        </simple-config-extension-with-custom-configuration>
+        <simple-extension-type-one attribute-one="${CUSTOM_TOKEN}" name="unique.name">
+        </simple-extension-type-one>
 ]]>
         </configuration-element>
     </config-bundle>
@@ -66,4 +65,5 @@
     </config-bundle>
 
 </service-config>
+
 

@@ -54,13 +54,13 @@
         <config name="server-config">
             <system-property name="CUSTOM_TOKEN" value="user.customized"></system-property>
             <simple-config-extension name="simple-config-name">
-                <extension-type-one attribute-one="${CUSTOM_TOKEN}" name="some.name">
-                        </extension-type-one>
+                <simple-extension-type-one attribute-one="${CUSTOM_TOKEN}" name="some.name">
+                        </simple-extension-type-one>
             </simple-config-extension>
-            <simple-config-extension-with-custom-configuration custom-token="${CUSTOM_TOKEN}">
+            <config-extension-one custom-token="${CUSTOM_TOKEN}">
                                <property name="prop.foo" value="prop.foo.value.custom"></property>
-                           </simple-config-extension-with-custom-configuration>
-            <empty-config-extension dummy="dummy-value"></empty-config-extension>
+                           </config-extension-one>
+            <config-extension-zero dummy="dummy-value"></config-extension-zero>
         </config>
     </configs>
     <property value="domain1" name="administrative.domain.name"/>

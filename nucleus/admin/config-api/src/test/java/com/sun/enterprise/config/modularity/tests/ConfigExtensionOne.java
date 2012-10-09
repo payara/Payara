@@ -40,12 +40,21 @@
 
 package com.sun.enterprise.config.modularity.tests;
 
-import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.glassfish.api.admin.config.ConfigExtension;
+import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.types.PropertyBag;
+
+import java.beans.PropertyVetoException;
 
 /**
  * @author Masoud Kalali
  */
-@Configured
-public interface SimpleConfigExtensionExtionsionPoint extends ConfigBeanProxy {
+@Configured()
+public interface ConfigExtensionOne extends ConfigExtension, PropertyBag {
+
+    @Attribute
+    String getCustomToken();
+    void setCustomToken(String value) throws PropertyVetoException;
+
 }

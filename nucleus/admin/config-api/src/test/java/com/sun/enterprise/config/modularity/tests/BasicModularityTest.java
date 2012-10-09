@@ -75,7 +75,7 @@ public class BasicModularityTest extends ConfigApiTest {
 
     @Test
     public void locationTest() {
-        String location = "domain/configs/config[$CURRENT_INSTANCE_CONFIG_NAME]/simple-config-extension-with-custom-configuration/property[prop.foo]";
+        String location = "domain/configs/config[$CURRENT_INSTANCE_CONFIG_NAME]/config-extension-one/property[prop.foo]";
         Class owningClass = ConfigModularityUtils.getOwningClassForLocation(location, habitat);
         assertNotNull("Cannot find owning class for: " + location, owningClass);
         assertEquals("Cannot find the right owning class for location", Property.class.getName(), owningClass.getName());
@@ -83,7 +83,7 @@ public class BasicModularityTest extends ConfigApiTest {
 
     @Test
     public void owningObjectTest() {
-        String location = "domain/configs/config[$CURRENT_INSTANCE_CONFIG_NAME]/simple-config-extension-with-custom-configuration/property[prop.foo]";
+        String location = "domain/configs/config[$CURRENT_INSTANCE_CONFIG_NAME]/config-extension-one/property[prop.foo]";
         ConfigBeanProxy obj = ConfigModularityUtils.getOwningObject(location, habitat);
         assertNotNull("Cannot find owning object for: " + location, obj);
         assertEquals("Getting Owning object for location is not right", "prop.foo.value.custom", ((Property) obj).getValue());
@@ -91,9 +91,9 @@ public class BasicModularityTest extends ConfigApiTest {
 
     @Test
     public void moduleConfigurationXmlParserTest() {
-        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = ConfigModularityUtils.getDefaultConfigurations(ExtensionTypeOne.class, true);
+        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = ConfigModularityUtils.getDefaultConfigurations(SimpleExtensionTypeOne.class, true);
         assertEquals("Incorrect number of config bean configuration read ", 2, values.size());
-        ConfigCustomizationToken token = ConfigModularityUtils.getDefaultConfigurations(ExtensionTypeOne.class, true).get(0).getCustomizationTokens().get(0);
+        ConfigCustomizationToken token = ConfigModularityUtils.getDefaultConfigurations(SimpleExtensionTypeOne.class, true).get(0).getCustomizationTokens().get(0);
         assertEquals("Customization Token reading broken ", "CUSTOM_TOKEN", token.getKey());
         assertEquals("Customization Token reading broken ", "token-default-value", token.getDefaultValue());
 //TODO Also check for the localization
@@ -106,19 +106,29 @@ public class BasicModularityTest extends ConfigApiTest {
     @Test
     public void serializeConfigBean() {
         Config config = habitat.<Domain>getService(Domain.class).getConfigs().getConfig().get(0);
-        ConfigBeanProxy prox = config.getExtensionByType(EmptyConfigExtension.class);
+        ConfigBeanProxy prox = config.getExtensionByType(ConfigExtensionZero.class);
         String content = ConfigModularityUtils.serializeConfigBean(prox);
-        assertEquals("Cannot serialize config beans properly", "<empty-config-extension dummy=\"dummy-value\"></empty-config-extension>", content);
+        assertEquals("Cannot serialize config beans properly", "<config-extension-zero dummy=\"dummy-value\"></config-extension-zero>", content);
 
     }
 
     @Test
     public void serializeConfigBeanByType() {
         Config config = habitat.<Domain>getService(Domain.class).getConfigs().getConfig().get(0);
-        String content = ConfigModularityUtils.serializeConfigBeanByType(SimpleConfigExtensionWithCustomConfiguration.class, habitat);
-        assertEquals("Cannot serialize config beans from type", "<simple-config-extension-with-custom-configuration custom-token=\"${CUSTOM_TOKEN}\">\n" +
+        String content = ConfigModularityUtils.serializeConfigBeanByType(ConfigExtensionOne.class, habitat);
+        assertEquals("Cannot serialize config beans from type", "<config-extension-one custom-token=\"${CUSTOM_TOKEN}\">\n" +
                 "  <property name=\"prop.foo\" value=\"prop.foo.value.custom\"></property>\n" +
-                "</simple-config-extension-with-custom-configuration>", content);
+                "</config-extension-one>", content);
+    }
+
+    @Test
+    @Ignore
+    public void testGetExtensionByType() {
+        Config config = habitat.<Domain>getService(Domain.class).getConfigs().getConfig().get(0);
+        ConfigExtensionTwo ext = (ConfigExtensionTwo)
+                config.getExtensionByType(ConfigExtensionTwo.class);
+        assertEquals("The system property is overriden while it should have not", "token-default-value", ext.getAttributeTwo());
+
     }
 
 
@@ -126,8 +136,8 @@ public class BasicModularityTest extends ConfigApiTest {
     @Ignore //Ignored but left here to investigate a possible bug
     public void testLoadingAndApplyingModuleConfigurationFile() {
         Config config = habitat.<Domain>getService(Domain.class).getConfigs().getConfig().get(0);
-        SimpleConfigExtensionWithCustomConfiguration ext = (SimpleConfigExtensionWithCustomConfiguration)
-                config.getExtensionByType(SimpleConfigExtensionWithCustomConfiguration.class);
+        ConfigExtensionOne ext = (ConfigExtensionOne)
+                config.getExtensionByType(ConfigExtensionOne.class);
         assertEquals("The system property is overriden while it should have not", "user.customized", ext.getCustomToken());
 
     }
@@ -135,16 +145,32 @@ public class BasicModularityTest extends ConfigApiTest {
     @Test
     @Ignore
     public void fromXmlToConfigBeanTest() throws Exception {
-        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = ConfigModularityUtils.getDefaultConfigurations(ExtensionTypeOne.class, true);
-        com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue def = ConfigModularityUtils.getDefaultConfigurations(ExtensionTypeOne.class, true).get(0);
-//        ExtensionTypeOne c = habitat.getService(ExtensionTypeOne.class);
+        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = ConfigModularityUtils.getDefaultConfigurations(SimpleExtensionTypeOne.class, true);
+        com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue def = ConfigModularityUtils.getDefaultConfigurations(SimpleExtensionTypeOne.class, true).get(0);
+//        SimpleExtensionTypeOne c = habitat.getService(SimpleExtensionTypeOne.class);
 //                System.out.println("So the config bean is around because we can get it and print it's property");
 //        System.out.println(c.getAttributeOne());
 //                System.out.println("But the method com.sun.enterprise.config.modularity.ConfigModularityUtils.getClassForFullName(ConfigModularityUtils.java:767) Goes NPE");
-//        ConfigModularityUtils.getClassForFullName(ExtensionTypeOne.class.getName(), habitat);
-        ExtensionTypeOne simple = ConfigModularityUtils.getCurrentConfigBeanForDefaultValue(def, habitat);
+//        ConfigModularityUtils.getClassForFullName(SimpleExtensionTypeOne.class.getName(), habitat);
+        SimpleExtensionTypeOne simple = ConfigModularityUtils.getCurrentConfigBeanForDefaultValue(def, habitat);
         assertNotNull("Cannot get config bean of a module based on the default module configuration information", simple);
         assertEquals("The retrieved current configuration of the module is not as is in domain.xml", "token-default-value", simple.getAttributeOne());
     }
+
+    @Test
+    @Ignore
+    public void fromClassNameToClassTest() throws Exception {
+
+        // This part passes as the configuration for the class is present in the domain.xml
+        Class clz = ConfigModularityUtils.getClassForFullName(ConfigExtensionZero.class.getName(), habitat);
+        assertNotNull("Cannot get config bean class using the class name", clz);
+        assertEquals("The mapped class is not the same as the provided class name", ConfigExtensionZero.class.getName(), clz.getName());
+
+        // this part fails as the configuration is not present in domain.xml which was is a regression somewhere
+         clz = ConfigModularityUtils.getClassForFullName(ConfigExtensionTwo.class.getName(), habitat);
+        assertNotNull("Cannot get config bean class using the class name", clz);
+        assertEquals("The mapped class is not the same as the provided class name", ConfigExtensionTwo.class.getName(), clz.getName());
+    }
+
 
 }

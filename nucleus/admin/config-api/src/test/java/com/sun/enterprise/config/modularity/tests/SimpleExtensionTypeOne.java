@@ -40,21 +40,30 @@
 
 package com.sun.enterprise.config.modularity.tests;
 
-import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.types.PropertyBag;
 
+import javax.validation.constraints.NotNull;
 import java.beans.PropertyVetoException;
 
 /**
  * @author Masoud Kalali
  */
-@Configured()
-public interface SimpleConfigExtensionWithCustomConfiguration extends ConfigExtension, PropertyBag {
+@Configured
+@com.sun.enterprise.config.modularity.annotation.CustomConfiguration(adminConfigFileName = "extension-type-one-module-config.xml", defaultConfigFileName = "extension-type-one-module-config.xml")
+@com.sun.enterprise.config.modularity.annotation.HasCustomizationTokens
+public interface SimpleExtensionTypeOne extends SimpleConfigExtensionExtensionPoint, PropertyBag {
 
-    @Attribute
-    String getCustomToken();
-    void setCustomToken(String value) throws PropertyVetoException;
+    @Attribute(defaultValue = "unique.name")
+    String getAttributeOne();
+    void setAttributeOne(String value) throws PropertyVetoException;
+
+    @Attribute(key =true, required = true)
+    @NotNull
+    String getName();
+    void setName(String value)throws PropertyVetoException;
+
+
 
 }

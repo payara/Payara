@@ -48,7 +48,7 @@ import org.jvnet.hk2.config.Configured;
  * @author Masoud Kalali
  */
 @Configured
-public interface EmptyConfigExtension extends ConfigExtension {
+public interface ConfigExtensionZero extends ConfigExtension {
 
     @Attribute (defaultValue = "dummy")
     String getDummy();
