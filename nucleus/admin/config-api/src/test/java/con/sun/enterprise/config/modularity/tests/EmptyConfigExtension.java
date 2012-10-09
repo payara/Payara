@@ -52,4 +52,5 @@ public interface EmptyConfigExtension extends ConfigExtension {
 
     @Attribute (defaultValue = "dummy")
     String getDummy();
+    void setDummy(String value);
 }

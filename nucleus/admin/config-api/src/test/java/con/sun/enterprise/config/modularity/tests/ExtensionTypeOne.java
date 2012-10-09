@@ -45,12 +45,26 @@ import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.types.PropertyBag;
 
+import javax.validation.constraints.NotNull;
+import java.beans.PropertyVetoException;
+
 /**
  * @author Masoud Kalali
  */
 @Configured
-public interface ExtensionTypeOne extends SimpleConfigExtensionExt,Named, PropertyBag {
+@com.sun.enterprise.config.modularity.annotation.CustomConfiguration(adminConfigFileName = "simple-module-configuration.xml", defaultConfigFileName = "simple-module-configuration.xml")
+@com.sun.enterprise.config.modularity.annotation.HasCustomizationTokens
+public interface ExtensionTypeOne extends SimpleConfigExtensionExtionsionPoint, PropertyBag {
 
     @Attribute(defaultValue = "default-value")
     String getAttributeOne();
+    void setAttributeOne(String value) throws PropertyVetoException;
+
+    @Attribute(key =true, required = true)
+    @NotNull
+    String getName();
+    void setName(String value)throws PropertyVetoException;
+
+
+
 }

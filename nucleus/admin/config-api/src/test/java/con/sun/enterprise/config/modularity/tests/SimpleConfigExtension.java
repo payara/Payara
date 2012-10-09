@@ -45,7 +45,6 @@ import org.glassfish.api.admin.config.Named;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -55,5 +54,5 @@ import java.util.List;
 public interface SimpleConfigExtension extends ConfigExtension, Named{
 
     @Element("*")
-    List<SimpleConfigExtensionExt> getExtensions();
+    List<SimpleConfigExtensionExtionsionPoint> getExtensions();
 }

@@ -48,5 +48,5 @@ import org.jvnet.hk2.config.Configured;
  * @author Masoud Kalali
  */
 @Configured
-public interface SimpleConfigExtensionExt extends ConfigBeanProxy {
+public interface SimpleConfigExtensionExtionsionPoint extends ConfigBeanProxy {
 }

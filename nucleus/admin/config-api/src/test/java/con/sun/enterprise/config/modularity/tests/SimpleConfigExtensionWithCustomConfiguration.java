@@ -47,14 +47,16 @@ import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.types.PropertyBag;
 
+import java.beans.PropertyVetoException;
+
 /**
  * @author Masoud Kalali
  */
 @Configured()
-@CustomConfiguration(adminConfigFileName = "simple-module-configuration.xml", defaultConfigFileName = "simple-module-configuration.xml")
 public interface SimpleConfigExtensionWithCustomConfiguration extends ConfigExtension, PropertyBag {
 
     @Attribute
     String getCustomToken();
+    void setCustomToken(String value) throws PropertyVetoException;
 
 }

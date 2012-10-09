@@ -53,6 +53,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.types.Property;
 
 import java.net.URL;
 import java.util.List;
@@ -67,7 +68,6 @@ import static org.junit.Assert.assertNotNull;
  */
 public class BasicModularityTest extends ConfigApiTest {
 
-
     Habitat habitat = Utils.instance.getHabitat(this);
 
     @Override
@@ -75,30 +75,27 @@ public class BasicModularityTest extends ConfigApiTest {
         return "Config-Modularity";
     }
 
-
     @Test
-
     public void locationTest() {
-        String location = "domain/configs/config[$CURRENT_INSTANCE_CONFIG_NAME]/simple-config-extension[simple-config-name]/extension-type-one[simple-second-extension]";
+        String location = "domain/configs/config[$CURRENT_INSTANCE_CONFIG_NAME]/simple-config-extension-with-custom-configuration/property[prop.foo]";
         Class owningClass = ConfigModularityUtils.getOwningClassForLocation(location, habitat);
         assertNotNull("Cannot find owning class for: " + location, owningClass);
-        assertEquals("Cannot find the right owning class for location", ExtensionTypeOne.class.getName(), owningClass.getName());
+        assertEquals("Cannot find the right owning class for location", Property.class.getName(), owningClass.getName());
     }
 
     @Test
-
     public void owningObjectTest() {
-        String location = "domain/configs/config[$CURRENT_INSTANCE_CONFIG_NAME]/simple-config-extension[simple-config-name]/extension-type-one[simple-second-extension]";
+        String location = "domain/configs/config[$CURRENT_INSTANCE_CONFIG_NAME]/simple-config-extension-with-custom-configuration/property[prop.foo]";
         ConfigBeanProxy obj = ConfigModularityUtils.getOwningObject(location, habitat);
         assertNotNull("Cannot find owning object for: " + location, obj);
-        assertEquals("Location's Owning object is not right", "default-value", ((ExtensionTypeOne) obj).getAttributeOne());
+        assertEquals("Getting Owning object for location is not right", "prop.foo.value.custom", ((Property) obj).getValue());
     }
 
     @Test
     public void moduleConfigurationXmlParserTest() {
-        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = ConfigModularityUtils.getDefaultConfigurations(SimpleConfigExtensionWithCustomConfiguration.class, true);
+        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = ConfigModularityUtils.getDefaultConfigurations(ExtensionTypeOne.class, true);
         assertEquals("Incorrect number of config bean configuration read ", 2, values.size());
-        ConfigCustomizationToken token = ConfigModularityUtils.getDefaultConfigurations(SimpleConfigExtensionWithCustomConfiguration.class, true).get(0).getCustomizationTokens().get(0);
+        ConfigCustomizationToken token = ConfigModularityUtils.getDefaultConfigurations(ExtensionTypeOne.class, true).get(0).getCustomizationTokens().get(0);
         assertEquals("Customization Token reading broken ", "CUSTOM_TOKEN", token.getKey());
         assertEquals("Customization Token reading broken ", "token-default-value", token.getDefaultValue());
 //TODO Also check for the localization
@@ -138,17 +135,18 @@ public class BasicModularityTest extends ConfigApiTest {
     }
 
     @Test
-    @Ignore //Ignored but left here to investigate a possible bug
+    @Ignore
     public void fromXmlToConfigBeanTest() throws Exception {
-        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = ConfigModularityUtils.getDefaultConfigurations(SimpleConfigExtensionWithCustomConfiguration.class, true);
-        com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue def = ConfigModularityUtils.getDefaultConfigurations(SimpleConfigExtensionWithCustomConfiguration.class, true).get(0);
-        SimpleConfigExtensionWithCustomConfiguration c = habitat.getService(SimpleConfigExtensionWithCustomConfiguration.class, ServerEnvironmentImpl.DEFAULT_INSTANCE_NAME);
-        //        System.out.println("So the config bean is around because we can get it and print it's property");
-        System.out.println(c.getCustomToken());
-        //        System.out.println("But the method com.sun.enterprise.config.modularity.ConfigModularityUtils.getClassForFullName(ConfigModularityUtils.java:767) Goes NPE");
-        SimpleConfigExtensionWithCustomConfiguration simple = ConfigModularityUtils.getCurrentConfigBeanForDefaultValue(def, habitat);
+        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = ConfigModularityUtils.getDefaultConfigurations(ExtensionTypeOne.class, true);
+        com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue def = ConfigModularityUtils.getDefaultConfigurations(ExtensionTypeOne.class, true).get(0);
+//        ExtensionTypeOne c = habitat.getService(ExtensionTypeOne.class);
+//                System.out.println("So the config bean is around because we can get it and print it's property");
+//        System.out.println(c.getAttributeOne());
+//                System.out.println("But the method com.sun.enterprise.config.modularity.ConfigModularityUtils.getClassForFullName(ConfigModularityUtils.java:767) Goes NPE");
+//        ConfigModularityUtils.getClassForFullName(ExtensionTypeOne.class.getName(), habitat);
+        ExtensionTypeOne simple = ConfigModularityUtils.getCurrentConfigBeanForDefaultValue(def, habitat);
         assertNotNull("Cannot get config bean of a module based on the default module configuration information", simple);
-        assertEquals("The retrieved current configuration of the module is not as is in domain.xml", "prop.foo.value.custom", simple.getProperty("prop.foo").getValue());
+        assertEquals("The retrieved current configuration of the module is not as is in domain.xml", "token-default-value", simple.getAttributeOne());
     }
 
 }
