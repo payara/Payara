@@ -63,13 +63,25 @@ public class ProbeFactory {
 			String moduleProviderName, String moduleName,
 			String probeProviderName, String probeName, String[] paramNames,
 			Class[] paramTypes, boolean self, boolean hidden) {
-		int id = counter.incrementAndGet();
-		FlashlightProbe probe = new FlashlightProbe(id, providerClazz,
-				moduleProviderName, moduleName, probeProviderName, probeName,
-				paramNames, paramTypes, self, hidden);
+	    return createProbe(providerClazz, moduleProviderName, moduleName, probeProviderName,
+	            probeName, paramNames, paramTypes, self, hidden,
+	            false, false, false, null); // not stateful, no profile names
+	}
 
-		probeRegistry.registerProbe(probe);
-		return probe;
+	public static FlashlightProbe createProbe(Class providerClazz,
+	        String moduleProviderName, String moduleName,
+	        String probeProviderName, String probeName, String[] paramNames,
+	        Class[] paramTypes, boolean self, boolean hidden,
+	        boolean stateful, boolean statefulReturn, boolean statefulException,
+	        String [] profileNames) {
+	    int id = counter.incrementAndGet();
+	    FlashlightProbe probe = new FlashlightProbe(id, providerClazz,
+	            moduleProviderName, moduleName, probeProviderName, probeName,
+	            paramNames, paramTypes, self, hidden, stateful, statefulReturn,
+	            statefulException, profileNames);
+
+	    probeRegistry.registerProbe(probe);
+	    return probe;
 	}
 
 }

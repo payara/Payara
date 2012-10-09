@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,6 +57,10 @@ public class XmlProbe {
     List<XmlProbeParam> probeParams = null;
     boolean hasSelf = false;
     boolean isHidden = false;
+    boolean stateful = false;
+    boolean statefulReturn = false;
+    boolean statefulException = false;
+    String profileNames = null;
 
     public String getProbeName() {
         return probeName;
@@ -78,13 +82,30 @@ public class XmlProbe {
         return isHidden;
     }
 
+    public boolean getStateful() { return stateful; }
+    public boolean getStatefulReturn() { return statefulReturn; }
+    public boolean getStatefulException() { return statefulException; }
+    public String getProfileNames() { return profileNames; } 
+
     public XmlProbe(String probeName, String method, List<XmlProbeParam> params, boolean hasSelf, boolean isHidden) {
         this.probeName = probeName;
         probeMethod = method;
         probeParams = params;
         this.hasSelf = hasSelf;
         this.isHidden = isHidden;
+    }
 
+    public XmlProbe(String probeName, String method, List<XmlProbeParam> params, boolean hasSelf, boolean isHidden,
+            boolean isStateful, boolean statefulReturn, boolean statefulException, String profileNames) {
+        this.probeName = probeName;
+        probeMethod = method;
+        probeParams = params;
+        this.hasSelf = hasSelf;
+        this.isHidden = isHidden;
+        this.stateful = isStateful;
+        this.statefulReturn = statefulReturn;
+        this.statefulException = statefulException;
+        this.profileNames = profileNames;
     }
 
     @Override

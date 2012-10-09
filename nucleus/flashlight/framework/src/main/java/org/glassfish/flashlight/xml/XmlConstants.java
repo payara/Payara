@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,4 +63,8 @@ public class XmlConstants {
      static String PROBE_PARAM = "probe-param";
      static String PROBE_PARAM_TYPE = "type";
      static String PROBE_PARAM_NAME = "name";
+     static String PROBE_STATEFUL = "stateful";
+     static String PROBE_STATEFUL_RETURN = "statefulReturn";
+     static String PROBE_STATEFUL_EXCEPTION = "statefulException";
+     static String PROBE_PROFILE_NAMES = "profileNames";
 }
