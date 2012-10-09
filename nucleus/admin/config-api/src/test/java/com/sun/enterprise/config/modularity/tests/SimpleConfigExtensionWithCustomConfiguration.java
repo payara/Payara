@@ -38,11 +38,9 @@
  *  holder.
  */
 
-package con.sun.enterprise.config.modularity.tests;
+package com.sun.enterprise.config.modularity.tests;
 
-import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
 import org.glassfish.api.admin.config.ConfigExtension;
-import org.glassfish.api.admin.config.Named;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.types.PropertyBag;

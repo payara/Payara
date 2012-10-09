@@ -38,7 +38,7 @@
  *  holder.
  */
 
-package con.sun.enterprise.config.modularity.tests;
+package com.sun.enterprise.config.modularity.tests;
 
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.serverbeans.Config;
@@ -46,7 +46,6 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.configapi.tests.ConfigApiTest;
 import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
 
-import org.glassfish.server.ServerEnvironmentImpl;
 import org.glassfish.tests.utils.Utils;
 
 import org.junit.Ignore;
@@ -55,7 +54,6 @@ import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.types.Property;
 
-import java.net.URL;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;

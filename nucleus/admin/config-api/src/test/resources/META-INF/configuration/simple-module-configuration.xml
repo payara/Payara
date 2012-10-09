@@ -48,7 +48,7 @@
                     description="$token.description"/>
         </customization-tokens>
         <configuration-element
-                config-bean-class-name="con.sun.enterprise.config.modularity.tests.SimpleConfigExtensionWithCustomConfiguration">
+                config-bean-class-name="com.sun.enterprise.config.modularity.tests.SimpleConfigExtensionWithCustomConfiguration">
             <![CDATA[
         <simple-config-extension-with-custom-configuration custom-token="${CUSTOM_TOKEN}">
         <property name="prop.foo" value="prop.foo.value.default"></property>

@@ -38,19 +38,14 @@
  *  holder.
  */
 
-package con.sun.enterprise.config.modularity.tests;
+package com.sun.enterprise.config.modularity.tests;
 
-import org.glassfish.api.admin.config.ConfigExtension;
-import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 /**
  * @author Masoud Kalali
  */
 @Configured
-public interface EmptyConfigExtension extends ConfigExtension {
-
-    @Attribute (defaultValue = "dummy")
-    String getDummy();
-    void setDummy(String value);
+public interface SimpleConfigExtensionExtionsionPoint extends ConfigBeanProxy {
 }

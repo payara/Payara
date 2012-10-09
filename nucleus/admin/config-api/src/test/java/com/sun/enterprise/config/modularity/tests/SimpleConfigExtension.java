@@ -38,15 +38,21 @@
  *  holder.
  */
 
-package con.sun.enterprise.config.modularity.tests;
+package com.sun.enterprise.config.modularity.tests;
 
+import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.api.admin.config.Named;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
+
+import java.util.List;
 
 /**
  * @author Masoud Kalali
  */
 @Configured
-public interface SimpleConfigExtensionExtionsionPoint extends ConfigBeanProxy {
+public interface SimpleConfigExtension extends ConfigExtension, Named{
+
+    @Element("*")
+    List<SimpleConfigExtensionExtionsionPoint> getExtensions();
 }
