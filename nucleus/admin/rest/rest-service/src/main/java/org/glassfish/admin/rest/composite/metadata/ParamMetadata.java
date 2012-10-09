@@ -59,6 +59,7 @@ public class ParamMetadata {
     private String help;
     private Object defaultValue;
     private boolean readOnly = false;
+    private boolean confidential = false;
     private OptionsCapable context;
     private Class<?> paramType;
 
@@ -77,6 +78,9 @@ public class ParamMetadata {
         for (Annotation a : annotations) {
             if (a.annotationType().equals(ReadOnly.class)) {
                 readOnly = true;
+            }
+            if (a.annotationType().equals(Confidential.class)) {
+                confidential = true;
             }
         }
     }
@@ -126,7 +130,7 @@ public class ParamMetadata {
         Object defVal = (defaultValue != null) ? defaultValue : JSONObject.NULL;
         o.put("default", defVal);
         o.put("readOnly", readOnly);
-
+        o.put("confidential", confidential);
         return o;
     }
 

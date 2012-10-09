@@ -49,12 +49,16 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.composite.RestModel;
+import org.glassfish.admin.rest.composite.metadata.Confidential;
 
 /**
  *
  * @author jdlee
  */
 public class JsonUtil {
+    public static final String CONFIDENTIAL_PROPERTY_SET = "********";
+    public static final String CONFIDENTIAL_PROPERTY_UNSET = null;
+
     public static Object getJsonObject(Object object) throws JSONException {
         Object result;
         if (object instanceof Collection) {
@@ -64,7 +68,7 @@ public class JsonUtil {
         } else if (object == null) {
             result = JSONObject.NULL;
         } else if (RestModel.class.isAssignableFrom(object.getClass())) {
-            result = getJsonForRestModel((RestModel)object);
+            result = getJsonForRestModel((RestModel)object, true);
         } else {
             result = object;
         }
@@ -72,14 +76,14 @@ public class JsonUtil {
         return result;
     }
 
-    public static JSONObject getJsonForRestModel(RestModel model) {
+    public static JSONObject getJsonForRestModel(RestModel model, boolean hideConfidentialProperties) {
         JSONObject result = new JSONObject();
         for (Method m : model.getClass().getDeclaredMethods()) {
             if (m.getName().startsWith("get")) { // && !m.getName().equals("getClass")) {
                 String propName = m.getName().substring(3);
                 propName = propName.substring(0,1).toLowerCase(Locale.getDefault()) + propName.substring(1);
                 try {
-                    result.put(propName, getJsonObject(m.invoke(model)));
+                    result.put(propName, getJsonObject(getRestModelProperty(model, m, hideConfidentialProperties)));
                 } catch (Exception e) {
 
                 }
@@ -87,6 +91,35 @@ public class JsonUtil {
         }
 
         return result;
+    }
+
+    private static Object getRestModelProperty(RestModel model, Method method, boolean hideConfidentialProperties) throws Exception {
+        Object object = method.invoke(model);
+        if (hideConfidentialProperties && isConfidentialString(model, method)) {
+            String str = (String)object;
+            return (StringUtil.notEmpty(str)) ? CONFIDENTIAL_PROPERTY_SET : CONFIDENTIAL_PROPERTY_UNSET;
+        } else {
+            return object;
+        }
+    }
+
+    private static boolean isConfidentialString(RestModel model, Method method) {
+        if (!String.class.equals(method.getReturnType())) {
+            return false;
+        }
+        // TBD - why aren't the annotations available from 'method'?
+        for (Class<?> ifaces : model.getClass().getInterfaces()) {
+            try {
+                Method m = ifaces.getDeclaredMethod(method.getName());
+                Confidential c = m.getAnnotation(Confidential.class);
+                if (c != null) {
+                    return true;
+                }
+            } catch (Exception e) {
+                // try another interface
+            }
+        }
+        return false;
     }
 
     public static JSONArray processCollection(Collection c) throws JSONException {
