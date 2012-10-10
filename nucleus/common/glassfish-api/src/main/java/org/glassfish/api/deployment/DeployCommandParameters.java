@@ -210,6 +210,9 @@ public class DeployCommandParameters extends OpsParams {
     @Param(optional=true, acceptableValues="true,false")
     public String lbenabled;
 
+    @Param(name=ParameterNames.DEPLOYMENT_ORDER, optional=true)
+    public Integer deploymentorder = 100;
+
     // todo : why is this not a param ?
     public Boolean clientJarRequested = true;
     public Boolean isClientJarRequested() {
@@ -252,6 +255,7 @@ public class DeployCommandParameters extends OpsParams {
         public static final String ENABLED = "enabled";
         public static final String PRECOMPILE_JSP = "precompilejsp";
         public static final String DEPLOYMENT_PLAN = "deploymentplan";
+        public static final String DEPLOYMENT_ORDER = "deploymentorder";
         public static final String ALT_DD = "altdd";
         public static final String RUNTIME_ALT_DD = "runtimealtdd";
     }

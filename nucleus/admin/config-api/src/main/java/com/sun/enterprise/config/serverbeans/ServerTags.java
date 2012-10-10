@@ -570,6 +570,7 @@ public class ServerTags  {
     //static public final String FACTORY_CLASS = "factory-class";
     //static public final String OBJECT_TYPE = "object-type";
     //static public final String ENABLED = "enabled";
+    static public final String DEPLOYMENT_ORDER = "deployment-order";
     // Tags for Element jdbc-resource
     static public final String JDBC_RESOURCE = "jdbc-resource";
     //static public final String DESCRIPTION = "description";
