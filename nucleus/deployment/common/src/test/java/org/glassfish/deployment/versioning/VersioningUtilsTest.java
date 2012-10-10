@@ -691,16 +691,6 @@ public class VersioningUtilsTest {
         }
 
         @Override
-        public String getDeploymentOrder() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void setDeploymentOrder(String value) throws PropertyVetoException{
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public List<Module> getModule() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
