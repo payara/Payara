@@ -40,23 +40,29 @@
 
 package com.sun.enterprise.config.modularity.tests;
 
-import org.glassfish.api.admin.config.ConfigExtension;
-import org.glassfish.api.admin.config.Named;
-import org.jvnet.hk2.config.ConfigExtensionMethod;
+import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.config.types.PropertyBag;
 
-import java.util.List;
+import javax.validation.constraints.NotNull;
+import java.beans.PropertyVetoException;
 
 /**
  * @author Masoud Kalali
  */
+
 @Configured
-public interface SimpleConfigExtension extends ConfigExtension, Named {
+public interface SimpleExtensionTypeTwo extends SimpleConfigExtensionExtensionPoint, PropertyBag {
 
-    @Element("*")
-    List<SimpleConfigExtensionExtensionPoint> getExtensions();
+    @Attribute(defaultValue = "attribute.two")
+    String getAttributeTwo();
 
-    @ConfigExtensionMethod
-    <T extends  SimpleConfigExtensionExtensionPoint> T getExtensionByType(Class extensionType);
+    void setAttributeTwo(String value) throws PropertyVetoException;
+
+    @Attribute(key = true, required = true, defaultValue = "SimpleExtensionTypeTwo")
+    @NotNull
+    String getName();
+
+    void setName(String value) throws PropertyVetoException;
+
 }

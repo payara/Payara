@@ -286,7 +286,7 @@ public final class ConfigModularityUtils {
             location = location.substring(location.indexOf("/", "domain/configs".length()) + 1);
             tokenizer = new StringTokenizer(location, "/", false);
             String curLevel = tokenizer.nextToken();
-            String expression = curLevel.substring(curLevel.lastIndexOf("[") + 1, curLevel.length()-1);
+            String expression = curLevel.substring(curLevel.lastIndexOf("[") + 1, curLevel.length() - 1);
             String configName = resolveExpression(expression, habitat);
             ConfigBeanProxy parent = habitat.<Domain>getService(Domain.class).getConfigNamed(configName);
 
@@ -614,7 +614,10 @@ public final class ConfigModularityUtils {
     public static Class getClassFor(String serviceName, ServiceLocator habitat) {
         serviceName = getServiceTypeNameIfNamedComponent(serviceName);
         ConfigInjector injector = habitat.getService(ConfigInjector.class, serviceName.toLowerCase());
+        return getClassFromInjector(injector);
+    }
 
+    private static Class getClassFromInjector(ConfigInjector injector) {
         if (injector != null) {
             String clzName = injector.getClass().getName().substring(0, injector.getClass().getName().length() - 8);
             try {
@@ -753,9 +756,22 @@ public final class ConfigModularityUtils {
 
     public static Class getClassForFullName(String configBeanClassName, ServiceLocator habitat) {
         ActiveDescriptor<?> descriptor = habitat.getBestDescriptor(BuilderHelper.createContractFilter(configBeanClassName));
-        if (!descriptor.isReified()) {
-            descriptor = habitat.reifyDescriptor(descriptor);
+        if (descriptor != null) {
+            if (!descriptor.isReified()) {
+                descriptor = habitat.reifyDescriptor(descriptor);
+            }
+            return getClassFromDescriptor(descriptor);
+        } else {
+            descriptor = habitat.getBestDescriptor(BuilderHelper.createContractFilter(configBeanClassName + "Injector"));
+            if (!descriptor.isReified()) {
+                descriptor = habitat.reifyDescriptor(descriptor);
+            }
+            ConfigInjector injector = (ConfigInjector) habitat.getServiceHandle(descriptor).getService();
+            return getClassFromInjector(injector);
         }
+    }
+
+    private static Class getClassFromDescriptor(ActiveDescriptor<?> descriptor) {
 
         Class<?> defaultReturnValue = descriptor.getImplementationClass();
 
@@ -776,7 +792,6 @@ public final class ConfigModularityUtils {
         if (foundContract == null) return defaultReturnValue;
         return foundContract;
     }
-
 
     public static String replacePropertiesWithCurrentValue(String xmlConfiguration, ConfigBeanDefaultValue value, ServiceLocator habitat) throws InvocationTargetException, IllegalAccessException {
         for (ConfigCustomizationToken token : value.getCustomizationTokens()) {

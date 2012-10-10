@@ -55,7 +55,7 @@ import java.beans.PropertyVetoException;
 @com.sun.enterprise.config.modularity.annotation.HasCustomizationTokens
 public interface SimpleExtensionTypeOne extends SimpleConfigExtensionExtensionPoint, PropertyBag {
 
-    @Attribute(defaultValue = "unique.name")
+    @Attribute(defaultValue = "attribute.one")
     String getAttributeOne();
     void setAttributeOne(String value) throws PropertyVetoException;
 
@@ -63,7 +63,5 @@ public interface SimpleExtensionTypeOne extends SimpleConfigExtensionExtensionPo
     @NotNull
     String getName();
     void setName(String value)throws PropertyVetoException;
-
-
 
 }

@@ -45,6 +45,7 @@ import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigExtensionHandler;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -71,7 +72,7 @@ public class ExtensionPatternInvocationImpl implements ConfigExtensionHandler {
     public ConfigBeanProxy handleExtension(Object owner, Class ownerType, Object[] params) {
 
         ConfigBeanProxy configExtension = null;
-        List<ConfigBeanProxy> extensions = ConfigModularityUtils.getExtensions(((GlassFishConfigBean) owner).createProxy(ownerType));
+        List<ConfigBeanProxy> extensions = ConfigModularityUtils.getExtensions(((ConfigBean) owner).createProxy(ownerType));
         for (ConfigBeanProxy extension : extensions) {
             try {
                 configExtension = (ConfigBeanProxy) ((Class) params[0]).cast(extension);
@@ -82,7 +83,7 @@ public class ExtensionPatternInvocationImpl implements ConfigExtensionHandler {
         }
 
         try {
-            ConfigBeanProxy pr = ((GlassFishConfigBean) owner).createProxy(ownerType);
+            ConfigBeanProxy pr = ((ConfigBean) owner).createProxy(ownerType);
             ModuleConfigurationLoader moduleConfigurationLoader = new ModuleConfigurationLoader(pr);
 
             ConfigBeanProxy returnValue = (ConfigBeanProxy) moduleConfigurationLoader.createConfigBeanForType((Class) params[0]);

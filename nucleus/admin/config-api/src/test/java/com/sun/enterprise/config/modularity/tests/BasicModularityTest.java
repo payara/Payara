@@ -121,6 +121,16 @@ public class BasicModularityTest extends ConfigApiTest {
                 "</config-extension-one>", content);
     }
 
+
+    @Test
+    public void testConfigExtensionPatternImpl() {
+        Config config = habitat.<Domain>getService(Domain.class).getConfigs().getConfig().get(0);
+        SimpleConfigExtension simpleConfigExtension = config.getExtensionByType(SimpleConfigExtension.class);
+        SimpleExtensionTypeTwo typeTwo = simpleConfigExtension.getExtensionByType(SimpleExtensionTypeTwo.class);
+        assertNotNull("cannot get extension using extensionmethod", typeTwo);
+        assertEquals("Retrieved extension is not from the right type... ", "attribute.two", typeTwo.getAttributeTwo());
+    }
+
     @Test
     @Ignore
     public void testGetExtensionByType() {
@@ -158,7 +168,6 @@ public class BasicModularityTest extends ConfigApiTest {
     }
 
     @Test
-    @Ignore
     public void fromClassNameToClassTest() throws Exception {
 
         // This part passes as the configuration for the class is present in the domain.xml
@@ -167,7 +176,7 @@ public class BasicModularityTest extends ConfigApiTest {
         assertEquals("The mapped class is not the same as the provided class name", ConfigExtensionZero.class.getName(), clz.getName());
 
         // this part fails as the configuration is not present in domain.xml which was is a regression somewhere
-         clz = ConfigModularityUtils.getClassForFullName(ConfigExtensionTwo.class.getName(), habitat);
+        clz = ConfigModularityUtils.getClassForFullName(ConfigExtensionTwo.class.getName(), habitat);
         assertNotNull("Cannot get config bean class using the class name", clz);
         assertEquals("The mapped class is not the same as the provided class name", ConfigExtensionTwo.class.getName(), clz.getName());
     }
