@@ -131,8 +131,8 @@ public class EmbeddedAddHttpsListenerTest {
     public void test() throws Exception {
 
         createHttpsListener(9191, "default-ssl-listener", "/keystore.jks", "changeit", "s1as");
-        createHttpsListener(9292, "ssl-listener0", "/keystore0", "password0", "keystore0");
-        createHttpsListener(9393, "ssl-listener1", "/keystore1", "password1", null);
+        //createHttpsListener(9292, "ssl-listener0", "/keystore0", "password0", "keystore0");
+        //createHttpsListener(9393, "ssl-listener1", "/keystore1", "password1", null);
 
         Deployer deployer = glassfish.getDeployer();
 
@@ -156,8 +156,8 @@ public class EmbeddedAddHttpsListenerTest {
 
         disableCertValidation();
         verify(9191);
-        verify(9292);
-        verify(9393);
+        //verify(9292);
+        //verify(9393);
         
         if (appName!=null)
             deployer.undeploy(appName);
