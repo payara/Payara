@@ -297,7 +297,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
 
             DeployCommandParameters parameters = new DeployCommandParameters(new File(archive.getURI()));
             ActionReport report = new HTMLActionReporter();
-            context = new DeploymentContextImpl(report, logger, archive, parameters, env);
+            context = new DeploymentContextImpl(report, archive, parameters, env);
             context.setArchiveHandler(archiveHandler);
             String appName = archiveHandler.getDefaultApplicationName(archive, context);
             parameters.name = appName;

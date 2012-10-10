@@ -136,7 +136,7 @@ public class InstanceLifecycleModuleCommand implements AdminCommand, AdminComman
             commandParams.enabled = enabled;
             commandParams.virtualservers = virtualservers;
 
-            ExtendedDeploymentContext lifecycleContext = new DeploymentContextImpl(report, logger, null, commandParams, null);
+            ExtendedDeploymentContext lifecycleContext = new DeploymentContextImpl(report, null, commandParams, null);
             lifecycleContext.getAppProps().putAll(appprops);
 
             if (application != null) {

@@ -228,23 +228,6 @@ public interface Application extends ApplicationName, PropertyBag {
      */
     void setDescription(String value) throws PropertyVetoException;
 
-    /**
-     * Gets the value of the deploymentOrder property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    @Attribute(defaultValue = "100", dataType = Integer.class)
-    String getDeploymentOrder();
-
-    /**
-     * Sets the value of the deploymentOrder property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    void setDeploymentOrder(String value) throws PropertyVetoException;
-
     @Element
     List<Module> getModule();
 
@@ -397,7 +380,6 @@ public interface Application extends ApplicationName, PropertyBag {
             if (appRef != null) {
                 deploymentParams.virtualservers = appRef.getVirtualServers();
             }
-            deploymentParams.deploymentorder = new Integer(app.getDeploymentOrder());
             for (Property prop : app.getProperty()) {
                 if (prop.getName().equals(ARCHIVE_TYPE_PROP_NAME)) {
                     deploymentParams.type = prop.getValue();

@@ -56,6 +56,10 @@ import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.deployment.versioning.VersioningUtils;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+
 /**
  * Writes a client JAR file, if one is needed, suitable for downloading.
  * <p>
@@ -71,15 +75,39 @@ import org.glassfish.deployment.versioning.VersioningUtils;
  */
 public class ClientJarWriter {
     
+    @LogMessagesResourceBundle
+    private static final String SHARED_LOGMESSAGE_RESOURCE = "javax.enterprise.deployment.common.LogMessages";
+
+    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
+    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.deployment.common";
+    private static final Logger deplLogger =
+        Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo(message = "Skipping possible client JAR generation because it would already have been done", level="FINE")
+    private static final String SKIPPING_JAR_GENERATION = "NCLS-DEPLOYMENT-00011";
+
+    @LogMessageInfo(message = "No client JAR generation is needed.", level="FINE")
+    private static final String NO_CLIENT_JAR_GENERATION_NEEDED = "NCLS-DEPLOYMENT-00012";
+
+    @LogMessageInfo(message = "Generated client JAR {0} for possible download", level="FINE")
+    private static final String CLIENT_JAR_GENERATED = "NCLS-DEPLOYMENT-00013";
+
+    @LogMessageInfo(message = "Adding a simple manifest; one was not already generated", level="FINER")
+    private static final String MANIFEST_ADDED = "NCLS-DEPLOYMENT-00014";
+
+    @LogMessageInfo(message = "Exception caught:  {0}", level="WARNING")
+    private static final String EXCEPTION_CAUGHT = "NCLS-DEPLOYMENT-00015";
+
+    @LogMessageInfo(message = "Files copied:  {0}", level="FINER")
+    private static final String FILES_COPIED = "NCLS-DEPLOYMENT-00016";
+
     private final String LINE_SEP = System.getProperty("line.separator");
     private final ExtendedDeploymentContext deploymentContext;
     private final String name;
-    private final Logger logger;
     
     public ClientJarWriter(final ExtendedDeploymentContext deploymentContext) {
         this.deploymentContext = deploymentContext;
         name = VersioningUtils.getUntaggedName(deploymentContext.getCommandParameters(DeployCommandParameters.class).name());
-        logger = deploymentContext.getLogger();
     }
     
     public void run() throws IOException {
@@ -87,7 +115,7 @@ public class ClientJarWriter {
          * Only generate the JAR if we would not already have done so.
          */
         if (isArtifactsPresent()) {
-            logger.log(Level.FINE, "Skipping possible client JAR generation because it would already have been done");
+            deplLogger.log(Level.FINE, SKIPPING_JAR_GENERATION);
             return;
         }
         
@@ -97,9 +125,9 @@ public class ClientJarWriter {
                 DeploymentUtils.generatedArtifacts(deploymentContext);
         final File clientJarFile = createClientJARIfNeeded(deploymentContext, name);
         if (clientJarFile == null) {
-            logger.log(Level.FINE, "No client JAR generation is needed.");
+            deplLogger.log(Level.FINE, NO_CLIENT_JAR_GENERATION_NEEDED);
         } else {
-            logger.log(Level.FINE, "Generated client JAR {0} for possible download", clientJarFile.getAbsolutePath());
+            deplLogger.log(Level.FINE, CLIENT_JAR_GENERATED, clientJarFile.getAbsolutePath());
             downloadableArtifacts.addArtifact(clientJarFile.toURI(), clientJarFile.getName());
             generatedArtifacts.addArtifact(clientJarFile.toURI(), clientJarFile.getName());
         }
@@ -142,7 +170,7 @@ public class ClientJarWriter {
                     /*
                      * Add a simple manifest.
                      */
-                    logger.log(Level.FINER, "Adding a simple manifest; one was not already generated");
+                    deplLogger.log(Level.FINER, MANIFEST_ADDED);
                     addManifest(artifacts);
                 }
 
@@ -192,7 +220,7 @@ public class ClientJarWriter {
             final WritableArchive generatedClientJARArchive,
             final Collection<Artifacts.FullAndPartURIs> artifacts) throws IOException {
         final Set<String> pathsWrittenToJAR = new HashSet<String>();
-        StringBuilder copiedFiles = (logger.isLoggable(Level.FINER)) ? new StringBuilder() : null;
+        StringBuilder copiedFiles = (deplLogger.isLoggable(Level.FINER)) ? new StringBuilder() : null;
         for (Artifacts.FullAndPartURIs artifact : artifacts) {
             /*
              * Make sure all ancestor directories are present in the JAR
@@ -223,7 +251,7 @@ public class ClientJarWriter {
                             append(artifact.getPart().toASCIIString());
                 }
             } catch (IOException ex) {
-                logger.log(Level.WARNING, ex.getLocalizedMessage());
+                deplLogger.log(Level.WARNING, EXCEPTION_CAUGHT, ex.getLocalizedMessage());
             } finally {
                 if (is != null) {
                     is.close();
@@ -238,7 +266,7 @@ public class ClientJarWriter {
             }
         }
         if (copiedFiles != null) {
-            logger.log(Level.FINER, copiedFiles.toString());
+            deplLogger.log(Level.FINER, FILES_COPIED, copiedFiles.toString());
         }
     }
     

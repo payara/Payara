@@ -390,7 +390,7 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
         commandParams.virtualservers = virtualservers;
         commandParams.enabled = enabled;
 
-        ExtendedDeploymentContext lifecycleContext = new DeploymentContextImpl(report, logger, null, commandParams, null);
+        ExtendedDeploymentContext lifecycleContext = new DeploymentContextImpl(report, null, commandParams, null);
         try  {
             deployment.registerAppInDomainXML(null, lifecycleContext, t, true);
         } catch(Exception e) {

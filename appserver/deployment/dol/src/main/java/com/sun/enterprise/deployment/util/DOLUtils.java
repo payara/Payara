@@ -505,7 +505,7 @@ public class DOLUtils {
         classPathURIs.addAll(getLibraryJarURIs(app, archive));
         Types types = archive.getParentArchive().getExtraData(Types.class);
         DeployCommandParameters parameters = new DeployCommandParameters(new File(archive.getURI()));
-        ExtendedDeploymentContext context = new DeploymentContextImpl(null, logger, archive, parameters, habitat.<ServerEnvironment>getService(ServerEnvironment.class));
+        ExtendedDeploymentContext context = new DeploymentContextImpl(null, archive, parameters, habitat.<ServerEnvironment>getService(ServerEnvironment.class));
         context.setArchiveHandler(handler);
         Collection<Sniffer> sniffers = snifferManager.getSniffers(context, classPathURIs, types);
         String type = getTypeFromModuleType(md.getModuleType());

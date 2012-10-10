@@ -53,6 +53,7 @@ import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
 import java.util.logging.Level;
 import java.net.URI;
 
@@ -60,17 +61,36 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import org.glassfish.internal.api.Globals;
 
-import com.sun.logging.LogDomains;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 /**
  * This class will detect whether an archive contains specified annotations.
  */
 public class GenericAnnotationDetector extends AnnotationScanner {
 
+    @LogMessagesResourceBundle
+    private static final String SHARED_LOGMESSAGE_RESOURCE = "javax.enterprise.deployment.common.LogMessages";
+
+    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
+    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.deployment.common";
+    private static final Logger deplLogger =
+        Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo(message = "Cannot find archive {0} referenced from archive {1}, it will be ignored for annotation scanning", level="WARNING")
+    private static final String ARCHIVE_NOT_FOUND = "NCLS-DEPLOYMENT-00018";
+
+    @LogMessageInfo(message = "Exception caught {0}", level="WARNING")
+    private static final String EXCEPTION_CAUGHT = "NCLS-DEPLOYMENT-00019";
+
+    @LogMessageInfo(message = "Error in jar entry {0}:  {1}", level="WARNING")
+    private static final String JAR_ENTRY_ERROR = "NCLS-DEPLOYMENT-00020";
+
+    @LogMessageInfo(message = "Failed to scan archive for annotations: {0}", level="WARNING")
+    private static final String FAILED_ANNOTATION_SCAN = "NCLS-DEPLOYMENT-00021";
     boolean found = false;
     List<String> annotations = new ArrayList<String>();; 
-
-    final static Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
 
     public GenericAnnotationDetector(Class[] annotationClasses) {
         if (annotationClasses != null) {
@@ -96,11 +116,14 @@ public class GenericAnnotationDetector extends AnnotationScanner {
                 try {
                     scanArchive(archiveFactory.openArchive(new File(externalLib.getPath())));
                 } catch(FileNotFoundException fnfe) {
-                    logger.log(Level.WARNING, "Cannot find archive " + externalLib.getPath()
-                            + " referenced from archive " + archive.getName()
-                            + ", it will be ignored for annotation scanning"); 
+                    Object args[] = { externalLib.getPath(), archive.getName() };
+                    deplLogger.log(Level.WARNING, ARCHIVE_NOT_FOUND, args);
                 } catch (Exception e) {
-                    logger.log(Level.WARNING, e.getMessage(), e);
+                    LogRecord lr = new LogRecord(Level.WARNING, EXCEPTION_CAUGHT);
+                    Object args[] = { e.getMessage() };
+                    lr.setParameters(args);
+                    lr.setThrown(e);
+                    deplLogger.log(lr);
                 }
             }
         }
@@ -157,14 +180,13 @@ public class GenericAnnotationDetector extends AnnotationScanner {
                             jarSubArchive.close();
                         }
                     } catch (IOException ioe) {
-                        logger.warning("Error scan jar entry" + entryName +
-                            ioe.getMessage());
+                        Object args[] = { entryName, ioe.getMessage() };
+                        deplLogger.log(Level.WARNING, JAR_ENTRY_ERROR, args);
                     }
                 }
             }
         } catch (Exception e) {
-            logger.warning("Failed to scan archive for annotations" +
-                e.getMessage());
+          deplLogger.log(Level.WARNING, FAILED_ANNOTATION_SCAN, e.getMessage());
         }
     }
 }

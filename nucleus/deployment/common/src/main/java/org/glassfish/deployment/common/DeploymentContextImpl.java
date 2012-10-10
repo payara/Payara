@@ -70,11 +70,29 @@ import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.Types;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+
 /**
  *
  * @author dochez
  */
 public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDestroy {
+
+    @LogMessagesResourceBundle
+    private static final String SHARED_LOGMESSAGE_RESOURCE = "javax.enterprise.deployment.common.LogMessages";
+
+    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
+    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.deployment.common";
+    private static final Logger deplLogger =
+        Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo(message = "Detected [EXTENSION_LIST] installed-library [ {0} ] for archive [ {1} ]", level="FINEST")
+    private static final String INSTALLED_LIBRARY = "NCLS-DEPLOYMENT-00003";
+
+    @LogMessageInfo(message = "Unable to create directory {0}", level="FINEST")
+    private static final String UNABLE_TO_CREATE_DIRECTORY = "NCLS-DEPLOYMENT-00004";
 
     private static final String INTERNAL_DIR_NAME = "__internal";
     private static final String APP_TENANTS_SUBDIR_NAME = "__app-tenants";
@@ -82,7 +100,6 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     ReadableArchive source;
     ReadableArchive originalSource;
     final OpsParams parameters;
-    final Logger logger;
     ActionReport actionReport;
     final ServerEnvironment env;
     ClassLoader cloader;
@@ -104,13 +121,16 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
 
     /** Creates a new instance of DeploymentContext */
     public DeploymentContextImpl(Deployment.DeploymentContextBuilder builder, ServerEnvironment env) {
-        this(builder.report(), builder.logger(),  builder.sourceAsArchive(), builder.params(), env);
+        this(builder.report(),  builder.sourceAsArchive(), builder.params(), env);
     }
-    public DeploymentContextImpl(ActionReport actionReport, Logger logger, 
+    public DeploymentContextImpl(ActionReport actionReport, Logger logger,
+        ReadableArchive source, OpsParams params, ServerEnvironment env) {
+      this(actionReport, source, params, env);
+    }
+    public DeploymentContextImpl(ActionReport actionReport,
         ReadableArchive source, OpsParams params, ServerEnvironment env) {
         this.originalSource = source;
         this.source = source;
-        this.logger = logger;
         this.actionReport = actionReport;
         this.parameters = params;
         this.env = env;
@@ -142,7 +162,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     }
 
     public Logger getLogger() {
-        return logger;
+        return deplLogger;
     }
 
     public synchronized void preDestroy() {
@@ -442,9 +462,9 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         URL[] extensionListLibraries = ASClassLoaderUtil.getLibrariesAsURLs(extensionList, env);
         for (URL url : extensionListLibraries) {
             libURIs.add(url.toURI());
-            if(logger.isLoggable(Level.FINEST)){
-                logger.log(Level.FINEST, "Detected [EXTENSION_LIST]" +
-                        " installed-library [ " + url + " ] for archive [ "+source.getName()+ "]");
+            if (deplLogger.isLoggable(Level.FINEST)) {
+                Object args[] = { url, source.getName() };
+                deplLogger.log(Level.FINEST, INSTALLED_LIBRARY, args);
             }
         }
 
@@ -611,10 +631,10 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         File f = getRootTenantDirForApp(originalAppName);
         f = new File(f, tenant);
         if (!f.exists() && !f.mkdirs()) {
-          // TODO handle this case properly -- reported by findbugs
-          if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "Unable to create directory " + f.getAbsolutePath());
+          if (deplLogger.isLoggable(Level.FINEST)) {
+              deplLogger.log(Level.FINEST, UNABLE_TO_CREATE_DIRECTORY, f.getAbsolutePath());
           }
+          
         }
         return f;
     }

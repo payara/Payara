@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Map;
 import java.util.HashMap;
-import com.sun.logging.LogDomains;
 import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.external.statistics.RangeStatistic;
 import org.glassfish.external.statistics.StringStatistic;
@@ -58,6 +57,10 @@ import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+
 /**
  * Provider statistics for deployment lifecycle
  */
@@ -66,8 +69,20 @@ import org.glassfish.gmbal.ManagedObject;
 @Description("Deployment Module Statistics")
 public class DeploymentLifecycleStatsProvider {
 
-    private static final Logger logger = LogDomains.getLogger(
-        DeploymentLifecycleStatsProvider.class, LogDomains.DPL_LOGGER);
+    @LogMessagesResourceBundle
+    private static final String SHARED_LOGMESSAGE_RESOURCE = "javax.enterprise.deployment.common.LogMessages";
+
+    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
+    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.deployment.common";
+    private static final Logger deplLogger =
+        Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo(message = "Application deployed event received - appName = {0}: appType = {1}: loadTime = {2}", level="FINEST")
+    private static final String DEPLOYMENT_EVENT_RECEIVED = "NCLS-DEPLOYMENT-00001";
+
+    @LogMessageInfo(message = "Application undeployed event received - appName = {0}: appType = {1}", level="FINEST")
+    private static final String UNDEPLOYMENT_EVENT_RECEIVED = "NCLS-DEPLOYMENT-00002";
+
 
     private static final String ACTIVE_APPLICATIONS_DEPLOYED_DESCRIPTION =
         "Number of applications deployed";
@@ -159,11 +174,9 @@ public class DeploymentLifecycleStatsProvider {
                     @ProbeParam("appName") String appName,
                     @ProbeParam("appType") String appType,
                     @ProbeParam("loadTime") String loadTime) {
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.finest("Application deployed event received - " +
-                          "appName = " + appName +
-                          ": appType = " + appType + 
-                          ": loadTime = " + loadTime);
+        if (deplLogger.isLoggable(Level.FINEST)) {
+            Object args[] = { appName, appType, loadTime };
+            deplLogger.log(Level.FINEST, DEPLOYMENT_EVENT_RECEIVED, args);
         }
         Map<String, String> appInfoMap = new HashMap<String, String>(); 
         appInfoMap.put(MODULE_TYPE, appType);
@@ -180,10 +193,9 @@ public class DeploymentLifecycleStatsProvider {
     public void applicationUndeployedEvent(
                     @ProbeParam("appName") String appName,
                     @ProbeParam("appType") String appType) {
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.finest("Application undeployed event received - " +
-                          "appName = " + appName +
-                          ": appType = " + appType);
+        if (deplLogger.isLoggable(Level.FINEST)) {
+            Object args[] = { appName, appType };
+            deplLogger.log(Level.FINEST, UNDEPLOYMENT_EVENT_RECEIVED, args);
         }
         appsInfoMap.remove(appName);
         synchronized (activeApplicationsDeployedCount) {

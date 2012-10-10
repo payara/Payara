@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.deploy.shared;
 
-import com.sun.logging.LogDomains;
 import org.glassfish.api.ContractProvider;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -63,6 +62,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 /**
  * This implementation of the ArchiveFactory interface
@@ -78,7 +82,16 @@ public class ArchiveFactory implements ContractProvider {
     @Inject
     ServiceLocator habitat;
 
-    final static Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
+    @LogMessagesResourceBundle
+    private static final String SHARED_LOGMESSAGE_RESOURCE = "javax.enterprise.deployment.common.LogMessages";
+
+    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
+    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.deployment.common";
+    private static final Logger deplLogger =
+        Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo(message = "Cannot find an archive implementation for {0}", cause="The type of archive being created is not supported.", action="Determine the type of archive requested to see whether another type can be used.", level="SEVERE")
+    private static final String IMPLEMENTATION_NOT_FOUND = "NCLS-DEPLOYMENT-00050";
 
     public WritableArchive createArchive(File path) throws java.io.IOException {
         try {
@@ -128,14 +141,19 @@ public class ArchiveFactory implements ContractProvider {
         try {
             WritableArchive archive = habitat.getService(WritableArchive.class, protocol);
             if (archive==null) {
-                logger.log(Level.SEVERE, "Cannot find an archive implementation for " + protocol);
+                deplLogger.log(Level.SEVERE,
+                               IMPLEMENTATION_NOT_FOUND,
+                               protocol);
                 throw new MalformedURLException("Protocol not supported : " + protocol);
             }
 
             archive.create(path);
             return archive;
         } catch (ComponentException e) {
-            logger.log(Level.SEVERE, "Cannot find an archive implementation for " + protocol, e);
+            LogRecord lr = new LogRecord(Level.SEVERE, IMPLEMENTATION_NOT_FOUND);
+            lr.setParameters(new Object[] { protocol });
+            lr.setThrown(e);
+            deplLogger.log(lr);
             throw new MalformedURLException("Protocol not supported : " + protocol);
         }
     }
@@ -191,13 +209,18 @@ public class ArchiveFactory implements ContractProvider {
         try {
             ReadableArchive archive = habitat.getService(ReadableArchive.class, provider);
             if (archive==null) {
-                logger.log(Level.SEVERE, "Cannot find an archive implementation for " + provider);
+                deplLogger.log(Level.SEVERE,
+                               IMPLEMENTATION_NOT_FOUND,
+                               provider);
                 throw new MalformedURLException("Protocol not supported : " + provider);
             }
             archive.open(path);
             return archive;
         } catch (ComponentException e) {
-            logger.log(Level.SEVERE, "Cannot find an archive implementation for " + provider, e);
+            LogRecord lr = new LogRecord(Level.SEVERE, IMPLEMENTATION_NOT_FOUND);
+            lr.setParameters(new Object[] { provider });
+            lr.setThrown(e);
+            deplLogger.log(lr);
             throw new MalformedURLException("Protocol not supported : " + provider);
         } 
     }

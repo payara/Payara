@@ -49,8 +49,11 @@ import java.io.InputStream;
 import java.util.Vector;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.logging.Handler;
+import java.util.logging.MemoryHandler;
 import com.sun.enterprise.util.OS;
 import java.util.Enumeration;
 import java.util.Arrays;
@@ -69,11 +72,23 @@ import org.jvnet.hk2.component.Habitat;
 
 import static org.junit.Assert.*;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+
 /**
  *
  * @author Tim Quinn
  */
 public class FileArchiveTest {
+
+    @LogMessagesResourceBundle
+    private static final String SHARED_LOGMESSAGE_RESOURCE = "javax.enterprise.deployment.common.LogMessages";
+
+    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
+    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.deployment.common";
+    private static final Logger deplLogger =
+        Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 
     private final static String LINE_SEP = System.getProperty("line.separator");
     private final static String STALE_ENTRY = "oldLower/oldFile.txt";
@@ -114,6 +129,9 @@ public class FileArchiveTest {
     private static ServiceLocator habitat;
     private static ArchiveFactory archiveFactory;
 
+    private static  RecordingHandler handler;
+    private static MemoryHandler memoryHandler;
+      
     public FileArchiveTest() {
     }
 
@@ -122,6 +140,9 @@ public class FileArchiveTest {
         habitat = Utils.getNewHabitat();
         archiveFactory = habitat.getService(ArchiveFactory.class);
 
+        handler = new RecordingHandler();
+        memoryHandler = new MemoryHandler(handler, 10, Level.ALL);
+        deplLogger.addHandler(handler);
     }
 
     @AfterClass
@@ -229,17 +250,18 @@ public class FileArchiveTest {
     }
 
     private void getListOfFilesCheckForLogRecord(FileArchive instance, final Set<String> expectedEntryNames) throws IOException {
-        final RecordingLogger logger = new RecordingLogger();
-        getListOfFiles((FileArchive) instance, expectedEntryNames, logger);
-        if (logger.logRecords().size() != 1) {
+        handler.flush();
+        getListOfFiles((FileArchive) instance, expectedEntryNames, deplLogger);
+        System.err.println("size:  " + handler.logRecords().size());
+        if (handler.logRecords().size() != 1) {
             final StringBuilder sb = new StringBuilder();
-            for (LogRecord record : logger.logRecords()) {
+            for (LogRecord record : handler.logRecords()) {
                 sb.append(record.getLevel().getLocalizedName())
                         .append(": ")
                         .append(record.getMessage())
                         .append(LINE_SEP);
             }
-            fail("Expected 1 log message but received " + logger.logRecords().size() + " as follows:" + LINE_SEP + sb.toString());
+            fail("Expected 1 log message but received " + handler.logRecords().size() + " as follows:" + LINE_SEP + sb.toString());
         }
 
         /*
@@ -480,8 +502,6 @@ public class FileArchiveTest {
         final String EXPECTED_LOG_KEY = "enterprise.deployment.nullFileList";
         System.out.println("testInaccessibleDirectoryInFileArchive");
         
-        final RecordingLogger myLogger = new RecordingLogger();
-
         final FileArchive archive = (FileArchive) createAndPopulateArchive(usualEntryNames);
 
         /*
@@ -506,9 +526,10 @@ public class FileArchiveTest {
          * one record.
          */
         final Vector<String> fileList = new Vector<String>();
-        archive.getListOfFiles(lower, fileList, null /* embeddedArchives */, myLogger);
+        handler.flush();
+        archive.getListOfFiles(lower, fileList, null /* embeddedArchives */, deplLogger);
 
-        List<LogRecord> logRecords = myLogger.logRecords();
+        List<LogRecord> logRecords = handler.logRecords();
         if (logRecords.isEmpty()) {
             fail("FileArchive logged no message about being unable to list files; expected " + EXPECTED_LOG_KEY);
         }
@@ -519,36 +540,33 @@ public class FileArchiveTest {
          */
         lower.setExecutable(true, false);
         lower.setReadable(true, false);
-        myLogger.clear();
+        handler.flush();
 
-        archive.getListOfFiles(lower, fileList, null, myLogger);
+        archive.getListOfFiles(lower, fileList, null, deplLogger);
         assertTrue("FileArchive was incorrectly unable to list files; error key in log record:" +
                 (logRecords.isEmpty() ? "" : logRecords.get(0).getMessage()),
                 logRecords.isEmpty());
         
     }
 
-    private static class RecordingLogger extends Logger {
-
+    private static class RecordingHandler extends Handler {
         private final List<LogRecord> records = new ArrayList<LogRecord>();
 
-        private RecordingLogger() {
-            super("TestLogger", null);
+        public void close() {
+            records.clear();
         }
 
-        @Override
-        public void log(LogRecord record) {
+        public void flush() {
+            records.clear();
+        }
+
+        public void publish(LogRecord record) {
             records.add(record);
         }
 
-        void clear() {
-            records.clear();
-        }
-        
         List<LogRecord> logRecords() {
             return records;
         }
-
     }
 }
 

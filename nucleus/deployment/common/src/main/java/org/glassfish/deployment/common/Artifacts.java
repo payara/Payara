@@ -40,7 +40,6 @@
 
 package org.glassfish.deployment.common;
 
-import com.sun.logging.LogDomains;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -51,6 +50,10 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.deployment.DeploymentContext;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 /**
  * Records information about artifacts (files) that a deployer might need to
@@ -73,8 +76,19 @@ import org.glassfish.api.deployment.DeploymentContext;
  */
 public class Artifacts {
 
-    private static final Logger logger =
-            LogDomains.getLogger(Artifacts.class, LogDomains.DPL_LOGGER);
+    @LogMessagesResourceBundle
+    private static final String SHARED_LOGMESSAGE_RESOURCE = "javax.enterprise.deployment.common.LogMessages";
+
+    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
+    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.deployment.common";
+    private static final Logger deplLogger =
+        Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo(message = "Added {1} artifact: {0}", level="FINE")
+    private static final String ARTIFACT_ADDED = "NCLS-DEPLOYMENT-00009";
+
+    @LogMessageInfo(message = "Added downloadable artifacts: {0}", level="FINE")
+    private static final String DOWNLOADABLE_ARTIFACT_ADDED = "NCLS-DEPLOYMENT-00010";
 
     /** the actual artifacts tracked - the part URI and the full URI */
     private final Set<FullAndPartURIs> artifacts = new HashSet<FullAndPartURIs>();
@@ -172,9 +186,10 @@ public class Artifacts {
     public synchronized void addArtifact(URI full, URI part, boolean isTemporary) {
         FullAndPartURIs fullAndPart = new FullAndPartURIs(full, part, isTemporary);
         artifacts.add(fullAndPart);
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Added {1} artifact: {0}",
-                    new Object[] {fullAndPart, keyPrefix});
+        if (deplLogger.isLoggable(Level.FINE)) {
+          deplLogger.log(Level.FINE,
+                         ARTIFACT_ADDED,
+                         new Object[] {fullAndPart, keyPrefix});
         }
     }
 
@@ -207,8 +222,8 @@ public class Artifacts {
      */
     public synchronized void addArtifacts(Collection<FullAndPartURIs> urisCollection) {
         artifacts.addAll(urisCollection);
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Added downloadable artifacts: {0}", urisCollection);
+        if (deplLogger.isLoggable(Level.FINE)) {
+            deplLogger.log(Level.FINE, DOWNLOADABLE_ARTIFACT_ADDED, urisCollection);
         }
     }
 

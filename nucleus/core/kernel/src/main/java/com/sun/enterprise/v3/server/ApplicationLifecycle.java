@@ -1338,9 +1338,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         if (deployParams.description != null) {
             app.setDescription(deployParams.description);
         }
-        if (deployParams.deploymentorder != null) {
-            app.setDeploymentOrder(deployParams.deploymentorder.toString());
-        }
 
         app.setEnabled(String.valueOf(true));
         if (appProps.getProperty(ServerTags.LOCATION) != null) {
