@@ -47,6 +47,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -84,6 +85,7 @@ import org.glassfish.internal.data.ContainerRegistry;
 import org.glassfish.internal.data.EngineInfo;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
+import org.glassfish.internal.deployment.DeploymentOrder;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.SnifferManager;
 import org.glassfish.security.services.impl.AuthenticationServiceImpl;
@@ -189,6 +191,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             "org.glassfish.deployment.trace");
 
         domain = habitat.getService(Domain.class);
+
         systemApplications = domain.getSystemApplications();
         
         for (Application systemApp : systemApplications.getApplications()) {
@@ -196,8 +199,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             if (Boolean.valueOf(systemApp.getDeployProperties().getProperty
                 (ServerTags.LOAD_SYSTEM_APP_ON_STARTUP))) {
                 if (deployment.isAppEnabled(systemApp) || loadAppOnDAS(systemApp.getName())) {
-                    ApplicationRef appRef = server.getApplicationRef(systemApp.getName());
-                    processApplication(systemApp, appRef, logger);
+                  DeploymentOrder.addApplicationDeployment(systemApp);
                 }
             }
         }
@@ -214,8 +216,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             // referenced by non-DAS target so the application
             // information is available on DAS
             if (deployment.isAppEnabled(standaloneAdapter) || loadAppOnDAS(standaloneAdapter.getName())) {
-                ApplicationRef appRef = server.getApplicationRef(standaloneAdapter.getName());
-                processApplication(standaloneAdapter, appRef, logger);
+                  DeploymentOrder.addApplicationDeployment(standaloneAdapter);
             }
         }
 
@@ -230,9 +231,15 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             // referenced by non-DAS target so the application
             // information is available on DAS
             if (deployment.isAppEnabled(app) || loadAppOnDAS(app.getName())) {
-                ApplicationRef appRef = server.getApplicationRef(app.getName());
-                processApplication(app, appRef, logger);
+                  DeploymentOrder.addApplicationDeployment(app);
             }
+        }
+
+        Iterator iter = DeploymentOrder.getApplicationDeployments();
+        while (iter.hasNext()) {
+          Application app = (Application)iter.next();
+          ApplicationRef appRef = server.getApplicationRef(app.getName());
+          processApplication(app, appRef, logger);
         }
 
         // does the user want us to run a particular application
