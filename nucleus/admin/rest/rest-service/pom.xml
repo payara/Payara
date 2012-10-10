@@ -135,15 +135,6 @@
     </dependencies>
     <build> 
         <plugins>
-<!--            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.5.1</version>
-                <configuration>
-                    <fork>true</fork>
-                    <compilerArgument>-proc:only</compilerArgument>
-                </configuration>
-            </plugin>-->
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
