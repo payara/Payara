@@ -177,6 +177,7 @@ public class WLSWireAdapter extends AbstractWireAdapter {
     case LONG:
       value = ois.readLong();
       if (key.equals(Catalog.CATALOG_META_KEY)) {
+        if (wlsCatalog == null) throw new IllegalStateException("wlsCatalog should have been set by readHeader.");
         wlsCatalog.setMeta((Long) value);
       }
       break;
@@ -380,7 +381,7 @@ public class WLSWireAdapter extends AbstractWireAdapter {
 
   @Override
   protected void readHeader(ObjectInputStream ois, Catalog catalog) throws IOException {
-    this.wlsCatalog = catalog;
+    wlsCatalog = catalog;
   }
 
   @Override

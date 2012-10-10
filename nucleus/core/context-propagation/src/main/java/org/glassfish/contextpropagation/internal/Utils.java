@@ -167,9 +167,12 @@ public class Utils {
         for (String key = wireAdapter.readKey(); key != null; key = wireAdapter.readKey()) {
           try {
             Entry entry = wireAdapter.readEntry();
-            if (entry == null) break;
-            entry.init(origFinder.isOriginator(key), accessController.isEveryoneAllowedToRead(key));
-            if (entry != null) map.put(key, entry);
+            if (entry == null) {
+              break;
+            } else {
+              entry.init(origFinder.isOriginator(key), accessController.isEveryoneAllowedToRead(key));
+              map.put(key, entry);
+            }
           } catch (ClassNotFoundException e) {
             ContextBootstrap.getLoggerAdapter().log(Level.ERROR, e,
                 MessageID.ERROR_UNABLE_TO_INSTANTIATE_CONTEXT_FROM_THE_WIRE);
@@ -246,14 +249,13 @@ public class Utils {
         }
       }
 
-      @SuppressWarnings("serial")
       private LinkedList<String> asList(final Iterator<Map.Entry<String, Entry>> mapEntries) {
-        return new LinkedList<String>() {{
-          while (mapEntries.hasNext()) {
-            Map.Entry<String, Entry> mapEntry = mapEntries.next();
-            add(mapEntry.getKey() + ": " + mapEntry.getValue());
-          }
-        }};
+        LinkedList<String> list = new LinkedList<String>();
+        while (mapEntries.hasNext()) {
+          Map.Entry<String, Entry> mapEntry = mapEntries.next();
+          list.add(mapEntry.getKey() + ": " + mapEntry.getValue());
+        }
+        return list;
       }
 
       @Override
