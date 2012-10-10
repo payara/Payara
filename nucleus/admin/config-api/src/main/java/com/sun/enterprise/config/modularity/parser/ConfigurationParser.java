@@ -82,7 +82,8 @@ public class ConfigurationParser<C extends ConfigLoader> {
         ConfigParser configParser = new ConfigParser(habitat);
         // I don't use the GlassFish document here as I don't need persistence
         final DomDocument doc = new DomDocument<GlassFishConfigBean>(habitat) {
-            public Dom make(final Habitat habitat, XMLStreamReader xmlStreamReader, GlassFishConfigBean dom, ConfigModel configModel) {
+            @Override
+            public Dom make(final ServiceLocator habitat, XMLStreamReader xmlStreamReader, GlassFishConfigBean dom, ConfigModel configModel) {
                 // by default, people get the translated view.
             LOG.info("at prepareAndSet: " + dom + "  " + configModel.getProxyType().getName() + "  " +configModel.getTagName());
                 return new GlassFishConfigBean(habitat, this, dom, configModel, xmlStreamReader);

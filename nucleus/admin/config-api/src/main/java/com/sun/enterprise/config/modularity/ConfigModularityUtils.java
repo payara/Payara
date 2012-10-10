@@ -501,6 +501,7 @@ public final class ConfigModularityUtils {
             ConfigParser configParser = new ConfigParser(habitat);
             // I don't use the GlassFish document here as I don't need persistence
             final DomDocument doc = new DomDocument<GlassFishConfigBean>(habitat) {
+                @Override
                 public Dom make(final ServiceLocator habitat, XMLStreamReader xmlStreamReader, GlassFishConfigBean dom,
                                 ConfigModel configModel) {
                     // by default, people get the translated view.
