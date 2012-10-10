@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,27 +61,12 @@ import javax.xml.stream.XMLResolver;
 import com.sun.logging.LogDomains;
 import org.glassfish.internal.deployment.GenericHandler;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
-
 /**
  * Common methods for ArchiveHandler implementations
  *
  * @author Jerome Dochez
  */
 public abstract class AbstractArchiveHandler extends GenericHandler {
-
-    @LogMessagesResourceBundle
-    private static final String SHARED_LOGMESSAGE_RESOURCE = "javax.enterprise.deployment.common.LogMessages";
-
-    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
-    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.deployment.common";
-    private static final Logger deplLogger =
-        Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
-
-    @LogMessageInfo(message = "Exception while getting manifest classpath: ", level="WARNING")
-    private static final String MANIFEST_CLASSPATH_ERROR = "NCLS-DEPLOYMENT-00069";
 
     static final protected Logger _logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
 
@@ -108,9 +93,8 @@ public abstract class AbstractArchiveHandler extends GenericHandler {
             Manifest manifest = getManifest(context.getSource());
             return DeploymentUtils.getManifestLibraries(context, manifest);
         }catch (IOException ioe) {
-            deplLogger.log(Level.WARNING,
-                           MANIFEST_CLASSPATH_ERROR,
-                           ioe);
+            _logger.log(Level.WARNING, 
+                "Exception while getting manifest classpath: ", ioe);
             return new ArrayList<URL>();
         }
     }

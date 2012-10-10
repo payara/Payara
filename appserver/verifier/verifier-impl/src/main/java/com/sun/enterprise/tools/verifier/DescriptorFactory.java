@@ -124,7 +124,7 @@ public class DescriptorFactory
             DeployCommandParameters params = new DeployCommandParameters();
             params.name = appName;
 
-            ExtendedDeploymentContext context = new DeploymentContextImpl(dummyReport, archive, params, env);
+            ExtendedDeploymentContext context = new DeploymentContextImpl(dummyReport, null, archive, params, env);
             context.setArchiveHandler(archiveHandler);
 
             if (!archiveFile.isDirectory()) {

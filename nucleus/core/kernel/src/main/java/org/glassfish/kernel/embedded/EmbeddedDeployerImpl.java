@@ -160,7 +160,7 @@ public class EmbeddedDeployerImpl implements EmbeddedDeployer {
         if (params==null) {
             params = new DeployCommandParameters();
         }
-        ExtendedDeploymentContext initialContext = new DeploymentContextImpl(report, archive, params, env);
+        ExtendedDeploymentContext initialContext = new DeploymentContextImpl(report, logger, archive, params, env);
         ArchiveHandler archiveHandler = null;
         try {
             archiveHandler = deployment.getArchiveHandler(archive);

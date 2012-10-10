@@ -49,7 +49,6 @@ import java.util.Locale;
 import java.util.jar.JarFile;
 import java.util.jar.JarEntry;
 import java.util.logging.Logger;
-import java.util.logging.LogRecord;
 import java.util.logging.Level;
 
 import com.sun.enterprise.deploy.shared.FileArchive;
@@ -57,10 +56,7 @@ import com.sun.enterprise.util.zip.ZipFile;
 import com.sun.enterprise.util.zip.ZipFileException;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.io.FileUtils;
-
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import com.sun.logging.LogDomains;
 
 /**
  * Simple Module exploder
@@ -70,19 +66,10 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
  */
 public class ModuleExploder {
 
-    @LogMessagesResourceBundle
-    private static final String SHARED_LOGMESSAGE_RESOURCE = "javax.enterprise.deployment.common.LogMessages";
-
-    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
-    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.deployment.common";
-    private static final Logger deplLogger =
-        Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
-
-    @LogMessageInfo(message = "Could not expand entry {0} into destination {1}", cause="An exception was caught when the entry was expanded", action="See the exception to determine how to fix the error", level="SEVERE")
-    private static final String COULD_NOT_EXPAND_ENTRY = "NCLS-DEPLOYMENT-00017";
-
     protected static final StringManager localStrings =
             StringManager.getManager(ModuleExploder.class );
+
+    protected static final Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
 
     protected static final String PRESERVED_MANIFEST_NAME = java.util.jar.JarFile.MANIFEST_NAME + ".preserved";
 
@@ -131,11 +118,7 @@ public class ModuleExploder {
                     new Object[] {fileSystemName, destination.getAbsolutePath() });
             IOException ioe = new IOException(msg0);
             ioe.initCause(e);
-            LogRecord lr = new LogRecord(Level.SEVERE, COULD_NOT_EXPAND_ENTRY);
-            Object args[] = { fileSystemName, destination.getAbsolutePath() };
-            lr.setParameters(args);
-            lr.setThrown(ioe);
-            deplLogger.log(lr);
+            logger.log(Level.SEVERE, msg, ioe);
             throw ioe;
         } finally {
             if (jarFile != null) {

@@ -49,36 +49,15 @@ import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Logger;
-import java.util.logging.LogRecord;
 import java.util.logging.Level;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import com.sun.logging.LogDomains;
 
 public class AnnotationScanner implements ClassVisitor {
 
-    @LogMessagesResourceBundle
-    private static final String SHARED_LOGMESSAGE_RESOURCE = "javax.enterprise.deployment.common.LogMessages";
-
-    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
-    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.deployment.common";
-    private static final Logger deplLogger =
-        Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
-
-    @LogMessageInfo(message = "Exception while scanning {0}", level="WARNING")
-    private static final String SCANNING_EXCEPTION_WARNING = "NCLS-DEPLOYMENT-00005";
-
-    @LogMessageInfo(message = "Exception while scanning {0}", level="FINE")
-    private static final String SCANNING_EXCEPTION_FINE = "NCLS-DEPLOYMENT-00006";
-
-    @LogMessageInfo(message = "Error scan jar entry {0} {1}", level="WARNING")
-    private static final String JAR_ENTRY_SCAN_ERROR = "NCLS-DEPLOYMENT-00007";
-
-    @LogMessageInfo(message = "Failed to scan archive for annotations", level="WARNING")
-    private static final String FAILED_ANNOTATION_SCAN = "NCLS-DEPLOYMENT-00008";
+    final static Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
 
     public void visit(int version,
            int access,
@@ -132,11 +111,8 @@ public class AnnotationScanner implements ClassVisitor {
                         ClassReader cr = new ClassReader(is);
                         cr.accept(this, crFlags);
                     } catch(Exception e) {
-                      LogRecord lr = new LogRecord(Level.WARNING, SCANNING_EXCEPTION_WARNING);
-                      Object args[] = { entryName };
-                      lr.setParameters(args);
-                      lr.setThrown(e);
-                      deplLogger.log(lr);
+                        logger.log(Level.WARNING, "Exception while scanning " +
+                                entryName, e);
                     } finally {
                         is.close();
                     }
@@ -157,11 +133,9 @@ public class AnnotationScanner implements ClassVisitor {
                                         ClassReader cr = new ClassReader(is);
                                         cr.accept(this, crFlags);
                                     } catch(Exception e) {
-                                      LogRecord lr = new LogRecord(Level.FINE, SCANNING_EXCEPTION_FINE);
-                                      Object args[] = { entryName };
-                                      lr.setParameters(args);
-                                      lr.setThrown(e);
-                                      deplLogger.log(lr);
+                                        logger.log(Level.FINE,
+                                                "Exception while scanning " +
+                                                        entryName, e);
                                     } finally {
                                         is.close();
                                     }
@@ -171,13 +145,13 @@ public class AnnotationScanner implements ClassVisitor {
                             jarFile.close();
                         }
                     } catch (IOException ioe) {
-                        Object args[] = { entryName, ioe.getMessage() };
-                        deplLogger.log(Level.WARNING, JAR_ENTRY_SCAN_ERROR, args);
+                        logger.warning("Error scan jar entry" + entryName +
+                            ioe.getMessage());
                     }
                 }
             }
         } catch (Exception e) {
-            deplLogger.log(Level.WARNING, FAILED_ANNOTATION_SCAN, e);
+            logger.log(Level.WARNING, "Failed to scan archive for annotations", e);
         }
     }
 }

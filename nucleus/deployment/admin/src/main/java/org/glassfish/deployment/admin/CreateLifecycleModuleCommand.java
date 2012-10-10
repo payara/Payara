@@ -180,7 +180,7 @@ public class CreateLifecycleModuleCommand implements AdminCommand, AdminCommandS
         commandParams.target = target;
 
         // create a dummy context to hold params and props
-        ExtendedDeploymentContext deploymentContext = new DeploymentContextImpl(report, null, commandParams, null);
+        ExtendedDeploymentContext deploymentContext = new DeploymentContextImpl(report, logger, null, commandParams, null);
 
         Properties appProps = deploymentContext.getAppProps();
 

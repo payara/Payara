@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.deployment.deploy.shared;
 
+import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.io.FileUtils;
 import java.net.MalformedURLException;
@@ -61,10 +62,6 @@ import java.util.zip.ZipEntry;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
-
 /**
  * This implementation of the Archive deal with reading
  * jar files either from a JarFile or from a JarInputStream
@@ -75,19 +72,7 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 @PerLookup
 public class InputJarArchive extends JarArchive implements ReadableArchive {
     
-    @LogMessagesResourceBundle
-    private static final String SHARED_LOGMESSAGE_RESOURCE = "javax.enterprise.deployment.common.LogMessages";
-
-    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
-    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.deployment.common";
-    private static final Logger deplLogger =
-        Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
-
-    @LogMessageInfo(message = " file open failure; file = {0}", level="WARNING")
-    private static final String FILE_OPEN_FAILURE = "NCLS-DEPLOYMENT-00048";
-
-    @LogMessageInfo(message = "exception message:  {0} -- invalid zip file: {1}", level="WARNING")
-    private static final String INVALID_ZIP_FILE = "NCLS-DEPLOYMENT-00049";
+    final static Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
 
     // the file we are currently mapped to 
     volatile protected JarFile jarFile=null;
@@ -323,16 +308,15 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
                 jf = new JarFile(file);
             }
         } catch(IOException e) {
-            deplLogger.log(Level.WARNING,
-                           FILE_OPEN_FAILURE,
-                           new Object[]{uri});
+            logger.log(Level.WARNING,
+                "enterprise.deployment.backend.fileOpenFailure", 
+                new Object[]{uri});
             // add the additional information about the path
             // since the IOException from jdk doesn't include that info
             String additionalInfo = localStrings.getString(
                 "enterprise.deployment.invalid_zip_file", uri);
-            deplLogger.log(Level.WARNING,
-                           INVALID_ZIP_FILE,
-                           new Object[] { e.getLocalizedMessage(), additionalInfo } );
+            logger.log(Level.WARNING,
+                e.getLocalizedMessage() + " --  " + additionalInfo);
         }
         return jf;
     }       

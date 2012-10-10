@@ -181,13 +181,6 @@ public class VirtualServer extends StandardHost
      */
     protected static final ResourceBundle rb = DEFAULT_LOGGER.getResourceBundle();
 
-    @LogMessagesResourceBundle
-    public static final String SHARED_LOGMESSAGE_RESOURCE =
-            "com.sun.enterprise.web.LogMessages";
-
-    @LoggerInfo(subsystem="WEB", description="Main WEB Logger", publish=true)
-    public static final String WEB_MAIN_LOGGER = "javax.enterprise.web";
-
     @LogMessageInfo(
             message = "The web module {0} has been designated as the default-web-module for virtual server {1}",
             level = "FINE")
@@ -2232,7 +2225,7 @@ public class VirtualServer extends StandardHost
             params.target = "server";
 
             ExtendedDeploymentContext initialContext =
-                    new DeploymentContextImpl(report, archive, params, env);
+                    new DeploymentContextImpl(report, _logger, archive, params, env);
 
             if (deployment==null)
                 deployment = services.getService(Deployment.class);
