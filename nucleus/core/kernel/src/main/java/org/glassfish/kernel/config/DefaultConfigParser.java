@@ -46,6 +46,8 @@ import org.glassfish.api.admin.config.ConfigParser;
 import org.glassfish.api.admin.config.Container;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.GlassFishConfigBean;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
@@ -83,9 +85,9 @@ public class DefaultConfigParser implements ConfigParser {
         // I don't use the GlassFish document here as I don't need persistence
         final DomDocument doc = new DomDocument<GlassFishConfigBean>(habitat) {
         	@Override
-            public Dom make(final Habitat habitat, XMLStreamReader xmlStreamReader, GlassFishConfigBean dom, ConfigModel configModel) {
+            public Dom make(final ServiceLocator habitat, XMLStreamReader xmlStreamReader, GlassFishConfigBean dom, ConfigModel configModel) {
                 // by default, people get the translated view.
-                return new GlassFishConfigBean(habitat,this, dom, configModel, xmlStreamReader);
+                return new GlassFishConfigBean((Habitat) habitat,this, dom, configModel, xmlStreamReader);
             }
         };
 

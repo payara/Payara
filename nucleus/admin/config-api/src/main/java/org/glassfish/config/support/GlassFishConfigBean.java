@@ -43,7 +43,7 @@ package org.glassfish.config.support;
 import java.lang.reflect.Proxy;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
@@ -81,7 +81,7 @@ public final class GlassFishConfigBean extends ConfigBean {
         return rawTransformer.transform(s);
     }
 
-    public GlassFishConfigBean(Habitat habitat, DomDocument document, GlassFishConfigBean parent, ConfigModel model, XMLStreamReader in) {
+    public GlassFishConfigBean(ServiceLocator habitat, DomDocument document, GlassFishConfigBean parent, ConfigModel model, XMLStreamReader in) {
         super(habitat, document, parent, model, in);                
     }
 
@@ -91,7 +91,7 @@ public final class GlassFishConfigBean extends ConfigBean {
 
     @Override
     public <T extends ConfigBeanProxy> T createProxy(Class<T> proxyType) {
-        TranslatedConfigView.setHabitat((Habitat) getServiceLocator());
+        TranslatedConfigView.setHabitat(getServiceLocator());
         if (defaultView==null) {
             defaultView = new TranslatedConfigView(this);
         }

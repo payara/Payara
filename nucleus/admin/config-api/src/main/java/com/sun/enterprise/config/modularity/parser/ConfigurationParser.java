@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.ConfigLoader;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.config.support.GlassFishConfigBean;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
@@ -76,7 +77,7 @@ public class ConfigurationParser<C extends ConfigLoader> {
      * @param habitat The Habitat object to add the config to
      * @param <T>     the ConfigBeanProxy type we are looking for
      */
-    public <T extends ConfigBeanProxy> void prepareAndSetConfigBean(final Habitat habitat, List<ConfigBeanDefaultValue> values) {
+    public <T extends ConfigBeanProxy> void prepareAndSetConfigBean(final ServiceLocator habitat, List<ConfigBeanDefaultValue> values) {
 
         ConfigParser configParser = new ConfigParser(habitat);
         // I don't use the GlassFish document here as I don't need persistence

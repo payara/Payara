@@ -46,6 +46,7 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigExtension;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.server.ServerEnvironmentImpl;
@@ -109,7 +110,7 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
                 U configBeanInstance = configExtensionType.cast(extension);
                 if (configBeanInstance instanceof ConfigExtension) {
                     ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(configBeanInstance)).getMasterView();
-                    Habitat habitat = cb.getHabitat();
+                    ServiceLocator habitat = cb.getHabitat();
                     ServiceLocatorUtilities.addOneDescriptor(habitat,
                             BuilderHelper.createConstantDescriptor(configBeanInstance, ServerEnvironment.DEFAULT_INSTANCE_NAME,
                                     ConfigSupport.getImpl(configBeanInstance).getProxyType()));
@@ -125,7 +126,7 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
 
     protected <U extends ConfigBeanProxy> void addConfigBeanFor(Class<U> extensionType, C extensionOwner) {
         ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(extensionOwner)).getMasterView();
-        Habitat habitat = cb.getHabitat();
+        ServiceLocator habitat = cb.getHabitat();
         StartupContext context = habitat.getService(StartupContext.class);
         List<ConfigBeanDefaultValue> configBeanDefaultValueList =
                 ConfigModularityUtils.getDefaultConfigurations(extensionType, ConfigModularityUtils.isDas(context));
