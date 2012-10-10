@@ -135,14 +135,32 @@
     </dependencies>
     <build> 
         <plugins>
-            <plugin>
+<!--            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.5.1</version>
                 <configuration>
                     <fork>true</fork>
-                    <compilerArgument>-proc:none</compilerArgument>
+                    <compilerArgument>-proc:only</compilerArgument>
                 </configuration>
+            </plugin>-->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy_service_files</id>
+                        <phase>test</phase>
+                        <configuration>
+                            <tasks>
+                                <move file="${project.build.outputDirectory}/META-INF/javax.annotation.processing.Processor"
+                                    todir="${project.build.outputDirectory}/META-INF/services" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
