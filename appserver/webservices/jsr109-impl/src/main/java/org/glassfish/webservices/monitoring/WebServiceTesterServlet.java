@@ -378,8 +378,8 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
 
     }    
     
-    private volatile MessageTrace request = null;
-    private volatile MessageTrace response = null;
+    private transient volatile MessageTrace request = null;
+    private transient volatile MessageTrace response = null;
     
     public void invocationProcessed(MessageTrace request, MessageTrace response) {
         this.request = request;

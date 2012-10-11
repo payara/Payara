@@ -91,7 +91,7 @@ public class ServiceInvocationHandler implements InvocationHandler {
     private Service serviceDelegate;
 
     // used in full wsdl case for DII methods. Lazily instantiated.
-    private Service configuredServiceDelegate;
+    private volatile Service configuredServiceDelegate;
 
     private ClassLoader classLoader;
 
@@ -208,7 +208,8 @@ public class ServiceInvocationHandler implements InvocationHandler {
 
                     serviceToInvoke = getConfiguredServiceDelegate();
                     break;
-
+                default:
+                    break;
             } // End switch (methodType)
 
             returnValue = methodToInvoke.invoke(serviceToInvoke, argsForInvoke);
@@ -281,22 +282,20 @@ public class ServiceInvocationHandler implements InvocationHandler {
     }
 
     private Service getConfiguredServiceDelegate() throws Exception {
-        synchronized(this) {
-            if( configuredServiceDelegate == null ) {
-                // We need a ConfiguredService to handle these
-                // invocations, since the JAXRPC RI Generated Service impl 
-                // does not.  Configured service is potentially 
-                // a heavy-weight object so we lazily instantiate it to
-                // take advantage of the likelihood that 
-                // GeneratedService service-refs won't be used for DII.
-                Service configuredService =
-                        wsUtil.createConfiguredService(serviceRef);
-                wsUtil.configureHandlerChain(serviceRef, configuredService,
-                        configuredService.getPorts(), classLoader);
-                configuredServiceDelegate = configuredService;
+        if (configuredServiceDelegate == null) {
+            // We need a ConfiguredService to handle these
+            // invocations, since the JAXRPC RI Generated Service impl
+            // does not.  Configured service is potentially
+            // a heavy-weight object so we lazily instantiate it to
+            // take advantage of the likelihood that
+            // GeneratedService service-refs won't be used for DII.
+            Service configuredService =
+                    wsUtil.createConfiguredService(serviceRef);
+            wsUtil.configureHandlerChain(serviceRef, configuredService,
+                    configuredService.getPorts(), classLoader);
+            configuredServiceDelegate = configuredService;
 
-                addMessageSecurityHandler(configuredService);
-            }
+            addMessageSecurityHandler(configuredService);
         }
         return configuredServiceDelegate;
     }
@@ -533,6 +532,8 @@ public class ServiceInvocationHandler implements InvocationHandler {
                 callProperties = serviceRef.getCallProperties();
                 break;
 
+            default:
+                break;
         }
 
         return callProperties;
