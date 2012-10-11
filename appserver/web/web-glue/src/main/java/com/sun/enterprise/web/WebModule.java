@@ -84,7 +84,7 @@ import org.glassfish.web.deployment.runtime.SessionConfig;
 import org.glassfish.web.deployment.runtime.*;
 import org.glassfish.web.loader.ServletContainerInitializerUtil;
 import org.glassfish.web.valve.GlassFishValve;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.types.Property;
 
 
@@ -356,7 +356,7 @@ public class WebModule extends PwcWebModule implements Context {
     // true if standalone WAR, false if embedded in EAR file
     private boolean isStandalone = true;
 
-    private Habitat services;
+    private ServiceLocator services;
 
     /**
      * Constructor.
@@ -365,7 +365,7 @@ public class WebModule extends PwcWebModule implements Context {
         this(null);
     }
 
-    public WebModule(Habitat services) {
+    public WebModule(ServiceLocator services) {
         super();
         this.services = services;
         this.adHocPaths = new HashMap<String,AdHocServletInfo>();

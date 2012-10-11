@@ -127,7 +127,7 @@ import org.glassfish.web.deployment.util.WebValidatorWithoutCL;
 import org.glassfish.web.valve.GlassFishValve;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
 import org.jvnet.hk2.config.Transactions;
@@ -479,7 +479,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     private GrizzlyService grizzlyService;
 
     @Inject
-    private Habitat habitat;
+    private ServiceLocator habitat;
 
     @Inject
     private JavaEEIOUtils javaEEIOUtils;

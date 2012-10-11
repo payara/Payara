@@ -51,7 +51,7 @@ import org.glassfish.web.WarType;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import javax.inject.Singleton;
 
 import java.io.IOException;
@@ -73,7 +73,7 @@ public class WarDetector implements ArchiveDetector {
     public static final String ARCHIVE_TYPE = WarType.ARCHIVE_TYPE;
 
     @Inject WebSniffer sniffer;
-    @Inject Habitat services;
+    @Inject ServiceLocator services;
     @Inject WarType archiveType;
     private ArchiveHandler archiveHandler;
     private Logger logger = Logger.getLogger(getClass().getPackage().getName());

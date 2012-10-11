@@ -57,7 +57,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
 
 /**
@@ -85,7 +85,7 @@ public class ListHttpListeners implements AdminCommand {
     @Inject
     Domain domain;
     @Inject
-    Habitat services;
+    ServiceLocator services;
 
     /**
      * Executes the command with the command parameters passed as Properties where the keys are the parameter names and

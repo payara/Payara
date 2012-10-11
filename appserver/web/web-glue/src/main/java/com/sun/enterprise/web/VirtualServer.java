@@ -126,7 +126,7 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.valve.GlassFishValve;
 
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
@@ -446,7 +446,7 @@ public class VirtualServer extends StandardHost
 
     private Domain domain;
 
-    private Habitat services;
+    private ServiceLocator services;
 
     // Is this virtual server active?
     private boolean isActive;
@@ -601,7 +601,7 @@ public class VirtualServer extends StandardHost
         this.cacheControls = cacheControls;
     }
 
-    public void setServices(Habitat services) {
+    public void setServices(ServiceLocator services) {
         this.services = services;
     }
 
@@ -1905,7 +1905,7 @@ public class VirtualServer extends StandardHost
      */
     void reconfigureAccessLog(String globalAccessLogBufferSize,
                               String globalAccessLogWriteInterval,
-                              Habitat services,
+                              ServiceLocator services,
                               Domain domain,
                               boolean globalAccessLoggingEnabled) {
         try {

@@ -48,7 +48,7 @@ import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import org.jboss.weld.transaction.spi.TransactionServices;
 
@@ -56,7 +56,7 @@ public class TransactionServicesImpl implements TransactionServices {
 
     private JavaEETransactionManager transactionManager = null;
 
-    public TransactionServicesImpl(Habitat services) {
+    public TransactionServicesImpl(ServiceLocator services) {
         transactionManager = services.getService(JavaEETransactionManager.class);
         if (transactionManager == null) {
             throw new RuntimeException("Unable to retrieve transaction mgr.");

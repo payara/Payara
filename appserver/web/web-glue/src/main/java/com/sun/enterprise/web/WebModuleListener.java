@@ -58,7 +58,7 @@ import org.glassfish.web.deployment.runtime.WebProperty;
 import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.web.deployment.util.WebValidatorWithCL;
 import org.glassfish.loader.util.ASClassLoaderUtil;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.naming.NamingException;
 import javax.servlet.ServletContext;
@@ -244,7 +244,7 @@ final class WebModuleListener
         servletContext.setAttribute(
             "com.sun.appserv.tldlistener.map", tldListenerMap);
 
-        Habitat defaultServices =
+        ServiceLocator defaultServices =
                 webContainer.getServerContext().getDefaultServices();
 
         // set services for jsf injection
@@ -288,7 +288,7 @@ final class WebModuleListener
 
         // START SJSAS 6311155
         String sysClassPath = ASClassLoaderUtil.getModuleClassPath(
-            (Habitat) defaultServices,
+            (ServiceLocator) defaultServices,
             webModule.getID(), null
         );
         // If the configuration flag usMyFaces is set, remove javax.faces.jar

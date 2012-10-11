@@ -56,7 +56,7 @@ import com.sun.faces.util.FacesLogger;
 import java.net.URI;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.servlet.ServletContext;
 import java.lang.reflect.InvocationTargetException;
@@ -96,7 +96,7 @@ public class GlassFishInjectionProvider extends DiscoverableInjectionProvider im
      * @param servletContext
      */
     public GlassFishInjectionProvider(ServletContext servletContext) {
-        Habitat defaultServices = (Habitat)servletContext.getAttribute(
+        ServiceLocator defaultServices = (ServiceLocator)servletContext.getAttribute(
                 HABITAT_ATTRIBUTE);
         compEnvManager = defaultServices.getService(ComponentEnvManager.class);
         invokeMgr = defaultServices.getService(InvocationManager.class);

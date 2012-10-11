@@ -61,7 +61,7 @@ import org.glassfish.ha.store.api.Storeable;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
 
 import javax.servlet.ServletRequest;
@@ -85,7 +85,7 @@ public class ReplicationWebEventPersistentManager<T extends Storeable> extends R
     
 
     @Inject
-    private Habitat services;
+    private ServiceLocator services;
 
     @Inject
     private GMSAdapterService gmsAdapterService;

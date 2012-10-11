@@ -61,7 +61,7 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 
 
@@ -88,7 +88,7 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
     public static final String CREATE_CONNECTOR = "AS-WEB-00045";
 
     @Inject
-    private Habitat services;
+    private ServiceLocator services;
     
     @Inject
     private ServerContext serverContext;

@@ -50,7 +50,7 @@ import com.sun.enterprise.web.WebContainer;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.logging.annotation.LoggerInfo;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.j2ee.statistics.Stats;
 
 import javax.management.MBeanServerFactory;
@@ -116,7 +116,7 @@ public class GrizzlyConfig implements MonitoringLevelListener{
     /**
      * This server context's default services.
      */
-    private Habitat services = null;
+    private ServiceLocator services = null;
     
 
     // --------------------------------------------------------------- //

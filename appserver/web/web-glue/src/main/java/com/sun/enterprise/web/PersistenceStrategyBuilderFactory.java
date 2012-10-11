@@ -43,7 +43,7 @@ package com.sun.enterprise.web;
 
 import com.sun.enterprise.web.session.PersistenceType;
 import org.apache.catalina.Context;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.logging.annotation.LoggerInfo;
 
@@ -82,14 +82,14 @@ public class PersistenceStrategyBuilderFactory {
             level = "FINEST")
     public static final String ACCESS_LOG_DIRECTORY_SET = "AS-WEB-00296";
 
-    Habitat services;
+    ServiceLocator services;
 
 
     /**
      * Constructor.
      */
     public PersistenceStrategyBuilderFactory(
-            ServerConfigLookup serverConfigLookup, Habitat services) {
+            ServerConfigLookup serverConfigLookup, ServiceLocator services) {
 
         this.services = services;
     }

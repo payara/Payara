@@ -58,7 +58,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.glassfish.ejb.api.EjbContainerServices;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.weld.ejb.EjbDescriptorImpl;
 import org.glassfish.weld.ejb.SessionObjectReferenceImpl;
 import org.jboss.weld.ejb.api.SessionObjectReference;
@@ -79,11 +79,11 @@ import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 public class EjbServicesImpl implements EjbServices
 {
 
-    private Habitat services;
+    private ServiceLocator services;
     private Logger logger = Logger.getLogger(EjbServicesImpl.class.getName());
 
 
-    public EjbServicesImpl(Habitat h) {
+    public EjbServicesImpl(ServiceLocator h) {
         services = h;
     }
 

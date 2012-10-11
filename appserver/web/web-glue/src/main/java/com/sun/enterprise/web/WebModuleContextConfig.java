@@ -57,7 +57,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.web.valve.GlassFishValve;
 
 import javax.naming.NamingException;
@@ -124,7 +124,7 @@ public class WebModuleContextConfig extends ContextConfig {
     public final static int MESSAGE_DESTINATION_REFS = 12;
     public final static int MIME_MAPPINGS = 13;
     
-    protected Habitat services;
+    protected ServiceLocator services;
         
     
     /**
@@ -149,7 +149,7 @@ public class WebModuleContextConfig extends ContextConfig {
     /**
      * Customized <code>ContextConfig</code> which use the DOL for deployment.
      */
-    public WebModuleContextConfig(Habitat services){
+    public WebModuleContextConfig(ServiceLocator services){
         synchronized (this) {
             this.services = services;
         }
