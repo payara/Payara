@@ -294,6 +294,7 @@ public class WebServiceReferenceManagerImpl implements WebServiceReferenceManage
         descUtil.preServiceCreate(desc);*/
         WsUtil wsu = new WsUtil();
         URL wsdlFile = wsu.privilegedGetServiceRefWsdl(desc);
+        /* TODO BM resolve catalog
         // Check if there is a catalog for this web service client
         // If so resolve the catalog entry
         String genXmlDir;
@@ -307,7 +308,6 @@ public class WebServiceReferenceManagerImpl implements WebServiceReferenceManage
             // this is the case of an appclient being run as class file from command line
             genXmlDir = desc.getBundleDescriptor().getModuleDescriptor().getArchiveUri();
         }
-        /* TODO BM resolve catalog
         File catalogFile = new File(genXmlDir,
                 desc.getBundleDescriptor().getDeploymentDescriptorDir() +
                     File.separator + "jax-ws-catalog.xml");

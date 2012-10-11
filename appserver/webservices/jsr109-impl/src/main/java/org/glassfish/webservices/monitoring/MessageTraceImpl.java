@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,8 +68,6 @@ public class MessageTraceImpl implements MessageTrace {
     private Endpoint source;
     private String soapMessage=null;
     private TransportInfo transportInfo=null;
-    private int hashcode=0;
-    
     
     /** Creates a new instance of InvocationTrace */
     public MessageTraceImpl() {
@@ -107,9 +105,6 @@ public class MessageTraceImpl implements MessageTrace {
     }
     
     public void setMessageContext(com.sun.xml.rpc.spi.runtime.SOAPMessageContext soapMessageCtx) {
-
-        hashcode = soapMessageCtx.hashCode();
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
             soapMessageCtx.getMessage().writeTo(baos);
@@ -121,9 +116,6 @@ public class MessageTraceImpl implements MessageTrace {
     }    
     
     public void setMessageContext(SOAPMessageContext soapMessageCtx) {
-        
-        hashcode = soapMessageCtx.hashCode();
-        
         ByteArrayOutputStream baos = new ByteArrayOutputStream();        
         try {
             soapMessageCtx.getMessage().writeTo(baos);       

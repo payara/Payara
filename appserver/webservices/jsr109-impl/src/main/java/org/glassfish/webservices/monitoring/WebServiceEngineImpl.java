@@ -67,12 +67,12 @@ import java.util.logging.Level;
  */
 public final class WebServiceEngineImpl implements WebServiceEngine {
     
-    protected final Map<String, Endpoint> endpoints = new HashMap<String, Endpoint>();
-    protected final List<EndpointLifecycleListener> lifecycleListeners = 
+    private final Map<String, Endpoint> endpoints = new HashMap<String, Endpoint>();
+    private final List<EndpointLifecycleListener> lifecycleListeners =
             new ArrayList<EndpointLifecycleListener>();
-    protected final List<AuthenticationListener> authListeners = 
+    private final List<AuthenticationListener> authListeners =
             new ArrayList<AuthenticationListener>();
-    protected volatile GlobalMessageListener globalMessageListener = null; 
+    private volatile GlobalMessageListener globalMessageListener = null;
            
     static final ThreadLocal servletThreadLocal = new ThreadLocal();
     public static final Logger sLogger = LogDomains.getLogger(WebServiceEngineImpl.class,LogDomains.WEBSERVICES_LOGGER);
