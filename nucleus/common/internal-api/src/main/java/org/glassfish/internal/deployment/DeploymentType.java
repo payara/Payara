@@ -138,7 +138,7 @@ public class DeploymentType implements Comparator {
 
   // Compares two instances of the current type
   public int compare(Object o1, Object o2) {
-    if ((o1 instanceof Application) && (o1 instanceof Application)) {
+    if ((o1 instanceof Application) && (o2 instanceof Application)) {
       return compare((Application)o1, (Application)o2);
     }
     return defaultCompare(o1, o2);
