@@ -104,7 +104,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
         return deploymentNotifier;
     }
 
-    private Logger logger = LogDomains.getLogger(this.getClass(), LogDomains.WEBSERVICES_LOGGER);
+    private static final Logger logger = LogDomains.getLogger(WebServicesDeployer.class, LogDomains.WEBSERVICES_LOGGER);
 
     private ResourceBundle rb = logger.getResourceBundle();
 
@@ -207,13 +207,13 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
         //For modules this is domains/<domain-name>/generated/xml
         //Check with Hong about j2ee-modules
         File wsdlDir = dc.getScratchDir("xml");
-        wsdlDir.mkdirs();
+        mkDirs(wsdlDir);
 
 
         //For modules this is domains/<domain-name>/generated/xml
         //Check with Hong about j2ee-modules
         File stubsDir = dc.getScratchDir("ejb");
-        stubsDir.mkdirs();
+        mkDirs(stubsDir);
 
 
         if (!DOLUtils.warType().equals(bundle.getModuleType()) &&
@@ -290,7 +290,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
      */
     private String downloadWsdlsAndSchemas( URL httpUrl, File wsdlDir) throws Exception {
         // First make required directories and download this wsdl file
-        wsdlDir.mkdirs();
+        mkDirs(wsdlDir);
         String fileName = httpUrl.toString().substring(httpUrl.toString().lastIndexOf("/")+1);
         File toFile = new File(wsdlDir.getAbsolutePath()+File.separator+fileName);
         downloadFile(httpUrl, toFile);
@@ -313,7 +313,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
             if(location.lastIndexOf(File.separator) != -1) {
                 File newDir = new File(wsdlDir.getAbsolutePath()+File.separator+
                 location.substring(0, location.lastIndexOf(File.separator)));
-                newDir.mkdirs();
+                mkDirs(newDir);
             }
             downloadFile(new URL(urlWithoutFileName+"/"+next.getLocation()),
                         new File(wsdlDir.getAbsolutePath()+File.separator+location));
@@ -397,8 +397,8 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
      */
     private static void copyFile(File src, File dest) throws IOException {
         if (!dest.exists()) {
-            dest.getParentFile().mkdirs();
-            dest.createNewFile();
+            mkDirs(dest.getParentFile());
+            mkFile(dest);
         }
 
         FileChannel srcChannel = null;
@@ -652,7 +652,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
                 File genXmlDir =  dc.getScratchDir("xml");
 
                 String wsdlFileDir = next.getWsdlFileUri().substring(0, next.getWsdlFileUri().lastIndexOf('/'));
-                (new File(genXmlDir, wsdlFileDir)).mkdirs();
+                mkDirs(new File(genXmlDir, wsdlFileDir));
                 File genWsdlFile = new File(genXmlDir, next.getWsdlFileUri());
                 wsUtil.generateFinalWsdl(url, next, wsUtil.getWebServerInfoForDAS(), genWsdlFile);
             }
@@ -757,7 +757,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
     public static void moveFile(String sourceFile, String destFile)
     throws IOException {
         FileUtils.copy(sourceFile, destFile);
-        new File(sourceFile).delete();
+        FileUtils.deleteFile(new File(sourceFile));
     }
 
     @Override
@@ -876,7 +876,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
             for (String path: publishedFiles) {
                 File f = new File(path);
                 if (f.exists()) {
-                    f.delete();
+                    FileUtils.deleteFile(f);
                 }
             }
         }
@@ -922,6 +922,17 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
         return webServiceDescriptors;
     }
 
+    private static void mkDirs(File f) {
+        if (!f.mkdirs() && logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Directory already exists {0}", f);
+        }
+    }
+
+    private static void mkFile(File f) throws IOException {
+        if (!f.createNewFile() && logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "File already exists {0}", f);
+        }
+    }
 }
 
 

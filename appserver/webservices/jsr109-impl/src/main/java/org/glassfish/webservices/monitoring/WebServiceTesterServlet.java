@@ -117,7 +117,7 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
 		    	   "enterprise.webservice.monitoring.ExceptionDetails",
                            "Exceptions details : {0}", 
                            new Object[] {e.getMessage()}) + "</H3>");                        
-                out.print("<HR>");                
+                out.print("<HR>");
                 e.printStackTrace(out);
                 out.print("<HR>");                                
                 out.print("</HTML>");
@@ -298,7 +298,7 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
                     String webValue = req.getParameter("PARAM"+
                             toInvoke.getName()+i);
                     out.print("<td>" + parameterTypes[i].getName()+"</td>");
-                    out.print("<td>" + webValue + "</td>");
+                    out.print("<td><pre>" + encodeHTML(webValue) + "</pre></td>");
                     parameterValues[i] = convertWebParam(parameterTypes[i],webValue);
                     out.print("</tr>");
                 }
@@ -308,7 +308,7 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
 		    	   "enterprise.webservice.monitoring.methodReturn",
                            "<h4>Method returned</h4>")
                            +toInvoke.getReturnType().getName() + " : \"<b>" 
-                        + toInvoke.invoke(port, parameterValues)+"</b>\"");
+                        + encodeHTML(toInvoke.invoke(port, parameterValues).toString())+"</b>\"");
                 out.print("<HR>");
                 if (request!=null) {
                     // let's print the SOAP request
@@ -369,10 +369,7 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
         
         
         out.print("<HR><blockquote><pre xml:lang>");
-        String value = baos.toString();
-        value = value.replaceAll("<", "&lt;");
-        value = value.replaceAll(">", "&gt;");
-        out.write(value);
+        out.write(encodeHTML(baos.toString()));
         
         out.print("</pre></blockquote><HR>");
 
@@ -739,5 +736,9 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
             }
             assert path.delete();
         }
-    }    
+    }
+
+    private String encodeHTML(String html) {
+        return html.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    }
 }
