@@ -53,6 +53,7 @@ import javax.ejb.RemoveException;
 import javax.transaction.Status;
 import javax.transaction.xa.XAResource;
 
+import com.sun.enterprise.config.serverbeans.Config;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.ejb.api.MessageBeanListener;
@@ -285,12 +286,7 @@ public final class MessageBeanContainer extends BaseContainer implements
         }
 
         MdbContainer mdbc = ejbContainerUtilImpl.getServices()
-                .getService(MdbContainer.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
-        if (mdbc == null) {
-            mdbc = ejbContainerUtilImpl.getServices()
-                    .getService(MdbContainer.class);   
-        }
-
+                        .<Config>getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME).getExtensionByType(MdbContainer.class);
         int maxPoolSize = beanPoolDesc_.getMaxPoolSize();
         if (maxPoolSize < 0) {
             maxPoolSize = stringToInt(mdbc.getMaxPoolSize(), appEJBName_,
