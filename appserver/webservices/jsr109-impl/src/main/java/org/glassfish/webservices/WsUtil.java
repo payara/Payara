@@ -1190,6 +1190,11 @@ public class WsUtil {
 
         SOAPMessageContext soapMsgContext = (SOAPMessageContext) context;
         SOAPMessage message = soapMsgContext.getMessage();
+
+        if (!(webServiceTie instanceof StreamingHandler)) {
+            throw new IllegalArgumentException(webServiceTie + "is not instance of StreamingHandler.");
+        }
+
         StreamingHandler streamingHandler = (StreamingHandler) webServiceTie;
         int opcode = streamingHandler.getOpcodeForRequestMessage(message);
         return streamingHandler.getMethodForOpcode(opcode);

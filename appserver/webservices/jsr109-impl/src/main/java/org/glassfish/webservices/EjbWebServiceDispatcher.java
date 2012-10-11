@@ -184,6 +184,11 @@ public class EjbWebServiceDispatcher implements EjbMessageDispatcher {
                 }                                   
                 
                 AdapterInvocationInfo aInfo = null;
+                
+                if (!(endpointInfo instanceof Ejb2RuntimeEndpointInfo)) {
+                    throw new IllegalArgumentException(endpointInfo + "is not instance of Ejb2RuntimeEndpointInfo.");
+                }
+
                 try {
                     Ejb2RuntimeEndpointInfo endpointInfo2 = (Ejb2RuntimeEndpointInfo)endpointInfo;
                     // Do ejb container pre-invocation and pre-handler
@@ -237,6 +242,10 @@ public class EjbWebServiceDispatcher implements EjbMessageDispatcher {
             }
             SOAPMessage reply = msgContext.getMessage();
             if (secServ != null && wssSucceded) {
+                if (!(endpointInfo instanceof Ejb2RuntimeEndpointInfo)) {
+                    throw new IllegalArgumentException(endpointInfo + "is not instance of Ejb2RuntimeEndpointInfo.");
+                }
+
                 Ejb2RuntimeEndpointInfo endpointInfo2 = (Ejb2RuntimeEndpointInfo)endpointInfo;
                 secServ.secureResponse(endpointInfo2.getServerAuthConfig(),(StreamingHandler)endpointInfo2.getHandlerImplementor().getHandler(),msgContext);
             }
