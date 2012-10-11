@@ -69,7 +69,10 @@ public class SubjectUtil {
             
             princSet = subject.getPrincipals();
             for (Principal p : princSet) {
-                if ((p != null) && p.getClass().isAssignableFrom(PrincipalImpl.class)) {
+                if ((p != null) && (
+                  p.getClass().isAssignableFrom(PrincipalImpl.class)  || 
+                  "weblogic.security.principal.WLSUserImpl".equals(p.getClass().getCanonicalName())
+                		)) {
                     String uName = p.getName();
                     userList.add(uName);
                 }
