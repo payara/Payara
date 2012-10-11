@@ -89,7 +89,11 @@ public class AdminCacheFileStore implements AdminCache {
             }
             return null;
         } finally {
-            try { is.close(); } catch (Exception ex) {}
+            if (is != null) {
+                try { 
+                    is.close(); 
+                } catch (Exception ex) {}
+            }
         }
             
     }
