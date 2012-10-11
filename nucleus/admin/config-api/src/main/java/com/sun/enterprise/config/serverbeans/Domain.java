@@ -49,6 +49,7 @@ import org.glassfish.api.admin.config.ReferenceContainer;
 import org.glassfish.quality.ToDo;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigExtensionMethod;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
@@ -466,7 +467,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     @DuckTyped
     List<Cluster> getClustersOnNode(String nodeName);
 
-    @DuckTyped
+    @ConfigExtensionMethod
     <T extends DomainExtension> T getExtensionByType(Class<T> type);
 
     /**
@@ -971,15 +972,5 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
              return false;
          }
 
-        public static <T extends DomainExtension> T getExtensionByType(Domain d, Class<T> type) throws TransactionFailure {
-            for (DomainExtension extension : d.getExtensions()) {
-                try {
-                    return type.cast(extension);
-                } catch (Exception e) {
-                }
-            }
-            ModuleConfigurationLoader loader = new ModuleConfigurationLoader<Domain, T>(d);
-            return (T) loader.createConfigBeanForType(type);
-        }
     }
 }

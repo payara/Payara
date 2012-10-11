@@ -42,6 +42,7 @@ package com.sun.enterprise.config.serverbeans;
 
 import com.sun.common.util.logging.LoggingConfigImpl;
 import com.sun.enterprise.config.modularity.parser.ModuleConfigurationLoader;
+import com.sun.enterprise.config.serverbeans.GroupManagementService;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTargetName;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
 import com.sun.enterprise.config.util.ServerHelper;
@@ -226,7 +227,7 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
      * @return possible object is
      *         {@link MonitoringService }
      */
-    @Element(required = true)
+    @Element()
     @NotNull
     MonitoringService getMonitoringService();
 
@@ -388,7 +389,7 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
      * @return a configuration proxy of type T or null if there is no such
      *         configuration with that type.
      */
-    @DuckTyped
+    @ConfigExtensionMethod
     <T extends ConfigExtension> T getExtensionByType(Class<T> type);
 
     /**
@@ -469,20 +470,6 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
             return map;
         }
 
-        public static <T extends ConfigExtension> T getExtensionByType(Config c, Class<T> type) throws TransactionFailure {
-            T configExtension;
-            for (ConfigExtension extension : c.getExtensions()) {
-                try {
-                    configExtension = type.cast(extension);
-                    return configExtension;
-                } catch (Exception e) {
-                    // ignore, not the right type.
-                }
-            }
-            ModuleConfigurationLoader loader = new ModuleConfigurationLoader<Config, T>(c);
-            T result = (T) loader.createConfigBeanForType(type);
-            return result;
-        }
 
         public static NetworkListener getAdminListener(Config c) {
             return ServerHelper.getAdminListener(c);
@@ -531,15 +518,6 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
                 }
             }
             return false;
-        }
-
-        public static GroupManagementService getGroupManagementService(Config param) throws TransactionFailure, ClassNotFoundException {
-            return getExtensionByType(param, GroupManagementService.class);
-
-        }
-
-        public static MonitoringService getMonitoringService(Config param) throws ClassNotFoundException, TransactionFailure {
-            return getExtensionByType(param, MonitoringService.class);
         }
 
         public static void createResourceRef(Config config, final String enabled, final String refName) throws TransactionFailure {
