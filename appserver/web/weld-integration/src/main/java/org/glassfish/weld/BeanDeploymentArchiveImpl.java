@@ -58,9 +58,7 @@ import static org.glassfish.weld.connector.WeldUtils.WEB_INF_LIB;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -81,7 +79,6 @@ import javax.enterprise.inject.spi.InjectionTarget;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.weld.connector.WeldUtils;
 import org.glassfish.weld.connector.WeldUtils.BDAType;
 import org.glassfish.weld.ejb.EjbDescriptorImpl;
 import org.jboss.weld.bootstrap.WeldBootstrap;
@@ -103,7 +100,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     private String id;
     private List<Class<?>> moduleClasses = null; //Classes in the module
     private List<Class<?>> beanClasses = null; //Classes identified as Beans through Weld SPI
-    private Set<URI> wUris = null;
+    private Set<URL> beansXmlUrls = null;
     private final Collection<EjbDescriptor<?>> ejbDescImpls;
     private List<BeanDeploymentArchive> beanDeploymentArchives;
 
@@ -135,7 +132,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         Collection<com.sun.enterprise.deployment.EjbDescriptor> ejbs, DeploymentContext ctx, String bdaID) {
         this.beanClasses = new ArrayList<Class<?>>();
         this.moduleClasses = new ArrayList<Class<?>>();
-        this.wUris = new CopyOnWriteArraySet<URI>();
+        this.beansXmlUrls = new CopyOnWriteArraySet<URL>();
         this.archive = archive;
         if (bdaID == null) {
             this.id = archive.getName();
@@ -174,12 +171,12 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     //These are for empty BDAs that do not model Bean classes in the current 
     //deployment unit -- for example: BDAs for portable Extensions.
-    public BeanDeploymentArchiveImpl(String id, List<Class<?>> wClasses, Set<URI> wUris,
+    public BeanDeploymentArchiveImpl(String id, List<Class<?>> wClasses, Set<URL> beansXmlUrls,
         Collection<com.sun.enterprise.deployment.EjbDescriptor> ejbs, DeploymentContext ctx) {
         this.id = id;
         this.moduleClasses = wClasses;
         this.beanClasses = new ArrayList<Class<?>>(wClasses);
-        this.wUris = wUris;
+        this.beansXmlUrls = beansXmlUrls;
         this.ejbDescImpls = new HashSet<EjbDescriptor<?>>();
         this.beanDeploymentArchives = new ArrayList<BeanDeploymentArchive>();
         this.context = ctx;
@@ -243,17 +240,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     public BeansXml getBeansXml() {
         WeldBootstrap wb =  context.getTransientAppMetaData(WeldDeployer.WELD_BOOTSTRAP, WeldBootstrap.class);
-        //convert the URI Set to a URL Collection, as WeldBootstrap.parse() 
-        //expects it so.
-        List<URL> sl = new ArrayList<URL>();
-        for(URI u: wUris) {
-            try {
-                sl.add(u.toURL());
-            } catch (MalformedURLException mfue) {
-                logger.log(Level.WARNING, "Error parsing Beans XML URL " + u, mfue);
-            }
-        }
-        return wb.parse(sl);
+        return wb.parse( beansXmlUrls );
     }
 
     /**
@@ -366,8 +353,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                     } else if (entry.endsWith(BEANS_XML_FILENAME)) {
                         URI uri = archive.getURI();
                         File file = new File(uri.getPath() + entry);
-                        URI beansXmlUri = file.toURI();
-                        wUris.add(beansXmlUri);
+                        beansXmlUrls.add(file.toURI().toURL());
                     }
                 }
                 archive.close();
@@ -514,13 +500,9 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                         + className + " : " + t.toString());
             }
         } else if (entry.endsWith("beans.xml")) {
-            try {
-                URL beansXmlUrl = Thread.currentThread().getContextClassLoader().getResource(entry);
-                if (beansXmlUrl != null) {  // http://java.net/jira/browse/GLASSFISH-17157
-                    wUris.add(beansXmlUrl.toURI());
-                }
-            } catch (URISyntaxException use) {
-                logger.log(Level.WARNING, "Error handling beans.xml at " + entry, use);
+            URL beansXmlUrl = Thread.currentThread().getContextClassLoader().getResource(entry);
+            if (beansXmlUrl != null) {  // http://java.net/jira/browse/GLASSFISH-17157
+                beansXmlUrls.add(beansXmlUrl);
             }
         }
     }
