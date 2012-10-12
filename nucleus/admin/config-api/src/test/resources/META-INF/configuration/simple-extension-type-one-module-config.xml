@@ -42,7 +42,7 @@
 -->
 <service-config>
     <config-bundle
-            location="domain/configs/config[server-config]"
+            location="domain/configs/config[server-config]/simple-config-extension[simple-config-name]"
             replace-if-exist="true">
         <customization-tokens>
             <customization-token
@@ -51,10 +51,18 @@
                     description="$token.description"/>
         </customization-tokens>
         <configuration-element
-                config-bean-class-name="com.sun.enterprise.config.modularity.tests.ConfigExtensionTwo">
+                config-bean-class-name="com.sun.enterprise.config.modularity.tests.SimpleExtensionTypeOne">
             <![CDATA[
-        <config-extension-two attribute-two="${CUSTOM_TOKEN}" >
-        </config-extension-two>
+        <simple-extension-type-one attribute-one="${CUSTOM_TOKEN}" name="some.name">
+        </simple-extension-type-one>
+]]>
+        </configuration-element>
+    </config-bundle>
+
+    <config-bundle location="domain/configs/config[server-config]" replace-if-exist="true">
+        <configuration-element config-bean-class-name="com.sun.enterprise.config.serverbeans.SystemProperty">
+            <![CDATA[
+          <system-property description="sample-desc" name="CONFIG_LEVEL_PROP" value="VALUE"></system-property>
 ]]>
         </configuration-element>
     </config-bundle>

@@ -40,22 +40,16 @@
 
 package com.sun.enterprise.config.modularity.tests;
 
-import org.glassfish.api.admin.config.ConfigExtension;
-import org.jvnet.hk2.config.Attribute;
+
+import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
-import java.beans.PropertyVetoException;
-
 /**
+ * This class is to show how overriding a config can happen during the startup.
  * @author Masoud Kalali
  */
+@com.sun.enterprise.config.modularity.annotation.ActivateOnStartup
+@com.sun.enterprise.config.modularity.annotation.CustomConfiguration(adminConfigFileName = "activate-on-startup-module-config.xml", defaultConfigFileName = "activate-on-startup-module-config.xml")
 @Configured
-@com.sun.enterprise.config.modularity.annotation.CustomConfiguration(adminConfigFileName = "config-extension-two-module-config.xml", defaultConfigFileName = "config-extension-two-module-config.xml")
-@com.sun.enterprise.config.modularity.annotation.HasCustomizationTokens
-public interface ConfigExtensionTwo extends ConfigExtension {
-
-    @Attribute(defaultValue = "extension.type.two.attr")
-    String getAttributeTwo();
-
-    void setAttributeTwo(String value) throws PropertyVetoException;
+public interface DummyConfigBeanForOverridingTest extends ConfigBeanProxy {
 }

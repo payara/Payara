@@ -40,22 +40,20 @@
 
 package com.sun.enterprise.config.modularity.tests;
 
+import com.sun.enterprise.config.modularity.annotation.HasNoDefaultConfiguration;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
-
-import java.beans.PropertyVetoException;
+import org.jvnet.hk2.config.ConfiguredBy;
 
 /**
  * @author Masoud Kalali
  */
 @Configured
-@com.sun.enterprise.config.modularity.annotation.CustomConfiguration(adminConfigFileName = "config-extension-two-module-config.xml", defaultConfigFileName = "config-extension-two-module-config.xml")
-@com.sun.enterprise.config.modularity.annotation.HasCustomizationTokens
-public interface ConfigExtensionTwo extends ConfigExtension {
+@HasNoDefaultConfiguration
+public interface ConfigExtensionThree extends ConfigExtension{
 
-    @Attribute(defaultValue = "extension.type.two.attr")
-    String getAttributeTwo();
-
-    void setAttributeTwo(String value) throws PropertyVetoException;
+    @Attribute(defaultValue = "config.extension.three.attribute.value")
+    String getAttributeThree();
+    void setAttributeThree(String value);
 }

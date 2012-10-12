@@ -56,12 +56,13 @@
             <system-property name="CUSTOM_TOKEN" value="user.customized.value"></system-property>
             <simple-config-extension name="simple-config-name">
                 <simple-extension-type-one attribute-one="${CUSTOM_TOKEN}" name="some.name">
-                        </simple-extension-type-one>
+                </simple-extension-type-one>
             </simple-config-extension>
             <config-extension-one custom-token="${CUSTOM_TOKEN}">
-                               <property name="prop.foo" value="prop.foo.value.custom"></property>
-                           </config-extension-one>
+                <property name="prop.foo" value="prop.foo.value.custom"></property>
+            </config-extension-one>
             <config-extension-zero dummy="dummy-value"></config-extension-zero>
+            <system-property name="startup.overriding.property" value="default-value"></system-property>
         </config>
     </configs>
     <property value="domain1" name="administrative.domain.name"/>

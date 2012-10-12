@@ -53,7 +53,7 @@ import java.beans.PropertyVetoException;
 @Configured()
 public interface ConfigExtensionOne extends ConfigExtension, PropertyBag {
 
-    @Attribute
+    @Attribute(defaultValue = "some.value")
     String getCustomToken();
     void setCustomToken(String value) throws PropertyVetoException;
 

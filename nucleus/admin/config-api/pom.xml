@@ -51,7 +51,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>config-api</artifactId>
-    
+
     <name>admin-config-api</name>
 
     <developers>
@@ -113,6 +113,13 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                 <enableAssertions>false</enableAssertions>
+                </configuration>
             </plugin>
             <!--  force a clean in the initialize phase.  See IT: 12780 -->
             <plugin>
