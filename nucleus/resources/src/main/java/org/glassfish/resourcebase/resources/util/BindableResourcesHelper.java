@@ -125,7 +125,8 @@ public class BindableResourcesHelper {
                 if(target.equals("domain")){
                     msg = localStrings.getLocalString("duplicate.resource.found",
                             "A {0} by name {1} already exists.", getResourceTypeName(duplicateResource), jndiName);
-                } else if (habitat.<org.glassfish.resourcebase.resources.admin.cli.ResourceUtil>getService(ResourceUtil.class).getTargetsReferringResourceRef(jndiName).contains(target)) {
+                } else if (habitat.<org.glassfish.resourcebase.resources.admin.cli.ResourceUtil>
+                        getService(org.glassfish.resourcebase.resources.admin.cli.ResourceUtil.class).getTargetsReferringResourceRef(jndiName).contains(target)) {
                     msg = localStrings.getLocalString("duplicate.resource.found.in.target",
                             "A {0} by name {1} already exists with resource-ref in target {2}.",
                             getResourceTypeName(duplicateResource), jndiName, target);
