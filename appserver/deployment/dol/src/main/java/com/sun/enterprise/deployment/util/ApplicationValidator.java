@@ -326,7 +326,7 @@ public class ApplicationValidator extends ComponentValidator
         }
 
 
-        // Reads MSD and DSD at application level
+        // Reads resource definition descriptor at application level
         CommonResourceBundleDescriptor commonResourceBundleDescriptor = (CommonResourceBundleDescriptor) application;
         Vector appLevel = new Vector();
         if (commonResourceBundleDescriptor != null) {
@@ -338,13 +338,20 @@ public class ApplicationValidator extends ComponentValidator
             if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, APP_LEVEL+commonResourceBundleDescriptor.getName())) {
                 return false;
             }
-            Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescriptors = application.getConnectorResourceDefinitionDescriptors();
-            if (isExistingConnectorResourceDefinitionDescriptor(connectorResourceDefinitionDescriptors, APP_LEVEL+application.getName())) {
+            Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescriptors = commonResourceBundleDescriptor.getConnectorResourceDefinitionDescriptors();
+            if (isExistingConnectorResourceDefinitionDescriptor(connectorResourceDefinitionDescriptors, APP_LEVEL+commonResourceBundleDescriptor.getName())) {
                 return false;
             }
-
-            Set<AdministeredObjectDefinitionDescriptor> administeredObjectDefinitionDescriptors = application.getAdministeredObjectDefinitionDescriptors();
-            if (isExistingAdministeredObjectDefinitionDescriptor(administeredObjectDefinitionDescriptors, APP_LEVEL+application.getName())) {
+            Set<AdministeredObjectDefinitionDescriptor> administeredObjectDefinitionDescriptors = commonResourceBundleDescriptor.getAdministeredObjectDefinitionDescriptors();
+            if (isExistingAdministeredObjectDefinitionDescriptor(administeredObjectDefinitionDescriptors, APP_LEVEL+commonResourceBundleDescriptor.getName())) {
+                return false;
+            }
+            Set<JMSConnectionFactoryDefinitionDescriptor> jmsConnectionFactoryDefinitionDescriptors = commonResourceBundleDescriptor.getJMSConnectionFactoryDefinitionDescriptors();
+            if (isExistingJMSConnectionFactoryDefinitionDescriptor(jmsConnectionFactoryDefinitionDescriptors, APP_LEVEL+commonResourceBundleDescriptor.getName())) {
+                return false;
+            }
+            Set<JMSDestinationDefinitionDescriptor> jmsDestinationDefinitionDescriptors = commonResourceBundleDescriptor.getJMSDestinationDefinitionDescriptors();
+            if (isExistingJMSDestinationDefinitionDescriptor(jmsDestinationDefinitionDescriptors, APP_LEVEL+commonResourceBundleDescriptor.getName())) {
                 return false;
             }
 
@@ -352,7 +359,7 @@ public class ApplicationValidator extends ComponentValidator
             validNameSpaceDetails.put(APP_KEYS, appLevel);
         }
 
-        // Reads MSD and DSD at application-client level
+        // Reads resource definition descriptor at application-client level
         if (application != null) {
           Set<ApplicationClientDescriptor> appClientDescs = application.getBundleDescriptors(ApplicationClientDescriptor.class);
           Vector appClientLevel = new Vector();
@@ -365,12 +372,20 @@ public class ApplicationValidator extends ComponentValidator
             if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, APPCLIENTBUNDLE_LEVEL+acd.getName())) {
               return false;
             }
+            Set<JMSConnectionFactoryDefinitionDescriptor> jmsConnectionFactoryDefinitionDescriptors = acd.getJMSConnectionFactoryDefinitionDescriptors();
+            if (isExistingJMSConnectionFactoryDefinitionDescriptor(jmsConnectionFactoryDefinitionDescriptors, APPCLIENTBUNDLE_LEVEL+acd.getName())) {
+                return false;
+            }
+            Set<JMSDestinationDefinitionDescriptor> jmsDestinationDefinitionDescriptors = acd.getJMSDestinationDefinitionDescriptors();
+            if (isExistingJMSDestinationDefinitionDescriptor(jmsDestinationDefinitionDescriptors, APPCLIENTBUNDLE_LEVEL+acd.getName())) {
+                return false;
+            }
             appClientLevel.add(APPCLIENTBUNDLE_LEVEL+acd.getName());
           }
           validNameSpaceDetails.put(APPCLIENT_KEYS, appClientLevel);
         }
 
-        // Reads MSD and DSD at connector level
+        // Reads resource definition descriptor at connector level
         if (application != null) {
           Set<ConnectorDescriptor> connectorDescs = application.getBundleDescriptors(ConnectorDescriptor.class);
           Vector cdLevel = new Vector();
@@ -383,12 +398,20 @@ public class ApplicationValidator extends ComponentValidator
             if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, APPCLIENT_LEVEL+cd.getName())) {
               return false;
             }
+            Set<JMSConnectionFactoryDefinitionDescriptor> jmsConnectionFactoryDefinitionDescriptors = cd.getJMSConnectionFactoryDefinitionDescriptors();
+            if (isExistingJMSConnectionFactoryDefinitionDescriptor(jmsConnectionFactoryDefinitionDescriptors, APPCLIENT_LEVEL+cd.getName())) {
+                return false;
+            }
+            Set<JMSDestinationDefinitionDescriptor> jmsDestinationDefinitionDescriptors = cd.getJMSDestinationDefinitionDescriptors();
+            if (isExistingJMSDestinationDefinitionDescriptor(jmsDestinationDefinitionDescriptors, APPCLIENT_LEVEL+cd.getName())) {
+                return false;
+            }
             cdLevel.add(APPCLIENT_LEVEL+cd.getName());
           }
           validNameSpaceDetails.put(CONNECTOR_KEYS, cdLevel);
         }
 
-        // Reads MSD and DSD at ejb-bundle level
+        // Reads resource definition descriptor at ejb-bundle level
         if (application != null) {
           Set<EjbBundleDescriptor> ejbBundleDescs = application.getBundleDescriptors(EjbBundleDescriptor.class);
           Vector ebdLevel = new Vector();
@@ -406,14 +429,22 @@ public class ApplicationValidator extends ComponentValidator
             if (isExistingConnectorResourceDefinitionDescriptor(connectorResourceDefinitionDescriptors, EJBBUNDLE_LEVEL+ebd.getName())) {
                 return false;
             }
-            Set<AdministeredObjectDefinitionDescriptor> administeredObjectDefinitionDescriptors = application.getAdministeredObjectDefinitionDescriptors();
-            if (isExistingAdministeredObjectDefinitionDescriptor(administeredObjectDefinitionDescriptors, EJBBUNDLE_LEVEL+application.getName())) {
+            Set<AdministeredObjectDefinitionDescriptor> administeredObjectDefinitionDescriptors = ebd.getAdministeredObjectDefinitionDescriptors();
+            if (isExistingAdministeredObjectDefinitionDescriptor(administeredObjectDefinitionDescriptors, EJBBUNDLE_LEVEL+ebd.getName())) {
+                return false;
+            }
+            Set<JMSConnectionFactoryDefinitionDescriptor> jmsConnectionFactoryDefinitionDescriptors = ebd.getJMSConnectionFactoryDefinitionDescriptors();
+            if (isExistingJMSConnectionFactoryDefinitionDescriptor(jmsConnectionFactoryDefinitionDescriptors, EJBBUNDLE_LEVEL+ebd.getName())) {
+                return false;
+            }
+            Set<JMSDestinationDefinitionDescriptor> jmsDestinationDefinitionDescriptors = ebd.getJMSDestinationDefinitionDescriptors();
+            if (isExistingJMSDestinationDefinitionDescriptor(jmsDestinationDefinitionDescriptors, EJBBUNDLE_LEVEL+ebd.getName())) {
                 return false;
             }
             ebdLevel.add(EJBBUNDLE_LEVEL+ebd.getName());
 
 
-            // Reads MSD and DSD at ejb level
+            // Reads resource definition descriptor at ejb level
             Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ebd.getEjbs();
             for (Iterator itr = ejbDescriptors.iterator(); itr.hasNext(); ) {
                 EjbDescriptor ejbDescriptor = (EjbDescriptor) itr.next();
@@ -429,8 +460,16 @@ public class ApplicationValidator extends ComponentValidator
                 if (isExistingConnectorResourceDefinitionDescriptor(connectorResourceDefinitionDescriptors, EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName())) {
                     return false;
                 }
-                administeredObjectDefinitionDescriptors = application.getAdministeredObjectDefinitionDescriptors();
-                if (isExistingAdministeredObjectDefinitionDescriptor(administeredObjectDefinitionDescriptors, EJB_LEVEL+application.getName())) {
+                administeredObjectDefinitionDescriptors = ejbDescriptor.getAdministeredObjectDefinitionDescriptors();
+                if (isExistingAdministeredObjectDefinitionDescriptor(administeredObjectDefinitionDescriptors, EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName())) {
+                    return false;
+                }
+                jmsConnectionFactoryDefinitionDescriptors = ejbDescriptor.getJMSConnectionFactoryDefinitionDescriptors();
+                if (isExistingJMSConnectionFactoryDefinitionDescriptor(jmsConnectionFactoryDefinitionDescriptors, EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName())) {
+                    return false;
+                }
+                jmsDestinationDefinitionDescriptors = ejbDescriptor.getJMSDestinationDefinitionDescriptors();
+                if (isExistingJMSDestinationDefinitionDescriptor(jmsDestinationDefinitionDescriptors, EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName())) {
                     return false;
                 }
               edLevel.add(EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName());
@@ -442,7 +481,7 @@ public class ApplicationValidator extends ComponentValidator
         }
 
 
-        // Reads MSD and DSD at web-bundle level
+        // Reads resource definition descriptor at web-bundle level
         if (application != null) {
           Set<WebBundleDescriptor> webBundleDescs = application.getBundleDescriptors(WebBundleDescriptor.class);
           Vector wbdLevel = new Vector();
@@ -459,8 +498,16 @@ public class ApplicationValidator extends ComponentValidator
             if (isExistingConnectorResourceDefinitionDescriptor(connectorResourceDefinitionDescriptors, WEBBUNDLE_LEVEL+wbd.getName())) {
                 return false;
             }
-            Set<AdministeredObjectDefinitionDescriptor> administeredObjectDefinitionDescriptors = application.getAdministeredObjectDefinitionDescriptors();
-            if (isExistingAdministeredObjectDefinitionDescriptor(administeredObjectDefinitionDescriptors, WEBBUNDLE_LEVEL+application.getName())) {
+            Set<AdministeredObjectDefinitionDescriptor> administeredObjectDefinitionDescriptors = wbd.getAdministeredObjectDefinitionDescriptors();
+            if (isExistingAdministeredObjectDefinitionDescriptor(administeredObjectDefinitionDescriptors, WEBBUNDLE_LEVEL+wbd.getName())) {
+                return false;
+            }
+            Set<JMSConnectionFactoryDefinitionDescriptor> jmsConnectionFactoryDefinitionDescriptors = wbd.getJMSConnectionFactoryDefinitionDescriptors();
+            if (isExistingJMSConnectionFactoryDefinitionDescriptor(jmsConnectionFactoryDefinitionDescriptors, WEBBUNDLE_LEVEL+wbd.getName())) {
+                return false;
+            }
+            Set<JMSDestinationDefinitionDescriptor> jmsDestinationDefinitionDescriptors = wbd.getJMSDestinationDefinitionDescriptors();
+            if (isExistingJMSDestinationDefinitionDescriptor(jmsDestinationDefinitionDescriptors, WEBBUNDLE_LEVEL+wbd.getName())) {
                 return false;
             }
             wbdLevel.add(WEBBUNDLE_LEVEL+wbd.getName());
@@ -533,6 +580,36 @@ public class ApplicationValidator extends ComponentValidator
     private boolean isExistingAdministeredObjectDefinitionDescriptor(Set<AdministeredObjectDefinitionDescriptor> descriptors, String scope) {
         for (AdministeredObjectDefinitionDescriptor aodDescriptor : descriptors ) {
             if (isExistsDescriptor(aodDescriptor.getName(), aodDescriptor, scope)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Method to validate JMSCFD is unique or not
+     * @param descriptors
+     * @param scope
+     * @return
+     */
+    private boolean isExistingJMSConnectionFactoryDefinitionDescriptor(Set<JMSConnectionFactoryDefinitionDescriptor> descriptors, String scope) {
+        for (JMSConnectionFactoryDefinitionDescriptor jmscfdDescriptor : descriptors) {
+            if (isExistsDescriptor(jmscfdDescriptor.getName(), jmscfdDescriptor, scope)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Method to validate JMSDD is unique or not
+     * @param descriptors
+     * @param scope
+     * @return
+     */
+    private boolean isExistingJMSDestinationDefinitionDescriptor(Set<JMSDestinationDefinitionDescriptor> descriptors, String scope) {
+        for (JMSDestinationDefinitionDescriptor jmsddDescriptor : descriptors) {
+            if (isExistsDescriptor(jmsddDescriptor.getName(), jmsddDescriptor, scope)) {
                 return true;
             }
         }
