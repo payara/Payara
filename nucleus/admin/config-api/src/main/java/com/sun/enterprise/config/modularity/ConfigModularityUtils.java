@@ -570,11 +570,6 @@ public final class ConfigModularityUtils {
         for (Method method : methods) {
             Attribute attributeAnnotation = method.getAnnotation(Attribute.class);
             if ((attributeAnnotation != null) && attributeAnnotation.key()) {
-                if (configBean != null) {
-                    LOG.log(Level.INFO, "getting the component name for: {0} ", configBean.getClass().getName());
-                } else {
-                    LOG.log(Level.INFO, "cannot get name for null configbean object of type: {0}", configBeanType.getName());
-                }
                 return (String) method.invoke(configBean);
             }
         }

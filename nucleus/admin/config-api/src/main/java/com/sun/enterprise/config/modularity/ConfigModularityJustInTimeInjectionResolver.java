@@ -112,7 +112,7 @@ public class ConfigModularityJustInTimeInjectionResolver implements JustInTimeIn
             if (config == null) {
                 config = locator.getService(Config.class, ServerEnvironmentImpl.DEFAULT_INSTANCE_NAME);
             }
-            ConfigBeanProxy pr = config.getExtensionByType(configBeanType);
+            ConfigBeanProxy pr = (ConfigBeanProxy) config.getExtensionByType(configBeanType);
             return pr != null;
 
         } else if (DomainExtension.class.isAssignableFrom(configBeanType)) {
@@ -122,8 +122,6 @@ public class ConfigModularityJustInTimeInjectionResolver implements JustInTimeIn
         return false;
 
     }
-
-
     //Let's check if we support automatic creation of this type or not.
     //This method will go away eventually when we are done with supporting all types.
     private boolean isInjectionSupported(Class c) {
