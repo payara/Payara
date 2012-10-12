@@ -43,7 +43,6 @@ package org.glassfish.config.support;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.component.Habitat;
 
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamException;
@@ -68,7 +67,7 @@ public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
 
     Logger logger = LogDomains.getLogger(GlassFishDocument.class, LogDomains.CORE_LOGGER);
 
-    public GlassFishDocument(final Habitat habitat, final ExecutorService executor) {
+    public GlassFishDocument(final ServiceLocator habitat, final ExecutorService executor) {
         super(habitat);
 
         ServiceLocatorUtilities.addOneConstant(habitat, executor, "transactions-executor", ExecutorService.class);
@@ -106,6 +105,6 @@ public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
     @Override
     public GlassFishConfigBean make(final ServiceLocator habitat, XMLStreamReader xmlStreamReader, GlassFishConfigBean dom, ConfigModel configModel) {
         // by default, people get the translated view.
-        return new GlassFishConfigBean((Habitat) habitat,this, dom, configModel, xmlStreamReader);
+        return new GlassFishConfigBean(habitat, this, dom, configModel, xmlStreamReader);
     }
 }
