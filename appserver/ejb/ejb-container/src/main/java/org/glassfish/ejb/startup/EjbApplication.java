@@ -111,13 +111,13 @@ public class EjbApplication
 
   public EjbApplication(
             EjbBundleDescriptorImpl bundle, DeploymentContext dc,
-            ClassLoader cl, ServiceLocator habitat) {
+            ClassLoader cl, ServiceLocator services) {
         this.ejbBundle = bundle;
         this.ejbs = bundle.getEjbs();
         this.ejbAppClassLoader = cl;
         this.dc = dc;
-        this.services = habitat;
-        this.policyLoader = habitat.getService(PolicyLoader.class);
+        this.services = services;
+        this.policyLoader = services.getService(PolicyLoader.class);
         Application app = ejbBundle.getApplication();
         initializeInOrder = (app != null) && (app.isInitializeInOrder());
     }
