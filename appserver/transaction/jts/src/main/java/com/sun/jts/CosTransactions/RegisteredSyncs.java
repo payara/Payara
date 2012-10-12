@@ -149,13 +149,8 @@ class RegisteredSyncs {
                 // Exception was logged in SynchronizationImpl
                 throw rex;
             } catch (Throwable exc) {
-
-                // Discard any exceptions at this point and return false.
-                if (!(exc instanceof INVALID_TRANSACTION)) {
-					_logger.log(Level.WARNING,
-							"jts.exception_in_synchronization_operation",
-		                    new java.lang.Object[] { exc.toString(),"before_completion"});
-                }
+				_logger.log(Level.WARNING, "jts.exception_in_synchronization_operation",
+		                new java.lang.Object[] { exc.toString(),"before_completion"});
                 result = false;
             }
         }

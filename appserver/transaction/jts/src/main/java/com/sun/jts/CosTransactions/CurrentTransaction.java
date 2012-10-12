@@ -350,11 +350,6 @@ public class CurrentTransaction {
 	return (m_tid.get()!=null);
     }
 
-    private static ControlImpl endAborted() {
-    	return (ControlImpl)m_tid.get();
-        //return endAborted(aborted, false);
-    }
-
     /**Ensures that an association with an aborted transaction is dealt with cleanly.
      *
      *

@@ -524,23 +524,6 @@ public class DelegatedRecoveryManager {
     }
     
     /**
-     * @param xid the xid to be stringified.
-     *
-     * @return stringified contents of the xid.
-     */
-    private static String stringifyXid(Xid xid) {
-        int glen = xid.getGlobalTransactionId().length;
-        int blen = xid.getBranchQualifier().length;
-        byte[] xidRep = new byte[glen + 1 + blen];
-        
-        System.arraycopy(xid.getGlobalTransactionId(), 0, xidRep, 0, glen);
-        xidRep[glen] = (byte) ',';
-        System.arraycopy(xid.getBranchQualifier(), 0, xidRep, glen + 1, blen);
-        
-        return new String(xidRep);
-    }
-    
-    /**
      * Reduce the set of XAResource objects into a unique set such that there
      * is at most one XAResource object per RM.
      */
@@ -625,7 +608,6 @@ public class DelegatedRecoveryManager {
                         // is registered with the coordinator per transaction
                         // per RM.
                         
-                        //String xidStr = stringifyXid(inDoubtXids[i]);
                         if (!uniqueXids.contains(inDoubtXids[i])) { // unique xid
                             if(_logger.isLoggable(Level.FINE))
                             {

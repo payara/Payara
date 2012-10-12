@@ -1170,7 +1170,7 @@ class CoordinatorLog extends java.lang.Object implements LogUpcallTarget {
                 Configuration.setLogFile(logStateHolder.logFile);
         }
 
-        result = (logStateHolder.log != null && logStateHolder.logFile != null);
+        result = (logStateHolder.logFile != null);
 
         return result;
     }
@@ -1231,7 +1231,7 @@ class CoordinatorLog extends java.lang.Object implements LogUpcallTarget {
                 Configuration.setLogFile(logPath,logStateHolder.logFile);
         }
 
-        result = (logStateHolder.log != null && logStateHolder.logFile != null);
+        result = (logStateHolder.logFile != null);
 
         return result;
     }
@@ -2083,7 +2083,6 @@ class CoordinatorLogSection extends java.lang.Object {
     Vector  unwrittenData    = null;
     Vector  writtenObjects   = null;
     Vector  writtenData      = null;
-    int     headerLength     = 0;
 
     /**Creates a CoordinatorLogSection with the given name.
      *
@@ -2160,7 +2159,6 @@ class CoordinatorLogSection extends java.lang.Object {
         sectionName = null;
         unwrittenEmpty   = true;
         writtenEmpty     = true;
-        headerLength     = 0;
 
 	SectionPool.putCoordinatorLogSection(this);
     }

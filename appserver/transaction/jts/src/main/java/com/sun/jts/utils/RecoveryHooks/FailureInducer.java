@@ -284,25 +284,6 @@ public class FailureInducer {
         }
     }
 
-    // Utility methods for fetching i18n/l10n messages
-
-    private static String getMessage(String key) {
-        return getMessage(key, null);
-    }
-
-    private static String getMessage(String key, Object[] inserts) {
-        if (messages == null || key == null) {
-            return null;
-        }
-
-        String msg = messages.getString(key);
-        if (inserts == null) {
-            return msg;
-        } else {
-            return MessageFormat.format(msg, inserts);
-        }
-    }
-
     private static GlobalTID getGlobalTID() {
         GlobalTID gtid = null;
         Coordinator coord = Utility.getCoordinator(Utility.getControl());
