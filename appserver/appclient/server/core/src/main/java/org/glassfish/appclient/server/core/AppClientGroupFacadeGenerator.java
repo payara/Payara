@@ -251,6 +251,7 @@ public class AppClientGroupFacadeGenerator {
         try {
             InputStream is = openByteCodeStream(mainClassResourceName);
             DeploymentUtils.copyStream(is, os);
+            os.close();
             is.close();
             clientArtifactsManager.add(mainClassFile, mainClassResourceName, true);
         } catch (Exception e) {
