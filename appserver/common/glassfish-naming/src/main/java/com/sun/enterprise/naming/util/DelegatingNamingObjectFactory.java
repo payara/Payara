@@ -53,7 +53,7 @@ public class DelegatingNamingObjectFactory
 
     private String name;
 
-    private transient Object value;
+    private transient volatile Object value;
 
     private boolean cacheResult;
 

@@ -218,9 +218,7 @@ public class SerialContext implements Context {
             throws NamingException {
 
         services = h;
-
-        myEnv = (environment != null) ? (Hashtable) (environment.clone())
-                : null;
+        myEnv = (Hashtable) environment.clone();
 
         // TODO REMOVE when property stuff is figured out
         myEnv.put("java.naming.factory.url.pkgs",
@@ -904,15 +902,13 @@ public class SerialContext implements Context {
             return javaUrlContext.createSubcontext(name);
         } else {
             try {
-                c = getProvider().createSubcontext(name);
+                getProvider().createSubcontext(name);
                 /*
                  * this simulates the transient context structure on the client
                  * side. Have to do this - as reference to Transient Context is
                  * not resolved properly due to rmi
                  */
-                if (c instanceof Context) {
-                    c = new SerialContext(name, myEnv, services);
-                }
+                c = new SerialContext(name, myEnv, services);
             } catch (RemoteException e) {
                 CommunicationException ce = new CommunicationException(e
                         .toString());

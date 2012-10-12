@@ -854,11 +854,6 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
         return id;
     }
 
-    private boolean isCOSNamingObj(Object obj) {
-        return ((obj instanceof java.rmi.Remote) || (obj instanceof org.omg.CORBA.Object));
-    }
-
-
     private static class AppModuleKey {
 
         private String app;
