@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
@@ -558,12 +557,6 @@ public class EntityContainer
 	    : readyStore.getEntryCount();
     }
 
-    /****************************/
-    
-    private int getEjbObjectStoreSize() {
-        return ejbObjectStore.getEntryCount();
-    }
-    
     /**
      * Implementation of BaseContainer method. This is never called.
      */
@@ -2652,23 +2645,6 @@ public class EntityContainer
         }
         
     } //class EntityContextFactory
-    
-    private static void appendStat(StringBuffer sbuf, String header, Map map) {
-        
-        sbuf.append("\n\t[").append(header).append(": ");
-        if (map != null) {
-            Iterator iter = map.entrySet().iterator();
-            
-            while (iter.hasNext()) {
-                Map.Entry entry = (Map.Entry)iter.next();
-                sbuf.append((String)entry.getKey()).append("=")
-                        .append(entry.getValue()).append("; ");
-            }
-        } else {
-            sbuf.append("NONE");
-        }
-        sbuf.append("]");
-    }
     
     private void createCaches() throws Exception {
 
