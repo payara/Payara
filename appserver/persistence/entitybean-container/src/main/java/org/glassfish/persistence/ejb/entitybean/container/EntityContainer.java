@@ -3011,7 +3011,6 @@ public class EntityContainer
 	implements EjbCacheStatsProviderDelegate
     {
 	private BaseCache cache;
-	private String configData;
 	private int confMaxCacheSize;
 
 	EntityCacheStatsProvider(BaseCache cache, int maxCacheSize) {
@@ -3053,16 +3052,12 @@ public class EntityContainer
 	    return this.confMaxCacheSize;
 	}
 
-    	public void appendStats(StringBuffer sbuf) {
+    public void appendStats(StringBuffer sbuf) {
 	    sbuf.append("[Cache: ")
 		.append("Size=").append(getNumBeansInCache()).append("; ")
 		.append("HitCount=").append(getCacheHits()).append("; ")
 		.append("MissCount=").append(getCacheMisses()).append("; ")
-		.append("Passivations=").append(getNumPassivations()).append("; ");
-	    if (configData != null) {
-		sbuf.append(configData);
-	    }
-	    sbuf.append("]");
+		.append("Passivations=").append(getNumPassivations()).append("; ]");
 	}
 
     }//End of class EntityCacheStatsProvider
