@@ -90,7 +90,6 @@ import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.javaee.core.deployment.JavaEEDeployer;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PostConstruct;
 
 /**
@@ -268,7 +267,7 @@ public class EjbDeployer
 
 
         EjbApplication ejbApp = new EjbApplication(ejbBundle, dc,
-                dc.getClassLoader(), (Habitat) habitat);
+                dc.getClassLoader(), habitat);
 
         try {
             compEnvManager.bindToComponentNamespace(ejbBundle);
@@ -433,7 +432,7 @@ public class EjbDeployer
         boolean generateRmicStubs = dcp.generatermistubs;
         dc.addTransientAppMetaData(CMPDeployer.MODULE_CLASSPATH, getModuleClassPath(dc));
         if( generateRmicStubs ) {
-            StaticRmiStubGenerator staticStubGenerator = new StaticRmiStubGenerator((Habitat) habitat);
+            StaticRmiStubGenerator staticStubGenerator = new StaticRmiStubGenerator(habitat);
             try {
                 staticStubGenerator.ejbc(dc);
             } catch(Exception e) {

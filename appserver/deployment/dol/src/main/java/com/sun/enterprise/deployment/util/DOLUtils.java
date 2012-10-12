@@ -79,7 +79,7 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.SnifferManager;
 import org.glassfish.loader.util.ASClassLoaderUtil;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.xml.sax.SAXParseException;
 
 import com.sun.enterprise.config.serverbeans.Applications;
@@ -265,7 +265,7 @@ public class DOLUtils {
         if (moduleType == null) {
             return null;
         }
-        final Habitat services = Globals.getDefaultHabitat();
+        final ServiceLocator services = Globals.getDefaultHabitat();
         ArchiveType result = null;
         // This method is called without HK2 being setup when dol unit tests are run, so protect against NPE.
         if(services != null) {

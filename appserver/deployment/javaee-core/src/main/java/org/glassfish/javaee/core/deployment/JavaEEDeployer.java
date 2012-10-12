@@ -57,7 +57,7 @@ import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.common.DeploymentProperties;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.File;
 import java.io.IOException;
@@ -84,7 +84,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
     protected ApplicationRegistry appRegistry;
 
     @Inject
-    protected Habitat habitat;
+    protected ServiceLocator habitat;
 
     @Inject @Named("application_undeploy") @Optional
     protected ApplicationVisitor undeploymentVisitor=null;

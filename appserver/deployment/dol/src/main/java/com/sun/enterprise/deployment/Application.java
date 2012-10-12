@@ -88,7 +88,7 @@ import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.Role;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Objects of this type encapsulate the data and behaviour of a J2EE
@@ -225,7 +225,7 @@ public class Application extends CommonResourceBundleDescriptor
     private Set<ApplicationParam> applicationParams = 
             new HashSet<ApplicationParam>();
 
-    private static final Habitat habitat = Globals.getDefaultHabitat();
+    private static final ServiceLocator habitat = Globals.getDefaultHabitat();
     
     private Application() {
         super("", localStrings.getLocalString(

@@ -77,7 +77,7 @@ import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -107,7 +107,7 @@ import org.xml.sax.Attributes;
 public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
 
 
-    protected Habitat habitat = Globals.getDefaultHabitat();
+    protected ServiceLocator habitat = Globals.getDefaultHabitat();
     
     private static final String QNAME_SEPARATOR = ":";
 

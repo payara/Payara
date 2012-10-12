@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.deployment.common.ClientArtifactsManager;
 import org.glassfish.ejb.spi.CMPDeployer;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
@@ -59,7 +60,6 @@ import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.util.OS;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * This class is used to generate the RMI-IIOP version of a 
@@ -82,7 +82,7 @@ public class StaticRmiStubGenerator {
     /**
      * This class is only instantiated internally.
      */
-    public StaticRmiStubGenerator(Habitat services) {
+    public StaticRmiStubGenerator(ServiceLocator services) {
         // Find java path and tools.jar
 
         //Try this jre's parent

@@ -68,8 +68,8 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * This class represents a logical collection of EJB components contained in one ejb-jar
@@ -91,7 +91,7 @@ public class EjbApplication
     private ClassLoader ejbAppClassLoader;
     private DeploymentContext dc;
     
-    private Habitat services;
+    private ServiceLocator services;
 
     private SingletonLifeCycleManager singletonLCM;
 
@@ -111,13 +111,13 @@ public class EjbApplication
 
   public EjbApplication(
             EjbBundleDescriptorImpl bundle, DeploymentContext dc,
-            ClassLoader cl, Habitat services) {
+            ClassLoader cl, ServiceLocator habitat) {
         this.ejbBundle = bundle;
         this.ejbs = bundle.getEjbs();
         this.ejbAppClassLoader = cl;
         this.dc = dc;
-        this.services = services;
-        this.policyLoader = services.getService(PolicyLoader.class);
+        this.services = habitat;
+        this.policyLoader = habitat.getService(PolicyLoader.class);
         Application app = ejbBundle.getApplication();
         initializeInOrder = (app != null) && (app.isInitializeInOrder());
     }
