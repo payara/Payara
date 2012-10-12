@@ -61,4 +61,15 @@
         <module>appserv-rt</module>
     </modules>
 
+    <profiles>
+        <profile>
+            <id>release-phase2</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>embedded</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

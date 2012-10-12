@@ -79,7 +79,14 @@
     </modules>
 
      <build>
-        <plugins> 
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <!-- automatically invokes clean during initialize phase -->
