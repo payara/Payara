@@ -76,7 +76,7 @@ class DistributedReadOnlyBeanServiceImpl
             long ejbID, ClassLoader loader,
             ReadOnlyBeanRefreshEventHandler handler) {
         refreshHandlers.put(ejbID, new ReadOnlyBeanRefreshHandlerInfo(
-                ejbID, loader, handler));
+                loader, handler));
         _logger.log(Level.INFO, "Registered ReadOnlyBeanRefreshEventHandler: "
                 + ejbID + "; " + handler);
     }
@@ -219,13 +219,11 @@ class DistributedReadOnlyBeanServiceImpl
     }
     
     private static class ReadOnlyBeanRefreshHandlerInfo {
-        public  long                            ejbId;
         public  ClassLoader                     loader;
         public  ReadOnlyBeanRefreshEventHandler handler;
         
-        public ReadOnlyBeanRefreshHandlerInfo(long ejbId,
+        public ReadOnlyBeanRefreshHandlerInfo(
                 ClassLoader loader, ReadOnlyBeanRefreshEventHandler handler) {
-            this.ejbId = ejbId;
             this.loader = loader;
             this.handler = handler;
         }
