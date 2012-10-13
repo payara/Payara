@@ -458,7 +458,7 @@ public class EntityContainer
         int steadyPoolSize = 0;
         int resizeQuantity = 10;
         int idleTimeoutInSeconds = Integer.MAX_VALUE-1;
-        poolProp = new PoolProperties();
+        poolProp = new PoolProperties(this);
         
         super.initializeHome();
 
@@ -2230,7 +2230,7 @@ public class EntityContainer
     
     
     // Key for INCOMPLETE_TX beans which contains ejbObject + Tx
-    private class EJBTxKey {
+    private static class EJBTxKey {
         
         Transaction  tx; // may be null
         Object       primaryKey;
@@ -2281,7 +2281,7 @@ public class EntityContainer
         
     }
     
-    protected class CacheProperties {
+    protected static class CacheProperties {
         
         int maxCacheSize ;
         int numberOfVictimsToSelect ;
@@ -2289,70 +2289,70 @@ public class EntityContainer
         String victimSelectionPolicy;
         int removalTimeoutInSeconds;
         
-        public CacheProperties() {
+        public CacheProperties(EntityContainer entityContainer) {
             numberOfVictimsToSelect = 
-                Integer.parseInt(ejbContainer.getCacheResizeQuantity());
-            maxCacheSize=Integer.parseInt(ejbContainer.getMaxCacheSize());
+                Integer.parseInt(entityContainer.ejbContainer.getCacheResizeQuantity());
+            maxCacheSize = Integer.parseInt(entityContainer.ejbContainer.getMaxCacheSize());
             cacheIdleTimeoutInSeconds = 
-            Integer.parseInt(ejbContainer.getCacheIdleTimeoutInSeconds());
-            victimSelectionPolicy = ejbContainer.getVictimSelectionPolicy();
+                Integer.parseInt(entityContainer.ejbContainer.getCacheIdleTimeoutInSeconds());
+            victimSelectionPolicy = entityContainer.ejbContainer.getVictimSelectionPolicy();
             removalTimeoutInSeconds = 
-            Integer.parseInt(ejbContainer.getRemovalTimeoutInSeconds());
+                Integer.parseInt(entityContainer.ejbContainer.getRemovalTimeoutInSeconds());
             
-            if(beanCacheDes != null) {
+            if(entityContainer.beanCacheDes != null) {
                 int temp = 0;
-                if((temp = beanCacheDes.getResizeQuantity()) != -1) {
+                if((temp = entityContainer.beanCacheDes.getResizeQuantity()) != -1) {
                     numberOfVictimsToSelect = temp;
                 }
                 
-                if((temp = beanCacheDes.getMaxCacheSize()) != -1) {
+                if((temp = entityContainer.beanCacheDes.getMaxCacheSize()) != -1) {
                     maxCacheSize = temp;
                 }
                 
-                if ((temp = beanCacheDes.getCacheIdleTimeoutInSeconds()) != -1)
+                if ((temp = entityContainer.beanCacheDes.getCacheIdleTimeoutInSeconds()) != -1)
                 {
                     cacheIdleTimeoutInSeconds = temp;
                 }
                 
-                if (( beanCacheDes.getVictimSelectionPolicy()) != null) {
-                    victimSelectionPolicy = 
-                        beanCacheDes.getVictimSelectionPolicy();
+                if ((entityContainer.beanCacheDes.getVictimSelectionPolicy()) != null) {
+                    victimSelectionPolicy =
+                        entityContainer.beanCacheDes.getVictimSelectionPolicy();
                 }
-                if ((temp = beanCacheDes.getRemovalTimeoutInSeconds()) != -1) {
+                if ((temp = entityContainer.beanCacheDes.getRemovalTimeoutInSeconds()) != -1) {
                     removalTimeoutInSeconds = temp;
                 }
             }
         }
     } //CacheProperties
     
-    private class PoolProperties {
+    private static class PoolProperties {
         int maxPoolSize;
         int poolIdleTimeoutInSeconds;
         //    	int maxWaitTimeInMillis;
         int poolResizeQuantity;
         int steadyPoolSize;
         
-        public PoolProperties() {
+        public PoolProperties(EntityContainer entityContainer) {
             
-            maxPoolSize = Integer.parseInt(ejbContainer.getMaxPoolSize());
+            maxPoolSize = Integer.parseInt(entityContainer.ejbContainer.getMaxPoolSize());
             poolIdleTimeoutInSeconds = Integer.parseInt(
-                ejbContainer.getPoolIdleTimeoutInSeconds());
+                entityContainer.ejbContainer.getPoolIdleTimeoutInSeconds());
             poolResizeQuantity = Integer.parseInt(
-                ejbContainer.getPoolResizeQuantity());
+                entityContainer.ejbContainer.getPoolResizeQuantity());
             steadyPoolSize = Integer.parseInt(
-                ejbContainer.getSteadyPoolSize());
-            if(beanPoolDes != null) {
+                entityContainer.ejbContainer.getSteadyPoolSize());
+            if(entityContainer.beanPoolDes != null) {
                 int temp = 0;
-                if (( temp = beanPoolDes.getMaxPoolSize()) != -1) {
+                if ((temp = entityContainer.beanPoolDes.getMaxPoolSize()) != -1) {
                     maxPoolSize = temp;
                 }
-                if (( temp = beanPoolDes.getPoolIdleTimeoutInSeconds()) != -1) {
+                if ((temp = entityContainer.beanPoolDes.getPoolIdleTimeoutInSeconds()) != -1) {
                     poolIdleTimeoutInSeconds = temp;
                 }
-                if (( temp = beanPoolDes.getPoolResizeQuantity()) != -1) {
+                if ((temp = entityContainer.beanPoolDes.getPoolResizeQuantity()) != -1) {
                     poolResizeQuantity = temp;
                 }
-                if (( temp = beanPoolDes.getSteadyPoolSize()) != -1) {
+                if ((temp = entityContainer.beanPoolDes.getSteadyPoolSize()) != -1) {
                     steadyPoolSize = temp;
                 }
             }
@@ -2648,7 +2648,7 @@ public class EntityContainer
     
     private void createCaches() throws Exception {
 
-        cacheProp = new CacheProperties();
+        cacheProp = new CacheProperties(this);
         
         int cacheSize = cacheProp.maxCacheSize;
         int numberOfVictimsToSelect = cacheProp.numberOfVictimsToSelect;
