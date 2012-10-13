@@ -59,12 +59,12 @@ import java.util.List;
 /**
  * @author Masoud Kalali
  */
-public class ModuleConfigurationParser {
+public class ModuleXMLConfigurationFileParser {
     private static final String CONFIG_BUNDLE = "config-bundle";
     private static final String LOCATION = "location";
     private static final String REPLACE_IF_EXISTS = "replace-if-exist";
     private static final String NAME = "name";
-    private static final String DEFAUL_VALUE = "default-value";
+    private static final String DEFAULT_VALUE = "default-value";
     private static final String DESCRIPTION = "description";
     private static final String CONFIGURATION_ELEMENT = "configuration-element";
     private static final String CUSTOMIZATION_TOKEN = "customization-token";
@@ -72,7 +72,7 @@ public class ModuleConfigurationParser {
     private static final String CONFIG_BEAN_CLASS_NAME = "config-bean-class-name";
     private LocalStringManager localStrings;
 
-    public ModuleConfigurationParser(LocalStringManager localStrings) {
+    public ModuleXMLConfigurationFileParser(LocalStringManager localStrings) {
         this.localStrings = localStrings;
     }
 
@@ -114,7 +114,7 @@ public class ModuleConfigurationParser {
                     Iterator<Attribute> attributes = startElement.getAttributes();
                     while (attributes.hasNext()) {
                         Attribute attribute = attributes.next();
-                        if (attribute.getName().toString().equals(DEFAUL_VALUE)) {
+                        if (attribute.getName().toString().equals(DEFAULT_VALUE)) {
                             value = attribute.getValue();
                         } else if (attribute.getName().toString().equals(DESCRIPTION)) {
                             description = getLocalizedValue(attribute.getValue());

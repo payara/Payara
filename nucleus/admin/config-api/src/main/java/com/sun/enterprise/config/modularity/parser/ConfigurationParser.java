@@ -77,7 +77,7 @@ public class ConfigurationParser<C extends ConfigLoader> {
      * @param habitat The Habitat object to add the config to
      * @param <T>     the ConfigBeanProxy type we are looking for
      */
-    public <T extends ConfigBeanProxy> void prepareAndSetConfigBean(final ServiceLocator habitat, List<ConfigBeanDefaultValue> values) {
+    public <T extends ConfigBeanProxy> void parseAndSetConfigBean(final ServiceLocator habitat, List<ConfigBeanDefaultValue> values) {
 
         ConfigParser configParser = new ConfigParser(habitat);
         // I don't use the GlassFish document here as I don't need persistence

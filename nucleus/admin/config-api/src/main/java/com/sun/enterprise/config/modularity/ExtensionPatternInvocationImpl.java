@@ -63,7 +63,7 @@ import java.util.logging.Logger;
  */
 @Service(name = "basic-config-extension-handler")
 public class ExtensionPatternInvocationImpl implements ConfigExtensionHandler {
-    //TODO to implement ExtensionPatternInvocationContract when HK2-72 available
+
     private static final Logger LOG = Logger.getLogger(ExtensionPatternInvocationImpl.class.getName());
     @Inject
     Habitat habitat;

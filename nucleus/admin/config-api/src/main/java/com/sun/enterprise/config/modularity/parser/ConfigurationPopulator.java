@@ -55,7 +55,6 @@ import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// import com.sun.enterprise.module.bootstrap.Populator;
 
 /**
  * populate the a DomDocument from the given configuration snippet file containing a config bean configuration.

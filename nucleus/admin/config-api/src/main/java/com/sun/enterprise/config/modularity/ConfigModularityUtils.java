@@ -45,7 +45,7 @@ import com.sun.enterprise.config.modularity.annotation.HasCustomizationTokens;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
 import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
 import com.sun.enterprise.config.modularity.parser.ConfigurationPopulator;
-import com.sun.enterprise.config.modularity.parser.ModuleConfigurationParser;
+import com.sun.enterprise.config.modularity.parser.ModuleXMLConfigurationFileParser;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Resource;
@@ -62,6 +62,7 @@ import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigInjector;
@@ -138,7 +139,7 @@ public final class ConfigModularityUtils {
             //TODO properly handle the exceptions
             LocalStringManager localStrings =
                     new LocalStringManagerImpl(configBeanClass);
-            ModuleConfigurationParser parser = new ModuleConfigurationParser(localStrings);
+            ModuleXMLConfigurationFileParser parser = new ModuleXMLConfigurationFileParser(localStrings);
             try {
                 defaults = parser.parseServiceConfiguration(getConfigurationFileUrl(configBeanClass, fileName).openStream());
             } catch (XMLStreamException e) {

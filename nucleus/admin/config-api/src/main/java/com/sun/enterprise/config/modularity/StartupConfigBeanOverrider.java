@@ -45,21 +45,16 @@ import com.sun.enterprise.config.modularity.annotation.ActivateOnStartup;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
 import com.sun.enterprise.config.modularity.parser.ConfigurationParser;
 import com.sun.enterprise.module.bootstrap.StartupContext;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.hk2.utilities.BuilderHelper;
-import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigInjector;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -119,7 +114,7 @@ public class StartupConfigBeanOverrider implements PostConstruct {
             ConfigurationParser configurationParser = new ConfigurationParser();
             List<ConfigBeanDefaultValue> configBeanDefaultValueList =
                     ConfigModularityUtils.getDefaultConfigurations(clz, ConfigModularityUtils.isDas(startupContext));
-            configurationParser.prepareAndSetConfigBean(habitat, configBeanDefaultValueList);
+            configurationParser.parseAndSetConfigBean(habitat, configBeanDefaultValueList);
         } catch (Throwable tr) {
             //Do nothing for now.
         }
