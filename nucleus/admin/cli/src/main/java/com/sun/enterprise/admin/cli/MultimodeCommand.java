@@ -242,6 +242,7 @@ public class MultimodeCommand extends CLICommand {
                 // copy over AsadminMain info
                 po.setClassPath(programOpts.getClassPath());
                 po.setClassName(programOpts.getClassName());
+                po.setCommandName(programOpts.getCommandName());
                 // remove the old one and replace it
                 atomicReplace(habitat, po);
                 
