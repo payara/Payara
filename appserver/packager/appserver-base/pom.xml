@@ -59,18 +59,19 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
-                <includes>
-                    <include>config/**</include>
-                </includes>
+                <excludes>
+		    <exclude>**/*.jar</exclude>
+                </excludes>
             </resource>
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>lib/*</include>
+                    <include>**/*.jar</include>
                 </includes>
             </resource>
         </resources>
     </build>
+
     <!-- Do not place any dependencies in this distribution, dependencies
     should go into other packager modules -->
 </project>
