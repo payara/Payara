@@ -577,9 +577,6 @@
 
             <modules>
                 <module>installer</module>
-                <module>extras/embedded/all</module>
-                <module>extras/embedded/web</module>
-                <module>extras/embedded/nucleus</module>
             </modules>
        </profile>
     </profiles>
