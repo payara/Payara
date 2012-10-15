@@ -58,7 +58,8 @@
 
 package org.apache.naming;
 
-import java.util.logging.*;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import javax.naming.Context;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
@@ -66,6 +67,7 @@ import javax.management.MBeanServer;
 import javax.management.MBeanRegistration;
 import javax.management.AttributeChangeNotification;
 import javax.management.Notification;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * Implementation of the NamingService JMX MBean.
@@ -78,9 +80,12 @@ public final class NamingService
     extends NotificationBroadcasterSupport
     implements NamingServiceMBean, MBeanRegistration {
     
-    
-    private static final Logger log = Logger.getLogger(
-        NamingService.class.getName());
+    private static final Logger log = org.apache.naming.resources.FileDirContext.logger;
+
+    @LogMessageInfo(
+            message = "Unable to restore original system properties",
+            level = "WARNING")
+    public static final String UNABLE_TO_RESTORE_ORIGINAL_SYS_PROPERTIES = "AS-WEB-00008";
 
     // ----------------------------------------------------- Instance Variables
         
@@ -231,8 +236,7 @@ public final class NamingService
             System.setProperty(Context.URL_PKG_PREFIXES, oldUrlValue);
             System.setProperty(Context.INITIAL_CONTEXT_FACTORY, oldIcValue);
         } catch (Throwable t) {
-            log.log(Level.WARNING,
-                "Unable to restore original system properties", t);
+            log.log(Level.WARNING, UNABLE_TO_RESTORE_ORIGINAL_SYS_PROPERTIES, t);
         }
         
         state = State.STOPPED;

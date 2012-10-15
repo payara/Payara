@@ -58,16 +58,15 @@
 
 package org.apache.naming.resources;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.logging.*;
 import java.io.File;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -79,21 +78,18 @@ import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.CompositeName;
-import javax.naming.NameParser;
 import javax.naming.OperationNotSupportedException;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.Attributes;
-import javax.naming.directory.Attribute;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
-import org.apache.naming.StringManager;
-import org.apache.naming.NameParserImpl;
 import org.apache.naming.NamingEntry;
 import org.apache.naming.NamingContextBindingsEnumeration;
 import org.apache.naming.NamingContextEnumeration;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * WAR Directory Context implementation.
@@ -104,8 +100,12 @@ import org.apache.naming.NamingContextEnumeration;
 
 public class WARDirContext extends BaseDirContext {
 
+    private static final Logger log = org.apache.naming.resources.FileDirContext.logger;
 
-    private static Logger log = Logger.getLogger(WARDirContext.class.getName());
+    @LogMessageInfo(
+            message = "Exception closing WAR File {0}",
+            level = "WARNING")
+    public static final String EXCEPTION_CLOSING_WAR = "AS-WEB-00007";
 
     // ----------------------------------------------------------- Constructors
 
@@ -206,8 +206,8 @@ public class WARDirContext extends BaseDirContext {
             try {
                 base.close();
             } catch (IOException e) {
-                log.log(Level.WARNING,
-                        "Exception closing WAR File " + base.getName(), e);
+                String msg = MessageFormat.format(EXCEPTION_CLOSING_WAR, base.getName());
+                log.log(Level.WARNING, msg, e);
             }
         }
         base = null;
