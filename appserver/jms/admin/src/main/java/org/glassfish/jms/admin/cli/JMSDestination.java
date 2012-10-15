@@ -190,8 +190,6 @@ public abstract class JMSDestination {
                        //Standalone server instance
                        logger.log(Level.FINE,"not in DAS");
                        logger.log(Level.FINE," _getMQJMXConnectorInfo - NOT in DAS");
-                       String domainurl  =
-                       serverContext.getServerConfigURL();
                        JmsService serverJmsService= getJmsServiceOfStandaloneServerInstance(targetName, config, domain);
                        //MQAddressList mqadList = new MQAddressList(serverJmsService, targetName);
                        mqadList.setJmsService(serverJmsService);
@@ -264,7 +262,6 @@ public abstract class JMSDestination {
                      } else if (ctarget == CommandTarget.CLUSTERED_INSTANCE ){
                          list.setInstanceName(target);
                      }
-                     String domainurl  = serverContext.getServerConfigURL();
                      java.util.Map<String,JmsHost> hostMap =  list.getResolvedLocalJmsHostsInMyCluster(true);
 
                      if ( hostMap.size() == 0 ) {

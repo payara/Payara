@@ -286,7 +286,6 @@ public class ConfigureJMSCluster implements AdminCommand {
         config = domain.getConfigNamed(cluster.getConfigRef());
 
         JmsAvailability jmsAvailability = config.getAvailabilityService().getExtensionByType(JmsAvailability.class);
-        JmsService jmsservice = config.getExtensionByType(JmsService.class);
         final Boolean availabilityEnabled = Boolean.valueOf(ENHANCED.equalsIgnoreCase(clusterType));
 
         try {

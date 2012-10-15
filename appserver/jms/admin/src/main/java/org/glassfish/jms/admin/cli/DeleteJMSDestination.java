@@ -139,7 +139,7 @@ public class DeleteJMSDestination extends JMSDestination implements AdminCommand
         }
 
         try {
-    			Object ret = deleteJMSDestination(destName, destType, target);
+                deleteJMSDestination(destName, destType, target);
                 return;
         } catch (Exception e) {
             logger.throwing(getClass().getName(), "deleteJMSDestination", e);

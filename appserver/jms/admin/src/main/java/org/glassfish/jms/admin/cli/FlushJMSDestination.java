@@ -232,10 +232,8 @@ public class FlushJMSDestination extends JMSDestination implements AdminCommand 
                         destType = DESTINATION_TYPE_QUEUE;
                     }
                    ObjectName on = createDestinationConfig(destType, destName);
-                                      String [] signature = null;
-                                      Object [] params = null;
 
-                    mbsc.invoke(on, "purge", params, signature);
+                    mbsc.invoke(on, "purge", null, null);
                } catch (Exception e) {
                            //log JMX Exception trace as WARNING
                            logAndHandleException(e, "admin.mbeans.rmb.error_purging_jms_dest");
