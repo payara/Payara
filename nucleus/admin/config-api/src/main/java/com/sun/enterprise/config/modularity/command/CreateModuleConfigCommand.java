@@ -243,7 +243,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
             return ConfigModularityUtils.serializeConfigBeanByType(configBeanType, serviceLocator);
         } else {
 
-            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType, serverenv.isDas());
+            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType, ConfigModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
             StringBuilder builder = new StringBuilder();
             for (ConfigBeanDefaultValue value : defaults) {
                 builder.append(localStrings.getLocalString("at.location",

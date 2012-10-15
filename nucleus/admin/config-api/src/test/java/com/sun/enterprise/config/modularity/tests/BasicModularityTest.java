@@ -41,23 +41,21 @@
 package com.sun.enterprise.config.modularity.tests;
 
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
+import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
+import com.sun.enterprise.config.modularity.customization.FileTypeDetails;
+import com.sun.enterprise.config.modularity.customization.PortTypeDetails;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.configapi.tests.ConfigApiTest;
-import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
-
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevelController;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.glassfish.tests.utils.Utils;
-
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.types.Property;
 
+import javax.inject.Inject;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -108,9 +106,9 @@ public class BasicModularityTest extends ConfigApiTest {
 
     @Test
     public void moduleConfigurationXmlParserTest() {
-        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = ConfigModularityUtils.getDefaultConfigurations(SimpleExtensionTypeOne.class, true);
+        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = ConfigModularityUtils.getDefaultConfigurations(SimpleExtensionTypeOne.class, "admin-");
         assertEquals("Incorrect number of config bean configuration read ", 2, values.size());
-        ConfigCustomizationToken token = ConfigModularityUtils.getDefaultConfigurations(SimpleExtensionTypeOne.class, true).get(0).getCustomizationTokens().get(0);
+        ConfigCustomizationToken token = ConfigModularityUtils.getDefaultConfigurations(SimpleExtensionTypeOne.class, "embedded-").get(0).getCustomizationTokens().get(0);
         assertEquals("Customization Token reading broken ", "CUSTOM_TOKEN", token.getKey());
         assertEquals("Customization Token reading broken ", "token-default-value", token.getDefaultValue());
     }
@@ -160,8 +158,8 @@ public class BasicModularityTest extends ConfigApiTest {
 
     @Test
     public void getCurrentConfigurationForConfigBean() throws Exception {
-        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = ConfigModularityUtils.getDefaultConfigurations(SimpleExtensionTypeOne.class, true);
-        com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue def = ConfigModularityUtils.getDefaultConfigurations(SimpleExtensionTypeOne.class, true).get(0);
+        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = ConfigModularityUtils.getDefaultConfigurations(SimpleExtensionTypeOne.class, "admin-");
+        com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue def = ConfigModularityUtils.getDefaultConfigurations(SimpleExtensionTypeOne.class, "embedded-").get(0);
         SimpleExtensionTypeOne simple = ConfigModularityUtils.getCurrentConfigBeanForDefaultValue(def, habitat);
         assertNotNull("Cannot get config bean of a module based on the default module configuration information", simple);
     }
@@ -174,6 +172,35 @@ public class BasicModularityTest extends ConfigApiTest {
         SystemProperty property = config.getSystemProperty("startup.overriding.property");
         assertEquals("The system property is not overridden during startup, Something wrong with processing @ActivateOnStartup", "new-custom-value", property.getValue());
     }
+
+
+    @Test
+    public void testLoadingAdminFile() throws Exception {
+        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = ConfigModularityUtils.getDefaultConfigurations(ConfigExtensionTwo.class, "admin");
+        assertEquals("Incorrect customization type loaded ", ConfigCustomizationToken.CustomizationType.FILE, values.get(0).getCustomizationTokens().get(0).getCustomizationType());
+        assertEquals("Incorrect customization details value ", true, ((FileTypeDetails) values.get(0).getCustomizationTokens().get(0).getTokenTypeDetails()).isShouldExist());
+    }
+
+    @Test
+    public void testLoadingEmbeddedFile() throws Exception {
+        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = values = ConfigModularityUtils.getDefaultConfigurations(ConfigExtensionTwo.class, "embedded");
+        assertEquals("Incorrect customization type loaded ", ConfigCustomizationToken.CustomizationType.PORT, values.get(0).getCustomizationTokens().get(0).getCustomizationType());
+        assertEquals("Incorrect customization details value ", "1000", ((PortTypeDetails) values.get(0).getCustomizationTokens().get(0).getTokenTypeDetails()).getBaseOffset());
+        assertEquals("validation expression is returned incorrectly ", "[a-zA-Z0-9]+", values.get(0).getCustomizationTokens().get(0).getValidationExpression());
+    }
+
+    @Test
+    public void testLoadingDefaultFile() throws Exception {
+        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = ConfigModularityUtils.getDefaultConfigurations(ConfigExtensionTwo.class, "non-existing-runtime-type");
+        assertEquals("validation expression is returned incorrectly ", ".*[0-9]{10}.*", values.get(0).getCustomizationTokens().get(0).getValidationExpression());
+    }
+
+    @Test
+    public void tesOnTheFlyConfigurationGenerationMethod() {
+        List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = ConfigModularityUtils.getDefaultConfigurations(SimpleExtensionThree.class, "non-existing-runtime-type");
+        assertEquals("On the fly config generation/reading is broken", "<xml-doc></xml-doc>", values.get(0).getXmlConfiguration());
+    }
+
 
     //TODO add more tests to cover token processing and i18n support
 

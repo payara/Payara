@@ -59,9 +59,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Qualifier
 public @interface CustomConfiguration {
-    String defaultConfigFileName();
 
-    String adminConfigFileName();
+    String baseConfigurationFileName();
 
     boolean usesOnTheFlyConfigGeneration() default false;
 }

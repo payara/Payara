@@ -61,7 +61,7 @@ import java.util.List;
 }) */
 
 @Configured
-//@CustomConfiguration(adminConfigFileName = "iiop-module-conf.xml", defaultConfigFileName = "iiop-module-conf.xml")
+//@CustomConfiguration(baseConfigurationFileName = "iiop-module-conf.xml")
 //@HasCustomizationTokens
 public interface IiopService extends ConfigBeanProxy, ConfigExtension   {
 

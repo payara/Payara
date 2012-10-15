@@ -38,69 +38,34 @@
  * holder.
  */
 
-package com.sun.enterprise.config.modularity.customization;
+package com.sun.enterprise.config.modularity.tests;
+
+import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
+import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.DuckTyped;
+import org.jvnet.hk2.config.types.PropertyBag;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Will carry a set of four strings which will be used during domain creation to find what initial values are required by a config bean to acquire them during the domain creation process.
- *
  * @author Masoud Kalali
  */
-public class ConfigCustomizationToken {
 
-    private String key;
-    private String title;
-    private String description;
-    private String defaultValue;
-    private String validationExpression;
-    private TokenTypeDetails tokenTypeDetails;
-    private CustomizationType customizationType;
+@Configured
+@CustomConfiguration(baseConfigurationFileName = "simple-ext-type-one.xml", usesOnTheFlyConfigGeneration = true)
+public interface SimpleExtensionThree extends SimpleConfigExtensionExtensionPoint, PropertyBag {
+    @DuckTyped
+    public List<ConfigBeanDefaultValue> getDefaultValues(String runtimeType);
 
-    public String getValidationExpression() {
-        return validationExpression;
+    class Duck {
+        public static List<ConfigBeanDefaultValue> getDefaultValues( String runtimeType) {
+            //decide what to do depending on the runtime...
+            ConfigBeanDefaultValue defaultValue = new ConfigBeanDefaultValue("domain", "some.class.name", "<xml-doc></xml-doc>", false, null);
+            List<ConfigBeanDefaultValue> vals = new ArrayList<ConfigBeanDefaultValue>();
+            vals.add(defaultValue);
+            return vals;
+        }
     }
-
-    public TokenTypeDetails getTokenTypeDetails() {
-        return tokenTypeDetails;
-    }
-
-    public CustomizationType getCustomizationType() {
-        return customizationType;
-    }
-
-    public ConfigCustomizationToken(String key, String title, String description, String defaultValue) {
-        this.key = key;
-        this.title = title;
-        this.description = description;
-        this.defaultValue = defaultValue;
-    }
-
-    public ConfigCustomizationToken(String key, String title, String description, String defaultValue,
-                                    String validationExpression, TokenTypeDetails tokenTypeDetails, CustomizationType customizationType) {
-        this.key = key;
-        this.title = title;
-        this.description = description;
-        this.defaultValue = defaultValue;
-        this.validationExpression = validationExpression;
-        this.tokenTypeDetails = tokenTypeDetails;
-        this.customizationType = customizationType;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getDefaultValue() {
-        return defaultValue;
-    }
-
-    public static enum CustomizationType {PORT, FILE, STRING}
 }
-

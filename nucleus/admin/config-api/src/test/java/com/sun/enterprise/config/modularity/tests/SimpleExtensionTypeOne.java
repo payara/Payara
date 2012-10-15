@@ -51,7 +51,7 @@ import java.beans.PropertyVetoException;
  * @author Masoud Kalali
  */
 @Configured
-@com.sun.enterprise.config.modularity.annotation.CustomConfiguration(adminConfigFileName = "simple-extension-type-one-module-config.xml", defaultConfigFileName = "simple-extension-type-one-module-config.xml")
+@com.sun.enterprise.config.modularity.annotation.CustomConfiguration(baseConfigurationFileName = "simple-ext-type-one.xml")
 @com.sun.enterprise.config.modularity.annotation.HasCustomizationTokens
 public interface SimpleExtensionTypeOne extends SimpleConfigExtensionExtensionPoint, PropertyBag {
 

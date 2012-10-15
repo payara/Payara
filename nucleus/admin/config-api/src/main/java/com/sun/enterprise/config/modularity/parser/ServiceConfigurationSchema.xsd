@@ -37,18 +37,21 @@
   only if the new code is made subject to such option by the copyright
   holder.
   -->
-<xsd:schema attributeFormDefault="unqualified" elementFormDefault="qualified" version="1.0"
-            xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+            version="1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
     <xsd:element name="service-config" type="service-configType"/>
     <xsd:complexType name="service-configType">
         <xsd:sequence>
-            <xsd:element maxOccurs="unbounded" name="config-bundle" type="config-bundleType"/>
+            <xsd:element maxOccurs="unbounded"
+                         name="config-bundle" type="config-bundleType"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="config-bundleType">
         <xsd:sequence>
-            <xsd:element name="customization-tokens" type="customization-tokensType"/>
-            <xsd:element name="configuration-element" type="configuration-elementType"/>
+            <xsd:element name="customization-tokens"
+                         type="customization-tokensType"/>
+            <xsd:element name="configuration-element"
+                         type="configuration-elementType"/>
         </xsd:sequence>
         <xsd:attribute name="location" type="xsd:string"/>
         <xsd:attribute name="replace-if-exist" type="xsd:boolean"/>
@@ -58,13 +61,26 @@
     </xsd:complexType>
     <xsd:complexType name="customization-tokensType">
         <xsd:sequence>
-            <xsd:element maxOccurs="unbounded" name="customization-token" type="customization-tokenType"/>
+            <xsd:element name="customization-token" type="customization-tokenType" minOccurs="0"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="customization-tokenType">
+        <xsd:sequence>
+            <xsd:choice minOccurs="0">
+                <xsd:element name="port" type="portType" minOccurs="0"/>
+                <xsd:element name="file" type="fileType" minOccurs="0"/>
+            </xsd:choice>
+        </xsd:sequence>
         <xsd:attribute name="title" type="xsd:string"/>
         <xsd:attribute name="name" type="xsd:string"/>
-        <xsd:attribute name="default-value" type="xsd:string"/>
+        <xsd:attribute name="default-value" type="xsd:int"/>
+        <xsd:attribute name="validation-expression" type="xsd:string"/>
         <xsd:attribute name="description" type="xsd:string"/>
+    </xsd:complexType>
+    <xsd:complexType name="fileType">
+        <xsd:attribute name="should-exist" type="xsd:boolean"/>
+    </xsd:complexType>
+    <xsd:complexType name="portType">
+        <xsd:attribute name="base-offset" type="xsd:int"/>
     </xsd:complexType>
 </xsd:schema>

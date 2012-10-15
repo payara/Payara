@@ -122,7 +122,7 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
     protected <U extends ConfigBeanProxy> void addConfigBeanFor(Class<U> extensionType) {
         StartupContext context = serviceLocator.getService(StartupContext.class);
         List<ConfigBeanDefaultValue> configBeanDefaultValueList =
-                ConfigModularityUtils.getDefaultConfigurations(extensionType, ConfigModularityUtils.isDas(context));
+                ConfigModularityUtils.getDefaultConfigurations(extensionType, ConfigModularityUtils.getRuntimeTypePrefix(context));
         configurationParser.parseAndSetConfigBean(configBeanDefaultValueList);
     }
 

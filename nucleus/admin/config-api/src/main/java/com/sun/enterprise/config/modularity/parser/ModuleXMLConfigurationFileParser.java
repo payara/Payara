@@ -42,8 +42,12 @@ package com.sun.enterprise.config.modularity.parser;
 
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
 import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
+import com.sun.enterprise.config.modularity.customization.FileTypeDetails;
+import com.sun.enterprise.config.modularity.customization.PortTypeDetails;
+import com.sun.enterprise.config.modularity.customization.TokenTypeDetails;
 import com.sun.enterprise.util.LocalStringManager;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -70,6 +74,12 @@ public class ModuleXMLConfigurationFileParser {
     private static final String CUSTOMIZATION_TOKEN = "customization-token";
     private static final String TITLE = "title";
     private static final String CONFIG_BEAN_CLASS_NAME = "config-bean-class-name";
+    private static final String SHOULD_EXIST = "should-exist";
+    private static final String BASE_OFFSET = "base-offset";
+    private static final String FILE = "file";
+    private static final String PORT = "port";
+    private static final String VALIDATION_EXPRESSION = "validation-expression";
+
     private LocalStringManager localStrings;
 
     public ModuleXMLConfigurationFileParser(LocalStringManager localStrings) {
@@ -110,6 +120,9 @@ public class ModuleXMLConfigurationFileParser {
                     String description = null;
                     String name = null;
                     String title = null;
+                    String validationExpression = null;
+                    ConfigCustomizationToken.CustomizationType type = ConfigCustomizationToken.CustomizationType.STRING;
+                    TokenTypeDetails tokenTypeDetails = null;
 
                     Iterator<Attribute> attributes = startElement.getAttributes();
                     while (attributes.hasNext()) {
@@ -122,10 +135,28 @@ public class ModuleXMLConfigurationFileParser {
                             name = attribute.getValue();
                         } else if (attribute.getName().toString().equals(TITLE)) {
                             title = getLocalizedValue(attribute.getValue());
+                        } else if (attribute.getName().toString().equals(VALIDATION_EXPRESSION)) {
+                            validationExpression = getLocalizedValue(attribute.getValue());
                         }
-                    }//attributes
 
-                    token = new ConfigCustomizationToken(name, title, description, value);
+                    }//attributes
+                    event = eventReader.nextEvent();
+                    while(!event.isStartElement() && !event.isEndElement()){event = eventReader.nextEvent();}
+                    if (event.isStartElement()) {
+                        startElement = event.asStartElement();
+                        // If we have a item element we create a new item
+                        if (startElement.getName().getLocalPart().equalsIgnoreCase(FILE)) {
+                            type = ConfigCustomizationToken.CustomizationType.FILE;
+                            tokenTypeDetails = new FileTypeDetails(Boolean.parseBoolean(startElement.getAttributeByName(QName.valueOf(SHOULD_EXIST)).getValue()));
+
+                        }
+                        else if (startElement.getName().getLocalPart().equalsIgnoreCase(PORT)) {
+                            type = ConfigCustomizationToken.CustomizationType.PORT;
+                            tokenTypeDetails = new PortTypeDetails(startElement.getAttributeByName(QName.valueOf(BASE_OFFSET)).getValue());
+                        }
+                    }
+
+                    token = new ConfigCustomizationToken(name, title, description, value, validationExpression, tokenTypeDetails, type);
                     //TODO check that ConfigValue is not null
                     configValue.addCustomizationToken(token);
                     continue;

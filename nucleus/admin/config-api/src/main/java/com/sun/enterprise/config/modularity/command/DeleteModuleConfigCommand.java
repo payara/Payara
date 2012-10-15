@@ -151,7 +151,7 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
         }
 
         if (ConfigModularityUtils.hasCustomConfig(configBeanType)) {
-            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType, serverenv.isDas());
+            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType, ConfigModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
             deleteDependentConfigElements(defaults);
         } else {
             deleteTopLevelExtensionByType(config, className, configBeanType);

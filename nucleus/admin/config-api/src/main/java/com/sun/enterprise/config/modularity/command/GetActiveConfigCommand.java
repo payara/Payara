@@ -160,7 +160,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
     private String getActiveConfigFor(Class configBeanType) throws InvocationTargetException, IllegalAccessException {
 
         if (ConfigModularityUtils.hasCustomConfig(configBeanType)) {
-            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType, serverenv.isDas());
+            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType, ConfigModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
             return getCompleteConfiguration(defaults);
         }
 

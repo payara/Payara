@@ -117,7 +117,7 @@ public class StartupConfigBeanOverrider implements PostConstruct {
     private void applyConfigIfNeeded(Class<?> clz) {
         try {
             List<ConfigBeanDefaultValue> configBeanDefaultValueList =
-                    ConfigModularityUtils.getDefaultConfigurations(clz, ConfigModularityUtils.isDas(startupContext));
+                    ConfigModularityUtils.getDefaultConfigurations(clz, ConfigModularityUtils.getRuntimeTypePrefix(startupContext));
             configurationParser.parseAndSetConfigBean(configBeanDefaultValueList);
         } catch (Throwable tr) {
             //Do nothing for now.

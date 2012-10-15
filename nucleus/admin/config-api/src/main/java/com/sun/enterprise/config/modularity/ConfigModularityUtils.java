@@ -108,8 +108,14 @@ import java.util.logging.Logger;
 public final class ConfigModularityUtils {
     private static final Logger LOG = Logger.getLogger(ConfigModularityUtils.class.getName());
 
-    private static <U extends ConfigBeanProxy> URL getConfigurationFileUrl(Class<U> configBeanClass, String fileName) {
-        return configBeanClass.getClassLoader().getResource("META-INF/configuration/" + fileName);
+    private static <U extends ConfigBeanProxy> URL getConfigurationFileUrl(Class<U> configBeanClass, String baseFileName, String runtimeType) {
+        //TODO can be optimized a little by checking the default file...
+        String fileName = runtimeType +"-"+ baseFileName;
+        URL fileUrl = configBeanClass.getClassLoader().getResource("META-INF/configuration/" + fileName);
+        if (fileUrl == null) {
+            fileUrl = configBeanClass.getClassLoader().getResource("META-INF/configuration/" + baseFileName);
+        }
+        return fileUrl;
     }
 
     /**
@@ -118,7 +124,7 @@ public final class ConfigModularityUtils {
      * @param configBeanClass the config bean type we want to check for its configuration snippet
      * @return A url to the file or null of not exists
      */
-    public static List<ConfigBeanDefaultValue> getDefaultConfigurations(Class configBeanClass, boolean isDas) {
+    public static List<ConfigBeanDefaultValue> getDefaultConfigurations(Class configBeanClass, String runtimeType) {
 
         //Determine if it is DAS or instance
         CustomConfiguration c = (CustomConfiguration) configBeanClass.getAnnotation(CustomConfiguration.class);
@@ -127,20 +133,18 @@ public final class ConfigModularityUtils {
             Method m = getGetDefaultValuesMethod(configBeanClass);
             if (m != null) {
                 try {
-                    defaults = (List<ConfigBeanDefaultValue>) m.invoke(null);
+                    defaults = (List<ConfigBeanDefaultValue>) m.invoke(null,runtimeType);
                 } catch (Exception e) {
                     LOG.log(Level.INFO, "cannot get default configuration for: " + configBeanClass.getName(), e);
                 }
             }
         } else {
-
-            String fileName = isDas ? c.adminConfigFileName() : c.defaultConfigFileName();
             //TODO properly handle the exceptions
             LocalStringManager localStrings =
                     new LocalStringManagerImpl(configBeanClass);
             ModuleXMLConfigurationFileParser parser = new ModuleXMLConfigurationFileParser(localStrings);
             try {
-                defaults = parser.parseServiceConfiguration(getConfigurationFileUrl(configBeanClass, fileName).openStream());
+                defaults = parser.parseServiceConfiguration(getConfigurationFileUrl(configBeanClass, c.baseConfigurationFileName(), runtimeType).openStream());
             } catch (XMLStreamException e) {
                 LOG.log(Level.SEVERE, "Cannot parse default module configuration", e);
             } catch (IOException e) {
@@ -725,7 +729,7 @@ public final class ConfigModularityUtils {
         }
         Method m;
         try {
-            m = duck.getMethod("getDefaultValues");
+            m = duck.getMethod("getDefaultValues",String.class);
         } catch (Exception ex) {
             return null;
         }
@@ -816,14 +820,16 @@ public final class ConfigModularityUtils {
     }
 
 
-    public static boolean isDas(StartupContext startupContext) {
+    public static String getRuntimeTypePrefix(StartupContext startupContext) {
         Properties args = startupContext.getArguments();
         RuntimeType serverType = RuntimeType.getDefault();
         String typeString = args.getProperty("-type");
         if (typeString != null)
             serverType = RuntimeType.valueOf(typeString);
         LOG.fine("server type is: " + serverType.name());
-        if (serverType.isEmbedded() || serverType.isSingleInstance() || serverType.isDas()) return true;
-        return false;
+        if (serverType.isEmbedded()) return "embedded";
+        if (serverType.isSingleInstance() || serverType.isDas()) return "admin";
+        if (serverType.isInstance()) return "instance";
+        return "";
     }
 }

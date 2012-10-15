@@ -50,7 +50,7 @@ import java.beans.PropertyVetoException;
  * @author Masoud Kalali
  */
 @Configured
-@com.sun.enterprise.config.modularity.annotation.CustomConfiguration(adminConfigFileName = "config-extension-two-module-config.xml", defaultConfigFileName = "config-extension-two-module-config.xml")
+@com.sun.enterprise.config.modularity.annotation.CustomConfiguration(baseConfigurationFileName = "conf-extension-two.xml")
 @com.sun.enterprise.config.modularity.annotation.HasCustomizationTokens
 public interface ConfigExtensionTwo extends ConfigExtension {
 

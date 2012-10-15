@@ -48,7 +48,10 @@
             <customization-token
                     title="$token.title" name="CUSTOM_TOKEN"
                     default-value="token-default-value"
-                    description="$token.description"/>
+                    description="$token.description"
+                    validation-expression=".*[0-9]{10}.*">
+                <file should-exist="true"></file>
+            </customization-token>
         </customization-tokens>
         <configuration-element
                 config-bean-class-name="com.sun.enterprise.config.modularity.tests.ConfigExtensionTwo">

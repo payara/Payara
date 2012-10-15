@@ -49,7 +49,7 @@ import org.jvnet.hk2.config.Configured;
  * @author Masoud Kalali
  */
 @com.sun.enterprise.config.modularity.annotation.ActivateOnStartup
-@com.sun.enterprise.config.modularity.annotation.CustomConfiguration(adminConfigFileName = "activate-on-startup-module-config.xml", defaultConfigFileName = "activate-on-startup-module-config.xml")
+@com.sun.enterprise.config.modularity.annotation.CustomConfiguration(baseConfigurationFileName = "activate-on-startup-module-config.xml")
 @Configured
 public interface DummyConfigBeanForOverridingTest extends ConfigBeanProxy {
 }
