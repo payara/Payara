@@ -2286,19 +2286,14 @@ public class EntityContainer
         int maxCacheSize ;
         int numberOfVictimsToSelect ;
         int cacheIdleTimeoutInSeconds ;
-        String victimSelectionPolicy;
-        int removalTimeoutInSeconds;
-        
+
         public CacheProperties(EntityContainer entityContainer) {
             numberOfVictimsToSelect = 
                 Integer.parseInt(entityContainer.ejbContainer.getCacheResizeQuantity());
             maxCacheSize = Integer.parseInt(entityContainer.ejbContainer.getMaxCacheSize());
             cacheIdleTimeoutInSeconds = 
                 Integer.parseInt(entityContainer.ejbContainer.getCacheIdleTimeoutInSeconds());
-            victimSelectionPolicy = entityContainer.ejbContainer.getVictimSelectionPolicy();
-            removalTimeoutInSeconds = 
-                Integer.parseInt(entityContainer.ejbContainer.getRemovalTimeoutInSeconds());
-            
+
             if(entityContainer.beanCacheDes != null) {
                 int temp = 0;
                 if((temp = entityContainer.beanCacheDes.getResizeQuantity()) != -1) {
@@ -2312,14 +2307,6 @@ public class EntityContainer
                 if ((temp = entityContainer.beanCacheDes.getCacheIdleTimeoutInSeconds()) != -1)
                 {
                     cacheIdleTimeoutInSeconds = temp;
-                }
-                
-                if ((entityContainer.beanCacheDes.getVictimSelectionPolicy()) != null) {
-                    victimSelectionPolicy =
-                        entityContainer.beanCacheDes.getVictimSelectionPolicy();
-                }
-                if ((temp = entityContainer.beanCacheDes.getRemovalTimeoutInSeconds()) != -1) {
-                    removalTimeoutInSeconds = temp;
                 }
             }
         }
