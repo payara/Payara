@@ -70,22 +70,12 @@ public class FIFOEJBObjectCache
     
     protected Object refCountLock = new Object();
     protected int totalRefCount = 0;
-    protected static boolean _printRefCount = false;
+    protected static boolean _printRefCount =
+        Boolean.getBoolean("cache.printrefcount");
     
     
     private static final Logger _logger =
         LogDomains.getLogger(FIFOEJBObjectCache.class, LogDomains.EJB_LOGGER);
-    
-    static {
-        
-        try {
-            Properties props = System.getProperties();
-            _printRefCount = (Boolean.valueOf(props.getProperty
-                ("cache.printrefcount"))).booleanValue();
-        } catch (Exception ex) {
-            _logger.log(Level.FINE, "Cache PrintRefCount property ex", ex);
-        }
-    }
     
     /**
      * default constructor
@@ -486,7 +476,7 @@ public class FIFOEJBObjectCache
         
         for (int i=0; i<maxCount; i++) {
             String key = (String) keys.get(i);
-            cache.get(key, ((i%2)==1));
+            cache.get(key, ((i % 2) != 0));
         }
         
         System.out.println("****  NONE SHOULD BE PRINTED ****");
