@@ -188,8 +188,9 @@ public class PECoyoteConnector extends Connector {
     
     /**
      * The increment number used by the processor threads.
-     */
+     *
     protected int minProcessorWorkerThreadsIncrement;
+     */
     
     
     /**
@@ -607,9 +608,9 @@ public class PECoyoteConnector extends Connector {
         return processorWorkerThreadsTimeout;
     }
 
-    public int getMinProcessorWorkerThreadsIncrement(){
+    /*public int getMinProcessorWorkerThreadsIncrement(){
         return minProcessorWorkerThreadsIncrement;
-    }
+    }*/
  
     public void setSelectorReadThreadsCount(int selectorReadThreadsCount) {
         this.selectorReadThreadsCount = selectorReadThreadsCount;

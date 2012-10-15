@@ -255,7 +255,8 @@ public abstract class BasePersistenceStrategyBuilder
                     _logger.log(Level.FINEST, SESSION_ID_GENERATOR_CLASSNAME_SET, sessionIdGeneratorClassname);
                 }
                 // END CR 6275709
-                
+
+                /*
                 // Now do properties under <manager-properties> element
                 List<Property> props = mgrBean.getProperty();
                 if (props != null) {
@@ -263,17 +264,16 @@ public abstract class BasePersistenceStrategyBuilder
                         String name = prop.getName();
                         String value = prop.getValue();
                         // maxIdleBackupSeconds
-                        /*
                         if (name.equalsIgnoreCase("maxIdleBackupSeconds")) {
                             try {
                                 maxIdleBackup = Integer.parseInt(value);
                             } catch (NumberFormatException e) {
                                 // XXX need error message
                             }
-                        }*/
+                        }
                     }
-                }
-            }            
+                }*/
+            }
             
             org.glassfish.web.config.serverbeans.StoreProperties storeBean =
                 smBean.getStoreProperties();
