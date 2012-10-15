@@ -45,9 +45,11 @@ import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigExtension;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -56,6 +58,7 @@ import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import javax.inject.Inject;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Proxy;
 import java.util.List;
@@ -67,15 +70,17 @@ import java.util.logging.Logger;
  *
  * @author Masoud Kalali
  */
+@Service
+@PerLookup
 public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends ConfigBeanProxy> {
     private final static Logger LOG = Logger.getLogger(ModuleConfigurationLoader.class.getName());
-    protected final C extensionOwner;
+    @Inject
+    private ServiceLocator serviceLocator;
 
-    public ModuleConfigurationLoader(C extensionOwner) {
-        this.extensionOwner = extensionOwner;
-    }
+    @Inject
+    private ConfigurationParser configurationParser;
 
-    public <U extends ConfigBeanProxy> U createConfigBeanForType(Class<U> configExtensionType) throws TransactionFailure {
+    public <U extends ConfigBeanProxy> U createConfigBeanForType(Class<U> configExtensionType,C extensionOwner) throws TransactionFailure {
         if (ConfigModularityUtils.hasCustomConfig(configExtensionType)) {
             addConfigBeanFor(configExtensionType, extensionOwner);
         } else {
@@ -106,9 +111,7 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
             try {
                 U configBeanInstance = configExtensionType.cast(extension);
                 if (configBeanInstance instanceof ConfigExtension) {
-                    ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(configBeanInstance)).getMasterView();
-                    ServiceLocator habitat = cb.getHabitat();
-                    ServiceLocatorUtilities.addOneDescriptor(habitat,
+                    ServiceLocatorUtilities.addOneDescriptor(serviceLocator,
                             BuilderHelper.createConstantDescriptor(configBeanInstance, ServerEnvironment.DEFAULT_INSTANCE_NAME,
                                     ConfigSupport.getImpl(configBeanInstance).getProxyType()));
                 }
@@ -122,13 +125,10 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
 
 
     protected <U extends ConfigBeanProxy> void addConfigBeanFor(Class<U> extensionType, C extensionOwner) {
-        ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(extensionOwner)).getMasterView();
-        ServiceLocator habitat = cb.getHabitat();
-        StartupContext context = habitat.getService(StartupContext.class);
+        StartupContext context = serviceLocator.getService(StartupContext.class);
         List<ConfigBeanDefaultValue> configBeanDefaultValueList =
                 ConfigModularityUtils.getDefaultConfigurations(extensionType, ConfigModularityUtils.isDas(context));
-        ConfigurationParser configurationParser = new ConfigurationParser();
-        configurationParser.parseAndSetConfigBean(habitat, configBeanDefaultValueList);
+        configurationParser.parseAndSetConfigBean(configBeanDefaultValueList);
     }
 
 

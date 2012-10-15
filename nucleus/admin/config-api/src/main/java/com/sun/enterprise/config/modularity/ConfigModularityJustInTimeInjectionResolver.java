@@ -79,9 +79,7 @@ public class ConfigModularityJustInTimeInjectionResolver implements JustInTimeIn
     @Inject
     private Domain domain;
 
-
     private static final List<String> supportedTypes = new ArrayList<String>();
-
 
     public ConfigModularityJustInTimeInjectionResolver() {
         supportedTypes.add("com.sun.enterprise.connectors.jms.config.JmsService");

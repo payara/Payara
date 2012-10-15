@@ -46,7 +46,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import org.glassfish.config.support.CommandTarget;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.util.StringTokenizer;
 
@@ -55,31 +55,31 @@ import java.util.StringTokenizer;
  */
 public abstract class AbstractConfigModularityCommand {
 
-    protected String replaceExpressionsWithValues(String location, Habitat habitat) {
+    protected String replaceExpressionsWithValues(String location, ServiceLocator serviceLocator) {
         StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
         while (tokenizer.hasMoreElements()) {
             String level = tokenizer.nextToken();
             if (level.contains("[$")) {
                 String expr = location.substring(location.indexOf("$"), location.indexOf("]"));
-                String value = ConfigModularityUtils.resolveExpression(expr,habitat);
+                String value = ConfigModularityUtils.resolveExpression(expr,serviceLocator);
                 location = location.replace(expr, value);
             }
         }
         return location;
     }
 
-    protected Config getConfigForName(String targetName, Habitat habitat, Domain domain) {
+    protected Config getConfigForName(String targetName, ServiceLocator serviceLocator, Domain domain) {
 
-        if (CommandTarget.CONFIG.isValid(habitat, targetName)) {
+        if (CommandTarget.CONFIG.isValid(serviceLocator, targetName)) {
             return domain.getConfigNamed(targetName);
         }
-        if (CommandTarget.DAS.isValid(habitat, targetName) ||
-                CommandTarget.STANDALONE_INSTANCE.isValid(habitat, targetName)) {
+        if (CommandTarget.DAS.isValid(serviceLocator, targetName) ||
+                CommandTarget.STANDALONE_INSTANCE.isValid(serviceLocator, targetName)) {
             Server s = domain.getServerNamed(targetName);
             return s == null ? null : domain.getConfigNamed(s.getConfigRef());
         }
 
-        if (CommandTarget.CLUSTER.isValid(habitat, targetName)) {
+        if (CommandTarget.CLUSTER.isValid(serviceLocator, targetName)) {
             Cluster cl = domain.getClusterNamed(targetName);
             return cl == null ? null : domain.getConfigNamed(cl.getConfigRef());
 

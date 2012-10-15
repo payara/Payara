@@ -44,9 +44,8 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
 import org.glassfish.api.admin.config.ConfigExtension;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-
 import javax.inject.Inject;
 import java.lang.reflect.Method;
 import java.util.Locale;
@@ -64,7 +63,7 @@ public class GetSetModularityHelper {
     private static final Logger LOG = Logger.getLogger(GetSetModularityHelper.class.getName());
 
     @Inject
-    private Habitat habitat;
+    private ServiceLocator serviceLocator;
 
     /**
      * checks and see if a class has an attribute with he specified name or not.
@@ -108,8 +107,8 @@ public class GetSetModularityHelper {
     }
 
     public boolean isConfigElementPresent(String serviceName, String target) {
-        Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, habitat);
-        Domain domain = habitat.getService(Domain.class);
+        Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, serviceLocator);
+        Domain domain = serviceLocator.getService(Domain.class);
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
             Config c = domain.getConfigNamed(target);
             if (c.checkIfExtensionExists(configBeanType)) {
@@ -124,8 +123,8 @@ public class GetSetModularityHelper {
     }
 
     public void addBeanToDomainXml(String serviceName, String target) {
-        Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, habitat);
-        Domain domain = habitat.getService(Domain.class);
+        Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, serviceLocator);
+        Domain domain = serviceLocator.getService(Domain.class);
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
             Config c = domain.getConfigNamed(target);
             c.getExtensionByType(configBeanType);

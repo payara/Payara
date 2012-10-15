@@ -60,9 +60,9 @@ import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;
@@ -93,7 +93,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
     private Domain domain;
 
     @Inject
-    Habitat habitat;
+    ServiceLocator serviceLocator;
 
     @Param(optional = true, defaultValue = "false", name = "dryRun")
     private Boolean dryRun;
@@ -120,7 +120,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
         final ActionReport report = context.getActionReport();
         String defaultConfigurationElements;
         if (target != null) {
-            Config newConfig = getConfigForName(target, habitat, domain);
+            Config newConfig = getConfigForName(target,  serviceLocator, domain);
             if (newConfig != null) {
                 config = newConfig;
             }
@@ -190,7 +190,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
             }
         } else if (serviceName != null) {
             String className = ConfigModularityUtils.convertConfigElementNameToClassName(serviceName);
-            Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, habitat);
+            Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, serviceLocator);
             if (configBeanType == null) {
                 String msg = localStrings.getLocalString("create.module.config.not.such.a.service.found",
                         DEFAULT_FORMAT, className, serviceName);
@@ -200,7 +200,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
             }
             try {
                 if (dryRun) {
-                    String serviceDefaultConfig = getDefaultConfigFor(configBeanType, habitat);
+                    String serviceDefaultConfig = getDefaultConfigFor(configBeanType);
                     if (serviceDefaultConfig != null) {
                         report.setMessage(serviceDefaultConfig);
                     }
@@ -239,9 +239,9 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
         return defaultConfigCreated;
     }
 
-    private String getDefaultConfigFor(Class configBeanType, Habitat habitat) throws Exception {
+    private String getDefaultConfigFor(Class configBeanType) throws Exception {
         if (!ConfigModularityUtils.hasCustomConfig(configBeanType)) {
-            return ConfigModularityUtils.serializeConfigBeanByType(configBeanType, habitat);
+            return ConfigModularityUtils.serializeConfigBeanByType(configBeanType, serviceLocator);
         } else {
 
             List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType, serverenv.isDas());
@@ -249,7 +249,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
             for (ConfigBeanDefaultValue value : defaults) {
                 builder.append(localStrings.getLocalString("at.location",
                         "At Location:"));
-                builder.append(replaceExpressionsWithValues(value.getLocation(), habitat));
+                builder.append(replaceExpressionsWithValues(value.getLocation(), serviceLocator));
                 builder.append(System.getProperty("line.separator"));
                 String substituted = replacePropertiesWithDefaultValues(value.getCustomizationTokens(),
                         value.getXmlConfiguration());

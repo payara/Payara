@@ -59,9 +59,9 @@ import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import javax.inject.Inject;
@@ -96,7 +96,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
 
     @Inject
     private
-    Habitat habitat;
+    ServiceLocator serviceLocator;
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
@@ -120,7 +120,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
             return;
         }
         if (target != null) {
-            Config newConfig = getConfigForName(target, habitat, domain);
+            Config newConfig = getConfigForName(target, serviceLocator, domain);
             if (newConfig != null) {
                 config = newConfig;
             }
@@ -133,7 +133,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
         }
 
         String className = ConfigModularityUtils.convertConfigElementNameToClassName(serviceName);
-        Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, habitat);
+        Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, serviceLocator);
         if (configBeanType == null) {
             String msg = localStrings.getLocalString("get.active.config.not.such.a.service.found",
                     DEFAULT_FORMAT, className, serviceName);
@@ -142,7 +142,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
             return;
         }
         try {
-            String serviceDefaultConfig = getActiveConfigFor(configBeanType, habitat);
+            String serviceDefaultConfig = getActiveConfigFor(configBeanType);
             if (serviceDefaultConfig != null) {
                 report.setMessage(serviceDefaultConfig);
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -157,7 +157,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
         }
     }
 
-    private String getActiveConfigFor(Class configBeanType, Habitat habitat) throws InvocationTargetException, IllegalAccessException {
+    private String getActiveConfigFor(Class configBeanType) throws InvocationTargetException, IllegalAccessException {
 
         if (ConfigModularityUtils.hasCustomConfig(configBeanType)) {
             List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType, serverenv.isDas());
@@ -168,14 +168,14 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
             if (config.checkIfExtensionExists(configBeanType)) {
                 return ConfigModularityUtils.serializeConfigBean(config.getExtensionByType(configBeanType));
             } else {
-                return ConfigModularityUtils.serializeConfigBeanByType(configBeanType, habitat);
+                return ConfigModularityUtils.serializeConfigBeanByType(configBeanType, serviceLocator);
             }
 
         } else if (configBeanType.isAssignableFrom(DomainExtension.class)) {
             if (domain.checkIfExtensionExists(configBeanType)) {
                 return ConfigModularityUtils.serializeConfigBean(domain.getExtensionByType(configBeanType));
             }
-            return ConfigModularityUtils.serializeConfigBeanByType(configBeanType, habitat);
+            return ConfigModularityUtils.serializeConfigBeanByType(configBeanType, serviceLocator);
         }
         return null;
     }
@@ -185,10 +185,10 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
         for (ConfigBeanDefaultValue value : defaults) {
             builder.append(localStrings.getLocalString("at.location",
                     "At Location:"));
-            builder.append(replaceExpressionsWithValues(value.getLocation(), habitat));
+            builder.append(replaceExpressionsWithValues(value.getLocation(), serviceLocator));
             builder.append(System.getProperty("line.separator"));
             String substituted = ConfigModularityUtils.replacePropertiesWithCurrentValue(
-                    getDependentConfigElement(value), value, habitat);
+                    getDependentConfigElement(value), value, serviceLocator);
             builder.append(substituted);
             builder.append(System.getProperty("line.separator"));
         }
@@ -198,7 +198,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
     }
 
     private String getDependentConfigElement(ConfigBeanDefaultValue defaultValue) throws InvocationTargetException, IllegalAccessException {
-        ConfigBeanProxy configBean = ConfigModularityUtils.getCurrentConfigBeanForDefaultValue(defaultValue, habitat);
+        ConfigBeanProxy configBean = ConfigModularityUtils.getCurrentConfigBeanForDefaultValue(defaultValue, serviceLocator);
         if (configBean != null) {
             return ConfigModularityUtils.serializeConfigBean(configBean);
         } else {

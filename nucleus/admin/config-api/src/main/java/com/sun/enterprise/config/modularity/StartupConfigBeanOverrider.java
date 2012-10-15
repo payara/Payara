@@ -47,10 +47,11 @@ import com.sun.enterprise.config.modularity.parser.ConfigurationParser;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+
 import org.jvnet.hk2.config.ConfigInjector;
 
 import javax.inject.Inject;
@@ -68,23 +69,25 @@ import java.util.logging.Logger;
 public class StartupConfigBeanOverrider implements PostConstruct {
 
     @Inject
-    Habitat habitat;
+    ServiceLocator serviceLocator;
 
     @Inject
     StartupContext startupContext;
+
+    @Inject private ConfigurationParser configurationParser;
 
     private static final Logger LOG = Logger.getLogger(StartupConfigBeanOverrider.class.getName());
 
     @Override
     public void postConstruct() {
         LOG.info("Starting the config overriding procedure");
-        List<ActiveDescriptor<?>> descriptor = habitat.getDescriptors(BuilderHelper.createContractFilter(ConfigInjector.class.getName()));
+        List<ActiveDescriptor<?>> descriptor = serviceLocator.getDescriptors(BuilderHelper.createContractFilter(ConfigInjector.class.getName()));
         Class<?> clz = null;
         for (ActiveDescriptor desc : descriptor) {
             if (desc.getName() == null) {
                 continue;
             }
-            ConfigInjector injector = habitat.getService(ConfigInjector.class, desc.getName());
+            ConfigInjector injector = serviceLocator.getService(ConfigInjector.class, desc.getName());
             if (injector != null) {
                 String clzName = injector.getClass().getName().substring(0, injector.getClass().getName().length() - 8);
                 if (clzName == null) {
@@ -111,10 +114,9 @@ public class StartupConfigBeanOverrider implements PostConstruct {
 
     private void applyConfigIfNeeded(Class<?> clz) {
         try {
-            ConfigurationParser configurationParser = new ConfigurationParser();
             List<ConfigBeanDefaultValue> configBeanDefaultValueList =
                     ConfigModularityUtils.getDefaultConfigurations(clz, ConfigModularityUtils.isDas(startupContext));
-            configurationParser.parseAndSetConfigBean(habitat, configBeanDefaultValueList);
+            configurationParser.parseAndSetConfigBean(configBeanDefaultValueList);
         } catch (Throwable tr) {
             //Do nothing for now.
         }
