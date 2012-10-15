@@ -152,74 +152,10 @@ public final class EJBServerConfigLookup {
         return Boolean.valueOf(availabilityService.getAvailabilityEnabled());
     }
 
-    /**
-     * Get the server name from domain.xml.
-     * return null if not found
-     */
-    private String getServerName() {
-        return (server != null) ? server.getName() : null;
-    }
-
-    /**
-     * Get the availability-enabled from domain.xml.
-     * This takes into account:
-     * global
-     * ejb-container-availability
-     * j2ee app if not stand-alone
-     * ejb-module (if stand-alone)
-     * return false if not found
-     * FIXME: need to add taking the availability-enabled of the bean itself
-     */
-    public boolean calculateEjbAvailabilityEnabledFromConfig() {
-        _logger.finest("in EJBServerConfigLookup>>calculateEjbAvailabilityEnabledFromConfig");
-        boolean isVirtual = this.isVirtualApplication();
-        String appName = this.getApplicationName();
-
-        boolean globalAvailability =
-                this.getAvailabilityEnabledFromConfig();
-        boolean ejbContainerAvailability =
-                this.getEjbContainerAvailabilityEnabledFromConfig(globalAvailability);
-        boolean ejbDescriptorAvailability = true;
-        if (isVirtual) {
-            ejbDescriptorAvailability =
-                    this.getAvailabilityEnabledFromEjbDescriptor();
-            _haEnabled = globalAvailability
-                    && ejbContainerAvailability
-                    && ejbDescriptorAvailability;
-        } else {
-            ejbDescriptorAvailability =
-                    this.getAvailabilityEnabledFromEjbDescriptor();
-            _haEnabled = globalAvailability
-                    && ejbContainerAvailability
-                    && ejbDescriptorAvailability;
-        }
-
-        return _haEnabled;
-    }
-
     public String getPersistenceStoreType() {
         return (_haEnabled)
                 ? getSfsbHaPersistenceTypeFromConfig()
                 : getSfsbNonHaPersistenceTypeFromConfig();
-    }
-
-    /**
-     * return whether the bean is a "virtual" app - i.e. a stand-alone
-     * ejb module
-     */
-    private boolean isVirtualApplication() {
-        Application application = _ejbDescriptor.getApplication();
-        return application.isVirtual();
-    }
-
-    /**
-     * return the name of the application to which the bean belongs
-     * it will be the j2ee app name if the bean is part of a j2ee app
-     * it will be the ejb module name if the bean is a stand-alone ejb module
-     */
-    private String getApplicationName() {
-        Application application = _ejbDescriptor.getApplication();
-        return application.getRegistrationName();
     }
 
     /**

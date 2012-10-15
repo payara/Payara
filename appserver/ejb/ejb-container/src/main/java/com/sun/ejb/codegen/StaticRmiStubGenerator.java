@@ -246,52 +246,6 @@ public class StaticRmiStubGenerator {
     }
 
     /**
-     * Get the java file name based on the specified class name.
-     *
-     * @param  className   the class name.
-     * @param  repository  repository for this application
-     *
-     * @return the java file name.
-     */
-    private String getFileName(String className, String repository) {
-
-        return (repository + File.separator
-               + className.replace('.', File.separatorChar) + ".java");
-    }
-
-
-    /**
-     * Create the FileOutputStream for the specified class.
-     *
-     * @param   fileName     the name of the file
-     *
-     * @return the output stream.
-     *
-     * @exception IOException
-     */
-    private OutputStream createOutputStream(String fileName)
-            throws IOException
-    {
-        File file    = new File(fileName);
-        File parent  = null;
-
-        if ( (parent=file.getParentFile()) != null)
-        {
-            if ( !parent.exists() )
-            {
-                parent.mkdirs();
-            }
-        }
-
-        FileOutputStream out       = new FileOutputStream(fileName);
-        BufferedOutputStream bout  = new BufferedOutputStream(out);
-
-        return bout;
-    }
-
-
-
-    /**
      * Compile all the generated .java files, run rmic on them.
      *
      * @param    classPath         class path for javac & rmic
