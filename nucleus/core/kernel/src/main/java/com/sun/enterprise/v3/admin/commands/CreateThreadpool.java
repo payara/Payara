@@ -77,7 +77,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 @org.glassfish.api.admin.ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 
-public class CreateThreadpool implements AdminCommand {
+public class CreateThreadpool implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     final private static LocalStringManagerImpl localStrings = new
             LocalStringManagerImpl(CreateThreadpool.class);
@@ -114,6 +114,26 @@ public class CreateThreadpool implements AdminCommand {
     @Inject
     ServiceLocator habitat;
 
+    @AccessRequired.NewChild(type=ThreadPool.class)
+    private ThreadPools threadPools;
+    
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        config = CLIUtil.updateConfigIfNeeded(config, target, habitat);
+        threadPools  = config.getThreadPools();
+        for (ThreadPool pool: threadPools.getThreadPool()) {
+            final ActionReport report = context.getActionReport();
+            if (pool.getName().equals(threadpool_id)) {
+                report.setMessage(localStrings.getLocalString("create.threadpool.duplicate",
+                        "Thread Pool named {0} already exists.", threadpool_id));
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the paramter names and the values the parameter values
@@ -123,22 +143,6 @@ public class CreateThreadpool implements AdminCommand {
 
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-        Target targetUtil = habitat.getService(Target.class);
-        Config newConfig = targetUtil.getConfig(target);
-        if (newConfig!=null) {
-            config = newConfig;
-        }
-        ThreadPools threadPools = config.getThreadPools();
-
-        for (ThreadPool pool: threadPools.getThreadPool()) {
-            if (pool.getName().equals(threadpool_id)) {
-                report.setMessage(localStrings.getLocalString("create.threadpool.duplicate",
-                        "Thread Pool named {0} already exists.", threadpool_id));
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
-        }
-
         if (workqueues != null) {
             report.setMessage(localStrings.getLocalString("create.threadpool.deprecated.workqueues",
                         "Deprecated Syntax: --workqueues option is deprecated for create-threadpool command."));

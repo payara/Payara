@@ -91,6 +91,7 @@ import org.glassfish.config.support.TargetType;
             @RestParam(name="target", value="$grandparent")
         })
 })
+@AccessRequired(resource="domain/jvm", action="read")
 public class GenerateJvmReportCommand implements AdminCommand {
     
     @Param(name="target", optional=true) 

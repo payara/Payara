@@ -84,7 +84,7 @@ import org.glassfish.api.admin.*;
         path="list-threadpools", 
         description="list-threadpools")
 })
-public class ListThreadpools implements AdminCommand {
+public class ListThreadpools implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
@@ -100,6 +100,16 @@ public class ListThreadpools implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListThreadpools.class);
 
+    @AccessRequired.To("read")
+    private ThreadPools threadPools;
+    
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        config = CLIUtil.updateConfigIfNeeded(config, target, habitat);
+        threadPools  = config.getThreadPools();
+        return true;
+    }
+    
     /**
      * Executes the command
      *
@@ -107,12 +117,6 @@ public class ListThreadpools implements AdminCommand {
      */
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-        Target targetUtil = habitat.getService(Target.class);
-        Config newConfig = targetUtil.getConfig(target);
-        if (newConfig != null) {
-            config = newConfig;
-        }
-        ThreadPools threadPools = config.getThreadPools();
         try {
             List<ThreadPool> poolList = threadPools.getThreadPool();
             for (ThreadPool pool : poolList) {

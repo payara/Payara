@@ -82,7 +82,7 @@ import org.glassfish.hk2.api.PerLookup;
         path="list-jvm-options", 
         description="list-jvm-options")
 })
-public final class ListJvmOptions implements AdminCommand {
+public final class ListJvmOptions implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     @Param(name="target", optional=true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     String target;
@@ -98,15 +98,20 @@ public final class ListJvmOptions implements AdminCommand {
 
     private static final StringManager lsm = StringManager.getManager(ListJvmOptions.class); 
     private static final Logger logger     = Logger.getLogger(ListJvmOptions.class.getPackage().getName());
+    
+    @AccessRequired.To("read")
+    private JavaConfig jc;
+    
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        config = CLIUtil.updateConfigIfNeeded(config, targetService, target);
+        jc = config.getJavaConfig();
+        return true;
+    }
+    
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         List<String> opts;
-        Config targetConfig = targetService.getConfig(target);
-        if (targetConfig != null) {
-            config = targetConfig;
-        }
-
-        JavaConfig jc = config.getJavaConfig();
         if (profiler) {
                 if (jc.getProfiler() == null) {
                     report.setMessage(lsm.getString("create.profiler.first"));

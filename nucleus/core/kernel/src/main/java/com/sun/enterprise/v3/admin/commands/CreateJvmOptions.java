@@ -68,6 +68,8 @@ import org.glassfish.internal.api.Target;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AdminCommandSecurity;
 
 
 import org.jvnet.hk2.annotations.Service;
@@ -89,7 +91,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 @UnknownOptionsAreOperands()
-public final class CreateJvmOptions implements AdminCommand {
+public final class CreateJvmOptions implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     @Param(name="target", optional=true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     String target;
@@ -109,15 +111,18 @@ public final class CreateJvmOptions implements AdminCommand {
     private static final StringManager lsm = StringManager.getManager(ListJvmOptions.class); 
     private static final Logger logger     = Logger.getLogger(CreateJvmOptions.class.getPackage().getName()); // TODO: change later
 
+    @AccessRequired.To("update")
+    private JavaConfig jc;
+    
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        config = CLIUtil.updateConfigIfNeeded(config, targetService, target);
+        jc = config.getJavaConfig();
+        return true;
+    }
+
+    
     public void execute(AdminCommandContext context) {
-        //validate the target first
-
-        Config targetConfig = targetService.getConfig(target);
-        if (targetConfig != null) {
-            config = targetConfig;
-        }
-
-        JavaConfig jc = config.getJavaConfig();
         final ActionReport report = context.getActionReport();
         try {
             JvmOptionBag bag;

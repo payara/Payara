@@ -75,7 +75,7 @@ import org.glassfish.api.ActionReport.ExitCode;
 @I18n("delete.threadpool")
 @org.glassfish.api.admin.ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
-public class DeleteThreadpool implements AdminCommand {
+public class DeleteThreadpool implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteThreadpool.class);
@@ -96,31 +96,25 @@ public class DeleteThreadpool implements AdminCommand {
     Domain domain;
 
     @Inject
-    ServiceLocator habitat;              
+    ServiceLocator habitat;    
 
-    /**
-     * Executes the command with the command parameters passed as Properties
-     * where the keys are the paramter names and the values the parameter values
-     *
-     * @param context information
-     */
-    public void execute(AdminCommandContext context) {
-        ActionReport report = context.getActionReport();
-        Target targetUtil = habitat.getService(Target.class);
-        Config newConfig = targetUtil.getConfig(target);
-        if (newConfig!=null) {
-            config = newConfig;
-        }
-        ThreadPools threadPools = config.getThreadPools();
-
+    private ThreadPools threadPools;
+    
+    @AccessRequired.To("delete")
+    private ThreadPool pool;
+    
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        final ActionReport report = context.getActionReport();
+        config = CLIUtil.updateConfigIfNeeded(config, target, habitat);
+        threadPools  = config.getThreadPools();
         if(!isThreadPoolExists(threadPools)) {
             report.setMessage(localStrings.getLocalString("delete.threadpool.notexists",
                 "Thread Pool named {0} does not exist.", threadpool_id));
             report.setActionExitCode(ExitCode.FAILURE);
-            return;
+            return false;
         }
-
-        ThreadPool pool = null;
+        pool = null;
         for (ThreadPool tp : config.getThreadPools().getThreadPool()) {
             if (tp.getName().equals(threadpool_id)) {
                 pool = tp;
@@ -135,9 +129,24 @@ public class DeleteThreadpool implements AdminCommand {
                     "{0} threadpool is being used in the network listener {1}",
                     threadpool_id, nwlsnr.getName()));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
+                return false;
             }
         }
+        return true;
+    }
+    
+    
+
+    /**
+     * Executes the command with the command parameters passed as Properties
+     * where the keys are the paramter names and the values the parameter values
+     *
+     * @param context information
+     */
+    public void execute(AdminCommandContext context) {
+        ActionReport report = context.getActionReport();
+
+        
 
         try {
             ConfigSupport.apply(new SingleConfigCode<ThreadPools>() {
