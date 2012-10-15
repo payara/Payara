@@ -41,15 +41,12 @@
 package com.sun.enterprise.security.cli;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.JaccProvider;
 import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.beans.PropertyVetoException;
-import java.util.List;
 import java.util.Properties;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -63,6 +60,8 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AdminCommandSecurity;
 
 
 import org.jvnet.hk2.annotations.Service;
@@ -92,7 +91,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @I18n("create.jacc.provider")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
-public class CreateJACCProvider implements AdminCommand {
+public class CreateJACCProvider implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     final private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(CreateJACCProvider.class);
@@ -117,47 +116,32 @@ public class CreateJACCProvider implements AdminCommand {
     private Config config;
 
     @Inject
-    private Configs configs;
-
-    @Inject
     private Domain domain;
 
+    @AccessRequired.NewChild(type=JaccProvider.class)
+    private SecurityService securityService;
+    
+
     @Override
-    public void execute(AdminCommandContext context) {
-       final ActionReport report = context.getActionReport();
-
-       Config tmp = null;
-        try {
-            tmp = configs.getConfigByName(target);
-        } catch (Exception ex) {
-        }
-
-        if (tmp != null) {
-            config = tmp;
-        }
-        if (tmp == null) {
-            Server targetServer = domain.getServerNamed(target);
-            if (targetServer != null) {
-                config = domain.getConfigNamed(targetServer.getConfigRef());
-            }
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                config = domain.getConfigNamed(cluster.getConfigRef());
-            }
-        }
-        SecurityService securityService = config.getSecurityService();
-
-        List<JaccProvider> jaccProviders = securityService.getJaccProvider();
-        for (JaccProvider jaccProv : jaccProviders) {
-            if (jaccProv.getName().equals(jaccProviderName)) {
-                report.setMessage(localStrings.getLocalString(
+    public boolean preAuthorization(AdminCommandContext context) {
+        config = CLIUtil.chooseConfig(domain, target);
+        securityService = config.getSecurityService();
+        JaccProvider jaccProvider = CLIUtil.findJaccProvider(securityService, jaccProviderName);
+        if (jaccProvider != null) {
+            final ActionReport report = context.getActionReport();
+            report.setMessage(localStrings.getLocalString(
                     "create.jacc.provider.duplicatefound",
                     "JaccProvider named {0} exists. Cannot add duplicate JaccProvider.",
                     jaccProviderName));
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;
         }
+        return true;
+    }
+    
+    @Override
+    public void execute(AdminCommandContext context) {
+       final ActionReport report = context.getActionReport();
 
         // No duplicate auth realms found. So add one.
         try {

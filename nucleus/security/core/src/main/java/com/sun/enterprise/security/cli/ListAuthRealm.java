@@ -59,10 +59,8 @@ import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.AuthRealm;
-import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.admin.*;
@@ -92,7 +90,7 @@ CommandTarget.CLUSTER, CommandTarget.CONFIG,CommandTarget.CLUSTERED_INSTANCE})
         path="list-auth-realms", 
         description="List Auth Realms")
 })
-public class ListAuthRealm implements AdminCommand {
+public class ListAuthRealm implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
     final private static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(ListAuthRealm.class);    
@@ -105,13 +103,21 @@ public class ListAuthRealm implements AdminCommand {
     private Config config;
 
     @Inject
-    private Configs configs;
-
-    @Inject
     private Domain domain;
     @Inject
     private RealmsManager realmsManager;
 
+    @AccessRequired.To("read")
+    private SecurityService securityService;
+            
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        config = CLIUtil.chooseConfig(domain, target);
+        securityService = config.getSecurityService();
+        return true;
+    }
+
+    
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the paramter names and the values the parameter values
@@ -121,25 +127,6 @@ public class ListAuthRealm implements AdminCommand {
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();
-
-        Config tmp = null;
-        try {
-            tmp = configs.getConfigByName(target);
-        } catch (Exception ex) {
-        }
-
-        if (tmp != null) {
-            config = tmp;
-        }
-        Server targetServer = domain.getServerNamed(target);
-        if (targetServer!=null) {
-            config = domain.getConfigNamed(targetServer.getConfigRef());
-        }
-        com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-        if (cluster!=null) {
-            config = domain.getConfigNamed(cluster.getConfigRef());
-        }
-        final SecurityService securityService = config.getSecurityService();
 
 //        Enumeration realms = Realm.getRealmNames();
 //

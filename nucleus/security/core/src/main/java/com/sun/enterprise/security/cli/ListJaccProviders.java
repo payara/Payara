@@ -81,7 +81,7 @@ CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
         path="list-jacc-providers", 
         description="list-jacc-providers")
 })
-public class ListJaccProviders implements AdminCommand {
+public class ListJaccProviders implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     final private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(DeleteJaccProvider.class);
@@ -99,30 +99,23 @@ public class ListJaccProviders implements AdminCommand {
     @Inject
     private Domain domain;
 
+    @AccessRequired.To("read")
+    private SecurityService securityService;
+
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        final ActionReport report = context.getActionReport();
+        config = CLIUtil.chooseConfig(domain, target);
+        securityService = config.getSecurityService();
+        return true;
+    }
+    
+    
+    
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-         Config tmp = null;
-        try {
-            tmp = configs.getConfigByName(target);
-        } catch (Exception ex) {
-        }
-
-        if (tmp != null) {
-            config = tmp;
-        }
-        if (tmp == null) {
-            Server targetServer = domain.getServerNamed(target);
-            if (targetServer != null) {
-                config = domain.getConfigNamed(targetServer.getConfigRef());
-            }
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                config = domain.getConfigNamed(cluster.getConfigRef());
-            }
-        }
-        final SecurityService securityService = config.getSecurityService();
-
+        
         List<JaccProvider> jaccProviders = securityService.getJaccProvider();
         JaccProvider jprov = null;
         for (JaccProvider jaccProv : jaccProviders) {

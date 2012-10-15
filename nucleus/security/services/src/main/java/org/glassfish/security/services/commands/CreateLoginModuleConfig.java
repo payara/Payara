@@ -67,6 +67,8 @@ import org.glassfish.security.services.config.SecurityConfigurations;
 import org.glassfish.security.services.config.SecurityProvider;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AdminCommandSecurity;
 
 /**
  * General create LoginModule config command.
@@ -75,7 +77,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(CommandTarget.DAS)
-public class CreateLoginModuleConfig implements AdminCommand {
+public class CreateLoginModuleConfig implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     @Param(optional = false)
     private String serviceName;
@@ -97,37 +99,23 @@ public class CreateLoginModuleConfig implements AdminCommand {
 
     @Inject
     private Domain domain;
+    
+    @AccessRequired.NewChild(type=LoginModuleConfig.class)
+    private SecurityProvider provider;
 
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        SecurityProvider provider = CLIUtil.findSecurityProvider(domain, serviceName, providerName, context.getActionReport());
+        return (provider != null);
+    }
+
+    
 	/**
 	 * Execute the create-login-module-config admin command.
 	 */
 	@Override
 	public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-
-        // Lookup the security configurations
-        SecurityConfigurations secConfigs = domain.getExtensionByType(SecurityConfigurations.class);
-        if (secConfigs == null) {
-            report.setMessage("Unable to locate security configurations");
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-
-        // Get the security service
-        SecurityConfiguration securityServiceConfiguration = secConfigs.getSecurityServiceByName(serviceName);
-        if (securityServiceConfiguration == null) {
-            report.setMessage("Unable to locate security service: " + serviceName);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-
-        // Get the security provider config
-        SecurityProvider provider = securityServiceConfiguration.getSecurityProviderByName(providerName);
-        if (provider == null) {
-            report.setMessage("Unable to locate security provider: " + providerName);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
 
         // Add LoginModule configuration to the security provider setup
         // TODO - Add validation logic of the LoginModule config attributes

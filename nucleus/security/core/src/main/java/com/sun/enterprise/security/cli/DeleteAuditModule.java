@@ -65,6 +65,8 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
 import java.beans.PropertyVetoException;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -86,7 +88,7 @@ import org.glassfish.config.support.TargetType;
 @I18n("delete.audit.module")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
-public class DeleteAuditModule implements AdminCommand {
+public class DeleteAuditModule implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
     final private static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(DeleteAuditModule.class);
@@ -102,15 +104,21 @@ public class DeleteAuditModule implements AdminCommand {
     private Config config;
 
     @Inject
-    private Configs configs;
-
-    @Inject
     private Domain domain;
 
-    AuditModule auditModule = null;
+    @AccessRequired.To(value="delete")
+    private AuditModule auditModule = null;
 
     @Inject
     SecurityConfigListener securityConfigListener;
+    
+    private SecurityService securityService;
+
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        auditModule = chooseAuditModule();
+        return true;
+    }
     
     /**
      * Executes the command with the command parameters passed as Properties
@@ -120,36 +128,9 @@ public class DeleteAuditModule implements AdminCommand {
      */
     public void execute(AdminCommandContext context) {
         
-        
-        Config tmp = null;
-        try {
-            tmp = configs.getConfigByName(target);
-        } catch (Exception ex) {
-        }
-
-        if (tmp != null) {
-            config = tmp;
-        }
-        if (tmp == null) {
-            Server targetServer = domain.getServerNamed(target);
-            if (targetServer != null) {
-                config = domain.getConfigNamed(targetServer.getConfigRef());
-            }
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                config = domain.getConfigNamed(cluster.getConfigRef());
-            }
-        }
-        SecurityService securityService = config.getSecurityService();
         ActionReport report = context.getActionReport();
 
         try {            
-            for (AuditModule am : securityService.getAuditModule()) {
-                if (am.getName().equals(auditModuleName)) {
-                    auditModule = am;
-                }
-            }
-
             if (auditModule == null) {
                 report.setMessage(localStrings.getLocalString(
                     "delete.audit.module.notfound", 
@@ -177,5 +158,16 @@ public class DeleteAuditModule implements AdminCommand {
         /*report.setMessage(localStrings.getLocalString("delete.audit.module.success",
             "Deletion of Audit Module {0} completed successfully", auditModuleName));*/
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+    }
+    
+    private AuditModule chooseAuditModule() {
+        config=CLIUtil.chooseConfig(domain, target);
+        securityService = config.getSecurityService();
+        for (AuditModule am : securityService.getAuditModule()) {
+                if (am.getName().equals(auditModuleName)) {
+                    return am;
+                }
+        }
+        return null;
     }
 }

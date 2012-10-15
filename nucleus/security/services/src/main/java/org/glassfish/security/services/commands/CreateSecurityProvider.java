@@ -64,6 +64,8 @@ import org.glassfish.security.services.config.SecurityConfigurations;
 import org.glassfish.security.services.config.SecurityProvider;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AdminCommandSecurity;
 
 /**
  * General create security provider command.
@@ -72,7 +74,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(CommandTarget.DAS)
-public class CreateSecurityProvider implements AdminCommand {
+public class CreateSecurityProvider implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     @Param(optional = false)
     private String serviceName;
@@ -89,6 +91,16 @@ public class CreateSecurityProvider implements AdminCommand {
     @Inject
     private Domain domain;
 
+    @AccessRequired.NewChild(type=SecurityProvider.class)
+    private SecurityConfiguration securityServiceConfiguration;
+    
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        securityServiceConfiguration = CLIUtil.findSecurityConfiguration(domain,
+                serviceName, context.getActionReport());
+        return (securityServiceConfiguration != null);
+    }
+
 	/**
 	 * Execute the create-security-provider admin command.
 	 */
@@ -96,23 +108,7 @@ public class CreateSecurityProvider implements AdminCommand {
 	public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
-        // Lookup the security configurations
-        SecurityConfigurations secConfigs = domain.getExtensionByType(SecurityConfigurations.class);
-        if (secConfigs == null) {
-            report.setMessage("Unable to locate security configurations");
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-
-        // Get the security service
-        SecurityConfiguration securityServiceConfiguration = secConfigs.getSecurityServiceByName(serviceName);
-        if (securityServiceConfiguration == null) {
-            report.setMessage("Unable to locate security service: " + serviceName);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-
-        // Add security provider configuration to the service
+                // Add security provider configuration to the service
         // TODO - Add validation logic required for security provider attributes
         try {
             ConfigSupport.apply(new SingleConfigCode<SecurityConfiguration>() {
@@ -132,4 +128,6 @@ public class CreateSecurityProvider implements AdminCommand {
             report.setFailureCause(transactionFailure);
         }
 	}
+        
+    
 }

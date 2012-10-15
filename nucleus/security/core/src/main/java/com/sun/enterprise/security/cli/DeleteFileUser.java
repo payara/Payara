@@ -98,7 +98,7 @@ import org.jvnet.hk2.config.types.Property;
             @RestParam(name="authrealmname", value="$parent")
         })
 })
-public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand {
+public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand, AdminCommandSecurity.Preauthorization {
     
     final private static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(DeleteFileUser.class);    
@@ -117,12 +117,32 @@ public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand {
     private Config config;
 
     @Inject
-    private Configs configs;
-
-    @Inject
     private Domain domain;
     @Inject
     private RealmsManager realmsManager;
+
+    @AccessRequired.To("update")
+    private AuthRealm fileAuthRealm;
+    
+    private SecurityService securityService;
+
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        config = CLIUtil.chooseConfig(domain, target);
+        securityService = config.getSecurityService();
+        fileAuthRealm = CLIUtil.findRealm(securityService, authRealmName);
+        if (fileAuthRealm == null) {
+            final ActionReport report = context.getActionReport();
+            report.setMessage(localStrings.getLocalString(
+                "delete.file.user.filerealmnotfound",
+                "File realm {0} does not exist", authRealmName));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;                                            
+        }
+        return true;
+    }
+    
+    
 
     /**
      * Executes the command with the command parameters passed as Properties
@@ -134,44 +154,6 @@ public class DeleteFileUser implements /*UndoableCommand*/ AdminCommand {
         
         final ActionReport report = context.getActionReport();
 
-        Config tmp = null;
-        try {
-            tmp = configs.getConfigByName(target);
-        } catch (Exception ex) {
-        }
-
-        if (tmp != null) {
-            config = tmp;
-        }
-        if (tmp == null) {
-            Server targetServer = domain.getServerNamed(target);
-            if (targetServer != null) {
-                config = domain.getConfigNamed(targetServer.getConfigRef());
-            }
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                config = domain.getConfigNamed(cluster.getConfigRef());
-            }
-        }
-        final SecurityService securityService = config.getSecurityService();
-
-        // ensure we have the file authrealm
-        if (authRealmName == null) 
-            authRealmName = securityService.getDefaultRealm();        
-
-        AuthRealm fileAuthRealm = null;        
-        for (AuthRealm authRealm : securityService.getAuthRealm()) {
-            if (authRealm.getName().equals(authRealmName))                 
-                fileAuthRealm = authRealm;            
-        }        
-        if (fileAuthRealm == null) {
-            report.setMessage(localStrings.getLocalString(
-                "delete.file.user.filerealmnotfound",
-                "File realm {0} does not exist", authRealmName));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;                                            
-        }
-        
         // Get FileRealm class name, match it with what is expected.
         String fileRealmClassName = fileAuthRealm.getClassname();
         

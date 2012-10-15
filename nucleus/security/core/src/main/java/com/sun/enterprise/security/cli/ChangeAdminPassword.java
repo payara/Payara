@@ -67,6 +67,8 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.util.List;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -88,7 +90,7 @@ import org.glassfish.internal.api.Target;
 @PerLookup
 @I18n("change.admin.password")
 @ExecuteOn({RuntimeType.ALL})
-public class ChangeAdminPassword implements AdminCommand {
+public class ChangeAdminPassword implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
     final private static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(ChangeAdminPassword.class);    
@@ -114,18 +116,15 @@ public class ChangeAdminPassword implements AdminCommand {
     private AdminService adminService;
     
     private SecureAdmin secureAdmin = null;
-
     
-    /**
-     * Executes the command with the command parameters passed as Properties
-     * where the keys are the paramter names and the values the parameter values
-     *
-     * @param context information
-     */
-    public void execute(AdminCommandContext context) {
+    private Config config;
+    
+    @AccessRequired.To("update")
+    private AuthRealm fileAuthRealm;
 
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-
         //Issue 17513 Fix - Check for null passwords if secureadmin is enabled
         secureAdmin = domain.getSecureAdmin();
         if (SecureAdmin.Util.isEnabled(secureAdmin)) {
@@ -133,16 +132,15 @@ public class ChangeAdminPassword implements AdminCommand {
                 report.setMessage(localStrings.getLocalString(
                         "null_empty_password","The new password is null or empty"));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
+                return false;
             }           
         }
-
-        List <Config> configList = configs.getConfig();
-        Config config = configList.get(0);
+        final List <Config> configList = configs.getConfig();
+        config = configList.get(0);
 
         SecurityService securityService = config.getSecurityService();
        
-        AuthRealm fileAuthRealm = null;        
+        fileAuthRealm = null;        
         for (AuthRealm authRealm : securityService.getAuthRealm()) {            
             if (authRealm.getName().equals(adminService.getAuthRealmName())) {                
                 fileAuthRealm = authRealm;            
@@ -155,9 +153,24 @@ public class ChangeAdminPassword implements AdminCommand {
                 "change.admin.password.adminrealmnotfound", "Server " +
                 "Error: There is no admin realm to perform this operation"));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;                                            
+            return false;                                            
         }
         
+        return true;
+    }
+
+    
+    
+    /**
+     * Executes the command with the command parameters passed as Properties
+     * where the keys are the paramter names and the values the parameter values
+     *
+     * @param context information
+     */
+    public void execute(AdminCommandContext context) {
+
+        final ActionReport report = context.getActionReport();
+
         // Get FileRealm class name, match it with what is expected.
         String fileRealmClassName = fileAuthRealm.getClassname();
         

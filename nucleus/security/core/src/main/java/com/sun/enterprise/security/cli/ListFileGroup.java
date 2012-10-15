@@ -95,7 +95,7 @@ CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
         path="list-file-groups", 
         description="list-file-groups")
 })
-public class ListFileGroup implements AdminCommand {
+public class ListFileGroup implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     final private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(ListFileGroup.class);
@@ -122,6 +122,29 @@ public class ListFileGroup implements AdminCommand {
     @Inject
     private RealmsManager realmsManager;
 
+    @AccessRequired.To("read")
+    private AuthRealm fileAuthRealm;
+    
+    private SecurityService securityService;
+
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        config = CLIUtil.chooseConfig(domain, target);
+        securityService = config.getSecurityService();
+        fileAuthRealm = CLIUtil.findRealm(securityService, authRealmName);
+        if (fileAuthRealm == null) {
+            final ActionReport report = context.getActionReport();
+            report.setMessage(localStrings.getLocalString(
+                "list.file.group.filerealmnotfound",
+                "File realm {0} does not exist", authRealmName));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;                                            
+        }
+        return true;
+    }
+    
+    
+
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the paramter names and the values the parameter values
@@ -131,45 +154,6 @@ public class ListFileGroup implements AdminCommand {
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
-
-        Config tmp = null;
-        try {
-            tmp = configs.getConfigByName(target);
-        } catch (Exception ex) {
-        }
-
-        if (tmp != null) {
-            config = tmp;
-        }
-        if (tmp == null) {
-            Server targetServer = domain.getServerNamed(target);
-            if (targetServer != null) {
-                config = domain.getConfigNamed(targetServer.getConfigRef());
-            }
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                config = domain.getConfigNamed(cluster.getConfigRef());
-            }
-        }
-        final SecurityService securityService = config.getSecurityService();
-
-        // ensure we have the file authrealm
-        if (authRealmName == null)
-            authRealmName = securityService.getDefaultRealm();
- 
-        AuthRealm fileAuthRealm = null;
-        for (AuthRealm authRealm : securityService.getAuthRealm()) {
-            if (authRealm.getName().equals(authRealmName))
-                fileAuthRealm = authRealm;
-        }
-
-        if (fileAuthRealm == null) {
-            report.setMessage(localStrings.getLocalString(
-                "list.file.group.filerealmnotfound",
-                "File realm {0} does not exist", authRealmName));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
 
         try {
             // Get all users of this file realm. If a username has

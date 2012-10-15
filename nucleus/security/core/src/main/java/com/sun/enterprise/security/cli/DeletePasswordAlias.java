@@ -88,7 +88,9 @@ import org.glassfish.hk2.api.PerLookup;
         path="delete-password-alias", 
         description="delete-password-alias")
 })
-public class DeletePasswordAlias implements AdminCommand {
+
+@AccessRequired(resource="domain/passwordAliases/$aliasName", action="delete")
+public class DeletePasswordAlias implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     final private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(DeletePasswordAlias.class);
@@ -98,6 +100,29 @@ public class DeletePasswordAlias implements AdminCommand {
     @Inject @Named("Security SSL Password Provider Service")
     private MasterPassword masterPasswordHelper;
 
+    private PasswordAdapter pa;
+    
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        final ActionReport report = context.getActionReport();
+        try {
+            pa = masterPasswordHelper.getMasterPasswordAdapter();
+            if (pa.getPasswordForAlias(aliasName) == null) {
+                report.setMessage(localStrings.getLocalString(
+                    "delete.password.alias.notfound",
+                    "Password alias for the alias {0} does not exist.",
+                    aliasName));
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return false;
+            }
+        } catch (Exception ex) {
+            reportFailure(context.getActionReport(), ex);
+            return false;
+        }
+        return true;
+    }
+
+    
 
     /**
      * Executes the command with the command parameters passed as Properties
@@ -109,24 +134,10 @@ public class DeletePasswordAlias implements AdminCommand {
         final ActionReport report = context.getActionReport();
 
         try {
-            PasswordAdapter pa = masterPasswordHelper.getMasterPasswordAdapter();
-            if (pa.getPasswordForAlias(aliasName) == null) {
-                report.setMessage(localStrings.getLocalString(
-                    "delete.password.alias.notfound",
-                    "Password alias for the alias {0} does not exist.",
-                    aliasName));
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
-
             pa.removeAlias(aliasName);
         } catch (Exception ex) {
             ex.printStackTrace();
-            report.setMessage(localStrings.getLocalString(
-                "delete.password.alias.fail",
-                "Deletion of Password Alias {0} failed", aliasName));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setFailureCause(ex);
+            reportFailure(report, ex);
             return;
         }
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -134,5 +145,14 @@ public class DeletePasswordAlias implements AdminCommand {
             "delete.password.alias.success",
             "Password alias for the alias {0} deleted successfully",
             aliasName));*/
+    }
+    
+    private void reportFailure(final ActionReport report,
+            final Exception ex) {
+        report.setMessage(localStrings.getLocalString(
+                "delete.password.alias.fail",
+                "Deletion of Password Alias {0} failed", aliasName));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setFailureCause(ex);
     }
 }

@@ -87,7 +87,7 @@ CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
         path="list-audit-modules", 
         description="List Audit Modules")
 })
-public class ListAuditModule implements AdminCommand {
+public class ListAuditModule implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
     final private static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(ListAuditModule.class);    
@@ -100,11 +100,18 @@ public class ListAuditModule implements AdminCommand {
     private Config config;
 
     @Inject
-    private Configs configs;
-
-    @Inject
     private Domain domain;
+    
+    @AccessRequired.To(value="read")
+    private SecurityService securityService = null;
 
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        securityService = chooseSecurityService();
+        return true;
+    }
+
+    
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the paramter names and the values the parameter values
@@ -113,27 +120,6 @@ public class ListAuditModule implements AdminCommand {
      */
     public void execute(AdminCommandContext context) {
 
-        Config tmp = null;
-        try {
-            tmp = configs.getConfigByName(target);
-        } catch (Exception ex) {
-        }
-
-        if (tmp != null) {
-            config = tmp;
-        }
-        if (tmp == null) {
-            Server targetServer = domain.getServerNamed(target);
-            if (targetServer != null) {
-                config = domain.getConfigNamed(targetServer.getConfigRef());
-            }
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                config = domain.getConfigNamed(cluster.getConfigRef());
-            }
-        }
-        final SecurityService securityService = config.getSecurityService();
-        
         final ActionReport report = context.getActionReport();
 
         report.getTopMessagePart().setChildrenType("audit-module");
@@ -141,5 +127,10 @@ public class ListAuditModule implements AdminCommand {
             ActionReport.MessagePart part = report.getTopMessagePart().addChild();
             part.setMessage(am.getName());
         }
+    }
+    
+    private SecurityService chooseSecurityService() {
+        config = CLIUtil.chooseConfig(domain, target);
+        return config.getSecurityService();
     }
 }

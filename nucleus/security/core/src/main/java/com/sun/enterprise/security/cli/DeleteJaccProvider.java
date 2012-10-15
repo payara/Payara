@@ -41,11 +41,9 @@
 package com.sun.enterprise.security.cli;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.JaccProvider;
 import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.beans.PropertyVetoException;
@@ -62,6 +60,8 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AdminCommandSecurity;
 
 
 import org.jvnet.hk2.annotations.Service;
@@ -81,7 +81,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @I18n("delete.jacc.provider")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
-public class DeleteJaccProvider implements AdminCommand {
+public class DeleteJaccProvider implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     final private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(DeleteJaccProvider.class);
@@ -97,34 +97,41 @@ public class DeleteJaccProvider implements AdminCommand {
     private Config config;
 
     @Inject
-    private Configs configs;
-
-    @Inject
     private Domain domain;
 
+    private SecurityService securityService;
+    
+    @AccessRequired.To("delete")
+    private JaccProvider jprov;
+    
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        final ActionReport report = context.getActionReport();
+        config = CLIUtil.chooseConfig(domain, target);
+        securityService = config.getSecurityService();
+        jprov = CLIUtil.findJaccProvider(securityService, jaccprovider);
+        if (jprov == null) {
+            report.setMessage(localStrings.getLocalString(
+                    "delete.jacc.provider.notfound",
+                    "JaccProvider named {0} not found", jaccprovider));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;
+        }
+        if ("default".equals(jprov.getName())
+                    || "simple".equals(jprov.getName())) {
+            report.setMessage(localStrings.getLocalString(
+                   "delete.jacc.provider.notallowed",
+                   "JaccProvider named {0} is a system provider and cannot be deleted", jaccprovider));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;
+         }
+        
+        return true;
+    }
+    
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-        Config tmp = null;
-        try {
-            tmp = configs.getConfigByName(target);
-        } catch (Exception ex) {
-        }
-
-        if (tmp != null) {
-            config = tmp;
-        }
-        if (tmp == null) {
-            Server targetServer = domain.getServerNamed(target);
-            if (targetServer != null) {
-                config = domain.getConfigNamed(targetServer.getConfigRef());
-            }
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                config = domain.getConfigNamed(cluster.getConfigRef());
-            }
-        }
-        SecurityService securityService = config.getSecurityService();
         try {
             List<JaccProvider> jaccProviders = securityService.getJaccProvider();
             JaccProvider jprov = null;
@@ -134,22 +141,7 @@ public class DeleteJaccProvider implements AdminCommand {
                    break;
                }
             }
-            if (jprov == null) {
-                report.setMessage(localStrings.getLocalString(
-                    "delete.jacc.provider.notfound",
-                    "JaccProvider named {0} not found", jaccprovider));
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
-
-            if ("default".equals(jprov.getName())
-                    || "simple".equals(jprov.getName())) {
-                 report.setMessage(localStrings.getLocalString(
-                    "delete.jacc.provider.notallowed",
-                    "JaccProvider named {0} is a system provider and cannot be deleted", jaccprovider));
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
+            
             final JaccProvider jaccprov = jprov;
             ConfigSupport.apply(new SingleConfigCode<SecurityService>() {
                 public Object run(SecurityService param)

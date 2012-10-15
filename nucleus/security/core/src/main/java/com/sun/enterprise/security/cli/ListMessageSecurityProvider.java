@@ -53,14 +53,12 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.glassfish.hk2.api.PerLookup;
-import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.config.serverbeans.MessageSecurityConfig;
 import com.sun.enterprise.config.serverbeans.ProviderConfig;
-import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
@@ -89,7 +87,7 @@ CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
         path="list-message-security-providers", 
         description="list-message-security-providers")
 })
-public class ListMessageSecurityProvider implements AdminCommand {
+public class ListMessageSecurityProvider implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
     final private static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(ListMessageSecurityProvider.class);    
@@ -107,9 +105,16 @@ public class ListMessageSecurityProvider implements AdminCommand {
     @Param(name="layer", acceptableValues="SOAP,HttpServlet", optional=true)
     String authLayer;
     
-    @Inject
-    Configs configs;
+    @AccessRequired.To("read")
+    private SecurityService secService;
 
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        config = CLIUtil.chooseConfig(domain, target);
+        secService = config.getSecurityService();
+        return true;
+    }
+    
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the paramter names and the values the parameter values
@@ -120,26 +125,6 @@ public class ListMessageSecurityProvider implements AdminCommand {
         
         final ActionReport report = context.getActionReport();
 
-        Config tmp = null;
-        try {
-            tmp = configs.getConfigByName(target);
-        } catch (Exception ex) {
-        }
-
-        if (tmp != null) {
-            config = tmp;
-        }
-        if (tmp == null) {
-            Server targetServer = domain.getServerNamed(target);
-            if (targetServer != null) {
-                config = domain.getConfigNamed(targetServer.getConfigRef());
-            }
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                config = domain.getConfigNamed(cluster.getConfigRef());
-            }
-        }
-        final SecurityService secService = config.getSecurityService();
         secService.getMessageSecurityConfig();
 
         report.getTopMessagePart().setMessage(

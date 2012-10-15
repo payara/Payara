@@ -58,13 +58,11 @@ import org.jvnet.hk2.config.types.Property;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.AuthRealm;
-import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.security.auth.realm.file.FileRealm;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.security.auth.realm.BadRealmException;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -103,7 +101,7 @@ import org.jvnet.hk2.config.TransactionFailure;
             @RestParam(name="authrealmname", value="$parent")
         })
 })
-public class CreateFileUser implements /*UndoableCommand*/ AdminCommand {
+public class CreateFileUser implements /*UndoableCommand*/ AdminCommand, AdminCommandSecurity.Preauthorization {
     
     final private static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(CreateFileUser.class);    
@@ -129,9 +127,6 @@ public class CreateFileUser implements /*UndoableCommand*/ AdminCommand {
     private Config config;
 
     @Inject
-    Configs configs;
-
-    @Inject
     private Domain domain;
 
     @Inject
@@ -144,6 +139,30 @@ public class CreateFileUser implements /*UndoableCommand*/ AdminCommand {
     private AdminService adminService;
     
     private SecureAdmin secureAdmin = null;
+    
+    @AccessRequired.To("update")
+    private AuthRealm fileAuthRealm;
+    
+    private SecurityService securityService;
+
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        config = CLIUtil.chooseConfig(domain, target);
+        securityService = config.getSecurityService();
+        fileAuthRealm = CLIUtil.findRealm(securityService, authRealmName);
+        if (fileAuthRealm == null) {
+            final ActionReport report = context.getActionReport();
+            report.setMessage(localStrings.getLocalString(
+                "create.file.user.filerealmnotfound",
+                "File realm {0} does not exist", 
+                authRealmName));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;                                            
+        }
+        return true;
+    }
+    
+    
 
     /**
      * Executes the command with the command parameters passed as Properties
@@ -154,48 +173,8 @@ public class CreateFileUser implements /*UndoableCommand*/ AdminCommand {
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();
-        Config tmp = null;
-        try {
-            tmp = configs.getConfigByName(target);
-        } catch (Exception ex) {
-        }
 
-        if (tmp != null) {
-            config = tmp;
-        }
-        if (tmp == null) {
-            Server targetServer = domain.getServerNamed(target);
-            if (targetServer != null) {
-                config = domain.getConfigNamed(targetServer.getConfigRef());
-            }
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                config = domain.getConfigNamed(cluster.getConfigRef());
-            }
-        }
-        final SecurityService securityService = config.getSecurityService();
-
-        // ensure we have the file authrealm
-        AuthRealm fileAuthRealm = null;
         
-        if (authRealmName == null) 
-            authRealmName = securityService.getDefaultRealm();        
-        
-        for (AuthRealm authRealm : securityService.getAuthRealm()) {            
-            if (authRealm.getName().equals(authRealmName)) {
-                fileAuthRealm = authRealm;            
-                break;
-            }
-        }       
-                
-        if (fileAuthRealm == null) {
-            report.setMessage(localStrings.getLocalString(
-                "create.file.user.filerealmnotfound",
-                "File realm {0} does not exist", 
-                authRealmName));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;                                            
-        }
         
         // Get FileRealm class name, match it with what is expected.
         String fileRealmClassName = fileAuthRealm.getClassname();

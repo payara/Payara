@@ -90,6 +90,7 @@ import javax.inject.Named;
         path="update-password-alias", 
         description="update-password-alias")
 })
+@AccessRequired(resource="domain/passwordAliases/$aliasName", action="update")
 public class UpdatePasswordAlias implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings =

@@ -42,7 +42,6 @@ package com.sun.enterprise.security.cli;
 
 import com.sun.enterprise.config.serverbeans.AuthRealm;
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -59,12 +58,13 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.security.SecurityConfigListener;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.beans.PropertyVetoException;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -86,7 +86,7 @@ import org.glassfish.config.support.TargetType;
 @I18n("delete.auth.realm")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
-public class DeleteAuthRealm implements AdminCommand {
+public class DeleteAuthRealm implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
     final private static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(DeleteAuthRealm.class);
@@ -102,14 +102,29 @@ public class DeleteAuthRealm implements AdminCommand {
     private Config config;
 
     @Inject
-    private Configs configs;
-    
-    @Inject
     private Domain domain;
    // @Inject
    // private SecurityConfigListener securityListener;
 
+    @AccessRequired.To("delete")
     AuthRealm authRealm = null;
+    
+    private SecurityService securityService;
+
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        config = CLIUtil.chooseConfig(domain, target);
+        securityService = config.getSecurityService();
+        authRealm = findRealm();
+        if (authRealm == null) {
+            final ActionReport report = context.getActionReport();
+            report.setMessage(localStrings.getLocalString(
+                "delete.auth.realm.notfound", 
+                "Authrealm named {0} not found", authRealmName));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        }
+        return (authRealm != null);
+    }
     
     /**
      * Executes the command with the command parameters passed as Properties
@@ -120,40 +135,7 @@ public class DeleteAuthRealm implements AdminCommand {
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
 
-        Config tmp = null;
-        try {
-            tmp = configs.getConfigByName(target);
-        } catch (Exception ex) {
-        }
-
-        if (tmp != null) {
-            config = tmp;
-        }
-
-        Server targetServer = domain.getServerNamed(target);
-        if (targetServer!=null) {
-            config = domain.getConfigNamed(targetServer.getConfigRef());
-        }
-        com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-        if (cluster!=null) {
-            config = domain.getConfigNamed(cluster.getConfigRef());
-        }
-        SecurityService securityService = config.getSecurityService();
         try {            
-            for (AuthRealm realm : securityService.getAuthRealm()) {
-                if (realm.getName().equals(authRealmName)) {
-                    authRealm = realm;
-                }
-            }
-
-            if (authRealm == null) {
-                report.setMessage(localStrings.getLocalString(
-                    "delete.auth.realm.notfound", 
-                    "Authrealm named {0} not found", authRealmName));
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
-
             ConfigSupport.apply(new SingleConfigCode<SecurityService>() {
                 public Object run(SecurityService param) 
                 throws PropertyVetoException, TransactionFailure {
@@ -172,5 +154,14 @@ public class DeleteAuthRealm implements AdminCommand {
             return;
         }
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+    }
+    
+    private AuthRealm findRealm() {
+        for (AuthRealm realm : securityService.getAuthRealm()) {
+            if (realm.getName().equals(authRealmName)) {
+                return realm;
+            }
+        }
+        return null;
     }
 }

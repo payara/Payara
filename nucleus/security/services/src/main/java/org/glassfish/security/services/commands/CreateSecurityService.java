@@ -65,6 +65,8 @@ import org.glassfish.security.services.config.AuthenticationService;
 import org.glassfish.security.services.config.SecurityConfigurations;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AdminCommandSecurity;
 
 /**
  * General create security service command.
@@ -73,7 +75,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(CommandTarget.DAS)
-public class CreateSecurityService implements AdminCommand {
+public class CreateSecurityService implements AdminCommand, AdminCommandSecurity.Preauthorization {
     private static final String AUTHENTICATION = "authentication";
 
     @Param(optional = false)
@@ -95,6 +97,16 @@ public class CreateSecurityService implements AdminCommand {
     private Class<? extends SecurityConfiguration> clazzServiceType;
     private ServiceConfigHandler<? extends SecurityConfiguration> serviceConfigHandler;
 
+    @AccessRequired.To("create")
+    private SecurityConfigurations secConfigs;
+    
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        final ActionReport report = context.getActionReport();
+        secConfigs = getSecurityConfigurations(report);
+        return secConfigs != null;
+    }
+
 	/**
 	 * Execute the create-security-service admin command.
 	 */
@@ -112,27 +124,7 @@ public class CreateSecurityService implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-
-        // Lookup or Create the security configurations
-        SecurityConfigurations secConfigs = domain.getExtensionByType(SecurityConfigurations.class);
-        if (secConfigs == null) {
-            try {
-            	secConfigs = (SecurityConfigurations) ConfigSupport.apply(new SingleConfigCode<Domain>() {
-                    @Override
-                    public Object run(Domain wDomain) throws PropertyVetoException, TransactionFailure {
-                    	SecurityConfigurations s = wDomain.createChild(SecurityConfigurations.class);
-                        wDomain.getExtensions().add(s);
-                        return s;
-                    }
-                }, domain);
-            } catch (TransactionFailure transactionFailure)  {
-                report.setMessage("Unable to create security configurations: " + transactionFailure.getMessage());
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setFailureCause(transactionFailure);
-                return;
-            }
-        }
-
+        
         // Add service configuration to the security configurations
         // TODO - Add validation logic required for base service configuration
         SecurityConfiguration config = null;
@@ -197,4 +189,26 @@ public class CreateSecurityService implements AdminCommand {
 		    return config;
 		}
 	}
+        
+        private SecurityConfigurations getSecurityConfigurations(final ActionReport report) {
+            // Lookup or Create the security configurations
+            SecurityConfigurations result = domain.getExtensionByType(SecurityConfigurations.class);
+            if (result == null) {
+                try {
+                    result = (SecurityConfigurations) ConfigSupport.apply(new SingleConfigCode<Domain>() {
+                        @Override
+                        public Object run(Domain wDomain) throws PropertyVetoException, TransactionFailure {
+                            SecurityConfigurations s = wDomain.createChild(SecurityConfigurations.class);
+                            wDomain.getExtensions().add(s);
+                            return s;
+                        }
+                    }, domain);
+                } catch (TransactionFailure transactionFailure)  {
+                    report.setMessage("Unable to create security configurations: " + transactionFailure.getMessage());
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    report.setFailureCause(transactionFailure);
+                }
+            }
+            return result;
+        }
 }

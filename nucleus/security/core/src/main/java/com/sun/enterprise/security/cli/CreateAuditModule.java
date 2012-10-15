@@ -68,6 +68,8 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
 import java.beans.PropertyVetoException;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -96,7 +98,7 @@ import org.glassfish.config.support.TargetType;
 @I18n("create.audit.module")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
-public class CreateAuditModule implements AdminCommand {
+public class CreateAuditModule implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
     final private static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(CreateAuditModule.class);    
@@ -121,11 +123,18 @@ public class CreateAuditModule implements AdminCommand {
     private Domain domain;
 
     @Inject
-    Configs configs;
-
-    @Inject
     SecurityConfigListener securityConfigListener;
 
+    @AccessRequired.NewChild(type=AuditModule.class)
+    private SecurityService securityService = null;
+    
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        securityService = chooseSecurityService();
+        return true;
+    }
+
+    
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are paramter names and the values the parameter values
@@ -135,27 +144,7 @@ public class CreateAuditModule implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
-       Config tmp = null;
-        try {
-            tmp = configs.getConfigByName(target);
-        } catch (Exception ex) {
-        }
-
-        if (tmp != null) {
-            config = tmp;
-        }
-        if (tmp == null) {
-            Server targetServer = domain.getServerNamed(target);
-            if (targetServer != null) {
-                config = domain.getConfigNamed(targetServer.getConfigRef());
-            }
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                config = domain.getConfigNamed(cluster.getConfigRef());
-            }
-        }
-        SecurityService securityService = config.getSecurityService();
-        
+       
         // check if there exists an audit module by the specified name
         // if so return failure.
         List<AuditModule> ams = securityService.getAuditModule();
@@ -194,6 +183,11 @@ public class CreateAuditModule implements AdminCommand {
         //report.setMessage(localStrings.getLocalString("create.audit.module.success",
         //    "Creation of AuditModule {0} completed successfully", auditModuleName));
     }       
+    
+    private SecurityService chooseSecurityService() {
+        config = CLIUtil.chooseConfig(domain, target);
+        return config.getSecurityService();
+    }
     
     private void populateAuditModuleElement(AuditModule newAuditModule) 
     throws PropertyVetoException, TransactionFailure {

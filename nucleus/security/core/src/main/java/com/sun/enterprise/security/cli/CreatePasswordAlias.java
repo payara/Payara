@@ -92,6 +92,7 @@ import javax.inject.Named;
         path="create-password-alias", 
         description="create-password-alias")
 })
+@AccessRequired(resource="domain/passwordAliases", action="create")
 public class CreatePasswordAlias implements AdminCommand {
     
     final private static LocalStringManagerImpl localStrings = 

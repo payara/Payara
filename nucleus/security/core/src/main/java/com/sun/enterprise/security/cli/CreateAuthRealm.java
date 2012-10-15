@@ -70,6 +70,8 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.beans.PropertyVetoException;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -107,7 +109,7 @@ import org.glassfish.internal.api.RelativePathResolver;
 @I18n("create.auth.realm")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
-public class CreateAuthRealm implements AdminCommand {
+public class CreateAuthRealm implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
     final private static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(CreateAuthRealm.class);    
@@ -139,7 +141,21 @@ public class CreateAuthRealm implements AdminCommand {
     //initialize the habitat in Util needed by Realm classes
     @Inject
     private Util util;
+    
+    @AccessRequired.NewChild(type=AuthRealm.class)
+    private SecurityService securityService;
 
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        config = CLIUtil.chooseConfig(domain, target);
+        securityService = config.getSecurityService();
+        if ( ! ensureRealmIsNew(context.getActionReport())) {
+            return false;
+        }
+        return true;
+    }
+
+    
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the paramter names and the values the parameter values
@@ -149,41 +165,6 @@ public class CreateAuthRealm implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
-        Config tmp = null;
-        try {
-            tmp = configs.getConfigByName(target);
-        } catch (Exception ex) {
-        }
-
-        if (tmp != null) {
-            config = tmp;
-        }
-        if (tmp == null) {
-            Server targetServer = domain.getServerNamed(target);
-            if (targetServer != null) {
-                config = domain.getConfigNamed(targetServer.getConfigRef());
-            }
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                config = domain.getConfigNamed(cluster.getConfigRef());
-            }
-        }
-        SecurityService securityService = config.getSecurityService();
-        
-        // check if there exists an auth realm byt he specified name
-        // if so return failure.
-        List<AuthRealm> authrealms = securityService.getAuthRealm();
-        for (AuthRealm authrealm : authrealms) {
-            if (authrealm.getName().equals(authRealmName)) {
-                report.setMessage(localStrings.getLocalString(
-                    "create.auth.realm.duplicatefound", 
-                    "Authrealm named {0} exists. Cannot add duplicate AuthRealm.", 
-                    authRealmName));
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
-        }
-        
         // No duplicate auth realms found. So add one.
         try {
             ConfigSupport.apply(new SingleConfigCode<SecurityService>() {
@@ -225,5 +206,17 @@ public class CreateAuthRealm implements AdminCommand {
                 newAuthRealm.getProperty().add(newprop);    
             }
         }
-    }    
+    }
+    
+    private boolean ensureRealmIsNew(final ActionReport report){
+        if ( ! CLIUtil.isRealmNew(securityService, authRealmName)) {
+            report.setMessage(localStrings.getLocalString(
+                "create.auth.realm.duplicatefound", 
+                "Authrealm named {0} exists. Cannot add duplicate AuthRealm.", 
+                authRealmName));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;
+        }
+        return true;
+    }
 }

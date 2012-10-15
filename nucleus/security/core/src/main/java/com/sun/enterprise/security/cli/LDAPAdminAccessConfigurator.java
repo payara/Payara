@@ -88,7 +88,7 @@ import org.glassfish.hk2.api.PerLookup;
         path="configure-ldap-for-admin", 
         description="configure-ldap-for-admin")
 })
-public class LDAPAdminAccessConfigurator implements AdminCommand {
+public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     @Param (name="basedn", shortName="b", optional=false)
     public volatile String basedn;
@@ -123,6 +123,24 @@ public class LDAPAdminAccessConfigurator implements AdminCommand {
 
     private static final Logger logger = LogDomains.getLogger(LDAPAdminAccessConfigurator.class, LogDomains.SECURITY_LOGGER);
 
+    private Config asc;
+    
+    @AccessRequired.To("update")
+    private AuthRealm adminAuthRealm;
+    
+    @AccessRequired.To("update")
+    private AdminService adminService;
+    
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        asc = chooseConfig();
+        final SecurityService ss = asc.getSecurityService();
+        adminAuthRealm = getAdminRealm(ss);
+        adminService = asc.getAdminService();
+        return true;
+    }
+
+    
 
     /** Field denoting the name of the realm used for administration. This is fixed in entire of v3. Note that
      *  the same name is used in admin GUI's web.xml and sun-web.xml. The name of the realm is the key, the
@@ -171,10 +189,7 @@ public class LDAPAdminAccessConfigurator implements AdminCommand {
     }
 
     private void configure(StringBuilder sb) throws TransactionFailure, PropertyVetoException {
-        Server s = configBeansUtilities.getServerNamed(ADMIN_SERVER);
-        String ac = s.getConfigRef();
-        Config asc = targetService.getConfig(ac);
-
+        
         //following things should happen transactionally - TODO replace SingleConfigCode by ConfigCode ...
         //createBackupRealm(sb, getAdminRealm(asc.getSecurityService()), getNewRealmName(asc.getSecurityService()));
         deleteRealm(asc.getSecurityService(), sb);
@@ -323,5 +338,11 @@ public class LDAPAdminAccessConfigurator implements AdminCommand {
 
     private static void appendNL(StringBuilder sb, String s) {
         sb.append(s).append("%%%EOL%%%");
+    }
+    
+    private Config chooseConfig() {
+        Server s = configBeansUtilities.getServerNamed(ADMIN_SERVER);
+        String ac = s.getConfigRef();
+        return targetService.getConfig(ac);
     }
 }

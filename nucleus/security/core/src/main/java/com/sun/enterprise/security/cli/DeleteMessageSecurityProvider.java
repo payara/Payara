@@ -41,7 +41,6 @@
 package com.sun.enterprise.security.cli;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -60,12 +59,13 @@ import org.jvnet.hk2.config.TransactionFailure;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.config.serverbeans.MessageSecurityConfig;
 import com.sun.enterprise.config.serverbeans.ProviderConfig;
-import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -88,7 +88,7 @@ import org.jvnet.hk2.config.ConfigListener;
 @I18n("delete.message.security.provider")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
-public class DeleteMessageSecurityProvider implements AdminCommand {
+public class DeleteMessageSecurityProvider implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
     final private static LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(DeleteMessageSecurityProvider.class);
@@ -108,14 +108,31 @@ public class DeleteMessageSecurityProvider implements AdminCommand {
     private Config config;
 
     @Inject
-    private Configs configs;
-
-    @Inject
     private Domain domain;
 
     ProviderConfig thePC = null;
 
-    MessageSecurityConfig msgSecCfg = null;
+    @AccessRequired.To("delete")
+    private MessageSecurityConfig msgSecCfg = null;
+    
+    private SecurityService secService;
+
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        config = CLIUtil.chooseConfig(domain, target);
+        secService = config.getSecurityService();
+        msgSecCfg = CLIUtil.findMessageSecurityConfig(secService, authLayer);
+        if (msgSecCfg == null) {
+            final ActionReport report = context.getActionReport();
+            report.setMessage(localStrings.getLocalString(
+                "delete.message.security.provider.confignotfound", 
+                "A Message security config does not exist for the layer {0}", 
+                authLayer));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;            
+        }
+        return true;
+    }
     
     /**
      * Executes the command with the command parameters passed as Properties
@@ -126,43 +143,6 @@ public class DeleteMessageSecurityProvider implements AdminCommand {
     public void execute(AdminCommandContext context) {
         
         ActionReport report = context.getActionReport();
-
-        Config tmp = null;
-        try {
-            tmp = configs.getConfigByName(target);
-        } catch (Exception ex) {
-        }
-
-        if (tmp != null) {
-            config = tmp;
-        }
-        if (tmp == null) {
-            Server targetServer = domain.getServerNamed(target);
-            if (targetServer != null) {
-                config = domain.getConfigNamed(targetServer.getConfigRef());
-            }
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                config = domain.getConfigNamed(cluster.getConfigRef());
-            }
-        }
-        final SecurityService securityService = config.getSecurityService();
-        List<MessageSecurityConfig> mscs = securityService.getMessageSecurityConfig();        
-        
-        for (MessageSecurityConfig  msc : mscs) {
-            if (msc.getAuthLayer().equals(authLayer)) {
-                msgSecCfg = msc;
-            }
-        }
-        
-        if (msgSecCfg == null) {           
-            report.setMessage(localStrings.getLocalString(
-                "delete.message.security.provider.confignotfound", 
-                "A Message security config does not exist for the layer {0}", 
-                authLayer));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;            
-        }
         
         List<ProviderConfig> pcs = msgSecCfg.getProviderConfig();
         for (ProviderConfig pc : pcs) {

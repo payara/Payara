@@ -42,6 +42,7 @@ package com.sun.enterprise.security.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import java.util.Enumeration;
+import org.glassfish.api.admin.AccessRequired;
 
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -95,6 +96,7 @@ import javax.inject.Named;
         path="list-password-aliases", 
         description="list-password-aliases")
 })
+@AccessRequired(resource="domain/passwordAliases", action="read")
 public class ListPasswordAlias implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings =

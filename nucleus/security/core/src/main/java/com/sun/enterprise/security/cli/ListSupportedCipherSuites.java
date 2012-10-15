@@ -75,6 +75,7 @@ import org.glassfish.hk2.api.PerLookup;
         path="list-supported-cipher-suites", 
         description="List Supported Cipher Suites")
 })
+@AccessRequired(resource="domain/security-service", action="read")
 public class ListSupportedCipherSuites implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings =
