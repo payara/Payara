@@ -70,7 +70,7 @@ public class FIFOEJBObjectCache
     
     protected Object refCountLock = new Object();
     protected int totalRefCount = 0;
-    protected static boolean _printRefCount =
+    protected static final boolean _printRefCount =
         Boolean.getBoolean("cache.printrefcount");
     
     
