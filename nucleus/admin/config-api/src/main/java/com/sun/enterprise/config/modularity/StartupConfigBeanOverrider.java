@@ -51,7 +51,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jvnet.hk2.annotations.Service;
-
 import org.jvnet.hk2.config.ConfigInjector;
 
 import javax.inject.Inject;
@@ -74,7 +73,8 @@ public class StartupConfigBeanOverrider implements PostConstruct {
     @Inject
     StartupContext startupContext;
 
-    @Inject private ConfigurationParser configurationParser;
+    @Inject
+    private ConfigurationParser configurationParser;
 
     private static final Logger LOG = Logger.getLogger(StartupConfigBeanOverrider.class.getName());
 
@@ -104,9 +104,11 @@ public class StartupConfigBeanOverrider implements PostConstruct {
                     continue;
                 }
             }
-            if (clz.isAnnotationPresent(ActivateOnStartup.class)) {
-                LOG.info("Overriding Config specified by: " + clz.getName());
-                applyConfigIfNeeded(clz);
+            if (clz != null) {
+                if (clz.isAnnotationPresent(ActivateOnStartup.class)) {
+                    LOG.info("Overriding Config specified by: " + clz.getName());
+                    applyConfigIfNeeded(clz);
+                }
             }
         }
         LOG.info("Finished the config overriding procedure");

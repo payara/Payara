@@ -45,22 +45,18 @@ import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigExtension;
-import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.ConfigView;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
-import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -71,7 +67,6 @@ import java.util.logging.Logger;
  * @author Masoud Kalali
  */
 @Service
-@PerLookup
 public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends ConfigBeanProxy> {
     private final static Logger LOG = Logger.getLogger(ModuleConfigurationLoader.class.getName());
     @Inject
@@ -80,9 +75,9 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
     @Inject
     private ConfigurationParser configurationParser;
 
-    public <U extends ConfigBeanProxy> U createConfigBeanForType(Class<U> configExtensionType,C extensionOwner) throws TransactionFailure {
+    public <U extends ConfigBeanProxy> U createConfigBeanForType(Class<U> configExtensionType, C extensionOwner) throws TransactionFailure {
         if (ConfigModularityUtils.hasCustomConfig(configExtensionType)) {
-            addConfigBeanFor(configExtensionType, extensionOwner);
+            addConfigBeanFor(configExtensionType);
         } else {
             if (configExtensionType.getAnnotation(HasNoDefaultConfiguration.class) != null) {
                 return null;
@@ -93,7 +88,7 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
                 public Object run(ConfigBeanProxy parent) throws PropertyVetoException, TransactionFailure {
                     U child = parent.createChild(childElement);
                     Dom unwrappedChild = Dom.unwrap(child);
-                    boolean writeDefaultElementsToXml = Boolean.parseBoolean(System.getProperty("writeDefaultElementsToXml","true"));
+                    boolean writeDefaultElementsToXml = Boolean.parseBoolean(System.getProperty("writeDefaultElementsToXml", "true"));
                     if (!writeDefaultElementsToXml) {
                         //Do not write default snippets to the domain.xml
                         unwrappedChild.skipFromXml();
@@ -124,7 +119,7 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
     }
 
 
-    protected <U extends ConfigBeanProxy> void addConfigBeanFor(Class<U> extensionType, C extensionOwner) {
+    protected <U extends ConfigBeanProxy> void addConfigBeanFor(Class<U> extensionType) {
         StartupContext context = serviceLocator.getService(StartupContext.class);
         List<ConfigBeanDefaultValue> configBeanDefaultValueList =
                 ConfigModularityUtils.getDefaultConfigurations(extensionType, ConfigModularityUtils.isDas(context));

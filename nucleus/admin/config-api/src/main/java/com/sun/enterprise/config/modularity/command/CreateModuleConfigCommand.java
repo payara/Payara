@@ -41,11 +41,11 @@
 package com.sun.enterprise.config.modularity.command;
 
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
+import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
+import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
-import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
-import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
@@ -59,11 +59,10 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -120,7 +119,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
         final ActionReport report = context.getActionReport();
         String defaultConfigurationElements;
         if (target != null) {
-            Config newConfig = getConfigForName(target,  serviceLocator, domain);
+            Config newConfig = getConfigForName(target, serviceLocator, domain);
             if (newConfig != null) {
                 config = newConfig;
             }

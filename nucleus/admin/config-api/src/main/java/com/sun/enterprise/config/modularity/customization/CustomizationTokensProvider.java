@@ -49,5 +49,5 @@ import java.util.List;
  */
 @Contract
 public interface CustomizationTokensProvider {
-     List<ConfigCustomizationToken> getPresentConfigCustomizationTokens();
+    List<ConfigCustomizationToken> getPresentConfigCustomizationTokens();
 }

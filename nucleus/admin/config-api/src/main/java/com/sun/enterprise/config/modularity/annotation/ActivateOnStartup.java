@@ -48,6 +48,7 @@ import java.lang.annotation.Target;
 
 /**
  * Mark the config beans that require their configuration to be applied on startup
+ *
  * @author Masoud Kalali
  */
 @Retention(RetentionPolicy.RUNTIME)

@@ -293,7 +293,7 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
         }
     }
 
-    private static <T extends ConfigBeanProxy> boolean removeCustomTokens(final ConfigBeanDefaultValue configBeanDefaultValue, T finalConfigBean,  ConfigBeanProxy parent) throws TransactionFailure, PropertyVetoException {
+    private static <T extends ConfigBeanProxy> boolean removeCustomTokens(final ConfigBeanDefaultValue configBeanDefaultValue, T finalConfigBean, ConfigBeanProxy parent) throws TransactionFailure, PropertyVetoException {
         if (parent instanceof SystemPropertyBag) {
             removeSystemPropertyForTokens(configBeanDefaultValue.getCustomizationTokens(), (SystemPropertyBag) parent);
             return true;

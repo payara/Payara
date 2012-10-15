@@ -76,7 +76,7 @@ public class ModuleXMLConfigurationFileParser {
         this.localStrings = localStrings;
     }
 
-    public List<ConfigBeanDefaultValue> parseServiceConfiguration(InputStream xmlDocumentStream ) throws XMLStreamException {
+    public List<ConfigBeanDefaultValue> parseServiceConfiguration(InputStream xmlDocumentStream) throws XMLStreamException {
 
         List<ConfigBeanDefaultValue> configBeans = new ArrayList<ConfigBeanDefaultValue>();
         XMLInputFactory inputFactory = XMLInputFactory.newInstance();
@@ -157,9 +157,9 @@ public class ModuleXMLConfigurationFileParser {
     }
 
     private String getLocalizedValue(String value) {
-        if(value.startsWith("$")){
-            value = localStrings.getLocalString(value.substring(1,value.length()),value.substring(1,value.length()));
+        if (value.startsWith("$")) {
+            value = localStrings.getLocalString(value.substring(1, value.length()), value.substring(1, value.length()));
         }
-            return value;
+        return value;
     }
 }

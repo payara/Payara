@@ -61,7 +61,7 @@ public abstract class AbstractConfigModularityCommand {
             String level = tokenizer.nextToken();
             if (level.contains("[$")) {
                 String expr = location.substring(location.indexOf("$"), location.indexOf("]"));
-                String value = ConfigModularityUtils.resolveExpression(expr,serviceLocator);
+                String value = ConfigModularityUtils.resolveExpression(expr, serviceLocator);
                 location = location.replace(expr, value);
             }
         }

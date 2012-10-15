@@ -45,7 +45,6 @@ import com.sun.enterprise.config.serverbeans.ConfigLoader;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.config.support.GlassFishConfigBean;
-import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -71,7 +70,6 @@ import java.util.logging.Logger;
  * @author Masoud Kalali
  */
 @Service
-@PerLookup
 public class ConfigurationParser<C extends ConfigLoader> {
     private static final Logger LOG = Logger.getLogger(ConfigurationParser.class.getName());
     //TODO Until the TranslatedView issue is fixed this remain true.
@@ -81,9 +79,9 @@ public class ConfigurationParser<C extends ConfigLoader> {
     private ServiceLocator serviceLocator;
 
     /**
-     * @param <T>     the ConfigBeanProxy type we are looking for
+     * @param <T> the ConfigBeanProxy type we are looking for
      */
-    public <T extends ConfigBeanProxy> void parseAndSetConfigBean( List<ConfigBeanDefaultValue> values) {
+    public <T extends ConfigBeanProxy> void parseAndSetConfigBean(List<ConfigBeanDefaultValue> values) {
 
         ConfigParser configParser = new ConfigParser(serviceLocator);
         // I don't use the GlassFish document here as I don't need persistence
@@ -122,7 +120,7 @@ public class ConfigurationParser<C extends ConfigLoader> {
                 final ConfigBeanProxy pr = doc.getRoot().createProxy(configBeanClass);
                 ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
                     public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
-                        boolean writeDefaultElementsToXml = Boolean.parseBoolean(System.getProperty("writeDefaultElementsToXml","true"));
+                        boolean writeDefaultElementsToXml = Boolean.parseBoolean(System.getProperty("writeDefaultElementsToXml", "true"));
                         if (!writeDefaultElementsToXml) {
                             //Do not write default snippets to domain.xml
                             doc.getRoot().skipFromXml();

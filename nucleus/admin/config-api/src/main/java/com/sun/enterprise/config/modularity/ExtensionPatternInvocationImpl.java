@@ -41,8 +41,6 @@
 package com.sun.enterprise.config.modularity;
 
 import com.sun.enterprise.config.modularity.parser.ModuleConfigurationLoader;
-import org.glassfish.api.admin.config.ConfigExtension;
-import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBean;
@@ -88,7 +86,7 @@ public class ExtensionPatternInvocationImpl implements ConfigExtensionHandler {
 
         try {
             ConfigBeanProxy pr = ((ConfigBean) owner).createProxy(ownerType);
-            ConfigBeanProxy returnValue = (ConfigBeanProxy) moduleConfigurationLoader.createConfigBeanForType((Class) params[0],pr);
+            ConfigBeanProxy returnValue = moduleConfigurationLoader.createConfigBeanForType((Class) params[0], pr);
             return returnValue;
         } catch (TransactionFailure transactionFailure) {
             LOG.log(Level.INFO, "Cannot get extension type {0} for {1} due to {2}", new Object[]{

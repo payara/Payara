@@ -44,12 +44,10 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
 import org.glassfish.api.admin.config.ConfigExtension;
-import org.glassfish.hk2.api.DynamicConfiguration;
 import org.glassfish.hk2.api.DynamicConfigurationService;
 import org.glassfish.hk2.api.Injectee;
 import org.glassfish.hk2.api.JustInTimeInjectionResolver;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -110,7 +108,7 @@ public class ConfigModularityJustInTimeInjectionResolver implements JustInTimeIn
             if (config == null) {
                 config = locator.getService(Config.class, ServerEnvironmentImpl.DEFAULT_INSTANCE_NAME);
             }
-            ConfigBeanProxy pr = (ConfigBeanProxy) config.getExtensionByType(configBeanType);
+            ConfigBeanProxy pr = config.getExtensionByType(configBeanType);
             return pr != null;
 
         } else if (DomainExtension.class.isAssignableFrom(configBeanType)) {
@@ -120,6 +118,7 @@ public class ConfigModularityJustInTimeInjectionResolver implements JustInTimeIn
         return false;
 
     }
+
     //Let's check if we support automatic creation of this type or not.
     //This method will go away eventually when we are done with supporting all types.
     private boolean isInjectionSupported(Class c) {
