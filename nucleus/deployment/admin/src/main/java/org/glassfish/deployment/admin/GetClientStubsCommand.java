@@ -44,12 +44,16 @@ import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
+import java.util.Collection;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.deployment.common.Artifacts;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
 
@@ -101,6 +105,11 @@ public class GetClientStubsCommand implements AdminCommand, AdminCommandSecurity
                 return true;
             }
         }
+        context.getActionReport().setMessage(localStrings.getLocalString(
+            getClass(),
+            "get-client-stubs.noSuchApp",
+            "Application {0} was not found",
+            new Object[] {appname}));
         return false;
     }
     
@@ -108,6 +117,7 @@ public class GetClientStubsCommand implements AdminCommand, AdminCommandSecurity
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         final Logger logger = context.getLogger();
+        Collection<Artifacts.FullAndPartURIs> artifactInfo = DeploymentUtils.downloadableArtifacts(matchingApp).getArtifacts();
 
         try {
             VersioningUtils.checkIdentifier(appname);
@@ -116,14 +126,15 @@ public class GetClientStubsCommand implements AdminCommand, AdminCommandSecurity
             return;
         }
 
-        if (matchingApp == null) {
-            report.failure(logger, localStrings.getLocalString(
+        if (artifactInfo.size() == 0) {
+            report.setMessage(localStrings.getLocalString(
                 getClass(),
-                "get-client-stubs.noSuchApp",
-                "Application {0} was not found",
+                "get-client-stubs.noStubApp",
+                "there are no files to retrieve for application {0}",
                 new Object[] {appname}));
             return;
         }
+
         try {
             DeployCommand.retrieveArtifacts(context, matchingApp, localDir);
         } catch (Exception e) {

@@ -515,7 +515,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                         tracing.addMark(DeploymentTracing.Mark.REGISTRATION);
                     }
                     if (retrieve != null) {
-                        retrieveArtifacts(context, downloadableArtifacts.getArtifacts(), retrieve, false);
+                        retrieveArtifacts(context, downloadableArtifacts.getArtifacts(), retrieve, false, name);
                     }
                     suppInfo.setDeploymentContext(deploymentContext);
                     //Fix for issue 14442
@@ -763,13 +763,27 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
         retrieveArtifacts(context,
                 DeploymentUtils.downloadableArtifacts(app).getArtifacts(),
                 targetLocalDir,
-                reportErrorsInTopReport);
+                reportErrorsInTopReport,
+                app.getName());
     }
 
     private static void retrieveArtifacts(final AdminCommandContext context,
             final Collection<Artifacts.FullAndPartURIs> artifactInfo,
             final String targetLocalDir,
-            final boolean reportErrorsInTopReport) {
+            final boolean reportErrorsInTopReport,
+            final String appname) {
+
+        if (artifactInfo.isEmpty()) {
+            final ActionReport report = context.getActionReport();
+            final ActionReport subReport = report.addSubActionsReport();
+            subReport.setMessage(localStrings.getLocalString(
+                DeployCommand.class,
+                "get-client-stubs.noStubApp",
+                "There are no files to retrieve for application {0}",
+            new Object[] {appname}));
+            subReport.setActionExitCode(ExitCode.SUCCESS);
+            return;
+        }
 
         Logger logger = context.getLogger();
         FileOutputStream targetStream = null;
@@ -795,7 +809,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                         uriPair.getPart(),"files",props,
                         new File(uriPair.getFull().getSchemeSpecificPart()));
             }
-            
             if (retrieveArtifacts) {
                 File targetLocalFile = new File(targetLocalDir); // CAUTION: file instead of dir
                 if (targetLocalFile.exists()) {
