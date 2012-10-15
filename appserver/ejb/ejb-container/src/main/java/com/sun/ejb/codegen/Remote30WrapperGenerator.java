@@ -62,7 +62,7 @@ public class Remote30WrapperGenerator extends Generator
     implements ClassGeneratorFactory {
 
     private static LocalStringManagerImpl localStrings =
-	new LocalStringManagerImpl(WrapperGenerator.class);
+	new LocalStringManagerImpl(Remote30WrapperGenerator.class);
 
     private String remoteInterfaceName;
     private Class businessInterface;

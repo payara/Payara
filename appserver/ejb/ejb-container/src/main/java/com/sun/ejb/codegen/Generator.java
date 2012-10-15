@@ -40,7 +40,6 @@
 
 package com.sun.ejb.codegen;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -206,70 +205,7 @@ public abstract class Generator {
 
     }
 
-    protected String[] printStaticMethodInit(IndentingWriter p, Class genClass, 
-                                         Method[] methods)
-        throws IOException
-    {
-	if ( methods==null || methods.length == 0 )
-	    return new String[0];
-	String[] methodVars = new String[methods.length];
-        // static variables for each biz method's Method object
-        for(int i = 0; i < methods.length; i++) {
-	    String methodVar = getUniqueMethodVar(methodVars, 
-					"__Method__" + methods[i].getName(), 0);
-	    methodVars[i] = methodVar;
-            p.pln("private static java.lang.reflect.Method " + methodVar + ";");
-        }
-
-        // static block to initialize Method objects
-        p.plnI("static {");
-        p.plnI("try {");
-        p.pln("java.lang.Class[] cl;");
-        for(int i = 0; i < methods.length; i++) {
-            Class[] params = methods[i].getParameterTypes();
-            // code to create array of parameter types' Classes
-            p.pln("cl = new java.lang.Class[" + params.length + "];");
-            for(int j = 0; j < params.length; j++) {
-                p.pln("cl[" + j + "] = " + printType(params[j]) + ".class;");
-            }
-            // Foo.class.getMethod(...)
-            p.pln(methodVars[i] + " = "
-                    + genClass.getName() + ".class.getMethod(\""
-                    + methods[i].getName() + "\", cl);");
-        }
-        p.pOln("} catch(NoSuchMethodException e) {}");
-        p.pOln("}");
-
-	return methodVars;
-    }
-
-
-    // get a unique variable name for a Method object
-    // handle overloading of method names by adding a unique number suffix
-    private String getUniqueMethodVar(String[] existingNames, String newName,
-				      int count)
-    {
-	// XXX clean this by using iteration instead of recursion
-	boolean exists=false;
-	String name = newName;
-	if ( count > 0 ) 
-	    name = newName + count;
-	for ( int i=0; i<existingNames.length; i++ ) {
-	    String existingName = existingNames[i];
-	    if ( existingName != null && existingName.equals(name) ) {
-		exists = true;
-		break;
-	    }
-	}
-	if ( exists ) {
-	    count++;
-	    // "foo1" exists, so try "foo2"
-	    return getUniqueMethodVar(existingNames, newName, count);
-	}
-	return name;
-    }
-
-    protected String getUniqueClassName(DeploymentContext context, String origName, 
+    protected String getUniqueClassName(DeploymentContext context, String origName,
                                         String origSuffix,
 					Vector existingClassNames)
     {
