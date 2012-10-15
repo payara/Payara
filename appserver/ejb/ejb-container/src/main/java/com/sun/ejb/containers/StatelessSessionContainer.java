@@ -281,7 +281,7 @@ public class StatelessSessionContainer
             beanPoolDes = iased.getBeanPool();
         }
 
-        poolProp = new PoolProperties();
+        poolProp = new PoolProperties(ejbContainer, beanPoolDes);
         String val = ejbDescriptor.getEjbBundleDescriptor().getEnterpriseBeansProperty(SINGLETON_BEAN_POOL_PROP);
         pool= new NonBlockingPool(getContainerId(), ejbDescriptor.getName(),
            sessionCtxFactory, poolProp.steadyPoolSize,
@@ -787,13 +787,13 @@ public class StatelessSessionContainer
         }
     } // SessionContextFactory{}
 
-    private class PoolProperties {
+    private static class PoolProperties {
         int maxPoolSize;
         int poolIdleTimeoutInSeconds;
         int poolResizeQuantity;
         int steadyPoolSize;
 
-        public PoolProperties() {
+        public PoolProperties(EjbContainer ejbContainer, BeanPoolDescriptor beanPoolDes) {
 
             maxPoolSize = Integer.parseInt(ejbContainer.getMaxPoolSize());
             poolIdleTimeoutInSeconds = Integer.parseInt(

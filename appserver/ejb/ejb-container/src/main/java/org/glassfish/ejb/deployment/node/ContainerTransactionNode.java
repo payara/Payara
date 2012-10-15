@@ -120,10 +120,11 @@ public class ContainerTransactionNode extends DeploymentDescriptorNode {
         
         Map methodToTransactions = ejb.getMethodContainerTransactions();
         MethodNode mn = new MethodNode();
-        for (Iterator e=methodToTransactions.keySet().iterator();e.hasNext();) {
-            MethodDescriptor md = (MethodDescriptor) e.next();
+        for (Object o : methodToTransactions.entrySet()) {
+            Map.Entry entry = (Map.Entry) o;
+            MethodDescriptor md = (MethodDescriptor) entry.getKey();
             Node ctNode = super.writeDescriptor(parent, nodeName, ejb);            
-            ContainerTransaction ct = (ContainerTransaction) methodToTransactions.get(md);
+            ContainerTransaction ct = (ContainerTransaction) entry.getValue();
             appendTextChild(ctNode, EjbTagNames.DESCRIPTION, ct.getDescription());
             mn.writeDescriptor(ctNode, EjbTagNames.METHOD, md, ejb.getName());
             appendTextChild(ctNode, EjbTagNames.TRANSACTION_ATTRIBUTE, ct.getTransactionAttribute());

@@ -42,7 +42,6 @@ package com.sun.ejb.containers;
 
 import org.glassfish.api.invocation.ComponentInvocation;
 
-import javax.ejb.SessionContext;
 import javax.ejb.TimerService;
 import javax.ejb.EJBException;
 import javax.transaction.TransactionManager;
@@ -56,8 +55,7 @@ import java.util.logging.Level;
  */
 
 public final class SingletonContextImpl
-        extends AbstractSessionContextImpl
-        implements SessionContext {
+        extends AbstractSessionContextImpl {
 
 
     SingletonContextImpl(Object ejb, BaseContainer container) {

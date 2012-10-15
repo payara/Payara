@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -192,14 +193,13 @@ public final class PersistenceDescriptor extends Descriptor {
         queries = new Hashtable();
         initializeAllQueriedMethods();
 
-        Iterator it = queriesClone.keySet().iterator();
-        while ( it.hasNext() ) {
-            Method oldMethod = (Method)it.next();
+        for (Object o : queriesClone.entrySet()) {
+            Map.Entry entry = (Map.Entry) o;
+            Method oldMethod = (Method)entry.getKey();
             Method newMethod = findEquivalentMethod(allQueriedMethods, 
                                                     oldMethod);
             if( newMethod != null ) {
-                QueryDescriptor oldQuery = (QueryDescriptor)
-                    queriesClone.get(oldMethod);
+                QueryDescriptor oldQuery = (QueryDescriptor) entry.getValue();
                 QueryDescriptor newQuery = 
                     new QueryDescriptor(oldQuery, newMethod);
                 // Only add to list of methods having queries if
@@ -289,23 +289,9 @@ public final class PersistenceDescriptor extends Descriptor {
         return equal;
     }
 
-    /**
-     * Checks whether two methods that might have been loaded by
-     * different class loaders are equal.  
-     * @param compareDeclaringClass if true, declaring class will
-     * be considered as part of equality test.  
-     */
-    private boolean methodsEqual(MethodDescriptor m1, Method m2, 
-                                 boolean compareDeclaringClass) {
-                                     
-        Method m = m1.getMethod(parentDesc);
-        return methodsEqual(m, m2, compareDeclaringClass);
-        
-    }    
-    
-    public void setParentDescriptor(Descriptor parentDesc)
+    public void setParentDescriptor(EjbCMPEntityDescriptor parentDesc)
     {
-	this.parentDesc = (EjbCMPEntityDescriptor)parentDesc;
+	this.parentDesc = parentDesc;
     }
 
     public Descriptor getParentDescriptor()

@@ -305,9 +305,10 @@ public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptorImpl> {
        // exclude-list*              
        if (excludedMethodsByEjb.size()>0) {
            Node excludeListNode = this.appendChild(assemblyNode, EjbTagNames.EXCLUDE_LIST);
-           for (Iterator ejbs = excludedMethodsByEjb.keySet().iterator(); ejbs.hasNext();) {
-               EjbDescriptor ejbDesc = (EjbDescriptor) ejbs.next();
-               Vector excludedMethods = (Vector) excludedMethodsByEjb.get(ejbDesc);
+           for (Object o : excludedMethodsByEjb.entrySet()) {
+               Map.Entry entry = (Map.Entry) o;
+               EjbDescriptor ejbDesc = (EjbDescriptor) entry.getKey();
+               Vector excludedMethods = (Vector) entry.getValue();
                
                MethodPermissionDescriptor mpd = new MethodPermissionDescriptor();
                mpd.addMethodPermission(MethodPermission.getExcludedMethodPermission());
@@ -342,11 +343,12 @@ public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptorImpl> {
             return;
         }
         
-        for (Iterator mpIterator = mpToMethods.keySet().iterator();mpIterator.hasNext();) {
-            MethodPermission mp = (MethodPermission) mpIterator.next();
+        for (Object o : mpToMethods.entrySet()) {
+            Map.Entry entry = (Map.Entry) o;
+            MethodPermission mp = (MethodPermission) entry.getKey();
             if (mp.isExcluded()) {
                 // we need to be sure the method descriptors knows who owns them
-                Set methods = (Set) mpToMethods.get(mp);
+                Set methods = (Set) entry.getValue();
                 excludedMethods.addAll(methods);
             } else {
                 MethodPermissionDescriptor mpd = new MethodPermissionDescriptor();
