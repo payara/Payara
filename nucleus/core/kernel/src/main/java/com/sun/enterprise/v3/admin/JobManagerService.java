@@ -189,7 +189,8 @@ public class JobManagerService implements JobManager {
                 managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
                 jobsRetentionPeriod = convert(managedJobConfig.getJobRetentionPeriod());
             }
-            if (currentTime - executedTime > jobsRetentionPeriod) {
+            if (currentTime - executedTime > jobsRetentionPeriod &&
+                    job.getState().equals(AdminCommandState.State.COMPLETED)) {
                  expiredJobs.add(job);
             }
 
