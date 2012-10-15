@@ -44,12 +44,12 @@ import static org.junit.Assert.assertNotNull;
 import mockit.Deencapsulation;
 
 import org.glassfish.contextpropagation.spi.ContextMapHelper;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.ConfigApiTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.junit.Hk2Runner;
 
@@ -90,7 +90,7 @@ public class BootstrapTest extends ConfigApiTest {
   }
   
   @Override
-  public DomDocument<?> getDocument(Habitat habitat) {
+  public DomDocument<?> getDocument(ServiceLocator habitat) {
     return null;
   }
   

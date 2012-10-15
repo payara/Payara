@@ -48,7 +48,6 @@ import java.util.Map;
 import javax.validation.ConstraintViolationException;
 import org.junit.Test;
 import org.junit.Before;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import org.jvnet.hk2.config.ConfigBean;
@@ -64,7 +63,7 @@ import static org.junit.Assert.*;
 public class ReferenceConstrainClusterTest extends ConfigApiTest {
     
 //    private Logger logger = Logger.getLogger(ReferenceConstrainTest.class.getName());
-    private Habitat habitat;
+    private ServiceLocator habitat;
 
     @Override
     public String getFileName() {

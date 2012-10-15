@@ -56,7 +56,6 @@ import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.config.support.GlassFishDocument;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.DomDocument;
 
 import java.io.File;
@@ -95,7 +94,7 @@ public class EventsTest extends ConfigApiTest {
     }
 
     @Override
-    public DomDocument getDocument(Habitat habitat) {
+    public DomDocument getDocument(ServiceLocator habitat) {
        DomDocument doc = habitat.getService(GlassFishDocument.class);
         if (doc==null) {
             return new GlassFishDocument(habitat, Executors.newCachedThreadPool(new ThreadFactory() {

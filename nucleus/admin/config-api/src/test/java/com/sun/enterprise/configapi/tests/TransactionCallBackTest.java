@@ -44,7 +44,6 @@ import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -62,7 +61,7 @@ import java.util.Map;
  */
 public class TransactionCallBackTest extends ConfigPersistence {
 
-    Habitat habitat = Utils.instance.getHabitat(this);
+    ServiceLocator habitat = Utils.instance.getHabitat(this);
 
     /**
      * Returns the file name without the .xml extension to load the test configuration
@@ -80,8 +79,8 @@ public class TransactionCallBackTest extends ConfigPersistence {
     }
     
     @Override
-    public Habitat getHabitat() {
-    	return (Habitat) getBaseServiceLocator();
+    public ServiceLocator getHabitat() {
+    	return getBaseServiceLocator();
     }
     
     public void doTest() throws TransactionFailure {

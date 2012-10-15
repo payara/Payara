@@ -43,14 +43,14 @@ package org.glassfish.jdbc.config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jdbc.config.JdbcResource;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.component.Habitat;
-
 
 import java.beans.PropertyVetoException;
 
@@ -69,7 +69,7 @@ public class ConcurrentModificationsTest extends ConfigApiTest{
     @Test(expected= TransactionFailure.class)
     public void collectionTest() throws TransactionFailure {
 
-        Habitat habitat = super.getHabitat();
+        ServiceLocator habitat = super.getHabitat();
         final Resources resources = habitat.<Domain>getService(Domain.class).getResources();
         assertTrue(resources!=null);
 

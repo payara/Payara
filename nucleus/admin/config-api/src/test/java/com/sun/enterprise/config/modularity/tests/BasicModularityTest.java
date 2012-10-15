@@ -47,6 +47,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.configapi.tests.ConfigApiTest;
 import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
 
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevelController;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.glassfish.tests.utils.Utils;
@@ -54,7 +55,6 @@ import org.glassfish.tests.utils.Utils;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.types.Property;
 
@@ -69,7 +69,7 @@ import static org.junit.Assert.*;
  */
 public class BasicModularityTest extends ConfigApiTest {
 
-    Habitat habitat = Utils.instance.getHabitat(this);
+    ServiceLocator habitat = Utils.instance.getHabitat(this);
 
     @Override
     public String getFileName() {

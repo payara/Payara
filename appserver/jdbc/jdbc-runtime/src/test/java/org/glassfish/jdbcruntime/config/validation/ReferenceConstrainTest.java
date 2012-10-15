@@ -45,11 +45,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import javax.validation.ConstraintViolationException;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jdbc.config.JdbcResource;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.junit.Before;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.tests.utils.Utils;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -65,7 +66,7 @@ import static org.junit.Assert.*;
 public class ReferenceConstrainTest extends ConfigApiTest {
     
 //    private Logger logger = Logger.getLogger(ReferenceConstrainTest.class.getName());
-    private Habitat habitat;
+    private ServiceLocator habitat;
 
     @Override
     public String getFileName() {
@@ -73,7 +74,7 @@ public class ReferenceConstrainTest extends ConfigApiTest {
     }
 
     @Override
-    public Habitat getHabitat() {
+    public ServiceLocator getHabitat() {
         return habitat;
     }
     

@@ -48,7 +48,6 @@ import java.beans.PropertyVetoException;
 import java.util.List;
 
 import org.glassfish.api.admin.AdminCommandContextImpl;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.types.Property;
 
 import org.glassfish.api.admin.AdminCommandContext;
@@ -82,7 +81,7 @@ public class CreateProfilerTest extends ConfigApiTest {
     private CommandRunnerImpl cr = habitat.getService(CommandRunnerImpl.class);
     
     @Override
-    public DomDocument getDocument(Habitat habitat) {
+    public DomDocument getDocument(ServiceLocator habitat) {
 
         return new TestDocument(habitat);
     }    

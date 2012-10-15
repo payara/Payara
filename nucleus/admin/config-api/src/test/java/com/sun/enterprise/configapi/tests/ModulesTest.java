@@ -53,7 +53,7 @@ import java.util.Collection;
  */
 public class ModulesTest extends ConfigApiTest {
 
-
+    @Override
     public String getFileName() {
         return "DomainTest";
     }

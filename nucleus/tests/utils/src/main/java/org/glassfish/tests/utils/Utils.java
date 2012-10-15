@@ -41,35 +41,21 @@
 package org.glassfish.tests.utils;
 
 // import com.sun.enterprise.module.bootstrap.Populator;
-import java.io.IOException;
+
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.StartupContext;
-import org.glassfish.hk2.api.DynamicConfiguration;
-import org.glassfish.hk2.api.DynamicConfigurationService;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
-import org.glassfish.hk2.bootstrap.HK2Populator;
-import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
-import org.glassfish.hk2.bootstrap.impl.Hk2LoaderPopulatorPostProcessor;
-import org.glassfish.hk2.internal.ConstantActiveDescriptor;
-import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
-import org.glassfish.hk2.utilities.BuilderHelper;
-import org.glassfish.hk2.utilities.DescriptorBuilder;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.DomDocument;
 
-import com.sun.enterprise.module.bootstrap.DefaultErrorService;
-import com.sun.enterprise.module.single.SingleModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 
 /**
@@ -82,40 +68,40 @@ public class Utils {
     final static String habitatName = "default";
     final static String inhabitantPath = "META-INF/inhabitants";
 
-    private static Map<String, Habitat> habitats = new HashMap<String, Habitat>();
+    private static Map<String, ServiceLocator> habitats = new HashMap<String, ServiceLocator>();
     public static final Utils instance = new Utils();
 
-    public synchronized Habitat getHabitat(ConfigApiTest test) {
+    public synchronized ServiceLocator getHabitat(ConfigApiTest test) {
 
         final String fileName = test.getFileName();
         // we cache the habitat per xml file
 
         if (habitats.containsKey(fileName))  {
-           return habitats.get(fileName);
+            return habitats.get(fileName);
         }
 
-        Habitat habitat = getNewHabitat(test);
+        ServiceLocator habitat = getNewHabitat(test);
         habitats.put(fileName, habitat);
         return habitat;
     }
 
-    private static synchronized Habitat getNewHabitat(final ConfigApiTest test) {
+    private static synchronized ServiceLocator getNewHabitat(final ConfigApiTest test) {
 
         String name = test.getFileName();
         final ServiceLocator sl = getNewHabitat();
-        Habitat habitat = sl.getService(Habitat.class);
 
         final String fileName = test.getFileName();
-        ConfigParser configParser = new ConfigParser(habitat);
+        ConfigParser configParser = new ConfigParser(sl);
 
 		long now = System.currentTimeMillis();
 		URL url = Utils.class.getClassLoader().getResource(fileName + ".xml");
 		if (url != null) {
 			try {
+			    DomDocument testDocument = test.getDocument(sl);
 				DomDocument document = configParser.parse(url,
-						test.getDocument(habitat));
-				ServiceLocatorUtilities.addOneConstant(habitat, document);
-				test.decorate(habitat);
+						testDocument);
+				ServiceLocatorUtilities.addOneConstant(sl, document);
+				test.decorate(sl);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -124,7 +110,7 @@ public class Utils {
 							+ String.valueOf(System.currentTimeMillis() - now));
 		}
         
-        return habitat;
+        return sl;
     }
 
     public static ServiceLocator getNewHabitat() {
@@ -139,14 +125,13 @@ public class Utils {
         p.put(com.sun.enterprise.glassfish.bootstrap.Constants.INSTANCE_ROOT_PROP_NAME, root);
         ModulesRegistry registry = new StaticModulesRegistry(Utils.class.getClassLoader(), new StartupContext(p));
         ServiceLocator defaultSL = registry.createServiceLocator("default");
-        return registry.createServiceLocator(defaultSL, root);
+        return defaultSL;
     }
 
 	public void shutdownServiceLocator(
 			final ConfigApiTest test) {
-        final String fileName = test.getFileName();
-        // we cache the habitat per xml file
-        
+	    String fileName = test.getFileName();
+	    
         if (habitats.containsKey(fileName))  {
         	ServiceLocator locator = habitats.remove(fileName);
         	ServiceLocatorFactory.getInstance().destroy(locator);

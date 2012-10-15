@@ -49,7 +49,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import static org.junit.Assert.*;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -67,7 +66,7 @@ import java.util.Map;
  */
 public class DirectCreationTest extends ConfigPersistence {
 
-    Habitat habitat = Utils.instance.getHabitat(this);
+    ServiceLocator habitat = Utils.instance.getHabitat(this);
 
     /**
      * Returns the file name without the .xml extension to load the test configuration
@@ -75,6 +74,7 @@ public class DirectCreationTest extends ConfigPersistence {
      *
      * @return the configuration file name
      */
+    @Override
     public String getFileName() {
         return "DomainTest";
     }
@@ -85,8 +85,8 @@ public class DirectCreationTest extends ConfigPersistence {
     }
     
     @Override
-    public Habitat getHabitat() {
-    	return (Habitat) getBaseServiceLocator();
+    public ServiceLocator getHabitat() {
+    	return getBaseServiceLocator();
     }
     
     public void doTest() throws TransactionFailure {

@@ -41,7 +41,7 @@
 package com.sun.enterprise.admin.tests;
 
 import org.glassfish.config.support.GlassFishDocument;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.DomDocument;
 import org.junit.Ignore;
 
@@ -55,7 +55,8 @@ import java.util.concurrent.ThreadFactory;
  */
 public abstract class ConfigApiTest extends org.glassfish.tests.utils.ConfigApiTest {
 
-    public DomDocument getDocument(Habitat habitat) {
+    @Override
+    public DomDocument getDocument(ServiceLocator habitat) {
         DomDocument doc = habitat.getService(GlassFishDocument.class);
         if (doc==null) {
             return new GlassFishDocument(habitat, Executors.newCachedThreadPool(new ThreadFactory() {

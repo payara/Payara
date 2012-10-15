@@ -51,26 +51,26 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.ConfigApiTest;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.DomDocument;
 
 import java.util.List;
 
 public class ListCustomResourcesTest extends ConfigApiTest {
 
-    private Habitat habitat = getHabitat();
+    private ServiceLocator habitat = getHabitat();
     private AdminCommandContext context ;
     private CommandRunner cr;
     private int origNum;
     private ParameterMap parameters;
 
-
-    public DomDocument getDocument(Habitat habitat) {
+    @Override
+    public DomDocument getDocument(ServiceLocator habitat) {
         return new TestDocument(habitat);
     }
 

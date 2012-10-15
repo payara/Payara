@@ -49,6 +49,8 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.ResourceRef;
 import com.sun.enterprise.config.serverbeans.Resources;
@@ -61,20 +63,19 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.TransactionFailure;
 
 
 public class CreateJavaMailResourceTest extends ConfigApiTest {
 
-    private Habitat habitat;
+    private ServiceLocator habitat;
     private Resources resources;
     private ParameterMap parameters;
     private AdminCommandContext context;
     private CommandRunner cr;
 
-    public DomDocument getDocument(Habitat habitat) {
+    public DomDocument getDocument(ServiceLocator habitat) {
         return new TestDocument(habitat);
     }
 

@@ -52,13 +52,13 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jdbc.config.JdbcResource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.tests.utils.Utils;
@@ -72,7 +72,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  */
 //@Ignore // temporarily disabled
 public class ListJdbcResourcesTest extends ConfigApiTest {
-    private Habitat habitat = Utils.instance.getHabitat(this);
+    private ServiceLocator habitat = Utils.instance.getHabitat(this);
     private Resources resources = habitat.<Domain>getService(Domain.class).getResources();
     private int origNum = 0;
     private ParameterMap parameters = new ParameterMap();
@@ -82,7 +82,8 @@ public class ListJdbcResourcesTest extends ConfigApiTest {
     AdminCommandContext context = null;
     CommandRunner cr = habitat.getService(CommandRunner.class);
     
-    public DomDocument getDocument(Habitat habitat) {
+    @Override
+    public DomDocument getDocument(ServiceLocator habitat) {
 
         return new TestDocument(habitat);
     }    

@@ -43,11 +43,12 @@ package org.glassfish.connectors.config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.Dom;
-import org.jvnet.hk2.component.Habitat;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -65,7 +66,7 @@ public class AllModelsImplementingTest extends ConfigApiTest {
     @Test
     public void checkResources() throws ClassNotFoundException {
 
-        Habitat habitat = getHabitat();
+        ServiceLocator habitat = getHabitat();
         Resources resources = habitat.<Domain>getService(Domain.class).getResources();
         Dom dom = Dom.unwrap(resources);
         List <ConfigModel> models = dom.document.getAllModelsImplementing(Resource.class);

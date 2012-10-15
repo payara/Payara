@@ -49,12 +49,12 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -66,7 +66,7 @@ import java.util.List;
 
 public class DeleteIiopListenerTest extends org.glassfish.tests.utils.ConfigApiTest {
 
-    private Habitat services;
+    private ServiceLocator services;
     private IiopService iiopService;
     private ParameterMap parameters;
     private CommandRunner cr;
@@ -76,7 +76,7 @@ public class DeleteIiopListenerTest extends org.glassfish.tests.utils.ConfigApiT
         return "DomainTest";
     }
 
-    public DomDocument getDocument(Habitat services) {
+    public DomDocument getDocument(ServiceLocator services) {
         return new TestDocument(services);
     }
 

@@ -42,7 +42,6 @@ package org.glassfish.tests.utils;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.junit.Ignore;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.Transactions;
 import static org.junit.Assert.*;
@@ -72,8 +71,8 @@ public abstract class ConfigApiTest {
      * 
      * @return a configured Habitat
      */
-    public Habitat getHabitat() {
-        Habitat habitat = Utils.instance.getHabitat(this);
+    public ServiceLocator getHabitat() {
+        ServiceLocator habitat = Utils.instance.getHabitat(this);
         
         assertNotNull("Transactions service from Configuration subsystem is null", habitat.getService(Transactions.class));
         return habitat;
@@ -83,11 +82,11 @@ public abstract class ConfigApiTest {
         return getHabitat();
     }
 
-    public abstract DomDocument getDocument(Habitat habitat);    
+    public abstract DomDocument getDocument(ServiceLocator habitat);    
     
     /* 
      * Decorate the habitat after parsing.  This is called on the habitat
      * just after parsing of the XML file is complete.
      */
-    public void decorate(Habitat habitat) {}  
+    public void decorate(ServiceLocator habitat) {}  
 }

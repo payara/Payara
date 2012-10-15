@@ -50,13 +50,13 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jdbc.config.JdbcResource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.ActionReport;
 import org.glassfish.tests.utils.Utils;
 import org.glassfish.tests.utils.ConfigApiTest;
@@ -68,14 +68,15 @@ import org.jvnet.hk2.config.DomDocument;
  */
 //@Ignore // temporarily disabled
 public class DeleteJdbcResourceTest extends ConfigApiTest {
-    Habitat habitat = Utils.instance.getHabitat(this);
+    ServiceLocator habitat = Utils.instance.getHabitat(this);
     private Resources resources = habitat.<Domain>getService(Domain.class).getResources();
     private DeleteJdbcResource deleteCommand = null;
     private ParameterMap parameters = new ParameterMap();
     private AdminCommandContext context = null;
     private CommandRunner cr = habitat.getService(CommandRunner.class);
     
-    public DomDocument getDocument(Habitat habitat) {
+    @Override
+    public DomDocument getDocument(ServiceLocator habitat) {
 
         return new TestDocument(habitat);
     }

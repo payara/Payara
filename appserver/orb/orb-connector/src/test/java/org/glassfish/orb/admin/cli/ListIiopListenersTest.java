@@ -50,11 +50,11 @@ import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.DomDocument;
 
 import java.util.ArrayList;
@@ -63,7 +63,7 @@ import java.util.List;
 
 public class ListIiopListenersTest extends org.glassfish.tests.utils.ConfigApiTest {
 
-    private Habitat services;
+    private ServiceLocator services;
     private int origNum;
     private ParameterMap parameters;
     private CommandRunner cr;
@@ -73,7 +73,7 @@ public class ListIiopListenersTest extends org.glassfish.tests.utils.ConfigApiTe
         return "DomainTest";
     }
 
-    public DomDocument getDocument(Habitat services) {
+    public DomDocument getDocument(ServiceLocator services) {
         return new TestDocument(services);
     }
 

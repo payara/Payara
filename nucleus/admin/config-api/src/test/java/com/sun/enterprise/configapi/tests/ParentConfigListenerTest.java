@@ -43,12 +43,12 @@ package com.sun.enterprise.configapi.tests;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
 import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.Assert;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -67,7 +67,7 @@ import java.util.List;
  */
 public class ParentConfigListenerTest extends ConfigApiTest {
 
-    Habitat habitat;
+    ServiceLocator habitat;
 
     public String getFileName() {
         return "DomainTest";

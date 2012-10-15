@@ -44,9 +44,9 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Server;
 import org.glassfish.config.support.GlassFishDocument;
 import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.DomDocument;
 
 import java.util.concurrent.Executors;
@@ -60,7 +60,8 @@ import org.glassfish.api.admin.ServerEnvironment;
  */
 public abstract class ConfigApiTest extends org.glassfish.tests.utils.ConfigApiTest {
 	
-    public DomDocument getDocument(Habitat habitat) {
+    @Override
+    public DomDocument getDocument(ServiceLocator habitat) {
         DomDocument doc = habitat.getService(GlassFishDocument.class);
         if (doc==null) {
             return new GlassFishDocument(habitat, Executors.newCachedThreadPool(new ThreadFactory() {
@@ -77,7 +78,7 @@ public abstract class ConfigApiTest extends org.glassfish.tests.utils.ConfigApiT
     }
     
     @Override
-    public void decorate(Habitat habitat) {
+    public void decorate(ServiceLocator habitat) {
         Server server = habitat.getService(Server.class, "server");
         if (server != null) {
             ActiveDescriptor<Server> serverDescriptor = BuilderHelper.createConstantDescriptor(server,

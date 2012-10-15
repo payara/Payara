@@ -52,13 +52,13 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.resources.javamail.config.MailResource;
 import org.glassfish.tests.utils.ConfigApiTest;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.DomDocument;
 
 import java.util.ArrayList;
@@ -66,13 +66,14 @@ import java.util.List;
 
 public class ListJavaMailResourcesTest extends ConfigApiTest {
 
-    private Habitat habitat;
+    private ServiceLocator habitat;
     private int origNum = 0;
     private ParameterMap parameters;
     private AdminCommandContext context;
     private CommandRunner cr;
 
-    public DomDocument getDocument(Habitat habitat) {
+    @Override
+    public DomDocument getDocument(ServiceLocator habitat) {
         return new TestDocument(habitat);
     }
 
