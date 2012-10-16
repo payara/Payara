@@ -54,6 +54,7 @@
       <class name="test.admin.JvmOptionTests"/>
       <class name="test.admin.JdbcConnectionPoolTests"/>
       <class name="test.admin.WebtierTests"/>
+      <class name="test.admin.OsgiAsadminTest"/>
     </classes>
   </test>
  
