@@ -555,6 +555,9 @@ final class StandardHostValve
         BufferedInputStream istream = null;
         IOException ioe = null;
 
+        if (!response.getResponse().isCommitted()) {
+            response.resetBuffer(true);
+        }
         String message = errorPage.getReason();
         if (message != null) {
             ((HttpResponse) response).reset(statusCode, message);
