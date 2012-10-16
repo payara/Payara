@@ -71,7 +71,6 @@ import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.ValidationException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -183,11 +182,7 @@ public class TemplateRestResource {
 //            return Response.ok(ResourceUtil.getActionReportResult(ar, successMessage, requestHeaders, uriInfo)).build();
             return Response.status(Status.CREATED).build();
         } catch (Exception ex) {
-            if (ex.getCause() instanceof ValidationException) {
-                return Response.status(400).entity(ResourceUtil.getActionReportResult(ActionReport.ExitCode.FAILURE, ex.getMessage(), requestHeaders, uriInfo)).build();
-            } else {
-                throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
-            }
+            throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
         }
     }
 

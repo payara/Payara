@@ -200,12 +200,12 @@ public class DummyUriInfo implements UriInfo {
         }
 
         @Override
-        public UriBuilder path(Class<?> resource) throws IllegalArgumentException {
+        public UriBuilder path(Class type) throws IllegalArgumentException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public UriBuilder path(Class<?> resource, String method) throws IllegalArgumentException {
+        public UriBuilder path(Class type, String string) throws IllegalArgumentException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
