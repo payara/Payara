@@ -154,7 +154,7 @@ public class AppServerStartup implements ModuleStartup {
      * as long as GlassFish kernel is up.
      */
     private Thread serverThread;
-
+    private boolean shutdownSignal = false;
 
     public synchronized void start() {
         ClassLoader origCL = Thread.currentThread().getContextClassLoader();
@@ -187,13 +187,17 @@ public class AppServerStartup implements ModuleStartup {
                 // thread has started.
                 latch.countDown();
 
-                try {
-                    synchronized (this) {
-                        wait(); // Wait indefinitely until shutdown is requested
+                synchronized (this) {
+                    while (!shutdownSignal) {
+                        try {
+                            wait(); // Wait indefinitely until shutdown is requested
+                        }
+                        catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
                 }
+                
                 logger.logp(level, "AppServerStartup", "run",
                         "[{0}] exiting", new Object[]{this});
             }
@@ -333,6 +337,8 @@ public class AppServerStartup implements ModuleStartup {
         // notify the server thread that we are done, so that it can come out.
         if (serverThread!=null) {
             synchronized (serverThread) {
+                shutdownSignal = true;
+                
                 serverThread.notify();
             }
             try {

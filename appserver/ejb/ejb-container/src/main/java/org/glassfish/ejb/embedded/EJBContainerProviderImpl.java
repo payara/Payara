@@ -209,8 +209,6 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
                     EmbeddedSecurity es = server.getService(EmbeddedSecurity.class);
                     ServiceLocator habitat = server.getService(ServiceLocator.class);
 
-                    // XXX Wait a little before stopping to avoid a deadlock
-                    Thread.sleep(1000);
                     server.stop();
 
                     // If we are running from an existing install, copy over security files to the temp instance
