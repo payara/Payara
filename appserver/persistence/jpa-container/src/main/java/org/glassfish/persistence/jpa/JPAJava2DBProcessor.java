@@ -204,7 +204,7 @@ public class JPAJava2DBProcessor {
             // Persistence provider is not supported, hence exit from java2db code
             if (helper.hasDeployCliOverrides()) {
                 helper.logI18NWarnMessage(
-                    "Java2DBProcessorHelper.nondefaultprovider",
+                    "JPAJava2DBProcessor.nondefaultprovider",
                     getProviderClassName(bundle),
                     bundle.getName(), null);
             }
