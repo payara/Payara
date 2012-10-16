@@ -48,7 +48,6 @@
   <parameter name="admin.password" value=""/>
   <parameter name="admin.console.url" value="http://localhost:4848/"/>
   <parameter name="resources.xml.relative.path" value="admin/resources/resources.xml"/>
-  
   <test name="admincli_tests">
         <classes>
                 <class name="test.admincli.RestartDomainTests"/>
@@ -144,8 +143,13 @@
       <class name="test.admin.JvmOptionTests"/>
       <class name="test.admin.JdbcConnectionPoolTests"/>
       <class name="test.admin.WebtierTests"/>
+      <class name="test.admin.OsgiAsadminTest"/> 
     </classes>
   </test>
- 
+  <test name="osgi_test">
+    <classes>
+        <class name="test.osgi.hello.HelloOSGITestNG" />
+    </classes>
+  </test>
 </suite>
 
