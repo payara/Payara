@@ -236,6 +236,7 @@
         <ant dir="admincli" target="build"/>
         <ant dir="adminconsole" target="build"/>
         <ant dir="rest" target="build"/>
+        <ant dir="osgitest/basicosgi" target="build"/>
         <ant dir="web/helloworld" target="build-deploy"/>
         <ant dir="web/jsfastrologer" target="build-deploy"/>
         <ant dir="web/jsfinjection" target="build-deploy"/>
