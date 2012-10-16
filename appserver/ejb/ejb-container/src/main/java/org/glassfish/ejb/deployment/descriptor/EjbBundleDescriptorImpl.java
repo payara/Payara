@@ -43,6 +43,7 @@ package org.glassfish.ejb.deployment.descriptor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -268,7 +269,7 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     */
     @Override
     public Set<EjbDescriptor> getEjbs() {
-    return ejbs;
+    return Collections.unmodifiableSet(ejbs);
     }
     
     /**
@@ -364,7 +365,7 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
 
     public void addEjb(EjbDescriptor ejbDescriptor) {
         ejbDescriptor.setEjbBundleDescriptor(this);
-        getEjbs().add(ejbDescriptor);
+        ejbs.add(ejbDescriptor);
     
     }
     
@@ -374,7 +375,7 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     
     public void removeEjb(EjbDescriptor ejbDescriptor) {
         ejbDescriptor.setEjbBundleDescriptor(null);
-        getEjbs().remove(ejbDescriptor);
+        ejbs.remove(ejbDescriptor);
     }
 
     /**
@@ -382,9 +383,9 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
      */
     protected void replaceEjb(EjbDescriptor oldEjbDescriptor, EjbDescriptor newEjbDescriptor) {
     oldEjbDescriptor.setEjbBundleDescriptor(null);
-    getEjbs().remove(oldEjbDescriptor);
+    ejbs.remove(oldEjbDescriptor);
     newEjbDescriptor.setEjbBundleDescriptor(this);
-    getEjbs().add(newEjbDescriptor);
+    ejbs.add(newEjbDescriptor);
     //  no need to notify listeners in wizard mode ??
     }
 
