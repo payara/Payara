@@ -142,6 +142,10 @@ public class ListFileUser implements AdminCommand, AdminCommandSecurity.Preautho
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return false;                                            
         }
+        /*
+         * The realm might have been defaulted, so capture the actual name.
+         */
+        authRealmName = fileAuthRealm.getName();
         return true;
     }
 

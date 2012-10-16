@@ -155,6 +155,10 @@ public class UpdateFileUser implements AdminCommand, AdminCommandSecurity.Preaut
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return false;                                            
         }
+        /*
+         * The realm might have been defaulted, so capture the actual name.
+         */
+        authRealmName = fileAuthRealm.getName();
         return true;
     }
     
