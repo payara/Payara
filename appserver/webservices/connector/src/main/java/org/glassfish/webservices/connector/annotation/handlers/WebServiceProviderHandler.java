@@ -109,6 +109,17 @@ public class WebServiceProviderHandler extends AbstractHandler {
         AnnotatedElementHandler annCtx = annInfo.getProcessingContext().getHandler();
         AnnotatedElement annElem = annInfo.getAnnotatedElement();
         
+        boolean ejbInWar = ignoreWebserviceAnnotations(annElem, annCtx);
+        //Bug  http://monaco.sfbay/detail.jsf?cr=6956406
+        //When there is an ejb webservice packaged in a war
+        //ignore the annotation processing for WebBundleDescriptor
+        //In Ejb webservice in a war there are 2 bundle descriptors
+        //so we should just allow the processing for the EjbBundleDescriptor
+        //and add webservices to that BundleDescriptor
+        if (ejbInWar) {
+            return HandlerProcessingResultImpl.getDefaultResult(getAnnotationType(), ResultType.PROCESSED);
+        }
+
         // sanity check
         if (!(annElem instanceof Class)) {
             AnnotationProcessorException ape = new AnnotationProcessorException(
@@ -137,24 +148,26 @@ public class WebServiceProviderHandler extends AbstractHandler {
         
         BundleDescriptor bundleDesc = null;
         
-        // let's see the type of web service we are dealing with...
-        if (annElem.getAnnotation(javax.ejb.Stateless.class)!=null) {
-            // this is an ejb !
-            EjbContext ctx = (EjbContext) annCtx;
-            bundleDesc = ctx.getDescriptor().getEjbBundleDescriptor();
-            bundleDesc.setSpecVersion("3.0");
-        } else {
-             if(annCtx instanceof WebComponentContext) {
-                    bundleDesc = ((WebComponentContext)annCtx).getDescriptor().getWebBundleDescriptor();
-                } else if ( !(annCtx instanceof WebBundleContext)) {
+        try {
+            // let's see the type of web service we are dealing with...
+            if ((ejbProvider != null) && ejbProvider.getType("javax.ejb.Stateless") != null && (annCtx instanceof EjbContext)) {
+                // this is an ejb !
+                EjbContext ctx = (EjbContext) annCtx;
+                bundleDesc = ctx.getDescriptor().getEjbBundleDescriptor();
+                bundleDesc.setSpecVersion("3.0");
+            } else {
+                if (annCtx instanceof WebComponentContext) {
+                    bundleDesc = ((WebComponentContext) annCtx).getDescriptor().getWebBundleDescriptor();
+                } else if (!(annCtx instanceof WebBundleContext)) {
                     return getInvalidAnnotatedElementHandlerResult(
                             annInfo.getProcessingContext().getHandler(), annInfo);
                 }
-
-                bundleDesc = ((WebBundleContext)annCtx).getDescriptor();
-
+                bundleDesc = ((WebBundleContext) annCtx).getDescriptor();
                 bundleDesc.setSpecVersion("2.5");
-        }        
+            }
+        } catch (Exception e) {
+            throw new AnnotationProcessorException(rb.getString("webservice.annotation.exception") + e.getMessage());
+        }
 
         // For WSProvider, portComponentName is the fully qualified class name
         String portComponentName = ((Class) annElem).getName();
@@ -198,7 +211,7 @@ public class WebServiceProviderHandler extends AbstractHandler {
             if (svcName.length()!=0) {
                 newWS = wsDesc.getWebServiceByName(svcName);
             } else {
-                newWS = wsDesc.getWebServiceByName(((Class)annElem).getSimpleName()+"Service");
+                newWS = wsDesc.getWebServiceByName(((Class)annElem).getSimpleName());
             }
             if(newWS==null) {
                 newWS = new WebService();
@@ -206,7 +219,7 @@ public class WebServiceProviderHandler extends AbstractHandler {
                 if (svcName.length()!=0) {
                     newWS.setName(svcName);
                 } else {
-                    newWS.setName(((Class)annElem).getSimpleName()+"Service");            
+                    newWS.setName(((Class)annElem).getSimpleName());            
                 }
                 wsDesc.addWebService(newWS);
             }
@@ -283,7 +296,7 @@ public class WebServiceProviderHandler extends AbstractHandler {
                 // if servlet is not known, we should add it now
                 if (webComponent == null) {
                     webComponent = new WebComponentDescriptorImpl();
-                    webComponent.setServlet(true);                
+                    webComponent.setServlet(true);
                     webComponent.setWebComponentImplementation(((Class) annElem).getCanonicalName());
                     webComponent.setName(endpoint.getEndpointName());
                     webComponent.addUrlPattern("/"+newWS.getName());
@@ -296,8 +309,8 @@ public class WebServiceProviderHandler extends AbstractHandler {
                 EjbDescriptor[] ejbDescs = ((EjbBundleDescriptor) bundleDesc).getEjbByClassName(((Class)annElem).getName());
                 if(ejbDescs.length != 1) {
                     throw new AnnotationProcessorException(
-                        "Unable to find matching descriptor for EJB endpoint", 
-                        annInfo);                    
+                        "Unable to find matching descriptor for EJB endpoint",
+                        annInfo);
                 }
                 endpoint.setEjbComponentImpl(ejbDescs[0]);
                 ejbDescs[0].setWebServiceEndpointInterfaceName(endpoint.getServiceEndpointInterface());
@@ -339,5 +352,23 @@ public class WebServiceProviderHandler extends AbstractHandler {
     
     private String format(String key, String ... values){
           return MessageFormat.format(key,values);
+    }
+
+    /**
+     * This is for the ejb webservices in war case Incase there is an@Stateless
+     * and
+     * @WebService and the annotationCtx is a WebBundleContext or
+     * WebComponentContext in that case ignore the annotations so that they do
+     * not get added twice to the bundle descriptors
+     *
+     */
+    private boolean ignoreWebserviceAnnotations(AnnotatedElement annElem, AnnotatedElementHandler annCtx) {
+        javax.ejb.Stateless stateless = annElem.getAnnotation(javax.ejb.Stateless.class);
+        javax.xml.ws.WebServiceProvider webservice = annElem.getAnnotation(javax.xml.ws.WebServiceProvider.class);
+        if ((stateless != null) && (webservice != null)
+                && ((annCtx instanceof WebBundleContext) || (annCtx instanceof WebComponentContext))) {
+            return true;
+        }
+        return false;
     }
 }
