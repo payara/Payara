@@ -61,6 +61,7 @@ import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import javax.inject.Inject;
+import org.glassfish.api.admin.AccessRequired;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
@@ -116,6 +117,7 @@ import org.jvnet.hk2.config.TransactionFailure;
         path="enable-secure-admin", 
         description="enable-secure-admin")
 })
+@AccessRequired(resource="domain/secure-admin", action="enable")
 public class EnableSecureAdminCommand extends SecureAdminCommand {
 
     @Param(optional = true, defaultValue = SecureAdmin.Duck.DEFAULT_ADMIN_ALIAS)

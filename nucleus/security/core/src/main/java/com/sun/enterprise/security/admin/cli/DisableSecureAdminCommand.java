@@ -43,6 +43,7 @@ package com.sun.enterprise.security.admin.cli;
 import com.sun.enterprise.config.serverbeans.Domain;
 import java.util.Iterator;
 import org.glassfish.api.I18n;
+import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
@@ -78,6 +79,7 @@ asadmin -s delete-protocol pu-protocol
         path="disable-secure-admin", 
         description="disable-secure-admin")
 })
+@AccessRequired(resource="domain/secure-admin", action="disable")
 public class DisableSecureAdminCommand extends SecureAdminCommand {
 
     @Override
