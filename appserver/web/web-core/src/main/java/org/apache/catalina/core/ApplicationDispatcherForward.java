@@ -61,7 +61,6 @@ package org.apache.catalina.core;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
-import org.apache.catalina.connector.ResponseFacade;
 import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ResponseUtil;
@@ -72,8 +71,13 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 /**
  * Class responsible for processing the result of a RD.forward() invocation
@@ -97,8 +101,26 @@ import java.util.logging.Logger;
  */
 class ApplicationDispatcherForward {
 
-    private static Logger log = Logger.getLogger(
-        ApplicationDispatcherForward.class.getName());
+    @LogMessagesResourceBundle
+    public static final String SHARED_LOGMESSAGE_RESOURCE =
+            "org.apache.catalina.core.LogMessages";
+
+    @LoggerInfo(subsystem="WEB", description="WEB Core Logger", publish=true)
+    public static final String WEB_CORE_LOGGER = "javax.enterprise.web.core";
+
+    public static final Logger log =
+            Logger.getLogger(WEB_CORE_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo(
+            message = "Exception processing {0}",
+            level = "WARNING")
+    public static final String EXCEPTION_PROCESSING = "AS-WEB-CORE-00001";
+
+    @LogMessageInfo(
+            message = "Exception sending default error page",
+            level = "WARNING")
+    public static final String EXCEPTION_SENDING_DEFAULT_ERROR_PAGE = "AS-WEB-CORE-00002";
+
 
     private static final StringManager sm =
         StringManager.getManager(org.apache.catalina.valves.Constants.Package);
@@ -214,8 +236,8 @@ class ApplicationDispatcherForward {
                 try {
                     serveErrorPage(response, errorPage, statusCode);
                 } catch (Exception e) {
-                    log.log(Level.WARNING,
-                            "Exception processing " + errorPage, e);
+                    String msg = MessageFormat.format(EXCEPTION_PROCESSING, errorPage);
+                    log.log(Level.WARNING, msg, e);
                 }
             }
         }
@@ -252,9 +274,11 @@ class ApplicationDispatcherForward {
                 servletContext.getRequestDispatcher(errorPage.getLocation());
             dispatcher.dispatch(request, response, DispatcherType.ERROR);
         } catch (IllegalStateException ise) {
-            log.log(Level.WARNING, "Exception processing " + errorPage, ise);
+            String msg = MessageFormat.format(EXCEPTION_PROCESSING, errorPage);
+            log.log(Level.WARNING, msg, ise);
         } catch (Throwable t) {
-            log.log(Level.WARNING, "Exception processing " + errorPage, t);
+            String msg = MessageFormat.format(EXCEPTION_PROCESSING, errorPage);
+            log.log(Level.WARNING, msg, t);
         }
     }
 
@@ -385,7 +409,7 @@ class ApplicationDispatcherForward {
             response.setContentType("text/html");
             response.getWriter().write(responseContents);
         } catch (Throwable t) {
-            log.log(Level.WARNING, "Exception sending default error page", t);
+            log.log(Level.WARNING, EXCEPTION_SENDING_DEFAULT_ERROR_PAGE, t);
         }
     }
 
