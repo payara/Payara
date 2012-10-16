@@ -76,8 +76,8 @@ public class TimerScheduleTest {
 
     @Test
     public void testSundays() {
-        Date fromDate = new Date(112, 9, 14, 10, 35);
-        Date timeoutDate = new Date(112, 9, 14, 12, 0);
+        Date fromDate = new Date(112, 9, 16, 10, 35);
+        Date timeoutDate = new Date(112, 9, 21, 12, 0);
         Locale localeDefault = Locale.getDefault();
         Locale[] availableLocales = Locale.getAvailableLocales();
         for (Locale l : availableLocales) {
@@ -86,7 +86,7 @@ public class TimerScheduleTest {
         }
 
         // Test couple of locales explicitly - see GLASSFISH-18804 and GLASSFISH-19154
-        Locale l1 = new Locale("en", "PH");
+        Locale l1 = new Locale("es", "PE");
         Locale.setDefault(l1);
         testSundays(fromDate, timeoutDate, true);
 

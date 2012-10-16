@@ -325,7 +325,7 @@ public class TimerSchedule implements Serializable {
             return isValid;
         }
 
-        Calendar now = new GregorianCalendar();
+        Calendar now = new GregorianCalendar(Locale.ENGLISH);
         if (tz_ != null) {
             now.setTimeZone(tz_);
         }
@@ -350,14 +350,14 @@ public class TimerSchedule implements Serializable {
      */
     public Calendar getNextTimeout() {
 
-        return getNextTimeout(new GregorianCalendar());
+        return getNextTimeout(new GregorianCalendar(Locale.ENGLISH));
     }
 
    /**
      * Returns the Date of the next possible timeout after the specific date.
      */
     public Calendar getNextTimeout(Date date) {
-        Calendar next = new GregorianCalendar();
+        Calendar next = new GregorianCalendar(Locale.ENGLISH);
         next.setTime(date);
 
         return getNextTimeout(next);
