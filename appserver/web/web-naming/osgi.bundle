@@ -45,3 +45,5 @@
                         org.apache.naming.resources; \
                         org.apache.naming.resources.jndi; version=${project.osgi.version}
 
+Bundle-Activator: org.apache.naming.resources.DirContextURLStreamHandlerService
+

@@ -222,12 +222,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <!-- Needed to register URLStreamHandler -->
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>web-gui-plugin-common</artifactId>
             <version>${project.version}</version>

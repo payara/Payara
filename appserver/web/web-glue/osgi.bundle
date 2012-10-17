@@ -81,8 +81,6 @@ Import-Package: \
                         net.sf.cglib.core, \
                         *
 
-Bundle-Activator: org.glassfish.web.DirContextURLStreamHandlerService
-
 # This is required because WebContainer requires JavaEEUtils service which is provided by ejb-container.
 # Having this forces resolver to also pull in ejb-container.
 # web-ha is required because web container might require this when ha is enabled.

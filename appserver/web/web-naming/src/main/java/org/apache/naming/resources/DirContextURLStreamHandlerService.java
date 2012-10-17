@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,9 +38,13 @@
  * holder.
  */
 
-package org.glassfish.web;
+package org.apache.naming.resources;
 
 import org.apache.naming.resources.DirContextURLStreamHandler;
+import org.glassfish.api.Startup;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.url.AbstractURLStreamHandlerService;
@@ -56,11 +60,18 @@ import java.util.Properties;
  * This class is responsible for adding {@code DirContextURLStreamHandler}
  * to OSGi service registry.
  *
+ * It is both an activator as well as marked as a Startup service.
+ *
+ * The Startup service ensures that this bundle gets activated during server startup and the activator ensures that
+ * we register a jndi protocol handler.
+ *
  * @author Sanjeeb.Sahoo@Sun.COM
  */
+@Service
+@RunLevel(StartupRunLevel.VAL)
 public class DirContextURLStreamHandlerService
         extends AbstractURLStreamHandlerService
-        implements BundleActivator {
+        implements URLStreamHandlerService, BundleActivator {
 
     // We have to extend DirContextURLStreamHandler so that we
     // can make openConnection and toExternalForm available as
