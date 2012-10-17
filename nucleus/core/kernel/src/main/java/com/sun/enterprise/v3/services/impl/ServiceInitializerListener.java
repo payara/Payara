@@ -49,7 +49,7 @@ import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransportBuilder;
 import org.glassfish.grizzly.threadpool.GrizzlyExecutorService;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * This class extends Grizzly's GrizzlyServiceListener class to customize it for GlassFish and enable a single listener
@@ -82,7 +82,7 @@ public class ServiceInitializerListener extends org.glassfish.grizzly.config.Gen
 
 
     @Override
-    protected void configureProtocol(final Habitat habitat,
+    protected void configureProtocol(final ServiceLocator habitat,
             final NetworkListener networkListener,
             final Protocol protocol, final FilterChainBuilder filterChainBuilder) {
         filterChainBuilder.add(new ServiceInitializerFilter(this,
@@ -90,7 +90,7 @@ public class ServiceInitializerListener extends org.glassfish.grizzly.config.Gen
     }
 
     @Override
-    protected void configureThreadPool(final Habitat habitat,
+    protected void configureThreadPool(final ServiceLocator habitat,
             final NetworkListener networkListener,
             final ThreadPool threadPool) {
         transport.setWorkerThreadPool(GrizzlyExecutorService.createInstance(

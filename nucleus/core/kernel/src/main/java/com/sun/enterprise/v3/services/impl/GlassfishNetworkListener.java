@@ -73,7 +73,6 @@ import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.internal.grizzly.V3Mapper;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.types.Property;
 
 public class GlassfishNetworkListener extends GenericGrizzlyListener {
@@ -151,7 +150,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
     }
 
     @Override
-    protected void configureHttpProtocol(final Habitat habitat,
+    protected void configureHttpProtocol(final ServiceLocator habitat,
             final NetworkListener networkListener,
             final Http http, final FilterChainBuilder filterChainBuilder) {
 

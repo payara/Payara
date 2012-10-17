@@ -53,9 +53,9 @@ import org.glassfish.grizzly.config.dom.Http;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.http.ajp.AjpAddOn;
 import org.glassfish.grizzly.http.server.AddOn;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * Ajp service.
@@ -70,7 +70,7 @@ public class AjpAddOnProvider extends AjpAddOn implements ConfigAwareElement<Htt
             AjpAddOnProvider.class, LogDomains.WEB_LOGGER);
 
     @Override
-    public void configure(final Habitat habitat,
+    public void configure(final ServiceLocator habitat,
             final NetworkListener networkListener, final Http http) {
 
         final boolean jkSupportEnabled = http.getJkEnabled() != null
@@ -132,7 +132,7 @@ public class AjpAddOnProvider extends AjpAddOn implements ConfigAwareElement<Htt
                 if (is != null) {
                     try {
                         is.close();
-                    } catch (IOException ioe) {
+                    } catch (IOException ignored) {
                     }
                 }
             }
