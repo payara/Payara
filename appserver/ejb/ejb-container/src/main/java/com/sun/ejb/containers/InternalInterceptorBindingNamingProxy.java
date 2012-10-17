@@ -42,10 +42,10 @@ package com.sun.ejb.containers;
 
 import org.glassfish.api.naming.NamespacePrefixes;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
 import javax.naming.NamingException;
 
@@ -61,7 +61,7 @@ public class InternalInterceptorBindingNamingProxy
         implements NamedNamingObjectProxy {
 
     @Inject
-    private Habitat services;
+    private ServiceLocator services;
 
     static final String INTERCEPTOR_BINDING
             = "java:org.glassfish.ejb.container.interceptor_binding_spi";

@@ -161,8 +161,8 @@ import org.glassfish.enterprise.iiop.api.ProtocolManager;
 import org.glassfish.enterprise.iiop.api.RemoteReferenceFactory;
 import org.glassfish.enterprise.iiop.spi.EjbContainerFacade;
 import org.glassfish.flashlight.provider.ProbeProviderFactory;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * This class implements part of the com.sun.ejb.Container interface.
@@ -1605,7 +1605,7 @@ public abstract class BaseContainer
 
     protected EJBContextImpl createEjbInstanceAndContext() throws Exception {
 
-        Habitat services = ejbContainerUtilImpl.getServices();
+        ServiceLocator services = ejbContainerUtilImpl.getServices();
 
         JCDIService jcdiService = services.getService(JCDIService.class);
 
@@ -1657,7 +1657,7 @@ public abstract class BaseContainer
 
     protected void injectEjbInstance(EJBContextImpl context) throws Exception {
         
-        Habitat services = ejbContainerUtilImpl.getServices();
+        ServiceLocator services = ejbContainerUtilImpl.getServices();
 
         JCDIService jcdiService = services.getService(JCDIService.class);
 

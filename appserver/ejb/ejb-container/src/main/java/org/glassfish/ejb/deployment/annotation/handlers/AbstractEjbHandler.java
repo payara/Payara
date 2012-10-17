@@ -69,11 +69,9 @@ import org.glassfish.apf.context.AnnotationContext;
 import org.glassfish.ejb.deployment.descriptor.DummyEjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.deployment.AnnotationTypesProvider;
-import org.jvnet.hk2.component.Habitat;
-
-
 
 /**
  * This is an abstract class for EJB annotation handler.
@@ -95,7 +93,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
     private AnnotationTypesProvider provider = null;
             
     public AbstractEjbHandler() {
-        Habitat h = Globals.getDefaultHabitat();
+        ServiceLocator h = Globals.getDefaultHabitat();
         if( h != null ) {
             provider = h.getService(AnnotationTypesProvider.class, "EJB");
         }

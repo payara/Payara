@@ -82,9 +82,9 @@ import org.glassfish.ha.store.api.BackingStoreFactory;
 import org.glassfish.ha.store.util.SimpleMetadata;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * A builder for StatefulSessionContainer. Takes care of
@@ -116,7 +116,7 @@ public class StatefulContainerFactory extends BaseContainerFactory
     private SFSBContainerInitialization containerInitialization;
 
     @Inject
-    private Habitat services;
+    private ServiceLocator services;
 
     @Inject
     private CacheProperties cacheProps;

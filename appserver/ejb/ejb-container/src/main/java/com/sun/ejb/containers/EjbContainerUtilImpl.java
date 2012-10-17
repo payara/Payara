@@ -70,10 +70,10 @@ import org.glassfish.server.ServerEnvironmentImpl;
 import org.glassfish.flashlight.provider.ProbeProviderFactory;
 
 import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -114,7 +114,7 @@ public class EjbContainerUtilImpl
     private ThreadPoolExecutor defaultThreadPoolExecutor;
     
     @Inject
-    private Habitat services;
+    private ServiceLocator services;
 
     @Inject
     private ServerContext serverContext;
@@ -233,7 +233,7 @@ public class EjbContainerUtilImpl
         return orbHelper;
     }
 
-    public Habitat getServices() {
+    public ServiceLocator getServices() {
         return services;
     }
 

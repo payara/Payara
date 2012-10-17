@@ -42,20 +42,20 @@ package com.sun.ejb.containers;
 
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import org.glassfish.deployment.common.ModuleDescriptor;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import com.sun.enterprise.deployment.*;
 import org.glassfish.api.invocation.ComponentInvocation;
 import java.util.Collection;
 
 import org.glassfish.api.invocation.InvocationManager;
 import com.sun.enterprise.container.common.spi.ManagedBeanManager;
-import org.jvnet.hk2.component.Habitat;
-
 
 public class InternalInterceptorBindingImpl  {
 
-    private Habitat services;
+    private ServiceLocator services;
 
-    public InternalInterceptorBindingImpl(Habitat services) {
+    public InternalInterceptorBindingImpl(ServiceLocator services) {
         this.services = services;
     }
 
