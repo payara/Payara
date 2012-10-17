@@ -194,7 +194,7 @@ public class AsadminMain {
 
     public static void main(String[] args) {
         //System.exit(new AsadminMain().doMain(args));
-        long startTime = System.currentTimeMillis();
+        //long startTime = System.currentTimeMillis();
         AsadminMain asadminMain = new AsadminMain();
         int code = asadminMain.doMain(args);
         //asadminMain.logger.log(Level.INFO, "Overal duration: {0} ms", (System.currentTimeMillis() - startTime));
