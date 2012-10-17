@@ -47,13 +47,18 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.StringTokenizer;
 
 /**
  * @author Masoud Kalali
  */
-public abstract class AbstractConfigModularityCommand {
+@Service
+public class AbstractConfigModularityCommand {
+    @Inject
+    private ConfigModularityUtils configModularityUtils;
 
     protected String replaceExpressionsWithValues(String location, ServiceLocator serviceLocator) {
         StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
@@ -61,7 +66,7 @@ public abstract class AbstractConfigModularityCommand {
             String level = tokenizer.nextToken();
             if (level.contains("[$")) {
                 String expr = location.substring(location.indexOf("$"), location.indexOf("]"));
-                String value = ConfigModularityUtils.resolveExpression(expr, serviceLocator);
+                String value = configModularityUtils.resolveExpression(expr);
                 location = location.replace(expr, value);
             }
         }

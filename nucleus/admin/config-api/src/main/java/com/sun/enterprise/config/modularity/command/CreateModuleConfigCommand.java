@@ -89,6 +89,9 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
     private static final String DEFAULT_FORMAT = "";
 
     @Inject
+    private ConfigModularityUtils configModularityUtils;
+
+    @Inject
     private Domain domain;
 
     @Inject
@@ -188,8 +191,8 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
                 return;
             }
         } else if (serviceName != null) {
-            String className = ConfigModularityUtils.convertConfigElementNameToClassName(serviceName);
-            Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, serviceLocator);
+            String className = configModularityUtils.convertConfigElementNameToClassName(serviceName);
+            Class configBeanType = configModularityUtils.getClassFor(serviceName);
             if (configBeanType == null) {
                 String msg = localStrings.getLocalString("create.module.config.not.such.a.service.found",
                         DEFAULT_FORMAT, className, serviceName);
@@ -239,11 +242,11 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
     }
 
     private String getDefaultConfigFor(Class configBeanType) throws Exception {
-        if (!ConfigModularityUtils.hasCustomConfig(configBeanType)) {
-            return ConfigModularityUtils.serializeConfigBeanByType(configBeanType, serviceLocator);
+        if (!configModularityUtils.hasCustomConfig(configBeanType)) {
+            return configModularityUtils.serializeConfigBeanByType(configBeanType);
         } else {
 
-            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType, ConfigModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
+            List<ConfigBeanDefaultValue> defaults = configModularityUtils.getDefaultConfigurations(configBeanType, configModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
             StringBuilder builder = new StringBuilder();
             for (ConfigBeanDefaultValue value : defaults) {
                 builder.append(localStrings.getLocalString("at.location",

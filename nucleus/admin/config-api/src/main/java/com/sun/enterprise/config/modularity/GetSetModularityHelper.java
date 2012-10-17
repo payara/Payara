@@ -66,6 +66,9 @@ public class GetSetModularityHelper {
     @Inject
     private ServiceLocator serviceLocator;
 
+    @Inject
+    private ConfigModularityUtils configModularityUtils;
+
     /**
      * checks and see if a class has an attribute with he specified name or not.
      *
@@ -108,7 +111,7 @@ public class GetSetModularityHelper {
     }
 
     public boolean isConfigElementPresent(String serviceName, String target) {
-        Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, serviceLocator);
+        Class configBeanType = configModularityUtils.getClassFor(serviceName);
         Domain domain = serviceLocator.getService(Domain.class);
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
             Config c = domain.getConfigNamed(target);
@@ -124,7 +127,7 @@ public class GetSetModularityHelper {
     }
 
     public void addBeanToDomainXml(String serviceName, String target) {
-        Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, serviceLocator);
+        Class configBeanType = configModularityUtils.getClassFor(serviceName);
         Domain domain = serviceLocator.getService(Domain.class);
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
             Config c = domain.getConfigNamed(target);

@@ -44,13 +44,13 @@ package com.sun.enterprise.config.modularity.customization;
  * @author Masoud Kalali
  */
 
-import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * Carries the default configuration values for a ConfigBeanProxy
@@ -114,7 +114,7 @@ public class ConfigBeanDefaultValue {
     public <U extends ConfigBeanProxy> ConfigBeanDefaultValue(String location, String configBeanClassName, InputStream xmlSnippetFileInputStream, boolean replaceCurrentIfExists, List<ConfigCustomizationToken> customizationTokens) {
         this.location = location;
         this.configBeanClassName = configBeanClassName;
-        this.xmlConfiguration = ConfigModularityUtils.streamToString(xmlSnippetFileInputStream, "utf-8");
+        this.xmlConfiguration = streamToString(xmlSnippetFileInputStream, "utf-8");
         this.replaceCurrentIfExists = replaceCurrentIfExists;
         this.customizationTokens = customizationTokens;
     }
@@ -150,4 +150,14 @@ public class ConfigBeanDefaultValue {
     public ConfigBeanDefaultValue() {
 
     }
+
+
+    /**
+     * @param ins the InputStream to read and turn it into String
+     * @return String equivalent of the stream
+     */
+    private String streamToString(InputStream ins, String encoding) {
+        return new Scanner(ins, encoding).useDelimiter("\\A").next();
+    }
+
 }

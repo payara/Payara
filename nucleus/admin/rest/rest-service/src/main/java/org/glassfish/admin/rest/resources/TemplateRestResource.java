@@ -320,7 +320,7 @@ public class TemplateRestResource {
             // the Dom tree. Once that's done, we can return that node and proceed as normal
             String location = buildPath(parent) + "/" + tagName;
             if (location.startsWith("domain/configs")) {
-                ConfigBeanProxy cbp = ConfigModularityUtils.getOwningObject(location, habitat);
+                ConfigBeanProxy cbp = habitat.<ConfigModularityUtils>getService(ConfigModularityUtils.class).getOwningObject(location);
                 if (cbp != null) {
                     entity = Dom.unwrap(cbp);
                     childModel = entity.model;

@@ -75,8 +75,11 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
     @Inject
     private ConfigurationParser configurationParser;
 
+    @Inject
+    private ConfigModularityUtils configModularityUtils;
+
     public <U extends ConfigBeanProxy> U createConfigBeanForType(Class<U> configExtensionType, C extensionOwner) throws TransactionFailure {
-        if (ConfigModularityUtils.hasCustomConfig(configExtensionType)) {
+        if (configModularityUtils.hasCustomConfig(configExtensionType)) {
             addConfigBeanFor(configExtensionType);
         } else {
             if (configExtensionType.getAnnotation(HasNoDefaultConfiguration.class) != null) {
@@ -95,13 +98,13 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
                     }
 
                     unwrappedChild.addDefaultChildren();
-                    ConfigModularityUtils.getExtensions(parent).add(child);
+                    configModularityUtils.getExtensions(parent).add(child);
                     return child;
                 }
             }, extensionOwner);
         }
 
-        List<U> extensions = ConfigModularityUtils.getExtensions(extensionOwner);
+        List<U> extensions = configModularityUtils.getExtensions(extensionOwner);
         for (ConfigBeanProxy extension : extensions) {
             try {
                 U configBeanInstance = configExtensionType.cast(extension);
@@ -122,7 +125,7 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
     protected <U extends ConfigBeanProxy> void addConfigBeanFor(Class<U> extensionType) {
         StartupContext context = serviceLocator.getService(StartupContext.class);
         List<ConfigBeanDefaultValue> configBeanDefaultValueList =
-                ConfigModularityUtils.getDefaultConfigurations(extensionType, ConfigModularityUtils.getRuntimeTypePrefix(context));
+                configModularityUtils.getDefaultConfigurations(extensionType, configModularityUtils.getRuntimeTypePrefix(context));
         configurationParser.parseAndSetConfigBean(configBeanDefaultValueList);
     }
 

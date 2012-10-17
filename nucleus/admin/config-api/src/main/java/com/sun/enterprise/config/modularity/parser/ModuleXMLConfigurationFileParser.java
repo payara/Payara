@@ -141,7 +141,9 @@ public class ModuleXMLConfigurationFileParser {
 
                     }//attributes
                     event = eventReader.nextEvent();
-                    while(!event.isStartElement() && !event.isEndElement()){event = eventReader.nextEvent();}
+                    while (!event.isStartElement() && !event.isEndElement()) {
+                        event = eventReader.nextEvent();
+                    }
                     if (event.isStartElement()) {
                         startElement = event.asStartElement();
                         // If we have a item element we create a new item
@@ -149,8 +151,7 @@ public class ModuleXMLConfigurationFileParser {
                             type = ConfigCustomizationToken.CustomizationType.FILE;
                             tokenTypeDetails = new FileTypeDetails(Boolean.parseBoolean(startElement.getAttributeByName(QName.valueOf(SHOULD_EXIST)).getValue()));
 
-                        }
-                        else if (startElement.getName().getLocalPart().equalsIgnoreCase(PORT)) {
+                        } else if (startElement.getName().getLocalPart().equalsIgnoreCase(PORT)) {
                             type = ConfigCustomizationToken.CustomizationType.PORT;
                             tokenTypeDetails = new PortTypeDetails(startElement.getAttributeByName(QName.valueOf(BASE_OFFSET)).getValue());
                         }

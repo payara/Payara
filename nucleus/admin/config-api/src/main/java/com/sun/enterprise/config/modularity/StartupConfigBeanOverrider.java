@@ -76,6 +76,9 @@ public class StartupConfigBeanOverrider implements PostConstruct {
     @Inject
     private ConfigurationParser configurationParser;
 
+    @Inject
+    private ConfigModularityUtils configModularityUtils;
+
     private static final Logger LOG = Logger.getLogger(StartupConfigBeanOverrider.class.getName());
 
     @Override
@@ -117,7 +120,7 @@ public class StartupConfigBeanOverrider implements PostConstruct {
     private void applyConfigIfNeeded(Class<?> clz) {
         try {
             List<ConfigBeanDefaultValue> configBeanDefaultValueList =
-                    ConfigModularityUtils.getDefaultConfigurations(clz, ConfigModularityUtils.getRuntimeTypePrefix(startupContext));
+                    configModularityUtils.getDefaultConfigurations(clz, configModularityUtils.getRuntimeTypePrefix(startupContext));
             configurationParser.parseAndSetConfigBean(configBeanDefaultValueList);
         } catch (Throwable tr) {
             //Do nothing for now.

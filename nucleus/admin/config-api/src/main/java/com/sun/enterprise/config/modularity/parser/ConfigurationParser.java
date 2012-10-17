@@ -78,6 +78,9 @@ public class ConfigurationParser<C extends ConfigLoader> {
     @Inject
     private ServiceLocator serviceLocator;
 
+    @Inject
+    private ConfigModularityUtils configModularityUtils;
+
     /**
      * @param <T> the ConfigBeanProxy type we are looking for
      */
@@ -95,13 +98,13 @@ public class ConfigurationParser<C extends ConfigLoader> {
         //TODO requires rework to put all the changes that a service may introduce into one transaction
         //the solution is to put the loop into the apply method...  But it would be some fine amount of work
         for (final ConfigBeanDefaultValue configBeanDefaultValue : values) {
-            final ConfigBeanProxy parent = ConfigModularityUtils.getOwningObject(configBeanDefaultValue.getLocation(), serviceLocator);
+            final ConfigBeanProxy parent = configModularityUtils.getOwningObject(configBeanDefaultValue.getLocation());
             ConfigurationPopulator populator = null;
             if (replaceSystemProperties)
                 try {
                     populator = new ConfigurationPopulator(
-                            ConfigModularityUtils.replacePropertiesWithCurrentValue(
-                                    configBeanDefaultValue.getXmlConfiguration(), configBeanDefaultValue, serviceLocator)
+                            configModularityUtils.replacePropertiesWithCurrentValue(
+                                    configBeanDefaultValue.getXmlConfiguration(), configBeanDefaultValue)
                             , doc, parent);
                 } catch (Exception e) {
                     LocalStringManager localStrings =
@@ -116,7 +119,7 @@ public class ConfigurationParser<C extends ConfigLoader> {
             }
             populator.run(configParser);
             try {
-                Class configBeanClass = ConfigModularityUtils.getClassForFullName(configBeanDefaultValue.getConfigBeanClassName(), serviceLocator);
+                Class configBeanClass = configModularityUtils.getClassForFullName(configBeanDefaultValue.getConfigBeanClassName());
                 final ConfigBeanProxy pr = doc.getRoot().createProxy(configBeanClass);
                 ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
                     public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
@@ -125,7 +128,7 @@ public class ConfigurationParser<C extends ConfigLoader> {
                             //Do not write default snippets to domain.xml
                             doc.getRoot().skipFromXml();
                         }
-                        ConfigModularityUtils.setConfigBean(pr, configBeanDefaultValue, serviceLocator, param);
+                        configModularityUtils.setConfigBean(pr, configBeanDefaultValue, param);
                         return param;
                     }
                 }, parent);

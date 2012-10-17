@@ -69,12 +69,14 @@ public class ExtensionPatternInvocationImpl implements ConfigExtensionHandler {
     @Inject
     private ModuleConfigurationLoader moduleConfigurationLoader;
 
+    @Inject
+    private ConfigModularityUtils configModularityUtils;
 
     @Override
     public ConfigBeanProxy handleExtension(Object owner, Class ownerType, Object[] params) {
 
         ConfigBeanProxy configExtension = null;
-        List<ConfigBeanProxy> extensions = ConfigModularityUtils.getExtensions(((ConfigBean) owner).createProxy(ownerType));
+        List<ConfigBeanProxy> extensions = configModularityUtils.getExtensions(((ConfigBean) owner).createProxy(ownerType));
         for (ConfigBeanProxy extension : extensions) {
             try {
                 configExtension = (ConfigBeanProxy) ((Class) params[0]).cast(extension);

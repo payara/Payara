@@ -95,6 +95,9 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
     private Domain domain;
 
     @Inject
+    private ConfigModularityUtils configModularityUtils;
+
+    @Inject
     private
     ServiceLocator serviceLocator;
 
@@ -132,8 +135,8 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
             }
         }
 
-        String className = ConfigModularityUtils.convertConfigElementNameToClassName(serviceName);
-        Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, serviceLocator);
+        String className = configModularityUtils.convertConfigElementNameToClassName(serviceName);
+        Class configBeanType = configModularityUtils.getClassFor(serviceName);
         if (configBeanType == null) {
             String msg = localStrings.getLocalString("get.active.config.not.such.a.service.found",
                     DEFAULT_FORMAT, className, serviceName);
@@ -159,23 +162,23 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
 
     private String getActiveConfigFor(Class configBeanType) throws InvocationTargetException, IllegalAccessException {
 
-        if (ConfigModularityUtils.hasCustomConfig(configBeanType)) {
-            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType, ConfigModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
+        if (configModularityUtils.hasCustomConfig(configBeanType)) {
+            List<ConfigBeanDefaultValue> defaults = configModularityUtils.getDefaultConfigurations(configBeanType, configModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
             return getCompleteConfiguration(defaults);
         }
 
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
             if (config.checkIfExtensionExists(configBeanType)) {
-                return ConfigModularityUtils.serializeConfigBean(config.getExtensionByType(configBeanType));
+                return configModularityUtils.serializeConfigBean(config.getExtensionByType(configBeanType));
             } else {
-                return ConfigModularityUtils.serializeConfigBeanByType(configBeanType, serviceLocator);
+                return configModularityUtils.serializeConfigBeanByType(configBeanType);
             }
 
         } else if (configBeanType.isAssignableFrom(DomainExtension.class)) {
             if (domain.checkIfExtensionExists(configBeanType)) {
-                return ConfigModularityUtils.serializeConfigBean(domain.getExtensionByType(configBeanType));
+                return configModularityUtils.serializeConfigBean(domain.getExtensionByType(configBeanType));
             }
-            return ConfigModularityUtils.serializeConfigBeanByType(configBeanType, serviceLocator);
+            return configModularityUtils.serializeConfigBeanByType(configBeanType);
         }
         return null;
     }
@@ -187,8 +190,8 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
                     "At Location:"));
             builder.append(replaceExpressionsWithValues(value.getLocation(), serviceLocator));
             builder.append(System.getProperty("line.separator"));
-            String substituted = ConfigModularityUtils.replacePropertiesWithCurrentValue(
-                    getDependentConfigElement(value), value, serviceLocator);
+            String substituted = configModularityUtils.replacePropertiesWithCurrentValue(
+                    getDependentConfigElement(value), value);
             builder.append(substituted);
             builder.append(System.getProperty("line.separator"));
         }
@@ -198,9 +201,9 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
     }
 
     private String getDependentConfigElement(ConfigBeanDefaultValue defaultValue) throws InvocationTargetException, IllegalAccessException {
-        ConfigBeanProxy configBean = ConfigModularityUtils.getCurrentConfigBeanForDefaultValue(defaultValue, serviceLocator);
+        ConfigBeanProxy configBean = configModularityUtils.getCurrentConfigBeanForDefaultValue(defaultValue);
         if (configBean != null) {
-            return ConfigModularityUtils.serializeConfigBean(configBean);
+            return configModularityUtils.serializeConfigBean(configBean);
         } else {
             return defaultValue.getXmlConfiguration();
         }

@@ -59,9 +59,11 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.config.support.GlassFishConfigBean;
+import org.glassfish.config.support.Singleton;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigInjector;
@@ -75,6 +77,7 @@ import org.jvnet.hk2.config.IndentingXMLStreamWriter;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import javax.inject.Inject;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -83,7 +86,6 @@ import java.beans.PropertyVetoException;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -95,7 +97,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -105,12 +106,19 @@ import java.util.logging.Logger;
  *
  * @author Masoud Kalali
  */
+@Service
+@Singleton
 public final class ConfigModularityUtils {
     private static final Logger LOG = Logger.getLogger(ConfigModularityUtils.class.getName());
 
-    private static <U extends ConfigBeanProxy> URL getConfigurationFileUrl(Class<U> configBeanClass, String baseFileName, String runtimeType) {
+    @Inject
+    private ServiceLocator serviceLocator;
+    @Inject
+    private StartupContext context;
+
+    public <U extends ConfigBeanProxy> URL getConfigurationFileUrl(Class<U> configBeanClass, String baseFileName, String runtimeType) {
         //TODO can be optimized a little by checking the default file...
-        String fileName = runtimeType +"-"+ baseFileName;
+        String fileName = runtimeType + "-" + baseFileName;
         URL fileUrl = configBeanClass.getClassLoader().getResource("META-INF/configuration/" + fileName);
         if (fileUrl == null) {
             fileUrl = configBeanClass.getClassLoader().getResource("META-INF/configuration/" + baseFileName);
@@ -124,7 +132,7 @@ public final class ConfigModularityUtils {
      * @param configBeanClass the config bean type we want to check for its configuration snippet
      * @return A url to the file or null of not exists
      */
-    public static List<ConfigBeanDefaultValue> getDefaultConfigurations(Class configBeanClass, String runtimeType) {
+    public List<ConfigBeanDefaultValue> getDefaultConfigurations(Class configBeanClass, String runtimeType) {
 
         //Determine if it is DAS or instance
         CustomConfiguration c = (CustomConfiguration) configBeanClass.getAnnotation(CustomConfiguration.class);
@@ -133,7 +141,7 @@ public final class ConfigModularityUtils {
             Method m = getGetDefaultValuesMethod(configBeanClass);
             if (m != null) {
                 try {
-                    defaults = (List<ConfigBeanDefaultValue>) m.invoke(null,runtimeType);
+                    defaults = (List<ConfigBeanDefaultValue>) m.invoke(null, runtimeType);
                 } catch (Exception e) {
                     LOG.log(Level.INFO, "cannot get default configuration for: " + configBeanClass.getName(), e);
                 }
@@ -155,7 +163,7 @@ public final class ConfigModularityUtils {
         return defaults;
     }
 
-    public static boolean hasCustomConfig(Class configBeanClass) {
+    public boolean hasCustomConfig(Class configBeanClass) {
         return configBeanClass.getAnnotation(CustomConfiguration.class) != null;
     }
 
@@ -166,7 +174,7 @@ public final class ConfigModularityUtils {
      * @param typeToSet The type we want to find a matching collection fo
      * @return The Method that
      */
-    public static Method findSuitableCollectionGetter(Class owner, Class typeToSet) {
+    public Method findSuitableCollectionGetter(Class owner, Class typeToSet) {
         Method[] methods = owner.getMethods();
         for (Method m : methods) {
             if (m.getName().startsWith("get")) {
@@ -189,7 +197,7 @@ public final class ConfigModularityUtils {
         return findDeeperSuitableCollectionGetter(owner, typeToSet);
     }
 
-    private static Method findDeeperSuitableCollectionGetter(Class owner, Class typeToSet) {
+    public Method findDeeperSuitableCollectionGetter(Class owner, Class typeToSet) {
         Class[] ifs = typeToSet.getInterfaces();
         Method[] methods = owner.getMethods();
         for (Method m : methods) {
@@ -214,7 +222,7 @@ public final class ConfigModularityUtils {
         return null;
     }
 
-    private static boolean checkInterfaces(Class[] ifs, Type actualGenericParameter) {
+    public boolean checkInterfaces(Class[] ifs, Type actualGenericParameter) {
         for (Class clz : ifs) {
             if (clz.getSimpleName().equals("ConfigBeanProxy") || clz.getSimpleName().equals("Injectable")
                     || clz.getSimpleName().equals("PropertyBag")) {
@@ -227,12 +235,12 @@ public final class ConfigModularityUtils {
         return false;
     }
 
-    public static Class getOwningClassForLocation(String location, ServiceLocator serviceLocator) {
+    public Class getOwningClassForLocation(String location) {
         StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
         if (!tokenizer.hasMoreElements()) return null;
         if (!tokenizer.nextToken().equalsIgnoreCase("domain")) return null;
         String level = "domain";
-        if (location.equalsIgnoreCase("domain/configs")) return getClassFor("domain", serviceLocator);
+        if (location.equalsIgnoreCase("domain/configs")) return getClassFor("domain");
         //It is a named config so we shall just return the config class
         if ((tokenizer.countTokens() == 2) && location.startsWith("domain/configs")) {
             return Config.class;
@@ -240,11 +248,11 @@ public final class ConfigModularityUtils {
         while (tokenizer.hasMoreElements()) {
             level = tokenizer.nextToken();
         }
-        return getClassFor(level, serviceLocator);
+        return getClassFor(level);
     }
 
 
-    public static ConfigBeanProxy getOwningObject(String location, ServiceLocator serviceLocator) {
+    public ConfigBeanProxy getOwningObject(String location) {
         if (!location.startsWith("domain/configs")) {
             if (!location.startsWith("domain")) {
                 //Sorry only know domain and below :D
@@ -265,7 +273,7 @@ public final class ConfigModularityUtils {
             while (tokenizer.hasMoreTokens()) {
                 try {
                     childElement = tokenizer.nextToken();
-                    parent = getOwner(parent, parentElement, childElement, serviceLocator);
+                    parent = getOwner(parent, parentElement, childElement);
                     parentElement = childElement;
                 } catch (Exception e) {
                     LOG.log(Level.INFO, "cannot get parent config bean for: " + childElement, e);
@@ -273,7 +281,7 @@ public final class ConfigModularityUtils {
             }
             return parent;
         } else {
-            Class typeToFindGetter = getOwningClassForLocation(location, serviceLocator);
+            Class typeToFindGetter = getOwningClassForLocation(location);
             if (typeToFindGetter == null) {
                 return null;
             }
@@ -283,7 +291,7 @@ public final class ConfigModularityUtils {
             //something directly inside the config itself
             if (tokenizer.countTokens() == 3) {
                 String expression = location.substring(location.lastIndexOf("[") + 1, location.length() - 1);
-                String configName = resolveExpression(expression, serviceLocator);
+                String configName = resolveExpression(expression);
                 return serviceLocator.<Domain>getService(Domain.class).getConfigNamed(configName);
             }
 
@@ -291,7 +299,7 @@ public final class ConfigModularityUtils {
             tokenizer = new StringTokenizer(location, "/", false);
             String curLevel = tokenizer.nextToken();
             String expression = curLevel.substring(curLevel.lastIndexOf("[") + 1, curLevel.length() - 1);
-            String configName = resolveExpression(expression, serviceLocator);
+            String configName = resolveExpression(expression);
             ConfigBeanProxy parent = serviceLocator.<Domain>getService(Domain.class).getConfigNamed(configName);
 
             String childElement;
@@ -299,7 +307,7 @@ public final class ConfigModularityUtils {
             while (tokenizer.hasMoreTokens()) {
                 try {
                     childElement = tokenizer.nextToken();
-                    parent = getOwner(parent, parentElement, childElement, serviceLocator);
+                    parent = getOwner(parent, parentElement, childElement);
                     parentElement = childElement;
                 } catch (Exception e) {
                     LOG.log(Level.INFO, "cannot get parent config bean for: " + configName, e);
@@ -309,20 +317,19 @@ public final class ConfigModularityUtils {
         }
     }
 
-    private static ConfigBeanProxy getOwner(ConfigBeanProxy parent, String parentElement, String childElement,
-                                            ServiceLocator serviceLocator) throws InvocationTargetException, IllegalAccessException {
+    public ConfigBeanProxy getOwner(ConfigBeanProxy parent, String parentElement, String childElement) throws InvocationTargetException, IllegalAccessException {
         if (childElement.endsWith("]")) {
             String componentName;
             String elementName;
             elementName = childElement.substring(childElement.lastIndexOf("/") + 1, childElement.indexOf("["));
             componentName = childElement.substring(childElement.lastIndexOf("[") + 1, childElement.indexOf("]"));
-            Class childClass = getClassFor(elementName, serviceLocator);
-            Class parentClass = getClassFor(parentElement, serviceLocator);
-            Method m = ConfigModularityUtils.findSuitableCollectionGetter(parentClass, childClass);
+            Class childClass = getClassFor(elementName);
+            Class parentClass = getClassFor(parentElement);
+            Method m = findSuitableCollectionGetter(parentClass, childClass);
             if (m != null) {
                 try {
                     Collection col = (Collection) m.invoke(parent);
-                    componentName = resolveExpression(componentName, serviceLocator);
+                    componentName = resolveExpression(componentName);
                     return getNamedConfigBeanFromCollection(col, componentName, childClass);
                 } catch (Exception e) {
                     LOG.log(Level.INFO, "The provided path is not valid: " + childElement + " resolved to component name: " + componentName, e);
@@ -331,7 +338,7 @@ public final class ConfigModularityUtils {
             }
             return null;
         } else {
-            Class clz = getClassFor(childElement, serviceLocator);
+            Class clz = getClassFor(childElement);
             Method m = getMatchingGetterMethod(parent.getClass(), clz);
             if (m != null) {
                 return (ConfigBeanProxy) m.invoke(parent);
@@ -350,7 +357,7 @@ public final class ConfigModularityUtils {
         }
     }
 
-    public static <U extends ConfigBeanProxy> List<U> getExtensions(ConfigBeanProxy parent) {
+    public <U extends ConfigBeanProxy> List<U> getExtensions(ConfigBeanProxy parent) {
 
         Method m = null;
         try {
@@ -369,10 +376,10 @@ public final class ConfigModularityUtils {
         return Collections.emptyList();
     }
 
-    public static <T extends ConfigBeanProxy> T setConfigBean(T finalConfigBean, ConfigBeanDefaultValue configBeanDefaultValue, ServiceLocator serviceLocator, ConfigBeanProxy parent) {
+    public <T extends ConfigBeanProxy> T setConfigBean(T finalConfigBean, ConfigBeanDefaultValue configBeanDefaultValue, ConfigBeanProxy parent) {
 
-        Class owningClassForLocation = ConfigModularityUtils.getOwningClassForLocation(configBeanDefaultValue.getLocation(), serviceLocator);
-        Class configBeanClass = ConfigModularityUtils.getClassForFullName(configBeanDefaultValue.getConfigBeanClassName(), serviceLocator);
+        Class owningClassForLocation = getOwningClassForLocation(configBeanDefaultValue.getLocation());
+        Class configBeanClass = getClassForFullName(configBeanDefaultValue.getConfigBeanClassName());
 
         try {
             ConfigBeanProxy configBeanInstance = null;
@@ -416,7 +423,7 @@ public final class ConfigModularityUtils {
             return finalConfigBean;
         }
 
-        m = ConfigModularityUtils.findSuitableCollectionGetter(owningClassForLocation, configBeanClass);
+        m = findSuitableCollectionGetter(owningClassForLocation, configBeanClass);
         if (m != null) {
             try {
                 Collection col = (Collection) m.invoke(parent);
@@ -452,13 +459,13 @@ public final class ConfigModularityUtils {
         return null;
     }
 
-    private static <T extends ConfigBeanProxy> boolean stackPositionHigher(T finalConfigBean, ConfigBeanProxy itemToRemove) {
+    public <T extends ConfigBeanProxy> boolean stackPositionHigher(T finalConfigBean, ConfigBeanProxy itemToRemove) {
         //This is a place holder for the stack-position comparison to be added.
         return true;
     }
 
-    public static <T extends ConfigBeanProxy> void applyCustomTokens(final ConfigBeanDefaultValue configBeanDefaultValue,
-                                                                     T finalConfigBean, ConfigBeanProxy parent)
+    public <T extends ConfigBeanProxy> void applyCustomTokens(final ConfigBeanDefaultValue configBeanDefaultValue,
+                                                              T finalConfigBean, ConfigBeanProxy parent)
             throws TransactionFailure, PropertyVetoException {
         //go up in the parents tree till meet someone ImplementingSystemProperty
         //then that is the freaking parent, get it and set the SystemProperty :D
@@ -482,7 +489,7 @@ public final class ConfigModularityUtils {
         }
     }
 
-    private static void addSystemPropertyForToken(List<ConfigCustomizationToken> tokens, SystemPropertyBag bag)
+    public void addSystemPropertyForToken(List<ConfigCustomizationToken> tokens, SystemPropertyBag bag)
             throws TransactionFailure, PropertyVetoException {
         for (ConfigCustomizationToken token : tokens) {
             if (!bag.containsProperty(token.getKey())) {
@@ -495,12 +502,11 @@ public final class ConfigModularityUtils {
         }
     }
 
-    public static <T extends ConfigBeanProxy> T getCurrentConfigBeanForDefaultValue(ConfigBeanDefaultValue defaultValue,
-                                                                                    ServiceLocator serviceLocator)
+    public <T extends ConfigBeanProxy> T getCurrentConfigBeanForDefaultValue(ConfigBeanDefaultValue defaultValue)
             throws InvocationTargetException, IllegalAccessException {
-        Class parentClass = ConfigModularityUtils.getOwningClassForLocation(defaultValue.getLocation(), serviceLocator);
-        Class configBeanClass = ConfigModularityUtils.getClassForFullName(defaultValue.getConfigBeanClassName(), serviceLocator);
-        Method m = ConfigModularityUtils.findSuitableCollectionGetter(parentClass, configBeanClass);
+        Class parentClass = getOwningClassForLocation(defaultValue.getLocation());
+        Class configBeanClass = getClassForFullName(defaultValue.getConfigBeanClassName());
+        Method m = findSuitableCollectionGetter(parentClass, configBeanClass);
         if (m != null) {
             ConfigParser configParser = new ConfigParser(serviceLocator);
             // I don't use the GlassFish document here as I don't need persistence
@@ -513,19 +519,19 @@ public final class ConfigModularityUtils {
                 }
             };
 
-            ConfigBeanProxy parent = ConfigModularityUtils.getOwningObject(defaultValue.getLocation(), serviceLocator);
+            ConfigBeanProxy parent = getOwningObject(defaultValue.getLocation());
             ConfigurationPopulator populator = new ConfigurationPopulator(defaultValue.getXmlConfiguration(), doc, parent);
             populator.run(configParser);
             ConfigBeanProxy configBean = doc.getRoot().createProxy(configBeanClass);
             Collection col = (Collection) m.invoke(parent);
-            return (T) ConfigModularityUtils.getConfigBeanFromCollection(col, configBean, configBeanClass);
+            return (T) getConfigBeanFromCollection(col, configBean, configBeanClass);
 
         }
         return null;
     }
 
-    private static <T extends ConfigBeanProxy> T getConfigBeanFromCollection(Collection<T> col, T configBeanObject,
-                                                                             Class typeOfObjects)
+    public <T extends ConfigBeanProxy> T getConfigBeanFromCollection(Collection<T> col, T configBeanObject,
+                                                                     Class typeOfObjects)
             throws InvocationTargetException, IllegalAccessException {
         String nameToLookFor = getNameForConfigBean(configBeanObject, typeOfObjects);
         if (nameToLookFor != null) {
@@ -544,9 +550,9 @@ public final class ConfigModularityUtils {
         return null;
     }
 
-    private static <T extends ConfigBeanProxy> T getNamedConfigBeanFromCollection(Collection<T> col,
-                                                                                  String nameToLookFor,
-                                                                                  Class typeOfObjects)
+    public <T extends ConfigBeanProxy> T getNamedConfigBeanFromCollection(Collection<T> col,
+                                                                          String nameToLookFor,
+                                                                          Class typeOfObjects)
             throws InvocationTargetException, IllegalAccessException {
         if (nameToLookFor == null) return null;
         for (Object item : col) {
@@ -561,7 +567,7 @@ public final class ConfigModularityUtils {
         return null;
     }
 
-    private static String getNameForConfigBean(Object configBean, Class configBeanType) throws InvocationTargetException, IllegalAccessException {
+    public String getNameForConfigBean(Object configBean, Class configBeanType) throws InvocationTargetException, IllegalAccessException {
         if (configBean instanceof Named) {
             Named nme = (Named) configBean;
             return nme.getName();
@@ -581,20 +587,12 @@ public final class ConfigModularityUtils {
     }
 
     /**
-     * @param ins the InputStream to read and turn it into String
-     * @return String equivalent of the stream
-     */
-    public static String streamToString(InputStream ins, String encoding) {
-        return new Scanner(ins, encoding).useDelimiter("\\A").next();
-    }
-
-    /**
      * convert a configuration element name to representing class name
      *
      * @param name the configuration element name we want to convert to class name
      * @return the class name which the configuration element represent.
      */
-    public static String convertConfigElementNameToClassName(String name) {
+    public String convertConfigElementNameToClassName(String name) {
         // first, trim off the prefix
         StringTokenizer tokenizer = new StringTokenizer(name, "-", false);
         StringBuilder className = new StringBuilder();
@@ -610,13 +608,13 @@ public final class ConfigModularityUtils {
     }
 
 
-    public static Class getClassFor(String serviceName, ServiceLocator serviceLocator) {
+    public Class getClassFor(String serviceName) {
         serviceName = getServiceTypeNameIfNamedComponent(serviceName);
         ConfigInjector injector = serviceLocator.getService(ConfigInjector.class, serviceName.toLowerCase());
         return getClassFromInjector(injector);
     }
 
-    private static Class getClassFromInjector(ConfigInjector injector) {
+    public Class getClassFromInjector(ConfigInjector injector) {
         if (injector != null) {
             String clzName = injector.getClass().getName().substring(0, injector.getClass().getName().length() - 8);
             try {
@@ -628,14 +626,14 @@ public final class ConfigModularityUtils {
         return null;
     }
 
-    private static String getServiceTypeNameIfNamedComponent(String serviceName) {
+    public String getServiceTypeNameIfNamedComponent(String serviceName) {
         if (serviceName.endsWith("]")) {
             serviceName = serviceName.substring(0, serviceName.indexOf("["));
         }
         return serviceName;
     }
 
-    public static String resolveExpression(String expression, ServiceLocator serviceLocator) {
+    public String resolveExpression(String expression) {
         if (expression.startsWith("$")) {
             String name = expression.substring(1, expression.length());
             if (name.equalsIgnoreCase("CURRENT_INSTANCE_CONFIG_NAME")) {
@@ -648,16 +646,16 @@ public final class ConfigModularityUtils {
         return expression;
     }
 
-    public static String serializeConfigBeanByType(Class configBeanType, ServiceLocator serviceLocator) {
-        ConfigBeanProxy configBeanProxy = getConfigBeanInstanceFor(configBeanType, serviceLocator);
+    public String serializeConfigBeanByType(Class configBeanType) {
+        ConfigBeanProxy configBeanProxy = getConfigBeanInstanceFor(configBeanType);
         return serializeConfigBean(configBeanProxy);
     }
 
-    private static ConfigBeanProxy getConfigBeanInstanceFor(Class configBeanType, ServiceLocator serviceLocator) {
+    public ConfigBeanProxy getConfigBeanInstanceFor(Class configBeanType) {
         return (ConfigBeanProxy) serviceLocator.getService(configBeanType);
     }
 
-    public static String serializeConfigBean(ConfigBeanProxy configBean) {
+    public String serializeConfigBean(ConfigBeanProxy configBean) {
         if (configBean == null) return null;
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         XMLOutputFactory xmlFactory = XMLOutputFactory.newInstance();
@@ -680,7 +678,7 @@ public final class ConfigModularityUtils {
      * @param methodReturnType the type we want to find the getter for
      * @return A Method object for a getter method in the classToQuery  which returns the    methodReturnType
      */
-    private static Method getMatchingGetterMethod(Class classToQuery, Class methodReturnType) {
+    public Method getMatchingGetterMethod(Class classToQuery, Class methodReturnType) {
         Method[] methods = classToQuery.getMethods();
         for (Method method : methods) {
             if (method.getReturnType().getSimpleName().equals(methodReturnType.getSimpleName())) {
@@ -697,7 +695,7 @@ public final class ConfigModularityUtils {
      * @param typeToSet    the type we want to find a setter for
      * @return the matching Method object or null if not present.
      */
-    private static Method getMatchingSetterMethod(Class classToQuery, Class typeToSet) {
+    public Method getMatchingSetterMethod(Class classToQuery, Class typeToSet) {
         String className = typeToSet.getName().substring(typeToSet.getName().lastIndexOf(".") + 1, typeToSet.getName().length());
         String setterName = "set" + className;
         Method[] methods = classToQuery.getClass().getMethods();
@@ -710,7 +708,7 @@ public final class ConfigModularityUtils {
     }
 
 
-    private static Class getDuckClass(Class configBeanType) {
+    public Class getDuckClass(Class configBeanType) {
         Class duck;
         final Class[] clz = configBeanType.getDeclaredClasses();
         for (Class aClz : clz) {
@@ -722,25 +720,25 @@ public final class ConfigModularityUtils {
         return null;
     }
 
-    private static Method getGetDefaultValuesMethod(Class configBeanType) {
+    public Method getGetDefaultValuesMethod(Class configBeanType) {
         Class duck = getDuckClass(configBeanType);
         if (duck == null) {
             return null;
         }
         Method m;
         try {
-            m = duck.getMethod("getDefaultValues",String.class);
+            m = duck.getMethod("getDefaultValues", String.class);
         } catch (Exception ex) {
             return null;
         }
         return m;
     }
 
-    public static boolean deleteConfigurationForConfigBean(ConfigBeanProxy configBean, Collection col, ConfigBeanDefaultValue defaultValue, ServiceLocator serviceLocator) {
+    public boolean deleteConfigurationForConfigBean(ConfigBeanProxy configBean, Collection col, ConfigBeanDefaultValue defaultValue) {
         String name;
         ConfigBeanProxy itemToRemove;
         try {
-            Class configBeanClass = ConfigModularityUtils.getClassForFullName(defaultValue.getConfigBeanClassName(), serviceLocator);
+            Class configBeanClass = getClassForFullName(defaultValue.getConfigBeanClassName());
             name = getNameForConfigBean(configBean, configBeanClass);
             itemToRemove = getNamedConfigBeanFromCollection(col, name, configBeanClass);
             if (itemToRemove != null) {
@@ -753,7 +751,7 @@ public final class ConfigModularityUtils {
         return false;
     }
 
-    public static Class getClassForFullName(String configBeanClassName, ServiceLocator serviceLocator) {
+    public Class getClassForFullName(String configBeanClassName) {
         ActiveDescriptor<?> descriptor = serviceLocator.getBestDescriptor(BuilderHelper.createContractFilter(configBeanClassName));
         if (descriptor != null) {
             if (!descriptor.isReified()) {
@@ -770,7 +768,7 @@ public final class ConfigModularityUtils {
         }
     }
 
-    private static Class getClassFromDescriptor(ActiveDescriptor<?> descriptor) {
+    public Class getClassFromDescriptor(ActiveDescriptor<?> descriptor) {
 
         Class<?> defaultReturnValue = descriptor.getImplementationClass();
 
@@ -792,10 +790,10 @@ public final class ConfigModularityUtils {
         return foundContract;
     }
 
-    public static String replacePropertiesWithCurrentValue(String xmlConfiguration, ConfigBeanDefaultValue value, ServiceLocator serviceLocator) throws InvocationTargetException, IllegalAccessException {
+    public String replacePropertiesWithCurrentValue(String xmlConfiguration, ConfigBeanDefaultValue value) throws InvocationTargetException, IllegalAccessException {
         for (ConfigCustomizationToken token : value.getCustomizationTokens()) {
             String toReplace = "${" + token.getKey() + "}";
-            ConfigBeanProxy current = ConfigModularityUtils.getCurrentConfigBeanForDefaultValue(value, serviceLocator);
+            ConfigBeanProxy current = getCurrentConfigBeanForDefaultValue(value);
             String propertyValue = getPropertyValue(token, current);
             if (propertyValue != null) {
                 xmlConfiguration = xmlConfiguration.replace(toReplace, propertyValue);
@@ -805,7 +803,7 @@ public final class ConfigModularityUtils {
     }
 
 
-    private static String getPropertyValue(ConfigCustomizationToken token, ConfigBeanProxy finalConfigBean) {
+    public String getPropertyValue(ConfigCustomizationToken token, ConfigBeanProxy finalConfigBean) {
         if (finalConfigBean != null) {
             ConfigBeanProxy parent = finalConfigBean.getParent();
             while (!(parent instanceof SystemPropertyBag)) {
@@ -820,7 +818,7 @@ public final class ConfigModularityUtils {
     }
 
 
-    public static String getRuntimeTypePrefix(StartupContext startupContext) {
+    public String getRuntimeTypePrefix(StartupContext startupContext) {
         Properties args = startupContext.getArguments();
         RuntimeType serverType = RuntimeType.getDefault();
         String typeString = args.getProperty("-type");

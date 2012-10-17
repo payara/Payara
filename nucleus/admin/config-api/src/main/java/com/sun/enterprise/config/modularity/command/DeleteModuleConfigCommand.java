@@ -103,6 +103,9 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
     private
     ServiceLocator serviceLocator;
 
+    @Inject
+    private ConfigModularityUtils configModularityUtils;
+
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
 
@@ -140,8 +143,8 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
             return;
         }
 
-        final String className = ConfigModularityUtils.convertConfigElementNameToClassName(serviceName);
-        Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, serviceLocator);
+        final String className = configModularityUtils.convertConfigElementNameToClassName(serviceName);
+        Class configBeanType = configModularityUtils.getClassFor(serviceName);
         if (configBeanType == null) {
             String msg = localStrings.getLocalString("delete.module.config.not.such.a.service.found",
                     DEFAULT_FORMAT);
@@ -150,8 +153,8 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
             return;
         }
 
-        if (ConfigModularityUtils.hasCustomConfig(configBeanType)) {
-            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType, ConfigModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
+        if (configModularityUtils.hasCustomConfig(configBeanType)) {
+            List<ConfigBeanDefaultValue> defaults = configModularityUtils.getDefaultConfigurations(configBeanType, configModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
             deleteDependentConfigElements(defaults);
         } else {
             deleteTopLevelExtensionByType(config, className, configBeanType);
@@ -165,12 +168,12 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
     }
 
     private void deleteDependentConfigElement(final ConfigBeanDefaultValue defaultValue) {
-        Class parentClass = ConfigModularityUtils.getOwningClassForLocation(defaultValue.getLocation(), serviceLocator);
-        final Class configBeanClass = ConfigModularityUtils.getClassForFullName(defaultValue.getConfigBeanClassName(), serviceLocator);
-        final Method m = ConfigModularityUtils.findSuitableCollectionGetter(parentClass, configBeanClass);
+        Class parentClass = configModularityUtils.getOwningClassForLocation(defaultValue.getLocation());
+        final Class configBeanClass = configModularityUtils.getClassForFullName(defaultValue.getConfigBeanClassName());
+        final Method m = configModularityUtils.findSuitableCollectionGetter(parentClass, configBeanClass);
         if (m != null) {
             try {
-                final ConfigBeanProxy parent = ConfigModularityUtils.getOwningObject(defaultValue.getLocation(), serviceLocator);
+                final ConfigBeanProxy parent = configModularityUtils.getOwningObject(defaultValue.getLocation());
                 ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
                     @Override
                     public Object run(ConfigBeanProxy param) throws PropertyVetoException,
@@ -180,7 +183,7 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
                         try {
                             col = (List) m.invoke(param);
                             if (col != null) {
-                                configBean = ConfigModularityUtils.getCurrentConfigBeanForDefaultValue(defaultValue, serviceLocator);
+                                configBean = configModularityUtils.getCurrentConfigBeanForDefaultValue(defaultValue);
                             }
                         } catch (Exception e) {
                             String message = localStrings.getLocalString("delete.module.config.failed.deleting.dependant",
@@ -191,7 +194,7 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
                         }
 
                         if (configBean != null) {
-                            boolean deleted = ConfigModularityUtils.deleteConfigurationForConfigBean(configBean, col, defaultValue, serviceLocator);
+                            boolean deleted = configModularityUtils.deleteConfigurationForConfigBean(configBean, col, defaultValue);
                             if (!deleted) {
                                 for (int i = 0; i < col.size(); i++) {
                                     if (configBeanClass.isAssignableFrom(col.get(i).getClass())) {
