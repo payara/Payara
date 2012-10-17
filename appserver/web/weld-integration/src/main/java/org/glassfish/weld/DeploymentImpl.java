@@ -47,9 +47,9 @@ import static org.glassfish.weld.connector.WeldUtils.META_INF_SERVICES_EXTENSION
 import static org.glassfish.weld.connector.WeldUtils.SEPARATOR_CHAR;
 
 import java.io.IOException;
-import java.net.URI;
+import java.net.URL;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 
 import javax.enterprise.inject.spi.Extension;
@@ -313,7 +313,7 @@ public class DeploymentImpl implements Deployment {
                 + beanClass + " not found in the BDAs of this deployment. " +
                 "Hence creating a new BDA");
         List<Class<?>> beanClasses = new ArrayList<Class<?>>();
-        Set<URI> beanXMLUris = new CopyOnWriteArraySet<URI>();
+        List<URL> beanXMLUrls = new CopyOnWriteArrayList<URL>();
         Set<EjbDescriptor> ejbs = new HashSet<EjbDescriptor>();
         beanClasses.add(beanClass);
 
@@ -325,7 +325,7 @@ public class DeploymentImpl implements Deployment {
 
         BeanDeploymentArchive newBda = 
             new BeanDeploymentArchiveImpl(beanClass.getName(), 
-                    beanClasses, beanXMLUris, ejbs, context);
+                    beanClasses, beanXMLUrls, ejbs, context);
         logger.log(FINE, "DeploymentImpl(as part of loadBDA):: new BDA " 
                 + newBda + "created. Now adding this new BDA to " +
                 "all root BDAs of this deployment");
