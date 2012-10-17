@@ -91,6 +91,7 @@ import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
         path="get-runtime-info", 
         description="Get Runtime Info")
 })
+@AccessRequired(resource="domain", action="read")
 public class RuntimeInfo implements AdminCommand {
     public RuntimeInfo() {
     }

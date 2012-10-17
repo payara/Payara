@@ -72,7 +72,8 @@ import javax.inject.Inject;
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.GET, 
         path="uptime", 
-        description="Uptime")
+        description="Uptime",
+        useForAuthorization=true)
 })
 public class UptimeCommand implements AdminCommand {
 

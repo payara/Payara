@@ -70,6 +70,7 @@ import org.glassfish.api.admin.*;
         path="list-modules", 
         description="list-modules")
 })
+@AccessRequired(resource="domain", action="dump")
 public class ListModulesCommand implements AdminCommand {
 
     @Inject

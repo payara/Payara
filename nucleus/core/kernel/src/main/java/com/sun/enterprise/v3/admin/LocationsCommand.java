@@ -72,7 +72,8 @@ import org.glassfish.internal.config.UnprocessedConfigListener;
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.GET, 
         path="locations", 
-        description="Location")
+        description="Location",
+        useForAuthorization=true)
 })
 public class LocationsCommand implements AdminCommand {
     
