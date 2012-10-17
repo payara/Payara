@@ -51,6 +51,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.stream.XMLStreamException;
 import static org.glassfish.flashlight.xml.XmlConstants.*;
+import org.glassfish.flashlight.FlashlightLoggerInfo;
+import static org.glassfish.flashlight.FlashlightLoggerInfo.*;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
@@ -62,7 +64,7 @@ import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
 public class ProbeProviderStaxParser extends StaxParser{
 
     private static final Logger logger =
-        LogDomains.getLogger(ProbeProviderStaxParser.class, LogDomains.MONITORING_LOGGER);
+        FlashlightLoggerInfo.getLogger();
     public final static LocalStringManagerImpl localStrings =
                             new LocalStringManagerImpl(ProbeProviderStaxParser.class);
 
@@ -86,7 +88,7 @@ public class ProbeProviderStaxParser extends StaxParser{
         }
         if (providers.isEmpty()) {
             // this line snatched from the previous implementation (DOM)
-            logger.log(Level.SEVERE, "noProviderIdentifiedFromXML");
+            logger.log(Level.SEVERE, NO_PROVIDER_IDENTIFIED_FROM_XML);
         }
 
         return providers;

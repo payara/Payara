@@ -51,11 +51,14 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
 import java.util.HashMap;
+import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import org.glassfish.flashlight.FlashlightLoggerInfo;
+import static org.glassfish.flashlight.FlashlightLoggerInfo.*;
 import org.glassfish.flashlight.provider.FlashlightProbe;
 import org.glassfish.flashlight.provider.ProbeRegistry;
 
@@ -91,6 +94,7 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
     private static boolean _debug = Boolean.parseBoolean(Utility.getEnvOrProp("AS_DEBUG"));
     private static boolean emittedAttachUnavailableMessageAlready = false;
     private static final String AGENT_CLASSNAME = "org.glassfish.flashlight.agent.ProbeAgentMain";
+    private static final Logger logger = FlashlightLoggerInfo.getLogger();
 
     private ProbeProviderClassFileTransformer(Class providerClass) {
         providerClassRef = new WeakReference<Class>(providerClass);
@@ -176,7 +180,7 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
             instrumentation.retransformClasses(providerClass);
         }
         catch (Exception e) {
-            Log.warning("retransformation.error", e);
+            logger.log(Level.WARNING, RETRANSFORMATION_ERROR, e);
         }
     }
 
@@ -207,7 +211,7 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
             instrumentation.retransformClasses(providerClass);
         }
         catch (UnmodifiableClassException e) {
-            Log.warning("retransformation.error", e);
+            logger.log(Level.WARNING, RETRANSFORMATION_ERROR, e);
         }
     }
 
@@ -259,7 +263,7 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
             }
         }
         catch (Exception ex) {
-            Log.warning("regerror", ex);
+            logger.log(Level.WARNING, REGISTRATION_ERROR, ex);
         }
 
         return ret;
@@ -288,7 +292,7 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
             fos.write(data);
         }
         catch (Throwable th) {
-            Log.warning("writeerror", th);
+            logger.log(Level.WARNING, WRITE_ERROR, th);
         }
         finally {
             try {
@@ -515,10 +519,10 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
         instrumentation = nonFinalInstrumentation;
 
         if (!canAttach)
-            Log.warning("no.attach.api");
+            logger.log(Level.WARNING, NO_ATTACH_API);
         else if (instrumentation != null)
             Log.info("yes.attach.api", instrumentation);
         else
-            Log.warning("no.attach.get", (throwable == null ? "" : throwable));
+            logger.log(Level.WARNING, NO_ATTACH_GET, throwable);
     }
 }

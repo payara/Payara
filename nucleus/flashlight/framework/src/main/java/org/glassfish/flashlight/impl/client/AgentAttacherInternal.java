@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,8 @@ import com.sun.logging.LogDomains;
 import com.sun.tools.attach.VirtualMachine;
 import java.io.File;
 import java.util.logging.*;
+import org.glassfish.flashlight.FlashlightLoggerInfo;
+import static org.glassfish.flashlight.FlashlightLoggerInfo.*;
 import static com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY;
 
 /**
@@ -69,7 +71,7 @@ final class AgentAttacherInternal {
                 pid = ProcessUtils.getPid();
 
             if (pid < 0) {
-                logger.warning(Strings.get("invalid.pid"));
+                logger.log(Level.WARNING, INVALID_PID);
                 return false;
             }
 
@@ -78,14 +80,14 @@ final class AgentAttacherInternal {
             File dir = new File(ir, "lib" + File.separator + "monitor");
 
             if (!dir.isDirectory()) {
-                logger.warning(Strings.get("missing.agent.jar.dir", dir));
+                logger.log(Level.WARNING, MISSING_AGENT_JAR_DIR, dir);
                 return false;
             }
 
             File agentJar = new File(dir, "flashlight-agent.jar");
 
             if (!agentJar.isFile()) {
-                logger.log(Level.WARNING, Strings.get("missing.agent.jar", dir));
+                logger.log(Level.WARNING, MISSING_AGENT_JAR, dir);
                 return false;
             }
 
@@ -93,13 +95,13 @@ final class AgentAttacherInternal {
             isAttached = true;
         }
         catch (Throwable t) {
-            logger.warning(Strings.get("attach.agent.exception", t.getMessage()));
+            logger.log(Level.WARNING, ATTACH_AGENT_EXCEPTION, t.getMessage());
             isAttached = false;
         }
         
         return isAttached;
     }
     private static final Object syncOnMe = new Object();
-    private static final Logger logger = LogDomains.getLogger(AgentAttacherInternal.class, LogDomains.MONITORING_LOGGER);
+    private static final Logger logger = FlashlightLoggerInfo.getLogger();
     private static boolean isAttached = false;
 }

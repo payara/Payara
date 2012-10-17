@@ -49,6 +49,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.*;
 import org.glassfish.api.monitoring.DTraceContract;
+import org.glassfish.flashlight.FlashlightLoggerInfo;
+import static org.glassfish.flashlight.FlashlightLoggerInfo.*;
 import org.glassfish.flashlight.FlashlightUtils;
 import org.glassfish.flashlight.impl.client.FlashlightProbeClientMediator;
 import org.glassfish.flashlight.provider.*;
@@ -90,8 +92,7 @@ public class FlashlightProbeProviderFactory
     private List<ProbeProviderEventListener> listeners = new ArrayList<ProbeProviderEventListener>();
 
     private final static Set<FlashlightProbeProvider> allProbeProviders = new HashSet<FlashlightProbeProvider>();
-    private static final Logger logger =
-        LogDomains.getLogger(FlashlightProbeProviderFactory.class, LogDomains.MONITORING_LOGGER);
+    private static final Logger logger = FlashlightLoggerInfo.getLogger();
     private static final ResourceBundle rb = logger.getResourceBundle();
 
     private static final HashMap<String, Class> primTypes = new HashMap<String, Class>() {
@@ -196,7 +197,7 @@ public class FlashlightProbeProviderFactory
                     invokerId, providerClazz);
         } else {
             logger.log(Level.WARNING,
-                    "invalidProbeProvider", new Object[]{providerClazz.getName()});
+                    INVALID_PROBE_PROVIDER, new Object[]{providerClazz.getName()});
             return null;
         }
     }
@@ -379,7 +380,7 @@ public class FlashlightProbeProviderFactory
             ppRegistry.unregisterProbeProvider(probeProvider);
         } catch (Throwable t) {
             if (logger.isLoggable(Level.WARNING))
-                logger.log(Level.WARNING, "unregisterProbeProvider exception ", t);
+                logger.log(Level.WARNING, UNREGISTER_PROBE_PROVIDER_EXCEPTION, t);
         }
     }
 
@@ -419,10 +420,8 @@ public class FlashlightProbeProviderFactory
                 registerProvider(cl, provider);
             }
         } catch (Exception e) {
-            String msg =
-                    rb.getString("cannotProcessXMLProbeProvider");
-            msg = MessageFormat.format(msg, xml);
-            logger.log(Level.SEVERE, msg, e);
+            Object params[] = {xml, e };
+            logger.log(Level.SEVERE, CANNOT_PROCESS_XML_PROBE_PROVIDER, params);
         }
 
     }
@@ -565,7 +564,7 @@ public class FlashlightProbeProviderFactory
                     // Lets not create a probe if we see a problem with the
                     // paramType resolution
                     errorParsingProbe = true;
-                    logger.log(Level.SEVERE, "cannotResolveProbeParamTypesForProbe", new Object[] {probeName});
+                    logger.log(Level.SEVERE, CANNOT_RESOLVE_PROBE_PARAM_TYPES_FOR_PROBE, new Object[] {probeName});
                     // stop parsing anymore probe params
                     break;
                 }
@@ -618,9 +617,8 @@ public class FlashlightProbeProviderFactory
                 // try to prepend java.lang. to the given class
                 paramType = cl.loadClass("java.lang." + paramTypeStr);
             } catch (Exception e) {
-                String errStr = rb.getString("cannotResolveProbeParamTypes");
-                errStr = MessageFormat.format(errStr, paramTypeStr);
-                logger.log(Level.SEVERE, errStr, e);
+                Object params[] = {paramTypeStr, e};
+                logger.log(Level.SEVERE, CANNOT_RESOLVE_PROBE_PARAM_TYPES, params);
             }
         }
 

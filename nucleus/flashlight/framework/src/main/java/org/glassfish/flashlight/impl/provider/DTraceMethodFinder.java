@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2010,2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,10 +45,8 @@
 package org.glassfish.flashlight.impl.provider;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 
 import java.lang.reflect.Method;
-import java.util.logging.Logger;
 
 import org.glassfish.flashlight.FlashlightUtils;
 import org.glassfish.flashlight.provider.FlashlightProbe;
@@ -59,8 +57,6 @@ import org.glassfish.flashlight.provider.FlashlightProbe;
  */
 class DTraceMethodFinder {
 
-    private static final Logger logger =
-            LogDomains.getLogger(DTraceMethodFinder.class, LogDomains.MONITORING_LOGGER);
     public final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DTraceMethodFinder.class);
 

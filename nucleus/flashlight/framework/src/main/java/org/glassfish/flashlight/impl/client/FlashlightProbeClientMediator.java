@@ -55,8 +55,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.external.probe.provider.annotations.ProbeListener;
+import org.glassfish.flashlight.FlashlightLoggerInfo;
+import static org.glassfish.flashlight.FlashlightLoggerInfo.*;
 import org.glassfish.flashlight.FlashlightUtils;
 import org.glassfish.flashlight.client.ProbeClientInvoker;
 import org.glassfish.flashlight.client.ProbeClientInvokerFactory;
@@ -78,7 +81,7 @@ public class FlashlightProbeClientMediator
 
     private static final ProbeRegistry probeRegistry = ProbeRegistry.getInstance();
     private static final Logger logger =
-            LogDomains.getLogger(FlashlightProbeClientMediator.class, LogDomains.MONITORING_LOGGER);
+            FlashlightLoggerInfo.getLogger();
     public final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(FlashlightProbeClientMediator.class);
     private static FlashlightProbeClientMediator _me = new FlashlightProbeClientMediator();
@@ -199,8 +202,7 @@ public class FlashlightProbeClientMediator
                 transformer.addProbe(probe);
             }
             catch (Exception ex) {
-                logger.severe(localStrings.getLocalString("bad.transform",
-                        "MNTG0505:Error transforming Probe: {0}", ex));
+                logger.log(Level.SEVERE, BAD_TRANSFORM, ex);
             }
         }
         ProbeProviderClassFileTransformer.transformAll();
