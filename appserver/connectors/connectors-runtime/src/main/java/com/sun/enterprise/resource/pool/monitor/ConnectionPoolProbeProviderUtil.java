@@ -43,7 +43,7 @@ package com.sun.enterprise.resource.pool.monitor;
 import com.sun.enterprise.connectors.ConnectionPoolMonitoringExtension;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -64,7 +64,7 @@ public class ConnectionPoolProbeProviderUtil {
     private Provider<ConnectionPoolStatsProviderBootstrap> connectionPoolStatsProviderBootstrapProvider;
 
     @Inject
-    private Habitat habitat;
+    private ServiceLocator habitat;
 
     public void registerProbeProvider() {
         if(ConnectorRuntime.getRuntime().isServer()) {

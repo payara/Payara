@@ -59,7 +59,7 @@ import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -101,7 +101,7 @@ public class ConnectionPoolStatsProviderBootstrap implements PostConstruct,
     private Provider<ConnectionPoolProbeProviderUtil> connectionPoolProbeProviderUtilProvider;
 
     @Inject
-    private Habitat habitat;
+    private ServiceLocator habitat;
 
     //List of all connector conn pool stats providers that are created and stored
     private List<ConnectorConnPoolStatsProvider> ccStatsProviders = null;

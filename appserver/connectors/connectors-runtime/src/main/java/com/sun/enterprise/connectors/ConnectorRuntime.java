@@ -85,7 +85,7 @@ import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
 import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.types.Property;
 
 import javax.inject.Inject;
@@ -245,7 +245,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     private ProcessEnvironment.ProcessType processType;
 
     @Inject
-    private Habitat habitat;
+    private ServiceLocator habitat;
 
     /**
      * Returns the ConnectorRuntime instance.

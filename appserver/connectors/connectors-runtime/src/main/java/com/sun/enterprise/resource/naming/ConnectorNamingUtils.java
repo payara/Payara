@@ -49,7 +49,7 @@ import com.sun.logging.LogDomains;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.internal.api.Globals;
@@ -92,8 +92,8 @@ public class ConnectorNamingUtils {
         return runtime;
     }
 
-    static private Habitat getHabitat() {
-        Habitat habitat = Globals.getStaticHabitat();
+    static private ServiceLocator getHabitat() {
+        ServiceLocator habitat = Globals.getStaticHabitat();
         StartupContext startupContext = new StartupContext();
         ServiceLocatorUtilities.addOneConstant(habitat, startupContext);
         ServiceLocatorUtilities.addOneConstant(habitat,

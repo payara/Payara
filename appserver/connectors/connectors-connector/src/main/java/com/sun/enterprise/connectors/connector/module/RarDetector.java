@@ -51,7 +51,7 @@ import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.deployment.common.GenericAnnotationDetector;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import javax.inject.Singleton;
 
 import java.io.IOException;
@@ -80,7 +80,7 @@ public class RarDetector implements ArchiveDetector {
     @Inject
     private ConnectorSniffer sniffer;
     @Inject
-    private Habitat services;
+    private ServiceLocator services;
 
     private ArchiveHandler archiveHandler; // lazy initialisation
     private Logger logger = Logger.getLogger(getClass().getPackage().getName());
