@@ -85,10 +85,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.glassfish.api.admin.AccessRequired;
-import org.glassfish.api.admin.AccessRequired.AccessCheck;
-import org.glassfish.api.admin.AdminCommandSecurity;
 
 /**
  * User: Jerome Dochez
@@ -99,8 +95,7 @@ import org.glassfish.api.admin.AdminCommandSecurity;
 @ExecuteOn(RuntimeType.INSTANCE)
 @PerLookup
 @I18n("set")
-public class SetCommand extends V2DottedNameSupport implements AdminCommand, PostConstruct,
-        AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
+public class SetCommand extends V2DottedNameSupport implements AdminCommand, PostConstruct {
 
     @Inject
     ServiceLocator habitat;
@@ -121,8 +116,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
 
     private HashMap<String, Integer> targetLevel = null;
 
-    private final List<ActionsOnValue> aovs = new ArrayList<ActionsOnValue>();
-    
     @Override
     public void postConstruct() {
         targetLevel = new HashMap<String, Integer>();
@@ -136,76 +129,20 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
     }
 
     @Override
-    public boolean preAuthorization(AdminCommandContext context) {
+    public void execute(AdminCommandContext context) {
         for (String value : values) {
+
             if (value.contains(".log-service")) {
                 fail(context, localStrings.getLocalString("admin.set.invalid.logservice.command", "For setting log levels/attributes use set-log-levels/set-log-attributes command."));
-                return false;
-            }
-            
-            final ActionsOnValue aov = new ActionsOnValue(value);
-            if ( ! prepareSet(aov, context, value)) {
-                return false;
-            }
-            aovs.add(aov);
-        }
-        return true;
-    }
-
-    @Override
-    public Collection<? extends AccessCheck> getAccessChecks() {
-        final Collection<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
-        for (ActionsOnValue aov : aovs) {
-            for (SetAction action : aov.setActions) {
-                accessChecks.add(new AccessCheck(action.resourceName(), action.actionName()));
-            }
-            for (Map.Entry<ConfigBean,Map<String,String>> entry : aov.changes.entrySet()) {
-                accessChecks.add(new AccessCheck(AccessRequired.Util.resourceNameFromDom(entry.getKey()), "update"));
-            }
-        }
-        
-        return accessChecks;
-    }
-
-    
-    @Override
-    public void execute(AdminCommandContext context) {
-        for (ActionsOnValue aov : aovs) {
-            final AtomicBoolean delPropertySuccess = new AtomicBoolean(false);
-            final AtomicBoolean setElementSuccess = new AtomicBoolean(false);
-            for (SetAction action : aov.setActions) {
-                
-                if ( ! action.set(context, delPropertySuccess, setElementSuccess)) {
-                    // fast failure
-                    return;
-                }
-            }
-            if (!aov.changes.isEmpty()) {
-                try {
-                    config.apply(aov.changes);
-                    success(context, aov.targetName, aov.value);
-                    runLegacyChecks(context);
-                } catch (TransactionFailure transactionFailure) {
-                    //fail(context, "Could not change the attributes: " +
-                    //        transactionFailure.getMessage(), transactionFailure);
-                    fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", "Could not change the attributes: {0}",
-                            transactionFailure.getMessage()), transactionFailure);
-                    return;
-                }
-            } else if (delPropertySuccess.get() || setElementSuccess.get()) {
-                success(context, aov.targetName, aov.value);
-            } else {
-                fail(context, localStrings.getLocalString("admin.set.configuration.notfound", "No configuration found for {0}", aov.targetName));
                 return;
             }
-            if (targetService.isThisDAS() && !replicateSetCommand(context, aov.targetName, aov.value)) {
-                // fast failure
+
+            if (!set(context, value))
                 return;
-            }
         }
     }
 
-    private boolean prepareSet(final ActionsOnValue aov, AdminCommandContext context, String nameval) {
+    private boolean set(AdminCommandContext context, String nameval) {
 
         int i = nameval.indexOf('=');
         if (i < 0) {
@@ -262,7 +199,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
             pattern = parentNodes[0].relativeName;
         }
         String targetName = prefix + pattern;
-        aov.targetName = targetName;
 
         Map<Dom, String> matchingNodes;
         boolean applyOverrideRules = false;
@@ -313,12 +249,30 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                     return true;
                 }
                 // create and set the property
-                aov.recordConfigBeanCreateAndSet((ConfigBean) parentNode, attrName,
-                        value, targetName);
-                return true;
+                Map<String, String> attributes = new HashMap<String, String>();
+                attributes.put("value", value);
+                attributes.put("name", attrName);
+                try {
+                    ConfigSupport.createAndSet((ConfigBean) parentNode, Property.class, attributes);
+                    success(context, targetName, value);
+                    runLegacyChecks(context);
+                    if (targetService.isThisDAS() && !replicateSetCommand(context, targetName, value))
+                        return false;
+                    return true;
+                } catch (TransactionFailure transactionFailure) {
+                    //fail(context, "Could not change the attributes: " +
+                    //    transactionFailure.getMessage(), transactionFailure);
+                    fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", "Could not change the attributes: {0}",
+                            transactionFailure.getMessage()), transactionFailure);
+                    return false;
+                }
             }
         }
 
+        Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
+
+        boolean setElementSuccess = false;
+        boolean delPropertySuccess = false;
         boolean delProperty = false;
         Map<String, String> attrChanges = new HashMap<String, String>();
         if (isProperty) {
@@ -348,7 +302,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
 
                         if (!isProperty) {
                             targetName = prefix + finalDottedName;
-                            aov.targetName = targetName;
 
                             if (value != null && value.length() > 0) {
                                 attrChanges.put(name, value);
@@ -357,7 +310,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                             }
                         } else {
                             targetName = prefix + node.getValue();
-                            aov.targetName = targetName;
                         }
 
                         if (delProperty) {
@@ -366,11 +318,22 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                             if (trueLastIndexOf(str, '.') != -1) {
                                 str = str.substring(trueLastIndexOf(str, '.') + 1);
                             }
-                            if (str != null) {
-                                aov.recordPropertyDeletion((ConfigBean) targetNode);
+                            try {
+                                if (str != null) {
+                                    ConfigSupport.deleteChild((ConfigBean) targetNode.parent(), (ConfigBean) targetNode);
+                                    delPropertySuccess = true;
+                                }
+                            } catch (IllegalArgumentException ie) {
+                                fail(context, localStrings.getLocalString("admin.set.delete.property.failure", "Could not delete the property: {0}",
+                                        ie.getMessage()), ie);
+                                return false;
+                            } catch (TransactionFailure transactionFailure) {
+                                fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", "Could not change the attributes: {0}",
+                                        transactionFailure.getMessage()), transactionFailure);
+                                return false;
                             }
                         } else {
-                            aov.changes.put((ConfigBean) node.getKey(), attrChanges);
+                            changes.put((ConfigBean) node.getKey(), attrChanges);
                         }
 
                     }
@@ -386,12 +349,40 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                            warning(context, localStrings.getLocalString("admin.set.elementdeprecated",
                                    "Warning: The element {0} is deprecated.", finalDottedName));
                         }
-                        aov.recordLeafElementSet((ConfigBean) targetNode, name, value);
+                        try {
+                            setLeafElement((ConfigBean)targetNode, name, value);
+                        } catch (TransactionFailure ex) {
+                            fail(context, localStrings.getLocalString("admin.set.badelement", "Cannot change the element: {0}",
+                                    ex.getMessage()), ex);
+                            return false;
+                        }
+                        setElementSuccess = true;
                         break;
                     }
                 }
             }
         }
+        if (!changes.isEmpty()) {
+            try {
+                config.apply(changes);
+                success(context, targetName, value);
+                runLegacyChecks(context);
+            } catch (TransactionFailure transactionFailure) {
+                //fail(context, "Could not change the attributes: " +
+                //        transactionFailure.getMessage(), transactionFailure);
+                fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", "Could not change the attributes: {0}",
+                        transactionFailure.getMessage()), transactionFailure);
+                return false;
+            }
+
+        } else if (delPropertySuccess || setElementSuccess) {
+            success(context, targetName, value);
+        } else {
+            fail(context, localStrings.getLocalString("admin.set.configuration.notfound", "No configuration found for {0}", targetName));
+            return false;
+        }
+        if (targetService.isThisDAS() && !replicateSetCommand(context, targetName, value))
+            return false;
         return true;
     }
 
@@ -611,174 +602,5 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
         ActionReport.MessagePart part = context.getActionReport().getTopMessagePart().addChild();
         part.setChildrenType("DottedName");
         part.setMessage(target + "=" + value);
-    }
-    
-    private class ActionsOnValue {
-        private String targetName;
-        private final String value;
-        private final Map<ConfigBean, Map<String, String>> changes = 
-                new HashMap<ConfigBean, Map<String,String>>();
-        private final List<SetAction> setActions = new ArrayList<SetAction>();
-        
-        private ActionsOnValue(final String value) {
-            this.value = value;
-        }
-        
-        private void recordConfigBeanCreateAndSet(final ConfigBean parentNode, 
-                final String attrName,
-                final String value,
-                final String targetName) {
-            final Map<String,String> attributes = new HashMap<String,String>();
-            attributes.put("value", value);
-            attributes.put("name", attrName);
-            setActions.add(new ConfigBeanCreateAndSetAction(
-                    parentNode, attributes, targetName, value));
-        }
-
-        private void recordPropertyDeletion(final ConfigBean targetNode) {
-            setActions.add(new PropertyDeleteAction(targetNode));
-        }
-
-        private void recordLeafElementSet(final ConfigBean targetNode,
-                final String name,
-                final String value) {
-            setActions.add(new LeafElementSetAction(targetNode, name, value));
-        }
-    }
-    
-    private abstract class SetAction {
-        abstract boolean set(AdminCommandContext context,
-                    final AtomicBoolean delPropertySuccess,
-                    final AtomicBoolean setElementSuccess);
-        
-        abstract String resourceName();
-        abstract String actionName();
-        
-    }
-    
-    private class PropertyDeleteAction extends SetAction {
-        private final Dom targetNode;
-        
-        private PropertyDeleteAction(final Dom targetNode) {
-            this.targetNode = targetNode;
-        }
-
-        @Override
-        String resourceName() {
-            return targetNode.getKey().replace('.', '/');
-        }
-
-        @Override
-        String actionName() {
-            return "update";
-        }
-        
-        @Override
-        boolean set(AdminCommandContext context,
-                    final AtomicBoolean delPropertySuccess,
-                    final AtomicBoolean setElementSuccess) {
-            try {
-                ConfigSupport.deleteChild((ConfigBean) targetNode.parent(), (ConfigBean) targetNode);
-                delPropertySuccess.set(true);
-                return true;
-            } catch (IllegalArgumentException ie) {
-                fail(context, localStrings.getLocalString("admin.set.delete.property.failure", "Could not delete the property: {0}",
-                        ie.getMessage()), ie);
-                return false;
-            } catch (TransactionFailure transactionFailure) {
-                fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", "Could not change the attributes: {0}",
-                        transactionFailure.getMessage()), transactionFailure);
-                return false;
-            }
-        }
-    }
-    
-    private class ConfigBeanCreateAndSetAction extends SetAction {
-        private ConfigBean parentNode;
-        private Map<String,String> attributes;
-        private String targetName;
-        private String value;
-        
-        private ConfigBeanCreateAndSetAction(final ConfigBean parentNode, 
-            final Map<String,String> attributes,
-            final String targetName,
-            final String value) {
-            this.parentNode = parentNode;
-            this.attributes = attributes;
-            this.targetName = targetName;
-            this.value = value;
-        }
-
-        @Override
-        String resourceName() {
-            return targetName.replace('.', '/');
-        }
-
-        @Override
-        String actionName() {
-            return "update";
-        }
-        
-        @Override
-        boolean set(final AdminCommandContext context,
-                    final AtomicBoolean delPropertySuccess,
-                    final AtomicBoolean setElementSuccess) {
-
-            try {
-                ConfigSupport.createAndSet(parentNode, Property.class, attributes);
-                success(context, targetName, value);
-                runLegacyChecks(context);
-                if (targetService.isThisDAS() && !replicateSetCommand(context, targetName, value)) {
-                    return false;
-                }
-                return true;
-            } catch (TransactionFailure transactionFailure) {
-                //fail(context, "Could not change the attributes: " +
-                //    transactionFailure.getMessage(), transactionFailure);
-                fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", "Could not change the attributes: {0}",
-                        transactionFailure.getMessage()), transactionFailure);
-                return false;
-            }
-        }
-    }
-    
-    private class LeafElementSetAction extends SetAction {
-        
-        final ConfigBean targetNode;
-        final String name;
-        final String value;
-        
-        private LeafElementSetAction(final ConfigBean targetNode,
-                final String name,
-                final String value) {
-            this.targetNode = targetNode;
-            this.name = name;
-            this.value = value;
-        }
-
-        @Override
-        String resourceName() {
-            return name.replace('.', '/');
-        }
-
-        @Override
-        String actionName() {
-            return "update";
-        }
-        
-        @Override
-        boolean set(AdminCommandContext context,
-                    final AtomicBoolean delPropertySuccess,
-                    final AtomicBoolean setElementSuccess) {
-            try {
-                setLeafElement((ConfigBean)targetNode, name, value);
-                setElementSuccess.set(true);
-                return true;
-            } catch (TransactionFailure ex) {
-                fail(context, localStrings.getLocalString("admin.set.badelement", "Cannot change the element: {0}",
-                        ex.getMessage()), ex);
-                return false;
-            }
-        }
     }
 }
