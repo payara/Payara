@@ -617,10 +617,12 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
 
         name = name.substring((partialName + "/").length());
         StringTokenizer toks = new StringTokenizer(name, "/", false);
-
+		StringBuilder sb=new StringBuilder();
+		sb.append(partialName);
         while (toks.hasMoreTokens()) {
             String tok = toks.nextToken();
-            partialName = partialName + "/" + tok;
+            sb.append("/").append(tok);
+            partialName = sb.toString();
             if (namespace.get(partialName) == null) {
                 namespace.put(partialName, new JavaURLContext(partialName, null));
             }
