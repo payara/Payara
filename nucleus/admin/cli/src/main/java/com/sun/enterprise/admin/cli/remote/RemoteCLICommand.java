@@ -971,7 +971,7 @@ public class RemoteCLICommand extends CLICommand {
     }
     
     private static boolean equalsStrIgnoreCase(String s, String t) {
-        if (s == t) return true;
+        if (s == null && t == null) return true;
         if ((s != null) && (t != null)) {
             return s.equalsIgnoreCase(t);
         }
@@ -979,7 +979,7 @@ public class RemoteCLICommand extends CLICommand {
     }
     
     private static boolean equalsStr(String s, String t) {
-        if (s == t) return true;
+        if (s == null && t == null) return true;
         if ((s != null) && (t != null)) {
             return s.equals(t);
         }
