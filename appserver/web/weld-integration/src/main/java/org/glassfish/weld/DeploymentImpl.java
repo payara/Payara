@@ -68,7 +68,7 @@ import org.jboss.weld.bootstrap.spi.Metadata;
 import com.sun.enterprise.deployment.EjbDescriptor;
 
 /*
- * Represents a deployment of a CDI (Weld) application. 
+ * Represents a deployment of a CDI (Weld) application.
  */
 public class DeploymentImpl implements Deployment {
 
@@ -85,10 +85,10 @@ public class DeploymentImpl implements Deployment {
     private SimpleServiceRegistry simpleServiceRegistry = null;
 
     private Logger logger = Logger.getLogger(DeploymentImpl.class.getName());
-    
+
     /**
      * Produce <code>BeanDeploymentArchive</code>s for this <code>Deployment</code>
-     * from information from the provided <code>ReadableArchive</code>. 
+     * from information from the provided <code>ReadableArchive</code>.
      */
     public DeploymentImpl(ReadableArchive archive, Collection<EjbDescriptor> ejbs,
                           DeploymentContext context) {
@@ -123,7 +123,7 @@ public class DeploymentImpl implements Deployment {
 
     /**
      * Produce <code>BeanDeploymentArchive</code>s for this <code>Deployment</code>
-     * from information from the provided <code>ReadableArchive</code>. 
+     * from information from the provided <code>ReadableArchive</code>.
      * This method is called for subsequent modules after This <code>Deployment</code> has
      * been created.
      */
@@ -164,7 +164,7 @@ public class DeploymentImpl implements Deployment {
     /**
      * Build the accessibility relationship between <code>BeanDeploymentArchive</code>s
      * for this <code>Deployment</code>.  This method must be called after all <code>Weld</code>
-     * <code>BeanDeploymentArchive</code>s have been produced for the 
+     * <code>BeanDeploymentArchive</code>s have been produced for the
      * <code>Deployment</code>.
      */
     public void buildDeploymentGraph() {
@@ -249,7 +249,7 @@ public class DeploymentImpl implements Deployment {
             }
         }
 
-      
+
     }
 
 
@@ -261,7 +261,7 @@ public class DeploymentImpl implements Deployment {
         if (!beanDeploymentArchives.isEmpty()) {
             return beanDeploymentArchives;
         }
-        return Collections.emptyList(); 
+        return Collections.emptyList();
     }
 
     @Override
@@ -274,10 +274,10 @@ public class DeploymentImpl implements Deployment {
             BeanDeploymentArchive bda = lIter.next();
             logger.log(FINE, "checking for " + beanClass + " in root BDA" + bda.getId());
             if (((BeanDeploymentArchiveImpl)bda).getModuleBeanClassObjects().contains(beanClass)) {
-                //don't stuff this Bean Class into the BDA's beanClasses, 
+                //don't stuff this Bean Class into the BDA's beanClasses,
                 //as Weld automatically add theses classes to the BDA's bean Classes
                 logger.log(FINE, "DeploymentImpl(as part of loadBDA)::An " +
-                		"existing BDA has this class " + beanClass.getName() 
+                		"existing BDA has this class " + beanClass.getName()
                 		+ " and so adding this class as a bean class it to " +
                 		"existing bda: " + bda);
                 //((BeanDeploymentArchiveImpl)bda).addBeanClass(beanClass.getName());
@@ -285,8 +285,8 @@ public class DeploymentImpl implements Deployment {
                 return bda;
             }
 
-            //XXX: As of now, we handle one-level. Ideally, a bean deployment 
-            //descriptor is a composite and we should be able to search the tree 
+            //XXX: As of now, we handle one-level. Ideally, a bean deployment
+            //descriptor is a composite and we should be able to search the tree
             //and get the right BDA for the beanClass
             if (bda.getBeanDeploymentArchives().size() > 0) {
                 for(BeanDeploymentArchive subBda: bda.getBeanDeploymentArchives()){
@@ -294,10 +294,10 @@ public class DeploymentImpl implements Deployment {
                     logger.log(FINE, "checking for " + beanClass + " in subBDA" + subBda.getId());
                     boolean match = moduleBeanClasses.contains(beanClass);
                     if (match) {
-                        //don't stuff this Bean Class into the BDA's beanClasses, 
+                        //don't stuff this Bean Class into the BDA's beanClasses,
                         //as Weld automatically add theses classes to the BDA's bean Classes
                         logger.log(FINE, "DeploymentImpl(as part of loadBDA)::" +
-                        		"An existing BDA has this class " 
+                        		"An existing BDA has this class "
                                 + beanClass.getName() + " and so adding this " +
                                 "class as a bean class to existing bda:" + subBda);
                         //((BeanDeploymentArchiveImpl)subBda).addBeanClass(beanClass.getName());
@@ -309,7 +309,7 @@ public class DeploymentImpl implements Deployment {
         }
 
         // If the BDA was not found for the Class, create one and add it
-        logger.log(FINE, "+++++ DeploymentImpl(as part of loadBDA):: beanClass " 
+        logger.log(FINE, "+++++ DeploymentImpl(as part of loadBDA):: beanClass "
                 + beanClass + " not found in the BDAs of this deployment. " +
                 "Hence creating a new BDA");
         List<Class<?>> beanClasses = new ArrayList<Class<?>>();
@@ -323,10 +323,10 @@ public class DeploymentImpl implements Deployment {
         if(gfExtension != null)
         	beanClasses.addAll(java.util.Arrays.asList(gfExtension.beans()));
 
-        BeanDeploymentArchive newBda = 
-            new BeanDeploymentArchiveImpl(beanClass.getName(), 
+        BeanDeploymentArchive newBda =
+            new BeanDeploymentArchiveImpl(beanClass.getName(),
                     beanClasses, beanXMLUrls, ejbs, context);
-        logger.log(FINE, "DeploymentImpl(as part of loadBDA):: new BDA " 
+        logger.log(FINE, "DeploymentImpl(as part of loadBDA):: new BDA "
                 + newBda + "created. Now adding this new BDA to " +
                 "all root BDAs of this deployment");
         lIter = beanDeploymentArchives.listIterator();
@@ -334,7 +334,7 @@ public class DeploymentImpl implements Deployment {
             BeanDeploymentArchive bda = lIter.next();
             bda.getBeanDeploymentArchives().add(newBda);
         }
-        logger.log(FINE, "DeploymentImpl(as part of loadBDA):: for beanClass " 
+        logger.log(FINE, "DeploymentImpl(as part of loadBDA):: for beanClass "
                 + beanClass + " finally returning the " +
                 "newly created BDA " + newBda);
         return newBda;
@@ -367,14 +367,14 @@ public class DeploymentImpl implements Deployment {
     public String toString() {
         StringBuffer valBuff = new StringBuffer();
         List<BeanDeploymentArchive> beanDeploymentArchives = getBeanDeploymentArchives();
-        ListIterator<BeanDeploymentArchive> lIter = beanDeploymentArchives.listIterator();        
+        ListIterator<BeanDeploymentArchive> lIter = beanDeploymentArchives.listIterator();
         while (lIter.hasNext()) {
             BeanDeploymentArchive bda = lIter.next();
-            valBuff.append(bda.toString()); 
+            valBuff.append(bda.toString());
         }
         return valBuff.toString();
     }
-    
+
     public BeanDeploymentArchive getBeanDeploymentArchiveForArchive(String archiveId) {
         return idToBeanDeploymentArchive.get(archiveId);
     }
@@ -398,7 +398,7 @@ public class DeploymentImpl implements Deployment {
     // This method creates and returns a List of BeanDeploymentArchives for each
     // Weld enabled jar under /lib of an existing Archive.
     private List<BeanDeploymentArchive> scanForLibJars(
-                            ReadableArchive archive, Collection<EjbDescriptor> ejbs, 
+                            ReadableArchive archive, Collection<EjbDescriptor> ejbs,
                             DeploymentContext context) {
         List<ReadableArchive> libJars = null;
         ApplicationHolder holder = context.getModuleMetaData(ApplicationHolder.class);
@@ -431,15 +431,15 @@ public class DeploymentImpl implements Deployment {
                 }
             }
         }
-        
+
         if (libJars != null) {
             String libDir = holder.app.getLibraryDirectory();
             ListIterator<ReadableArchive> libJarIterator = libJars.listIterator();
             while (libJarIterator.hasNext()) {
                 ReadableArchive libJarArchive = (ReadableArchive)libJarIterator.next();
                 BeanDeploymentArchive bda = new BeanDeploymentArchiveImpl(
-                        libJarArchive, ejbs, context, 
-                        /* use lib/jarname as BDA ID */ libDir + SEPARATOR_CHAR 
+                        libJarArchive, ejbs, context,
+                        /* use lib/jarname as BDA ID */ libDir + SEPARATOR_CHAR
                         + libJarArchive.getName());
                 this.beanDeploymentArchives.add(bda);
                 if (libJarBDAs  == null) {
@@ -451,10 +451,10 @@ public class DeploymentImpl implements Deployment {
             //Ensure each library jar in EAR/lib is visible to each other.
             ensureEarLibJarVisibility(libJarBDAs);
         }
-        
+
         return libJarBDAs;
     }
-    
+
     private void ensureEarLibJarVisibility(List<BeanDeploymentArchive> earLibBDAs) {
         //ensure all ear/lib JAR BDAs are visible to each other
         for (int i = 0; i < earLibBDAs.size(); i++) {
