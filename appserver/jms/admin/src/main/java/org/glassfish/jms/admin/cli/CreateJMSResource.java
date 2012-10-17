@@ -242,11 +242,15 @@ public class CreateJMSResource implements AdminCommand {
                  //validate the provided properties and modify it if required.
                     Properties properties =  validateDestinationResourceProps(props, jndiName);
                     //aoAttrList.put("property", properties);
-                    String propString = "";
+                    StringBuilder builder = new StringBuilder();
                     for (java.util.Map.Entry<Object, Object>prop : properties.entrySet()) {
-                            propString += prop.getKey() + "=" + prop.getValue() + ":";
+                        builder.append(prop.getKey()).append("=").append(prop.getValue()).append(":");
                     }
-                    propString = propString.substring(0, propString.length());
+                    String propString = builder.toString();
+                    int lastColonIndex = propString.lastIndexOf(":");
+                    if (lastColonIndex >= 0) {
+                        propString = propString.substring(0, lastColonIndex);
+                    }
                     aoAttrList.set("property", propString);
                 }catch (Exception e)
                 {
@@ -372,14 +376,16 @@ public class CreateJMSResource implements AdminCommand {
             }
                if (tmpProps.size() >0)
                {
-               String propString = "";
-                for (java.util.Map.Entry<Object, Object>prop : tmpProps.entrySet()) {
-                        propString += prop.getKey() + "=" + prop.getValue() + ":";
-                }
-                propString = propString.substring(0, propString.length());
-
-                parameters.set("property", propString);
-
+                    StringBuilder builder = new StringBuilder();
+                    for (java.util.Map.Entry<Object, Object>prop : tmpProps.entrySet()) {
+                        builder.append(prop.getKey()).append("=").append(prop.getValue()).append(":");
+                    }
+                    String propString = builder.toString();
+                    int lastColonIndex = propString.lastIndexOf(":");
+                    if (lastColonIndex >= 0) {
+                        propString = propString.substring(0, lastColonIndex);
+                    }
+                    parameters.set("property", propString);
                }
          }
         //parameters.set("restype", resourceType);

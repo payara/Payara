@@ -182,10 +182,8 @@ public class ListJMSDestinations extends JMSDestination implements AdminCommand 
             MBeanServerConnection mbsc = mqInfo.getMQMBeanServerConnection();
             ObjectName on = new ObjectName(
                 DESTINATION_MANAGER_CONFIG_MBEAN_NAME);
-            String [] signature = null;
-            Object [] params = null;
 
-            ObjectName [] dests = (ObjectName [])mbsc.invoke(on, "getDestinations", params, signature);
+            ObjectName [] dests = (ObjectName [])mbsc.invoke(on, "getDestinations", null, null);
             if ((dests != null) && (dests.length > 0)) {
                 List<JMSDestinationInfo> jmsdi = new ArrayList<JMSDestinationInfo>();
                 for (int i=0; i<dests.length; i++) {

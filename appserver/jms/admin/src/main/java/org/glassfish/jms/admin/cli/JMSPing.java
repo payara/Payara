@@ -211,11 +211,15 @@ public class JMSPing implements AdminCommand {
        //need to escape the addresslist property so that they get passed on correctly to the create-connector-connection-pool command
         properties.put("AddressList", "\"mq://"+host + ":"+ port +"\"");
 
-        String propString = "";
+        StringBuilder builder = new StringBuilder();
         for (java.util.Map.Entry<Object, Object>prop : properties.entrySet()) {
-                propString += prop.getKey() + "=" + prop.getValue() + ":";
+            builder.append(prop.getKey()).append("=").append(prop.getValue()).append(":");
         }
-        propString = propString.substring(0, propString.length());
+        String propString = builder.toString();
+        int lastColonIndex = propString.lastIndexOf(":");
+        if (lastColonIndex >= 0) {
+            propString = propString.substring(0, lastColonIndex);
+        }
         aoAttrList.set("property", propString);
 
         aoAttrList.set("restype",  "javax.jms.QueueConnectionFactory");
