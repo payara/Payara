@@ -40,11 +40,6 @@
 
 package org.apache.naming.resources;
 
-import org.apache.naming.resources.DirContextURLStreamHandler;
-import org.glassfish.api.Startup;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.url.AbstractURLStreamHandlerService;
@@ -60,15 +55,13 @@ import java.util.Properties;
  * This class is responsible for adding {@code DirContextURLStreamHandler}
  * to OSGi service registry.
  *
- * It is both an activator as well as marked as a Startup service.
- *
- * The Startup service ensures that this bundle gets activated during server startup and the activator ensures that
- * we register a jndi protocol handler.
+ * As much as we would have liked it to be both an activator as well as a Startup service, we can't.
+ * In embedded mode, this Startup service would fail to load, so we have separated the startup servuce part to
+ * {@link WebNamingStartup} class. That Startup service ensures that this bundle gets activated
+ * during server startup and the activator ensures that we register a jndi protocol handler.
  *
  * @author Sanjeeb.Sahoo@Sun.COM
  */
-@Service
-@RunLevel(StartupRunLevel.VAL)
 public class DirContextURLStreamHandlerService
         extends AbstractURLStreamHandlerService
         implements URLStreamHandlerService, BundleActivator {
