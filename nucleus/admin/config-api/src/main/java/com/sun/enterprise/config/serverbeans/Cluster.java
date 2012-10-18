@@ -552,9 +552,6 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
     @PerLookup
     class Decorator implements CreationDecorator<Cluster> {
 
-        @Param
-        String name=null;
-
         @Param(name="config", optional=true)
         String configRef=null;
 
