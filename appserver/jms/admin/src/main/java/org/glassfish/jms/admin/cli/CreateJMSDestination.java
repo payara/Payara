@@ -228,6 +228,7 @@ public class CreateJMSDestination extends JMSDestination implements AdminCommand
             }
 
             mbsc.invoke(on, "create", params, signature);
+            report.setMessage(localStrings.getLocalString("create.jms.destination.success", "JMS Desctination {0} created.", destName));
         } catch (Exception e) {
             logAndHandleException(e, "admin.mbeans.rmb.error_creating_jms_dest");
         } finally {
