@@ -52,9 +52,11 @@ import java.io.File;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
 import java.util.logging.Level;
-import com.sun.logging.LogDomains;
 import org.glassfish.deployment.common.DeploymentUtils;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * Implementation of Directory scanner for autodeployment  </br>
@@ -67,7 +69,12 @@ import org.glassfish.deployment.common.DeploymentUtils;
  */
 public class AutoDeployDirectoryScanner implements DirectoryScanner{
     
-    private static final Logger sLogger=LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
+    public static final Logger deplLogger =
+        org.glassfish.deployment.autodeploy.AutoDeployer.deplLogger;
+
+    @LogMessageInfo(message = "Error occurred: {0}", cause="An exception was caught when the operation was attempted", action="See the exception to determine how to fix the error", level="SEVERE")
+    private static final String EXCEPTION_OCCURRED = "NCLS-DEPLOYMENT-00040";
+
     private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AutoDeployDirectoryScanner.class);
     
     public AutoDeployDirectoryScanner() {
@@ -147,7 +154,11 @@ public class AutoDeployDirectoryScanner implements DirectoryScanner{
     }
 
     protected void printException(Exception e) {
-        sLogger.log(Level.SEVERE, e.getMessage(), e);
+        LogRecord lr = new LogRecord(Level.SEVERE, EXCEPTION_OCCURRED);
+        Object args[] = { e.getMessage() };
+        lr.setParameters(args);
+        lr.setThrown(e);
+        deplLogger.log(lr);
     }
     
     protected File[] getListOfFiles(File dir) {

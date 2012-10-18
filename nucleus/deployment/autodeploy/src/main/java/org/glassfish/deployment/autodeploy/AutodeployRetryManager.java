@@ -42,7 +42,6 @@ package org.glassfish.deployment.autodeploy;
 
 import com.sun.enterprise.config.serverbeans.DasConfig;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
@@ -58,6 +57,8 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import javax.inject.Singleton;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * Manages retrying of autodeployed files in case a file is copied slowly.
@@ -129,8 +130,6 @@ public class AutodeployRetryManager implements PostConstruct {
     /** Maps an invalid File to its corresponding Info object. */
     private HashMap<File,Info> invalidFiles = new HashMap<File,Info>();
 
-    private Logger sLogger;
-    
     private static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(AutodeployRetryManager.class);
 
@@ -139,8 +138,19 @@ public class AutodeployRetryManager implements PostConstruct {
     
     private int timeout;
 
+    public static final Logger deplLogger =
+        org.glassfish.deployment.autodeploy.AutoDeployer.deplLogger;
+
+    @LogMessageInfo(message = "Configured timeout value of {0} second{0,choice,0#s|1#|1<s} will be used but seems very large", level="WARNING")
+    private static final String LARGE_TIMEOUT = "NCLS-DEPLOYMENT-00031";
+
+    @LogMessageInfo(message = "Configured timeout value of {0} second{0,choice,0#s|1#|1<s} is too small; using previous value of {1} second{1,choice,0#s|1#|1<s}", level="WARNING")
+    private static final String SMALL_TIMEOUT = "NCLS-DEPLOYMENT-00032";
+
+    @LogMessageInfo(message = "Could not convert configured timeout value of \"{0}\" to a number; using previous value of {1} second{1,choice,0#s|1#|1<s}", level="WARNING")
+    private static final String INVALID_TIMEOUT = "NCLS-DEPLOYMENT-00033";
+
     public void postConstruct() {
-        sLogger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
         setTimeout();
     }
     
@@ -166,7 +176,7 @@ public class AutodeployRetryManager implements PostConstruct {
     boolean shouldAttemptDeployment(File file) {
         boolean result = true; // default is true in case the file is not being monitored
         String msg = null;
-        boolean loggable = sLogger.isLoggable(Level.FINE);
+        boolean loggable = deplLogger.isLoggable(Level.FINE);
         Info info = (Info) invalidFiles.get(file);
         if (info != null) {
             result = info.shouldOpen();
@@ -193,7 +203,7 @@ public class AutodeployRetryManager implements PostConstruct {
             }
         }
         if (loggable) {
-            sLogger.log(Level.FINE, msg);
+            deplLogger.log(Level.FINE, msg);
         }
         return result;
     }
@@ -246,12 +256,12 @@ public class AutodeployRetryManager implements PostConstruct {
              */
             info = createInfo(file);
             invalidFiles.put(file, info);
-            if (sLogger.isLoggable(Level.FINE)) {
+            if (deplLogger.isLoggable(Level.FINE)) {
                 String msg = localStrings.getLocalString(
                         "enterprise.deployment.autodeploy.begin_monitoring", 
                         "will monitor {0} waiting for its size to be stable size until {1}",
                         file.getAbsolutePath(), new Date(info.retryExpiration).toString());
-                sLogger.log(Level.FINE, msg);
+                deplLogger.log(Level.FINE, msg);
             }
         } else {
             /*
@@ -266,7 +276,7 @@ public class AutodeployRetryManager implements PostConstruct {
              *the file is just an invalid archive and throw an exception
              *to indicate that.
              */
-            boolean loggable = sLogger.isLoggable(Level.FINE);
+            boolean loggable = deplLogger.isLoggable(Level.FINE);
             if ( ! info.hasRetryPeriodExpired()) {
                 /*
                  *Just log that the file is still being monitored.
@@ -276,7 +286,7 @@ public class AutodeployRetryManager implements PostConstruct {
                             "enterprise.deployment.autodeploy.continue_monitoring", 
                             "file {0} remains eligible for monitoring until {1}",
                             file.getAbsolutePath(), new Date(info.retryExpiration).toString());
-                    sLogger.log(Level.FINE, msg);
+                    deplLogger.log(Level.FINE, msg);
                 }
             } else {
                 /*
@@ -290,7 +300,7 @@ public class AutodeployRetryManager implements PostConstruct {
                         file.getAbsolutePath(), 
                         timeout);
                 if (loggable) {
-                    sLogger.log(Level.FINE, msg);
+                    deplLogger.log(Level.FINE, msg);
                 }
                 invalidFiles.remove(file);
                 throw new AutoDeploymentException(msg);
@@ -305,12 +315,12 @@ public class AutodeployRetryManager implements PostConstruct {
      *@return true if the file had been previously recorded as invalid
      */
     private boolean recordSuccessfulOpen(File file) {
-        if (sLogger.isLoggable(Level.FINE)) {
+        if (deplLogger.isLoggable(Level.FINE)) {
             String msg = localStrings.getLocalString(
                     "enterprise.deployment.autodeploy.end_monitoring", 
                     "File {0} opened successfully; no need to monitor it further",
                     file.getAbsolutePath());
-            sLogger.log(Level.FINE, msg);
+            deplLogger.log(Level.FINE, msg);
         }
         return (invalidFiles.remove(file)) != null;
     }
@@ -329,26 +339,23 @@ public class AutodeployRetryManager implements PostConstruct {
                  * User probably thought the configured value was in milliseconds
                  * instead of seconds.  
                  */
-                sLogger.warning(localStrings.getLocalString(
-                        "enterprise.deployment.autodeploy.configured_timeout_large",
-                        "Configured timeout value of {0} second{0,choice,0#s|1#|1<s} will be used but seems very large",
-                        configuredTimeout));
+              deplLogger.log(Level.WARNING,
+                             LARGE_TIMEOUT,
+                             configuredTimeout);
                 newTimeout = configuredTimeout;
             } else if (configuredTimeout <= 0) {
-                sLogger.warning(localStrings.getLocalString(
-                        "enterprise.deployment.autodeploy.configured_timeout_small",
-                        "Configured timeout value of {0} second{0,choice,0#s|1#|1<s} is too small; using previous value of {1} second{1,choice,0#s|1#|1<s}",
-                        configuredTimeout,
-                        timeout));
+              deplLogger.log(Level.WARNING,
+                             SMALL_TIMEOUT,
+                             new Object[] { configuredTimeout,
+                                            timeout });
             } else {
                 newTimeout = configuredTimeout;
             }
         } catch (NumberFormatException ex) {
-            sLogger.warning(localStrings.getLocalString(
-                    "enterprise.deployment.autodeploy.configured_timeout_invalid",
-                    "Could not convert configured timeout value of \"{0}\" to a number; using previous value of {1} second{1,choice,0#s|1#|1<s}",
-                    timeoutText,
-                    timeout));
+              deplLogger.log(Level.WARNING,
+                             INVALID_TIMEOUT,
+                             new Object[] { timeoutText,
+                                            timeout });
         }
         timeout = newTimeout;
     }

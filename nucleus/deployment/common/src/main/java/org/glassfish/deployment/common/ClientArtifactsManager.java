@@ -40,7 +40,6 @@
 
 package org.glassfish.deployment.common;
 
-import com.sun.logging.LogDomains;
 import java.io.File;
 import java.net.URI;
 import java.text.MessageFormat;
@@ -86,12 +85,11 @@ import org.glassfish.api.deployment.DeploymentContext;
  */
 public class ClientArtifactsManager {
 
+    public static final Logger deplLogger = org.glassfish.deployment.common.DeploymentContextImpl.deplLogger;
+
     private boolean isArtifactSetConsumed = false;
     
     private static final String CLIENT_ARTIFACTS_KEY = "ClientArtifacts";
-    
-    private static final Logger logger =
-            LogDomains.getLogger(ClientArtifactsManager.class, LogDomains.DPL_LOGGER);
     
     private final Map<URI,Artifacts.FullAndPartURIs> artifacts =
             new HashMap<URI,Artifacts.FullAndPartURIs>();
@@ -240,7 +238,7 @@ public class ClientArtifactsManager {
     }
 
     private String formattedString(final String key, final Object... args) {
-        final String format = logger.getResourceBundle().getString(key);
+        final String format = deplLogger.getResourceBundle().getString(key);
         return MessageFormat.format(format, args);
     }
 

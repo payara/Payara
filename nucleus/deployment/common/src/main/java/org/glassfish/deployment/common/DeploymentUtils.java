@@ -44,7 +44,6 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
@@ -75,9 +74,13 @@ import java.util.zip.Adler32;
 import java.util.jar.Manifest;
 import java.util.jar.JarFile;
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
 import java.util.logging.Level;
 
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 /** 
  * Utility methods for deployment. 
@@ -85,11 +88,14 @@ import java.util.logging.Level;
 
 public class DeploymentUtils {
 
+    public static final Logger deplLogger = org.glassfish.deployment.common.DeploymentContextImpl.deplLogger;
+
+    @LogMessageInfo(message = "Exception caught {0}", level="WARNING")
+    private static final String EXCEPTION_CAUGHT = "NCLS-DEPLOYMENT-00010";
+
     public static final String DEPLOYMENT_PROPERTY_JAVA_WEB_START_ENABLED = "java-web-start-enabled";
     
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeploymentUtils.class);
-
-    final private static Logger _logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
 
     private static final String V2_COMPATIBILITY = "v2";
 
@@ -206,7 +212,11 @@ public class DeploymentUtils {
             }
             return detector.handles(archive); 
         } catch (IOException ioe) {
-            _logger.log(Level.WARNING, ioe.getMessage(), ioe);
+            LogRecord lr = new LogRecord(Level.WARNING, EXCEPTION_CAUGHT);
+            Object args[] = { ioe.getMessage() };
+            lr.setParameters(args);
+            lr.setThrown(ioe);
+            deplLogger.log(lr);
             return false;
         }
     }

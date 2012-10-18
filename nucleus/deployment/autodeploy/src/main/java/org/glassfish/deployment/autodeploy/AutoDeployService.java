@@ -41,7 +41,6 @@
 package org.glassfish.deployment.autodeploy;
 
 import com.sun.enterprise.config.serverbeans.DasConfig;
-import com.sun.logging.LogDomains;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +50,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -68,6 +68,8 @@ import javax.inject.Singleton;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * A service wrapper around the autodeployer.
@@ -111,15 +113,22 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
             );
         
  
-    /** Cannot find the resource bundle unless we wait until postConstruct to create the logger. */
-    private Logger logger = null;
-    
+    public static Logger deplLogger;
+
+    @LogMessageInfo(message = "Error parsing configured polling-interval-in-seconds {0} as an integer; {1} {2}", level="WARNING")
+    private static final String PARSING_POLLING_INTERVAL_ERROR = "NCLS-DEPLOYMENT-00028";
+
+    @LogMessageInfo(message = "Exception caught:  {0}", cause="An exception was caught when the application was autodeployed.", action="See the exception to determine how to fix the error", level="SEVERE")
+    private static final String EXCEPTION_CAUGHT = "NCLS-DEPLOYMENT-00029";
+
+    @LogMessageInfo(message = "Error processing configuration change of {0} from {1} to {2}; {3} {4}", level="WARNING")
+    private static final String CONFIGURATION_CHANGE_ERROR = "NCLS-DEPLOYMENT-00030";
+
     private static final String DEFAULT_POLLING_INTERVAL_IN_SECONDS = "2";
     private static final String DEFAULT_AUTO_DEPLOY_ENABLED = "true";
 
     public void postConstruct() {
-        logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
-
+        deplLogger = org.glassfish.deployment.autodeploy.AutoDeployer.deplLogger;
         /*
          * Do not start the autodeployer if this is not the DAS.
          */
@@ -150,21 +159,23 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
             try {
                 pollingIntervalInSeconds = getPollingIntervalInSeconds();
             } catch (NumberFormatException ex) {
-                logger.log(
-                        Level.WARNING, 
-                        "enterprise.deployment.autodeploy.error_parsing_polling_interval", 
-                        new Object[] {
-                            activeDasConfig.getAutodeployPollingIntervalInSeconds(),
-                            ex.getClass().getName(),
-                            ex.getLocalizedMessage()
-                            }
-                    );
+                deplLogger.log(Level.WARNING,
+                               PARSING_POLLING_INTERVAL_ERROR,
+                               new Object[] {
+                                 activeDasConfig.getAutodeployPollingIntervalInSeconds(),
+                                 ex.getClass().getName(),
+                                 ex.getLocalizedMessage()
+                               });
             }
             if (isEnabled) {
                 startAutoDeployer(pollingIntervalInSeconds);
             }
         } catch (AutoDeploymentException e) {
-            logger.log(Level.SEVERE, e.getLocalizedMessage(), e); 
+            LogRecord lr = new LogRecord(Level.SEVERE, EXCEPTION_CAUGHT);
+            Object args[] = { e.getMessage() };
+            lr.setParameters(args);
+            lr.setThrown(e);
+            deplLogger.log(lr);
         }
 
     }
@@ -181,8 +192,8 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
             boolean isEnabled,
             int pollingIntervalInSeconds,
             String directory) {
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("[AutoDeploy] " + title + ", enabled=" + isEnabled +
+        if (deplLogger.isLoggable(Level.FINE)) {
+            deplLogger.fine("[AutoDeploy] " + title + ", enabled=" + isEnabled +
                     ", polling interval(seconds)=" + pollingIntervalInSeconds +
                     ", directory=" + directory);
         }
@@ -222,7 +233,7 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
                             autoDeployer.run();
                         } catch (Exception ex) {
                             // shoule have been already logged
-                            AutoDeployer.sLogger.log(Level.FINE, ex.getMessage(), ex);
+                            AutoDeployer.deplLogger.log(Level.FINE, ex.getMessage(), ex);
                         }
                     }
                 }, 
@@ -240,7 +251,7 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
          * Tell the running autodeployer to stop, then cancel the timer task 
          * and the timer.
          */
-        logger.fine("[AutoDeploy] Stopping");
+        deplLogger.fine("[AutoDeploy] Stopping");
         if (autoDeployer!=null)
             autoDeployer.cancel(true);
         if (autoDeployerTimerTask!=null)
@@ -255,7 +266,7 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
      * the frequency.
      */
     private void rescheduleAutoDeployer(int pollingIntervalInSeconds) {
-        logger.fine("[AutoDeploy] Restarting...");
+        deplLogger.fine("[AutoDeploy] Restarting...");
         stopAutoDeployer();
         try {
             autoDeployer.waitUntilIdle();
@@ -287,7 +298,7 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
             if (event.getSource() instanceof DasConfig) {
                 String propName = event.getPropertyName();
                 if (configPropertyNames.contains(propName) && event.getOldValue().equals(event.getNewValue())) {
-                    logger.fine("[AutoDeploy] Ignoring reconfig of " + propName + 
+                    deplLogger.fine("[AutoDeploy] Ignoring reconfig of " + propName + 
                             " from " + event.getOldValue() + " to " + event.getNewValue());
                     continue;
                 }
@@ -302,48 +313,50 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
                      * currently running one.
                      */
                     newEnabled = Boolean.valueOf(newValue);
-                    logger.fine("[AutoDeploy] Reconfig - enabled changed to " + newEnabled);
+                    deplLogger.fine("[AutoDeploy] Reconfig - enabled changed to " + newEnabled);
                 } else if (propName.equals("autodeploy-polling-interval-in-seconds")) {
                     try {
                         newPollingIntervalInSeconds = new Integer(newValue);
-                        logger.fine("[AutoDeploy] Reconfig - polling interval (seconds) changed from " 
+                        deplLogger.fine("[AutoDeploy] Reconfig - polling interval (seconds) changed from " 
                                 + oldValue + " to " +
                                 newPollingIntervalInSeconds);
                     } catch (NumberFormatException ex) {
-                        logger.log(Level.WARNING, "enterprise.deployment.autodeploy.error_processing_config_change", 
-                                new Object[] {
-                                    propName, 
-                                    oldValue,
-                                    newValue,
-                                    ex.getClass().getName(), 
-                                    ex.getLocalizedMessage()} );
+                        deplLogger.log(Level.WARNING,
+                                       CONFIGURATION_CHANGE_ERROR,
+                                       new Object[] {
+                                         propName, 
+                                         oldValue,
+                                         newValue,
+                                         ex.getClass().getName(), 
+                                         ex.getLocalizedMessage()} );
                     }
                 } else if (propName.equals("autodeploy-dir")) {
                     String newDir = newValue;
                     try {
                         autoDeployer.setDirectory(newDir);
-                        logger.fine("[AutoDeploy] Reconfig - directory changed from " + 
+                        deplLogger.fine("[AutoDeploy] Reconfig - directory changed from " + 
                                 oldValue + " to " +
                                 newDir);
                     } catch (AutoDeploymentException ex) {
-                        logger.log(Level.WARNING, "enterprise.deployment.autodeploy.error_processing_config_change",
-                                new Object[] {
-                                    propName, 
-                                    oldValue,
-                                    newValue,
-                                    ex.getClass().getName(), 
-                                    ex.getCause().getLocalizedMessage()});
+                        deplLogger.log(Level.WARNING,
+                                       CONFIGURATION_CHANGE_ERROR,
+                                       new Object[] {
+                                         propName, 
+                                         oldValue,
+                                         newValue,
+                                         ex.getClass().getName(), 
+                                         ex.getLocalizedMessage()} );
                     }
                 } else if (propName.equals("autodeploy-verifier-enabled")) {
                     boolean newVerifierEnabled = Boolean.parseBoolean(newValue);
                     autoDeployer.setVerifierEnabled(newVerifierEnabled);
-                    logger.fine("[AutoDeploy] Reconfig - verifierEnabled changed from " + 
+                    deplLogger.fine("[AutoDeploy] Reconfig - verifierEnabled changed from " + 
                             Boolean.parseBoolean(oldValue) +
                             " to " + newVerifierEnabled);
                 } else if (propName.equals("autodeploy-jsp-precompilation-enabled")) {
                     boolean newJspPrecompiled = Boolean.parseBoolean(newValue);
                     autoDeployer.setJspPrecompilationEnabled(newJspPrecompiled);
-                    logger.fine("[AutoDeploy] Reconfig - jspPrecompilationEnabled changed from " + 
+                    deplLogger.fine("[AutoDeploy] Reconfig - jspPrecompilationEnabled changed from " + 
                             Boolean.parseBoolean(oldValue) +
                             " to " + newJspPrecompiled);
                 }

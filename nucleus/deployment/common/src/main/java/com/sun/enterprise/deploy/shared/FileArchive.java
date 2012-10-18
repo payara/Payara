@@ -59,6 +59,10 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.net.URI;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+
 /**
  * This implementation of the Archive interface maps to a directory/file
  * structure.
@@ -112,7 +116,13 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
     // the currently opened entry
     OutputStream os=null;
 
-    private static final Logger logger = LogDomains.getLogger(FileArchive.class, LogDomains.DPL_LOGGER);
+    public static final Logger deplLogger = org.glassfish.deployment.common.DeploymentContextImpl.deplLogger;
+
+    @LogMessageInfo(message = "Attempt to list files in {0} failed, perhaps because that is not a valid directory or because file permissions do not allow GlassFish to access it", level="WARNING")
+    private static final String FILE_LIST_FAILURE = "NCLS-DEPLOYMENT-00022";
+
+    @LogMessageInfo(message = "Ignoring {0} because the containing archive {1} recorded it as a pre-existing stale file", level="WARNING")
+    private static final String STALE_FILES_SKIPPED = "NCLS-DEPLOYMENT-00023";
 
     /*
      * tracks stale files in the archive and filters the archive's contents to
@@ -302,7 +312,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
         String subEntryName = getFileSubArchivePath(name);
         File subEntry = new File(subEntryName);
         if (subEntry.exists() && isEntryValid(subEntry)) {
-            logger.log(DEBUG_LEVEL, "FileArchive.getSubArchive for {0} found that it is valid",
+            deplLogger.log(DEBUG_LEVEL, "FileArchive.getSubArchive for {0} found that it is valid",
                     subEntry.getAbsolutePath());
             ReadableArchive result = archiveFactory.openArchive(subEntry);
             if (result instanceof AbstractReadableArchive) {
@@ -310,7 +320,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
             }
             return result;
         } else if (subEntry.exists()) {
-            logger.log(DEBUG_LEVEL, "FileArchive.getSubArchive for {0} found that it is not a valid entry; it is stale",
+            deplLogger.log(DEBUG_LEVEL, "FileArchive.getSubArchive for {0} found that it is not a valid entry; it is stale",
                     subEntry.getAbsolutePath());
         }
         return null;
@@ -329,10 +339,10 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
             if (!subEntry.exists() && !subEntry.mkdirs()) {
               throw new IOException("Unable to create directory for " + subEntry.getAbsolutePath());
             }
-            logger.log(DEBUG_LEVEL, "FileArchive.createSubArchive created dirs for {0}",
+            deplLogger.log(DEBUG_LEVEL, "FileArchive.createSubArchive created dirs for {0}",
                 subEntry.getAbsolutePath());
         } else {
-            logger.log(DEBUG_LEVEL, "FileArchive.createSubArchive found existing dir for {0}",
+            deplLogger.log(DEBUG_LEVEL, "FileArchive.createSubArchive found existing dir for {0}",
                     subEntry.getAbsolutePath());
             /*
              * This subdirectory already exists, so it might be marked as
@@ -498,11 +508,11 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
      * @return
      */
     private boolean isEntryValid(final File entry) {
-        return isEntryValid(entry, true, logger);
+        return isEntryValid(entry, true, deplLogger);
     }
 
     private boolean isEntryValid(final File entry, final boolean isLogging) {
-        return isEntryValid(entry, isLogging, logger);
+        return isEntryValid(entry, isLogging, deplLogger);
     }
 
     private boolean isEntryValid(final File entry, final boolean isLogging, final Logger logger) {
@@ -572,7 +582,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
      */
 
     private void getListOfFiles(File directory, List<String> files, List embeddedArchives) {
-        getListOfFiles(directory, files, embeddedArchives, logger);
+        getListOfFiles(directory, files, embeddedArchives, deplLogger);
     }
 
     /**
@@ -589,9 +599,10 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
             return;
         final File[] fileList = directory.listFiles();
         if (fileList == null) {
-            logger.log(Level.WARNING, "enterprise.deployment.nullFileList",
-                    directory.getAbsolutePath());
-            return;
+            deplLogger.log(Level.WARNING,
+                           FILE_LIST_FAILURE,
+                           directory.getAbsolutePath());
+             return;
         }
         for (File aList : fileList) {
             String fileName = aList.getAbsolutePath().substring(archive.getAbsolutePath().length() + 1);
@@ -664,7 +675,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
         File newFile = new File(archive, name);
         if (newFile.exists()) {
             if (!deleteEntry(name, false /* isLogging */)) {
-                logger.log(Level.FINE, 
+                deplLogger.log(Level.FINE, 
                         "Could not delete file {0} in FileArchive {1} during putNextEntry; continuing", 
                         new Object[]{name, uri.toASCIIString()});
             }
@@ -781,7 +792,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
                 for ( ; staleFileIt.hasNext(); ) {
                     final URI relativeURI = archiveURI.relativize(staleFileIt.next().toURI());
                     ps.println(relativeURI);
-                    logger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager recording left-over file {0}", relativeURI);
+                    deplLogger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager recording left-over file {0}", relativeURI);
                 }
                 ps.close();
             }
@@ -942,7 +953,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
                 reader = new LineNumberReader(new FileReader(markerFile));
 
                 // Avoid some work if logging is coarser than FINE.
-                final boolean isShowEntriesToBeSkipped = logger.isLoggable(DEBUG_LEVEL);
+                final boolean isShowEntriesToBeSkipped = deplLogger.isLoggable(DEBUG_LEVEL);
                 final StringBuffer entriesToSkip = isShowEntriesToBeSkipped ? new StringBuffer() : null;
                 String line;
                 while ((line = reader.readLine()) != null) {
@@ -952,7 +963,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
                     }
                 }
                 if (isShowEntriesToBeSkipped) {
-                    logger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager will skip following file(s): {0}{1}",
+                    deplLogger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager will skip following file(s): {0}{1}",
                             new Object[] {LINE_SEP, entriesToSkip.toString()});
                 }
                 return result;
@@ -965,7 +976,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
 
         @Override
         public boolean isEntryValid(final File f, final boolean isLogging) {
-            return isEntryValid(f, isLogging, logger);
+            return isEntryValid(f, isLogging, deplLogger);
         }
 
 
@@ -974,8 +985,9 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
             final boolean result = ( ! isEntryMarkerFile(f)) && 
                     ( ! staleEntryNames.contains(archiveURI.relativize(f.toURI()).getPath()));
             if ( ! result && ! isEntryMarkerFile(f) && isLogging) {
-                logger.log(Level.WARNING, "enterprise.deployment.filePredatesArchive",
-                        new Object[] {archiveURI.relativize(f.toURI()).toASCIIString(), archiveFile.getAbsolutePath()});
+                deplLogger.log(Level.WARNING,
+                               STALE_FILES_SKIPPED,
+                               new Object[] {archiveURI.relativize(f.toURI()).toASCIIString(), archiveFile.getAbsolutePath()});
             }
             return result;
         }
@@ -1032,7 +1044,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
             final String dirURIPath = archiveURI.relativize(dir.toURI()).getPath();
             for (String staleEntryName : staleEntryNames) {
                 if (staleEntryName.startsWith(dirURIPath) && ! staleEntryName.equals(dirURIPath)) {
-                    logger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager.isStaleEntryInDir found remaining stale entry {0} in {1}",
+                    deplLogger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager.isStaleEntryInDir found remaining stale entry {0} in {1}",
                             new Object[] {staleEntryName, dir.getAbsolutePath()});
                     return true;
                 }
@@ -1042,17 +1054,17 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
 
         private boolean updateStaleEntry(File f, final String msg) {
             if (staleEntryNames.isEmpty()) {
-                logger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager.updateStaleEntry finds staleEntryNames is empty; skipping");
+                deplLogger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager.updateStaleEntry finds staleEntryNames is empty; skipping");
                 return false;
             }
 
             final String entryName = archiveURI.relativize(f.toURI()).toASCIIString();
             final boolean wasStale = staleEntryNames.remove(entryName);
             if (wasStale) {
-                logger.log(DEBUG_LEVEL, msg,
+                deplLogger.log(DEBUG_LEVEL, msg,
                         entryName);
             } else {
-                logger.log(DEBUG_LEVEL, "updateStaleEntry did not find {0} in the stale entries {1}",
+                deplLogger.log(DEBUG_LEVEL, "updateStaleEntry did not find {0} in the stale entries {1}",
                         new Object[] {entryName, staleEntryNames.toString()});
             }
             return wasStale;
@@ -1061,7 +1073,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
         @Override
         public void flush() {
             if (staleEntryNames.isEmpty()) {
-                logger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager.flush deleting marker file; no more stale entries");
+                deplLogger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager.flush deleting marker file; no more stale entries");
                 final File marker = Util.markerFile(archiveFile);
                 if ( ! marker.exists() || marker.delete()) {
                     return;
@@ -1070,7 +1082,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
                  * Couldn't delete the marker file, so try to write out an empty one
                  * so its old contents will not confuse the stale file manager.
                  */
-                logger.log(Level.FINE, "FileArchive.StatleFileManager.flush could not delete marker file {0}; continuing by writing out an empty marker file", 
+                deplLogger.log(Level.FINE, "FileArchive.StatleFileManager.flush could not delete marker file {0}; continuing by writing out an empty marker file", 
                         marker.getAbsolutePath());
             }
             PrintStream ps = null;
@@ -1083,7 +1095,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
                 ps.println(staleEntryName);
             }
             ps.close();
-            logger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager.flush rewrote on-disk file {0} containing {1}",
+            deplLogger.log(DEBUG_LEVEL, "FileArchive.StaleFileManager.flush rewrote on-disk file {0} containing {1}",
                     new Object[] {markerFile.getAbsolutePath(), staleEntryNames.toString()});
         }
 

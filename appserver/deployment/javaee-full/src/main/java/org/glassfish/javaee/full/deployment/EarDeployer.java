@@ -327,7 +327,7 @@ public class EarDeployer implements Deployer {
 
                 ActionReport subReport = 
                     context.getActionReport().addSubActionsReport();
-                moduleContext = new DeploymentContextImpl(subReport, logger, context.getSource(),
+                moduleContext = new DeploymentContextImpl(subReport, context.getSource(),
                         context.getCommandParameters(OpsParams.class), env) {
 
                     @Override

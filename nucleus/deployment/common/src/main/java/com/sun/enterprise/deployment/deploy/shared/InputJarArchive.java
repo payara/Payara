@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.deployment.deploy.shared;
 
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.io.FileUtils;
 import java.net.MalformedURLException;
@@ -62,6 +61,8 @@ import java.util.zip.ZipEntry;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+
 /**
  * This implementation of the Archive deal with reading
  * jar files either from a JarFile or from a JarInputStream
@@ -72,7 +73,13 @@ import java.net.URISyntaxException;
 @PerLookup
 public class InputJarArchive extends JarArchive implements ReadableArchive {
     
-    final static Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
+    public static final Logger deplLogger = org.glassfish.deployment.common.DeploymentContextImpl.deplLogger;
+
+    @LogMessageInfo(message = " file open failure; file = {0}", level="WARNING")
+    private static final String FILE_OPEN_FAILURE = "NCLS-DEPLOYMENT-00019";
+
+    @LogMessageInfo(message = "exception message:  {0} -- invalid zip file: {1}", level="WARNING")
+    private static final String INVALID_ZIP_FILE = "NCLS-DEPLOYMENT-00020";
 
     // the file we are currently mapped to 
     volatile protected JarFile jarFile=null;
@@ -308,15 +315,16 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
                 jf = new JarFile(file);
             }
         } catch(IOException e) {
-            logger.log(Level.WARNING,
-                "enterprise.deployment.backend.fileOpenFailure", 
-                new Object[]{uri});
+            deplLogger.log(Level.WARNING,
+                           FILE_OPEN_FAILURE,
+                           new Object[]{uri});
             // add the additional information about the path
             // since the IOException from jdk doesn't include that info
             String additionalInfo = localStrings.getString(
                 "enterprise.deployment.invalid_zip_file", uri);
-            logger.log(Level.WARNING,
-                e.getLocalizedMessage() + " --  " + additionalInfo);
+            deplLogger.log(Level.WARNING,
+                           INVALID_ZIP_FILE,
+                           new Object[] { e.getLocalizedMessage(), additionalInfo } );
         }
         return jf;
     }       

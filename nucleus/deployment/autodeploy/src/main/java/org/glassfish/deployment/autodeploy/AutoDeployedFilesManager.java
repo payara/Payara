@@ -47,13 +47,14 @@
 
 package org.glassfish.deployment.autodeploy;
 
-import com.sun.logging.LogDomains;
 import java.io.*;
 import java.net.URI;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.glassfish.deployment.common.DeploymentUtils;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  *  Contains the status of list of files that have been autodeployed. 
@@ -63,7 +64,21 @@ import org.glassfish.deployment.common.DeploymentUtils;
 
 public class AutoDeployedFilesManager {
     
-    private static final Logger sLogger=LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
+    public static final Logger deplLogger =
+        org.glassfish.deployment.autodeploy.AutoDeployer.deplLogger;
+
+    @LogMessageInfo(message = "Attempt to create file {0} failed; no further information.", level="WARNING")
+    private static final String CREATE_FAILED = "NCLS-DEPLOYMENT-00041";
+
+    @LogMessageInfo(message = "Attempt to set last modified date/time of file {0} failed; no further information.", level="WARNING")
+    private static final String MODIFIED_DATE_FAILED = "NCLS-DEPLOYMENT-00042";
+
+    @LogMessageInfo(message = "Attempt to delete file {0} failed; no further information.", level="WARNING")
+    private static final String DELETE_FAILED = "NCLS-DEPLOYMENT-00043";
+
+    @LogMessageInfo(message = "Attempt to create directory {0} failed; no further information.", level="WARNING")
+    private static final String MKDIRS_FAILED = "NCLS-DEPLOYMENT-00044";
+
     static final String STATUS_DIR_NAME = ".autodeploystatus";
 
     /*
@@ -124,10 +139,14 @@ public class AutoDeployedFilesManager {
       try {
         File statusFile = getStatusFile(f);
         if ( ! statusFile.createNewFile()) {
-            sLogger.log(Level.WARNING, "enterprise.deployment.createFailed", statusFile.getAbsolutePath());
+            deplLogger.log(Level.WARNING,
+                           CREATE_FAILED,
+                           statusFile.getAbsolutePath());
         }
         if ( ! statusFile.setLastModified(f.lastModified())) {
-            sLogger.log(Level.WARNING, "enterprise.deployment.setLastModFailed", statusFile.getAbsolutePath());
+            deplLogger.log(Level.WARNING,
+                           MODIFIED_DATE_FAILED,
+                           statusFile.getAbsolutePath());
         }
       } catch (Exception e) { throw e; }
     }
@@ -139,7 +158,9 @@ public class AutoDeployedFilesManager {
       try {
         File statusFile = getStatusFile(f);
         if ( ! statusFile.delete()) {
-            sLogger.log(Level.WARNING, "enterprise.deployment.deleteFailed", f.getAbsolutePath());
+            deplLogger.log(Level.WARNING,
+                           DELETE_FAILED,
+                           f.getAbsolutePath());
         }
       } catch (Exception e) { throw e;}
     }
@@ -168,7 +189,9 @@ public class AutoDeployedFilesManager {
          */
         if (autoDeployDir.exists()) {
             if ( ! statDir.exists() && ! statDir.mkdirs()) {
-                sLogger.log(Level.WARNING, "enterprise.deployment.mkdirsFailed", autoDeployDir.getAbsolutePath());
+                deplLogger.log(Level.WARNING,
+                               MKDIRS_FAILED,
+                               autoDeployDir.getAbsolutePath());
             }
         }
         return statDir;
@@ -186,20 +209,20 @@ public class AutoDeployedFilesManager {
         ArrayList<File> arrList = new ArrayList<File>();
         for (File deployDirFile : latestFiles) {
             if (FILE_NAMES_TO_IGNORE_FOR_AUTODEPLOY.contains(deployDirFile.getName())) {
-                if (sLogger.isLoggable(Level.FINE)) {
-                    sLogger.fine("Skipping " + deployDirFile.getAbsolutePath() + " because its name is in the list of files to ignore");
+                if (deplLogger.isLoggable(Level.FINE)) {
+                    deplLogger.fine("Skipping " + deployDirFile.getAbsolutePath() + " because its name is in the list of files to ignore");
                 }
                 continue;
             }
             File statusFile = getStatusFile(deployDirFile);
             if (!statusFile.exists() || deployDirFile.lastModified() != statusFile.lastModified()) {
-                if (sLogger.isLoggable(Level.FINE)) {
-                    sLogger.fine("Including " + deployDirFile.getAbsolutePath() + " in candidate files for deployment");
+                if (deplLogger.isLoggable(Level.FINE)) {
+                    deplLogger.fine("Including " + deployDirFile.getAbsolutePath() + " in candidate files for deployment");
                 }
                 arrList.add(deployDirFile);
             } else {
-                if (sLogger.isLoggable(Level.FINE)) {
-                    sLogger.fine("Skipping " + deployDirFile.getAbsolutePath() + " its status file exists and the timestamps on the status file and the autodeployed file match");
+                if (deplLogger.isLoggable(Level.FINE)) {
+                    deplLogger.fine("Skipping " + deployDirFile.getAbsolutePath() + " its status file exists and the timestamps on the status file and the autodeployed file match");
                 }
             }
         }
@@ -275,12 +298,12 @@ public class AutoDeployedFilesManager {
                 appsRequested.add(new UndeployRequestedFile(new File(autodeployDir, f.getName())));
             }
         }
-        if (sLogger.isLoggable(Level.FINE) && ! appsRequested.isEmpty()) {
+        if (deplLogger.isLoggable(Level.FINE) && ! appsRequested.isEmpty()) {
             StringBuilder sb = new StringBuilder("Undeployment requested using *_undeployRequested for ");
             for (File app : appsRequested) {
                 sb.append("  " + app.getName() + System.getProperty("line.separator"));
             }
-            sLogger.fine(sb.toString());
+            deplLogger.fine(sb.toString());
         }
         return appsRequested;
     }

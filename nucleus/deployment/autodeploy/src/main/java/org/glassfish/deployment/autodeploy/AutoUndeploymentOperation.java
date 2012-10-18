@@ -58,6 +58,8 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+
 /**
  * Performs a single auto-undeploy operation for a single file.
  * <p>
@@ -105,6 +107,9 @@ public class AutoUndeploymentOperation extends AutoOperation {
     @Inject @Named(COMMAND_NAME)
     private AdminCommand undeployCommand;
     
+    @LogMessageInfo(message = "Attempt to create file {0} failed; no further information.", level="WARNING")
+    private static final String CREATE_FAILED = "NCLS-DEPLOYMENT-00039";
+
     /**
      * Completes the intialization of the object.
      * @param appFile
@@ -199,8 +204,9 @@ public class AutoUndeploymentOperation extends AutoOperation {
             deleteAllMarks(f);
             final File undeployedFile = getUndeployedFile(f);
             if ( ! undeployedFile.createNewFile()) {
-                sLogger.log(Level.WARNING, "enterprise.deployment.createFailed",
-                        undeployedFile.getAbsolutePath());
+                deplLogger.log(Level.WARNING,
+                               CREATE_FAILED,
+                               undeployedFile.getAbsolutePath());
             }
         } catch (Exception e) { 
             //ignore 
@@ -212,8 +218,9 @@ public class AutoUndeploymentOperation extends AutoOperation {
             deleteAllMarks(f);
             final File undeployFailedFile = getUndeployFailedFile(f);
             if ( ! undeployFailedFile.createNewFile()) {
-                sLogger.log(Level.WARNING, "enterprise.deployment.createFailed",
-                        undeployFailedFile.getAbsolutePath());
+                deplLogger.log(Level.WARNING,
+                               CREATE_FAILED,
+                               undeployFailedFile.getAbsolutePath());
             }
         } catch (Exception e) { 
             //ignore 
@@ -225,19 +232,19 @@ public class AutoUndeploymentOperation extends AutoOperation {
     }
     
     private void cleanupAppAndRequest(File f) {
-        boolean logFine = sLogger.isLoggable(Level.FINE);
+        boolean logFine = deplLogger.isLoggable(Level.FINE);
 
         /*
          * Clean up the application file or directory.
          */
         if (f.isDirectory()) {
             if (logFine) {
-                sLogger.fine("Deleting autodeployed directory " + f.getAbsolutePath() + " by request");
+                deplLogger.fine("Deleting autodeployed directory " + f.getAbsolutePath() + " by request");
             }
             FileUtils.liquidate(f);
         } else {
             if (logFine) {
-                sLogger.fine("Deleting autodeployed file " + f.getAbsolutePath() + " by request");
+                deplLogger.fine("Deleting autodeployed file " + f.getAbsolutePath() + " by request");
             }
             FileUtils.deleteFile(f);
         }
@@ -247,7 +254,7 @@ public class AutoUndeploymentOperation extends AutoOperation {
          */
         File requestFile = AutoDeployedFilesManager.appToUndeployRequestFile(f);
         if (logFine) {
-            sLogger.fine("Deleting autodeploy request file " + requestFile.getAbsolutePath());
+            deplLogger.fine("Deleting autodeploy request file " + requestFile.getAbsolutePath());
         }
         FileUtils.deleteFile(requestFile);
     }

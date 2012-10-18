@@ -40,7 +40,6 @@
 
 package org.glassfish.deployment.common;
 
-import com.sun.logging.LogDomains;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -73,8 +72,7 @@ import org.glassfish.api.deployment.DeploymentContext;
  */
 public class Artifacts {
 
-    private static final Logger logger =
-            LogDomains.getLogger(Artifacts.class, LogDomains.DPL_LOGGER);
+    public static final Logger deplLogger = org.glassfish.deployment.common.DeploymentContextImpl.deplLogger;
 
     /** the actual artifacts tracked - the part URI and the full URI */
     private final Set<FullAndPartURIs> artifacts = new HashSet<FullAndPartURIs>();
@@ -172,9 +170,9 @@ public class Artifacts {
     public synchronized void addArtifact(URI full, URI part, boolean isTemporary) {
         FullAndPartURIs fullAndPart = new FullAndPartURIs(full, part, isTemporary);
         artifacts.add(fullAndPart);
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Added {1} artifact: {0}",
-                    new Object[] {fullAndPart, keyPrefix});
+        if (deplLogger.isLoggable(Level.FINE)) {
+            deplLogger.log(Level.FINE, "Added {1} artifact: {0}",
+                           new Object[] {fullAndPart, keyPrefix});
         }
     }
 
@@ -207,8 +205,8 @@ public class Artifacts {
      */
     public synchronized void addArtifacts(Collection<FullAndPartURIs> urisCollection) {
         artifacts.addAll(urisCollection);
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Added downloadable artifacts: {0}", urisCollection);
+        if (deplLogger.isLoggable(Level.FINE)) {
+            deplLogger.log(Level.FINE, "Added downloadable artifacts: {0}", urisCollection);
         }
     }
 

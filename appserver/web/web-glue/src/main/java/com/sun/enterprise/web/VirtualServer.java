@@ -2225,7 +2225,7 @@ public class VirtualServer extends StandardHost
             params.target = "server";
 
             ExtendedDeploymentContext initialContext =
-                    new DeploymentContextImpl(report, _logger, archive, params, env);
+                    new DeploymentContextImpl(report, archive, params, env);
 
             if (deployment==null)
                 deployment = services.getService(Deployment.class);

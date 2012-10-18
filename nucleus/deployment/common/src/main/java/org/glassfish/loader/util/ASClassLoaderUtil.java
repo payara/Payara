@@ -43,7 +43,6 @@ package org.glassfish.loader.util;
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -63,14 +62,26 @@ import java.net.URL;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes;
 import java.util.*;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+
 public class ASClassLoaderUtil {
 
-   final private static Logger _logger = LogDomains.getLogger(ASClassLoaderUtil.class, LogDomains.DPL_LOGGER);
+    public static final Logger deplLogger = org.glassfish.deployment.common.DeploymentContextImpl.deplLogger;
+
+    @LogMessageInfo(message = "Cannot convert classpath to URL {0}", level="WARNING")
+    private static final String CLASSPATH_ERROR = "NCLS-DEPLOYMENT-00043";
+
+    @LogMessageInfo(message = "Exception:  {0}", level="WARNING")
+    private static final String EXCEPTION = "NCLS-DEPLOYMENT-00017";
+
+    @LogMessageInfo(message = "unexpected error in getting urls", level="WARNING")
+    private static final String UNEXPECTED_EXCEPTION = "NCLS-DEPLOYMENT-00018";
 
     private static String modulesClassPath = null;
 
@@ -92,9 +103,9 @@ public class ASClassLoaderUtil {
     public static String getModuleClassPath
         (ServiceLocator habitat, String moduleId, String deploymentLibs) {
 
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "ASClassLoaderUtil.getModuleClassPath " +
-                    "for module Id : " + moduleId);
+        if (deplLogger.isLoggable(Level.FINE)) {
+          deplLogger.log(Level.FINE,
+                         "ASClassLoaderUtil.getModuleClassPath " + "for module Id : " + moduleId);
         }
 
         StringBuilder classpath = new StringBuilder(getModulesClasspath(habitat));
@@ -105,8 +116,9 @@ public class ASClassLoaderUtil {
             classpath.append(commonClassPath).append(File.pathSeparator);
         }
         addDeployParamLibrariesForModule(classpath, moduleId, deploymentLibs, habitat);
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "Final classpath: " + classpath.toString());
+        if (deplLogger.isLoggable(Level.FINE)) {
+            deplLogger.log(Level.FINE,
+                           "Final classpath: " + classpath.toString());
         }
         return classpath.toString();
 
@@ -207,9 +219,13 @@ public class ASClassLoaderUtil {
                 URL url =f.toURI().toURL();
                 urls[i++] = url;
             } catch (MalformedURLException malEx) {
-                _logger.log(Level.WARNING, "Cannot convert classpath to URL",
-                        libraryStr);
-                _logger.log(Level.WARNING, malEx.getMessage(), malEx);
+                deplLogger.log(Level.WARNING,
+                               CLASSPATH_ERROR,
+                               libraryStr);
+                LogRecord lr = new LogRecord(Level.WARNING, EXCEPTION);
+                lr.setParameters(new Object[] { malEx.getMessage() });
+                lr.setThrown(malEx);
+                deplLogger.log(lr);
             }
         }
         return urls;
@@ -290,10 +306,9 @@ public class ASClassLoaderUtil {
                     URL url = dir.toURI().toURL();
                     list.add(url);
 
-                    if (_logger.isLoggable(Level.FINE)) {
-
-                       _logger.log(Level.FINE,
-                            "Adding directory to class path:" + url.toString());
+                    if (deplLogger.isLoggable(Level.FINE)) {
+                       deplLogger.log(Level.FINE,
+                                      "Adding directory to class path:" + url.toString());
                     }
                 }
             }
@@ -314,9 +329,9 @@ public class ASClassLoaderUtil {
                             (!ignoreZip && FileUtils.isZip(jar)) ) {
                             list.add(jar.toURI().toURL());
 
-                            if (_logger.isLoggable(Level.FINE)) {
-                                _logger.log(Level.FINE,
-                                    "Adding jar to class path:" + jar.toURL());
+                            if (deplLogger.isLoggable(Level.FINE)) {
+                                deplLogger.log(Level.FINE,
+                                               "Adding jar to class path:" + jar.toURL());
                             }
                         }
                     }
@@ -376,8 +391,9 @@ public class ASClassLoaderUtil {
                 File f = new File(path);
                 urls.add(f.toURI().toURL());
             } catch(Exception e) {
-                  _logger.log(Level.WARNING,
-                      "unexpected error in getting urls",e);
+                  deplLogger.log(Level.WARNING,
+                                 UNEXPECTED_EXCEPTION,
+                                 e);
             }
         }
         return urls;

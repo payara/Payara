@@ -41,7 +41,6 @@
 package org.glassfish.deployment.autodeploy;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import java.io.File;
 import java.util.Properties;
 import java.util.Map;
@@ -58,6 +57,8 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+
 /**
  * Abstract class for operations the AutoDeployer can perform (currently
  * deploy and undeploy).
@@ -72,7 +73,21 @@ import org.glassfish.hk2.api.PerLookup;
 @PerLookup
 public abstract class AutoOperation {
     
-    final static Logger sLogger=LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
+    public static final Logger deplLogger =
+        org.glassfish.deployment.autodeploy.AutoDeployer.deplLogger;
+
+    @LogMessageInfo(message = "{0}", level="INFO")
+    private static final String INFO_MSG = "NCLS-DEPLOYMENT-00035";
+
+    @LogMessageInfo(message = "{0}", level="WARNING")
+    private static final String WARNING_MSG = "NCLS-DEPLOYMENT-00036";
+
+    @LogMessageInfo(message = "Error occurred: ", cause="An exception was caught when the operation was attempted", action="See the exception to determine how to fix the error", level="SEVERE")
+    private static final String EXCEPTION_OCCURRED = "NCLS-DEPLOYMENT-00037";
+
+    @LogMessageInfo(message = "Attempt to delete file {0} failed; no further information.", level="WARNING")
+    private static final String DELETE_FAILED = "NCLS-DEPLOYMENT-00038";
+
     final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AutoDeployer.class);
 
     /**
@@ -144,8 +159,15 @@ public abstract class AutoOperation {
             CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation(commandName, report);
             inv.parameters(p).execute(command);
             AutodeploymentStatus ds = AutodeploymentStatus.forExitCode(report.getActionExitCode());
-            Level messageLevel = (ds.status ? Level.INFO : Level.WARNING);
-            sLogger.log(messageLevel, getMessageString(ds, file));
+            if (ds.status) {
+              deplLogger.log(Level.INFO,
+                             INFO_MSG,
+                             getMessageString(ds, file));
+            } else {
+              deplLogger.log(Level.WARNING,
+                             WARNING_MSG,
+                             getMessageString(ds, file));
+            }
             markFiles(ds, file);
             /*
              * Choose the final status to report, based on the outcome of the
@@ -157,7 +179,9 @@ public abstract class AutoOperation {
             /*
              * Log and continue.
              */
-            sLogger.log(Level.SEVERE, "Error occurred: ", ex); 
+            deplLogger.log(Level.SEVERE,
+                           EXCEPTION_OCCURRED,
+                           ex);
             return AutodeploymentStatus.FAILURE;
         }
     }
@@ -215,8 +239,9 @@ public abstract class AutoOperation {
                 final File suffixedFile = getSuffixedFile(f, suffix);
                 if(suffixedFile.exists()){
                     if ( ! suffixedFile.delete()) {
-                        sLogger.log(Level.WARNING, "enterprise.deployment.deleteFailed",
-                                suffixedFile.getAbsolutePath());
+                        deplLogger.log(Level.WARNING,
+                                       DELETE_FAILED,
+                                       suffixedFile.getAbsolutePath());
                     }
                 }
             }

@@ -64,7 +64,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.Transaction;
 
-import java.util.logging.Logger;
 import java.util.Properties;
 import java.util.List;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
@@ -163,7 +162,6 @@ public class CreateLifecycleModuleCommand implements AdminCommand, AdminCommandS
     public void execute(AdminCommandContext context) {
         
         ActionReport report = context.getActionReport();
-        final Logger logger = context.getLogger();
 
         try {
             validateTarget(target, name);
@@ -180,7 +178,7 @@ public class CreateLifecycleModuleCommand implements AdminCommand, AdminCommandS
         commandParams.target = target;
 
         // create a dummy context to hold params and props
-        ExtendedDeploymentContext deploymentContext = new DeploymentContextImpl(report, logger, null, commandParams, null);
+        ExtendedDeploymentContext deploymentContext = new DeploymentContextImpl(report, null, commandParams, null);
 
         Properties appProps = deploymentContext.getAppProps();
 

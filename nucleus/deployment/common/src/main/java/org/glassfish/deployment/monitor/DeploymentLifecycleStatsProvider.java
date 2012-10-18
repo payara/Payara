@@ -44,7 +44,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Map;
 import java.util.HashMap;
-import com.sun.logging.LogDomains;
 import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.external.statistics.RangeStatistic;
 import org.glassfish.external.statistics.StringStatistic;
@@ -66,8 +65,7 @@ import org.glassfish.gmbal.ManagedObject;
 @Description("Deployment Module Statistics")
 public class DeploymentLifecycleStatsProvider {
 
-    private static final Logger logger = LogDomains.getLogger(
-        DeploymentLifecycleStatsProvider.class, LogDomains.DPL_LOGGER);
+    public static final Logger deplLogger = org.glassfish.deployment.common.DeploymentContextImpl.deplLogger;
 
     private static final String ACTIVE_APPLICATIONS_DEPLOYED_DESCRIPTION =
         "Number of applications deployed";
@@ -159,8 +157,8 @@ public class DeploymentLifecycleStatsProvider {
                     @ProbeParam("appName") String appName,
                     @ProbeParam("appType") String appType,
                     @ProbeParam("loadTime") String loadTime) {
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.finest("Application deployed event received - " +
+        if (deplLogger.isLoggable(Level.FINEST)) {
+            deplLogger.finest("Application deployed event received - " +
                           "appName = " + appName +
                           ": appType = " + appType + 
                           ": loadTime = " + loadTime);
@@ -180,8 +178,8 @@ public class DeploymentLifecycleStatsProvider {
     public void applicationUndeployedEvent(
                     @ProbeParam("appName") String appName,
                     @ProbeParam("appType") String appType) {
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.finest("Application undeployed event received - " +
+        if (deplLogger.isLoggable(Level.FINEST)) {
+            deplLogger.finest("Application undeployed event received - " +
                           "appName = " + appName +
                           ": appType = " + appType);
         }

@@ -384,7 +384,6 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                         // the handler is assuming a file:// url
                         ExtendedDeploymentContext subContext =
                             new DeploymentContextImpl(subReport,
-                            context.getLogger(),
                             sub,
                             context.getCommandParameters(
                                 DeployCommandParameters.class), env) {

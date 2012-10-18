@@ -40,7 +40,6 @@
 
 package org.glassfish.deployment.autodeploy;
 
-import com.sun.logging.LogDomains;
 import java.io.File;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -56,6 +55,8 @@ import javax.inject.Named;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * Performs a single auto-deployment operation for a single file.
@@ -111,8 +112,12 @@ public class AutoDeploymentOperation extends AutoOperation {
     @Inject
     private AutodeployRetryManager retryManager;
     
-    private static final Logger logger = LogDomains.getLogger(AutoDeploymentOperation.class, LogDomains.DPL_LOGGER); 
-    
+    public static final Logger deplLogger =
+        org.glassfish.deployment.autodeploy.AutoDeployer.deplLogger;
+
+    @LogMessageInfo(message = "Attempt to create file {0} failed; no further information.", level="WARNING")
+    private static final String CREATE_FILE_FAILED = "NCLS-DEPLOYMENT-00034";
+
     /**
      * Completes the initialization of the object.
      * @param renameOnSuccess
@@ -204,8 +209,9 @@ public class AutoDeploymentOperation extends AutoOperation {
             deleteAllMarks(f);
             final File deployedFile = getDeployedFile(f);
             if ( ! deployedFile.createNewFile()) {
-                logger.log(Level.WARNING, "enterprise.deployment.createFailed",
-                        deployedFile.getAbsolutePath());
+                deplLogger.log(Level.WARNING,
+                               CREATE_FILE_FAILED,
+                               deployedFile.getAbsolutePath());
             }
         } catch (Exception e) { 
             //ignore 
@@ -217,8 +223,9 @@ public class AutoDeploymentOperation extends AutoOperation {
             deleteAllMarks(f);
             final File deployFailedFile = getDeployFailedFile(f);
             if ( ! deployFailedFile.createNewFile()) {
-                logger.log(Level.WARNING, "enterprise.deployment.createFailed", 
-                        deployFailedFile.getAbsolutePath());
+                deplLogger.log(Level.WARNING,
+                               CREATE_FILE_FAILED,
+                               deployFailedFile.getAbsolutePath());
             }
         } catch (Exception e) { 
             //ignore 

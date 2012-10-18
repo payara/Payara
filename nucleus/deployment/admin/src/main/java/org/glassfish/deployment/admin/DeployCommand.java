@@ -254,7 +254,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             }
 
             // create an initial  context
-            initialContext = new DeploymentContextImpl(report, logger, archive, this, env);
+            initialContext = new DeploymentContextImpl(report, archive, this, env);
             initialContext.setArchiveHandler(archiveHandler);
 
             if (tracing!=null) {

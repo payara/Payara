@@ -48,18 +48,22 @@
 package org.glassfish.deployment.autodeploy;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import java.io.File;
 
 import java.net.URI;
 import java.util.Arrays;
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
 import java.util.logging.Level;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.api.ServiceLocator;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 /**
  * Handles the logic of deploying the module/app to the required destination.</br>
@@ -80,7 +84,6 @@ public class AutoDeployer {
     private String virtualServer = null;
 
     private String target=null;
-    static final Logger sLogger=LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AutoDeployer.class);
     private DirectoryScanner directoryScanner=null;
     
@@ -92,6 +95,24 @@ public class AutoDeployer {
 
     private File domainRoot = null;
     
+    @LogMessagesResourceBundle
+    private static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.deployment.LogMessages";
+
+    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
+    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.deploy";
+
+    public static final Logger deplLogger =
+        Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo(message = "Exception caught:  {0}", cause="An exception was caught when the application was autodeployed.", action="See the exception to determine how to fix the error", level="SEVERE")
+    private static final String EXCEPTION_CAUGHT = "NCLS-DEPLOYMENT-00025";
+
+    @LogMessageInfo(message = "Autoundeploying application:  {0}", level="INFO")
+    private static final String AUTODEPLOYING_APPLICATION = "NCLS-DEPLOYMENT-00026";
+
+    @LogMessageInfo(message = "Selecting file {0} for autodeployment", level="INFO")
+    private static final String SELECTING_FILE = "NCLS-DEPLOYMENT-00027";
+
     /*
      *Represent the result of attempting autodeployment of a single file.
      *PENDING indicates the file could not be opened as an archive,
@@ -379,7 +400,7 @@ public class AutoDeployer {
         if (directory.exists()) {
             run(DEFAULT_INCLUDE_SUBDIR);
         } else {
-            sLogger.fine("autodeploy directory does not exist");
+            deplLogger.fine("autodeploy directory does not exist");
         }
     }
     
@@ -390,7 +411,11 @@ public class AutoDeployer {
             undeployAll(directory, includeSubdir);
         } catch (AutoDeploymentException e) {
             // print and continue
-            sLogger.log(Level.SEVERE, e.getMessage(), e);
+            LogRecord lr = new LogRecord(Level.SEVERE, EXCEPTION_CAUGHT);
+            Object args[] = { e.getMessage() };
+            lr.setParameters(args);
+            lr.setThrown(e);
+            deplLogger.log(lr);
         } finally {
             clearInProgress();
         }
@@ -450,7 +475,7 @@ public class AutoDeployer {
          *updated.
          */
         if(files != null && files.length > 0) {
-            sLogger.fine("Deployable files: " + Arrays.toString(files));
+            deplLogger.fine("Deployable files: " + Arrays.toString(files));
             for (int i=0; ((i < files.length) && !cancelDeployment);i++) {
                 boolean okToRecordResult = true;
                 try {
@@ -459,7 +484,7 @@ public class AutoDeployer {
                     //ignore and move to next file
                 } finally {
                     if(renameOnSuccess && okToRecordResult) {
-                        sLogger.fine("Reporting deployed entity " + files[i].getAbsolutePath());
+                        deplLogger.fine("Reporting deployed entity " + files[i].getAbsolutePath());
                         directoryScanner.deployedEntity(autoDeployDir, files[i]);
                     }
                 }
@@ -515,7 +540,9 @@ public class AutoDeployer {
                 applicationFile, 
                 name, 
                 target);
-        sLogger.log(Level.INFO, "Autoundeploying application :" + name);
+        deplLogger.log(Level.INFO,
+                       AUTODEPLOYING_APPLICATION,
+                       name);
         return au.run();
         
     }
@@ -550,11 +577,9 @@ public class AutoDeployer {
         if ( ! retryManager.shouldAttemptDeployment(deployablefile)) {
             return AutodeploymentStatus.PENDING;
         }
-        String msg = localStrings.getLocalString(
-                "enterprise.deployment.autodeploy.selecting_file",
-                "selecting {0} for autodeployment",
-                file);
-        sLogger.log(Level.INFO, msg);
+        deplLogger.log(Level.INFO,
+                       SELECTING_FILE,
+                       file);
 
 
         AutoDeploymentOperation ad = AutoDeploymentOperation.newInstance(

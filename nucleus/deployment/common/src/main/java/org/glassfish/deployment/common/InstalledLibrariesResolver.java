@@ -53,6 +53,8 @@ import java.util.*;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+
 /**
  * This class resolves the dependencies between optional packages (installed libraries) and also between
  * apps/stand-alone modules that depend on optional packages (installed libraries)
@@ -74,7 +76,25 @@ public class InstalledLibrariesResolver {
     //of "java.ext.dirs" entries)
     private static Map<Extension, String> appLibsDirLibsStore = new HashMap<Extension, String>();
 
-    private static Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
+    public static final Logger deplLogger = org.glassfish.deployment.common.DeploymentContextImpl.deplLogger;
+
+    @LogMessageInfo(message = "Optional package {0} does not exist or its Specification-Version does not match. Unable to satisfy dependency for {1}", level="WARNING")
+    private static final String PACKAGE_NOT_FOUND = "NCLS-DEPLOYMENT-00011";
+
+    @LogMessageInfo(message = "Optional package dependency satisfied for {0}", level="INFO")
+    private static final String PACKAGE_SATISFIED = "NCLS-DEPLOYMENT-00012";
+
+    @LogMessageInfo(message = "Error in opening optional package file {0} due to exception: {1}.", level="WARNING")
+    private static final String INVALID_ZIP = "NCLS-DEPLOYMENT-00013";
+
+    @LogMessageInfo(message = "Exception occurred : {0}.", level="WARNING")
+    private static final String EXCEPTION_OCCURRED = "NCLS-DEPLOYMENT-00014";
+
+    @LogMessageInfo(message = "Specification-Version for the optional package [ {0} ] in the jarfile [ {1} ] is not specified. Please provide a valid specification version for this optional package", level="WARNING")
+    private static final String NULL_SPEC_VERS = "NCLS-DEPLOYMENT-00015";
+
+    @LogMessageInfo(message = "Skipping extension processing for {0} due to error: {1}", level="INFO")
+    private static final String SKIPPING_PROCESSING_INFO = "NCLS-DEPLOYMENT-00016";
 
     /**
      * resolves installed library dependencies
@@ -92,15 +112,15 @@ public class InstalledLibrariesResolver {
             try{
                 getInstalledLibraries(archiveUri, manifest, true, appLibsDirLibsStore);
             }catch(MissingResourceException e1){
-                logger.log(Level.WARNING,
-                    "enterprise.deployment.backend.optionalpkg.dependency.notexist",
-                    new Object[] {e1.getClass(), archiveUri});
+                deplLogger.log(Level.WARNING,
+                               PACKAGE_NOT_FOUND,
+                               new Object[] {e1.getClass(), archiveUri});
                 return false;
             }
         }
-        logger.log(Level.INFO,
-                "enterprise.deployment.backend.optionalpkg.dependency.satisfied",
-                new Object[] {archiveUri});
+        deplLogger.log(Level.INFO,
+                       PACKAGE_SATISFIED, 
+                       new Object[] {archiveUri});
         return true;
     }
 
@@ -116,13 +136,13 @@ public class InstalledLibrariesResolver {
 
     private static void initializeInstalledLibRegistryForExtDirs() {
         String ext_dirStr = System.getProperty("java.ext.dirs");
-        logger.fine("ext-Dir-Str : " + ext_dirStr);
+        deplLogger.fine("ext-Dir-Str : " + ext_dirStr);
 
         Vector extDirs = new Vector();
         StringTokenizer st = new StringTokenizer(ext_dirStr, File.pathSeparator);
         while (st.hasMoreTokens()) {
             String next = st.nextToken();
-            logger.log(Level.FINE,"string tokens..." + next);
+            deplLogger.log(Level.FINE,"string tokens..." + next);
             extDirs.addElement(next);
         }
 
@@ -130,8 +150,8 @@ public class InstalledLibrariesResolver {
 
             File extDir = new File((String)extDirs.elementAt(v));
 
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE,"extension dir..." + extDir);
+            if (deplLogger.isLoggable(Level.FINE)) {
+                deplLogger.log(Level.FINE,"extension dir..." + extDir);
             }
 
             /*
@@ -155,24 +175,24 @@ public class InstalledLibrariesResolver {
                                 try{
                                     getInstalledLibraries(file.getAbsolutePath(), m, true, extDirsLibsStore);
                                 }catch(MissingResourceException e){
-                                    logger.log(Level.WARNING,
-                                        "enterprise.deployment.backend.optionalpkg.dependency.notexist",
-                                        new Object[] {e.getClass(), file.getAbsolutePath()});
+                                    deplLogger.log(Level.WARNING,
+                                                   PACKAGE_NOT_FOUND,
+                                                   new Object[] {e.getClass(), file.getAbsolutePath()});
                                 }
                             }
                         } catch (IOException ioe) {
-                            logger.log(Level.WARNING,
-                                "enterprise.deployment.backend.optionalpkg.invalid.zip",
-                                    new Object[] {file.getAbsolutePath(), ioe.getMessage()});
+                            deplLogger.log(Level.WARNING,
+                                           INVALID_ZIP,
+                                           new Object[] {file.getAbsolutePath(), ioe.getMessage()});
                         }finally {
                             if (jarFile!=null)
                                 jarFile.close();
                         }
                     }
                 } catch (IOException e) {
-                    logger.log(Level.WARNING,
-                            "enterprise.deployment.backend.optionalpkg.dependency.exception",
-                            new Object[] {e.getMessage()});
+                    deplLogger.log(Level.WARNING,
+                                   EXCEPTION_OCCURRED,
+                                   new Object[] {e.getMessage()});
                 }
             }
         }
@@ -245,13 +265,13 @@ public class InstalledLibrariesResolver {
         try {
             extensionList = manifest.getMainAttributes().
                     getValue(Attributes.Name.EXTENSION_LIST);
-            if(logger.isLoggable(Level.FINE)){
-                logger.fine("Extension-List for archive [" + archiveURI + "] : " + extensionList);
+            if(deplLogger.isLoggable(Level.FINE)){
+                deplLogger.fine("Extension-List for archive [" + archiveURI + "] : " + extensionList);
             }
         } catch (Exception e) {
             //ignore this exception
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE,
+            if (deplLogger.isLoggable(Level.FINE)) {
+                deplLogger.log(Level.FINE,
                         "InstalledLibrariesResolver : exception occurred : " + e.toString());
             }
         }
@@ -287,8 +307,8 @@ public class InstalledLibrariesResolver {
                         // no action needed
                     }
                 }
-                if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, " is library installed [" + extName + "] " +
+                if (deplLogger.isLoggable(Level.FINEST)) {
+                    deplLogger.log(Level.FINEST, " is library installed [" + extName + "] " +
                             "for archive [" + archiveURI + "]: " + isLibraryInstalled);
                 }
             }
@@ -331,7 +351,7 @@ public class InstalledLibrariesResolver {
 
         String applibsDirString = domainLibDir + File.separator + "applibs";
 
-        logger.fine("applib-Dir-String..." + applibsDirString);
+        deplLogger.fine("applib-Dir-String..." + applibsDirString);
         ArrayList<File> validApplibsDirLibFiles = new ArrayList<File>();
         Map<Extension, String> installedLibraries = getInstalledLibraries(applibsDirString, null, validApplibsDirLibFiles);
         appLibsDirLibsStore.putAll(installedLibraries);
@@ -354,24 +374,24 @@ public class InstalledLibrariesResolver {
                         try{
                             getInstalledLibraries(file.getAbsolutePath(), m, true, extDirsLibsStore);
                         }catch(MissingResourceException mre ){
-                            logger.log(Level.WARNING,
-                                "enterprise.deployment.backend.optionalpkg.dependency.notexist",
-                                new Object[] {mre.getClass(), file.getAbsolutePath()});
+                          deplLogger.log(Level.WARNING,
+                                         PACKAGE_NOT_FOUND,
+                                         new Object[] {mre.getClass(), file.getAbsolutePath()});
                         }
                     }
                 }
             } catch (IOException ioe) {
-                logger.log(Level.WARNING,
-                    "enterprise.deployment.backend.optionalpkg.invalid.zip",
-                        new Object[] {file.getAbsolutePath(), ioe.getMessage()});
+              deplLogger.log(Level.WARNING,
+                             INVALID_ZIP,
+                             new Object[] {file.getAbsolutePath(), ioe.getMessage()});
             }finally {
                 if (jarFile!=null)
                     try {
                         jarFile.close();
                     } catch (IOException e) {
-                        logger.log(Level.WARNING,
-                                "enterprise.deployment.backend.optionalpkg.dependency.exception",
-                                new Object[] {e.getMessage()});
+                      deplLogger.log(Level.WARNING,
+                                     EXCEPTION_OCCURRED,
+                                     new Object[] {e.getMessage()});
                     }
             }
         }
@@ -384,8 +404,8 @@ public class InstalledLibrariesResolver {
 
         File dir = new File(libraryDirectoryName);
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "installed library directory : " + dir);
+        if (deplLogger.isLoggable(Level.FINE)) {
+            deplLogger.log(Level.FINE, "installed library directory : " + dir);
         }
 
         File[] libraries = dir.listFiles();
@@ -393,21 +413,21 @@ public class InstalledLibrariesResolver {
             try {
                 for (int i = 0; i < libraries.length; i++) {
 
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE, "installed library : " + libraries[i]);
+                    if (deplLogger.isLoggable(Level.FINE)) {
+                        deplLogger.log(Level.FINE, "installed library : " + libraries[i]);
                     }
                     /*
                      *Skip any candidate that does not end with .jar or is a
                      *directory.
                      */
                     if (libraries[i].isDirectory()) {
-                        logger.log(Level.FINE,
+                        deplLogger.log(Level.FINE,
                                 "Skipping installed library processing on " +
                                         libraries[i].getAbsolutePath() +
                                         "; it is a directory");
                         continue;
                     } else if (!libraries[i].getName().toLowerCase(Locale.getDefault()).endsWith(".jar")) {
-                        logger.log(Level.FINE,
+                        deplLogger.log(Level.FINE,
                                 "Skipping installed library processing on " +
                                         libraries[i].getAbsolutePath() +
                                         "; it does not appear to be a JAR file based on its file type");
@@ -431,14 +451,14 @@ public class InstalledLibrariesResolver {
                                     getValue(Attributes.Name.EXTENSION_NAME);
                             String specVersion = manifest.getMainAttributes().
                                     getValue(Attributes.Name.SPECIFICATION_VERSION);
-                            logger.fine("Extension " + libraries[i].getAbsolutePath() +
+                            deplLogger.fine("Extension " + libraries[i].getAbsolutePath() +
                                     ", extNameOfOPtionalPkg..." + extName +
                                     ", specVersion..." + specVersion);
                             if (extName != null) {
                                 if (specVersion == null) {
-                                    logger.log(Level.WARNING,
-                                            "enterprise.deployment.backend.optionalpkg.dependency.specversion.null",
-                                            new Object[]{extName, jarFile.getName()});
+                                    deplLogger.log(Level.WARNING,
+                                                   NULL_SPEC_VERS,
+                                                   new Object[]{extName, jarFile.getName()});
                                     specVersion = "";
                                 }
 
@@ -449,14 +469,16 @@ public class InstalledLibrariesResolver {
                             }
                         }
                     } catch (Throwable thr) {
-                        String msg = logger.getResourceBundle().getString(
+                        String msg = deplLogger.getResourceBundle().getString(
                                 "enterprise.deployment.backend.optionalpkg.dependency.error");
-                        if (logger.isLoggable(Level.FINE)) {
-                            logger.log(Level.FINE, MessageFormat.format(
+                        if (deplLogger.isLoggable(Level.FINE)) {
+                            deplLogger.log(Level.FINE, MessageFormat.format(
                                     msg, libraries[i].getAbsolutePath(), thr.getMessage()), thr);
                         } else {
-                            logger.log(Level.INFO, MessageFormat.format(
-                                    msg, libraries[i].getAbsolutePath(), thr.getMessage()));
+                            LogRecord lr = new LogRecord(Level.INFO,
+                                                         SKIPPING_PROCESSING_INFO);
+                            lr.setParameters(new Object[] { libraries[i].getAbsolutePath(), thr.getMessage() } );
+                            deplLogger.log(lr);
                         }
                     } finally {
                         if (jarFile != null) {
@@ -465,7 +487,7 @@ public class InstalledLibrariesResolver {
                     }
                 }
             } catch (IOException e) {
-                logger.log(Level.WARNING,
+                deplLogger.log(Level.WARNING,
                         "enterprise.deployment.backend.optionalpkg.dependency.exception", new Object[]{e.getMessage()});
             }
         }
