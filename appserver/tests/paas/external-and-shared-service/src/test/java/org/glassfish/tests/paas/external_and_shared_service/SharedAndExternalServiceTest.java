@@ -50,7 +50,7 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
 import org.junit.Assert;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -114,7 +114,7 @@ public class SharedAndExternalServiceTest {
         try {
             {
                 //start-database
-                Habitat habitat = Globals.getDefaultHabitat();
+                ServiceLocator habitat = Globals.getDefaultHabitat();
                 ServerContext serverContext = habitat.getService(ServerContext.class);
                 String[] startdbArgs = {serverContext.getInstallRoot().getAbsolutePath() +
                         File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "start-database",
@@ -172,7 +172,7 @@ public class SharedAndExternalServiceTest {
 
                 {
                     //stop-database
-                    Habitat habitat = Globals.getDefaultHabitat();
+                    ServiceLocator habitat = Globals.getDefaultHabitat();
                     ServerContext serverContext = habitat.getService(ServerContext.class);
                     String[] stopDbArgs = {serverContext.getInstallRoot().getAbsolutePath() +
                             File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "stop-database","--dbhost",ip_address};
@@ -267,7 +267,7 @@ public class SharedAndExternalServiceTest {
     private void createSharedAndExternalServices(String ipAddress_DAS) {
 
         System.out.println("################### Trying to Create Shared Service #######################");
-        Habitat habitat = Globals.getDefaultHabitat();
+        ServiceLocator habitat = Globals.getDefaultHabitat();
         org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
         ActionReport report = habitat.getService(ActionReport.class);
 
@@ -337,7 +337,7 @@ public class SharedAndExternalServiceTest {
     private void testSharedAndExternalService() {
 
         System.out.println("$$$$$$$$$$$$$ TEST SHARED AND EXTERNAL SERVICES $$$$$$$$$$$$$$$");
-        Habitat habitat = Globals.getDefaultHabitat();
+        ServiceLocator habitat = Globals.getDefaultHabitat();
         org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
         ActionReport report = habitat.getService(ActionReport.class);
         //Try stopping a shared service, referenced by the app. Should 'FAIL'
@@ -401,7 +401,7 @@ public class SharedAndExternalServiceTest {
     }
 
     private void deleteSharedAndExternalService() {
-        Habitat habitat = Globals.getDefaultHabitat();
+        ServiceLocator habitat = Globals.getDefaultHabitat();
         org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
         ActionReport report = habitat.getService(ActionReport.class);
 

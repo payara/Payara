@@ -52,7 +52,7 @@ import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 import org.glassfish.internal.api.Globals;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -214,7 +214,7 @@ public class BasicbookstoreDnsPaasTest {
 
     /* Creates LB as a shared service */
     public void CreateLbSharedService(GlassFish glassfish) throws Exception {
-	Habitat habitat = Globals.getDefaultHabitat();
+	ServiceLocator habitat = Globals.getDefaultHabitat();
 	org.glassfish.api.admin.CommandRunner commandRunner = habitat
 		.getService(org.glassfish.api.admin.CommandRunner.class);
 	ActionReport report = habitat.getService(ActionReport.class);
@@ -244,7 +244,7 @@ public class BasicbookstoreDnsPaasTest {
     
     public void CreateDNSExternalService(){
 	
-	Habitat habitat = Globals.getDefaultHabitat();
+	ServiceLocator habitat = Globals.getDefaultHabitat();
 	org.glassfish.api.admin.CommandRunner commandRunner = habitat
 		.getService(org.glassfish.api.admin.CommandRunner.class);
 	ActionReport report = habitat.getService(ActionReport.class);
@@ -289,7 +289,7 @@ public class BasicbookstoreDnsPaasTest {
 	
     /*Delete shared LB service*/
     private void deleteSharedLbandDNSexternalSerivce() {
-        Habitat habitat = Globals.getDefaultHabitat();
+        ServiceLocator habitat = Globals.getDefaultHabitat();
         org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
         ActionReport report = habitat.getService(ActionReport.class);
         //Try stopping a shared service, referenced by the app. Should 'FAIL'

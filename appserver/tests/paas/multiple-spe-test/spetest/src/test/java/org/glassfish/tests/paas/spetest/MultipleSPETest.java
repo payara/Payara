@@ -50,7 +50,7 @@ import org.glassfish.embeddable.GlassFishRuntime;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.junit.Test;
 
@@ -112,7 +112,7 @@ public class MultipleSPETest {
         } finally {
 
             //3. Register one of the plugins as the default S.P.E
-            Habitat habitat = Globals.getDefaultHabitat();
+            ServiceLocator habitat = Globals.getDefaultHabitat();
             org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
             ActionReport report = habitat.getService(ActionReport.class);
 

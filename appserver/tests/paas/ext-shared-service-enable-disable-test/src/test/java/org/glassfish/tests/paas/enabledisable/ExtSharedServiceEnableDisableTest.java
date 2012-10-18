@@ -45,6 +45,7 @@ import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.ProcessExecutor;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.embeddable.CommandResult;
@@ -55,8 +56,6 @@ import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 import org.junit.Assert;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
-
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -122,7 +121,7 @@ public class ExtSharedServiceEnableDisableTest {
 
             {
                 //start-database
-                Habitat habitat = Globals.getDefaultHabitat();
+                ServiceLocator habitat = Globals.getDefaultHabitat();
                 ServerContext serverContext = habitat.getService(ServerContext.class);
                 String[] startdbArgs = {serverContext.getInstallRoot().getAbsolutePath() +
                         File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "start-database",
@@ -179,7 +178,7 @@ public class ExtSharedServiceEnableDisableTest {
                 deleteSharedAndExternalService();
                 {
                     //stop-database
-                    Habitat habitat = Globals.getDefaultHabitat();
+                    ServiceLocator habitat = Globals.getDefaultHabitat();
                     ServerContext serverContext = habitat.getService(ServerContext.class);
                     String[] stopDbArgs = {serverContext.getInstallRoot().getAbsolutePath() +
                             File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "stop-database","--dbhost",ip_address};
@@ -273,7 +272,7 @@ public class ExtSharedServiceEnableDisableTest {
     private void createSharedAndExternalServices(String ipAddress_DAS) {
 
         System.out.println("################### Trying to Create External and Shared Service #######################");
-        Habitat habitat = Globals.getDefaultHabitat();
+        ServiceLocator habitat = Globals.getDefaultHabitat();
         org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
         ActionReport report = habitat.getService(ActionReport.class);
 
@@ -344,7 +343,7 @@ public class ExtSharedServiceEnableDisableTest {
     private void testSharedAndExternalService() {
 
         System.out.println("$$$$$$$$$$$$$ TEST SHARED AND EXTERNAL SERVICES $$$$$$$$$$$$$$$");
-        Habitat habitat = Globals.getDefaultHabitat();
+        ServiceLocator habitat = Globals.getDefaultHabitat();
         org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
         ActionReport report = habitat.getService(ActionReport.class);
 
@@ -477,7 +476,7 @@ public class ExtSharedServiceEnableDisableTest {
     }
 
     private void deleteSharedAndExternalService() {
-        Habitat habitat = Globals.getDefaultHabitat();
+        ServiceLocator habitat = Globals.getDefaultHabitat();
         org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
         ActionReport report = habitat.getService(ActionReport.class);
 

@@ -40,6 +40,8 @@
 
 package org.glassfish.tests.embedded.inplanted;
 
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.embedded.*;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.admin.*;
@@ -49,8 +51,6 @@ import org.junit.BeforeClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.AfterClass;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
 
 import java.io.File;
 import java.util.Enumeration;
@@ -76,12 +76,12 @@ public class ExistingDomainTest {
     @Test
     public void Test() throws Exception {
 
-        Habitat habitat = server.getHabitat();
+        ServiceLocator habitat = server.getHabitat();
         System.out.println("Process type is " + habitat.<ProcessEnvironment>getService(ProcessEnvironment.class).getProcessType());
-        Collection<Inhabitant<?>> listeners = habitat.getInhabitantsByType("org.glassfish.grizzly.config.dom.NetworkListener");
+        Collection<ServiceHandle<?>> listeners = habitat.getAllServiceHandles(org.glassfish.grizzly.config.dom.NetworkListener.class);
         Assert.assertTrue(listeners.size()>1);
-        for (Inhabitant<?> s : listeners) {
-            Object networkListener = s.get();
+        for (ServiceHandle<?> s : listeners) {
+            Object networkListener = s.getService();
             Method m = networkListener.getClass().getMethod("getPort");
             Assert.assertNotNull("Object returned does not implement getPort, is it a networkListener ?", m);
             String port = (String) m.invoke(networkListener);

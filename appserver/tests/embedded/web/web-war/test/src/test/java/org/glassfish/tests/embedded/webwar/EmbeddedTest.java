@@ -106,7 +106,7 @@ public class EmbeddedTest {
         for (NetworkListener nl : listeners) {
             System.out.println("Network listener " + nl.getPort());
         }
-        Collection<NetworkListener> cnl = server.getHabitat().getAllByContract(NetworkListener.class);
+        Collection<NetworkListener> cnl = server.getHabitat().getAllServices(NetworkListener.class);
         System.out.println("Network listener size after creation " + cnl.size());
         for (NetworkListener nl : cnl) {
             System.out.println("Network listener " + nl.getPort());

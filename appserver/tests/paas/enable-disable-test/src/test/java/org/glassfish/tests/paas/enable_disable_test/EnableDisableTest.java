@@ -46,7 +46,7 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.embeddable.*;
 import org.glassfish.internal.api.Globals;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -111,7 +111,7 @@ public class EnableDisableTest {
 
             //2.a.Check if all services of the application are in ONLY running state.
 
-            Habitat habitat = Globals.getDefaultHabitat();
+            ServiceLocator habitat = Globals.getDefaultHabitat();
             org.glassfish.api.admin.CommandRunner commandRunner1 = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
             ActionReport report = habitat.getService(ActionReport.class);
             org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner1.getCommandInvocation("list-services", report);

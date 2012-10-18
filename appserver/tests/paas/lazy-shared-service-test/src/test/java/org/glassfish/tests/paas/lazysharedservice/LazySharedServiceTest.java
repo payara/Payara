@@ -47,7 +47,7 @@ import org.glassfish.embeddable.*;
 import org.glassfish.internal.api.Globals;
 import org.junit.Assert;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.*;
 import java.net.ConnectException;
@@ -102,7 +102,7 @@ public class LazySharedServiceTest {
 
             //Check to see if the DB service is not provisioned
             {
-                Habitat habitat = Globals.getDefaultHabitat();
+                ServiceLocator habitat = Globals.getDefaultHabitat();
                 org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
                 ActionReport report = habitat.getService(ActionReport.class);
 
@@ -228,7 +228,7 @@ public class LazySharedServiceTest {
     private void createSharedServices() {
 
         System.out.println("################### Trying to Create Shared Service #######################");
-        Habitat habitat = Globals.getDefaultHabitat();
+        ServiceLocator habitat = Globals.getDefaultHabitat();
         org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
         ActionReport report = habitat.getService(ActionReport.class);
 
@@ -297,7 +297,7 @@ public class LazySharedServiceTest {
     private void checkStatusOfSharedServices() {
 
         System.out.println("$$$$$$$$$$$$$ Checking Status of Shared Services $$$$$$$$$$$$$$$");
-        Habitat habitat = Globals.getDefaultHabitat();
+        ServiceLocator habitat = Globals.getDefaultHabitat();
         org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
         ActionReport report = habitat.getService(ActionReport.class);
 
@@ -343,7 +343,7 @@ public class LazySharedServiceTest {
 
 
     private void deleteSharedService() {
-        Habitat habitat = Globals.getDefaultHabitat();
+        ServiceLocator habitat = Globals.getDefaultHabitat();
         org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
         ActionReport report = habitat.getService(ActionReport.class);
         //Try stopping a shared service, referenced by the app. Should 'FAIL'

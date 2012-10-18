@@ -40,11 +40,11 @@
 
 package org.glassfish.tests.embedded.cooked;
 
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.embedded.Server;
 import org.glassfish.internal.embedded.EmbeddedFileSystem;
 import org.junit.Assert;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
 
 import java.io.File;
 import java.util.Collection;
@@ -89,13 +89,13 @@ public class ExistingConfigurationTest {
             builder.embeddedFileSystem(efsb.build());
             server = builder.build();
 
-            Habitat habitat = server.getHabitat();
-            Collection<VirtualServer> vss = habitat.getAllByContract(VirtualServer.class);
+            ServiceLocator habitat = server.getHabitat();
+            Collection<VirtualServer> vss = habitat.getAllServices(VirtualServer.class);
             Assert.assertTrue(vss.size()>0);
             for (VirtualServer vs : vss ) {
                 System.out.println("Virtual Server " + vs.getId());
             }
-            Collection<NetworkListener> nls = habitat.getAllByContract(NetworkListener.class);
+            Collection<NetworkListener> nls = habitat.getAllServices(NetworkListener.class);
             for (NetworkListener nl : nls) {
                 System.out.println("Network listener " + nl.getPort());
             }

@@ -46,7 +46,7 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.paas.orchestrator.provisioning.util.JSONUtil;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.Deployer;
@@ -159,7 +159,7 @@ public class BasicServiceDiscoveryPaaSTest {
      //Test for CLI : '_get-service-description''
     private void testGetServiceDescription(String appName, String serviceName) {
 
-        Habitat habitat = Globals.getDefaultHabitat();
+        ServiceLocator habitat = Globals.getDefaultHabitat();
         org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
 
         ActionReport report = habitat.getService(ActionReport.class);
@@ -224,7 +224,7 @@ public class BasicServiceDiscoveryPaaSTest {
 
     private void testGetServiceMetadata(File archive) {
 
-        Habitat habitat = Globals.getDefaultHabitat();
+        ServiceLocator habitat = Globals.getDefaultHabitat();
         org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
 
         ActionReport report = habitat.getService(ActionReport.class);
@@ -272,7 +272,7 @@ public class BasicServiceDiscoveryPaaSTest {
     private void testGenerateGFDeploymentPlan(File archive) {
 
         //Execute the '_get-service-metadata' command and obtain the SDs. Change the configuration of one of the SD.
-        Habitat habitat = Globals.getDefaultHabitat();
+        ServiceLocator habitat = Globals.getDefaultHabitat();
         org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
 
         ActionReport report = habitat.getService(ActionReport.class);

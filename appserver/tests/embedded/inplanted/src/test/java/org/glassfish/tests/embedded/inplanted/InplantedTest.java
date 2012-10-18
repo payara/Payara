@@ -44,10 +44,10 @@ import org.junit.Test;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.embedded.*;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.admin.*;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.embedded.web.EmbeddedWebContainer;
 import org.glassfish.tests.embedded.utils.EmbeddedServerUtils;
@@ -106,9 +106,9 @@ public class InplantedTest {
     @Test
     public void Test() {
 
-        Habitat habitat = server.getHabitat();
+        ServiceLocator habitat = server.getHabitat();
         System.out.println("Process type is " + habitat.<ProcessEnvironment>getService(ProcessEnvironment.class).getProcessType());
-        for (Sniffer s : habitat.getAllByContract(Sniffer.class)) {
+        for (Sniffer s : habitat.<Sniffer>getAllServices(Sniffer.class)) {
             System.out.println("Got sniffer " + s.getModuleType());
         }
     }

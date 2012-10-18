@@ -40,13 +40,13 @@
 
 package org.glassfish.tests.embedded.inplanted;
 
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.embedded.*;
 import org.glassfish.tests.embedded.utils.EmbeddedServerUtils;
 import org.junit.BeforeClass;
 import org.junit.Assert;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
 
 import java.io.File;
 import java.util.Collection;
@@ -75,21 +75,21 @@ public class ExistingConfigurationTest {
             efsb.configurationFile(f, true);
             server = EmbeddedServerUtils.createServer(efsb.build());
 
-            Habitat habitat = server.getHabitat();
-            Collection<Inhabitant<?>> vss = habitat.getInhabitantsByContract("com.sun.enterprise.config.serverbeans.VirtualServer");
+            ServiceLocator habitat = server.getHabitat();
+            Collection<ServiceHandle<?>> vss = habitat.getAllServiceHandles(com.sun.enterprise.config.serverbeans.VirtualServer.class);
             Assert.assertTrue(vss.size()>0);
-            for (Inhabitant<?> vs : vss ) {
-                Object virtualServer = vs.get();
+            for (ServiceHandle<?> vs : vss ) {
+                Object virtualServer = vs.getService();
                 Method m = virtualServer.getClass().getMethod("getId");
                 Assert.assertNotNull("Object returned does not implement getId, is it a virtual server ?", m);
                 String id = (String) m.invoke(virtualServer);
                 System.out.println("Virtual Server " + id);
                 Assert.assertNotNull("Got a null virtual server ID", id);
             }
-            Collection<Inhabitant<?>> nls = habitat.getInhabitantsByContract("org.glassfish.grizzly.config.dom.NetworkListener");
+            Collection<ServiceHandle<?>> nls = habitat.getAllServiceHandles(org.glassfish.grizzly.config.dom.NetworkListener.class);
             Assert.assertTrue(nls.size()>1);
-            for (Inhabitant<?> nl : nls) {
-                Object networkListener = nl.get();
+            for (ServiceHandle<?> nl : nls) {
+                Object networkListener = nl.getService();
                 Method m = networkListener.getClass().getMethod("getPort");
                 Assert.assertNotNull("Object returned does not implement getPort, is it a networkListener ?", m);
                 String p = (String) m.invoke(networkListener);
