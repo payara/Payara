@@ -83,7 +83,7 @@ import javax.inject.Provider;
 import javax.rmi.CORBA.Tie;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import javax.inject.Inject;
 import org.omg.CORBA.CompletionStatus;
 import org.omg.CORBA.INVALID_TRANSACTION;
@@ -123,7 +123,7 @@ public final class POAProtocolMgr extends org.omg.CORBA.LocalObject
     private PresentationManager presentationMgr;
 
     @Inject
-    private Habitat services;
+    private ServiceLocator services;
 
     public POAProtocolMgr() {}
 

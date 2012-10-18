@@ -40,12 +40,12 @@
 
 package org.glassfish.api.naming;
 
-import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.component.Habitat;
-import org.omg.CORBA.ORB;
-
 import java.util.Hashtable;
 import java.util.List;
+
+import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.annotations.Contract;
+import org.omg.CORBA.ORB;
 
 /**
  * A contract that manages naming load-balancing.
@@ -68,7 +68,7 @@ public interface NamingClusterInfo {
     public static final String CORBALOC = "corbaloc:";
 
     void initGroupInfoService(Hashtable<?, ?> myEnv, String defaultHost, String defaultPort,
-                              ORB orb, Habitat services);
+                              ORB orb, ServiceLocator services);
 
     void setClusterInstanceInfo(Hashtable<?, ?> myEnv, String defaultHost, String defaultPort,
                                 boolean membershipChangeForced);
