@@ -476,7 +476,7 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
         }
 
         public static void addIndex(Config c, ServiceLocator habitat, String name) {
-            ActiveDescriptor<?> bob = ServiceLocatorUtilities.addOneDescriptor(habitat,
+            ServiceLocatorUtilities.addOneDescriptor(habitat,
                     BuilderHelper.createConstantDescriptor(c, name, Config.class));
 
             // directly referenced objects
