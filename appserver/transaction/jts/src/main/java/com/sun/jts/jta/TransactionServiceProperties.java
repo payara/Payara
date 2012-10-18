@@ -90,18 +90,18 @@ public class TransactionServiceProperties {
     private static volatile boolean orbAvailable = false;
     private static volatile boolean recoveryInitialized = false;
 
-    public static synchronized Properties getJTSProperties (ServiceLocator habitat, boolean isORBAvailable) {
+    public static synchronized Properties getJTSProperties (ServiceLocator serviceLocator, boolean isORBAvailable) {
         if (orbAvailable == isORBAvailable && properties != null) {
             // We will need to update the properties if ORB availability changed
             return properties;
         }
 
         Properties jtsProperties = new Properties();
-        if (habitat != null) {
-            jtsProperties.put(HABITAT, habitat);
-            ProcessEnvironment processEnv = habitat.getService(ProcessEnvironment.class);
+        if (serviceLocator != null) {
+            jtsProperties.put(HABITAT, serviceLocator);
+            ProcessEnvironment processEnv = serviceLocator.getService(ProcessEnvironment.class);
             if( processEnv.getProcessType().isServer()) {
-                TransactionService txnService = habitat.getService(TransactionService.class,
+                TransactionService txnService = serviceLocator.getService(TransactionService.class,
                         ServerEnvironment.DEFAULT_INSTANCE_NAME);
 
                 if (txnService != null) {
@@ -182,7 +182,7 @@ public class TransactionServiceProperties {
                     int jtsServerId = DEFAULT_SERVER_ID; // default value
 
                     if (isORBAvailable) {
-                        jtsServerId = habitat.<GlassFishORBHelper>getService(GlassFishORBHelper.class).getORBInitialPort();
+                        jtsServerId = serviceLocator.<GlassFishORBHelper>getService(GlassFishORBHelper.class).getORBInitialPort();
                         if (jtsServerId == 0) {
                             // XXX Can this ever happen?
                             jtsServerId = DEFAULT_SERVER_ID; // default value
@@ -205,7 +205,7 @@ public class TransactionServiceProperties {
                     String serverId = String.valueOf(DEFAULT_SERVER_ID);
                     System.setProperty(J2EE_SERVER_ID_PROP, serverId);
     
-                    ServerContext ctx = habitat.getService(ServerContext.class);
+                    ServerContext ctx = serviceLocator.getService(ServerContext.class);
                     String instanceName = ctx.getInstanceName();
 
                     /**
@@ -220,7 +220,7 @@ public class TransactionServiceProperties {
                     } else {
 
                        // if (dbLoggingResource == null) {
-                        Domain domain = habitat.getService(Domain.class);
+                        Domain domain = serviceLocator.getService(Domain.class);
                         Server server = domain.getServerNamed(instanceName);
 
                         // Check if the server system property is set
@@ -310,18 +310,18 @@ public class TransactionServiceProperties {
         if (force || (isValueSet(value) && "true".equals(value))) {
             recoveryInitialized = true;
 
-            ServiceLocator habitat = (ServiceLocator) properties.get(HABITAT);
-            if (habitat != null) {
-                ProcessEnvironment processEnv = habitat.getService(ProcessEnvironment.class);
+            ServiceLocator serviceLocator = (ServiceLocator) properties.get(HABITAT);
+            if (serviceLocator != null) {
+                ProcessEnvironment processEnv = serviceLocator.getService(ProcessEnvironment.class);
                 if( processEnv.getProcessType().isServer()) {
                     // Start ResourceManager if it hadn't started yet
-                    habitat.getService(PostStartup.class,"ResourceManager");
+                    serviceLocator.getService(PostStartup.class,"ResourceManager");
                     value = properties.getProperty("pending-txn-cleanup-interval");
                     int interval = -1;
                     if (isValueSet(value)) {
                         interval = Integer.parseInt(value);
                     }
-                    new RecoveryHelperThread(habitat, interval).start();
+                    new RecoveryHelperThread(serviceLocator, interval).start();
                 }
                 // Release all locks
                 RecoveryManager.startResyncThread();
@@ -348,17 +348,17 @@ public class TransactionServiceProperties {
 
     private static class RecoveryHelperThread extends Thread {
         private int interval;
-        private ServiceLocator habitat;
+        private ServiceLocator serviceLocator;
 
-        RecoveryHelperThread(ServiceLocator habitat, int interval) {
+        RecoveryHelperThread(ServiceLocator serviceLocator, int interval) {
             setName("Recovery Helper Thread");
             setDaemon(true);
-            this.habitat = habitat;
+            this.serviceLocator = serviceLocator;
             this.interval = interval;
         }
 
         public void run() {
-            ResourceRecoveryManager recoveryManager = habitat.getService(ResourceRecoveryManager.class);
+            ResourceRecoveryManager recoveryManager = serviceLocator.getService(ResourceRecoveryManager.class);
             if (interval <= 0) {
                 // Only start the recovery thread if the interval value is set, and set to a positive value
                 return;

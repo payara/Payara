@@ -102,7 +102,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 public class JavaEETransactionManagerJTSDelegate 
             implements JavaEETransactionManagerDelegate, PostConstruct {
 
-    @Inject private ServiceLocator habitat;
+    @Inject private ServiceLocator serviceLocator;
 
     // an implementation of the JavaEETransactionManager that calls
     // this object.
@@ -504,8 +504,8 @@ public class JavaEETransactionManagerJTSDelegate
     }
 
     public void initTransactionProperties() {
-        if (habitat != null) {
-            txnService = habitat.getService(TransactionService.class,
+        if (serviceLocator != null) {
+            txnService = serviceLocator.getService(TransactionService.class,
                     ServerEnvironment.DEFAULT_INSTANCE_NAME);
 
             if (txnService != null) {
@@ -531,7 +531,7 @@ public class JavaEETransactionManagerJTSDelegate
         
                 if (Boolean.parseBoolean(txnService.getAutomaticRecovery())) {
                     // If recovery on server startup is set, initialize other properties as well
-                    Properties props = TransactionServiceProperties.getJTSProperties(habitat, false);
+                    Properties props = TransactionServiceProperties.getJTSProperties(serviceLocator, false);
                     DefaultTransactionService.setServerName(props);
 
                     if (Boolean.parseBoolean(txnService.getPropertyValue("delegated-recovery"))) {
@@ -548,7 +548,7 @@ public class JavaEETransactionManagerJTSDelegate
                                 _logger.log(Level.WARNING,"error_wait_time_before_recovery",e);
                             }
                         }
-                        new GMSCallBack(waitTime, habitat);
+                        new GMSCallBack(waitTime, serviceLocator);
                     }
                 }
             }
@@ -608,7 +608,7 @@ public class JavaEETransactionManagerJTSDelegate
     public String getTxLogLocation() {
         if (Configuration.getServerName() == null) {
             // If server name is null, the properties were not fully initialized
-            Properties props = TransactionServiceProperties.getJTSProperties(habitat, false);
+            Properties props = TransactionServiceProperties.getJTSProperties(serviceLocator, false);
             DefaultTransactionService.setServerName(props);
         }
 

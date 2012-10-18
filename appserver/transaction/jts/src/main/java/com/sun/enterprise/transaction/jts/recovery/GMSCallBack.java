@@ -78,7 +78,7 @@ public class GMSCallBack implements CallBack {
     static Logger _logger = LogDomains.getLogger(TransactionServiceProperties.class, LogDomains.TRANSACTION_LOGGER);
 
     private Servers servers;
-    private ServiceLocator habitat;
+    private ServiceLocator serviceLocator;
 
     private int waitTime;
     private DelegatedTransactionRecoveryFence fence;
@@ -86,19 +86,19 @@ public class GMSCallBack implements CallBack {
     private final long startTime;
     private final static Object lock = new Object();
 
-    public GMSCallBack(int waitTime, ServiceLocator habitat) {
-        GMSAdapterService gmsAdapterService = habitat.getService(GMSAdapterService.class);
+    public GMSCallBack(int waitTime, ServiceLocator serviceLocator) {
+        GMSAdapterService gmsAdapterService = serviceLocator.getService(GMSAdapterService.class);
         if (gmsAdapterService != null) {
             GMSAdapter gmsAdapter = gmsAdapterService.getGMSAdapter();
             if (gmsAdapter != null) {
                 gmsAdapter.registerFailureRecoveryListener(component, this);
 
-                this.habitat = habitat;
-                servers = habitat.getService(Servers.class);
+                this.serviceLocator = serviceLocator;
+                servers = serviceLocator.getService(Servers.class);
 
                 this.waitTime = waitTime;
 
-                Properties props = TransactionServiceProperties.getJTSProperties(habitat, false);
+                Properties props = TransactionServiceProperties.getJTSProperties(serviceLocator, false);
                 if (!Configuration.isDBLoggingEnabled()) {
                     if (Configuration.getORB() == null) {
                         // IIOP listeners are not setup yet,
@@ -236,7 +236,7 @@ public class GMSCallBack implements CallBack {
                 _logger.log(Level.FINE, "Starting transaction recovery of " + instance);
             }
 
-            ResourceRecoveryManager recoveryManager = habitat.getService(ResourceRecoveryManager.class);
+            ResourceRecoveryManager recoveryManager = serviceLocator.getService(ResourceRecoveryManager.class);
             recoveryManager.recoverIncompleteTx(true, logdir, instance, true);
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "Transaction recovery of " + instance + " is completed");

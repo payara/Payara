@@ -89,7 +89,7 @@ public class TransactionIIOPInterceptorFactory implements IIOPInterceptorFactory
     private static boolean txServiceInitialized = false;
     private InterceptorImpl interceptor = null;
 
-    @Inject private ServiceLocator habitat;
+    @Inject private ServiceLocator serviceLocator;
     @Inject private ProcessEnvironment processEnv;
 
     public ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {
@@ -163,7 +163,7 @@ public class TransactionIIOPInterceptorFactory implements IIOPInterceptorFactory
             }
 
             // Add IOR Interceptor only for OTS tagged components
-            TxIORInterceptor iorInterceptor = new TxIORInterceptor(codec, habitat);
+            TxIORInterceptor iorInterceptor = new TxIORInterceptor(codec, serviceLocator);
             info.add_ior_interceptor(iorInterceptor);
 
         } catch (Exception e) {
@@ -175,8 +175,8 @@ public class TransactionIIOPInterceptorFactory implements IIOPInterceptorFactory
     }
 
     private void initJTSProperties(boolean isServer) {
-        if (habitat != null) {
-            jtsProperties = TransactionServiceProperties.getJTSProperties(habitat, true);
+        if (serviceLocator != null) {
+            jtsProperties = TransactionServiceProperties.getJTSProperties(serviceLocator, true);
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE,
                             "++++ Server id: "
