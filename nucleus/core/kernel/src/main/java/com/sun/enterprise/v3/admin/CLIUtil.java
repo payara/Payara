@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
- *
+ * 
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
- *
+ * 
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
- *
+ * 
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
  * exception as provided by Oracle in the GPL Version 2 section of the License
  * file that accompanied this code.
- *
+ * 
  * Modifications:
  * If applicable, add the following below the License Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyright [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
  * If you wish your version of this file to be governed by only the CDDL or
  * only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -37,60 +37,46 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.v3.admin;
 
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
-import org.glassfish.api.ActionReport.ExitCode;
-import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
-
-import org.glassfish.hk2.api.PerLookup;
-import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
+import org.glassfish.internal.api.Target;
+import org.jvnet.hk2.config.types.Property;
 
 /**
- * Return the version and build number
  *
- * @author Jerome Dochez
+ * @author tjquinn
  */
-@Service(name="version")
-@PerLookup
-@CommandLock(CommandLock.LockType.NONE)
-@I18n("version.command")
-@RestEndpoints({
-    @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="version", 
-        description="version",
-        useForAuthorization=true)
-})
-public class VersionCommand implements AdminCommand {
+public class CLIUtil {
     
-    @Param(optional=true, defaultValue="false", shortName = "v")
-    Boolean verbose;
-
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(VersionCommand.class);
-
-    public void execute(AdminCommandContext context) {
-        String vers;
-        if (verbose) {
-            vers = strings.getLocalString("version.verbose",
-                "{0}, JRE version {1}",
-                Version.getFullVersion(), System.getProperty("java.version"));
-        } else {
-            vers = strings.getLocalString("version",
-                "{0}", Version.getFullVersion());
+    static Config chooseConfig(final Target targetService, 
+            Config config,
+            final String target) {
+        Config targetConfig = targetService.getConfig(target);
+        if (targetConfig != null) {
+            config = targetConfig;
         }
-        ActionReport report = context.getActionReport();
-        report.setActionExitCode(ExitCode.SUCCESS);
-        report.setMessage(vers);
+        return config;
     }
+    
+    static SystemPropertyBag chooseTarget(final Domain domain, final String target) {
+        SystemPropertyBag spb = null;
+        Property domainProp = domain.getProperty("administrative.domain.name");
+        String domainName = domainProp.getValue();
+        if ("domain".equals(target) || target.equals(domainName)) {
+            spb = domain;
+        } else {
+            spb = domain.getConfigNamed(target);
+            if (spb == null) {
+                spb = domain.getClusterNamed(target);
+            }
+            if (spb == null) {
+                spb = domain.getServerNamed(target);
+            }
+        }
+        return spb;
+    }
+    
 }

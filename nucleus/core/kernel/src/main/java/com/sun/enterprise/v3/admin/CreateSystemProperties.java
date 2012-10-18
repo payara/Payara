@@ -63,7 +63,12 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Properties;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.jvnet.hk2.config.types.Property;
 
 /**
@@ -85,7 +90,8 @@ import org.jvnet.hk2.config.types.Property;
 @TargetType(value={CommandTarget.CLUSTER, 
 CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTERED_INSTANCE})
 @I18n("create.system.properties")
-public class CreateSystemProperties implements AdminCommand {
+public class CreateSystemProperties implements AdminCommand, AdminCommandSecurity.Preauthorization,
+        AdminCommandSecurity.AccessCheckProvider {
     
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateSystemProperties.class);
     
@@ -98,6 +104,29 @@ public class CreateSystemProperties implements AdminCommand {
     @Inject
     Domain domain;
 
+    private SystemPropertyBag spb;
+
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        spb = CLIUtil.chooseTarget(domain, target);
+        if (spb == null) {
+            final ActionReport report = context.getActionReport();
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            String msg = localStrings.getLocalString("invalid.target.sys.props",
+                    "Invalid target:{0}. Valid targets types are domain, config, cluster, default server, clustered instance, stand alone instance", target);
+            report.setMessage(msg);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final Collection<AccessCheck> result = new ArrayList<AccessCheck>();
+        result.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(spb), "update"));
+        return result;
+    }
+
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the paramter names and the values the parameter values
@@ -108,27 +137,6 @@ public class CreateSystemProperties implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
-        SystemPropertyBag spb;
-        Property domainProp = domain.getProperty("administrative.domain.name");
-        String domainName = domainProp.getValue();
-        if ("domain".equals(target) || target.equals(domainName)) {
-            spb = domain;
-        } else {
-            spb = domain.getConfigNamed(target);
-            if (spb == null) {
-                spb = domain.getClusterNamed(target);
-            }
-            if (spb == null) {
-                spb = domain.getServerNamed(target);
-            }
-        }
-        if (spb == null) {
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            String msg = localStrings.getLocalString("invalid.target.sys.props",
-                    "Invalid target:{0}. Valid targets types are domain, config, cluster, default server, clustered instance, stand alone instance", target);
-            report.setMessage(msg);
-            return;
-        }
         String sysPropName = "";
         try {            
             for (final Object key : properties.keySet()) {

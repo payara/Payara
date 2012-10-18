@@ -78,6 +78,7 @@ import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.universal.collections.ManifestUtils;
 import com.sun.enterprise.v3.common.PropsFileActionReporter;
+import org.glassfish.api.admin.AccessRequired;
 
 /**
  * Dumps a sorted list of all registered Contract's in the Habitat
@@ -96,6 +97,7 @@ import com.sun.enterprise.v3.common.PropsFileActionReporter;
         description="_get-habitat-info")
 })
 @GetHabitatInfo.Constraint
+@AccessRequired(resource="domain", action="dump")
 public class GetHabitatInfo implements AdminCommand {
     @Inject
     ServiceLocator serviceLocator;

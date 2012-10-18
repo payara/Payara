@@ -84,7 +84,7 @@ import org.jvnet.hk2.config.TransactionFailure;
         path="create-profiler", 
         description="Create Profiler")
 })
-public class CreateProfiler implements AdminCommand {
+public class CreateProfiler implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateProfiler.class);
 
@@ -111,6 +111,18 @@ public class CreateProfiler implements AdminCommand {
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
+    
+    @AccessRequired.To("update")
+    private JavaConfig javaConfig;
+
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        config = CLIUtil.chooseConfig(targetService, config, target);
+        javaConfig = config.getJavaConfig();
+        return true;
+    }
+    
+    
 
     /**
      * Executes the command with the command parameters passed as Properties
@@ -121,12 +133,6 @@ public class CreateProfiler implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
-        Config targetConfig = targetService.getConfig(target);
-        if (targetConfig != null) {
-            config = targetConfig;
-        }
-
-        JavaConfig javaConfig = config.getJavaConfig();
         if (javaConfig.getProfiler() != null) {
             System.out.println("profiler exists. Please delete it first");
             report.setMessage(
