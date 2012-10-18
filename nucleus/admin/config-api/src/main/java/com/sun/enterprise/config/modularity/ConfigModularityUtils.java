@@ -73,6 +73,7 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigView;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
+import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.IndentingXMLStreamWriter;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -186,7 +187,9 @@ public final class ConfigModularityUtils {
                         if (Collection.class.isAssignableFrom(m.getReturnType())) {
                             if (actualGenericParameter instanceof Class) {
                                 if (typeToSet.isAssignableFrom((Class) actualGenericParameter)) {
-                                    return m;
+                                    if ((m.getAnnotation(DuckTyped.class) == null) && (findDeeperSuitableCollectionGetter(owner, typeToSet) == null))
+                                        return m;
+                                    else return findDeeperSuitableCollectionGetter(owner, typeToSet);
                                 }
                             }
                         }
