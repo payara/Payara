@@ -64,13 +64,10 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.config.serverbeans.Profiler;
-import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Collection;
 import org.glassfish.api.admin.*;
 
 /**
@@ -88,7 +85,7 @@ import org.glassfish.api.admin.*;
         path="delete-profiler", 
         description="Delete Profiler")
 })
-public class DeleteProfiler implements AdminCommand, AdminCommandSecurity.Preauthorization {
+public class DeleteProfiler implements AdminCommand {
 
    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteProfiler.class);
 
@@ -101,18 +98,7 @@ public class DeleteProfiler implements AdminCommand, AdminCommandSecurity.Preaut
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
 
-    @AccessRequired.To("update")
-    private JavaConfig javaConfig;
-
-    
-    @Override
-    public boolean preAuthorization(AdminCommandContext context) {
-        config = CLIUtil.chooseConfig(targetService, config, target);
-        javaConfig = config.getJavaConfig();
-        return true;
-    }
-
-    /**
+   /**
     * Executes the command with the command parameters passed as Properties
     * where the keys are the paramter names and the values the parameter values
     *
@@ -121,6 +107,13 @@ public class DeleteProfiler implements AdminCommand, AdminCommandSecurity.Preaut
    public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
+        Config targetConfig = targetService.getConfig(target);
+        if (targetConfig != null) {
+            config = targetConfig;
+        }
+
+        JavaConfig javaConfig = config.getJavaConfig();
+
         try {
            ConfigSupport.apply(new SingleConfigCode<JavaConfig>() {
                public Object run(JavaConfig param) throws PropertyVetoException, TransactionFailure {

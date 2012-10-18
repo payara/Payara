@@ -54,7 +54,6 @@ import javax.inject.Inject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.hk2.api.PerLookup;
@@ -75,7 +74,6 @@ import org.glassfish.hk2.api.PerLookup;
         path="_dump-hk2", 
         description="_dump-hk2")
 })
-@AccessRequired(resource="domain", action="dump")
 public class DumpHK2Command implements AdminCommand {
 
     @Inject

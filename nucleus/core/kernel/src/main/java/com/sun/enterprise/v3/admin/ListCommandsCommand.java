@@ -40,14 +40,12 @@
 
 package com.sun.enterprise.v3.admin;
 
-import com.sun.enterprise.admin.util.CommandSecurityChecker;
 import com.sun.enterprise.config.serverbeans.Domain;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.ServiceHandle;
@@ -69,13 +67,12 @@ import org.jvnet.hk2.annotations.Service;
         path="list-commands", 
         description="list-commands")
 })
-@AccessRequired(resource="domain", action="read")
 public class ListCommandsCommand implements AdminCommand {
 
     private static final String DEBUG_PAIR = "mode=debug";
     @Inject
     ServiceLocator habitat;
-    
+
 
     /**
      * Executes the command with the command parameters passed as Properties

@@ -74,7 +74,6 @@ import javax.inject.Singleton;
         path="list-containers", 
         description="list-containers")
 })
-@AccessRequired(resource="domain", action="read")
 public class ListContainersCommand implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListContainersCommand.class);

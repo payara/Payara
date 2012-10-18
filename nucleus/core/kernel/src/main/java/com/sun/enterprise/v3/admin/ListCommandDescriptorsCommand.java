@@ -47,7 +47,6 @@ import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.hk2.api.PerLookup;
@@ -63,7 +62,7 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name="list-descriptors", metadata="mode=debug")
 @PerLookup
 @I18n("list.commands")
-@AccessRequired(resource="domain", action="dump")
+
 public class ListCommandDescriptorsCommand implements AdminCommand {
     @Inject
     ServiceLocator habitat;

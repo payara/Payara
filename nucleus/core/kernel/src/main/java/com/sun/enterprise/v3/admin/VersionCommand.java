@@ -69,8 +69,7 @@ import org.glassfish.api.admin.*;
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.GET, 
         path="version", 
-        description="version",
-        useForAuthorization=true)
+        description="version")
 })
 public class VersionCommand implements AdminCommand {
     

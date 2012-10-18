@@ -75,7 +75,6 @@ import org.glassfish.internal.config.UnprocessedConfigListener;
         path="_get-restart-required", 
         description="Restart Reasons")
 })
-@AccessRequired(resource="domain", action="dump")
 public class GetRestartRequiredCommand implements AdminCommand {
     @Param(optional = true)
     private boolean why;

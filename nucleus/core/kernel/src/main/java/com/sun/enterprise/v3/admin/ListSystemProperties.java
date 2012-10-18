@@ -45,8 +45,6 @@ import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -88,8 +86,7 @@ CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.STA
         path="list-system-properties", 
         description="list-system-properties")
 })
-public class ListSystemProperties implements AdminCommand, AdminCommandSecurity.Preauthorization,
-        AdminCommandSecurity.AccessCheckProvider {
+public class ListSystemProperties implements AdminCommand {
     
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListSystemProperties.class);
 
@@ -98,29 +95,6 @@ public class ListSystemProperties implements AdminCommand, AdminCommandSecurity.
 
     @Inject
     Domain domain;
-
-    private SystemPropertyBag spb;
-
-    @Override
-    public boolean preAuthorization(AdminCommandContext context) {
-        spb = CLIUtil.chooseTarget(domain, target);
-        if (spb == null) {
-            final ActionReport report = context.getActionReport();
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            String msg = localStrings.getLocalString("invalid.target.sys.props",
-                    "Invalid target:{0}. Valid targets types are domain, config, cluster, default server, clustered instance, stand alone instance", target);
-            report.setMessage(msg);
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
-        final Collection<AccessRequired.AccessCheck> result = new ArrayList<AccessRequired.AccessCheck>();
-        result.add(new AccessRequired.AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(spb), "update"));
-        return result;
-    }
 
     /**
      * Executes the command with the command parameters passed as Properties
@@ -131,6 +105,28 @@ public class ListSystemProperties implements AdminCommand, AdminCommandSecurity.
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
+        SystemPropertyBag spb;
+        Property domainProp = domain.getProperty("administrative.domain.name");
+        String domainName = domainProp.getValue();
+
+        if ("domain".equals(target) || target.equals(domainName)) {
+            spb = domain;
+        } else {
+            spb = domain.getConfigNamed(target);
+            if (spb == null) {
+                spb = domain.getClusterNamed(target);
+            }
+            if (spb == null) {
+                spb = domain.getServerNamed(target);
+            }
+        }
+        if (spb == null) {
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            String msg = localStrings.getLocalString("invalid.target.sys.props",
+                    "Invalid target:{0}. Valid targets types are domain, config, cluster, default server, clustered instance, stand alone instance", target);
+            report.setMessage(msg);
+            return;
+        }
         try {
             List<SystemProperty> sysProps = spb.getSystemProperty();
             int length = 0;

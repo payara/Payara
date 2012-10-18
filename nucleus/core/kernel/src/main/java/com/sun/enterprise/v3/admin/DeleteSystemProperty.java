@@ -66,9 +66,6 @@ import java.beans.PropertyVetoException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import org.glassfish.api.admin.AccessRequired;
-import org.glassfish.api.admin.AdminCommandSecurity;
 
 /**
  * Delete System Property Command
@@ -87,8 +84,7 @@ import org.glassfish.api.admin.AdminCommandSecurity;
 @TargetType(value={CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE,
 CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE})
 @I18n("delete.system.property")
-public class DeleteSystemProperty implements AdminCommand,
-        AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
+public class DeleteSystemProperty implements AdminCommand {
     
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteSystemProperty.class);
 
@@ -101,29 +97,6 @@ public class DeleteSystemProperty implements AdminCommand,
     @Inject
     Domain domain;
 
-    private SystemPropertyBag spb;
-
-    @Override
-    public boolean preAuthorization(AdminCommandContext context) {
-        spb = CLIUtil.chooseTarget(domain, target);
-        if (spb == null) {
-            final ActionReport report = context.getActionReport();
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            String msg = localStrings.getLocalString("invalid.target.sys.props",
-                    "Invalid target:{0}. Valid targets types are domain, config, cluster, default server, clustered instance, stand alone instance", target);
-            report.setMessage(msg);
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
-        final Collection<AccessRequired.AccessCheck> result = new ArrayList<AccessRequired.AccessCheck>();
-        result.add(new AccessRequired.AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(spb), "update"));
-        return result;
-    }
-
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the paramter names and the values the parameter values
@@ -132,8 +105,27 @@ public class DeleteSystemProperty implements AdminCommand,
      */
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
+        SystemPropertyBag spb;
         Property domainProp = domain.getProperty("administrative.domain.name");
         String domainName = domainProp.getValue();
+        if ("domain".equals(target) || target.equals(domainName)) {
+            spb = domain;
+        } else {
+            spb = domain.getConfigNamed(target);
+            if (spb == null) {
+                spb = domain.getClusterNamed(target);
+            }
+            if (spb == null) {
+                spb = domain.getServerNamed(target);
+            }
+        }
+        if (spb == null) {
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            String msg = localStrings.getLocalString("invalid.target.sys.props",
+                    "Invalid target:{0}. Valid targets types are domain, config, cluster, default server, clustered instance, stand alone instance", target);
+            report.setMessage(msg);
+            return;
+        }
         if(!spb.containsProperty(propName)) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             String msg = localStrings.getLocalString("no.such.property",
