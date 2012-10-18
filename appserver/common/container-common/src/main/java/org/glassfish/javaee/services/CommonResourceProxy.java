@@ -44,11 +44,11 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import org.glassfish.api.naming.NamingObjectProxy;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
 import javax.inject.Inject;
 import javax.naming.Context;
@@ -67,7 +67,7 @@ import java.io.Serializable;
 public class CommonResourceProxy implements NamingObjectProxy.InitializationNamingObjectProxy, Serializable {
 
     @Inject
-    protected transient Habitat habitat;
+    protected ServiceLocator habitat;
     private Descriptor desc;
     protected String actualResourceName;
 

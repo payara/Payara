@@ -43,8 +43,8 @@ package org.glassfish.admingui.plugin;
 import org.glassfish.api.admingui.ConsoleProvider;
 
 import org.glassfish.hk2.api.IterableProvider;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.MultiMap;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.DomDocument;
@@ -80,7 +80,7 @@ import javax.inject.Inject;
 @Service
 public class ConsolePluginService {
     @Inject Logger logger;
-    @Inject Habitat habitat;
+    @Inject ServiceLocator habitat;
     @Inject IterableProvider<ConsoleProvider> providers;
 
 /*
