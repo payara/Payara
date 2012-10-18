@@ -49,7 +49,6 @@ import org.glassfish.api.admin.*;
 import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
 import org.glassfish.internal.api.Target;
 import javax.inject.Inject;
-import org.glassfish.api.admin.AccessRequired.AccessCheck;
 
 import org.jvnet.hk2.annotations.Optional;
 
@@ -75,9 +74,7 @@ import org.jvnet.hk2.config.types.Property;
         path="get", 
         description="Get")
 })
-public class GetCommand extends V2DottedNameSupport implements AdminCommand,
-        AdminCommandSecurity.Preauthorization,
-        AdminCommandSecurity.AccessCheckProvider {
+public class GetCommand extends V2DottedNameSupport implements AdminCommand {
     @Inject
     private MonitoringReporter mr;
     @Inject
@@ -99,15 +96,10 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand,
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(GetCommand.class);
 
-    private ActionReport report;
-    
-    private List<Map.Entry> matchingNodesSorted;
-    
-    private String prefix;
-    
     @Override
-    public boolean preAuthorization(AdminCommandContext context) {
-        report = context.getActionReport();
+    public void execute(AdminCommandContext context) {
+
+        ActionReport report = context.getActionReport();
 
         /* Issue 5918 Used in ManifestManager to keep output sorted */
         try {
@@ -118,22 +110,6 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand,
             // ignore this is not a manifest output.
         }
 
-        matchingNodesSorted = findSortedMatchingNodes();
-        return matchingNodesSorted != null;
-    }
-
-    @Override
-    public Collection<? extends AccessCheck> getAccessChecks() {
-        final Collection<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
-        for (Map.Entry entry : matchingNodesSorted) {
-            accessChecks.add(new AccessCheck(resourceNameFromDottedName((String) entry.getValue()), "read"));
-        }
-        return accessChecks;
-    }
-    
-    @Override
-    public void execute(AdminCommandContext context) {
-
         if (monitor) {
             getMonitorAttributes(context);
             //String old = report.getMessage();
@@ -141,7 +117,61 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand,
             //report.setMessage(old == null ? append : old + append);
             return;
         }
+
+        // check for logging patterns
+        if (pattern.contains(".log-service")) {
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(localStrings.getLocalString("admin.get.invalid.logservice.command", "For getting log levels/attributes use list-log-levels/list-log-attributes command."));
+            return;
+        }
+
+        //check for incomplete dotted name
+        if (!pattern.equals("*")) {
+            if (pattern.lastIndexOf(".") == -1 || pattern.lastIndexOf(".") == (pattern.length() - 1)) {
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                //report.setMessage("Missing expected dotted name part");
+                report.setMessage(localStrings.getLocalString("missing.dotted.name", "Missing expected dotted name part"));
+                return;
+            }
+        }
+
+        // first let's get the parent for this pattern.
+        TreeNode[] parentNodes = getAliasedParent(domain, pattern);
+
+        // reset the pattern.
+        String prefix = "";
+        if(!pattern.startsWith(parentNodes[0].relativeName)) {
+            prefix = pattern.substring(0, pattern.indexOf(parentNodes[0].relativeName));
+            pattern = parentNodes[0].relativeName;
+        } else {
+            pattern = parentNodes[0].relativeName;
+        }
+
+        Map<Dom, String> matchingNodes;
+        Map<Dom, String> dottedNames = new HashMap<Dom, String>();
+        for (TreeNode parentNode : parentNodes) {
+            dottedNames.putAll(getAllDottedNodes(parentNode.node));
+            if (parentNode.name.equals("")) {
+                dottedNames.put(parentNode.node, "domain");
+            }
+        }
+        matchingNodes = getMatchingNodes(dottedNames, pattern);
+        if (matchingNodes.isEmpty() && pattern.lastIndexOf('.') != -1) {
+            // it's possible the user is just looking for an attribute, let's remove the
+            // last element from the pattern.
+            matchingNodes = getMatchingNodes(dottedNames, pattern.substring(0, pattern.lastIndexOf(".")));
+        }
         
+        //No matches found - report the failure and return
+        if (matchingNodes.isEmpty()) {
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            //report.setMessage("Dotted name path \"" + prefix + pattern + "\" not found.");
+            report.setMessage(localStrings.getLocalString("admin.get.path.notfound", "Dotted name path {0} not found.", prefix + pattern));
+            return;
+        }
+
+        List<Map.Entry> matchingNodesSorted = sortNodesByDottedName(matchingNodes);
+        matchingNodesSorted = applyOverrideRules(matchingNodesSorted);
         boolean foundMatch = false;
         for (Map.Entry<Dom, String> node : matchingNodesSorted) {
             // if we get more of these special cases, we should switch to a Renderer pattern
@@ -187,67 +217,5 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand,
             ctxt.getLogger().fine(s);
 
         mr.execute();
-    }
-    
-    private List<Map.Entry> findSortedMatchingNodes() {
-        // check for logging patterns
-        if (pattern.contains(".log-service")) {
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(localStrings.getLocalString("admin.get.invalid.logservice.command", "For getting log levels/attributes use list-log-levels/list-log-attributes command."));
-            return null;
-        }
-
-        //check for incomplete dotted name
-        if (!pattern.equals("*")) {
-            if (pattern.lastIndexOf(".") == -1 || pattern.lastIndexOf(".") == (pattern.length() - 1)) {
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                //report.setMessage("Missing expected dotted name part");
-                report.setMessage(localStrings.getLocalString("missing.dotted.name", "Missing expected dotted name part"));
-                return null;
-            }
-        }
-
-        // first let's get the parent for this pattern.
-        TreeNode[] parentNodes = getAliasedParent(domain, pattern);
-
-        // reset the pattern.
-        prefix = "";
-        if(!pattern.startsWith(parentNodes[0].relativeName)) {
-            prefix = pattern.substring(0, pattern.indexOf(parentNodes[0].relativeName));
-            pattern = parentNodes[0].relativeName;
-        } else {
-            pattern = parentNodes[0].relativeName;
-        }
-
-        Map<Dom, String> matchingNodes;
-        Map<Dom, String> dottedNames = new HashMap<Dom, String>();
-        for (TreeNode parentNode : parentNodes) {
-            dottedNames.putAll(getAllDottedNodes(parentNode.node));
-            if (parentNode.name.equals("")) {
-                dottedNames.put(parentNode.node, "domain");
-            }
-        }
-        matchingNodes = getMatchingNodes(dottedNames, pattern);
-        if (matchingNodes.isEmpty() && pattern.lastIndexOf('.') != -1) {
-            // it's possible the user is just looking for an attribute, let's remove the
-            // last element from the pattern.
-            matchingNodes = getMatchingNodes(dottedNames, pattern.substring(0, pattern.lastIndexOf(".")));
-        }
-        
-        //No matches found - report the failure and return
-        if (matchingNodes.isEmpty()) {
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            //report.setMessage("Dotted name path \"" + prefix + pattern + "\" not found.");
-            report.setMessage(localStrings.getLocalString("admin.get.path.notfound", "Dotted name path {0} not found.", prefix + pattern));
-            return null;
-        }
-
-        List<Map.Entry> result = sortNodesByDottedName(matchingNodes);
-        result = applyOverrideRules(result);
-        return result;
-    }
-    
-    private String resourceNameFromDottedName(final String dottedName) {
-        return dottedName.replace('.', '/');
     }
 }
