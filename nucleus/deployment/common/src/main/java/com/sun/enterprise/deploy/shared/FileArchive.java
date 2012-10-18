@@ -42,7 +42,6 @@ package com.sun.enterprise.deploy.shared;
 
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.logging.LogDomains;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.deployment.archive.Archive;

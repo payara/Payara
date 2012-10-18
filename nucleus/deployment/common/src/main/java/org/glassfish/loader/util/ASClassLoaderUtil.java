@@ -75,7 +75,7 @@ public class ASClassLoaderUtil {
     public static final Logger deplLogger = org.glassfish.deployment.common.DeploymentContextImpl.deplLogger;
 
     @LogMessageInfo(message = "Cannot convert classpath to URL {0}", level="WARNING")
-    private static final String CLASSPATH_ERROR = "NCLS-DEPLOYMENT-00043";
+    private static final String CLASSPATH_ERROR = "NCLS-DEPLOYMENT-00045";
 
     @LogMessageInfo(message = "Exception:  {0}", level="WARNING")
     private static final String EXCEPTION = "NCLS-DEPLOYMENT-00017";

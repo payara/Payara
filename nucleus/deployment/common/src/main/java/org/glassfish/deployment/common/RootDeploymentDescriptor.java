@@ -46,10 +46,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.archive.ArchiveType;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * This descriptor contains all common information amongst root element 
@@ -59,6 +61,11 @@ import org.glassfish.api.deployment.archive.ArchiveType;
  * @author Jerome Dochez
  */
 public abstract class RootDeploymentDescriptor extends Descriptor {
+
+    public static final Logger deplLogger = org.glassfish.deployment.common.DeploymentContextImpl.deplLogger;
+
+    @LogMessageInfo(message = "invalidSpecVersion:  {0}", level="WARNING")
+    private static final String INVALID_SPEC_VERSION = "NCLS-DEPLOYMENT-00046";
 
     /**
      * each module is uniquely identified with a moduleID
@@ -146,8 +153,9 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
         try {
             Double.parseDouble(specVersion); 
         } catch (NumberFormatException nfe) {
-            LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER).log(Level.WARNING, "invalidSpecVersion",
-                new Object[] {specVersion, getDefaultSpecVersion()});
+            deplLogger.log(Level.WARNING,
+                           INVALID_SPEC_VERSION,
+                           new Object[] {specVersion, getDefaultSpecVersion()});
             specVersion = getDefaultSpecVersion();
         }
 
