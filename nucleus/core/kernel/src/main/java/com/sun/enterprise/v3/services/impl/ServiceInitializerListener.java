@@ -74,7 +74,11 @@ public class ServiceInitializerListener extends org.glassfish.grizzly.config.Gen
                                       final FilterChainBuilder filterChainBuilder) {
         
         transport = TCPNIOTransportBuilder.newInstance().build();
-
+        transport.setSelectorRunnersCount(Transport.ACCEPTOR_THREADS);
+        transport.getKernelThreadPoolConfig().setPoolName(networkListener.getName());
+        transport.getWorkerThreadPoolConfig().setCorePoolSize(ThreadPool.MAX_THREADPOOL_SIZE);
+        transport.getWorkerThreadPoolConfig().setMaxPoolSize(ThreadPool.MAX_THREADPOOL_SIZE);
+        transport.getWorkerThreadPoolConfig().setPoolName(networkListener.getName() + "-Worker");
         rootFilterChain = FilterChainBuilder.stateless().build();
 
         transport.setProcessor(rootFilterChain);
