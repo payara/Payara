@@ -123,7 +123,7 @@ public class StartupConfigBeanOverrider implements PostConstruct {
                     configModularityUtils.getDefaultConfigurations(clz, configModularityUtils.getRuntimeTypePrefix(startupContext));
             configurationParser.parseAndSetConfigBean(configBeanDefaultValueList);
         } catch (Throwable tr) {
-            LOG.log(Level.INFO,"Cannot override or load the default configuration",tr);
+            LOG.log(Level.FINER,"Cannot override or load the default configuration",tr);
         }
     }
 }
