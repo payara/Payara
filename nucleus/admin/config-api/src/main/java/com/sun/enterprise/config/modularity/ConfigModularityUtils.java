@@ -234,7 +234,7 @@ public final class ConfigModularityUtils {
                     || clz.getSimpleName().equals("PropertyBag")) {
                 continue;
             }
-            if (clz.isAssignableFrom((Class) actualGenericParameter)) {
+            if (actualGenericParameter instanceof Class && clz.isAssignableFrom((Class) actualGenericParameter)) {
                 return true;
             }
         }
