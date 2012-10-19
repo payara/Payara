@@ -123,11 +123,6 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 "default-config not detected during upgrade. Running DefaultConfigUpgrade to create default-config."));
 
         String template = getDomainXmlTemplate();
-        if (template == null) {
-            throw new RuntimeException(localStrings.getLocalString(
-                    "DefaultConfigUpgrade.problemGettingDomainXmlTemplate",
-                    "DefaultConfigUpgrade failed.  Problem getting domain.xml template."));
-        }
 
         try {
             ConfigSupport.apply(new MinDefaultConfigCode(), configs);
