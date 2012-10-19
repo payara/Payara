@@ -248,9 +248,9 @@ public class EntityManagerFactoryWrapper
         stream.defaultReadObject();
 
         //Initialize the transients that were passed at ctor.
-        ServiceLocator defaultHabitat = Globals.getDefaultHabitat();
-        invMgr        = defaultHabitat.getService(InvocationManager.class);
-        compEnvMgr    = defaultHabitat.getService(ComponentEnvManager.class);
+        ServiceLocator defaultServiceLocator = Globals.getDefaultHabitat();
+        invMgr        = defaultServiceLocator.getService(InvocationManager.class);
+        compEnvMgr    = defaultServiceLocator.getService(ComponentEnvManager.class);
     }
 
     public void addNamedQuery(String name, Query query) {

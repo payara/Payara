@@ -43,7 +43,7 @@ package com.sun.enterprise.naming.impl;
 import org.glassfish.api.naming.NamingClusterInfo;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ORBLocator;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.omg.CORBA.ORB;
 
 import javax.naming.Context;
@@ -64,7 +64,7 @@ public class SerialInitContextFactory implements InitialContextFactory {
 
     private static String defaultPort = null ;
 
-    private static Habitat defaultServices = null ;
+    private static ServiceLocator defaultServices = null ;
 
     static void setDefaultHost(String host) {
         defaultHost = host;
@@ -74,16 +74,16 @@ public class SerialInitContextFactory implements InitialContextFactory {
         defaultPort = port;
     }
 
-    static void setDefaultServices(Habitat h) {
+    static void setDefaultServices(ServiceLocator h) {
         defaultServices = h;
 
     }
 
-    static Habitat getDefaultServices() {
+    static ServiceLocator getDefaultServices() {
         return defaultServices;
     }
 
-    private final Habitat services;
+    private final ServiceLocator services;
 
 
     private boolean propertyIsSet( Hashtable env, String pname ) {
@@ -121,7 +121,7 @@ public class SerialInitContextFactory implements InitialContextFactory {
 
     public SerialInitContextFactory() {
         // Issue 14396
-        Habitat temp = defaultServices;
+        ServiceLocator temp = defaultServices;
         if (temp == null) {
             temp = Globals.getDefaultHabitat() ;
         }

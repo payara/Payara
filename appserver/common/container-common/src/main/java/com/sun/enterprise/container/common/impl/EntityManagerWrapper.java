@@ -1084,11 +1084,11 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         stream.defaultReadObject();
 
         //Initialize the transients that were passed at ctor.
-        ServiceLocator defaultHabitat = Globals.getDefaultHabitat();
-        txManager     = defaultHabitat.getService(TransactionManager.class);
-        invMgr        = defaultHabitat.getService(InvocationManager.class);
-        compEnvMgr    = defaultHabitat.getService(ComponentEnvManager.class);
-        callFlowAgent = defaultHabitat.getService(CallFlowAgent.class);
+        ServiceLocator defaultServiceLocator = Globals.getDefaultHabitat();
+        txManager     = defaultServiceLocator.getService(TransactionManager.class);
+        invMgr        = defaultServiceLocator.getService(InvocationManager.class);
+        compEnvMgr    = defaultServiceLocator.getService(ComponentEnvManager.class);
+        callFlowAgent = defaultServiceLocator.getService(CallFlowAgent.class);
     }
 
     public StoredProcedureQuery createNamedStoredProcedureQuery(String name)  {

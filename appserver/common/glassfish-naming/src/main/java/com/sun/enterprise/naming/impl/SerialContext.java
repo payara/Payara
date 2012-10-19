@@ -48,7 +48,7 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ORBLocator;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.ORBPackage.InvalidName;
 import org.omg.CosNaming.NameComponent;
@@ -118,7 +118,7 @@ public class SerialContext implements Context {
 
     private final JavaURLContext javaUrlContext;
 
-    private Habitat services;
+    private ServiceLocator services;
 
     private boolean testMode = false;
 
@@ -214,7 +214,7 @@ public class SerialContext implements Context {
      * Constructor for the context. Initializes the object reference to the
      * remote provider object.
      */
-    public SerialContext(String name, Hashtable environment, Habitat h)
+    public SerialContext(String name, Hashtable environment, ServiceLocator h)
             throws NamingException {
 
         services = h;
@@ -313,7 +313,7 @@ public class SerialContext implements Context {
      * This constructor takes the component id as an argument. All name
      * arguments to operations are prepended by the component id.
      */
-    public SerialContext(Hashtable env, Habitat services) throws NamingException {
+    public SerialContext(Hashtable env, ServiceLocator services) throws NamingException {
         this("", env, services);
     }
 

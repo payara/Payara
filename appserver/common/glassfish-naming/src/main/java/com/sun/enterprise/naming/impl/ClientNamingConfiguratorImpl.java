@@ -43,7 +43,7 @@ package com.sun.enterprise.naming.impl;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.api.naming.ClientNamingConfigurator;
 
@@ -60,7 +60,7 @@ public final class  ClientNamingConfiguratorImpl
         implements ClientNamingConfigurator, PostConstruct {
 
     @Inject
-    private Habitat defaultServices;
+    private ServiceLocator defaultServices;
 
 
     public void postConstruct() {

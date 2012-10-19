@@ -67,7 +67,7 @@ import java.io.Serializable;
 public class CommonResourceProxy implements NamingObjectProxy.InitializationNamingObjectProxy, Serializable {
 
     @Inject
-    protected transient ServiceLocator habitat;
+    protected transient ServiceLocator serviceLocator;
     private Descriptor desc;
     protected String actualResourceName;
 
@@ -78,9 +78,9 @@ public class CommonResourceProxy implements NamingObjectProxy.InitializationNami
                     (desc.getResourceId(), desc.getName(), desc.getResourceType());
 
             try {
-                if (habitat == null) {
-                    habitat = Globals.getDefaultHabitat();
-                    if (habitat == null) {
+                if (serviceLocator == null) {
+                    serviceLocator = Globals.getDefaultHabitat();
+                    if (serviceLocator == null) {
                         throw new NamingException("Unable to create resource " +
                                 "[" + desc.getName() + " ] as habitat is null");
                     }
@@ -96,7 +96,7 @@ public class CommonResourceProxy implements NamingObjectProxy.InitializationNami
     }
 
     protected ResourceDeployer getResourceDeployer(Object resource) {
-        return habitat.<ResourceManagerFactory>getService(ResourceManagerFactory.class).getResourceDeployer(resource);
+        return serviceLocator.<ResourceManagerFactory>getService(ResourceManagerFactory.class).getResourceDeployer(resource);
     }
 
     public void setDescriptor(Descriptor desc) {

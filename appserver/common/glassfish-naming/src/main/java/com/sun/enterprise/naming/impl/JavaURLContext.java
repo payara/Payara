@@ -44,7 +44,7 @@ import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
 import org.glassfish.api.naming.ComponentNamingUtil;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.naming.*;
 import java.util.Hashtable;
@@ -177,7 +177,7 @@ public final class JavaURLContext implements Context, Cloneable {
             return obj;
         } catch (NamingException ex) {
 
-            Habitat services = Globals.getDefaultHabitat();
+            ServiceLocator services = Globals.getDefaultHabitat();
             ProcessEnvironment processEnv = services.getService(ProcessEnvironment.class);
             if( fullName.startsWith("java:app/") &&
                 processEnv.getProcessType() == ProcessType.ACC ) {
