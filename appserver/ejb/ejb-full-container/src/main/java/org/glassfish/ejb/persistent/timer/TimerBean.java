@@ -100,11 +100,6 @@ public class TimerBean implements TimerLocal {
     @PersistenceContext(unitName="__EJB__Timer__App")
     private EntityManager em;
 
-    @PreDestroy
-    private void destroy() {
-        EJBTimerService.onShutdown();
-    }
-
     // Find Timer by Id
     public TimerState findTimer(TimerPrimaryKey timerId) {
         return em.find(TimerState.class, timerId);
