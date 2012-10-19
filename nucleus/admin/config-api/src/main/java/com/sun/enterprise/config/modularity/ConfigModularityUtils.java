@@ -616,7 +616,7 @@ public final class ConfigModularityUtils {
 
     public Class getClassFor(String serviceName) {
         serviceName = getServiceTypeNameIfNamedComponent(serviceName);
-        ConfigInjector injector = serviceLocator.getService(ConfigInjector.class, serviceName.toLowerCase());
+        ConfigInjector injector = serviceLocator.getService(ConfigInjector.class, serviceName.toLowerCase(Locale.getDefault()));
         return getClassFromInjector(injector);
     }
 
