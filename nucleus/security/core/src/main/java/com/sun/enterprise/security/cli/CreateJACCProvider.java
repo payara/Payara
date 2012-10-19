@@ -124,7 +124,10 @@ public class CreateJACCProvider implements AdminCommand, AdminCommandSecurity.Pr
 
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
-        config = CLIUtil.chooseConfig(domain, target);
+        config = CLIUtil.chooseConfig(domain, target, context.getActionReport());
+        if (config == null) {
+            return false;
+        }
         securityService = config.getSecurityService();
         JaccProvider jaccProvider = CLIUtil.findJaccProvider(securityService, jaccProviderName);
         if (jaccProvider != null) {

@@ -46,6 +46,7 @@ import com.sun.enterprise.config.serverbeans.JaccProvider;
 import com.sun.enterprise.config.serverbeans.MessageSecurityConfig;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.util.List;
 import org.glassfish.api.ActionReport;
 
@@ -55,6 +56,9 @@ import org.glassfish.api.ActionReport;
  */
 public class CLIUtil {
     
+    final private static LocalStringManagerImpl localStrings = 
+        new LocalStringManagerImpl(CLIUtil.class);    
+
     /**
      * Selects a config of interest from the domain, based on the target.
      * (Eliminates duplicated code formerly in Create, Delete, and ListAuthRealm).
@@ -84,6 +88,19 @@ public class CLIUtil {
             if (cluster != null) {
                 config = domain.getConfigNamed(cluster.getConfigRef());
             }
+        }
+        return config;
+    }
+    
+    static Config chooseConfig(final Domain domain,
+            final String target,
+            final ActionReport report) {
+        final Config config = chooseConfig(domain, target);
+        if (config == null) {
+            report.setMessage(localStrings.getLocalString(
+                "util.noconfigfortarget",
+                "Configuration for target {0} not found.", target));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
         return config;
     }

@@ -107,7 +107,7 @@ public class ListAuditModule implements AdminCommand, AdminCommandSecurity.Preau
 
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
-        securityService = chooseSecurityService();
+        securityService = chooseSecurityService(context.getActionReport());
         return true;
     }
 
@@ -129,8 +129,11 @@ public class ListAuditModule implements AdminCommand, AdminCommandSecurity.Preau
         }
     }
     
-    private SecurityService chooseSecurityService() {
-        config = CLIUtil.chooseConfig(domain, target);
+    private SecurityService chooseSecurityService(final ActionReport report) {
+        config = CLIUtil.chooseConfig(domain, target, report);
+        if (config == null) {
+            return null;
+        }
         return config.getSecurityService();
     }
 }

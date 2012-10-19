@@ -107,7 +107,10 @@ public class DeleteJaccProvider implements AdminCommand, AdminCommandSecurity.Pr
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-        config = CLIUtil.chooseConfig(domain, target);
+        config = CLIUtil.chooseConfig(domain, target, report);
+        if (config == null) {
+            return false;
+        }
         securityService = config.getSecurityService();
         jprov = CLIUtil.findJaccProvider(securityService, jaccprovider);
         if (jprov == null) {

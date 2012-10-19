@@ -116,7 +116,7 @@ public class DeleteAuditModule implements AdminCommand, AdminCommandSecurity.Pre
 
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
-        auditModule = chooseAuditModule();
+        auditModule = chooseAuditModule(context.getActionReport());
         return true;
     }
     
@@ -160,8 +160,11 @@ public class DeleteAuditModule implements AdminCommand, AdminCommandSecurity.Pre
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
     
-    private AuditModule chooseAuditModule() {
-        config=CLIUtil.chooseConfig(domain, target);
+    private AuditModule chooseAuditModule(final ActionReport report) {
+        config = CLIUtil.chooseConfig(domain, target, report);
+        if (config == null) {
+            return null;
+        }
         securityService = config.getSecurityService();
         for (AuditModule am : securityService.getAuditModule()) {
                 if (am.getName().equals(auditModuleName)) {

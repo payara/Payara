@@ -130,8 +130,8 @@ public class CreateAuditModule implements AdminCommand, AdminCommandSecurity.Pre
     
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
-        securityService = chooseSecurityService();
-        return true;
+        securityService = chooseSecurityService(context.getActionReport());
+        return (securityService != null);
     }
 
     
@@ -184,8 +184,11 @@ public class CreateAuditModule implements AdminCommand, AdminCommandSecurity.Pre
         //    "Creation of AuditModule {0} completed successfully", auditModuleName));
     }       
     
-    private SecurityService chooseSecurityService() {
-        config = CLIUtil.chooseConfig(domain, target);
+    private SecurityService chooseSecurityService(final ActionReport report) {
+        config = CLIUtil.chooseConfig(domain, target, report);
+        if (config == null) {
+            return null;
+        }
         return config.getSecurityService();
     }
     

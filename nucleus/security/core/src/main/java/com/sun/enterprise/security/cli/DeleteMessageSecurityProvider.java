@@ -119,7 +119,10 @@ public class DeleteMessageSecurityProvider implements AdminCommand, AdminCommand
 
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
-        config = CLIUtil.chooseConfig(domain, target);
+        config = CLIUtil.chooseConfig(domain, target, context.getActionReport());
+        if (config == null) {
+            return false;
+        }
         secService = config.getSecurityService();
         msgSecCfg = CLIUtil.findMessageSecurityConfig(secService, authLayer);
         if (msgSecCfg == null) {

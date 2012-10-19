@@ -177,7 +177,10 @@ public class CreateMessageSecurityProvider implements AdminCommand, AdminCommand
 
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
-        config = CLIUtil.chooseConfig(domain, target);
+        config = CLIUtil.chooseConfig(domain, target, context.getActionReport());
+        if (config == null) {
+            return false;
+        }
         secService = config.getSecurityService();
         return true;
     }

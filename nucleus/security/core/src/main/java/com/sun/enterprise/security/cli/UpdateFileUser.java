@@ -143,7 +143,10 @@ public class UpdateFileUser implements AdminCommand, AdminCommandSecurity.Preaut
 
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
-        config = CLIUtil.chooseConfig(domain, target);
+        config = CLIUtil.chooseConfig(domain, target, context.getActionReport());
+        if (config == null) {
+            return false;
+        }
         securityService = config.getSecurityService();
         fileAuthRealm = CLIUtil.findRealm(securityService, authRealmName);
         if (fileAuthRealm == null) {
