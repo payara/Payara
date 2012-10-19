@@ -245,7 +245,7 @@ public class ResourceHandler extends AbstractResourceHandler {
                 desc.setDescription(resourceAn.description());
 
             // merge lookup-name and mapped-name
-            if (!desc.hasLookupName() &&
+            if (!desc.hasLookupName() && !desc.isSetValueCalled() &&
                     ok(getResourceLookupValue(resourceAn, ainfo)))
                 desc.setLookupName(getResourceLookupValue(resourceAn, ainfo));
             if (!ok(desc.getMappedName()) && ok(resourceAn.mappedName()))
