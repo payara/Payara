@@ -361,8 +361,8 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     
     /**
      * Return the default admin user.  A default admin user only
-     * exists if the admin realm is a file realm and the file
-     * realm contains exactly one user.  If so, that's the default
+     * exists if the admin realm is a file realm and the admin file
+     * realm contains exactly one user in the admin group.  If so, that's the default
      * admin user.
      */
     private String getDefaultAdminUser() {
@@ -384,23 +384,28 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
         }
         try {
             FileRealm fr = new FileRealm(rf.getAbsolutePath());
-            Enumeration users = fr.getUserNames();
-            if (users.hasMoreElements()) {
+            String candidateDefaultAdminUser = null;
+            for (Enumeration users = fr.getUserNames(); users.hasMoreElements();) {
                 String au = (String) users.nextElement();
-                if (!users.hasMoreElements()) {
-                    FileRealmUser fru = (FileRealmUser)fr.getUser(au);
-                    for (String group : fru.getGroups()) {
-                        if (group.equals(AdminConstants.DOMAIN_ADMIN_GROUP_NAME))
-                            // there is only one admin user, in the right group, default to it
-                            ADMSEC_LOGGER.log(Level.FINE, "Will use \"{0}\", if needed, for a default admin user", au);
-                            return au;
+                FileRealmUser fru = (FileRealmUser)fr.getUser(au);
+                for (String group : fru.getGroups()) {
+                    if (group.equals(AdminConstants.DOMAIN_ADMIN_GROUP_NAME)) {
+                        if (candidateDefaultAdminUser != null) {
+                            ADMSEC_LOGGER.log(Level.FINE, "There are multiple admin users so we cannot use any as a default");
+                            return null;
+                        }
+                        candidateDefaultAdminUser = au;
                     }
                 }
-                ADMSEC_LOGGER.log(Level.FINE, "There are multiple admin users so we cannot use any as a default");
-                return null;
             }
-            ADMSEC_LOGGER.log(Level.FINE, "There are no admin users so we cannot use any as a default");
-            return null;
+            if (candidateDefaultAdminUser == null) {
+                ADMSEC_LOGGER.log(Level.FINE, "There are no admin users so we cannot use any as a default");
+            } else {
+                // there is only one admin user, in the right group, default to it
+                ADMSEC_LOGGER.log(Level.FINE, "Will use \"{0}\", if needed, for a default admin user", candidateDefaultAdminUser);
+            }
+            return candidateDefaultAdminUser;
+                
         } catch(Exception e) {
             ADMSEC_LOGGER.log(Level.WARNING, AdminLoggerInfo.mAdminUserSearchError, e);
             return null;
