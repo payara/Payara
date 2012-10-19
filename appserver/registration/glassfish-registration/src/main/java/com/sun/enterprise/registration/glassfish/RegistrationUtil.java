@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -114,10 +114,12 @@ public class RegistrationUtil {
                     in = new BufferedReader(new FileReader(serviceTagLink));
                     //The first line in the link file is expected to contain fully qualified path to actual service tag repository
                     String indirectedServiceTagRegistryName = in.readLine();
-                    File indirectedServiceTagRegisitryFile = new File(indirectedServiceTagRegistryName);
-                    if (indirectedServiceTagRegisitryFile.exists()) {
-                        //Return indirectedServiceTagRegisitryFile as the serviceTagRegistry only if it exists
-                        serviceTagRegistry = indirectedServiceTagRegisitryFile;
+                    if (indirectedServiceTagRegistryName != null) {
+                        File indirectedServiceTagRegisitryFile = new File(indirectedServiceTagRegistryName);
+                        if (indirectedServiceTagRegisitryFile.exists()) {
+                            //Return indirectedServiceTagRegisitryFile as the serviceTagRegistry only if it exists
+                            serviceTagRegistry = indirectedServiceTagRegisitryFile;
+                        }
                     }
                 } catch (IOException e) {
                     //I/O error occured. There is not much we can do to recover. Assumer that service tags are not present
