@@ -70,7 +70,7 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
 
     private final static Logger logger = LogDomains.getLogger(InjectableJMSContext.class, LogDomains.JMS_LOGGER);
     private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InjectableJMSContext.class);
-    private final static String DEFAULT_CONNECTION_FACTORY = "java:comp/defaultJMSConnectionFactory";
+    private final static String DEFAULT_CONNECTION_FACTORY = "java:comp/DefaultJMSConnectionFactory";
 
     private final String id;
 

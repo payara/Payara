@@ -692,7 +692,7 @@ public class ComponentEnvManagerImpl
 
     private void addDefaultJNDIBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
         if (ScopeType.COMPONENT.equals(scope)) {
-            String logicalJndiName = "java:comp/defaultJMSConnectionFactory";
+            String logicalJndiName = "java:comp/DefaultJMSConnectionFactory";
             String physicalJndiName = "jms/__defaultConnectionFactory";
             Object value = namingUtils.createLazyNamingObjectFactory(logicalJndiName, physicalJndiName, false);
             if (env instanceof Application) {
