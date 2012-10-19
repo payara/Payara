@@ -60,7 +60,7 @@ import org.jvnet.hk2.config.Transformer;
  */
 public final class GlassFishConfigBean extends ConfigBean {
 
-     TranslatedConfigView defaultView;
+     transient TranslatedConfigView defaultView;
 
     /**
      * Returns the translated view of a configuration object
