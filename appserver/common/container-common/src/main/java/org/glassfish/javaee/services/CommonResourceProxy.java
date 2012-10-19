@@ -67,7 +67,7 @@ import java.io.Serializable;
 public class CommonResourceProxy implements NamingObjectProxy.InitializationNamingObjectProxy, Serializable {
 
     @Inject
-    protected ServiceLocator habitat;
+    protected transient ServiceLocator habitat;
     private Descriptor desc;
     protected String actualResourceName;
 
