@@ -634,8 +634,18 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
                     continue;
                 }
                 String value = (String)entry.getValue();
-                JMSConnectionFactoryProperty dp = convertProperty(key, value);
-                jmsConnectionFactoryProperties.add(dp);
+                JMSConnectionFactoryProperty property = convertProperty(key, value);
+                jmsConnectionFactoryProperties.add(property);
+            }
+
+            if (desc.getUser() != null) {
+                JMSConnectionFactoryProperty property = convertProperty("UserName", desc.getUser());
+                jmsConnectionFactoryProperties.add(property);
+            }
+
+            if (desc.getPassword() != null) {
+                JMSConnectionFactoryProperty property = convertProperty("Password", desc.getPassword());
+                jmsConnectionFactoryProperties.add(property);
             }
 
             return jmsConnectionFactoryProperties;
