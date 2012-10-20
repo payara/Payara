@@ -198,10 +198,18 @@ class DeferredFileOutputStream
         if (prefix != null) {
             outputFile = File.createTempFile(prefix, suffix, directory);
         }
-        FileOutputStream fos = new FileOutputStream(outputFile);
-        memoryOutputStream.writeTo(fos);
-        currentOutputStream = fos;
-        memoryOutputStream = null;
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(outputFile);
+            memoryOutputStream.writeTo(fos);
+            currentOutputStream = fos;
+            memoryOutputStream = null;
+        } catch (IOException e) {
+            if (fos != null) {
+                fos.close();
+            }
+            throw e;
+        }
     }
 
 

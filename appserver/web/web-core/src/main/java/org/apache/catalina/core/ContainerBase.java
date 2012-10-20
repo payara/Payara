@@ -1574,7 +1574,8 @@ public abstract class ContainerBase
                     !( parent instanceof StandardEngine) ) {
                 parent=parent.getParent();
             }
-            if( parent instanceof StandardEngine ) {
+            if( parent != null ) {
+                // parent will always be an instanceof StandardEngine unless it is null
                 domain=((StandardEngine)parent).getDomain();
             } 
         }
