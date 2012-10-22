@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010,2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -83,25 +83,25 @@ class PEDomainConfigValidator extends DomainConfigValidator
     static DomainConfigEntryInfo[] entries = new DomainConfigEntryInfo[]
     {
         new DomainConfigEntryInfo(DomainConfig.K_INSTALL_ROOT, 
-                                  "java.lang.String", lInstallRoot, 
+                                  "java.lang.String",
                                   new FileValidator(lInstallRoot, "dr")),
         new DomainConfigEntryInfo(DomainConfig.K_DOMAINS_ROOT, 
-                                  "java.lang.String", lDomainsRoot,
+                                  "java.lang.String",
                                   new FileValidator(lDomainsRoot, "drw")),
         new DomainConfigEntryInfo(DomainConfig.K_ADMIN_PORT, 
-                                  "java.lang.Integer", lAdminPort,
+                                  "java.lang.Integer",
                                   new PortValidator(lAdminPort)),
         new DomainConfigEntryInfo(DomainConfig.K_INSTANCE_PORT, 
-                                  "java.lang.Integer", lInstancePort,
+                                  "java.lang.Integer",
                                   new PortValidator(lInstancePort)),
         new DomainConfigEntryInfo(DomainConfig.K_HOST_NAME, 
-                                  "java.lang.String", lHostName,
+                                  "java.lang.String",
                                   new StringValidator(lHostName)),
         new DomainConfigEntryInfo(DomainConfig.K_ORB_LISTENER_PORT, 
-                                  "java.lang.Integer", lOrbPort,
+                                  "java.lang.Integer",
                                   new PortValidator(lOrbPort)),
         new DomainConfigEntryInfo(DomainConfig.K_JMS_PORT, 
-                                  "java.lang.Integer", lJmsPort,
+                                  "java.lang.Integer",
                                   new PortValidator(lJmsPort))
     };
 

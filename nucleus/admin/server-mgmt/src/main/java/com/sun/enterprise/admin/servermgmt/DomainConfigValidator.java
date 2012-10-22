@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010,2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -67,18 +67,15 @@ public abstract class DomainConfigValidator extends Validator
     {
         final String key;
         final String dataType;
-        final String displayText;
         final Validator validator;
 
         /** Creates a new DomainConfigEntryInfo object */
         public DomainConfigEntryInfo(String key, 
                                      String dataType, 
-                                     String displayText,
                                      Validator validator)
         {
             this.key            = key;
             this.dataType       = dataType;
-            this.displayText    = displayText;
             this.validator      = validator;
         }
 
