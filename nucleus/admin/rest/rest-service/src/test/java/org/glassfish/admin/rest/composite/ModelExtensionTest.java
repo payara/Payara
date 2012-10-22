@@ -94,7 +94,8 @@ public class ModelExtensionTest {
         Assert.assertNotNull(m2);
 
         RestResourceMetadata rrmd = new RestResourceMetadata(new TestResource());
-        JSONObject name = getJsonObject(rrmd.getResourceMethods().get("GET").toJson(), "response.properties.name");
+        final List<RestMethodMetadata> getMethods = rrmd.getResourceMethods().get("GET");
+        JSONObject name = getJsonObject(getMethods.get(0).toJson(), "response.properties.name");
 
         Assert.assertNotNull(name, "'name' should not be null. Inherited methods are not showing up in generated class");
         Assert.assertNotNull(name.get("default"), "The field 'name' should have a default value.");
@@ -126,7 +127,7 @@ public class ModelExtensionTest {
         }
     }
 
-    public static interface Model1 {
+    public static interface Model1 extends RestModel {
         @Default(generator=ModelDefaultGenerator.class)
         String getName();
         void setName(String name);

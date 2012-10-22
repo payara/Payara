@@ -55,12 +55,12 @@ public class ResourceMetadataTest  {
     public void testMetadata() throws JSONException {
         RestResourceMetadata rrmd = new RestResourceMetadata(new DummiesResource());
         Assert.assertNotNull(rrmd);
-        Assert.assertEquals(rrmd.getResourceMethods().size(), 2);
+        Assert.assertEquals(rrmd.getResourceMethods().size(), 3);
         Assert.assertEquals(rrmd.getSubResources().size(), 1);
 
         rrmd = new RestResourceMetadata(new DummyResource());
         Assert.assertNotNull(rrmd);
-        Assert.assertEquals(rrmd.getResourceMethods().size(), 2);
+        Assert.assertEquals(rrmd.getResourceMethods().size(), 3);
         Assert.assertEquals(rrmd.getSubResources().size(), 0);
     }
 }

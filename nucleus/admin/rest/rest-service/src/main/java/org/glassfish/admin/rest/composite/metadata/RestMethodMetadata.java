@@ -48,14 +48,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
+
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.OptionsCapable;
-import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.RestCollection;
 import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.utils.Util;
@@ -70,18 +68,20 @@ public class RestMethodMetadata {
     /**
      * The type of the incoming request body, if there is one.
      */
-    private Class<?> requestPayload;
+    private Type requestPayload;
     /**
      * The type of the response entity.  If <code>isCollection</code> is true, this value reflects the type of the items
      * in the collection.
      */
-    private Class<?> returnPayload;
+    private Type returnPayload;
     /**
      * Specifies whether or not the return payload is a collection (in which case <code>returnPayload</code> gives the
      * type of the items in the collection) or not.
      */
     private boolean isCollection = false;
     private String path;
+    private String produces[];
+    private String consumes[];
     private OptionsCapable context;
 
     public RestMethodMetadata(OptionsCapable context, Method method, Annotation designator) {
@@ -89,7 +89,26 @@ public class RestMethodMetadata {
         this.httpMethod = designator.getClass().getInterfaces()[0].getSimpleName();
         this.returnPayload = calculateReturnPayload(method);
         this.path = getPath(method);
+
+        Consumes cann = getAnnotation(Consumes.class, method);
+        Produces pann = getAnnotation(Produces.class, method);
+        if (cann != null) {
+            consumes = cann.value();
+        }
+        if (pann != null) {
+            produces = pann.value();
+        }
+
         processParameters(method);
+    }
+
+    private <T> T getAnnotation(Class<T> annoClass, Method method) {
+        T annotation = (T)method.getAnnotation((Class<Annotation>)annoClass);
+        if (annotation == null) {
+            annotation = (T)method.getDeclaringClass().getAnnotation((Class<Annotation>)annoClass);
+        }
+
+        return annotation;
     }
 
     public String getHttpMethod() {
@@ -108,19 +127,19 @@ public class RestMethodMetadata {
         this.queryParameters = queryParameters;
     }
 
-    public Class<?> getRequestPayload() {
+    public Type getRequestPayload() {
         return requestPayload;
     }
 
-    public void setRequestPayload(Class<?> requestPayload) {
+    public void setRequestPayload(Type requestPayload) {
         this.requestPayload = requestPayload;
     }
 
-    public Class<?> getReturnPayload() {
+    public Type getReturnPayload() {
         return returnPayload;
     }
 
-    public void setReturnPayload(Class<?> returnPayload) {
+    public void setReturnPayload(Type returnPayload) {
         this.returnPayload = returnPayload;
     }
 
@@ -134,8 +153,11 @@ public class RestMethodMetadata {
 
     @Override
     public String toString() {
-        return "RestMethodMetadata{" + "httpMethod=" + httpMethod + ", queryParameters=" + queryParameters + ", returnType=" 
-                + returnPayload + ", isCollection =" + isCollection + '}';
+        try {
+            return toJson().toString();
+        } catch (JSONException ex) {
+            return ex.getMessage();
+        }
     }
 
     /**
@@ -154,12 +176,27 @@ public class RestMethodMetadata {
             queryParamJson.put(pmd.getName(), pmd.toJson());
         }
 
+        if (consumes != null) {
+            JSONArray array = new JSONArray();
+            for (String type : consumes) {
+                array.put(type);
+            }
+            o.put("accepts", array);
+        }
+        if (produces != null) {
+            JSONArray array = new JSONArray();
+            for (String type : produces) {
+                array.put(type);
+            }
+            o.put("produces", array);
+        }
+
         o.put("queryParams", queryParamJson);
 
         if (requestPayload != null) {
             JSONObject requestProps = new JSONObject();
             requestProps.put("isCollection", isCollection);
-            requestProps.put("dataType", requestPayload.getSimpleName());
+            requestProps.put("dataType", getTypeString(requestPayload));
             requestProps.put("properties", getProperties(requestPayload));
             o.put("request", requestProps);
         }
@@ -167,7 +204,7 @@ public class RestMethodMetadata {
         if (returnPayload != null) {
             JSONObject returnProps = new JSONObject();
             returnProps.put("isCollection", isCollection);
-            returnProps.put("dataType", returnPayload.getSimpleName());
+            returnProps.put("dataType", getTypeString(returnPayload));
             returnProps.put("properties", getProperties(returnPayload));
             o.put("response", returnProps);
         }
@@ -183,9 +220,9 @@ public class RestMethodMetadata {
      * @param method
      * @return
      */
-    private Class<?> calculateReturnPayload(Method method) {
+    private Type calculateReturnPayload(Method method) {
         final Type grt = method.getGenericReturnType();
-        Class<?> value = (Class<?>)method.getReturnType();
+        Type value = method.getReturnType();
         if (ParameterizedType.class.isAssignableFrom(grt.getClass())) {
             final ParameterizedType pt = (ParameterizedType) grt;
             if (RestCollection.class.isAssignableFrom((Class) pt.getRawType())) {
@@ -197,6 +234,25 @@ public class RestMethodMetadata {
         }
         
         return value;
+    }
+
+    private Type calculateParameterType(Type paramType) {
+        Type type;
+
+        if (Util.isGenericType(paramType)) {
+            ParameterizedType pt = (ParameterizedType) paramType;
+            Class<?> first = Util.getFirstGenericType(paramType);
+            if (RestModel.class.isAssignableFrom(first) || RestCollection.class.isAssignableFrom(first)) {
+//            if ((first instanceof RestModel.class) || (first instanceof RestCollection.class)) {
+                type = first;
+            } else {
+                type = pt;
+            }
+        } else {
+            type = paramType;
+        }
+
+        return type;
     }
 
     private String getPath(Method method) {
@@ -238,8 +294,9 @@ public class RestMethodMetadata {
 
             }
             if (!processed && !isPathParam) {
-                requestPayload = Util.isGenericType(paramType) ?
-                                 Util.getFirstGenericType(paramType) : (Class<?>)paramType;
+                requestPayload = calculateParameterType(paramType);
+//                                 Util.isGenericType(paramType) ?
+//                                 Util.getFirstGenericType(paramType) : (Class<?>)paramType;
             }
         }
     }
@@ -247,32 +304,61 @@ public class RestMethodMetadata {
     /**
      * This method will analyze the getters of the given class to determine its properties.  Currently, for simplicity's
      * sake, only getters are checked.
-     * @param clazz
+     * @param type
      * @return
      * @throws JSONException
      */
-    private JSONObject getProperties(Class<?> clazz) throws JSONException {
-        Map<String, ParamMetadata> map = new HashMap<String, ParamMetadata>();
+    private JSONObject getProperties(Type type) throws JSONException {
         JSONObject props = new JSONObject();
-        if (clazz.isInterface()) {
-            Object model = CompositeUtil.instance().getModel(clazz);
-            clazz = model.getClass();
+        Class<?> clazz;
+        Map<String, ParamMetadata> map = new HashMap<String, ParamMetadata>();
+        if (Util.isGenericType(type)) {
+            ParameterizedType pt = (ParameterizedType)type;
+            clazz = (Class<?>)pt.getRawType();
+//            if (RestModel.class.isAssignableFrom(clazz) || RestCollection.class.isAssignableFrom(clazz)) {
+//                Object model = CompositeUtil.instance().getModel(clazz);
+//                clazz = model.getClass();
+//            }
+        } else {
+            clazz = (Class<?>) type;
         }
 
-        for (Class<?> ifaces : clazz.getInterfaces()) {
-            for (Method m : ifaces.getMethods()) {
+        if (RestModel.class.isAssignableFrom(clazz) || RestCollection.class.isAssignableFrom(clazz)) {
+            for (Method m : clazz.getMethods()) {
                 String methodName = m.getName();
                 if (methodName.startsWith("get")) {
-                    String propertyName = methodName.substring(3,4).toLowerCase(Locale.getDefault()) + methodName.substring(4);
+                    String propertyName = methodName.substring(3, 4).toLowerCase(Locale.getDefault()) + methodName.substring(4);
                     map.put(propertyName, new ParamMetadata(context, m.getReturnType(), propertyName, m.getAnnotations()));
                 }
             }
-        }
 
-        for (Map.Entry<String, ParamMetadata> entry : map.entrySet()) {
-            props.put(entry.getKey(), entry.getValue().toJson());
+            for (Map.Entry<String, ParamMetadata> entry : map.entrySet()) {
+                props.put(entry.getKey(), entry.getValue().toJson());
+            }
         }
 
         return props;
+    }
+
+    protected String getTypeString(Type clazz) {
+        StringBuilder sb = new StringBuilder();
+        if (Util.isGenericType(clazz)) {
+            ParameterizedType pt = (ParameterizedType)clazz;
+            sb.append(((Class<?>)pt.getRawType()).getSimpleName());
+            Type [] typeArgs = pt.getActualTypeArguments();
+            if ((typeArgs != null) && (typeArgs.length >= 1)) {
+                String sep = "";
+                sb.append("<");
+                for (Type arg : typeArgs) {
+                    sb.append(sep)
+                            .append(((Class<?>)arg).getSimpleName());
+                    sep=",";
+                }
+                sb.append(">");
+            }
+        } else {
+            sb.append(((Class<?>)clazz).getSimpleName());
+        }
+        return sb.toString();
     }
 }
