@@ -56,7 +56,7 @@ import org.glassfish.admin.mbeanserver.JMXSslConfigHolder;
 import org.glassfish.admin.mbeanserver.Util;
 import org.glassfish.grizzly.config.SSLConfigurator;
 import org.glassfish.grizzly.config.dom.Ssl;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Inner class for SSL support for JMX connection using RMI.
@@ -67,7 +67,7 @@ public class SecureRMIServerSocketFactory
         extends SslRMIServerSocketFactory {
 
     private final InetAddress mAddress;
-    private final Habitat habitat;
+    private final ServiceLocator habitat;
     private final Ssl ssl;
     // The list of cipher suite
     private String[] enabledCipherSuites;
@@ -79,7 +79,7 @@ public class SecureRMIServerSocketFactory
     private final Object protocolsSync = new Object();
     private Map socketMap = new HashMap<Integer, Socket>();
 
-    public SecureRMIServerSocketFactory(final Habitat habitat,
+    public SecureRMIServerSocketFactory(final ServiceLocator habitat,
             final Ssl sslConfig,
             final InetAddress addr) {
         mAddress = addr;

@@ -51,20 +51,20 @@ import com.sun.logging.LogDomains;
 import java.util.logging.Logger;
 import javax.security.auth.callback.CallbackHandler;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
 @Service
 @Singleton
 public class SecurityServicesUtil {
 
-    private static Habitat habitat = Globals.getDefaultHabitat();
+    private static ServiceLocator habitat = Globals.getDefaultHabitat();
     
     private static final LocalStringManagerImpl _localStrings =
             new LocalStringManagerImpl(SecurityServicesUtil.class);
@@ -179,7 +179,7 @@ public class SecurityServicesUtil {
 //
 //    }
 
-    public Habitat getHabitat() {
+    public ServiceLocator getHabitat() {
         return habitat;
     }
     

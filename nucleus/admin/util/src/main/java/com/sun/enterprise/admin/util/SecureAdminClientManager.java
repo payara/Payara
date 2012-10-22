@@ -57,8 +57,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
@@ -283,7 +284,7 @@ public class SecureAdminClientManager {
         }
 
         try {
-            Habitat habitat = Globals.getStaticHabitat();
+            ServiceLocator habitat = Globals.getStaticHabitat();
             ConfigParser parser = new ConfigParser(habitat);
             URL domainURL = domainXMLFile.toURI().toURL();
             DomDocument doc = parser.parse(domainURL);

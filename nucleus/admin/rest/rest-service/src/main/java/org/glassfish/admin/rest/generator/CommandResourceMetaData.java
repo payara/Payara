@@ -58,7 +58,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigInjector;
 
@@ -131,7 +130,7 @@ public class CommandResourceMetaData {
     public static List<CommandResourceMetaData> getRestRedirectPointToBean(String beanName) {
         synchronized (restRedirects) {
             if (restRedirects.isEmpty()) {
-                final Habitat habitat = Globals.getDefaultHabitat();
+                final ServiceLocator habitat = Globals.getDefaultHabitat();
 
                 processConfigBeans(habitat);
 
@@ -187,9 +186,7 @@ public class CommandResourceMetaData {
         return restRedirects.get(beanName);
     }
 
-    private static void processConfigBeans(Habitat habitat) {
-    	
-    	ServiceLocator serviceLocator = (ServiceLocator) habitat;
+    private static void processConfigBeans(ServiceLocator serviceLocator) {
 
 		List<ActiveDescriptor<?>> allDescriptors = serviceLocator.getDescriptors(
 		        BuilderHelper.createContractFilter(ConfigInjector.class.getName()));

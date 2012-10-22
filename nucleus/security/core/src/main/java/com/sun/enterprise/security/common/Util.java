@@ -54,7 +54,6 @@ import org.glassfish.internal.embedded.Server;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
 import javax.inject.Singleton;
 
@@ -66,7 +65,7 @@ import javax.inject.Singleton;
 @Service
 @Singleton
 public class Util {
-    private static Habitat habitat = Globals.getDefaultHabitat();
+    private static ServiceLocator habitat = Globals.getDefaultHabitat();
     
     @Inject 
     private ProcessEnvironment penv;
@@ -78,7 +77,7 @@ public class Util {
     
     //Note: Will return Non-Null only after Util has been 
     //Injected in some Service.
-    public static Habitat getDefaultHabitat() {
+    public static ServiceLocator getDefaultHabitat() {
         return habitat;
     }
     

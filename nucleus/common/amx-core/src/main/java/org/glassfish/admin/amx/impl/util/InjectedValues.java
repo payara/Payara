@@ -40,6 +40,7 @@
 package org.glassfish.admin.amx.impl.util;
 
 import org.jvnet.hk2.annotations.Service;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
 import org.glassfish.api.Async;
@@ -52,7 +53,6 @@ import org.glassfish.internal.config.UnprocessedConfigListener;
 import com.sun.enterprise.module.ModulesRegistry;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import org.jvnet.hk2.component.Habitat;
 
 /**
 Utility class that gets various useful values injected into it for use
@@ -64,7 +64,7 @@ because many AMX MBeans and support code don't have any access to injection.
 public class InjectedValues {
 
     @Inject
-    Habitat mHabitat;
+    ServiceLocator mHabitat;
     @Inject
     private MBeanServer mMBeanServer;
     @Inject
@@ -80,7 +80,7 @@ public class InjectedValues {
         return mMBeanServer;
     }
 
-    public Habitat getHabitat() {
+    public ServiceLocator getHabitat() {
         return mHabitat;
     }
 
@@ -96,7 +96,7 @@ public class InjectedValues {
         return mModulesRegistry;
     }
 
-    public static Habitat getDefaultServices() {
+    public static ServiceLocator getDefaultServices() {
         return Globals.getDefaultHabitat();
     }
 

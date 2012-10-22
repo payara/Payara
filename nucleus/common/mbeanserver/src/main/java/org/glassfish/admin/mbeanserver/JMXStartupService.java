@@ -48,7 +48,6 @@ import javax.management.MBeanRegistrationException;
 
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -112,7 +111,7 @@ public final class JMXStartupService implements PostConstruct {
     @Inject
     Events mEvents;
      
-    static Habitat habitat = Globals.getDefaultHabitat();
+    static ServiceLocator habitat = Globals.getDefaultHabitat();
     
     @Inject
     private ServerEnvironment serverEnv;

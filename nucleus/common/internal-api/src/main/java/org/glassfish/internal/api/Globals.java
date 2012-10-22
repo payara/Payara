@@ -40,32 +40,12 @@
 
 package org.glassfish.internal.api;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.bootstrap.StartupContext;
-import com.sun.enterprise.module.single.SingleModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.common.util.admin.GlassFishErrorServiceImpl;
-import org.glassfish.common.util.admin.HK2BindTracingService;
-import org.glassfish.hk2.api.DynamicConfiguration;
-import org.glassfish.hk2.api.DynamicConfigurationService;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.bootstrap.HK2Populator;
-import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
-import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
-import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
-import org.glassfish.hk2.utilities.BuilderHelper;
-import org.glassfish.hk2.utilities.DescriptorImpl;
 import org.glassfish.internal.api.Init;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
-import org.glassfish.hk2.utilities.Binder;
-import org.glassfish.hk2.utilities.BuilderHelper;
 import javax.inject.Inject;
 
 /**
@@ -76,7 +56,7 @@ import javax.inject.Inject;
 @Service(name = "globals")
 public class Globals implements Init {
 
-    private static volatile Habitat defaultHabitat;
+    private static volatile ServiceLocator defaultHabitat;
 
     private static Object staticLock = new Object();
     
@@ -85,15 +65,15 @@ public class Globals implements Init {
     private ConfigBeansUtilities utilities;
     
     @Inject
-    private Globals(Habitat habitat) {
+    private Globals(ServiceLocator habitat) {
         defaultHabitat = habitat;
     }
 
-    public static Habitat getDefaultBaseServiceLocator() {
+    public static ServiceLocator getDefaultBaseServiceLocator() {
     	return getDefaultHabitat();
     }
     
-    public static Habitat getDefaultHabitat() {
+    public static ServiceLocator getDefaultHabitat() {
         return defaultHabitat;
     }
 
@@ -101,99 +81,24 @@ public class Globals implements Init {
         return defaultHabitat.getService(type);
     }
 
-    public static void setDefaultHabitat(final Habitat habitat) {
+    public static void setDefaultHabitat(final ServiceLocator habitat) {
         defaultHabitat = habitat;
     }
 
-    public static Habitat getStaticBaseServiceLocator() {
+    public static ServiceLocator getStaticBaseServiceLocator() {
     	return getStaticHabitat();
     }
     
-    public static Habitat getStaticHabitat() {
+    public static ServiceLocator getStaticHabitat() {
         if (defaultHabitat == null) {
             synchronized (staticLock) {
                 if (defaultHabitat == null) {
                     ModulesRegistry modulesRegistry = new StaticModulesRegistry(Globals.class.getClassLoader());
-                    ServiceLocator locator = modulesRegistry.createServiceLocator("default");
-                    Habitat previouslyCreated = locator.getService(Habitat.class);
-                    if (previouslyCreated != null) {
-                        defaultHabitat = previouslyCreated;
-                        return defaultHabitat;
-                    }
-                    // Why is this needed?
-                    defaultHabitat = new Habitat();
-                    initializeClient(locator);
+                    defaultHabitat = modulesRegistry.createServiceLocator("default");
                 }
             }
         }
 
         return defaultHabitat;
     }
-	
-	private static void initializeClient(ServiceLocator locator) {
-	    ClassLoader cl = Thread.currentThread().getContextClassLoader();
-	    if (cl == null) {
-	        cl = Globals.class.getClassLoader();
-	    }
-	    
-	    DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
-	    DynamicConfiguration config = dcs.createDynamicConfiguration();
-	    
-	    Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
-	    AbstractActiveDescriptor<Logger> di = BuilderHelper.createConstantDescriptor(logger);
-	    di.addContractType(Logger.class);
-	    
-	    config.addActiveDescriptor(di);
-	    
-	    config.addActiveDescriptor(HK2BindTracingService.class);
-	    config.addActiveDescriptor(GlassFishErrorServiceImpl.class);
-	    
-	    SingleModulesRegistry smr = new SingleModulesRegistry(cl);
-	    
-	    config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(smr));
-	    config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(new StartupContext()));
-	    
-	    config.commit();
-	    
-		Binder postProcessorBinder = new Binder() {
-
-			@Override
-			public void bind(DynamicConfiguration config) {
-				config.bind(BuilderHelper
-						.createConstantDescriptor(new ClientPostProcessor()));
-			}
-		};
-
-	    try {
-            HK2Populator.populate(locator,
-                    new ClasspathDescriptorFileFinder(cl),
-                    postProcessorBinder);
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Error initializing HK2", e);
-        }
-	}
-	
-	private static final String SERVER_CONTEXT_IMPL = "com.sun.enterprise.v3.server.ServerContextImpl";
-    private static final HashSet<String> VERBOTEN_WORDS = new HashSet<String>();
-    
-    static {
-        VERBOTEN_WORDS.add(SERVER_CONTEXT_IMPL);
-    }
-    
-    private static class ClientPostProcessor implements PopulatorPostProcessor {
-
-        /* (non-Javadoc)
-         * @see org.glassfish.hk2.bootstrap.PopulatorPostProcessor#process(org.glassfish.hk2.utilities.DescriptorImpl)
-         */
-        @Override
-        public DescriptorImpl process(DescriptorImpl descriptorImpl) {
-            if (VERBOTEN_WORDS.contains(descriptorImpl.getImplementation())) {
-                // This is a client
-                return null;
-            }
-            
-            return descriptorImpl;
-        }
-    }
-
 }

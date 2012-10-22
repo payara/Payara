@@ -51,8 +51,8 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509KeyManager;
 import org.glassfish.grizzly.config.SSLConfigurator;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * This class extends the SSLConfigHolder for the sole purpose of
@@ -67,7 +67,7 @@ public class JMXSslConfigHolder extends SSLConfigurator {
 
     private static final String DEFAULT_SSL_PROTOCOL = "TLS";
 
-    public JMXSslConfigHolder(final Habitat habitat, final Ssl ssl) throws SSLException {
+    public JMXSslConfigHolder(final ServiceLocator habitat, final Ssl ssl) throws SSLException {
                 super(habitat, ssl);
     }
 

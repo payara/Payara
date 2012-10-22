@@ -70,7 +70,7 @@ import org.glassfish.admin.mbeanserver.ssl.SSLClientConfigurator;
 import org.glassfish.admin.mbeanserver.ssl.SSLParams;
 import org.glassfish.admin.mbeanserver.ssl.SecureRMIServerSocketFactory;
 import org.glassfish.grizzly.config.dom.Ssl;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * This class configures and starts the JMX RMI connector server using rmi_jrmp protocol.
@@ -105,7 +105,7 @@ final class RMIConnectorStarter extends ConnectorStarter {
             final int port,
             final String protocol,
             final boolean securityEnabled,
-            final Habitat habitat,
+            final ServiceLocator habitat,
             final BootAMXListener bootListener,
             final Ssl sslConfig) throws UnknownHostException {
 

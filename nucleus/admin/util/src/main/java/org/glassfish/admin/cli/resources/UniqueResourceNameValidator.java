@@ -42,8 +42,9 @@ package org.glassfish.admin.cli.resources;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Resource;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -69,7 +70,7 @@ public class UniqueResourceNameValidator implements ConstraintValidator<UniqueRe
 
         domain = cbu.getDomain();*/
 
-        Habitat habitat = Globals.getDefaultHabitat();
+        ServiceLocator habitat = Globals.getDefaultHabitat();
         if (habitat == null) return; // due to: http://java.net/jira/browse/GLASSFISH-19043
 
         domain = habitat.getService(Domain.class);
