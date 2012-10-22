@@ -517,10 +517,13 @@ public @interface AccessRequired {
                 final Class<? extends ConfigBeanProxy> childType) {
             final StringBuilder sb = new StringBuilder(resourceNameFromDom(parent)).append('/');
             final String tagName = parent.document.buildModel(childType).getTagName();
-            if (collectionName == null || collectionName.isEmpty()) {
-                collectionName = pluralize(tagName);
+            if (collectionName != null) {
+                if (collectionName.isEmpty()) {
+                    collectionName = pluralize(tagName);
+                }
+                sb.append(collectionName).append('/');
             }
-            sb.append(collectionName).append('/').append(tagName);
+            sb.append(tagName);
             return sb.toString();
         }
         
