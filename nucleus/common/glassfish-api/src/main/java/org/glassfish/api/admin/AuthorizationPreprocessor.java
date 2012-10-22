@@ -79,6 +79,7 @@ public interface AuthorizationPreprocessor {
             Subject subject,
             String resourceName,
             String action,
+            AdminCommand command,
             Map<String,Object> context,
             Map<String,String> subjectAttributes,
             Map<String,String> resourceAttributes,

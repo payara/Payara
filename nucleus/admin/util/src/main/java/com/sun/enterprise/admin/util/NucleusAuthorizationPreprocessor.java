@@ -41,6 +41,7 @@ package com.sun.enterprise.admin.util;
 
 import java.util.Map;
 import javax.security.auth.Subject;
+import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AuthorizationPreprocessor;
 import org.glassfish.hk2.api.Rank;
 import org.jvnet.hk2.annotations.Service;
@@ -59,7 +60,8 @@ public class NucleusAuthorizationPreprocessor implements AuthorizationPreprocess
     }
 
     @Override
-    public void describeAuthorization(Subject subject, String resourceName, String action, Map<String, Object> context, Map<String, String> subjectAttributes, Map<String, String> resourceAttributes, Map<String, String> actionAttributes) {
+    public void describeAuthorization(Subject subject, String resourceName, String action, 
+        AdminCommand command, Map<String, Object> context, Map<String, String> subjectAttributes, Map<String, String> resourceAttributes, Map<String, String> actionAttributes) {
     }
 
     

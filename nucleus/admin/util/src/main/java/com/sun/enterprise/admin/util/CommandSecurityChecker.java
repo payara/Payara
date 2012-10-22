@@ -221,6 +221,7 @@ public class CommandSecurityChecker {
                         subject, 
                         a.accessCheck.resourceName(), 
                         a.accessCheck.action(),
+                        command,
                         env, 
                         subjectAttrs, 
                         resourceAttrs, 
