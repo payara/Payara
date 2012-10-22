@@ -55,6 +55,7 @@ import org.glassfish.api.admin.RuntimeType;
 import com.sun.enterprise.config.serverbeans.Cluster;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Map;
 import java.beans.PropertyVetoException;
@@ -296,8 +297,8 @@ public class ConfigureJMSCluster implements AdminCommand {
                         param.setMessageStoreType(JDBC);
                     }
                     else{
-                        param.setConfigStoreType(configStoreType.toLowerCase());
-                        param.setMessageStoreType(messageStoreType.toLowerCase());
+                        param.setConfigStoreType(configStoreType.toLowerCase(Locale.ENGLISH));
+                        param.setMessageStoreType(messageStoreType.toLowerCase(Locale.ENGLISH));
                     }
                     param.setDbVendor(dbvendor);
                     param.setDbUsername(dbuser);
@@ -349,7 +350,7 @@ public class ConfigureJMSCluster implements AdminCommand {
     private boolean isSupportedDbVendor(){
         if (dbvendor != null)
         {
-            return SUPPORTED_DB_VENDORS.contains(dbvendor.toLowerCase());
+            return SUPPORTED_DB_VENDORS.contains(dbvendor.toLowerCase(Locale.ENGLISH));
         }
         return false;
     }

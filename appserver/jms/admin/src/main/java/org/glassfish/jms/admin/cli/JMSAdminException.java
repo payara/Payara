@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,7 +49,7 @@ public class JMSAdminException extends Exception
     /**
      * Exception reference
      **/
-    private Exception linkedException;
+    private volatile Exception linkedException;
     private String _message = null;
 
     /**
@@ -86,7 +86,7 @@ public class JMSAdminException extends Exception
      *
      * @param ex       the linked Exception
      **/
-    public synchronized void setLinkedException(Exception ex) {
+    public void setLinkedException(Exception ex) {
         linkedException = ex;
     }
 
@@ -103,11 +103,12 @@ public class JMSAdminException extends Exception
 	}
 
 	// Append any message from the linked exception.
-	if (linkedException != null && linkedException.getMessage() != null) {
+	Exception localLinkedException = linkedException;
+	if (localLinkedException != null && localLinkedException.getMessage() != null) {
 	    if (retString != null) {
-	        retString += retString + "\n" + linkedException.getMessage();
+	        retString += retString + "\n" + localLinkedException.getMessage();
 	    } else {
-	        retString = linkedException.getMessage();
+	        retString = localLinkedException.getMessage();
 	    }
 	}
 
