@@ -1030,6 +1030,7 @@ public class SSHLauncher {
      * @return
      */
     private static String commandListToQuotedString(List<String> command) {
+        if(command.size()==1) return command.get(0);
         StringBuilder commandBuilder  = new StringBuilder();
         boolean first = true;
 

@@ -115,6 +115,7 @@ public class ConfigurationParser<C extends ConfigLoader> {
                     LOG.log(Level.SEVERE, msg, e);
                 }
             else {
+                //Check that parent is not null!
                 populator = new ConfigurationPopulator(configBeanDefaultValue.getXmlConfiguration(), doc, parent);
             }
             populator.run(configParser);
