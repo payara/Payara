@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -174,6 +174,23 @@ public class TransactionState {
      * This is called from OTS to rollback a particular XAResource
      */
     synchronized public void rollback(XAResource res)
+        throws IllegalStateException, XAException {
+
+        // Rollback the requested resource
+        _rollback(res);
+
+        // Now rollback all other resources known that are not
+        // registered with the RegisteredResources during startAssociation() call
+        Iterator e = resourceStates.keySet().iterator();
+        while (e.hasNext()) {
+            XAResource res0 = (XAResource) e.next();
+            if (res0.isSameRM(res) && res0 != res) {
+                _rollback(res0);
+            }
+        }
+    }
+
+    synchronized private void _rollback(XAResource res)
         throws IllegalStateException, XAException {
 
         Xid xid = (Xid) resourceList.get(res);
