@@ -49,7 +49,6 @@ import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.module.single.SingleModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.common.util.admin.GlassFishErrorServiceImpl;
 import org.glassfish.common.util.admin.HK2BindTracingService;
@@ -65,7 +64,6 @@ import org.glassfish.hk2.utilities.DescriptorImpl;
 import org.glassfish.internal.api.Init;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import org.glassfish.hk2.utilities.Binder;
-import org.glassfish.hk2.utilities.BuilderHelper;
 import javax.inject.Inject;
 
 /**
@@ -76,7 +74,7 @@ import javax.inject.Inject;
 @Service(name = "globals")
 public class Globals implements Init {
 
-    private static volatile Habitat defaultHabitat;
+    private static volatile ServiceLocator defaultHabitat;
 
     private static Object staticLock = new Object();
     
@@ -85,7 +83,7 @@ public class Globals implements Init {
     private ConfigBeansUtilities utilities;
     
     @Inject
-    private Globals(Habitat habitat) {
+    private Globals(ServiceLocator habitat) {
         defaultHabitat = habitat;
     }
 

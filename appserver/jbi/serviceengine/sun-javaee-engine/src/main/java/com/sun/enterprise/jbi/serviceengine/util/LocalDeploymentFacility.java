@@ -52,7 +52,7 @@ import java.util.HashSet;
 import java.util.Map;
 import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Provides a DeploymentFacility implementation
@@ -74,7 +74,7 @@ public class LocalDeploymentFacility extends AbstractDeploymentFacility {
      */
     public LocalDeploymentFacility() {
         super();
-        final Habitat habitat = Globals.getDefaultHabitat();
+        final ServiceLocator habitat = Globals.getDefaultHabitat();
         commandRunner = habitat.getService(CommandRunner.class);
     }
 

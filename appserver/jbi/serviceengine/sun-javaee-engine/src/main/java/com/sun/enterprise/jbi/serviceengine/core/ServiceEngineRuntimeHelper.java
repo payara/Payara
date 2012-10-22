@@ -52,7 +52,7 @@ import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
 import com.sun.enterprise.jbi.serviceengine.bridge.EndpointInfoCollector;
 import org.glassfish.webservices.WebServiceEjbEndpointRegistry;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Provides services exposed by GlassFish to ServiceEngine
@@ -64,7 +64,7 @@ public class ServiceEngineRuntimeHelper implements ContractProvider {
 
     private static ServiceEngineRuntimeHelper _runtime;
     @Inject
-    private static Habitat habitat;
+    private static ServiceLocator habitat;
     @Inject
     private ArchivistFactory archivistFactory;
     @Inject

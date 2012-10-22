@@ -62,7 +62,7 @@ import java.util.logging.Level;
 
 import java.util.Collection;
 import java.util.Set;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
@@ -83,7 +83,7 @@ public class EndpointInfoCollector {
     @Inject
     private Applications allApplications;
     @Inject
-    private Habitat habitat;
+    private ServiceLocator habitat;
 
     //Injected so that during restart event, listener is started after the applications are loaded.
     @Inject

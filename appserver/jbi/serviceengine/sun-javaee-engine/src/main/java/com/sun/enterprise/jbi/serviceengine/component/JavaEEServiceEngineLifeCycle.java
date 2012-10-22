@@ -51,7 +51,7 @@ import javax.jbi.component.ComponentContext;
 import javax.jbi.component.ComponentLifeCycle;
 import org.glassfish.api.ContractProvider;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Provide initialization, start, stop, and  shutdown processing. The JBI
@@ -133,7 +133,7 @@ public class JavaEEServiceEngineLifeCycle implements ComponentLifeCycle {
     public void start() throws JBIException{
         try {
             //Initialize RuntimeHelper Service
-            Habitat habitat = Globals.getDefaultHabitat();
+            SerivceLocator habitat = Globals.getDefaultHabitat();
             habitat.getService(ContractProvider.class, "ServiceEngineRuntimeHelper");
 
             if(ServiceEngineUtil.isServiceEngineEnabled()) {
