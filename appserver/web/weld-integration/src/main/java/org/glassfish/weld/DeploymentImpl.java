@@ -92,7 +92,9 @@ public class DeploymentImpl implements Deployment {
      */
     public DeploymentImpl(ReadableArchive archive, Collection<EjbDescriptor> ejbs,
                           DeploymentContext context) {
-        logger.log(FINE, "Creating deployment for archive:" + archive.getName());
+        if ( logger.isLoggable( FINE ) ) {
+            logger.log(FINE, "Creating deployment for archive:" + archive.getName());
+        }
         this.beanDeploymentArchives = new ArrayList<BeanDeploymentArchive>();
         this.context = context;
         this.idToBeanDeploymentArchive = new HashMap<String, BeanDeploymentArchive>();
@@ -266,22 +268,27 @@ public class DeploymentImpl implements Deployment {
 
     @Override
     public BeanDeploymentArchive loadBeanDeploymentArchive(Class<?> beanClass) {
-        logger.log(FINE, "DeploymentImpl::loadBDA:"+ beanClass);
+        if ( logger.isLoggable( FINE ) ) {
+            logger.log(FINE, "DeploymentImpl::loadBDA:"+ beanClass);
+        }
         List<BeanDeploymentArchive> beanDeploymentArchives = getBeanDeploymentArchives();
 
         ListIterator<BeanDeploymentArchive> lIter = beanDeploymentArchives.listIterator();
         while (lIter.hasNext()) {
             BeanDeploymentArchive bda = lIter.next();
-            logger.log(FINE, "checking for " + beanClass + " in root BDA" + bda.getId());
+            if ( logger.isLoggable( FINE ) ) {
+                logger.log(FINE, "checking for " + beanClass + " in root BDA" + bda.getId());
+            }
             if (((BeanDeploymentArchiveImpl)bda).getModuleBeanClassObjects().contains(beanClass)) {
                 //don't stuff this Bean Class into the BDA's beanClasses,
                 //as Weld automatically add theses classes to the BDA's bean Classes
-                logger.log(FINE, "DeploymentImpl(as part of loadBDA)::An " +
+                if ( logger.isLoggable( FINE ) ) {
+                    logger.log(FINE, "DeploymentImpl(as part of loadBDA)::An " +
                 		"existing BDA has this class " + beanClass.getName()
                 		+ " and so adding this class as a bean class it to " +
                 		"existing bda: " + bda);
                 //((BeanDeploymentArchiveImpl)bda).addBeanClass(beanClass.getName());
-                logger.log(FINE, "Deployment(as part of loadBDA): and returning " + bda);
+                }
                 return bda;
             }
 
@@ -291,17 +298,20 @@ public class DeploymentImpl implements Deployment {
             if (bda.getBeanDeploymentArchives().size() > 0) {
                 for(BeanDeploymentArchive subBda: bda.getBeanDeploymentArchives()){
                     Collection<Class<?>> moduleBeanClasses = ((BeanDeploymentArchiveImpl)subBda).getModuleBeanClassObjects();
-                    logger.log(FINE, "checking for " + beanClass + " in subBDA" + subBda.getId());
+                    if ( logger.isLoggable( FINE ) ) {
+                        logger.log(FINE, "checking for " + beanClass + " in subBDA" + subBda.getId());
+                    }
                     boolean match = moduleBeanClasses.contains(beanClass);
                     if (match) {
                         //don't stuff this Bean Class into the BDA's beanClasses,
                         //as Weld automatically add theses classes to the BDA's bean Classes
-                        logger.log(FINE, "DeploymentImpl(as part of loadBDA)::" +
+                        if ( logger.isLoggable( FINE ) ) {
+                            logger.log(FINE, "DeploymentImpl(as part of loadBDA)::" +
                         		"An existing BDA has this class "
                                 + beanClass.getName() + " and so adding this " +
                                 "class as a bean class to existing bda:" + subBda);
+                        }
                         //((BeanDeploymentArchiveImpl)subBda).addBeanClass(beanClass.getName());
-                        logger.log(FINE, "Deployment(as part of loadBDA): and returning " + subBda);
                         return subBda;
                     }
                 }
@@ -309,9 +319,11 @@ public class DeploymentImpl implements Deployment {
         }
 
         // If the BDA was not found for the Class, create one and add it
-        logger.log(FINE, "+++++ DeploymentImpl(as part of loadBDA):: beanClass "
+        if ( logger.isLoggable( FINE ) ) {
+            logger.log(FINE, "+++++ DeploymentImpl(as part of loadBDA):: beanClass "
                 + beanClass + " not found in the BDAs of this deployment. " +
                 "Hence creating a new BDA");
+        }
         List<Class<?>> beanClasses = new ArrayList<Class<?>>();
         List<URL> beanXMLUrls = new CopyOnWriteArrayList<URL>();
         Set<EjbDescriptor> ejbs = new HashSet<EjbDescriptor>();
@@ -326,17 +338,21 @@ public class DeploymentImpl implements Deployment {
         BeanDeploymentArchive newBda =
             new BeanDeploymentArchiveImpl(beanClass.getName(),
                     beanClasses, beanXMLUrls, ejbs, context);
-        logger.log(FINE, "DeploymentImpl(as part of loadBDA):: new BDA "
+        if ( logger.isLoggable( FINE ) ) {
+            logger.log(FINE, "DeploymentImpl(as part of loadBDA):: new BDA "
                 + newBda + "created. Now adding this new BDA to " +
                 "all root BDAs of this deployment");
+        }
         lIter = beanDeploymentArchives.listIterator();
         while (lIter.hasNext()) {
             BeanDeploymentArchive bda = lIter.next();
             bda.getBeanDeploymentArchives().add(newBda);
         }
-        logger.log(FINE, "DeploymentImpl(as part of loadBDA):: for beanClass "
+        if ( logger.isLoggable( FINE ) ) {
+            logger.log(FINE, "DeploymentImpl(as part of loadBDA):: for beanClass "
                 + beanClass + " finally returning the " +
                 "newly created BDA " + newBda);
+        }
         return newBda;
     }
 
@@ -464,7 +480,9 @@ public class DeploymentImpl implements Deployment {
             for (int j = 0; j < earLibBDAs.size(); j++) {
                 BeanDeploymentArchive otherBDA = earLibBDAs.get(j);
                 if (!firstBDA.getId().equals(otherBDA.getId())){
-                    logger.log(FINE, "DeploymentImpl::ensureEarLibJarVisibility - " + firstBDA.getId() + " being associated with " + otherBDA.getId());
+                    if ( logger.isLoggable( FINE ) ) {
+                        logger.log(FINE, "DeploymentImpl::ensureEarLibJarVisibility - " + firstBDA.getId() + " being associated with " + otherBDA.getId());
+                    }
                     firstBDA.getBeanDeploymentArchives().add(otherBDA);
                     modified = true;
                 }
@@ -472,7 +490,9 @@ public class DeploymentImpl implements Deployment {
             //update modified BDA
             if (modified){
                 int idx = this.beanDeploymentArchives.indexOf(firstBDA);
-                logger.log(FINE, "DeploymentImpl::ensureEarLibJarVisibility - updating " + firstBDA.getId() );
+                if ( logger.isLoggable( FINE ) ) {
+                    logger.log(FINE, "DeploymentImpl::ensureEarLibJarVisibility - updating " + firstBDA.getId() );
+                }
                 if (idx >= 0) {
                     this.beanDeploymentArchives.set(idx, firstBDA);
                 }

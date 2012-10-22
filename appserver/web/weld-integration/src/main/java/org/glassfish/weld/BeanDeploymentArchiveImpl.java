@@ -199,7 +199,9 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         }
         //This method is called during BeanDeployment.deployBeans, so this would
         //be the right time to place the module classloader for the BDA as the TCL
-        logger.log(FINER, "set TCL for " + this.id + " to " + this.moduleClassLoaderForBDA);
+        if ( logger.isLoggable( FINER ) ) {
+            logger.log(FINER, "set TCL for " + this.id + " to " + this.moduleClassLoaderForBDA);
+        }
         Thread.currentThread().setContextClassLoader(this.moduleClassLoaderForBDA);
         //The TCL is unset at the end of deployment of CDI beans in WeldDeployer.event
         //XXX: This is a workaround for issue https://issues.jboss.org/browse/WELD-781.
@@ -229,12 +231,18 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         for (Iterator<Class<?>> iterator = moduleClasses.iterator(); iterator.hasNext();) {
             Class c = iterator.next();
             if (c.getName().equals(beanClassName)) {
-                logger.log(FINE, "BeanDeploymentArchiveImpl::addBeanClass - adding " + c + "to " + beanClasses );
+                if ( logger.isLoggable( FINE ) ) {
+                  logger.log(FINE, "BeanDeploymentArchiveImpl::addBeanClass - adding " + c + "to " + beanClasses );
+                }
                 beanClasses.add(c);
                 added = true;
             }
         }
-        if (!added) logger.log(FINE, "Error!!!! " + beanClassName + " not added to beanClasses");
+        if (!added) {
+          if ( logger.isLoggable( FINE ) ) {
+            logger.log(FINE, "Error!!!! " + beanClassName + " not added to beanClasses");
+          }
+        }
     }
 
     public BeansXml getBeansXml() {
@@ -329,8 +337,10 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     private void populate(Collection<com.sun.enterprise.deployment.EjbDescriptor> ejbs) {
         try {
             if (archive.exists(WEB_INF_BEANS_XML) || archive.exists(WEB_INF_CLASSES_META_INF_BEANS_XML)) {
-                logger.log(FINE, "-processing " + archive.getURI()
-                                        + " as it has " + WEB_INF_BEANS_XML + " or " + WEB_INF_CLASSES_META_INF_BEANS_XML);
+                if ( logger.isLoggable( FINE ) ) {
+                    logger.log(FINE, "-processing " + archive.getURI() + " as it has " +
+                      WEB_INF_BEANS_XML + " or " + WEB_INF_CLASSES_META_INF_BEANS_XML);
+                }
                 bdaType = BDAType.WAR;
                 Enumeration<String> entries = archive.entries();
                 while (entries.hasMoreElements()) {
@@ -367,8 +377,9 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
             //  beans.xml in the jar archive
 
             if (archive.exists(WEB_INF_LIB)) {
-                logger.log(FINE, "-processing WEB-INF/lib in "
-                        + archive.getURI());
+                if ( logger.isLoggable( FINE ) ) {
+                    logger.log(FINE, "-processing WEB-INF/lib in " + archive.getURI());
+                }
                 bdaType = BDAType.WAR;
                 Enumeration<String> entries = archive.entries(WEB_INF_LIB);
                 List<ReadableArchive> weblibJarsThatAreBeanArchives =
@@ -380,16 +391,22 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                         entry.indexOf(SEPARATOR_CHAR, WEB_INF_LIB.length() + 1 ) == -1 ) {
                         ReadableArchive weblibJarArchive = archive.getSubArchive(entry);
                         if (weblibJarArchive.exists(META_INF_BEANS_XML)) {
-                            logger.log(FINE, "-WEB-INF/lib: considering " + entry
-                              + " as a bean archive and hence added another BDA for it");
+                            if ( logger.isLoggable( FINE ) ) {
+                                logger.log(FINE, "-WEB-INF/lib: considering " + entry
+                                  + " as a bean archive and hence added another BDA for it");
+                            }
                             weblibJarsThatAreBeanArchives.add(weblibJarArchive);
                         } else if (weblibJarArchive.exists(META_INF_SERVICES_EXTENSION)) {
-                            logger.log(FINE, "-WEB-INF/lib: considering " + entry
-                                    + " as an extension and creating another BDA for it");
+                            if ( logger.isLoggable( FINE ) ) {
+                                logger.log(FINE, "-WEB-INF/lib: considering " + entry
+                                        + " as an extension and creating another BDA for it");
+                            }
                             weblibJarsThatAreBeanArchives.add(weblibJarArchive);
                         } else {
-                          logger.log(FINE, "-WEB-INF/lib: skipping " + archive.getName()
-                                          + " as it doesn't have beans.xml or an extension");
+                            if ( logger.isLoggable( FINE ) ) {
+                                logger.log(FINE, "-WEB-INF/lib: skipping " + archive.getName()
+                                              + " as it doesn't have beans.xml or an extension");
+                            }
                         }
                     }
                }
@@ -419,15 +436,19 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
             }
 
             if (archive.exists(META_INF_BEANS_XML)) {
-                logger.log(FINE, "-JAR processing: " + archive.getURI()
-                        + " as a Bean archive jar since it has META-INF/beans.xml");
+                if ( logger.isLoggable( FINE ) ) {
+                    logger.log(FINE, "-JAR processing: " + archive.getURI()
+                            + " as a Bean archive jar since it has META-INF/beans.xml");
+                }
                 bdaType = BDAType.JAR;
                 collectJarInfo(archive, true);
             }
 
             if (archive.exists(META_INF_SERVICES_EXTENSION)){
-                logger.log(FINE, "-JAR processing: " + archive.getURI()
-                        + " as an extensions jar since it has META-INF/services extension");
+                if ( logger.isLoggable( FINE ) ) {
+                    logger.log(FINE, "-JAR processing: " + archive.getURI()
+                            + " as an extensions jar since it has META-INF/services extension");
+                }
                 bdaType = BDAType.UNKNOWN;
                 collectJarInfo(archive, false);
             }
@@ -448,7 +469,9 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
             for (int j = 0; j < webLibBDAs.size(); j++) {
                 BeanDeploymentArchiveImpl otherBDA = webLibBDAs.get(j);
                 if (!firstBDA.getId().equals(otherBDA.getId())){
-                    logger.log(FINE, "BDAImpl::ensureWebLibJarVisibility - " + firstBDA.getFriendlyId() + " being associated with " + otherBDA.getFriendlyId());
+                    if ( logger.isLoggable( FINE ) ) {
+                        logger.log(FINE, "BDAImpl::ensureWebLibJarVisibility - " + firstBDA.getFriendlyId() + " being associated with " + otherBDA.getFriendlyId());
+                    }
                     firstBDA.getBeanDeploymentArchives().add(otherBDA);
                     modified = true;
                 }
@@ -456,7 +479,9 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
             //update modified BDA
             if (modified){
                 int idx = this.beanDeploymentArchives.indexOf(firstBDA);
-                logger.log(FINE, "BDAImpl::ensureWebLibJarVisibility - updating " + firstBDA.getFriendlyId() );
+                if ( logger.isLoggable( FINE ) ) {
+                    logger.log(FINE, "BDAImpl::ensureWebLibJarVisibility - updating " + firstBDA.getFriendlyId() );
+                }
                 if (idx >= 0) {
                     this.beanDeploymentArchives.set(idx, firstBDA);
                 }
@@ -467,8 +492,10 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         for (int i = 0; i < webLibBDAs.size(); i++) {
             BeanDeploymentArchiveImpl subBDA = webLibBDAs.get(i);
             subBDA.getBeanDeploymentArchives().add(this);
-            logger.log(FINE, "BDAImpl::ensureWebLibJarVisibility - updating "
-                    + subBDA.getId() + " to include " + this.getId() );
+            if ( logger.isLoggable( FINE ) ) {
+                logger.log(FINE, "BDAImpl::ensureWebLibJarVisibility - updating "
+                        + subBDA.getId() + " to include " + this.getId() );
+            }
             int idx = this.beanDeploymentArchives.indexOf(subBDA);
             if (idx >= 0) {
                 this.beanDeploymentArchives.set(idx, subBDA);
@@ -478,7 +505,9 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     private void collectJarInfo(ReadableArchive archive, boolean isBeanArchive)
                         throws IOException, ClassNotFoundException {
-        logger.log(FINE, "-collecting jar info for " + archive.getURI());
+        if ( logger.isLoggable( FINE ) ) {
+            logger.log(FINE, "-collecting jar info for " + archive.getURI());
+        }
         Enumeration<String> entries = archive.entries();
         while (entries.hasMoreElements()) {
             String entry = entries.nextElement();
@@ -515,7 +544,9 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     private void collectRarInfo(ReadableArchive archive) throws IOException,
             ClassNotFoundException {
-        logger.log(FINE, "-collecting rar info for " + archive.getURI());
+        if ( logger.isLoggable( FINE ) ) {
+            logger.log(FINE, "-collecting rar info for " + archive.getURI());
+        }
         Enumeration<String> entries = archive.entries();
         while (entries.hasMoreElements()) {
             String entry = entries.nextElement();
@@ -544,10 +575,14 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         if (this.context.getClassLoader() != null) {
             cl = this.context.getClassLoader();
         } else if (Thread.currentThread().getContextClassLoader() != null) {
-            logger.log(FINE, "Using TCL");
+            if ( logger.isLoggable( FINE ) ) {
+                logger.log(FINE, "Using TCL");
+            }
             cl = Thread.currentThread().getContextClassLoader();
         } else {
-            logger.log(FINE, "TCL is null. Using DeploymentImpl's classloader");
+            if ( logger.isLoggable( FINE ) ) {
+                logger.log(FINE, "TCL is null. Using DeploymentImpl's classloader");
+            }
             cl = BeanDeploymentArchiveImpl.class.getClassLoader();
         }
 

@@ -160,12 +160,16 @@ public class EjbServicesImpl implements EjbServices
         // Convert to EjbInterceptor
         // First create master list of EjbInterceptor descriptors
         for(Interceptor<?> next : interceptorBindings.getAllInterceptors()) {
-            logger.log(Level.FINE, "trying to register:" + next);
+            if ( logger.isLoggable( Level.FINE ) ) {
+                logger.log(Level.FINE, "trying to register:" + next);
+            }
             // Add interceptor to list all interceptors in ejb descriptor
             if( !(glassfishEjbDesc.hasInterceptorClass(next.getBeanClass().getName()))) {
-                logger.log(Level.FINE, "Adding interceptor: " 
+                if ( logger.isLoggable( Level.FINE ) ) {
+                    logger.log(Level.FINE, "Adding interceptor: "
                         + next.getBeanClass().getName() + " for EJB:" 
                         + glassfishEjbDesc.getEjbClassName());
+                }
                 EjbInterceptor ejbInt = makeEjbInterceptor(next, glassfishEjbDesc.getEjbBundleDescriptor());
                 glassfishEjbDesc.addInterceptorClass(ejbInt);
             }

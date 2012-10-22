@@ -40,9 +40,7 @@
 
 package org.glassfish.weld;
 
-import java.util.logging.Logger;
-
-import org.osgi.framework.BundleActivator; 
+import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext; 
 
 import org.jboss.weld.bootstrap.api.SingletonProvider;
@@ -70,10 +68,6 @@ import org.jboss.weld.bootstrap.api.helpers.TCCLSingletonProvider;
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 public class WeldActivator implements BundleActivator {
-    private Logger logger = Logger.getLogger(WeldActivator.class.getName());
-
-    // private javassist.util.proxy.ProxyFactory.ClassLoaderProvider oldCLP;
-
     public void start(BundleContext context) throws Exception {
         boolean earSupport = false;
         try {

@@ -40,17 +40,11 @@
 
 package org.glassfish.weld;
 
-import java.util.logging.Logger;
-
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.ApplicationContext;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 
-import com.sun.logging.LogDomains;
-
 public class WeldApplicationContainer implements ApplicationContainer {
-
-    private Logger _logger = LogDomains.getLogger(WeldApplicationContainer.class, LogDomains.CORE_LOGGER);
 
     private WeldBootstrap weldBootstrap;
 
