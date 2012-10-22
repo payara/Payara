@@ -66,6 +66,10 @@
             <id>release-phase2</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>release-phase-all</name>
+                    <value>true</value>
+                </property>
             </activation>
             <modules>
                 <module>embedded</module>
