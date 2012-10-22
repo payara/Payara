@@ -46,6 +46,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
+import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.RuntimeType;
@@ -58,6 +59,10 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import java.util.List;
+import org.glassfish.api.admin.AdminCommandSecurity;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * Delete Resource Ref Command
@@ -69,7 +74,7 @@ import java.util.List;
 @Service(name="delete-resource-ref")
 @PerLookup
 @I18n("delete.resource.ref")
-public class DeleteResourceRef implements AdminCommand {
+public class DeleteResourceRef implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteResourceRef.class);
 
@@ -92,50 +97,65 @@ public class DeleteResourceRef implements AdminCommand {
     @Inject
     private ConfigBeansUtilities configBeansUtilities;
 
+    private RefContainer refContainer = null;
+    
+    @AccessRequired.To("delete")
+    private ResourceRef resourceRef = null;
+    
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        refContainer = chooseRefContainer();
+        if (refContainer != null) {
+            resourceRef = getResourceRef();
+        }
+        
+        if (resourceRef == null) {
+            setResourceRefDoNotExistMessage(context.getActionReport());
+        }
+        return resourceRef != null;
+    }
+    
+    private RefContainer chooseRefContainer() {
+        Config config = domain.getConfigs().getConfigByName(target);
+        if (config != null) {
+            return config;
+        }
+        Server server = configBeansUtilities.getServerNamed(target);
+        if (server != null) {
+            return server;
+        }
+        Cluster cluster = domain.getClusterNamed(target);
+        return cluster;
+    }
+    
+    private ResourceRef getResourceRef() {
+        for (ResourceRef rr : refContainer.getResourceRef()) {
+            if (rr.getRef().equals(refName)) {
+                return rr;
+            }
+        }
+        return null;
+    }
+    
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the parameter names and the values the parameter values
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         
         try {
-            Config config = domain.getConfigs().getConfigByName(target);
-            if (config != null) {
-                if (config.isResourceRefExists(refName)) {
-                    config.deleteResourceRef(refName);
-                } else {
-                    setResourceRefDoNotExistMessage(report);
-                    return;
-                }
-            } else {
-                Server server = configBeansUtilities.getServerNamed(target);
-                if (server != null) {
-                    if (server.isResourceRefExists(refName)) {
-                        // delete ResourceRef as a child of Server
-                        server.deleteResourceRef(refName);
-                    } else {
-                        setResourceRefDoNotExistMessage(report);
-                        return;
-                    }
-                } else {
-                    Cluster cluster = domain.getClusterNamed(target);
-                    if (cluster.isResourceRefExists(refName)) {
-                        // delete ResourceRef as a child of Cluster
-                        cluster.deleteResourceRef(refName);
-                    } else {
-                        setResourceRefDoNotExistMessage(report);
-                        return;
-                    }
+            deleteResourceRef();
+            if (refContainer instanceof Cluster) {
 
-                    // delete ResourceRef for all instances of Cluster
-                    Target tgt = habitat.getService(Target.class);
-                    List<Server> instances = tgt.getInstances(target);
-                    for (Server svr : instances) {
-                        svr.deleteResourceRef(refName);
-                    }
+                // delete ResourceRef for all instances of Cluster
+                Target tgt = habitat.getService(Target.class);
+                List<Server> instances = tgt.getInstances(target);
+                for (Server svr : instances) {
+                    svr.deleteResourceRef(refName);
                 }
             }
         } catch(Exception e) {
@@ -144,14 +164,25 @@ public class DeleteResourceRef implements AdminCommand {
         }
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         report.setMessage(localStrings.getLocalString("delete.resource.ref.success",
-                "resource-ref {0} deleted successfully from target {1}.", refName));
+                "resource-ref {0} deleted successfully from target {1}.", refName, target));
+    }
+    
+    private void deleteResourceRef() throws TransactionFailure {
+        if (resourceRef != null) {
+            ConfigSupport.apply(new SingleConfigCode<RefContainer>() {
+
+                @Override
+                public Object run(RefContainer param) {
+                    return param.getResourceRef().remove(resourceRef);
+                }
+            }, refContainer);
+        }
     }
 
     private void setResourceRefDoNotExistMessage(ActionReport report) {
         report.setMessage(localStrings.getLocalString("delete.resource.ref.doesNotExist",
                 "A resource ref named {0} does not exist for target {1}.", refName, target));
         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        return;
     }
 
     private void setFailureMessage(ActionReport report, Exception e) {

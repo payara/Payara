@@ -43,6 +43,7 @@ package org.glassfish.admin.cli.resources;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import java.beans.PropertyVetoException;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -57,7 +58,6 @@ import org.glassfish.hk2.api.Descriptor;
 import org.glassfish.hk2.api.Filter;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceHandle;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -65,10 +65,14 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
 
 /**
  * Create Resource Ref Command
@@ -81,7 +85,8 @@ import java.util.Set;
 @Service(name="create-resource-ref")
 @PerLookup
 @I18n("create.resource.ref")
-public class CreateResourceRef implements AdminCommand {
+public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Preauthorization,
+        AdminCommandSecurity.AccessCheckProvider {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateResourceRef.class);
 
@@ -109,29 +114,113 @@ public class CreateResourceRef implements AdminCommand {
     private String commandName = null;
 
     private CommandTarget targets[];
+    
+    private boolean isTargetValid = false;
+    
+    private RefContainer refContainer = null;
+    
+    @AccessRequired.To("refer")
+    private Resource resourceOfInterest = null;
 
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        final ActionReport report = context.getActionReport();
+        resourceOfInterest = getResourceByIdentity(refName);
+        if (resourceOfInterest == null) {
+            report.setMessage(localStrings.getLocalString("create.resource.ref.resourceDoesNotExist",
+                    "Resource {0} does not exist", refName));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;
+        }
+        
+        refContainer = chooseRefContainer(context); // also sets isTargetValid
+        if ( ! isTargetValid) {
+            report.setMessage(localStrings.getLocalString("create.resource.ref.resourceDoesNotHaveValidTarget",
+                            "Resource {0} has Invalid target to create resource-ref on {1}.", refName, target));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;
+        }
+        
+        return refContainer != null;
+    }
+
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final Collection<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        accessChecks.add(new AccessCheck(
+                AccessRequired.Util.resourceNameFromConfigBeanType(refContainer, null /* collection name */, ResourceRef.class), 
+                "create"));
+        return accessChecks;
+    }
+    
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the parameter names and the values the parameter values
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-
-        // check if the resource exists before creating a reference
-        if (!isResourceExists(refName)) {
-            report.setMessage(localStrings.getLocalString("create.resource.ref.resourceDoesNotExist",
-                    "Resource {0} does not exist", refName));
+        
+        if (isResourceRefAlreadyPresent()) {
+            report.setMessage(localStrings.getLocalString(
+                    "create.resource.ref.existsAlready",
+                    "Resource ref {0} already exists for target {1}", 
+                    refName, target));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-
-        boolean isBindableResource = isBindableResource(refName);
-        boolean isServerResource = isServerResource(refName);
+        try {
+            createResourceRef();
         
-        Resource resource = getResourceByIdentity(refName);
-        Class<?>[] allInterfaces = resource.getClass().getInterfaces();
+            // create new ResourceRef for all instances of Cluster, if it's a cluster
+            if (refContainer instanceof Cluster && isBindableResource(refName)) {
+                Target tgt = locator.getService(Target.class);
+                List<Server> instances = tgt.getInstances(target);
+                for (Server svr : instances) {
+                    svr.createResourceRef(enabled.toString(), refName);
+                }
+            }
+            ActionReport.ExitCode ec = ActionReport.ExitCode.SUCCESS;
+            report.setMessage(localStrings.getLocalString("create.resource.ref.success",
+                    "resource-ref {0} created successfully.", refName));
+            report.setActionExitCode(ec);
+        } catch (TransactionFailure tfe) {
+            report.setMessage(localStrings.getLocalString("create.resource.ref.failed",
+                    "Resource ref {0} creation failed", refName));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setFailureCause(tfe);
+        }
+    }
+    
+    private boolean isResourceRefAlreadyPresent() {
+        for (ResourceRef rr : refContainer.getResourceRef()) {
+            if (rr.getRef().equals(refName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private void createResourceRef() throws TransactionFailure {
+        ConfigSupport.apply(new SingleConfigCode<RefContainer>() {
+
+                public Object run(RefContainer param) throws PropertyVetoException, TransactionFailure {
+
+                    ResourceRef newResourceRef = param.createChild(ResourceRef.class);
+                    newResourceRef.setEnabled(enabled.toString());
+                    newResourceRef.setRef(refName);
+                    param.getResourceRef().add(newResourceRef);
+                    return newResourceRef;
+                }
+            }, refContainer);
+    }
+    
+    private RefContainer chooseRefContainer(final AdminCommandContext context) {
+        final ActionReport report = context.getActionReport();
+
+        Class<?>[] allInterfaces = resourceOfInterest.getClass().getInterfaces();
         for (Class<?> resourceInterface : allInterfaces) {
             ResourceConfigCreator resourceConfigCreator = (ResourceConfigCreator) resourceInterface.getAnnotation(ResourceConfigCreator.class);
             if (resourceConfigCreator != null) {
@@ -144,8 +233,9 @@ public class CreateResourceRef implements AdminCommand {
                 @Override
                 public boolean matches(Descriptor arg0) {
                     String name = arg0.getName();
-                    if (name != null && name.equals(commandName))
+                    if (name != null && name.equals(commandName)) {
                         return true;
+                    }
                     return false;
                 }
             });
@@ -161,84 +251,25 @@ public class CreateResourceRef implements AdminCommand {
                 }
             }
 
-            if (!validateTarget(target, targets)) {
-                report.setMessage(localStrings.getLocalString("create.resource.ref.resourceDoesNotHaveValidTarget",
-                        "Resource {0} has Invalid target to create resource-ref on {1}.", refName, target));
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-
+            if ( ! (isTargetValid = validateTarget(target, targets))) {
+                return null;
             }
 
-            try {
-                Config config = domain.getConfigs().getConfigByName(target);
-                if (config != null) {
-                    if (config.isResourceRefExists(refName)) {
-                        report.setMessage(localStrings.getLocalString(
-                                "create.resource.ref.existsAlready",
-                                "Resource ref {0} already exists for target {1}", 
-                                refName, target));
-                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                        return;
-                    }
-                    config.createResourceRef(enabled.toString(), refName);
-                } else {
-                	Server server = configBeansUtilities.getServerNamed(target);
-	                if (server != null) {
-	                    if (server.isResourceRefExists(refName)) {
-	                        report.setMessage(localStrings.getLocalString(
-	                        		"create.resource.ref.existsAlready",
-	                                "Resource ref {0} already exists for target {1}", 
-	                                refName, target));
-	                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-	                        return;
-	                    }
-	                    // create new ResourceRef as a child of Server
-	                    server.createResourceRef(enabled.toString(), refName);
-	                } else {
-	                    Cluster cluster = domain.getClusterNamed(target);
-	                    if (cluster.isResourceRefExists(refName)) {
-	                        report.setMessage(localStrings.getLocalString(
-	                        		"create.resource.ref.existsAlready",
-	                                "Resource ref {0} already exists for target {1}", 
-	                                refName, target));
-	                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-	                        return;
-	                    }
-	                    // create new ResourceRef as a child of Cluster
-	                    cluster.createResourceRef(enabled.toString(), refName);
-
-	                    // create new ResourceRef for all instances of Cluster
-	                    if (isBindableResource) {
-	                        Target tgt = locator.getService(Target.class);
-		                    List<Server> instances = tgt.getInstances(target);
-		                    for (Server svr : instances) {
-		                        svr.createResourceRef(enabled.toString(), refName);
-		                    }
-	                    }
-	                }
-                }
-            } catch (TransactionFailure tfe) {
-                report.setMessage(localStrings.getLocalString("create.resource.ref.failed",
-                        "Resource ref {0} creation failed", refName));
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setFailureCause(tfe);
-                return;
-            } catch (Exception e) {
-                report.setMessage(localStrings.getLocalString("create.resource.ref.failed",
-                        "Resource ref {0} creation failed", refName));
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setFailureCause(e);
-                return;
+            Config config = domain.getConfigs().getConfigByName(target);
+            if (config != null) {
+                return config;
             }
-            ActionReport.ExitCode ec = ActionReport.ExitCode.SUCCESS;
-            report.setMessage(localStrings.getLocalString("create.resource.ref.success",
-                    "resource-ref {0} created successfully.", refName));
-            report.setActionExitCode(ec);
+            Server server = configBeansUtilities.getServerNamed(target);
+            if (server != null) {
+                return server;
+            }
+            Cluster cluster = domain.getClusterNamed(target);
+            return cluster;
         } else {
             report.setMessage(localStrings.getLocalString("create.resource.ref.failed",
                     "Resource ref {0} creation failed", refName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
+            return null;
         }
     }
 
@@ -250,10 +281,6 @@ public class CreateResourceRef implements AdminCommand {
         return domain.getResources().getResourceByName(ServerResource.class, name) != null;
     }
     
-    private boolean isResourceExists(String jndiName) {
-        return getResourceByIdentity(jndiName) != null;
-    }
-
     private Resource getResourceByJndiName(String jndiName) {
         for (Resource resource : domain.getResources().getResources()) {
             if (resource instanceof BindableResource) {
