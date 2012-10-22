@@ -40,8 +40,8 @@
 
 package org.glassfish.api.admin.config;
 
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.component.Habitat;
 
 import java.net.URL;
 import java.io.IOException;
@@ -80,6 +80,6 @@ public interface ConfigParser {
      * @return Confgured container
      * @throws IOException
      */
-    public <T extends Container> T parseContainerConfig(Habitat habitat, URL configuration, Class<T> containerType) throws IOException;
+    public <T extends Container> T parseContainerConfig(ServiceLocator habitat, URL configuration, Class<T> containerType) throws IOException;
 
 }

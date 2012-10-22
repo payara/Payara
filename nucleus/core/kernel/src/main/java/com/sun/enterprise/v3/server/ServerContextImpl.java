@@ -50,8 +50,9 @@ import org.glassfish.api.naming.GlassfishNamingManager;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import javax.inject.Singleton;
 
 import javax.naming.InitialContext;
@@ -74,7 +75,7 @@ public class ServerContextImpl implements ServerContext, PostConstruct {
     StartupContext startupContext;
 
     @Inject
-    Habitat services;
+    ServiceLocator services;
 
     File instanceRoot;
     String[] args;
@@ -145,7 +146,7 @@ public class ServerContextImpl implements ServerContext, PostConstruct {
      * Returns the default services for this instance
      * @return default services
      */
-    public Habitat getDefaultServices() {
+    public ServiceLocator getDefaultServices() {
         return services;
         
     }

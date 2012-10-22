@@ -54,6 +54,7 @@ import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.InitRunLevel;
@@ -65,7 +66,6 @@ import org.jvnet.hk2.annotations.Optional;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.ComponentException;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
@@ -94,7 +94,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     ServerEnvironmentImpl env;
 
     @Inject
-    Habitat habitat;
+    ServiceLocator habitat;
 
     @Inject @Optional
     Agent agent = null;

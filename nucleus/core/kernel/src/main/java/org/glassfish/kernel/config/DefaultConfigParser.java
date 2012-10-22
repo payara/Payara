@@ -50,7 +50,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.Dom;
@@ -78,7 +77,7 @@ public class DefaultConfigParser implements ConfigParser {
 
     Logger logger = Logger.getLogger(LogDomains.CORE_LOGGER);
 
-    public <T extends Container> T parseContainerConfig(Habitat habitat, final URL configuration, Class<T> configType) throws IOException {
+    public <T extends Container> T parseContainerConfig(ServiceLocator habitat, final URL configuration, Class<T> configType) throws IOException {
 
 
         org.jvnet.hk2.config.ConfigParser configParser = new org.jvnet.hk2.config.ConfigParser(habitat);
@@ -87,7 +86,7 @@ public class DefaultConfigParser implements ConfigParser {
         	@Override
             public Dom make(final ServiceLocator habitat, XMLStreamReader xmlStreamReader, GlassFishConfigBean dom, ConfigModel configModel) {
                 // by default, people get the translated view.
-                return new GlassFishConfigBean((Habitat) habitat,this, dom, configModel, xmlStreamReader);
+                return new GlassFishConfigBean(habitat,this, dom, configModel, xmlStreamReader);
             }
         };
 

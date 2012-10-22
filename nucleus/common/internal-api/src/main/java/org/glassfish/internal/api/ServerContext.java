@@ -41,8 +41,8 @@
 package org.glassfish.internal.api;
 
 import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.naming.InitialContext;
 import java.io.File;
@@ -154,6 +154,6 @@ public interface ServerContext {
      * Returns the default habitat for this instance
      * @return defa ult habitat
      */
-    public Habitat getDefaultServices();
+    public ServiceLocator getDefaultServices();
 
 }

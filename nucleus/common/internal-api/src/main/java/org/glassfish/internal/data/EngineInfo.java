@@ -44,7 +44,6 @@ import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.container.Container;
 import org.glassfish.api.deployment.Deployer;
 import org.glassfish.api.deployment.ApplicationContainer;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
