@@ -42,6 +42,7 @@ package com.sun.enterprise.admin.util;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.PrivilegedAction;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -140,11 +141,22 @@ public class CommandSecurityChecker {
         boolean result;
         try {
             if (command instanceof AdminCommandSecurity.Preauthorization) {
-                if ( ! ((AdminCommandSecurity.Preauthorization) command).preAuthorization(adminCommandContext)) {
+                /*
+                 * Invoke preAuthorization in the context of the Subject.
+                 */
+                result = Subject.doAs(subject, new PrivilegedAction<Boolean> () {
+
+                    @Override
+                    public Boolean run() {
+                        return ((AdminCommandSecurity.Preauthorization) command).preAuthorization(adminCommandContext);
+                    }
+                    
+                });
+                if ( ! result) {
                     return false;
                 }
             }
-            final List<AccessCheckWork> accessChecks = assembleAccessCheckWork(command);
+            final List<AccessCheckWork> accessChecks = assembleAccessCheckWork(command, subject);
             result = checkAccessRequired(subject, env, command, accessChecks);
             if ( ! result) {
 //                final List<AccessCheck> failedAccessChecks = new ArrayList<AccessCheck>();
@@ -162,7 +174,9 @@ public class CommandSecurityChecker {
         }
     }
     
-    private List<AccessCheckWork> assembleAccessCheckWork(final AdminCommand command) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    private List<AccessCheckWork> assembleAccessCheckWork(
+            final AdminCommand command,
+            final Subject subject) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         final boolean isTaggable = ADMSEC_AUTHZ_LOGGER.isLoggable(PROGRESS_LEVEL);
         final List<AccessCheckWork> accessChecks = new ArrayList<AccessCheckWork>();
         /*
@@ -170,7 +184,7 @@ public class CommandSecurityChecker {
          * and so provide their own AccessCheck objects.  So the addChecksFromAuthorizer
          * method will cover the CRUD commands.
          */
-        addChecksFromAccessCheckProvider(command, accessChecks, isTaggable);
+        addChecksFromAccessCheckProvider(command, accessChecks, isTaggable, subject);
         addChecksFromExplicitAccessRequiredAnnos(command, accessChecks, isTaggable);
         addChecksFromReSTEndpoints(command, accessChecks, isTaggable);
 
@@ -240,13 +254,15 @@ public class CommandSecurityChecker {
     /**
      * Returns all AccessCheck objects which apply to the specified command.
      * @param command the AdminCommand for which the AccessChecks are needed
+     * @param subject the Subject resulting from successful authentication
      * @return the AccessChecks resulting from analyzing the command
      * @throws NoSuchFieldException
      * @throws IllegalArgumentException
      * @throws IllegalAccessException 
      */
-    public Collection<? extends AccessCheck> getAccessChecks(final AdminCommand command) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        final List<AccessCheckWork> work = assembleAccessCheckWork(command);
+    public Collection<? extends AccessCheck> getAccessChecks(final AdminCommand command,
+            final Subject subject) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        final List<AccessCheckWork> work = assembleAccessCheckWork(command, subject);
         final Collection<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
         for (AccessCheckWork w : work) {
             accessChecks.add(w.accessCheck());
@@ -264,11 +280,22 @@ public class CommandSecurityChecker {
      */
     private boolean addChecksFromAccessCheckProvider( 
             final AdminCommand command, final List<AccessCheckWork> accessChecks,
-            final boolean isTaggable) {
+            final boolean isTaggable,
+            final Subject subject) {
         if (command instanceof AdminCommandSecurity.AccessCheckProvider) {
-            final Collection<? extends AccessCheck> checks = ((AdminCommandSecurity.AccessCheckProvider) command).getAccessChecks();
+            /*
+             * Invoke getAccessChecks in the context of the Subject.
+             */
+            final Collection<? extends AccessCheck> checks = 
+                    Subject.doAs(subject, new PrivilegedAction<Collection<? extends AccessCheck>>() {
+
+                @Override
+                public Collection<? extends AccessCheck> run() {
+                    return ((AdminCommandSecurity.AccessCheckProvider) command).getAccessChecks();
+                }
+            });
+                        
             for (AccessCheck ac : checks) {
-                
                 accessChecks.add(new AccessCheckWork(ac,
                         isTaggable ? "  Class's getAccessChecks()"  : null));
             }

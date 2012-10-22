@@ -539,14 +539,28 @@ public class CommandRunnerImpl implements CommandRunner {
         // the command. See issue #5596
         AdminCommand wrappedCommand = new WrappedAdminCommand(command) {
             @Override
-            public void execute(AdminCommandContext context) {
+            public void execute(final AdminCommandContext context) {
                 Thread thread = Thread.currentThread();
                 ClassLoader origCL = thread.getContextClassLoader();
                 ClassLoader ccl = sc.getCommonClassLoader();
                 if (origCL != ccl) {
                     try {
                         thread.setContextClassLoader(ccl);
-                        command.execute(context);
+                        /*
+                         * Execute the command in the security context of the 
+                         * previously-authenticated subject.
+                         */
+                        Subject.doAs(context.getSubject(), 
+                                new PrivilegedAction<Void> () {
+
+                            @Override
+                            public Void run() {
+                                command.execute(context);
+                                return null;
+                            }
+                                    
+                        });
+                        
                     } finally {
                         thread.setContextClassLoader(origCL);
                     }
