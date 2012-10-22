@@ -427,7 +427,6 @@ public class EJBContainerTransactionManager {
      */
     protected void postInvokeTx(EjbInvocation inv) throws Exception {
          
-        InvocationInfo invInfo = inv.invocationInfo;
         Throwable exception = inv.exception;
         
         // For StatelessSessionBeans, ejbCreate/ejbRemove was called without a Tx,

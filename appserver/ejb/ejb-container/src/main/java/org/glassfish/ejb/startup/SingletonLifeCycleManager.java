@@ -66,8 +66,6 @@ import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
  */
 public class SingletonLifeCycleManager {
 
-    private Set<String> names = new HashSet<String>();
-
     private Map<String, Set<String>> initialDependency =
             new HashMap<String, Set<String>>();
 
@@ -103,8 +101,6 @@ public class SingletonLifeCycleManager {
     void addSingletonContainer(EjbApplication ejbApp, AbstractSingletonContainer c) {
         c.setSingletonLifeCycleManager(this);
         EjbSessionDescriptor sdesc = (EjbSessionDescriptor) c.getEjbDescriptor();
-        //String modName = sdesc.getEjbBundleDescriptor().getName();
-        //System.out.println("BundleName: " + modName);
         String src = normalizeSingletonName(sdesc.getName(), sdesc);
         
         String[] depends = sdesc.getDependsOn();
@@ -235,16 +231,6 @@ public class SingletonLifeCycleManager {
         }
     }
 
-    private void addDependency(String src, List<String> depends) {
-        if (depends != null) {
-            for (String s : depends) {
-                addDependency(src, s);
-            }
-        } else {
-            addDependency(src, "");
-        }
-    }
-
     private void addDependency(String src, String depends) {
         src = src.trim();
         Set<String> deps = getExistingDependecyList(src);
@@ -257,63 +243,6 @@ public class SingletonLifeCycleManager {
                 getExistingDependecyList(dep);
             }
         }
-    }
-
-    private String[] getPartialOrdering() {
-        if (adj == null) {
-            fillAdjacencyMatrix();
-        }
-        boolean[][] tempAdj = new boolean[maxIndex][maxIndex];
-        for (int i = 0; i < maxIndex; i++) {
-            for (int j = 0; j < maxIndex; j++) {
-                tempAdj[i][j] = adj[i][j];
-            }
-        }
-        List<String> dependencies = new ArrayList<String>();
-        do {
-            String src = null;
-            boolean foundAtLeastOneLeaf = false;
-            for (int i = 0; i < maxIndex; i++) {
-                src = index2Name.get(i);
-                if (!dependencies.contains(src)) {
-                    boolean hasDep = false;
-                    for (int j = 0; j < maxIndex; j++) {
-                        if (tempAdj[i][j]) {
-                            hasDep = true;
-                            break;
-                        }
-                    }
-
-                    if ((!hasDep) && (!dependencies.contains(src))) {
-                        dependencies.add(src);
-                        for (int k = 0; k < maxIndex; k++) {
-                            tempAdj[k][i] = false;
-                        }
-                        foundAtLeastOneLeaf = true;
-                    }
-                }
-            }
-
-            if ((!foundAtLeastOneLeaf) && (dependencies.size() < name2Index.size())) {
-                throw new IllegalArgumentException("Circular dependency: "
-                        + getCyclicString(tempAdj));
-            }
-
-        } while (dependencies.size() < name2Index.size());
-
-        return dependencies.toArray(new String[dependencies.size()]);
-
-    }
-
-    private AbstractSingletonContainer[] getPartiallyOrderedSingletonContainer() {
-        String[] computedDeps = getPartialOrdering();
-        int sz = computedDeps.length;
-        AbstractSingletonContainer[] deps = new AbstractSingletonContainer[sz];
-        for (int i = 0; i < sz; i++) {
-            deps[i] = name2Container.get(computedDeps[i]);
-        }
-
-        return deps;
     }
 
     private List<String> computeDependencies(String root) {
@@ -416,31 +345,14 @@ public class SingletonLifeCycleManager {
         return sb.toString();
     }
 
-    private void printAdjacencyMatrix() {
-        if (adj == null) {
-            fillAdjacencyMatrix();
-        }
-        System.out.print(" ");
-        for (int i = 0; i < maxIndex; i++) {
-            System.out.print(" " + index2Name.get(i));
-        }
-        System.out.println();
-        for (int i = 0; i < maxIndex; i++) {
-            System.out.print(index2Name.get(i) + " ");
-            for (int j = 0; j < maxIndex; j++) {
-                System.out.print(adj[i][j] ? "1 " : "0 ");
-            }
-            System.out.println();
-        }
-    }
+/*
 
     public static void main(String[] args) {
-        //test1();
-        //test2();
-        //test3();
-        //test4();
+        test1();
+        test2();
+        test3();
+        test4();
     }
-
 
     private static void test1() {
         SingletonLifeCycleManager ts = new SingletonLifeCycleManager(false);
@@ -550,4 +462,79 @@ public class SingletonLifeCycleManager {
         System.out.println();
     }
 
+    private String[] getPartialOrdering() {
+        if (adj == null) {
+            fillAdjacencyMatrix();
+        }
+        boolean[][] tempAdj = new boolean[maxIndex][maxIndex];
+        for (int i = 0; i < maxIndex; i++) {
+            for (int j = 0; j < maxIndex; j++) {
+                tempAdj[i][j] = adj[i][j];
+            }
+        }
+        List<String> dependencies = new ArrayList<String>();
+        do {
+            String src = null;
+            boolean foundAtLeastOneLeaf = false;
+            for (int i = 0; i < maxIndex; i++) {
+                src = index2Name.get(i);
+                if (!dependencies.contains(src)) {
+                    boolean hasDep = false;
+                    for (int j = 0; j < maxIndex; j++) {
+                        if (tempAdj[i][j]) {
+                            hasDep = true;
+                            break;
+                        }
+                    }
+
+                    if ((!hasDep) && (!dependencies.contains(src))) {
+                        dependencies.add(src);
+                        for (int k = 0; k < maxIndex; k++) {
+                            tempAdj[k][i] = false;
+                        }
+                        foundAtLeastOneLeaf = true;
+                    }
+                }
+            }
+
+            if ((!foundAtLeastOneLeaf) && (dependencies.size() < name2Index.size())) {
+                throw new IllegalArgumentException("Circular dependency: "
+                        + getCyclicString(tempAdj));
+            }
+
+        } while (dependencies.size() < name2Index.size());
+
+        return dependencies.toArray(new String[dependencies.size()]);
+
+    }
+
+    private void addDependency(String src, List<String> depends) {
+        if (depends != null) {
+            for (String s : depends) {
+                addDependency(src, s);
+            }
+        } else {
+            addDependency(src, "");
+        }
+    }
+
+    private void printAdjacencyMatrix() {
+        if (adj == null) {
+            fillAdjacencyMatrix();
+        }
+        System.out.print(" ");
+        for (int i = 0; i < maxIndex; i++) {
+            System.out.print(" " + index2Name.get(i));
+        }
+        System.out.println();
+        for (int i = 0; i < maxIndex; i++) {
+            System.out.print(index2Name.get(i) + " ");
+            for (int j = 0; j < maxIndex; j++) {
+                System.out.print(adj[i][j] ? "1 " : "0 ");
+            }
+            System.out.println();
+        }
+    }
+
+*/
 }

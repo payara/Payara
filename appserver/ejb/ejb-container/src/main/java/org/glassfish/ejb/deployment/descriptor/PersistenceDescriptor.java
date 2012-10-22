@@ -153,7 +153,6 @@ public final class PersistenceDescriptor extends Descriptor {
 	// in bean class as getter/setter.
         persistentClass = null;
         stateClass = null;
-        Class persClass = getPersistentClass();
 
         Vector fieldDescriptors = parentDesc.getFieldDescriptors();
 

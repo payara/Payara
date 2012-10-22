@@ -96,7 +96,6 @@ public class NonBlockingPool
     private boolean poolClosed = false;
     
     private int		  resizeTaskCount;
-    private int		  timerTaskCount;
 
     protected NonBlockingPool() {
     }

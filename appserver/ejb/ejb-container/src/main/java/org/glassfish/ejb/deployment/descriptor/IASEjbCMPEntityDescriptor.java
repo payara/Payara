@@ -443,10 +443,6 @@ public  class IASEjbCMPEntityDescriptor extends EjbCMPEntityDescriptor {
            super(other);
 
            setPersistenceType(CONTAINER_PERSISTENCE);
-
-           if ( other instanceof EjbCMPEntityDescriptor ) {
-             EjbCMPEntityDescriptor entity = (EjbCMPEntityDescriptor)other;
-           }
     }
  
   
