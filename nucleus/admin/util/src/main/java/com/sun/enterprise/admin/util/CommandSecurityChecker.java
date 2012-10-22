@@ -41,6 +41,7 @@ package com.sun.enterprise.admin.util;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -52,10 +53,16 @@ import javax.inject.Singleton;
 import javax.security.auth.Subject;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.hk2.api.IterableProvider;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.security.services.api.authorization.AuthorizationService;
+import org.glassfish.security.services.api.authorization.AzAction;
+import org.glassfish.security.services.api.authorization.AzResource;
+import org.glassfish.security.services.api.authorization.AzResult;
+import org.glassfish.security.services.api.authorization.AzSubject;
+import org.glassfish.security.services.api.common.Attributes;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -96,6 +103,8 @@ public class CommandSecurityChecker {
     @Inject
     private NamedResourceManager namedResourceMgr;
     
+    @Inject
+    private IterableProvider<AuthorizationPreprocessor> authPreprocessors;
     
     private static final Map<RestEndpoint.OpType,String> optypeToAction = initOptypeMap();
     
@@ -166,8 +175,8 @@ public class CommandSecurityChecker {
         addChecksFromReSTEndpoints(command, accessChecks, isTaggable);
 
         /*
-         * If this command has no access requirements specified, use a
-         * default one requiring write access on the domain.
+         * If this command has no access requirements specified, use
+         * one from the "unguarded" part of the resource tree.
          */
         if (accessChecks.isEmpty()) {
             accessChecks.add(new UnguardedCommandAccessCheckWork(command));
@@ -180,13 +189,35 @@ public class CommandSecurityChecker {
             final Map<String,Object> env,
             final AdminCommand command,
             final List<AccessCheckWork> accessChecks) 
-                throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+                throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, URISyntaxException {
         
         final boolean isTaggable = ADMSEC_AUTHZ_LOGGER.isLoggable(PROGRESS_LEVEL);
         boolean result = true;
         final StringBuilder sb = (isTaggable ? (new StringBuilder(LINE_SEP)).append("AccessCheck processing on ").append(command.getClass().getName()).append(LINE_SEP) : null);
         for (final AccessCheckWork a : accessChecks) {
-            a.accessCheck.setSuccessful(authService.isAuthorized(subject, resourceURIFromAccessCheck(a.accessCheck), a.accessCheck.action()));
+            final URI resourceURI = resourceURIFromAccessCheck(a.accessCheck);
+            final AzSubject azSubject = authService.makeAzSubject(subject);
+            final AzResource azResource = authService.makeAzResource(resourceURI);
+            final AzAction azAction = authService.makeAzAction(a.accessCheck.action());
+            final Map<String,String> subjectAttrs = new HashMap<String,String>();
+            final Map<String,String> resourceAttrs = new HashMap<String,String>();
+            final Map<String,String> actionAttrs = new HashMap<String,String>();
+            for (AuthorizationPreprocessor ap : authPreprocessors) {
+                ap.describeAuthorization(
+                        subject, 
+                        a.accessCheck.resourceName(), 
+                        a.accessCheck.action(),
+                        env, 
+                        subjectAttrs, 
+                        resourceAttrs, 
+                        actionAttrs);
+            }
+            mapToAzAttrs(subjectAttrs, azSubject);
+            mapToAzAttrs(resourceAttrs, azResource);
+            mapToAzAttrs(actionAttrs, azAction);
+            
+            final AzResult azResult = authService.getAuthorizationDecision(azSubject, azResource, azAction);
+            a.accessCheck.setSuccessful(azResult.getDecision() == AzResult.Decision.PERMIT);
             if (isTaggable) {
                 sb.append(a.tag).append(LINE_SEP).
                    append("    ").append(a.accessCheck).append(LINE_SEP);
@@ -198,6 +229,12 @@ public class CommandSecurityChecker {
             ADMSEC_AUTHZ_LOGGER.log(PROGRESS_LEVEL, sb.toString());
         }
         return result;
+    }
+    
+    private void mapToAzAttrs(final Map<String,String> info, final Attributes attrs) {
+        for (Map.Entry<String,String> i : info.entrySet()) {
+            attrs.addAttribute(i.getKey(), i.getValue(), false /* replace */);
+        }
     }
     
     /**
@@ -240,8 +277,15 @@ public class CommandSecurityChecker {
         return false;
     }
     
-    private URI resourceURIFromAccessCheck(final AccessCheck c) {
-        return URI.create(resourceNameFromAccessCheck(c));
+    private URI resourceURIFromAccessCheck(final AccessCheck c) throws URISyntaxException {
+        final Iterator<AuthorizationPreprocessor> it = authPreprocessors.iterator();
+        String scheme = null;
+        if (it.hasNext()) {
+            scheme = it.next().getURIScheme();
+        }
+        return new URI(scheme,
+                        resourceNameFromAccessCheck(c) /* ssp */,
+                        null /* fragment */);
     }
     
     private String resourceNameFromAccessCheck(final AccessCheck c) {
@@ -517,10 +561,14 @@ public class CommandSecurityChecker {
          */
         String resource;
         if (restEndpoint.params().length == 0) {
-            resource = resourceNameFromConfigBeanType(restEndpoint.configBean(), locator);
+            resource = resourceNameFromRestEndpoint(restEndpoint.configBean(), 
+                    restEndpoint.path(),
+                    locator);
         } else {
             // TODO need to do something with the endpoint params
-            resource = resourceNameFromConfigBeanType(restEndpoint.configBean(), locator);
+            resource = resourceNameFromRestEndpoint(restEndpoint.configBean(), 
+                    restEndpoint.path(),
+                    locator);
         }
         final AccessCheck a = new AccessCheck(resource, action);
         String tag = null;
@@ -530,9 +578,15 @@ public class CommandSecurityChecker {
         accessChecks.add(new AccessCheckWork(a, tag));
     }
     
-    private static String resourceNameFromConfigBeanType(Class<? extends ConfigBeanProxy> c, final ServiceLocator locator) {
+    private static String resourceNameFromRestEndpoint(Class<? extends ConfigBeanProxy> c, 
+            final String path,
+            final ServiceLocator locator) {
         ConfigBeanProxy b = locator.getService(c);
-        return (b != null ? AccessRequired.Util.resourceNameFromConfigBeanProxy(b) : "?");
+        String name = (b != null ? AccessRequired.Util.resourceNameFromConfigBeanProxy(b) : "?");
+        if (path != null) {
+            name += '/' + path;
+        }
+        return name;
     }
         
         
