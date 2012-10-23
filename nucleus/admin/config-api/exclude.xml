@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -52,5 +52,17 @@
 	    <Field name="nodeagent"/>
         </Or>
         <Bug pattern="UUF_UNUSED_FIELD"/>
+    </Match>
+
+    <!--
+        These fields are used by classes in the cluster-admin module.
+     -->
+    <Match>
+        <Class name="com.sun.enterprise.config.util.RegisterInstanceCommandParameters"/>
+        <Or>
+	    <Field name="config"/>
+	    <Field name="lbEnabled"/>
+        </Or>
+        <Bug pattern="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"/>
     </Match>
 </FindBugsFilter>
