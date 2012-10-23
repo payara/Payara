@@ -55,9 +55,7 @@ import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.testing.junit.HK2Runner;
 
 /**
@@ -72,18 +70,17 @@ public class CommandRunnerTest extends HK2Runner {
     CommandRunner commandRunner;
 
     @BeforeClass
-    public static void setup() {
-        Habitat h = new Habitat();
+    public void setup() {
         
         /*
          * The CommandRunnerImpl now injects Domain but these tests do not
          * exercise the code path that requires the domain.  So register a
          * dummy Domain instance with the habitat so injection will work.
          */
-        ServiceLocatorUtilities.addOneDescriptor(h,
+        ServiceLocatorUtilities.addOneDescriptor(testLocator,
                 BuilderHelper.createConstantDescriptor(simpleDomain(), null, Domain.class));
-        ServiceLocatorUtilities.addOneConstant(h, new StartupContext());
-        ServiceLocatorUtilities.addOneDescriptor(h,
+        ServiceLocatorUtilities.addOneConstant(testLocator, new StartupContext());
+        ServiceLocatorUtilities.addOneDescriptor(testLocator,
                 BuilderHelper.createConstantDescriptor(new SingleModulesRegistry(CommandRunnerTest.class.getClassLoader()),
                         null, ModulesRegistry.class));
     }

@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.v3.services.impl;
 
-import com.sun.enterprise.config.serverbeans.VirtualServer;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.api.deployment.ApplicationContainer;
@@ -60,7 +59,6 @@ import org.glassfish.grizzly.config.GrizzlyListener;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.impl.FutureImpl;
 import org.glassfish.grizzly.impl.UnsafeFutureImpl;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * This class is responsible for configuring Grizzly.
@@ -119,7 +117,7 @@ public class GrizzlyProxy implements NetworkProxy {
 
         createGrizzlyListener(networkListener);
 
-        grizzlyListener.configure((Habitat) grizzlyService.getHabitat(), networkListener);
+        grizzlyListener.configure(grizzlyService.getHabitat(), networkListener);
     }
 
     protected void createGrizzlyListener(final NetworkListener networkListener) {

@@ -40,10 +40,10 @@
 
 package com.sun.enterprise.v3.server;
 
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.*;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -70,7 +70,7 @@ public class SnifferManagerImpl implements SnifferManager {
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SnifferManagerImpl.class);
 
     @Inject
-    protected Habitat habitat;
+    protected ServiceLocator habitat;
 
     /**
      * Returns all the presently registered sniffers

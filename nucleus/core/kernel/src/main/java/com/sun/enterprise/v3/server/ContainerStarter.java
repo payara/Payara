@@ -59,7 +59,6 @@ import org.glassfish.internal.data.ContainerRegistry;
 import org.glassfish.internal.data.EngineInfo;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
 import com.sun.enterprise.module.Module;
 
@@ -75,7 +74,7 @@ public class ContainerStarter {
 	ServiceLocator serviceLocator;
 	
     @Inject
-    Habitat habitat;
+    ServiceLocator habitat;
 
     @Inject
     Logger logger;

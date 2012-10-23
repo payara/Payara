@@ -45,8 +45,7 @@ import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jvnet.hk2.config.TranslationException;
 import org.jvnet.hk2.config.VariableResolver;
@@ -95,7 +94,7 @@ public class ClassLoaderHierarchyImpl implements ClassLoaderHierarchy {
     Logger logger;
 
     @Inject
-    Habitat habitat;
+    ServiceLocator habitat;
 
     SystemVariableResolver resolver = new SystemVariableResolver();
 

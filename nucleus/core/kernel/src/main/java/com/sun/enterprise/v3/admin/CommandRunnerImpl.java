@@ -75,6 +75,7 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.GenericCrudCommand;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.MultiException;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.*;
 import org.glassfish.internal.deployment.DeploymentTargetResolver;
 
@@ -124,7 +125,7 @@ public class CommandRunnerImpl implements CommandRunner {
 
     private final InjectionManager injectionMgr = new InjectionManager();
     @Inject
-    private Habitat habitat;
+    private ServiceLocator habitat;
     @Inject
     private ServerContext sc;
     @Inject
