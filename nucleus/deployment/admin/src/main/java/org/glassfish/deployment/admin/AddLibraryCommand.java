@@ -78,7 +78,7 @@ import org.glassfish.api.admin.AccessRequired;
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class, opType= RestEndpoint.OpType.POST, path="add-library", description="Install library")
 })
-@AccessRequired(resource=DeploymentCommandUtils.LIBRARY_SECURITY_RESOURCE_PREFIX + "/$type", action="create")
+@AccessRequired(resource=DeploymentCommandUtils.LIBRARY_SECURITY_RESOURCE_PREFIX + "$type", action="create")
 public class AddLibraryCommand implements AdminCommand {
 
     @Param(primary=true, multiple=true)
