@@ -132,7 +132,7 @@ public class JavaEETransactionManagerSimplified
 
     // admin and monitoring related parameters
     private  static final Hashtable statusMap = new Hashtable();
-    private Vector activeTransactions = new Vector();
+    private List activeTransactions = Collections.synchronizedList(new ArrayList());
     private boolean monitoringEnabled = false;
 
     private TransactionServiceProbeProvider monitor;
@@ -430,31 +430,6 @@ public class JavaEETransactionManagerSimplified
         tx.setJTSTx(jtsTx);
         jtsTx.registerSynchronization(new JTSSynchronization(jtsTx, this));
     }
-
-/**
-        try {
-            if (tx.isAssociatedTimeout()) {
-                // calculate the timeout for the transaction, this is required as the local tx 
-                // is getting converted to a global transaction
-                int timeout = tx.cancelTimerTask();
-                int newtimeout = (int) ((System.currentTimeMillis() - tx.getStartTime()) / 1000);
-                newtimeout = (timeout -   newtimeout);
-                getDelegate().beginJTS(newtimeout);
-            } else {
-                getDelegate().beginJTS(getEffectiveTimeout());
-            }
-            
-            // The local Transaction was promoted to global Transaction
-            if (tx!=null && monitoringEnabled){
-                if(activeTransactions.remove(tx)){
-                    monitor.transactionDeactivatedEvent();
-                }
-            }
-            
-        } catch ( NotSupportedException ex ) {
-            throw new RuntimeException(sm.getString("enterprise_distributedtx.lazy_transaction_notstarted"),ex);
-        }
-**/
 
     /**
      * get the resources being used in the calling component's invocation context
@@ -819,7 +794,7 @@ public class JavaEETransactionManagerSimplified
             getDelegate().getReadLock().lock(); // XXX acquireReadLock();
             try{
                 JavaEETransactionImpl tx = initJavaEETransaction(timeout);
-                activeTransactions.addElement(tx);
+                activeTransactions.add(tx);
                 monitor.transactionActivatedEvent();
                 ComponentInvocation inv = invMgr.getCurrentInvocation();
                 if (inv != null && inv.getInstance() != null) {
@@ -838,27 +813,15 @@ public class JavaEETransactionManagerSimplified
             HeuristicMixedException, HeuristicRollbackException, SecurityException,
             IllegalStateException, SystemException {
 
+        boolean acquiredlock=false;
         try {
             JavaEETransaction tx = transactions.get();
             if ( tx != null && tx.isLocalTx()) {
                 if(monitoringEnabled){
-                    Object obj = tx;
                     getDelegate().getReadLock().lock(); // XXX acquireReadLock();
-
-                    boolean success = false;
-                    try{
-                        tx.commit(); // commit local tx
-                        success = true;
-                    }catch(HeuristicMixedException e){
-                        success = true;
-                        throw e;
-                    } finally {
-                        monitorTxCompleted(obj, success);
-                        getDelegate().getReadLock().unlock(); // XXX releaseReadLock();
-                    }
-                } else {
-                    tx.commit(); // commit local tx
+                    acquiredlock = true;
                 }
+                tx.commit(); // commit local tx
             }
             else  {
                 try{
@@ -874,6 +837,9 @@ public class JavaEETransactionManagerSimplified
         } finally {
             setCurrentTransaction(null); // clear current thread's tx
             delegates.set(null);
+            if(acquiredlock){
+                getDelegate().getReadLock().unlock(); // XXX releaseReadLock();
+            }
         }
         // END IASRI 4662745
     }
@@ -885,18 +851,10 @@ public class JavaEETransactionManagerSimplified
             JavaEETransaction tx = transactions.get();
             if ( tx != null && tx.isLocalTx()) {
                 if(monitoringEnabled){
-                    Object obj = tx;
                     getDelegate().getReadLock().lock(); // XXX acquireReadLock();
                     acquiredlock = true;
-
-                    try {
-                        tx.rollback(); // rollback local tx
-                    } finally {
-                        monitorTxCompleted(obj, false);
-                    }
-                } else {
-                    tx.rollback(); // rollback local tx
                 }
+                tx.rollback(); // rollback local tx
             }
             else  {
                 try {
@@ -1139,10 +1097,10 @@ public class JavaEETransactionManagerSimplified
     public ArrayList getActiveTransactions() {
         ArrayList tranBeans = new ArrayList();
         txnTable = new Hashtable();
-        Vector active = (Vector)activeTransactions.clone(); // get the clone of the active transactions
-        for(int i=0;i<active.size();i++){
+        Object[] activeCopy = activeTransactions.toArray(); // get the clone of the active transactions
+        for(int i=0;i<activeCopy.length;i++){
             try{
-                Transaction tran = (Transaction)active.elementAt(i);
+                Transaction tran = (Transaction)activeCopy[i];
                 TransactionAdminBean tBean = getDelegate().getTransactionAdminBean(tran);
                 if (tBean == null) {
                     // Shouldn't happen
@@ -1206,10 +1164,10 @@ public class JavaEETransactionManagerSimplified
     public void setMonitoringEnabled(boolean enabled){
         monitoringEnabled = enabled;
         //reset the variables
-        activeTransactions.removeAllElements();
+        activeTransactions.clear();
     }
 
-    protected void monitorTxCompleted(Object obj, boolean committed){
+    private void _monitorTxCompleted(Object obj, boolean committed){
         if(obj != null) {
             if (obj instanceof JavaEETransactionImpl) {
                 JavaEETransactionImpl t = (JavaEETransactionImpl) obj;
@@ -1217,7 +1175,7 @@ public class JavaEETransactionManagerSimplified
                     obj = t.getJTSTx();
                 }
             }
-            if(activeTransactions.remove(obj)){
+            if(activeTransactions.remove(obj)) {
                 if(committed){
                     monitor.transactionCommittedEvent();
                 }else{
@@ -1521,15 +1479,15 @@ public class JavaEETransactionManagerSimplified
         return _logger;
     }
 
-    public void monitorTxCompleted0(Object obj, boolean b) {
+    public void monitorTxCompleted(Object obj, boolean b) {
         if(monitoringEnabled){
-            monitorTxCompleted(obj, b);
+            _monitorTxCompleted(obj, b);
         }
     }
 
     public void monitorTxBegin(Transaction tx) {
         if (monitoringEnabled) {
-            activeTransactions.addElement(tx);
+            activeTransactions.add(tx);
             monitor.transactionActivatedEvent();
         }
     }

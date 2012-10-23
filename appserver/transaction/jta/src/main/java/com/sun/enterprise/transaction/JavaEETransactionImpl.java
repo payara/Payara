@@ -405,13 +405,18 @@ public final class JavaEETransactionImpl extends TimerTask implements
         }
 
         commitStarted = true;
-
+        boolean success = false;
         if ( jtsTx != null ) {
             try {
                 jtsTx.commit();
+                success = true;
+            } catch(HeuristicMixedException e) {
+                success = true;
+                throw e;
             } finally {
+                ((JavaEETransactionManagerSimplified) javaEETM).monitorTxCompleted(this, success);
                 ((JavaEETransactionManagerSimplified) javaEETM).clearThreadTx();
-                onTxCompletion(true);
+                onTxCompletion(success);
                 try {
                     localTxStatus = jtsTx.getStatus();
                 } catch (Exception e) {
@@ -515,6 +520,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
                 }
                 // V2-XXX should this be STATUS_NO_TRANSACTION ?
                 localTxStatus = Status.STATUS_COMMITTED;
+                success = true;
 
             } catch ( RollbackException ex ) {
                 localTxStatus = Status.STATUS_ROLLEDBACK; // V2-XXX is this correct ?
@@ -523,6 +529,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
             } catch ( SystemException ex ) {
                 // localTxStatus = Status.STATUS_ROLLEDBACK; // V2-XXX is this correct ?
                 localTxStatus = Status.STATUS_COMMITTING;
+                success = true;
                 throw ex;
 
             } catch ( Exception ex ) {
@@ -532,6 +539,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
                 throw exc;
 
             } finally {
+                ((JavaEETransactionManagerSimplified) javaEETM).monitorTxCompleted(this, success);
                 ((JavaEETransactionManagerSimplified) javaEETM).clearThreadTx();
                 for ( int i=0; i<interposedSyncs.size(); i++ ) {
                     try { 
@@ -552,7 +560,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
                     }
                 }
 
-                onTxCompletion(true);
+                onTxCompletion(success);
                 jtsTx = null;
             }
         }
@@ -594,6 +602,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
             // V2-XXX should this be STATUS_NO_TRANSACTION ?
             localTxStatus = Status.STATUS_ROLLEDBACK;
 
+            ((JavaEETransactionManagerSimplified) javaEETM).monitorTxCompleted(this, false);
             ((JavaEETransactionManagerSimplified) javaEETM).clearThreadTx();
             if ( jtsTx == null ) {
                 for ( int i=0; i<interposedSyncs.size(); i++ ) {

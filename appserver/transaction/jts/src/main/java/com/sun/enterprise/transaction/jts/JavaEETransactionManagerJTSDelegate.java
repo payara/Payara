@@ -177,7 +177,7 @@ public class JavaEETransactionManagerJTSDelegate
                 success = true;
                 throw e;
             } finally {
-                javaEETMS.monitorTxCompleted0(obj, success);
+                javaEETMS.monitorTxCompleted(obj, success);
             }
         } else {
             try {
@@ -192,7 +192,7 @@ public class JavaEETransactionManagerJTSDelegate
                 success = true;
                 throw e;
             } finally {
-                javaEETMS.monitorTxCompleted0(obj, success);
+                javaEETMS.monitorTxCompleted(obj, success);
                 javaEETMS.setTransactionCompeting(false);
             }
         }
@@ -229,7 +229,7 @@ public class JavaEETransactionManagerJTSDelegate
                 }
             }
         } finally {
-            javaEETMS.monitorTxCompleted0(obj, false);
+            javaEETMS.monitorTxCompleted(obj, false);
         }
     }
 
