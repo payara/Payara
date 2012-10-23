@@ -130,7 +130,10 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
 
     }
 
-
+    @Override
+    public Payload.Outbound getPayload() {
+        return payload;
+    }
 
 
 }

@@ -173,7 +173,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
 
     //JAX-RS Client related attributes
     private final Client client;
-    //TODO: Make it static. It is non-static because of Jersey concurency bug in lazy init
     {
         Metrix.event("Initialize jersey client - start");
         client = JerseyClientFactory.newClient(new ClientConfig().binders(new MultiPartClientBinder()));
@@ -192,20 +191,17 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
 //                .register(MultiPartWriter.class);
         Metrix.event("Initialize jersey client - done");
     }
-//    private Target target;
 
     private String              responseFormatType = "hk2-agent";
     private OutputStream        userOut;
     // return output string rather than printing it
     protected String              output;
     private ActionReport        actionReport;
-//    private Map<String, String> attrs;
     private boolean             doUpload = false;
     private boolean             addedUploadOption = false;
     private RestPayloadImpl.Outbound    outboundPayload;
     private String              usage;
     private File                fileOutputDir;
-    //private StringBuilder       passwordOptions;
 
     // constructor parameters
     protected String            name;
@@ -259,55 +255,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     private static final String FILE_PAYLOAD_MIME_TYPE =
             "application/octet-stream";
 
-//    /**
-//     * Interface to enable factoring out common HTTP connection management code.
-//     * <p>
-//     * The implementation of this interface must implement
-//     * <ul>
-//     * <li>{@link #prepareConnection} - to perform all pre-connection configuration - set headers, chunking, etc.
-//     * as well as writing any payload to the outbound connection.  In short
-//     * anything needed prior to the URLConnection#connect invocation.
-//     * <p>
-//     * The caller will invoke this method after it has invoked {@link URL#openConnection}
-//     * but before it invokes {@link URL#connect}.
-//     * <li>{@link #useConnection} - to read from the
-//     * input stream, etc.  The caller will invoke this method after it has
-//     * successfully invoked {@link URL#connect}.
-//     * </ul>
-//     * Because the caller might have to work with multiple URLConnection objects
-//     * (as it follows redirection, for example) this contract allows the caller
-//     * to delegate to the HttpCommand implementation multiple times to configure
-//     * each of the URLConnections objects, then to invoke useConnection only
-//     * once after it has the "final" URLConnection object.  For this reason
-//     * be sure to implement prepareConnection so that it can be invoked
-//     * multiple times.
-//     *
-//     */
-//    interface HttpCommand {
-//
-//        /**
-//         * Configures the HttpURLConnection (headers, chuncking, etc.) according
-//         * to the needs of this use of the connection and then writes any
-//         * required outbound payload to the connection.
-//         * <p>
-//         * This method might be invoked multiple times before the connection is
-//         * actually connected, so it should be serially reentrant.  Note that the
-//         * caller will
-//         * @param urlConnection the connection to be configured
-//         */
-//        public void prepareConnection(HttpURLConnection urlConnection) throws IOException;
-//
-//        /**
-//         * Uses the configured and connected connection to read
-//         * data, process it, etc.
-//         *
-//         * @param urlConnection the connection to be used
-//         * @throws CommandException
-//         * @throws IOException
-//         */
-//        public void useConnection(HttpURLConnection urlConnection)
-//                throws CommandException, IOException;
-//    }
 
     public RemoteRestAdminCommand(String name, String host, int port)
             throws CommandException {
@@ -367,24 +314,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         setActionReport(report);
         this.closeSse = true;
     }
-
-//    private Target getTarget() {
-//        if (this.target == null) {
-//            StringBuilder path = new StringBuilder();
-//            if (secure) {
-//                path.append("https://");
-//            } else {
-//                path.append("http://");
-//            }
-//            path.append(host);
-//            if (port > 0) {
-//                path.append(':').append(port);
-//            }
-//            path.append("/command/").append(name);
-//            target = client.target(path.toString());
-//        }
-//        return target;
-//    }
 
     /**
      * Set the response type used in requests to the server.
@@ -609,7 +538,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                         closeSse = false;
                         GfSseEventReceiver eventReceiver = response.readEntity(GfSseEventReceiver.class);
                         GfSseInboundEvent event;
-                        String instanceId; //TODO: Use ID to reconnect in case of connection lost
+                        String instanceId = null; 
                         do {
                             event = eventReceiver.readEvent();
                             fireEvent(event.getName(), event);
@@ -629,7 +558,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                                     closeSse = true;
                                     if (!acs.isOutboundPayloadEmpty()) {
                                         logger.log(Level.FINEST, "Romote command holds data. Must load it");
-                                        //TODO: Retrieve remote outbound data
+                                        downloadPayloadFromManaged(instanceId);
                                     }
                                 }
                             }
@@ -661,6 +590,22 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         }
         Metrix.event("executeCommand() - done");
         return output;
+    }
+    
+    private void downloadPayloadFromManaged(String jobId) {
+        if (jobId == null) {
+            return;
+        }
+        try {
+            RemoteRestAdminCommand command = new RemoteRestAdminCommand("_get-payload", 
+                    this.host, this.port, this.secure, this.user, this.password, 
+                    this.logger, this.scope, this.authToken, this.prohibitDirectoryUploads);
+            ParameterMap params = new ParameterMap();
+            params.add("DEFAULT", jobId);
+            command.executeCommand(params);
+        } catch (CommandException ex) {
+            logger.log(Level.WARNING, strings.getString("remote.sse.canNotGetPayload", "Cannot retrieve payload. {0}"), ex.getMessage());
+        }
     }
 
     protected void setActionReport(ActionReport ar) {
@@ -697,9 +642,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 if (sb.length() > 0) {
                     sb.append(EOL);
                 }
-//                if (ok(subPart.getChildrenType())) {
-//                    sb.append(indentPrefix).append(subPart.getChildrenType()).append(": "); //I dont understand why indent only if exist childrentype, but it is as is now implemented
-//                }
                 if (ok(subPart.getMessage())) {
                     sb.append(subPart.getMessage());
                 }
@@ -820,15 +762,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         }
     }
 
-//    /**
-//     * After a successful command execution, the attributes returned
-//     * by the command are saved.  This method returns those saved
-//     * attributes.
-//     */
-//    public Map<String, String> getAttributes() {
-//        return attrs;
-//    }
-
     /**
      * Return true if we're successful in collecting new information
      * (and thus the caller should try the request again).
@@ -876,80 +809,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     protected String reportAuthenticationException() {
         return strings.get("InvalidCredentials", user);
     }
-
-//    /**
-//     * Get the URI for executing the command.
-//     */
-//    protected StringBuilder getCommandURI() {
-//        StringBuilder rv = new StringBuilder(ADMIN_URI_PATH);
-//        if (scope != null) rv.append(scope);
-//        rv.append(name).append(QUERY_STRING_INTRODUCER);
-//        return rv;
-//    }
-
-//    /**
-//     * Actually execute the remote command.
-//     */
-//    private void executeRemoteCommand(String uri) throws CommandException {
-//        doHttpCommand(uri, chooseRequestMethod(), new HttpCommand() {
-//
-//            @Override
-//            public void prepareConnection(final HttpURLConnection urlConnection) throws IOException {
-//                if (doUpload) {
-//                    /*
-//                     * If we are uploading anything then set the content-type
-//                     * and add the uploaded part(s) to the payload.
-//                     */
-//                    urlConnection.setChunkedStreamingMode(0); // use default value
-//                    urlConnection.setRequestProperty("Content-Type",
-//                            outboundPayload.getContentType());
-//                }
-//
-//                // add any user-specified headers
-//                for (Header h : requestHeaders) {
-//                    urlConnection.addRequestProperty(h.getName(), h.getValue());
-//                }
-//
-//                if (doUpload) {
-//                    outboundPayload.writeTo(urlConnection.getOutputStream());
-//                }
-//
-//            }
-//
-//            @Override
-//            public void useConnection(final HttpURLConnection urlConnection)
-//                    throws CommandException, IOException {
-//
-//                InputStream in = urlConnection.getInputStream();
-//
-//                String responseContentType = urlConnection.getContentType();
-//
-//                Payload.Inbound inboundPayload =
-//                    PayloadImpl.Inbound.newInstance(responseContentType, in);
-//
-//                if (inboundPayload == null)
-//                    throw new IOException(
-//                        strings.get("NoPayloadSupport", responseContentType));
-//                PayloadFilesManager downloadedFilesMgr =
-//                    new PayloadFilesManager.Perm(fileOutputDir, null, logger,
-//                        new PayloadFilesManager.ActionReportHandler() {
-//                            @Override
-//                            public void handleReport(InputStream reportStream)
-//                                                    throws Exception {
-//                                handleResponse(options, reportStream,
-//                                    urlConnection.getResponseCode(), userOut);
-//                            }
-//                        });
-//                try {
-//                    downloadedFilesMgr.processParts(inboundPayload);
-//                } catch (CommandException cex) {
-//                    throw cex;
-//                } catch (Exception ex) {
-//                    throw new CommandException(ex.getMessage(), ex);
-//                }
-//                }
-//            });
-//    }
 
     private URI createURI(boolean secure, String pathSufix) throws CommandException {
         StringBuilder path = new StringBuilder("/command/");
@@ -1271,59 +1130,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         return null;
     }
 
-//    /**
-//     * Creates a new HttpConnectorAddress corresponding to the location to which
-//     * an earlier request was redirected.
-//     * <p>
-//     * If the new protocol is https then the HttpConnectorAddress secure setting
-//     * is turned on.
-//     * @param originalAddr the address which has been redirected elsewhere
-//     * @param redirection the location to which the attempted connection was redirected
-//     * @return connector address for the new location
-//     * @throws MalformedURLException
-//     */
-//    private Target followRedirection(
-//            final Target target,
-//            final String redirection) throws MalformedURLException {
-//        target.
-//        final URL url = new URL(redirection);
-//        final boolean useSecure = (url.getProtocol().equalsIgnoreCase("https"));
-//        HttpConnectorAddress hca = new HttpConnectorAddress(
-//                url.getHost(),
-//                url.getPort(),
-//                useSecure,
-//                originalAddr.getPath(),
-//                originalAddr.getSSLSocketFactory());
-//        hca.setInteractive(interactive);
-//        return hca;
-//    }
-
-//    /**
-//     * Provides an HttpConnectorAddress for use in connecting to the desired
-//     * admin listener.
-//     * <p>
-//     * This implementation works for true admin clients and will not work
-//     * correctly for commands submitted to instances from inside the DAS.  (That
-//     * is done from the implementation in ServerRemoteRestAdminCommand which extends
-//     * this class.)
-//     * <p>
-//     * This code constructs the HttpConnectorAddress in a way that uses either
-//     * no SSLSocketFactory (if security is off) or uses an SSLSocketFactory
-//     * linked to the asadmin truststore.
-//     *
-//     * @param host the host name to which the connection should be made
-//     * @param port the admin port on that host
-//     * @param shouldUseSecure whether SSL should be used to connect or not
-//     * @return
-//     */
-//    protected HttpConnectorAddress getHttpConnectorAddress(
-//            final String host, final int port, final boolean shouldUseSecure) {
-//        HttpConnectorAddress hca = new HttpConnectorAddress(
-//                                host, port, shouldUseSecure);
-//        hca.setInteractive(interactive);
-//        return hca;
-//    }
-
     protected SSLContext getSslContext() {
         try {
             Metrix.event("getSslContext() - start");
@@ -1505,56 +1311,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         }
     }
 
-//    /**
-//     * Decide what request method to use in building the HTTP request.
-//     * @return the request method appropriate to the current command and options
-//     */
-//    private String chooseRequestMethod() {
-//        // XXX - should be part of command metadata
-//        if (doUpload) {
-//            return "POST";
-//        } else {
-//            return "GET";
-//        }
-//    }
-
-//    //TODO: Remove
-//    private void handleResponse(ParameterMap params,
-//            InputStream in, int code, OutputStream userOut)
-//            throws IOException, CommandException {
-//        if (userOut == null) {
-//            handleResponse(params, in, code);
-//        } else {
-//            FileUtils.copy(in, userOut, 0);
-//        }
-//    }
-//
-//    //TODO: Remove
-//    private void handleResponse(ParameterMap params,
-//            InputStream in, int code) throws IOException, CommandException {
-//        RemoteResponseManager rrm = null;
-//
-//        try {
-//            rrm = new RemoteResponseManager(in, code, logger);
-//            rrm.process();
-//        } catch (RemoteSuccessException rse) {
-//            // save results
-//            output = rse.getMessage();
-//	    assert rrm != null;
-//	    attrs = rrm.getMainAtts();
-//            return;
-//        } catch (RemoteException rfe) {
-//            // XXX - gross
-//            if (rfe.getRemoteCause().indexOf("CommandNotFoundException") >= 0) {
-//                // CommandNotFoundException from the server, then display
-//                // the closest matching commands
-//                throw new InvalidCommandException(rfe.getMessage());
-//            }
-//            throw new CommandException(
-//                        "remote failure: " + rfe.getMessage(), rfe);
-//        }
-//    }
-
     public String getManPage() throws CommandException {
         logger.log(Level.FINEST, "getManPage()");
         Response res = doRestCommand(new ParameterMap(), "manpage", "GET", false, MediaType.TEXT_PLAIN_TYPE);
@@ -1610,92 +1366,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         }
         Metrix.event("fetchCommandModel() - done");
     }
-
-    //TODO: Remove
-//    /**
-//     * Fetch the command metadata from the remote server.
-//     */
-//    protected void fetchCommandModel() throws CommandException {
-//        long startNanos = System.nanoTime();
-//        commandModel = null; //For sure not be used during request header construction
-//
-//        // XXX - there should be a "help" command, that returns XML output
-//        //StringBuilder uriString = new StringBuilder(ADMIN_URI_PATH).
-//                //append("help").append(QUERY_STRING_INTRODUCER);
-//        //addStringOption(uriString, "DEFAULT", name);
-//        StringBuilder uriString = getCommandURI();
-//        addStringOption(uriString, "Xhelp", "true");
-//
-//        // remove the last character, whether it was "?" or "&"
-//        uriString.setLength(uriString.length() - 1);
-//
-//        doHttpCommand(uriString.toString(), "GET", new HttpCommand() {
-//
-//            @Override
-//            public void prepareConnection(HttpURLConnection urlConnection) {
-//                //urlConnection.setRequestProperty("Accept: ", "text/xml");
-//                urlConnection.setRequestProperty("User-Agent", "metadata");
-//            }
-//
-//            @Override
-//            public void useConnection(HttpURLConnection urlConnection)
-//                    throws CommandException, IOException {
-//
-//                InputStream in = urlConnection.getInputStream();
-//
-//                String responseContentType = urlConnection.getContentType();
-//                logger.finer("Response Content-Type: " + responseContentType);
-//                Payload.Inbound inboundPayload =
-//                    PayloadImpl.Inbound.newInstance(responseContentType, in);
-//
-//                if (inboundPayload == null)
-//                    throw new IOException(
-//                        strings.get("NoPayloadSupport", responseContentType));
-//
-//                boolean isReportProcessed = false;
-//                Iterator<Payload.Part> partIt = inboundPayload.parts();
-//                while (partIt.hasNext()) {
-//                    /*
-//                     * There should be only one part, which should be the
-//                     * metadata, but skip any other parts just in case.
-//                     */
-//                    if (!isReportProcessed) {
-//                        metadataErrors = new StringBuilder();
-//                        commandModel =
-//                                parseMetadata(partIt.next().getInputStream(),
-//                                metadataErrors);
-//                        logger.finer(
-//                            "fetchCommandModel: got command opts: " +
-//                            commandModel);
-//                        isReportProcessed = true;
-//                    } else {
-//                        partIt.next();  // just throw it away
-//                    }
-//                }
-//            }
-//        });
-//        if (commandModel == null) {
-//            if (metadataErrors != null) {
-//                throw new InvalidCommandException(metadataErrors.toString());
-//            } else {
-//                throw new InvalidCommandException(strings.get("unknownError"));
-//            }
-//        } else {
-//            this.commandModelFromCache = false;
-//            if (logger.isLoggable(Level.FINEST)) {
-//                logger.log(Level.FINEST, "Command model for {0} command fetched from remote server. [Duration: {1} nanos]", new Object[] {name, System.nanoTime() - startNanos});
-//            }
-//            //if (!omitCache) {
-//                try {
-//                    AdminCacheUtils.getCache().put(createCommandCacheKey(), commandModel);
-//                } catch (Exception ex) {
-//                    if (logger.isLoggable(Level.FINER)) {
-//                        logger.log(Level.FINER, "Can not put data to cache under key {0}", createCommandCacheKey());
-//                    }
-//                }
-//            //}
-//        }
-//    }
 
     private String createCommandCacheKey() {
         StringBuilder result = new StringBuilder(getCanonicalHost().length() + name.length() + 12);
@@ -1803,132 +1473,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         }
     }
 
-    // TODO: remove parseMetadata - obsolete
-//    /**
-//     * Parse the XML metadata for the command on the input stream.
-//     *
-//     * @param in the input stream
-//     * @return the set of ValidOptions
-//     */
-//    private CommandModel parseMetadata(InputStream in, StringBuilder errors) {
-//        if (logger.isLoggable(Level.FINER)) { // XXX - assume "debug" == "FINER"
-//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//            try {
-//                FileUtils.copy(in, baos, 0);
-//            } catch (IOException ex) { }
-//            in = new ByteArrayInputStream(baos.toByteArray());
-//            String response = baos.toString();
-//            logger.finer("------- RAW METADATA RESPONSE ---------");
-//            logger.finer(response);
-//            logger.finer("------- RAW METADATA RESPONSE ---------");
-//        }
-//
-//        CachedCommandModel cm = new CachedCommandModel(name);
-//        boolean sawFile = false;
-//        try {
-//            DocumentBuilder d =
-//                    DocumentBuilderFactory.newInstance().newDocumentBuilder();
-//            Document doc = d.parse(in);
-//            NodeList cmd = doc.getElementsByTagName("command");
-//            Node cmdnode = cmd.item(0);
-//            if (cmdnode == null) {
-//                Node report = doc.getElementsByTagName("action-report").item(0);
-//                String cause = getAttr(report.getAttributes(), "failure-cause");
-//                if (ok(cause))
-//                    errors.append(cause);
-//                else {
-//                    Node mp = report.getFirstChild();   // message-part
-//                    if (mp != null)
-//                        cause = getAttr(mp.getAttributes(), "message");
-//                    if (ok(cause))
-//                        errors.append(cause);
-//                }
-//                // no command info, must be invalid command or something
-//                // wrong with command implementation
-//                return null;
-//            }
-//            NamedNodeMap cmdattrs = cmdnode.getAttributes();
-//            usage = getAttr(cmdattrs, "usage");
-//            cm.setUsage(usage);
-//            String dashOk = getAttr(cmdattrs, "unknown-options-are-operands");
-//            if (dashOk != null)
-//                cm.dashOk = Boolean.parseBoolean(dashOk);
-//            NodeList opts = doc.getElementsByTagName("option");
-//            for (int i = 0; i < opts.getLength(); i++) {
-//                Node n = opts.item(i);
-//                NamedNodeMap attributes = n.getAttributes();
-//                String sn = getAttr(attributes, "short");
-//                String def = getAttr(attributes, "default");
-//                String obs = getAttr(attributes, "obsolete");
-//                String alias = getAttr(attributes, "alias");
-//                ParamModelData opt = new ParamModelData(
-//                        getAttr(attributes, "name"),
-//                        typeOf(getAttr(attributes, "type")),
-//                        Boolean.parseBoolean(getAttr(attributes, "optional")),
-//                        def,
-//                        ok(sn) ? sn : null,
-//			ok(obs) ? Boolean.parseBoolean(obs) : false,
-//			alias);
-//                if (getAttr(attributes, "type").equals("PASSWORD")) {
-//                    opt.param._password = true;
-//                    opt.description = getAttr(attributes, "description");
-//                }
-//                cm.add(opt);
-//                if (opt.getType() == File.class)
-//                    sawFile = true;
-//            }
-//            // should be only one operand item
-//            opts = doc.getElementsByTagName("operand");
-//            for (int i = 0; i < opts.getLength(); i++) {
-//                Node n = opts.item(i);
-//                NamedNodeMap attributes = n.getAttributes();
-//                Class<?> type = typeOf(getAttr(attributes, "type"));
-//                if (type == File.class) {
-//                    sawFile = true;
-//                }
-//                int min = Integer.parseInt(getAttr(attributes, "min"));
-//                String max = getAttr(attributes, "max");
-//                boolean multiple = false;
-//                if (max.equals("unlimited")) {
-//                    multiple = true;
-//                    // XXX - should convert to array of whatever
-//                    if (type == File.class) {
-//                        type = File[].class;
-//                    } else {
-//                        type = List.class;
-//                    }
-//                }
-//                ParamModelData pm = new ParamModelData(
-//                    getAttr(attributes, "name"), type, min == 0, null);
-//                pm.param._primary = true;
-//                pm.param._multiple = multiple;
-//                cm.add(pm);
-//            }
-//
-//            /*
-//             * If one of the options or operands is a FILE,
-//             * make sure there's also a --upload option available.
-//             * XXX - should only add it if it's not present
-//             * XXX - should just define upload parameter on remote command
-//             */
-//            if (sawFile) {
-//                cm.add(new ParamModelData("upload", Boolean.class,
-//                        true, null));
-//                addedUploadOption = true;
-//                cm.setAddedUploadOption(true);
-//            }
-//        } catch (ParserConfigurationException pex) {
-//            // ignore for now
-//            return null;
-//        } catch (SAXException sex) {
-//            // ignore for now
-//            return null;
-//        } catch (IOException ioex) {
-//            // ignore for now
-//            return null;
-//        }
-//        return cm;
-//    }
 
     private Class<?> typeOf(String type) {
         if (type.equals("STRING"))
@@ -1950,10 +1494,11 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
      */
     private static String getAttr(NamedNodeMap attributes, String name) {
         Node n = attributes.getNamedItem(name);
-        if (n != null)
+        if (n != null) {
             return n.getNodeValue();
-        else
+        } else {
             return null;
+        }
     }
 
     /**
@@ -1999,10 +1544,11 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             logger.finer("Saw a file parameter");
             // found a FILE param, is doUpload set?
             String upString = getOption("upload");
-            if (ok(upString))
+            if (ok(upString)) {
                 doUpload = Boolean.parseBoolean(upString);
-            else
+            } else {
                 doUpload = !isLocal(host) && sawUploadableFile;
+            }
             if (prohibitDirectoryUploads && sawDirectory && doUpload) {
                 // oops, can't upload directories
                 logger.finer("--upload=" + upString +

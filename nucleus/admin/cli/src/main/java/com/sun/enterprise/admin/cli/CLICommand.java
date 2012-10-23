@@ -691,8 +691,9 @@ public abstract class CLICommand implements PostConstruct {
                                 break;
                             }
                         }
-                        if (opt == null)        // should never happen
+                        if (opt == null) {
                             continue;
+                        }
 
                         // format the option appropriately
                         sb.append(" --").append(p.getKey());
@@ -700,11 +701,11 @@ public abstract class CLICommand implements PostConstruct {
                         // XXX - won't handle multi-values
                         if (opt.getType() == Boolean.class ||
                             opt.getType() == boolean.class) {
-                            if (!pl.get(0).equalsIgnoreCase("true"))
+                            if (!pl.get(0).equalsIgnoreCase("true")) {
                                 sb.append("=false");
-                        } else {
-                            if (pl != null && pl.size() > 0)
-                                sb.append(" ").append(pl.get(0));
+                            }
+                        } else if (pl != null && pl.size() > 0) {
+                            sb.append(" ").append(pl.get(0));
                         }
                     }
                     sb.append(" ").append(name).append(" [options] ...");
@@ -1174,16 +1175,18 @@ public abstract class CLICommand implements PostConstruct {
      */
     protected String getOption(String name) {
         String val = options.getOne(name);
-        if (val == null)
+        if (val == null) {
             val = env.getStringOption(name);
+        }
         if (val == null) {
             // no value, find the default
             ParamModel opt = commandModel.getModelFor(name);
             // if no value was specified and there's a default value, return it
             if (opt != null) {
                 String def = opt.getParam().defaultValue();
-                if (ok(def))
+                if (ok(def)) {
                     val = def;
+                }
             }
         }
         return val;

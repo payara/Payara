@@ -178,4 +178,15 @@ public class CommandProgressImpl extends ProgressStatusImpl implements CommandPr
         }
     }
     
+    @Override
+    public void complete() {
+        complete(null);
+    }
+    
+    @Override
+    public void complete(String message) {
+        this.endTime = new Date();
+        super.complete(message);
+    }
+    
 }

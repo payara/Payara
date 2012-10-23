@@ -64,6 +64,7 @@ public class PayloadImpl implements Payload {
          */
         private final ArrayList<Payload.Part> parts = new ArrayList<Payload.Part>();
         
+        @Override
         public int size() {
             return getParts().size();
         }
@@ -332,7 +333,7 @@ public class PayloadImpl implements Payload {
             return (isComplex()) ? getComplexContentType() : getSinglePartContentType();
         }
 
-        protected ArrayList<Payload.Part> getParts() {
+        public ArrayList<Payload.Part> getParts() {
             return parts;
         }
 

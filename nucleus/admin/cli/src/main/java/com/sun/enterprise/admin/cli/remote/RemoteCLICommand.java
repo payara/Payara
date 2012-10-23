@@ -60,6 +60,8 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
@@ -71,8 +73,10 @@ import javax.ws.rs.core.Response;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandModel.ParamModel;
 import org.glassfish.api.admin.CommandProgress;
 import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.common.util.admin.ManPageFinder;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -96,6 +100,9 @@ public class RemoteCLICommand extends CLICommand {
     private String                      responseFormatType;
     private OutputStream                userOut;
     private File                        outputDir;
+    //Options from first round if reexecuted because of CommandModel update
+    protected ParameterMap              reExecutedOptions;
+    protected List<String>              reExecutedOperands;
 
     private RemoteCLICommand.CLIRemoteAdminCommand       rac;
 
@@ -133,7 +140,7 @@ public class RemoteCLICommand extends CLICommand {
             sessionCache = new File(AsadminSecurityUtil.getDefaultClientDir(),
                     sessionFilePath.toString());
             statusPrinter = new ProgressStatusPrinter(env.debug() || env.trace(), logger);
-            if (!env.getBooleanOption(ProgramOptions.TERSE)) {
+            if (!programOpts.isTerse() && System.console() != null) {
                 super.registerListener(CommandProgress.EVENT_PROGRESSSTATUS_CHANGE, statusPrinter);
                 super.registerListener(CommandProgress.EVENT_PROGRESSSTATUS_STATE, statusPrinter);
             }
@@ -556,8 +563,10 @@ public class RemoteCLICommand extends CLICommand {
         if (eTag != null && eTag.equals(newETag)) {
             return; //Nothing change in command model
         }
-        logger.log(Level.WARNING, "Command signature of {0} command was changed. Re executing with new metadata.", name);
+        //logger.log(Level.WARNING, "Command signature of {0} command was changed. Re executing with new metadata.", name);
         //clean state of this instance
+        this.reExecutedOptions = this.options;
+        this.reExecutedOperands = this.operands;
         this.options = null;
         this.operands = null;
         //Reexecute it
@@ -641,6 +650,37 @@ public class RemoteCLICommand extends CLICommand {
     @Override
     protected void prevalidate() throws CommandException {
         try {
+            //Copy date from interactive part of 
+            if (reExecutedOperands != null && !reExecutedOperands.isEmpty()) {
+                ParamModel operandModel = getOperandModel();
+                if (operandModel != null && !operandModel.getParam().optional()) {
+                    if (operands == null) {
+                        operands = new ArrayList<String>(reExecutedOperands.size());
+                    }
+                    if (reExecutedOperands.size() > operands.size()) {
+                        if (operandModel.getParam().multiple()) {
+                            for (String str : reExecutedOperands) {
+                                if (!operands.contains(str)) {
+                                    operands.add(str);
+                                }
+                            }
+                        } else if (reExecutedOperands.size() == 1) {
+                            operands = reExecutedOperands;
+                        }
+                    }
+                }
+            }
+            if (reExecutedOptions != null) {
+                for (ParamModel opt : commandModel.getParameters()) {
+                    if (opt.getParam().primary()) {
+                        continue;
+                    }
+                    if (options.get(opt.getName()) == null && reExecutedOptions.get(opt.getName()) != null) {
+                        options.set(opt.getName(), reExecutedOptions.get(opt.getName()));
+                    }
+                }
+            }
+            //Execute
             super.prevalidate();
         } catch (CommandException ex) {
             reExecuteAfterMetadataUpdate();

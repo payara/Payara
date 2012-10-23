@@ -66,8 +66,6 @@ public interface Job extends AdminCommandState {
 
     public long getCommandExecutionDate();
 
-
-
-
+    public Payload.Outbound getPayload();
     
 }

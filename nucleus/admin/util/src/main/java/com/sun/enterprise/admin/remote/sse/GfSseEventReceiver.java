@@ -185,10 +185,9 @@ public final class GfSseEventReceiver implements Closeable {
             inboundEvent.addData(value);
             inboundEvent.addData(new byte[]{'\n'});
         } else if(name.equals("id")) {
-            String s = new String(value);
-            if (s == null) {
-                s = "";
-            } else {
+            String s = "";
+            if (value != null) {
+                s = new String(value);
                 s = s.trim();
                 if (!s.matches("\\-?\\d+")) {
                     s = "";
