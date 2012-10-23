@@ -47,10 +47,10 @@ import javax.inject.Inject;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.util.SSHUtil;
@@ -74,7 +74,7 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
     @Param(optional = true, defaultValue = "false")
     private boolean generatekey;
     @Inject
-    private Habitat habitat;
+    private ServiceLocator habitat;
 
     public SetupSshKey() {
     }

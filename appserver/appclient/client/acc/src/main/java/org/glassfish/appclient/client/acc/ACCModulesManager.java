@@ -47,8 +47,6 @@ import com.sun.enterprise.naming.impl.ClientNamingConfiguratorImpl;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.glassfish.api.admin.ProcessEnvironment;
@@ -62,7 +60,6 @@ import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
 import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * Encapsulates details of preparing the HK2 habitat while also providing
@@ -82,7 +79,7 @@ import org.jvnet.hk2.component.Habitat;
  */
 public class ACCModulesManager /*implements ModuleStartup*/ {
 
-    private static Habitat habitat = null;
+    private static ServiceLocator habitat = null;
 
     public synchronized static void initialize(final ClassLoader loader) throws URISyntaxException {
         /*
@@ -149,7 +146,7 @@ public class ACCModulesManager /*implements ModuleStartup*/ {
     }
 
 
-    static Habitat getHabitat() {
+    static ServiceLocator getHabitat() {
         return habitat;
     }
 
@@ -167,11 +164,11 @@ public class ACCModulesManager /*implements ModuleStartup*/ {
      * @throws com.sun.enterprise.module.bootstrap.BootException
      * @throws java.net.URISyntaxException
      */
-    private static Habitat prepareHabitat(
+    private static ServiceLocator prepareHabitat(
             final ClassLoader loader) {
         ServiceLocator serviceLocator = ServiceLocatorFactory.getInstance().create("default");
 
-        habitat = new Habitat(serviceLocator);
+        habitat = serviceLocator;
         
         try {
         	HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(loader), null);

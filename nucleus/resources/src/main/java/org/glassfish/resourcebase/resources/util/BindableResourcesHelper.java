@@ -44,9 +44,9 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.resourcebase.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
 import javax.inject.Inject;
 import java.lang.reflect.Proxy;
@@ -62,7 +62,7 @@ import java.util.logging.Logger;
 public class BindableResourcesHelper {
 
     @Inject
-    Habitat habitat;
+    ServiceLocator habitat;
 
     @Inject
     private ServerEnvironment environment;

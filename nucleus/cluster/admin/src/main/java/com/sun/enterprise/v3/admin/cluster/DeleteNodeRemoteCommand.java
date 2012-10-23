@@ -55,8 +55,7 @@ import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import javax.inject.Inject;
 
 import org.glassfish.hk2.api.IterableProvider;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.universal.process.ProcessManager;
 import com.sun.enterprise.universal.process.ProcessManagerException;
@@ -69,7 +68,7 @@ import com.sun.enterprise.universal.process.ProcessManagerException;
 public abstract class DeleteNodeRemoteCommand implements AdminCommand {
     private static final int DEFAULT_TIMEOUT_MSEC = 300000; // 5 minutes
     @Inject
-    protected Habitat habitat;
+    protected ServiceLocator habitat;
     @Inject
     IterableProvider<Node> nodeList;
     @Inject

@@ -65,8 +65,6 @@ import org.glassfish.cluster.ssh.sftp.SFTPClient;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.single.StaticModulesRegistry;
 
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.io.DomainDirs;
@@ -79,9 +77,6 @@ import com.trilead.ssh2.SFTPv3DirectoryEntry;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
-import org.jvnet.hk2.component.Habitat;
-
-import org.glassfish.security.common.MasterPassword;
 
 import com.sun.enterprise.security.store.PasswordAdapter;
 
@@ -333,8 +328,6 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                         );
                  
                     ServiceLocator serviceLocator = ServiceLocatorFactory.getInstance().create("default");
-
-                    Habitat habitat = new Habitat();
                     
                     try {
                     	HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(cl), null);
@@ -342,7 +335,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                     	logger.log(Level.SEVERE, "Error initializing HK2", e);
                     }
                     
-                    ConfigParser parser = new ConfigParser((Habitat)habitat);
+                    ConfigParser parser = new ConfigParser(serviceLocator);
                     URL domainURL = domainXMLFile.toURI().toURL();
                     DomDocument doc = parser.parse(domainURL);
                     Dom domDomain = doc.getRoot();
