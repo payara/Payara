@@ -200,7 +200,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                 if (!strLine.equals("")) {
                     if (strLine.startsWith("[[") && strLine.endsWith("]") && countOccurrences(strLine, '[') > 4) { // for odl formatter
                         odlFormatter++;
-                    } else if (strLine.startsWith("[#|") && strLine.endsWith("|#]") && countOccurrences(strLine, '|') > 4) {  // for ufl formatter
+                    } else if (strLine.startsWith("[#|") && countOccurrences(strLine, '|') > 4) {  // for ufl formatter
                         uflFormatter++;
                     } else {
                         otherFormatter++;  // for other formatter
@@ -219,7 +219,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                     }
 
                     // reading first few lines and breaking loop
-                    if (odlFormatter > 2 || uflFormatter > 2 || odlFormatter > 2) {
+                    if (odlFormatter > 2 || uflFormatter > 2 || otherFormatter > 2) {
                         break;
                     }
                 }

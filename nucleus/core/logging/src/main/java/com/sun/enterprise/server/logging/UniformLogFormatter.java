@@ -84,13 +84,6 @@ public class UniformLogFormatter extends Formatter {
     private LogManager logManager;
     // A Dummy Container Date Object is used to format the date
     private Date date = new Date();
-    private static String PRODUCTID_CONTEXTID = null;
-    // This is temporary, in the next phase of implementation the product Id
-    // will be obtained from the version object that is part of Sun One AppServ
-    // Bug 4882896: string initialized using Version.java
-    private static final String PRODUCT_VERSION =
-            com.sun.appserv.server.util.Version.getAbbreviatedVersion();
-    private static final int FINE_LEVEL_INT_VALUE = Level.FINE.intValue();
 
     private static boolean LOG_SOURCE_IN_KEY_VALUE = false;
 
@@ -355,11 +348,12 @@ public class UniformLogFormatter extends Formatter {
                 }
                 recordBuffer.append(logMessage);
     
-                if (record.getThrown() != null) {
+                Throwable throwable = getThrowable(record);                
+                if (throwable != null) {
                     recordBuffer.append(LINE_SEPARATOR);
                     StringWriter sw = new StringWriter();
                     PrintWriter pw = new PrintWriter(sw);
-                    record.getThrown().printStackTrace(pw);
+                    throwable.printStackTrace(pw);
                     pw.close();
                     recordBuffer.append(sw.toString());
                     sw.close();
@@ -393,6 +387,22 @@ public class UniformLogFormatter extends Formatter {
           }
         }
         return null;
+    }
+    
+    static Throwable getThrowable(LogRecord record) {
+        Throwable throwable = record.getThrown();
+        if (throwable == null) {
+            // GLASSFISH-19156
+            // Try
+            Object[] params = record.getParameters();            
+            if (params != null) {
+                Object lastParam = params[params.length-1];
+                if (lastParam != null && lastParam instanceof Throwable) {
+                    throwable = (Throwable) params[params.length-1];
+                }
+            }
+        }
+        return throwable;
     }
 
     private synchronized ResourceBundle getResourceBundle(String loggerName) {

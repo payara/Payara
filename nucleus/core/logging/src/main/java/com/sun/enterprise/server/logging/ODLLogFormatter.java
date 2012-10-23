@@ -55,8 +55,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.*;
 import java.util.logging.Formatter;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * ODLLogFormatter conforms to the logging format defined by the
@@ -327,7 +325,8 @@ public class ODLLogFormatter extends Formatter {
             }
 
             if (multiLine) {
-                recordBuffer.append(FIELD_BEGIN_MARKER).append(FIELD_BEGIN_MARKER);    
+                recordBuffer.append(FIELD_BEGIN_MARKER).append(FIELD_BEGIN_MARKER);
+                recordBuffer.append(LINE_SEPARATOR);
             }
             recordBuffer.append(message);
             if (multiLine) {
@@ -375,14 +374,15 @@ public class ODLLogFormatter extends Formatter {
                     // because the logMessage is initialized already
                 }
             }
-        }        
-        if (record.getThrown() != null) {
+        }  
+        Throwable throwable = UniformLogFormatter.getThrowable(record);
+        if (throwable != null) {
             StringBuffer buffer = new StringBuffer();
             buffer.append(logMessage);
             buffer.append(LINE_SEPARATOR);
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
-            record.getThrown().printStackTrace(pw);
+            throwable.printStackTrace(pw);
             pw.close();
             buffer.append(sw.toString());
             logMessage = buffer.toString();
