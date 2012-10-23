@@ -162,7 +162,6 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();
-        final ActionReport subReport = report.addSubActionsReport();
 
         ActionReport.MessagePart part = report.getTopMessagePart();        
         int numOfApplications = 0;
@@ -218,11 +217,6 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
         String formattedLine = formattedLineBuf.toString();
         if ( !terse ) {
             if (rowList.isEmpty()) {
-                subReport.setMessage(localStrings.getLocalString(
-                        DeployCommand.class,
-                        "list.no.applications.deployed",
-                        "No applications are deployed to this target {0}.",
-                        new Object[] {this.target}));
                 part.setMessage(localStrings.getLocalString("list.components.no.elements.to.list", "Nothing to List."));
             } else if ( long_opt ) {
                 ActionReport.MessagePart childPart = part.addChild();
