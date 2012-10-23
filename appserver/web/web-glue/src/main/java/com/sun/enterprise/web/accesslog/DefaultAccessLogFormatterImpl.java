@@ -47,7 +47,6 @@ import org.apache.catalina.HttpResponse;
 import org.apache.catalina.Request;
 import org.apache.catalina.Response;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;

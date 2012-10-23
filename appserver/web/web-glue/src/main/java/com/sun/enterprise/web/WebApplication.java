@@ -41,8 +41,6 @@
 package com.sun.enterprise.web;
 
 import com.sun.enterprise.deployment.EnvironmentProperty;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.EnvironmentEntry;
 import com.sun.enterprise.util.Result;
@@ -56,7 +54,6 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.deployment.common.ApplicationConfigInfo;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.config.serverbeans.ContextParam;
 import org.glassfish.web.config.serverbeans.EnvEntry;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;

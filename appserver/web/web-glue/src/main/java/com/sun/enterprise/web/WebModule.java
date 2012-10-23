@@ -74,7 +74,6 @@ import org.glassfish.embeddable.web.config.TransportGuarantee;
 import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.security.common.Role;
 import org.glassfish.web.admin.monitor.ServletProbeProvider;
 import org.glassfish.web.admin.monitor.SessionProbeProvider;

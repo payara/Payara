@@ -43,7 +43,6 @@ package com.sun.enterprise.web;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.web.session.PersistenceType;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.runtime.ManagerProperties;
 import org.glassfish.web.deployment.runtime.SessionManager;
 import org.glassfish.web.deployment.runtime.StoreProperties;

@@ -58,7 +58,6 @@ package org.glassfish.web.jsp;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
-import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.web.InitializationParameter;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
@@ -67,7 +66,6 @@ import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.runtime.JspConfig;
 import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.web.deployment.runtime.WebProperty;

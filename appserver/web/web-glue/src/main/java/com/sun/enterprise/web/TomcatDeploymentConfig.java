@@ -50,7 +50,6 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardWrapper;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.descriptor.*;
 
 import javax.servlet.SessionCookieConfig;

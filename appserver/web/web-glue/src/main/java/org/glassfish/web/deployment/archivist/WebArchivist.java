@@ -41,7 +41,6 @@
 package org.glassfish.web.deployment.archivist;
 
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
@@ -60,7 +59,6 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.WarType;
 import org.glassfish.web.deployment.descriptor.*;
 import org.glassfish.web.deployment.io.WebDeploymentDescriptorFile;

@@ -58,7 +58,6 @@ import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletRequest;

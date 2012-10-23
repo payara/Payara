@@ -45,7 +45,6 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.session.FileStore;
 import org.apache.catalina.session.PersistentManager;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.runtime.SessionManager;
 import org.jvnet.hk2.annotations.Service;
 

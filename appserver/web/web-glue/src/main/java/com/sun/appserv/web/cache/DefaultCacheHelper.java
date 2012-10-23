@@ -44,12 +44,10 @@ import com.sun.appserv.web.cache.mapping.CacheMapping;
 import com.sun.appserv.web.cache.mapping.ConstraintField;
 import com.sun.appserv.web.cache.mapping.Field;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

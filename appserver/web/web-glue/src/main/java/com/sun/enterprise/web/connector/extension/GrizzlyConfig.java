@@ -49,11 +49,9 @@ import com.sun.enterprise.config.serverbeans.ModuleMonitoringLevels;
 import com.sun.enterprise.web.WebContainer;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.j2ee.statistics.Stats;
 
-import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 import java.lang.String;
 import java.text.MessageFormat;

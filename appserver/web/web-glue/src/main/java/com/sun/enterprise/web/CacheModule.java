@@ -48,7 +48,6 @@ import com.sun.appserv.web.cache.mapping.ValueConstraint;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.runtime.*;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;

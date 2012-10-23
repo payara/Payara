@@ -46,7 +46,6 @@ import com.sun.enterprise.web.WebModule;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jsp.api.ResourceInjector;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.servlet.jsp.tagext.JspTag;
 import java.lang.String;

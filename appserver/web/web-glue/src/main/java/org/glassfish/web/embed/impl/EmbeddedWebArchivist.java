@@ -48,7 +48,6 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.internal.embedded.*;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.archivist.WebArchivist;
 import org.jvnet.hk2.annotations.Service;
 
@@ -92,7 +91,10 @@ public class EmbeddedWebArchivist extends WebArchivist {
                         try {
                             elements.add(classLoader.loadClass(toClassName(entry)));
                         } catch (ClassNotFoundException e) {
-                            logger.log(Level.FINER, MessageFormat.format(CANNOT_LOAD_CLASS, entry), e);
+                            logger.log(Level.FINER,
+                                    MessageFormat.format(
+                                            _logger.getResourceBundle().getString(CANNOT_LOAD_CLASS), entry),
+                                    e);
                         }
                     }
                 }

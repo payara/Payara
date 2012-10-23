@@ -53,7 +53,6 @@ import org.apache.catalina.valves.ValveBase;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 
 import java.io.File;
 import java.io.FileOutputStream;

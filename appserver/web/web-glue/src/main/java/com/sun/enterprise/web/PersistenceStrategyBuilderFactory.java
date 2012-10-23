@@ -45,7 +45,6 @@ import com.sun.enterprise.web.session.PersistenceType;
 import org.apache.catalina.Context;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

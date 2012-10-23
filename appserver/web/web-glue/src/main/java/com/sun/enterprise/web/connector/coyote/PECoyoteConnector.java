@@ -50,7 +50,6 @@ import com.sun.enterprise.web.connector.extension.GrizzlyConfig;
 import com.sun.enterprise.web.connector.grizzly.DummyConnectorLauncher;
 import com.sun.enterprise.web.pwc.connector.coyote.PwcCoyoteRequest;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.grizzly.config.dom.*;
 import org.glassfish.web.util.IntrospectionUtils;
 import org.apache.catalina.*;
@@ -59,7 +58,6 @@ import org.glassfish.security.common.CipherInfo;
 import org.glassfish.web.admin.monitor.RequestProbeProvider;
 
 import javax.management.Notification;
-import javax.management.ObjectName;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.lang.Object;

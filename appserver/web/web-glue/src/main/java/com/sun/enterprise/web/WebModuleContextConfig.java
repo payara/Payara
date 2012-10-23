@@ -55,13 +55,11 @@ import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.startup.ContextConfig;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.web.valve.GlassFishValve;
 
 import javax.naming.NamingException;
-import java.io.File;
 import java.lang.String;
 import java.text.MessageFormat;
 import java.util.*;

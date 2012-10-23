@@ -45,7 +45,6 @@ import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 
 import java.text.MessageFormat;
 import java.util.logging.Level;
@@ -53,25 +52,25 @@ import java.util.logging.Logger;
 //END OF IASRI 4660482 
 
 
-    /**
-    * I dictate how the web app I belong to should be logged into.
-    * @author Danny Coward
-     */
+/**
+ * I dictate how the web app I belong to should be logged into.
+ * @author Danny Coward
+ */
 
 public class LoginConfigurationImpl extends Descriptor implements LoginConfiguration {
 
-        static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
+    static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
 
-        @LogMessageInfo(
-                message = "An authentication method was not defined in the web.xml descriptor. " +
-                        "Using default BASIC for login configuration.",
-                level = "WARNING")
-        public static final String AUTH_METHOD_NOT_FOUND = "AS-WEB-00350";
+    @LogMessageInfo(
+            message = "An authentication method was not defined in the web.xml descriptor. " +
+                    "Using default BASIC for login configuration.",
+            level = "WARNING")
+    public static final String AUTH_METHOD_NOT_FOUND = "AS-WEB-00350";
 
-        @LogMessageInfo(
-                message = "[{0}] is not a valid authentication method",
-                level = "WARNING")
-        public static final String EXCEPTION_AUTH_METHOD = "AS-WEB-00351";
+    @LogMessageInfo(
+            message = "[{0}] is not a valid authentication method",
+            level = "WARNING")
+    public static final String EXCEPTION_AUTH_METHOD = "AS-WEB-00351";
 
     /** teh client authenticates using http basic authentication. */
     public static final String AUTHENTICATION_METHOD_BASIC = LoginConfiguration.BASIC_AUTHENTICATION;
@@ -110,7 +109,10 @@ public class LoginConfigurationImpl extends Descriptor implements LoginConfigura
 		    && !LoginConfiguration.FORM_AUTHENTICATION.equals(authenticationMethod)
 			&& !LoginConfiguration.CLIENT_CERTIFICATION_AUTHENTICATION.equals(authenticationMethod) ) {
 
-            throw new IllegalArgumentException(MessageFormat.format(EXCEPTION_AUTH_METHOD, authenticationMethod));
+            throw new IllegalArgumentException(
+                    MessageFormat.format(
+                            _logger.getResourceBundle().getString(EXCEPTION_AUTH_METHOD),
+                            authenticationMethod));
 		
 	    }
 	}

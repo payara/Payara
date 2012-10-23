@@ -46,7 +46,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 
 /** ConstraintField class represents a single Field and constraints on its 
  *  values; Field name and its scope are inherited from the Field class. 

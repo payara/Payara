@@ -41,7 +41,6 @@
 package com.sun.appserv.web.cache.mapping;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;

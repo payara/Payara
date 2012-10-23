@@ -110,8 +110,6 @@ import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.web.admin.monitor.RequestProbeProvider;
 import org.glassfish.web.deployment.archivist.WebArchivist;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;

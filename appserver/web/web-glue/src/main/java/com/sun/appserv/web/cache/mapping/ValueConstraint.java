@@ -45,7 +45,6 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 
 /** ValueConstraint class represents a field's value constraint; 
  *  supports common matching expressions. 

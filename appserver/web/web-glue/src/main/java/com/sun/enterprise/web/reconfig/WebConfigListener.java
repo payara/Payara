@@ -50,7 +50,6 @@ import com.sun.enterprise.v3.services.impl.MapperUpdateListener;
 import com.sun.enterprise.web.WebContainer;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.config.serverbeans.ManagerProperties;
 import org.glassfish.web.config.serverbeans.WebContainerAvailability;
 import org.apache.catalina.LifecycleException;

@@ -46,10 +46,8 @@ import com.sun.appserv.web.cache.CacheManager;
 import com.sun.appserv.web.cache.CacheManagerListener;
 import com.sun.appserv.web.cache.DefaultCacheHelper;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.servlet.*;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;

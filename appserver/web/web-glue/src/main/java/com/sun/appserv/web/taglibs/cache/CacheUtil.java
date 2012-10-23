@@ -47,7 +47,6 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 
 /**
  * CacheUtil has utility methods used by the cache tag library.

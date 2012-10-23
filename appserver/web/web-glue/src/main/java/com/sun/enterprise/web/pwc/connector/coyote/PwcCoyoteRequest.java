@@ -44,12 +44,10 @@ import com.sun.enterprise.web.pwc.PwcWebModule;
 import com.sun.enterprise.web.session.WebSessionCookieConfig;
 import com.sun.enterprise.web.session.WebSessionCookieConfig.CookieSecureType;
 import org.apache.catalina.Context;
-import org.apache.catalina.Globals;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.servlet.http.Cookie;
 import java.io.BufferedReader;

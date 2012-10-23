@@ -47,7 +47,6 @@ import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.config.serverbeans.*;
 import org.glassfish.web.config.serverbeans.WebContainer;
 import javax.inject.Inject;

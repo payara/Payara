@@ -48,7 +48,6 @@ import org.apache.catalina.ContainerListener;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 
 import java.lang.String;
 import java.text.MessageFormat;

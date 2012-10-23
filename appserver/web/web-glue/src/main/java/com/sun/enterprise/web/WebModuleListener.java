@@ -53,7 +53,6 @@ import org.apache.catalina.*;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.web.TldProvider;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.web.deployment.runtime.WebProperty;
 import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.web.deployment.util.WebValidatorWithCL;
@@ -62,7 +61,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.naming.NamingException;
 import javax.servlet.ServletContext;
-import java.io.File;
 import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;

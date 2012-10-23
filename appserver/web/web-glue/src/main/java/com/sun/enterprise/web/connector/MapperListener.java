@@ -78,7 +78,6 @@ import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 
 
 /**
@@ -544,7 +543,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
             contextName = "";
         }
 
-        String msg = MessageFormat.format(REGISTER_WRAPPER, wrapperName, contextName);
+        String msg = MessageFormat.format(rb.getString(REGISTER_WRAPPER), wrapperName, contextName);
         if (logger.isLoggable(Level.FINE)) {
             logger.fine(msg);
         }

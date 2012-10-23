@@ -50,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 
 /**
  * CacheTag is a JSP tag that allows server-side caching of JSP page

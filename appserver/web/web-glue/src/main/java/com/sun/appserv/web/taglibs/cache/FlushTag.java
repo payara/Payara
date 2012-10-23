@@ -45,12 +45,10 @@ import com.sun.appserv.util.cache.Cache;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.TagSupport;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 
 /**
  * FlushTag is a JSP tag that is used with the CacheTag. The FlushTag
