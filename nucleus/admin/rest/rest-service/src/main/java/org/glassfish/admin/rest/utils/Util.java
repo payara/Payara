@@ -572,9 +572,9 @@ public class Util {
     }
 
     public static boolean useLegacyResponseFormat(HttpHeaders requestHeaders) {
-        final boolean legacyHeader = requestHeaders.getHeaderString(Constants.HEADER_LEGACY_FORMAT) != null;
-        final boolean acceptHeader = requestHeaders.getHeaderString("Accept").contains("html");
-        return legacyHeader || acceptHeader;
+        final boolean legacyHeaderPresent = requestHeaders.getHeaderString(Constants.HEADER_LEGACY_FORMAT) != null;
+        final boolean acceptsHtml = requestHeaders.getHeaderString("Accept").contains("html");
+        return legacyHeaderPresent || acceptsHtml;
     }
 
    /**
