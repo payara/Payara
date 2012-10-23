@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -461,7 +461,10 @@ public final class SMFService extends ServiceAdapter {
                 throw new IllegalArgumentException(msg);
             }
         }
-        manifest.getParentFile().mkdirs();
+        if (!manifest.getParentFile().mkdirs()) {
+            if (info.trace)
+                printOut("Failed to create manifest parent file: " + manifest.getParentFile().getAbsolutePath());
+        }
         if (info.trace)
             printOut("Manifest validated: " + manifestPath);
     }
@@ -491,15 +494,15 @@ public final class SMFService extends ServiceAdapter {
     private void cleanupManifest() throws RuntimeException {
         final File manifest = new File(getManifestFilePath());
         if (manifest.exists()) {
-            manifest.delete();
-            manifest.deleteOnExit();
+            if (!manifest.delete())
+                manifest.deleteOnExit();
             if (info.trace)
                 printOut("Attempted deleting failed service manifest: " + manifest.getAbsolutePath());
         }
         final File failedServiceNode = manifest.getParentFile();
         if (failedServiceNode.exists()) {
-            failedServiceNode.delete();
-            failedServiceNode.deleteOnExit();
+            if (!failedServiceNode.delete())
+                failedServiceNode.deleteOnExit();
             if (info.trace)
                 printOut("Attempted deleting failed service folder: " + failedServiceNode.getAbsolutePath());
         }
