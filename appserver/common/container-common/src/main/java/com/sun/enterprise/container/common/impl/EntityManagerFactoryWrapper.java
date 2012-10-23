@@ -108,38 +108,67 @@ public class EntityManagerFactoryWrapper
         return entityManagerFactory;
     }
 
+    @Override
     public EntityManager createEntityManager() {
         return getDelegate().createEntityManager();
     }
 
+    @Override
     public EntityManager createEntityManager(Map map) {
         return getDelegate().createEntityManager(map);
     }
 
+    @Override
+    public EntityManager createEntityManager(SynchronizationType synchronizationType) {
+        return getDelegate().createEntityManager(synchronizationType);
+    }
+
+    @Override
+    public EntityManager createEntityManager(SynchronizationType synchronizationType, Map map) {
+        return getDelegate().createEntityManager(synchronizationType, map);
+    }
+
+    @Override
+    public void addNamedQuery(String name, Query query) {
+        getDelegate().addNamedQuery(name, query);
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> cls) {
+        return getDelegate().unwrap(cls);
+    }
+
+    @Override
     public CriteriaBuilder getCriteriaBuilder() {
         return getDelegate().getCriteriaBuilder();
     }
 
+    @Override
     public Metamodel getMetamodel() {
         return getDelegate().getMetamodel();
     }
 
+    @Override
     public Map<java.lang.String, java.lang.Object> getProperties() {
         return getDelegate().getProperties();
     }
 
+    @Override
     public void close() {
         getDelegate().close();
     }
 
+    @Override
     public boolean isOpen() {
         return getDelegate().isOpen();
     }
 
+    @Override
     public Cache getCache() {
         return getDelegate().getCache();
     }
 
+    @Override
     public PersistenceUnitUtil getPersistenceUnitUtil() {
         return getDelegate().getPersistenceUnitUtil();
     }
@@ -252,21 +281,5 @@ public class EntityManagerFactoryWrapper
         invMgr        = defaultServiceLocator.getService(InvocationManager.class);
         compEnvMgr    = defaultServiceLocator.getService(ComponentEnvManager.class);
     }
-
-    public void addNamedQuery(String name, Query query) {
-        // TODO: implement
-        throw new RuntimeException("Not implemented ... WIP ...");
-    }
-
-    public <T> T unwrap(Class<T> cls) {
-        // TODO: implement
-        throw new RuntimeException("Not implemented ... WIP ...");
-    }
-
-    public EntityManager createEntityManager(SynchronizationType synchronizationType, Map map) {
-        // TODO: implement
-        throw new RuntimeException("Not implemented ... WIP ...");
-    }
-
 
 }
