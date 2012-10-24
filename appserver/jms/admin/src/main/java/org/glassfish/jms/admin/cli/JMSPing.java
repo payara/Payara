@@ -92,6 +92,7 @@ public class JMSPing implements AdminCommand {
     String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(JMSPing.class);
+    final private static String JNDINAME_APPENDER="-Connection-Pool";
 
     @Inject
     private ConnectorRuntime connectorRuntime;
@@ -147,7 +148,7 @@ public class JMSPing implements AdminCommand {
                 return;
          }
         try{
-            boolean value = pingConnectionPool(tmpJMSResource);
+            boolean value = pingConnectionPool(tmpJMSResource + JNDINAME_APPENDER);
             
             if(!value){
 
