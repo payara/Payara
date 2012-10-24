@@ -41,6 +41,7 @@
 package org.glassfish.web.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.EnvironmentProperty;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
@@ -70,6 +71,29 @@ public class WebServletHandler extends AbstractWebHandler {
     }
 
     @Override
+    public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo) 
+            throws AnnotationProcessorException {
+
+        AnnotatedElementHandler aeHandler = ainfo.getProcessingContext().getHandler();
+        if (aeHandler instanceof WebBundleContext) {
+            WebBundleContext webBundleContext = (WebBundleContext)aeHandler;
+            WebServlet webServletAn = (WebServlet)ainfo.getAnnotation();
+            Class webCompClass = (Class)ainfo.getAnnotatedElement();
+            String servletName = getServletName(webServletAn, webCompClass);
+
+            // create a WebComponentDescriptor if there is none
+            WebComponentDescriptor webCompDesc =
+                webBundleContext.getDescriptor().getWebComponentByCanonicalName(servletName);
+            if (webCompDesc == null) {
+                createWebComponentDescriptor(servletName, webCompClass,
+                        webBundleContext.getDescriptor());
+            }
+        }
+
+        return super.processAnnotation(ainfo);
+    }
+
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             WebComponentContext[] webCompContexts)
             throws AnnotationProcessorException {
@@ -93,22 +117,17 @@ public class WebServletHandler extends AbstractWebHandler {
         WebServlet webServletAn = (WebServlet)ainfo.getAnnotation();
 
         Class webCompClass = (Class)ainfo.getAnnotatedElement();
-        String servletName = webServletAn.name();
-        if (servletName == null || servletName.length() == 0) {
-            servletName = webCompClass.getName();
-        }
+        String servletName = getServletName(webServletAn, webCompClass);
 
         WebComponentDescriptor webCompDesc =
             webBundleContext.getDescriptor().getWebComponentByCanonicalName(servletName);
         if (webCompDesc == null) {
-            webCompDesc = new WebComponentDescriptorImpl();
-            webCompDesc.setName(servletName);
-            webCompDesc.setCanonicalName(servletName);
+            webCompDesc = createWebComponentDescriptor(servletName, webCompClass,
+                    webBundleContext.getDescriptor());
         }
         
         HandlerProcessingResult result = processAnnotation(ainfo, webCompDesc);
         if (result.getOverallResult() == ResultType.PROCESSED) {
-            webBundleContext.getDescriptor().addWebComponentDescriptor(webCompDesc);
             WebComponentContext webCompContext = new WebComponentContext(webCompDesc);
             // we push the new context on the stack...
             webBundleContext.getProcessingContext().pushHandler(webCompContext);
@@ -132,6 +151,11 @@ public class WebServletHandler extends AbstractWebHandler {
         }
 
         WebServlet webServletAn = (WebServlet)ainfo.getAnnotation();
+        String servletName = getServletName(webServletAn, webCompClass);
+        if (!servletName.equals(webCompDesc.getCanonicalName())) {
+            // skip the processing as it is not for given webCompDesc
+            return getDefaultProcessedResult();
+        }
 
         String webCompImpl = webCompDesc.getWebComponentImplementation();
         if (webCompImpl != null && webCompImpl.length() > 0 &&
@@ -150,7 +174,7 @@ public class WebServletHandler extends AbstractWebHandler {
             
             log(Level.SEVERE, ainfo,
                 localStrings.getLocalString(messageKey, defaultMessage,
-                new Object[] { webCompDesc.getName(), webCompImpl, webCompClass.getName(),
+                new Object[] { webCompDesc.getCanonicalName(), webCompImpl, webCompClass.getName(),
                 WebServlet.class.getName() }));
             return getDefaultFailedResult();
         }
@@ -222,5 +246,25 @@ public class WebServletHandler extends AbstractWebHandler {
         }
 
         return getDefaultProcessedResult();
+    }
+
+    private String getServletName(WebServlet webServletAn, Class<?> webCompClass) {
+        String servletName = webServletAn.name();
+        if (servletName == null || servletName.length() == 0) {
+            servletName = webCompClass.getName();
+        }
+        return servletName;
+    }
+
+    private WebComponentDescriptor createWebComponentDescriptor(String servletName,
+            Class<?> webCompClass, WebBundleDescriptor webBundleDescriptor) {
+
+        WebComponentDescriptor webCompDesc = new WebComponentDescriptorImpl();
+        webCompDesc.setName(servletName);
+        webCompDesc.setCanonicalName(servletName);
+        webCompDesc.setServlet(true);
+        webCompDesc.setWebComponentImplementation(webCompClass.getName());
+        webBundleDescriptor.addWebComponentDescriptor(webCompDesc);
+        return webCompDesc;
     }
 }
