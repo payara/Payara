@@ -45,7 +45,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.Adapter;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -61,7 +61,7 @@ import javax.inject.Named;
 public class ProxyRestMonitoringAdapter extends AbstractProxyRestAdapter {
 
     @Inject
-    Habitat services;
+    ServiceLocator services;
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -69,7 +69,7 @@ public class ProxyRestMonitoringAdapter extends AbstractProxyRestAdapter {
 
 
     @Override
-    protected Habitat getServices() {
+    protected ServiceLocator getServices() {
         return services;
     }
 

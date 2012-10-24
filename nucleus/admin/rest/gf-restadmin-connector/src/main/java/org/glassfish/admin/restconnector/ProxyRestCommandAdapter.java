@@ -45,7 +45,7 @@ import javax.inject.Named;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.Adapter;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /** Implementation of {@link Adapter} for rest based command executor.
  * It extends from {@link AbstractProxyRestAdapter} that uses a handle-body idiom. The handle
@@ -57,7 +57,7 @@ import org.jvnet.hk2.component.Habitat;
 public class ProxyRestCommandAdapter extends AbstractProxyRestAdapter {
     
     @Inject
-    Habitat services;
+    ServiceLocator services;
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -65,7 +65,7 @@ public class ProxyRestCommandAdapter extends AbstractProxyRestAdapter {
 
 
     @Override
-    protected Habitat getServices() {
+    protected ServiceLocator getServices() {
         return services;
     }
 

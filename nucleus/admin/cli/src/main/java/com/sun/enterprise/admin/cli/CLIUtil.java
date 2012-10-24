@@ -186,7 +186,7 @@ public class CLIUtil {
      *
      * @return the commands as a String array, sorted
      */
-    public static String[] getAllCommands(Habitat habitat, ProgramOptions po,
+    public static String[] getAllCommands(ServiceLocator habitat, ProgramOptions po,
                                 Environment env) {
         try {
             String[] remoteCommands = getRemoteCommands(habitat, po, env);

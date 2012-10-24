@@ -44,7 +44,7 @@ import java.io.*;
 import java.util.*;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandModel.ParamModel;
@@ -71,7 +71,7 @@ import javax.inject.Inject;
 @PerLookup
 public class MultimodeCommand extends CLICommand {
     @Inject
-    private Habitat habitat;
+    private ServiceLocator habitat;
 
     @Param(optional = true, shortName = "f")
     private File file;

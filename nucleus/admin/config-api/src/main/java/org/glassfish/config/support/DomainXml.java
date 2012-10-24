@@ -46,7 +46,7 @@ import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 
 import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.Populator;
 import org.jvnet.hk2.config.ConfigPopulatorException;
 import com.sun.enterprise.module.bootstrap.StartupContext;
@@ -89,7 +89,7 @@ public abstract class DomainXml implements Populator {
     @Inject
     StartupContext context;
     @Inject
-    protected Habitat habitat;
+    protected ServiceLocator habitat;
     @Inject @Optional
     private ModulesRegistry registry;
     @Inject

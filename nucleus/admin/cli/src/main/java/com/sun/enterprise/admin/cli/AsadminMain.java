@@ -64,7 +64,7 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.common.util.admin.AsadminInput;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
@@ -81,7 +81,7 @@ public class AsadminMain {
     private String className;
     private String command;
     private ProgramOptions po;
-    private Habitat habitat;
+    private ServiceLocator serviceLocator;
     private Environment env = new Environment();
     protected Logger logger;
     private final static int ERROR = 1;
@@ -259,8 +259,8 @@ public class AsadminMain {
          * Create a habitat that can load from the extension directory.
          */
         ModulesRegistry registry = new StaticModulesRegistry(ecl);
-        final ServiceLocator serviceLocator = registry.createServiceLocator("default");
-        habitat = serviceLocator.getService(Habitat.class);
+        serviceLocator = registry.createServiceLocator("default");
+        
         classPath =
                 SmartFile.sanitizePaths(System.getProperty("java.class.path"));
         className = AsadminMain.class.getName();
@@ -341,9 +341,9 @@ public class AsadminMain {
             }
             command = argv[0];
 
-            ServiceLocatorUtilities.addOneConstant(habitat, env);
-            ServiceLocatorUtilities.addOneConstant(habitat, po);
-            cmd = CLICommand.getCommand(habitat, command);
+            ServiceLocatorUtilities.addOneConstant(serviceLocator, env);
+            ServiceLocatorUtilities.addOneConstant(serviceLocator, po);
+            cmd = CLICommand.getCommand(serviceLocator, command);
             return cmd.execute(argv);
         } catch (CommandValidationException cve) {
             logger.severe(cve.getMessage());
@@ -359,7 +359,7 @@ public class AsadminMain {
             logger.severe(ice.getMessage());
             try {
                 CLIUtil.displayClosestMatch(command,
-                        CLIUtil.getAllCommands(habitat, po, env),
+                        CLIUtil.getAllCommands(serviceLocator, po, env),
                         strings.get("ClosestMatchedLocalAndRemoteCommands"), logger);
             } catch (InvalidCommandException e) {
                 // not a big deal if we cannot help
@@ -371,7 +371,7 @@ public class AsadminMain {
                 logger.severe(ce.getMessage());
                 try {
                     CLIUtil.displayClosestMatch(command,
-                            CLIUtil.getLocalCommands(habitat),
+                            CLIUtil.getLocalCommands(serviceLocator),
                             strings.get("ClosestMatchedLocalCommands"), logger);
                 } catch (InvalidCommandException e) {
                     logger.info(

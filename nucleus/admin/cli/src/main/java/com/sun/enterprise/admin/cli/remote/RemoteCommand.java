@@ -463,7 +463,7 @@ public class RemoteCommand extends CLICommand {
     /**
      * A habitat just for finding man pages.
      */
-    private static Habitat manHabitat;
+    private static ServiceLocator manServiceLocator;
 
     /**
      * Construct a new remote command object.  The command and arguments
@@ -900,17 +900,17 @@ public class RemoteCommand extends CLICommand {
     }
 
     /**
-     * Return a Habitat used just for reading man pages from the
+     * Return a ServiceLocator used just for reading man pages from the
      * modules in the modules directory.
      */
-    private static synchronized Habitat getManHabitat() {
-        if (manHabitat != null)
-            return manHabitat;
+    private static synchronized ServiceLocator getManHabitat() {
+        if (manServiceLocator != null)
+            return manServiceLocator;
         
         ModulesRegistry registry = new StaticModulesRegistry(getModuleClassLoader());
         ServiceLocator serviceLocator = registry.createServiceLocator("default");
-        manHabitat = serviceLocator.getService(Habitat.class);
-        return manHabitat;
+        manServiceLocator = serviceLocator.getService(Habitat.class);
+        return manServiceLocator;
     }
 
     /**

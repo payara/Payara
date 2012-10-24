@@ -397,7 +397,7 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
      * directly referenced by this Config.  This includes all of the Config
      * extensions.
      *
-     * @param habitat Habitat that contains this Config
+     * @param habitat ServiceLocator that contains this Config
      * @param name    name to use to identify the objects
      */
     @DuckTyped
