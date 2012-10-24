@@ -57,13 +57,13 @@ import javax.ws.rs.core.UriInfo;
 import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.OptionsCapable;
 import org.glassfish.admin.rest.RestResource;
+import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.security.services.common.SubjectUtil;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * This is the base class for all composite resources. It provides all of the basic configuration and utilities needed
@@ -83,7 +83,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
     @Inject
     protected Ref<Subject> subjectRef;
     @Inject
-    protected Habitat habitat;
+    protected LocatorBridge habitat;
     @Context
     protected SecurityContext sc;
 
@@ -130,9 +130,11 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
         this.subjectRef = subjectRef;
     }
 
-    public void setHabitat(Habitat habitat) {
+    /*
+    public void setHabitat(LocatorBridge habitat) {
         this.habitat = habitat;
     }
+    */
 
     @Override
     public Object getDefaultValue(String propertyName) {

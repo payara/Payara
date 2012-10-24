@@ -61,14 +61,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.OptionsCapable;
+import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.utils.Util;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * @author ludo
@@ -81,7 +80,7 @@ public class TemplateExecCommand implements OptionsCapable {
     protected UriInfo uriInfo;
 
     @Context
-    protected Habitat habitat;
+    protected LocatorBridge habitat;
 
     protected String resourceName;
     protected String commandName;
@@ -128,7 +127,8 @@ public class TemplateExecCommand implements OptionsCapable {
 
             OptionsResult optionsResult = new OptionsResult(resourceName);
             Map<String, MethodMetaData> mmd = new HashMap<String, MethodMetaData>();
-            MethodMetaData methodMetaData = ResourceUtil.getMethodMetaData(commandName, getCommandParams(), habitat, RestService.logger);
+            MethodMetaData methodMetaData = ResourceUtil.getMethodMetaData(commandName, getCommandParams(),
+                    habitat.getRemoteLocator(), RestService.logger);
 
             optionsResult.putMethodMetaData(commandMethod, methodMetaData);
             mmd.put(commandMethod, methodMetaData);
@@ -147,7 +147,7 @@ public class TemplateExecCommand implements OptionsCapable {
     }
 
     protected Response executeCommand(ParameterMap data) {
-        RestActionReporter actionReport = ResourceUtil.runCommand(commandName, data, habitat,
+        RestActionReporter actionReport = ResourceUtil.runCommand(commandName, data, habitat.getRemoteLocator(),
                                                                   ResourceUtil.getResultType(requestHeaders));
         ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
         int status = (exitCode == ActionReport.ExitCode.FAILURE) ?

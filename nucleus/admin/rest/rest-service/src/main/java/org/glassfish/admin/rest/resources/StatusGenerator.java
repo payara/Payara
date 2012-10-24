@@ -78,7 +78,6 @@ import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.Dom;
@@ -123,7 +122,7 @@ public class StatusGenerator {
             DomDocument document = dom.document;
             ConfigModel rootModel = dom.document.getRoot().model;
 
-            ResourcesGenerator resourcesGenerator = new NOOPResourcesGenerator((Habitat)habitat);
+            ResourcesGenerator resourcesGenerator = new NOOPResourcesGenerator(habitat);
             resourcesGenerator.generateSingle(rootModel, document);
             resourcesGenerator.endGeneration();
         } catch (Exception ex) {
@@ -205,7 +204,7 @@ public class StatusGenerator {
             DomDocument document = dom.document;
             ConfigModel rootModel = dom.document.getRoot().model;
 
-            ResourcesGenerator resourcesGenerator = new NOOPResourcesGenerator((Habitat)habitat);
+            ResourcesGenerator resourcesGenerator = new NOOPResourcesGenerator(habitat);
             resourcesGenerator.generateSingle(rootModel, document);
             resourcesGenerator.endGeneration();
         } catch (Exception ex) {
@@ -429,7 +428,7 @@ public class StatusGenerator {
 
     class NOOPResourcesGenerator extends ResourcesGeneratorBase {
 
-        public NOOPResourcesGenerator(Habitat h){
+        public NOOPResourcesGenerator(ServiceLocator h){
             super(h);
 
         }

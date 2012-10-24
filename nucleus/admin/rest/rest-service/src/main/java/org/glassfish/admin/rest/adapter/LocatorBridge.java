@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,36 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.admin.rest.adapter;
 
-package org.glassfish.admin.rest.resources;
+import javax.inject.Singleton;
 
-import com.sun.enterprise.config.serverbeans.Domain;
-import javax.ws.rs.core.Context;
-
-import org.glassfish.admin.rest.adapter.LocatorBridge;
-import org.jvnet.hk2.config.Dom;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
- * This is the root class for the generated DomainResource
- * that bootstrap the dom tree with the domain object
- * and add a few sub resources like log viewer
- * or log-level setup which are not described as configbeans
- * but more external config or files (server.log or JDK logger setup
+ * This is a bridge from one service locator to another, which is not related via
+ * parentage
+ * 
+ * @author jwells
  *
- * @author ludo
  */
-public class GlassFishDomainResource extends TemplateRestResource {
-
-    public GlassFishDomainResource() {
-        //moved init code in the setHabitat callback from Jersey, to get the correct habitat
-        //otherwise we cannot used jersey injected values in a constructor (which does not have a param)
+@Singleton
+public class LocatorBridge {
+    private final ServiceLocator remoteLocator;
+    
+    public LocatorBridge(ServiceLocator remoteLocator) {
+        this.remoteLocator = remoteLocator;
+    }
+    
+    public ServiceLocator getRemoteLocator() {
+        return remoteLocator;
     }
 
-    //called when jersey is injecting the habitat...
-    @Context
-    public void setBaseServiceLocator(LocatorBridge hab) {
-        Dom dom1 = Dom.unwrap(hab.getRemoteLocator().<Domain>getService(Domain.class));
-        childModel = dom1.document.getRoot().model;
-        entity = dom1.document.getRoot();
+    public String toString() {
+        return "LocatorBridge(" + remoteLocator + "," + System.identityHashCode(this) + ")";
     }
 }

@@ -45,7 +45,6 @@ import com.sun.enterprise.config.serverbeans.JavaConfig;
 import javax.inject.Provider;
 import javax.ws.rs.PUT;
 import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.component.Habitat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +65,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 
+import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.provider.MethodMetaData;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.results.OptionsResult;
@@ -94,7 +94,7 @@ public abstract class CollectionLeafResource {
     protected Provider<UriInfo> uriInfo;
 
     @Context
-    protected Habitat habitat;
+    protected LocatorBridge habitat;
 
     protected List<String> entity;
     protected Dom parent;
@@ -238,14 +238,14 @@ public abstract class CollectionLeafResource {
         //POST meta data
         String postCommand = getPostCommand();
         if (postCommand != null) {
-            MethodMetaData postMethodMetaData = ResourceUtil.getMethodMetaData(postCommand, habitat, RestService.logger);
+            MethodMetaData postMethodMetaData = ResourceUtil.getMethodMetaData(postCommand, habitat.getRemoteLocator(), RestService.logger);
             mmd.put("POST", postMethodMetaData);
         }
 
         //DELETE meta data
         String deleteCommand = getDeleteCommand();
         if (deleteCommand != null) {
-            MethodMetaData deleteMethodMetaData = ResourceUtil.getMethodMetaData(deleteCommand, habitat, RestService.logger);
+            MethodMetaData deleteMethodMetaData = ResourceUtil.getMethodMetaData(deleteCommand, habitat.getRemoteLocator(), RestService.logger);
             mmd.put("DELETE", deleteMethodMetaData);
         }
 
@@ -287,7 +287,7 @@ public abstract class CollectionLeafResource {
             if (null != commandName) {
                 String typeOfResult = ResourceUtil.getResultType(requestHeaders.get());
                 RestActionReporter actionReport = ResourceUtil.runCommand(commandName,
-                    data, habitat,typeOfResult);
+                    data, habitat.getRemoteLocator(), typeOfResult);
 
                 ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
                 if (exitCode != ActionReport.ExitCode.FAILURE) {

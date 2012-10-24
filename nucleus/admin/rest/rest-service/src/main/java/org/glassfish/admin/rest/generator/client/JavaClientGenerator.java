@@ -60,8 +60,8 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import org.glassfish.admin.rest.utils.Util;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.loader.util.ASClassLoaderUtil;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigModel;
 
 /**
@@ -76,7 +76,7 @@ public class JavaClientGenerator extends ClientGenerator {
             "mvn install:install-file -DpomFile=pom.xml -Dfile=" + ARTIFACT_NAME + "-VERSION.jar -Dsources=" +
                     ARTIFACT_NAME + "-VERSION-sources.jar";
 
-    public JavaClientGenerator(Habitat habitat) {
+    public JavaClientGenerator(ServiceLocator habitat) {
         super(habitat);
         baseDirectory = Util.createTempDirectory();
         try {

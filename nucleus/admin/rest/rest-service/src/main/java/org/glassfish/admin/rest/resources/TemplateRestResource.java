@@ -55,7 +55,6 @@ import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
@@ -93,6 +92,7 @@ import java.util.logging.Logger;
 import javax.ws.rs.core.Response.Status;
 import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.OptionsCapable;
+import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 
 import static org.glassfish.admin.rest.utils.Util.eleminateHypen;
@@ -112,7 +112,7 @@ public class TemplateRestResource implements OptionsCapable {
     @Context
     protected UriInfo uriInfo;
     @Context
-    protected Habitat habitat;
+    protected LocatorBridge locatorBridge;
     protected Dom entity;  //may be null when not created yet...
     protected Dom parent;
     protected String tagName;
@@ -338,7 +338,7 @@ public class TemplateRestResource implements OptionsCapable {
             // the Dom tree. Once that's done, we can return that node and proceed as normal
             String location = buildPath(parent) + "/" + tagName;
             if (location.startsWith("domain/configs")) {
-                ConfigBeanProxy cbp = habitat.<ConfigModularityUtils>getService(ConfigModularityUtils.class).getOwningObject(location);
+                ConfigBeanProxy cbp = locatorBridge.getRemoteLocator().<ConfigModularityUtils>getService(ConfigModularityUtils.class).getOwningObject(location);
                 if (cbp != null) {
                     entity = Dom.unwrap(cbp);
                     childModel = entity.model;
@@ -487,7 +487,7 @@ public class TemplateRestResource implements OptionsCapable {
         ResourceUtil.addMethodMetaData(ar, mmd);
         if (entity != null) {
             ar.getExtraProperties().put("childResources", ResourceUtil.getResourceLinks(entity, uriInfo,
-                    ResourceUtil.canShowDeprecatedItems(habitat)));
+                    ResourceUtil.canShowDeprecatedItems(locatorBridge.getRemoteLocator())));
         }
         ar.getExtraProperties().put("commands", ResourceUtil.getCommandLinks(getCommandResourcesPaths()));
 
@@ -542,7 +542,7 @@ public class TemplateRestResource implements OptionsCapable {
      */
     private RestActionReporter runCommand(String commandName, HashMap<String, String> data) {
         if (commandName != null) {
-            return ResourceUtil.runCommand(commandName, data, habitat, ResourceUtil.getResultType(requestHeaders));//processed
+            return ResourceUtil.runCommand(commandName, data, locatorBridge.getRemoteLocator(), ResourceUtil.getResultType(requestHeaders));//processed
         }
 
         return null;//not processed
@@ -601,7 +601,7 @@ public class TemplateRestResource implements OptionsCapable {
                 deleteMethodMetaData = new MethodMetaData();
             } else {
                 deleteMethodMetaData = ResourceUtil.getMethodMetaData(
-                        command, habitat, RestService.logger);
+                        command, locatorBridge.getRemoteLocator(), RestService.logger);
 
                 //In case of delete operation(command), do not  display/provide id attribute.
                 deleteMethodMetaData.removeParamMetaData("id");

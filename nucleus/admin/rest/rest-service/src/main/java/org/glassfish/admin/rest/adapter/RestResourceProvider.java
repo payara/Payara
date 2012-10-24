@@ -45,14 +45,10 @@ import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.jvnet.hk2.component.Habitat;
 
 import javax.security.auth.Subject;
-import javax.ws.rs.core.MediaType;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -71,7 +67,7 @@ public interface RestResourceProvider {
 
     ResourceConfig getResourceConfig(Set<Class<?>> classes,
                                      final ServerContext sc,
-                                     final Habitat habitat,
+                                     final ServiceLocator habitat,
                                      final Class<? extends Factory<Ref<Subject>>> subjectReferenceFactory)
             throws EndpointRegistrationException;
 

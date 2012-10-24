@@ -67,8 +67,8 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
 
@@ -93,7 +93,7 @@ import javax.inject.Inject;
 })
 public class GenerateClientCommand implements AdminCommand {
     @Inject
-    Habitat habitat;
+    ServiceLocator habitat;
 
     @Param
     private String outputDir;

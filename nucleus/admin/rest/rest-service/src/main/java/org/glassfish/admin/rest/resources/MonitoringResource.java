@@ -42,7 +42,6 @@ package org.glassfish.admin.rest.resources;
 
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.admin.rest.utils.ProxyImpl;
-import org.jvnet.hk2.component.Habitat;
 
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
@@ -66,6 +65,8 @@ import javax.ws.rs.PathParam;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
+
+import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.external.statistics.Statistic;
@@ -89,7 +90,7 @@ public class MonitoringResource {
     protected UriInfo uriInfo;
 
     @Context
-    protected Habitat habitat;
+    protected LocatorBridge habitat;
 
     @GET
     @Path("domain{path:.*}")
@@ -103,7 +104,7 @@ public class MonitoringResource {
 
         String currentInstanceName = System.getProperty("com.sun.aas.instanceName");
         boolean isRunningOnDAS = "server".equals(currentInstanceName); //TODO this needs to come from an API. Check with admin team
-        MonitoringRuntimeDataRegistry monitoringRegistry =habitat.getService(MonitoringRuntimeDataRegistry.class);
+        MonitoringRuntimeDataRegistry monitoringRegistry =habitat.getRemoteLocator().getService(MonitoringRuntimeDataRegistry.class);
         TreeNode rootNode = monitoringRegistry.get(currentInstanceName);
 
         //The pathSegments will always contain "domain". Discard it
@@ -146,7 +147,8 @@ public class MonitoringResource {
             } else { //firstPathElement != currentInstanceName => A proxy request
                 if(isRunningOnDAS) { //Attempt to forward to instance if running on Das
                     //TODO validate that firstPathElement corresponds to a valid server name
-                    Properties proxiedResponse = new MonitoringProxyImpl().proxyRequest(uriInfo, Util.getJerseyClient(), habitat);
+                    Properties proxiedResponse = new MonitoringProxyImpl().proxyRequest(uriInfo, Util.getJerseyClient(),
+                            habitat.getRemoteLocator());
                     ar.setExtraProperties(proxiedResponse);
                     responseBuilder.entity(new ActionReportResult(ar));
                 } else { // Not running on DAS and firstPathElement != currentInstanceName => Reject the request as invalid
@@ -159,7 +161,7 @@ public class MonitoringResource {
             constructEntity(list,  ar);
 
             if(isRunningOnDAS) { // Add links to instances from the cluster
-                Domain domain = habitat.getService(Domain.class);
+                Domain domain = habitat.getRemoteLocator().getService(Domain.class);
                 Map<String, String> links = (Map<String, String>) ar.getExtraProperties().get("childResources");
                 for (Server s : domain.getServers().getServer()) {
                     if (!s.getName().equals("server")) {// add all non 'server' instances

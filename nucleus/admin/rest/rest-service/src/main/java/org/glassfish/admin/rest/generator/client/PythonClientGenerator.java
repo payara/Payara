@@ -40,7 +40,7 @@
 package org.glassfish.admin.rest.generator.client;
 
 import org.glassfish.admin.rest.utils.Util;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigModel;
 
 import com.sun.appserv.server.util.Version;
@@ -60,7 +60,7 @@ public class PythonClientGenerator extends ClientGenerator {
     private static String MSG_INSTALL =
             "To install the egg into your Python environment:  sudo easy_install " + ARTIFACT_NAME + "-VERSION-egg.zip";
 
-    public PythonClientGenerator(Habitat habitat) {
+    public PythonClientGenerator(ServiceLocator habitat) {
         super(habitat);
         baseDirectory = Util.createTempDirectory();
         messages.add(MSG_INSTALL.replace("VERSION", versionString));

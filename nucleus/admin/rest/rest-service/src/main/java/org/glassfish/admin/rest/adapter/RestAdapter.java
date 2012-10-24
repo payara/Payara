@@ -78,6 +78,7 @@ import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jersey.internal.util.collection.Ref;
@@ -85,7 +86,6 @@ import org.glassfish.jersey.internal.util.collection.Refs;
 import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * Adapter for REST interface
@@ -105,7 +105,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     private RestResourceProvider rrp;
 
     @Inject
-    protected Habitat habitat;
+    protected ServiceLocator habitat;
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -302,7 +302,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
      * gain a few 100 millis at GlassFish startup time
      */
     protected JerseyContainer exposeContext(Set<Class<?>> classes, final ServerContext sc,
-                                     final Habitat habitat) throws EndpointRegistrationException {
+                                     final ServiceLocator habitat) throws EndpointRegistrationException {
         // Use common classloader. Jersey artifacts are not visible through
         // module classloader. Actually there is a more important reason to use CommonClassLoader.
         // jax-rs API called RuntimeDelegate makes stupid class loading assumption and throws LinkageError

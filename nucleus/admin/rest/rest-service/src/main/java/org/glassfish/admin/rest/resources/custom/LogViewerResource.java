@@ -41,7 +41,6 @@
 package org.glassfish.admin.rest.resources.custom;
 
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilter;
-import com.sun.enterprise.util.SystemPropertyConstants;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,13 +64,11 @@ import java.util.zip.GZIPOutputStream;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.logviewer.CharSpool;
 import org.glassfish.admin.rest.logviewer.LineEndNormalizingWriter;
 import org.glassfish.admin.rest.logviewer.WriterOutputStream;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
-import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.Dom;
 
 /**
@@ -94,7 +91,7 @@ public class LogViewerResource {
     protected UriInfo ui;
 
     @Context
-    protected Habitat habitat;
+    protected LocatorBridge habitat;
 
     /**
      * Represents the data source of this text.
@@ -137,7 +134,7 @@ public class LogViewerResource {
 
 
         // getting logFilter object from habitat
-        LogFilter logFilter = habitat.getService(LogFilter.class);
+        LogFilter logFilter = habitat.getRemoteLocator().getService(LogFilter.class);
         String logLocation = "";
 
         // getting log file location on DAS for server/local instance/remote instance

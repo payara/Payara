@@ -56,6 +56,8 @@ import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import javax.ws.rs.core.UriInfo;
+
+import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
@@ -64,7 +66,6 @@ import org.glassfish.common.util.admin.RestSessionManager;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.jersey.internal.util.collection.Ref;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * Represents sessions with GlassFish Rest service
@@ -85,7 +86,7 @@ public class SessionsResource {
     private Ref<Request> request;
 
     @Context
-    protected Habitat habitat;
+    protected LocatorBridge habitat;
 
     /**
      * Get a new session with GlassFish Rest service
@@ -99,7 +100,7 @@ public class SessionsResource {
         if (data == null) {
             data = new HashMap<String, String>();
         }
-        final RestConfig restConfig = ResourceUtil.getRestConfig(habitat);
+        final RestConfig restConfig = ResourceUtil.getRestConfig(habitat.getRemoteLocator());
 
         Response.ResponseBuilder responseBuilder = Response.status(UNAUTHORIZED);
         RestActionReporter ar = new RestActionReporter();
@@ -116,9 +117,9 @@ public class SessionsResource {
         Subject subject = null;
         try {
 //            subject = ResourceUtil.authenticateViaAdminRealm(Globals.getDefaultHabitat(), grizzlyRequest, hostName);
-            subject = ResourceUtil.authenticateViaAdminRealm(habitat, grizzlyRequest, hostName);
+            subject = ResourceUtil.authenticateViaAdminRealm(habitat.getRemoteLocator(), grizzlyRequest, hostName);
             access = (hostName == null) ? AdminAccessController.Access.FULL :
-                    ResourceUtil.chooseAccess(habitat, subject, hostName);
+                    ResourceUtil.chooseAccess(habitat.getRemoteLocator(), subject, hostName);
         } catch (Exception e) {
             ar.setMessage("Error while authenticating " + e);
         }

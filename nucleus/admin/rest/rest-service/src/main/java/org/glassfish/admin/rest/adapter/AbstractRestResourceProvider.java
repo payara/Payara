@@ -48,6 +48,7 @@ import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.common.util.admin.RestSessionManager;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
 import org.glassfish.hk2.utilities.BuilderHelper;
@@ -62,7 +63,6 @@ import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.CsrfProtectionFilter;
 import org.glassfish.jersey.server.filter.UriConnegFilter;
-import org.jvnet.hk2.component.Habitat;
 
 import javax.security.auth.Subject;
 import javax.ws.rs.core.MediaType;
@@ -113,7 +113,7 @@ public abstract class AbstractRestResourceProvider implements RestResourceProvid
     @Override
     public ResourceConfig getResourceConfig(Set<Class<?>> classes,
                                             final ServerContext sc,
-                                            final Habitat habitat,
+                                            final ServiceLocator habitat,
                                             final Class<? extends Factory<Ref<Subject>>> subjectReferenceFactory)
             throws EndpointRegistrationException {
         final Reloader r = new Reloader();
@@ -147,10 +147,6 @@ public abstract class AbstractRestResourceProvider implements RestResourceProvid
         rc.addSingletons(r);
         rc.addClasses(ReloadResource.class);
 
-        /**
-         * JRW JRW
-         *
-         */
         rc.addBinders(getJsonBinder(), new MultiPartBinder(), new AbstractBinder() {
 
             @Override
@@ -163,8 +159,8 @@ public abstract class AbstractRestResourceProvider implements RestResourceProvid
                 scDescriptor.addContractType(ServerContext.class);
                 bind(scDescriptor);
 
-                AbstractActiveDescriptor<Habitat> hDescriptor = BuilderHelper.createConstantDescriptor(habitat);
-                hDescriptor.addContractType(Habitat.class);
+                LocatorBridge locatorBridge = new LocatorBridge(habitat);
+                AbstractActiveDescriptor<LocatorBridge> hDescriptor = BuilderHelper.createConstantDescriptor(locatorBridge);
                 bind(hDescriptor);
 
                 RestSessionManager rsm = habitat.getService(RestSessionManager.class);

@@ -54,7 +54,6 @@ import org.glassfish.api.admin.CommandModel;
 import org.glassfish.api.admin.CommandModel.ParamModel;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.Dom;
@@ -74,14 +73,14 @@ public abstract class ClientGenerator {
     private static final String BASE_CLASS = "org.glassfish.admin.rest.client.RestClientBase";
 
     protected Set<String> alreadyGenerated = new HashSet<String>();
-    protected Habitat habitat;
+    protected ServiceLocator habitat;
     protected List<String> messages = new ArrayList<String>();
     protected String versionString;
     protected static final String ARTIFACT_NAME = "rest-client-wrapper";
 
     private DomDocument document;
 
-    public ClientGenerator(Habitat habitat) {
+    public ClientGenerator(ServiceLocator habitat) {
         this.habitat = habitat;
         versionString = Version.getVersionNumber();
     }
@@ -103,7 +102,7 @@ public abstract class ClientGenerator {
         generateSingle(rootModel);
     }
 
-    public Habitat getBaseServiceLocator() {
+    public ServiceLocator getBaseServiceLocator() {
         return habitat;
     }
 
