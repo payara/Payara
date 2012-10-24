@@ -51,6 +51,7 @@
                         com.sun.ejb.monitoring.probes; \
                         com.sun.ejb.spi.io; \
                         com.sun.ejb.spi.container; \
+                        org.glassfish.ejb; \
                         org.glassfish.ejb.deployment.annotation.handlers; \
                         org.glassfish.ejb.deployment.descriptor; \
                         org.glassfish.ejb.deployment.descriptor.runtime; version=${project.osgi.version}
@@ -63,6 +64,7 @@ Import-Package: \
                         javax.xml.ws.handler;resolution:=optional, \
                         javax.jws;resolution:=optional, \
                         org.glassfish.apf.context, \
+                        org.glassfish.ejb.deployment.archive, \
                         *
 
 Bundle-SymbolicName: \

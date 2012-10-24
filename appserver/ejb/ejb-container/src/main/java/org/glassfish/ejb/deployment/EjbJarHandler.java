@@ -49,7 +49,7 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentProperties;
-import org.glassfish.ejb.EjbJarDetector;
+import org.glassfish.ejb.deployment.archive.EjbJarDetector;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import javax.inject.Inject;
 import javax.inject.Named;

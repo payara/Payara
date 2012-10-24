@@ -51,7 +51,7 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.appclient.server.connector.CarDetector;
 import org.glassfish.deployment.common.*;
-import org.glassfish.ejb.EjbJarDetector;
+import org.glassfish.ejb.deployment.archive.EjbJarDetector;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.api.DelegatingClassLoader;
 import org.glassfish.api.admin.ServerEnvironment;

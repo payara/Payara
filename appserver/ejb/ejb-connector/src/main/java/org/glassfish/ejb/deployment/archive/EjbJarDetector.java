@@ -39,7 +39,7 @@
  */
 
 
-package org.glassfish.ejb;
+package org.glassfish.ejb.deployment.archive;
 
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ArchiveHandler;

@@ -38,10 +38,9 @@
  * holder.
  */
 
-package org.glassfish.ejb;
+package org.glassfish.ejb.deployment.archive;
 
 import org.glassfish.internal.deployment.GenericSniffer;
-import org.glassfish.ejb.EjbType;
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModuleDefinition;
 import com.sun.enterprise.module.common_impl.DirectoryBasedRepository;
