@@ -909,7 +909,7 @@ public class RemoteCommand extends CLICommand {
         
         ModulesRegistry registry = new StaticModulesRegistry(getModuleClassLoader());
         ServiceLocator serviceLocator = registry.createServiceLocator("default");
-        manServiceLocator = serviceLocator.getService(Habitat.class);
+        manServiceLocator = serviceLocator;
         return manServiceLocator;
     }
 

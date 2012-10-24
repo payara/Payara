@@ -127,9 +127,8 @@ public final class VerifyDomainXmlCommand extends LocalDomainCommand {
             
             ModulesRegistry registry = new StaticModulesRegistry(cl);
             ServiceLocator serviceLocator = registry.createServiceLocator("default");
-            ServiceLocator habitat = serviceLocator.getService(Habitat.class);
 
-            ConfigParser parser = new ConfigParser(habitat);
+            ConfigParser parser = new ConfigParser(serviceLocator);
             URL domainURL = domainXMLFile.toURI().toURL();
             DomDocument doc = parser.parse(domainURL);
             Dom domDomain = doc.getRoot();
