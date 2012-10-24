@@ -40,8 +40,8 @@
 
 package org.glassfish.web.loader;
 
-import com.sun.logging.LogDomains;
 import org.glassfish.deployment.common.ClassDependencyBuilder;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.hk2.classmodel.reflect.*;
 
 import javax.servlet.ServletContainerInitializer;
@@ -71,10 +71,31 @@ import java.util.logging.Logger;
  */
 public class ServletContainerInitializerUtil {
 
-    private static final Logger log = LogDomains.getLogger(
-        ServletContainerInitializerUtil.class, LogDomains.WEB_LOGGER);
+    private static final Logger log = WebappClassLoader.logger;
 
     private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Unexpected type of ClassLoader. Expected: java.net.URLClassLoader, got: {0}",
+            level = "WARNING")
+    public static final String WRONG_CLASSLOADER_TYPE = "AS-WEB-UTIL-00034";
+
+    @LogMessageInfo(
+            message = "Unable to load class {0}, reason: {1}",
+            level = "FINE")
+    public static final String CLASS_LOADING_ERROR = "AS-WEB-UTIL-00035";
+
+    @LogMessageInfo(
+            message = "Invalid URLClassLoader path component: [{0}] is neither a JAR file nor a directory",
+            level = "WARNING")
+    public static final String INVALID_URL_CLASS_LOADER_PATH = "AS-WEB-UTIL-00036";
+
+    @LogMessageInfo(
+            message = "Error trying to scan the classes at {0} for annotations in which a ServletContainerInitializer has expressed interest",
+            level = "SEVERE",
+            cause = "An IOException is encountered",
+            action = "Verify if the path is correct")
+    public static final String IO_ERROR = "AS-WEB-UTIL-00037";
 
     /**
      * Given a class loader, check for ServletContainerInitializer
@@ -97,8 +118,8 @@ public class ServletContainerInitializerUtil {
         if((absoluteOrderingList != null) && !hasOthers) {
             if(!(cl instanceof URLClassLoader)) {
                 log.log(Level.WARNING,
-                    "servletContainerInitializerUtil.wrongClassLoaderType",
-                    cl.getClass().getCanonicalName());
+                        WRONG_CLASSLOADER_TYPE,
+                        cl.getClass().getCanonicalName());
                 return null;
             }
             final URLClassLoader webAppCl = (URLClassLoader) cl;
@@ -293,7 +314,7 @@ public class ServletContainerInitializerUtil {
                                         } catch (Throwable t) {
                                             if (log.isLoggable(Level.FINE)) {
                                                 log.log(Level.FINE,
-                                                    "servletContainerInitializerUtil.classLoadingError",
+                                                    CLASS_LOADING_ERROR,
                                                     new Object[] {
                                                         anEntry.getName(),
                                                         t.toString()});
@@ -315,14 +336,13 @@ public class ServletContainerInitializerUtil {
                                         scanDirectory(file, classInfo);
                                     } else {
                                         log.log(Level.WARNING,
-                                            "servletContainerInitializerUtil.invalidUrlClassLoaderPath",
+                                            INVALID_URL_CLASS_LOADER_PATH,
                                             path);
                                     }
                                 }
                             }
                         } catch(IOException ioex) {
-                            String msg = rb.getString(
-                                "servletContainerInitializerUtil.ioError");
+                            String msg = rb.getString(IO_ERROR);
                             msg = MessageFormat.format(msg,
                                 new Object[] { path });
                             log.log(Level.SEVERE, msg, ioex);
@@ -400,7 +420,7 @@ public class ServletContainerInitializerUtil {
                     } catch (Throwable t) {
                         if (log.isLoggable(Level.WARNING)) {
                             log.log(Level.WARNING,
-                                "servletContainerInitializerUtil.classLoadingError",
+                                CLASS_LOADING_ERROR,
                                 new Object[] {fileName, t.toString()});
                         }
                         continue;
@@ -450,7 +470,7 @@ public class ServletContainerInitializerUtil {
                         } catch (Throwable t) {
                             if (log.isLoggable(Level.WARNING)) {
                                 log.log(Level.WARNING,
-                                    "servletContainerInitializerUtil.classLoadingError",
+                                    CLASS_LOADING_ERROR,
                                     new Object[] {ae.getName(), t.toString()});
                             }
                         }     
@@ -469,7 +489,7 @@ public class ServletContainerInitializerUtil {
                     } catch (Throwable t) {
                         if (log.isLoggable(Level.WARNING)) {
                             log.log(Level.WARNING,
-                                "servletContainerInitializerUtil.classLoadingError",
+                                CLASS_LOADING_ERROR,
                                 new Object[] {classModel.getName(), t.toString()});
                         }
                     }
@@ -524,7 +544,7 @@ public class ServletContainerInitializerUtil {
                 } catch (Throwable t) {
                     if (log.isLoggable(Level.WARNING)) {
                         log.log(Level.WARNING,
-                            "servletContainerInitializerUtil.classLoadingError",
+                            CLASS_LOADING_ERROR,
                             new Object[] {className, t.toString()});
                     }
                 }

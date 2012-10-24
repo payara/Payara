@@ -82,8 +82,7 @@ import java.util.logging.Logger;
 public final class IntrospectionUtils {
 
     
-    private static final Logger log =
-        Logger.getLogger(IntrospectionUtils.class.getName());
+    private static final Logger log = org.glassfish.web.loader.WebappClassLoader.logger;
     
     /**
      * Call execute() - any ant-like task should work
