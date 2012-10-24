@@ -121,6 +121,7 @@ public class ListApplicationRefsCommand implements AdminCommand, AdminCommandSec
      */
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
+        final ActionReport subReport = report.addSubActionsReport();
         ColumnFormatter cf = new ColumnFormatter();
 
         ActionReport.MessagePart part = report.getTopMessagePart();
@@ -140,6 +141,11 @@ public class ListApplicationRefsCommand implements AdminCommand, AdminCommandSec
         if (numOfApplications != 0) {
             report.setMessage(cf.toString());
         } else if ( !terse) {
+            subReport.setMessage(localStrings.getLocalString(
+                    DeployCommand.class,
+                    "NoSuchAppDeployed",
+                    "No applications are deployed to this target {0}.",
+                    new Object[] {this.target}));
             part.setMessage(localStrings.getLocalString("list.components.no.elements.to.list", "Nothing to List."));
         }
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
