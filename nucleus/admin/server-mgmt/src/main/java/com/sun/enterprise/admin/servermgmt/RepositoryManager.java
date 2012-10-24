@@ -967,16 +967,19 @@ public class RepositoryManager extends MasterPasswordFileManager {
         final Connection conn = DriverManager.getConnection(url);
         deleteTable(conn);
         final Statement cs = conn.createStatement();
-        cs.executeUpdate(createStatement);
-        cs.close();
+        try {
+            cs.executeUpdate(createStatement);
+        }
+        finally {
+            cs.close();
+        }
     }
 
-    private void deleteTable(final Connection conn) {
+    private void deleteTable(final Connection conn) throws Exception {
+        final Statement ds = conn.createStatement();
+        final String deleteTable = "delete table " + PEFileLayout.EJB_TIMER_TABLE_NAME;
         try {
-            final Statement ds = conn.createStatement();
-            final String deleteTable = "delete table " + PEFileLayout.EJB_TIMER_TABLE_NAME;
             ds.executeUpdate(deleteTable);
-            ds.close();
         }
         catch (final Exception e) {
             // There is an excellent chance that an Exception will get
@@ -985,6 +988,9 @@ public class RepositoryManager extends MasterPasswordFileManager {
             // don't want to throw this back out to the caller.
             // thus -- ignore this Exception
             // wbn July 2007
+        }
+        finally {
+            ds.close();
         }
     }
 
