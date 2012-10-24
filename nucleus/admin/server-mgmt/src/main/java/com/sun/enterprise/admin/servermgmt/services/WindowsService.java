@@ -208,9 +208,10 @@ public class WindowsService extends NonSMFServiceAdapter {
             setTemplateFile(TEMPLATE_FILE_NAME);
             setSourceWin32Exe();
             targetDir = new File(getServerDirs().getServerDir(), TARGET_DIR);
-            targetDir.mkdirs(); // just in case...
-            if (!targetDir.isDirectory())
-                throw new RuntimeException(Strings.get("noTargetDir", targetDir));
+            if (!targetDir.isDirectory()) {
+                if (!targetDir.mkdirs())
+                    throw new RuntimeException(Strings.get("noTargetDir", targetDir));
+            }
             targetWin32Exe = new File(targetDir, info.serviceName + "Service.exe");
             targetXml = new File(targetDir, info.serviceName + "Service.xml");
         }
@@ -311,9 +312,12 @@ public class WindowsService extends NonSMFServiceAdapter {
             catch (IOException ex) {
                 // oh well....
             }
+            
+            if (!targetWin32Exe.delete())
+                dryRun("Dry Run error: delete failed for targetWin32Exe " + targetWin32Exe);
 
-            targetXml.delete();
-            targetWin32Exe.delete();
+            if (!targetXml.delete())
+                dryRun("Dry Run error: delete failed for targetXml " + targetXml);
         }
         else {
             ProcessManager mgr = new ProcessManager(targetWin32Exe.getPath(), "install");
@@ -333,13 +337,14 @@ public class WindowsService extends NonSMFServiceAdapter {
     private void handlePreExisting(File targetWin32Exe, File targetXml, boolean force) {
         if (targetWin32Exe.exists() || targetXml.exists()) {
             if (force) {
-                targetWin32Exe.delete();
-                targetXml.delete();
-                // we call this same method to make sur they were deleted
-                handlePreExisting(targetWin32Exe, targetXml, false);
-            }
-            else {
-                throw new RuntimeException(Strings.get("services.alreadyCreated",
+                if (!targetWin32Exe.delete())
+                    trace("HandlePreExisting error: could not delete targetWin32Exe.");
+                
+                if (!targetXml.delete())
+                    trace("HandlePreExisting error: could not delete targetXml.");
+                
+                if (targetWin32Exe.exists() || targetXml.exists())
+                    throw new RuntimeException(Strings.get("services.alreadyCreated",
                         new File(targetDir, getServerDirs().getServerName() + "Service").toString() + ".*",
                         "del"));
             }
