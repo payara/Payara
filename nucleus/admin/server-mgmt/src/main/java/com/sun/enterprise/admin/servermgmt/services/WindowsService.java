@@ -235,7 +235,7 @@ public class WindowsService extends NonSMFServiceAdapter {
 
         if (!sourceWin32Exe.isFile()) {
             // copy it from inside this jar to the file system
-            InputStream in = getClass().getResourceAsStream("/lib/" + SOURCE_WIN32_EXE_FILENAME);
+            InputStream in = WindowsService.class.getResourceAsStream("/lib/" + SOURCE_WIN32_EXE_FILENAME);
             FileOutputStream out = new FileOutputStream(sourceWin32Exe);
             copyStream(in, out);
             trace("Copied from inside the jar to " + sourceWin32Exe);
