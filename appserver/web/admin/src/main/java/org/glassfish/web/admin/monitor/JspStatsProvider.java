@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,6 @@
 
 package org.glassfish.web.admin.monitor;
 
-import java.util.logging.Logger;
-import javax.servlet.Servlet;
-import com.sun.logging.LogDomains;
 import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.external.statistics.RangeStatistic;
 import org.glassfish.external.statistics.impl.CountStatisticImpl;
@@ -63,9 +60,6 @@ import org.glassfish.gmbal.ManagedObject;
 @ManagedObject
 @Description("Web Container JSP Statistics")
 public class JspStatsProvider {
-
-    private static final Logger logger = LogDomains.getLogger(
-        JspStatsProvider.class, LogDomains.WEB_LOGGER);
 
     private static final String JSP_COUNT_DESCRIPTION =
         "Number of active JSP pages";

@@ -44,18 +44,14 @@ import java.beans.PropertyVetoException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import javax.inject.Inject;
+import javax.inject.Named;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import org.glassfish.grizzly.config.dom.NetworkConfig;
-import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.glassfish.grizzly.config.dom.NetworkListeners;
-import org.glassfish.grizzly.config.dom.ThreadPool;
-import org.glassfish.grizzly.config.dom.Transport;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.I18n;
@@ -68,13 +64,16 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.grizzly.config.dom.NetworkConfig;
+import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.grizzly.config.dom.NetworkListeners;
+import org.glassfish.grizzly.config.dom.ThreadPool;
+import org.glassfish.grizzly.config.dom.Transport;
 import org.glassfish.internal.api.Target;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -123,11 +122,11 @@ public class CreateHttpListener implements AdminCommand {
     @Inject
     CommandRunner runner;
     @Inject
-    Logger logger;
-    @Inject
     Domain domain;
     private static final String DEFAULT_TRANSPORT = "tcp";
     private NetworkConfig networkConfig = null;
+
+    private static final Logger logger = HttpServiceStatsProviderBootstrap.logger;
 
     /**
      * Executes the command with the command parameters passed as Properties where the keys are the paramter names and

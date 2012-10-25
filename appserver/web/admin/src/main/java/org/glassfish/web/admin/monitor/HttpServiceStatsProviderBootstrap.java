@@ -49,11 +49,12 @@ import java.util.logging.Logger;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -74,20 +75,37 @@ public class HttpServiceStatsProviderBootstrap implements PostConstruct {
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
 
-    private static final Logger logger = LogDomains.getLogger(
-        HttpServiceStatsProviderBootstrap.class, LogDomains.WEB_LOGGER);
-    private static final LocalStringManagerImpl localStrings =
-        new LocalStringManagerImpl(HttpServiceStatsProviderBootstrap.class);
-    
+    @LogMessagesResourceBundle
+    private static final String SHARED_LOGMESSAGE_RESOURCE =
+            "org.glassfish.web.admin.monitor.LogMessages";
+
+    @LoggerInfo(subsystem="WEB", description="WEB Admin Logger", publish=true)
+    private static final String WEB_ADMIN_LOGGER = "javax.enterprise.web.admin";
+
+    public static final Logger logger =
+            Logger.getLogger(WEB_ADMIN_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo(
+            message = "Unable to register StatsProvider {0} with Monitoring Infrastructure. " +
+                    "No monitoring data will be collected for {1} and {2}",
+            level = "SEVERE",
+            cause = "Current server config is null",
+            action = "Verify if the server instance is started correctly")
+    public static final String UNABLE_TO_REGISTER_STATS_PROVIDERS = "AS-WEB-ADMIN-00001";
+
+    @LogMessageInfo(
+            message = "Current server config is null",
+            level = "INFO")
+    public static final String NULL_CONFIG = "AS-WEB-ADMIN-00002";
+
     public void postConstruct() {
 
         if (config == null) {
             Object[] params = {VirtualServerInfoStatsProvider.class.getName(),
                     HttpServiceStatsProvider.class.getName(),
                     "http service", "virtual server"};
-            logger.log(Level.SEVERE, "unableToRegisterStatsProviders", params);
-            throw new ConfigurationException(localStrings.getLocalString(
-                    "nullConfig", "Current server config is null."));
+            logger.log(Level.SEVERE, UNABLE_TO_REGISTER_STATS_PROVIDERS, params);
+            throw new ConfigurationException(logger.getResourceBundle().getString(NULL_CONFIG));
         }
 
         HttpService httpService = config.getHttpService();

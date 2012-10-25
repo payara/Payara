@@ -40,6 +40,7 @@
 
 package org.glassfish.web.admin.monitor.statistics;
 
+import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
@@ -74,8 +75,7 @@ public class HTTPListenerStatsImpl implements MonitorContract {
     @Inject
     private MonitoringRuntimeDataRegistry mrdr;
 
-    @Inject
-    private Logger logger;
+    private static final Logger logger = HttpServiceStatsProviderBootstrap.logger;
 
     private static final LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(HTTPListenerStatsImpl.class);

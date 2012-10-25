@@ -46,13 +46,11 @@
 package org.glassfish.web.admin.monitor;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.logging.LogDomains;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.*;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import javax.inject.Inject;
@@ -68,9 +66,6 @@ import javax.inject.Singleton;
 @Service(name = "web")
 @Singleton
 public class WebStatsProviderBootstrap implements PostConstruct {
-
-    private static final Logger logger = LogDomains.getLogger(
-        WebStatsProviderBootstrap.class, LogDomains.WEB_LOGGER);
 
     private static final String NODE_SEPARATOR = "/";
 

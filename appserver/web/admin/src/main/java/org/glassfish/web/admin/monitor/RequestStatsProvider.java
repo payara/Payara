@@ -42,7 +42,6 @@ package org.glassfish.web.admin.monitor;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import com.sun.logging.LogDomains;
 import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.external.statistics.annotations.Reset;
 import org.glassfish.external.statistics.impl.CountStatisticImpl;
@@ -64,8 +63,7 @@ import org.glassfish.gmbal.ManagedAttribute;
 @Description("Web Request Statistics")
 public class RequestStatsProvider {
 
-    private static final Logger logger = LogDomains.getLogger(
-        RequestStatsProvider.class, LogDomains.WEB_LOGGER);
+    private static final Logger logger = HttpServiceStatsProviderBootstrap.logger;
 
     private static final String ERROR_COUNT_DESCRIPTION =
         "Cumulative value of the error count, with error count representing the number of cases where the response code was greater than or equal to 400";

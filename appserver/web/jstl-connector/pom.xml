@@ -88,6 +88,11 @@
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
+         <dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>war-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
 

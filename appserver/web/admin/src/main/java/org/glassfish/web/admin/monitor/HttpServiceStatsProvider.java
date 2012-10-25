@@ -54,7 +54,6 @@ import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.AMXMetadata;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
-import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.hk2.api.PostConstruct;
@@ -72,8 +71,7 @@ public class HttpServiceStatsProvider implements PostConstruct {
 
     private NetworkConfig networkConfig;
 
-    private static final Logger logger = Logger.getLogger(
-        HttpServiceStatsProvider.class.getName());
+    private static final Logger logger = HttpServiceStatsProviderBootstrap.logger;
 
     private static final String ERROR_COUNT_DESCRIPTION =
             "Cumulative value of the error count, with error count representing the number of cases where the response code was greater than or equal to 400";

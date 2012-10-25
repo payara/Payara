@@ -45,22 +45,20 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.*;
 import java.util.regex.Pattern;
-
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.web.TldProvider;
-import org.glassfish.internal.api.ServerContext;
-import org.glassfish.web.config.serverbeans.WebContainer;
-
-import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
-import org.glassfish.hk2.api.PostConstruct;
-import javax.inject.Singleton;
+import com.sun.appserv.web.taglibs.cache.CacheTag;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.net.JarURIPattern;
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.logging.LogDomains;
-import com.sun.appserv.web.taglibs.cache.CacheTag;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.web.TldProvider;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.web.config.serverbeans.WebContainer;
+import org.glassfish.web.loader.WebappClassLoader;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * Implementation of TldProvider for JSP caching taglib.
@@ -71,9 +69,7 @@ import com.sun.appserv.web.taglibs.cache.CacheTag;
 public class GlassFishTldProvider
         implements TldProvider, PostConstruct {
 
-    private static final Logger logger =
-        LogDomains.getLogger(GlassFishTldProvider.class,
-            LogDomains.WEB_LOGGER);
+    private static final Logger logger = WebappClassLoader.logger;
 
     private static final ResourceBundle rb = logger.getResourceBundle();
 
@@ -145,7 +141,7 @@ public class GlassFishTldProvider
                         try {
                             uris[i] = urls[i].toURI();
                         } catch(URISyntaxException e) {
-                            String msg = rb.getString("tldProvider.ignoreUrl");
+                            String msg = rb.getString(WebappClassLoader.TLD_PROVIDER_IGNORE_URL);
                             msg = MessageFormat.format(msg, urls[i]);
                             logger.log(Level.WARNING, msg, e);
                         }
@@ -153,7 +149,7 @@ public class GlassFishTldProvider
                 }
             } else {
                 logger.log(Level.WARNING,
-                    "taglibs.unableToDetermineTldResources",
+                    WebappClassLoader.UNABLE_TO_DETERMINE_TLD_RESOURCES,
                     new Object[] {"JSP Caching", classLoader,
                         GlassFishTldProvider.class.getName()});
             }

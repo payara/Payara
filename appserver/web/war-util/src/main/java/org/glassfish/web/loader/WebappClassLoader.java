@@ -311,6 +311,17 @@ public class WebappClassLoader
             level = "WARNING")
     public static final String UNABLE_PURGE_BEAN_CLASSES = "AS-WEB-UTIL-000026";
 
+    @LogMessageInfo(
+            message = "Ignoring [{0}] during Tag Library Descriptor (TLD) processing",
+            level = "WARNING")
+    public static final String TLD_PROVIDER_IGNORE_URL = "AS-WEB-UTIL-000037";
+
+    @LogMessageInfo(
+            message = "Unable to determine TLD resources for [{0}] tag library, " +
+                    "because class loader [{1}] for [{2}] is not an instance of java.net.URLClassLoader",
+            level = "WARNING")
+    public static final String UNABLE_TO_DETERMINE_TLD_RESOURCES = "AS-WEB-UTIL-000038";
+
     /**
      * Set of package names which are not allowed to be loaded from a webapp
      * class loader without delegating first.

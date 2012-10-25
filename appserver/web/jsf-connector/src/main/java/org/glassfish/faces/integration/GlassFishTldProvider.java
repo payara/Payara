@@ -43,14 +43,9 @@ package org.glassfish.faces.integration;
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.util.net.JarURIPattern;
-import com.sun.logging.LogDomains;
-import org.glassfish.api.web.TldProvider;
-import javax.inject.Inject;
-
 import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.web.TldProvider;
 import org.glassfish.hk2.api.PostConstruct;
-import javax.inject.Singleton;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -60,6 +55,10 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.glassfish.web.loader.WebappClassLoader;
 
 /**
  * Implementation of TldProvider for JSF.
@@ -71,9 +70,7 @@ import java.util.regex.Pattern;
 @Singleton
 public class GlassFishTldProvider implements TldProvider, PostConstruct {
 
-    private static final Logger logger =
-        LogDomains.getLogger(GlassFishTldProvider.class,
-            LogDomains.WEB_LOGGER);
+    private static final Logger logger = WebappClassLoader.logger;
 
     private static final ResourceBundle rb = logger.getResourceBundle();
 
@@ -149,7 +146,7 @@ public class GlassFishTldProvider implements TldProvider, PostConstruct {
                         try {
                             uris[i] = urls[i].toURI();
                         } catch(URISyntaxException e) {
-                            String msg = rb.getString("tldProvider.ignoreUrl");
+                            String msg = rb.getString(WebappClassLoader.TLD_PROVIDER_IGNORE_URL);
                             msg = MessageFormat.format(msg, urls[i]);
                             logger.log(Level.WARNING, msg, e);
                         }
@@ -157,7 +154,7 @@ public class GlassFishTldProvider implements TldProvider, PostConstruct {
                 }
             } else {
                 logger.log(Level.WARNING,
-                    "taglibs.unableToDetermineTldResources",
+                    WebappClassLoader.UNABLE_TO_DETERMINE_TLD_RESOURCES,
                     new Object[] {"JSF", classLoader,
                         GlassFishTldProvider.class.getName()});
             }
