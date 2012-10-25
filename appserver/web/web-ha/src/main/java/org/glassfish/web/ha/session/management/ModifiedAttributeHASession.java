@@ -46,12 +46,9 @@
 
 package org.glassfish.web.ha.session.management;
 
-import com.sun.logging.LogDomains;
 import org.apache.catalina.Manager;
 import org.apache.catalina.util.Enumerator;
 
-import javax.servlet.http.HttpSession;
-import java.io.Serializable;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,7 +61,7 @@ import java.util.logging.Logger;
  */
 public class ModifiedAttributeHASession extends BaseHASession {
     
-    private static final Logger _logger = LogDomains.getLogger(ModifiedAttributeHASession.class,  LogDomains.WEB_LOGGER);
+    private static final Logger _logger = ReplicationStore._logger;
 
     private transient Map<String, SessionAttributeState> _attributeStates = new HashMap<String, SessionAttributeState>();
     private transient boolean _dirtyFlag = false;

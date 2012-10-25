@@ -40,15 +40,14 @@
 
 package org.glassfish.web.ha.session.management;
 
-import com.sun.logging.LogDomains;
 import org.apache.catalina.Session;
 import org.apache.catalina.session.PersistentManagerBase;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.Storeable;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,7 +62,17 @@ public abstract class ReplicationManagerBase<T extends Storeable> extends Persis
 
     protected static final String name = "ReplicationManagerBase";
 
-    protected Logger logger = LogDomains.getLogger(ReplicationManagerBase.class, LogDomains.WEB_LOGGER);
+    protected Logger logger = ReplicationStore._logger;
+
+    @LogMessageInfo(
+            message = "Failed to remove session from backing store",
+            level = "WARNING")
+    public static final String FAILED_TO_REMOVE_SESSION = "AS-WEB-HA-00006";
+
+    @LogMessageInfo(
+            message = "Required version NumberFormatException",
+            level = "INFO")
+    public static final String REQUIRED_VERSION_NFE = "AS-WEB-HA-00007";
 
     protected boolean relaxCacheVersionSemantics = false;
     protected boolean disableJreplica = false;
@@ -96,7 +105,7 @@ public abstract class ReplicationManagerBase<T extends Storeable> extends Persis
         try {
             backingStore.remove(id);
         } catch (BackingStoreException e) {
-            logger.warning("Failed to remove session from backing store");
+            logger.warning(FAILED_TO_REMOVE_SESSION);
         }
     }
 
@@ -120,7 +129,7 @@ public abstract class ReplicationManagerBase<T extends Storeable> extends Persis
                 logger.fine("Required version " + requiredVersion);
             }
         } catch (NumberFormatException ex) {
-             logger.log(Level.INFO,"required version nfe ", ex);
+             logger.log(Level.INFO, REQUIRED_VERSION_NFE, ex);
             //deliberately do nothing
         }
         if(logger.isLoggable(Level.FINE)) {

@@ -55,13 +55,8 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
-import com.sun.enterprise.naming.util.ObjectInputOutputStreamFactory;
-import com.sun.enterprise.naming.util.ObjectInputOutputStreamFactoryFactory;
-import com.sun.logging.LogDomains;
 import org.apache.catalina.*;
 import org.apache.catalina.session.StoreBase;
-//import org.apache.catalina.util.*;
-//import com.sun.enterprise.ee.web.initialization.ServerConfigReader;
 import com.sun.enterprise.web.ServerConfigLookup;
 
 /**
@@ -79,7 +74,7 @@ public abstract class HAStoreBase extends StoreBase {
      * The logger to use for logging ALL web container related messages.
      */
     protected static final Logger _logger
-        = LogDomains.getLogger(HAStoreBase.class, LogDomains.WEB_LOGGER);    
+        = ReplicationStore._logger;
 
 
     /** Creates a new instance of HAStoreBase */

@@ -42,12 +42,12 @@ package org.glassfish.web.ha.authenticator;
 
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.security.web.GlassFishSingleSignOn;
-import com.sun.logging.LogDomains;
 
 import org.apache.catalina.Session;
 import org.apache.catalina.authenticator.SingleSignOnEntry;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreException;
+import org.glassfish.web.ha.session.management.ReplicationStore;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -57,8 +57,7 @@ import java.security.Principal;
  * @author Shing Wai Chan
  */
 public class HASingleSignOn extends GlassFishSingleSignOn {
-    private static final Logger logger = LogDomains.getLogger(
-            HASingleSignOn.class, LogDomains.WEB_LOGGER);
+    private static final Logger logger = ReplicationStore._logger;
 
     private BackingStore<String, HASingleSignOnEntryMetadata> ssoEntryMetadataBackingStore = null;
 

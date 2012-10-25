@@ -47,7 +47,6 @@
 
 package org.glassfish.web.ha.session.management;
 
-import com.sun.logging.LogDomains;
 import org.apache.catalina.Session;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.ha.common.GlassFishHAReplicaPredictor;
@@ -58,6 +57,7 @@ import org.glassfish.ha.store.api.BackingStoreConfiguration;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.BackingStoreFactory;
 import org.glassfish.ha.store.api.Storeable;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
@@ -101,8 +101,14 @@ public class ReplicationWebEventPersistentManager<T extends Storeable> extends R
      * The logger to use for logging ALL web container related messages.
      */
     private static final Logger _logger 
-        = LogDomains.getLogger(ReplicationWebEventPersistentManager.class, LogDomains.WEB_LOGGER);    
-    
+        = ReplicationStore._logger;
+
+    @LogMessageInfo(
+            message = "Could not create backing store",
+            level = "WARNING")
+    public static final String COULD_NOT_CREATE_BACKING_STORE = "AS-WEB-HA-00008";
+
+
     /**
      * The descriptive information about this implementation.
      */
@@ -278,7 +284,7 @@ public class ReplicationWebEventPersistentManager<T extends Storeable> extends R
             }
             this.backingStore = factory.createBackingStore(conf);
         } catch (BackingStoreException e) {
-            _logger.log(Level.WARNING, "Could not create backing store", e);  
+            _logger.log(Level.WARNING, COULD_NOT_CREATE_BACKING_STORE, e);
         }
         Object obj = conf.getVendorSpecificSettings().get("key.mapper");
         if (obj != null && obj instanceof GlassFishHAReplicaPredictor) {

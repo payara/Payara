@@ -42,7 +42,6 @@ package org.glassfish.web.ha.session.management;
 
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.web.ServerConfigLookup;
-import com.sun.logging.LogDomains;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.apache.catalina.*;
@@ -65,7 +64,7 @@ public class ReplicationAttributeStore extends ReplicationStore {
     
 
     private static final Logger _logger 
-        = LogDomains.getLogger(ReplicationAttributeStore.class, LogDomains.WEB_LOGGER);    
+        = ReplicationStore._logger;
     
 
     /** Creates a new instance of ReplicationAttributeStore */

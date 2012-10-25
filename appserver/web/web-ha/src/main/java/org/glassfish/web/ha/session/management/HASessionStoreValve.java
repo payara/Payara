@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,9 +60,7 @@ import org.apache.catalina.Request;
 import org.apache.catalina.Response;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
-import com.sun.logging.LogDomains;
 import org.glassfish.ha.common.HACookieManager;
-import org.glassfish.web.valve.GlassFishValve;
 
 /**
  *
@@ -75,7 +73,7 @@ public class HASessionStoreValve extends ValveBase {
      * The logger to use for logging ALL web container related messages.
      */
     private static final Logger _logger 
-        = LogDomains.getLogger(HASessionStoreValve.class,LogDomains.WEB_LOGGER);     
+        = ReplicationStore._logger;
     
     /** Creates a new instance of HASessionStoreValve */
     public HASessionStoreValve() {

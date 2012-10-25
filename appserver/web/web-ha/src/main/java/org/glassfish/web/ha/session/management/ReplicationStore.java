@@ -50,7 +50,6 @@ package org.glassfish.web.ha.session.management;
 import com.sun.appserv.util.cache.BaseCache;
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.web.ServerConfigLookup;
-import com.sun.logging.LogDomains;
 import org.apache.catalina.Container;
 import org.apache.catalina.Session;
 import org.apache.catalina.LifecycleException;
@@ -59,6 +58,9 @@ import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.Storeable;
 import org.glassfish.ha.store.util.SimpleMetadata;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 import java.io.*;
 import java.util.logging.Level;
@@ -72,12 +74,40 @@ import java.util.zip.GZIPInputStream;
  */
 public class ReplicationStore extends HAStoreBase {
 
-    /**
-     * The logger to use for logging ALL web container related messages.
-     */
-    protected static final Logger _logger
-        = LogDomains.getLogger(ReplicationStore.class, LogDomains.WEB_LOGGER);
+    @LogMessagesResourceBundle
+    private static final String SHARED_LOGMESSAGE_RESOURCE =
+            "org.glassfish.web.ha.session.management.LogMessages";
 
+    @LoggerInfo(subsystem="WEB", description="WEB HA Logger", publish=true)
+    private static final String WEB_HA_LOGGER = "javax.enterprise.web.ha";
+
+    public static final Logger _logger =
+            Logger.getLogger(WEB_HA_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo(
+            message = "Exception during removing synchronized from backing store",
+            level = "WARNING")
+    public static final String EXCEPTION_REMOVING_SYNCHRONIZED = "AS-WEB-HA-00001";
+
+    @LogMessageInfo(
+            message = "Exception during removing expired session from backing store",
+            level = "WARNING")
+    public static final String EXCEPTION_REMOVING_EXPIRED_SESSION = "AS-WEB-HA-00002";
+
+    @LogMessageInfo(
+            message = "Error creating inputstream",
+            level = "WARNING")
+    public static final String ERROR_CREATING_INPUT_STREAM = "AS-WEB-HA-00003";
+
+    @LogMessageInfo(
+            message = "Exception during deserializing the session",
+            level = "WARNING")
+    public static final String EXCEPTION_DESERIALIZING_SESSION = "AS-WEB-HA-00004";
+
+    @LogMessageInfo(
+            message = "Exception occurred in getSession",
+            level = "WARNING")
+    public static final String EXCEPTION_GET_SESSION = "AS-WEB-HA-00005";
 
     /**
      * Creates a new instance of ReplicationStore
@@ -298,7 +328,7 @@ public class ReplicationStore extends HAStoreBase {
         try {
             replicator.remove(id);
         } catch (BackingStoreException ex) {
-            _logger.log(Level.WARNING, "Exception during removing synchronized from backing store", ex);
+            _logger.log(Level.WARNING, EXCEPTION_REMOVING_SYNCHRONIZED, ex);
         }
     }     
     
@@ -322,7 +352,7 @@ public class ReplicationStore extends HAStoreBase {
         try {
             replicator.remove(id);
         } catch (BackingStoreException ex) {
-            _logger.log(Level.WARNING, "Exception during removing synchronized from backing store", ex);
+            _logger.log(Level.WARNING, EXCEPTION_REMOVING_SYNCHRONIZED, ex);
         }
     }
     
@@ -355,7 +385,7 @@ public class ReplicationStore extends HAStoreBase {
             try {
                 result = backingStore.removeExpired(mgr.getMaxInactiveInterval());
             } catch (BackingStoreException ex) {
-                _logger.log(Level.WARNING, "Exception during removing expired session from backing store", ex);
+                _logger.log(Level.WARNING, EXCEPTION_REMOVING_EXPIRED_SESSION, ex);
             }
         }
         if(_logger.isLoggable(Level.FINE)) {
@@ -521,7 +551,7 @@ public class ReplicationStore extends HAStoreBase {
                 try {
                     ois = ioUtils.createObjectInputStream(is,true,classLoader);
                 } catch (Exception ex) {
-                    _logger.log(Level.WARNING, "Error creating inputstream ", ex);
+                    _logger.log(Level.WARNING, ERROR_CREATING_INPUT_STREAM, ex);
                 }
             }
             
@@ -544,13 +574,13 @@ public class ReplicationStore extends HAStoreBase {
             }
         } catch(ClassNotFoundException e) {
             IOException ex1 = (IOException) new IOException(
-                    "Error during deserialization: " + e.getMessage()).initCause(e);
-            _logger.log(Level.WARNING, "Exception during deserializing the session ", ex1);
+                    _logger.getResourceBundle().getString(EXCEPTION_DESERIALIZING_SESSION) + e.getMessage()).initCause(e);
+            _logger.log(Level.WARNING, EXCEPTION_DESERIALIZING_SESSION, ex1);
             throw ex1;
         }
         catch(IOException e) {
             if (_logger.isLoggable(Level.WARNING)) {
-                _logger.log(Level.WARNING, "Exception occurred in getSession", e);
+                _logger.log(Level.WARNING, EXCEPTION_GET_SESSION, e);
             }
             throw e;
         }
