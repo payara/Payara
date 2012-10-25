@@ -457,7 +457,7 @@ public interface ModuleMonitoringLevels extends ConfigBeanProxy, PropertyBag {
      */
     @Attribute (defaultValue="OFF")
     @Pattern(regexp="(OFF|LOW|HIGH)")
-    public String getCloudIaasMgmt();
+    public String getCloudVirtAssemblyService();
 
     /**
      * Sets the value of the cloud IMS property.
@@ -465,7 +465,7 @@ public interface ModuleMonitoringLevels extends ConfigBeanProxy, PropertyBag {
      * @param value allowed object is
      *              {@link String }
      */
-    public void setCloudIaasMgmt(String value) throws PropertyVetoException;
+    public void setCloudVirtAssemblyService(String value) throws PropertyVetoException;
     /**
         Properties as per {@link PropertyBag}
      */
