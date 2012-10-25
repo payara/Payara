@@ -99,7 +99,7 @@ public class AutoDeployer {
     private static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.deployment.LogMessages";
 
     @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
-    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.deploy";
+    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.system.tools.deployment.autodeploy";
 
     public static final Logger deplLogger =
         Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
