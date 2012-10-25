@@ -58,9 +58,9 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.container.Adapter;
+import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.InjectionManager;
 import org.jvnet.hk2.component.UnsatisfiedDepedencyException;
 
@@ -206,7 +206,7 @@ public class JMXHTTPAdapter implements Adapter {
                 return annotation.optional();
             }
 
-            protected Object getValue(Object component, AnnotatedElement target, Class type) throws ComponentException {
+            protected Object getValue(Object component, AnnotatedElement target, Class type) throws MultiException {
                 // look for the name in the list of parameters passed.
                 Param param = target.getAnnotation(Param.class);
                 if (param.primary()) {
@@ -250,7 +250,7 @@ public class JMXHTTPAdapter implements Adapter {
             report.setMessage(errorMsg);
             report.setFailureCause(e);
             return;
-        } catch (ComponentException e) {
+        } catch (MultiException e) {
             logger.severe(e.getMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(e.getMessage());
@@ -389,7 +389,7 @@ public class JMXHTTPAdapter implements Adapter {
         AdminCommand command = null;
         try {
             command = habitat.getService(AdminCommand.class, commandName);
-        } catch(ComponentException e) {
+        } catch(MultiException e) {
         }
         if (command==null) {
             String msg = adminStrings.getLocalString("adapter.command.notfound", "Command {0} not found", commandName);
