@@ -40,8 +40,6 @@
 
 package org.glassfish.common.util.admin;
 
-import org.jvnet.hk2.component.ComponentException;
-
 /**
  * HK2 has an Injection Manager.  We make an instance of this Injection
  * Manager and override some methods.  Now we throw an Exception out.  If it

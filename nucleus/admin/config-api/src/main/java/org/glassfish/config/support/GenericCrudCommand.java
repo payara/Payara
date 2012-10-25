@@ -46,7 +46,6 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandModelProvider;
 import org.glassfish.common.util.admin.ParamTokenizer;
-import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
@@ -159,7 +158,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                     parentTypeName, e.getMessage());
             Object[] params = new Object[] { parentTypeName, e.getMessage()};
             logger.log(Level.SEVERE, "GenericCrudCommand.configbean_not_found",params);
-            throw new ComponentException(msg, e);
+            throw new RuntimeException(msg, e);
         }
 
         // find now the accessor method.
@@ -188,7 +187,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                     parentTypeName, methodName);
             Object[] params = new Object[] { parentTypeName, methodName};
             logger.log(Level.SEVERE,"GenericCrudCommand.configbean_not_found", params);
-            throw new ComponentException(msg);
+            throw new RuntimeException(msg);
         }
         
         String targetTypeName = getOne(GenerateServiceFromMethod.METHOD_ACTUAL, myself.getMetadata());
@@ -202,7 +201,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                     targetTypeName, e.getMessage());
             Object[] params = new Object[] { targetTypeName, e.getMessage()};
             logger.log(Level.SEVERE, "GenericCrudCommand.configbean_not_found",params);
-            throw new ComponentException(msg, e);
+            throw new RuntimeException(msg, e);
         }
     }
 
@@ -233,7 +232,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
         final InjectionResolver<Param> delegate = injector;
         return new InjectionResolver<Param>(Param.class) {
             @Override
-            public <V> V getValue(Object component, AnnotatedElement annotated, Type genericType, Class<V> type) throws ComponentException {
+            public <V> V getValue(Object component, AnnotatedElement annotated, Type genericType, Class<V> type) throws MultiException {
                 if (type.isAssignableFrom(List.class)) {
                     final List<ConfigBeanProxy> values;
                     try {
@@ -248,7 +247,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                     annotated.getClass().toString());
                             Object[] params = new Object[] { annotated.getClass().toString()};
                             logger.log(Level.SEVERE, "GenericCrudCommand.invalid_type", params);
-                            throw new ComponentException(msg);
+                            throw new MultiException(new IllegalArgumentException(msg));
                         }
                     } catch (IllegalAccessException e) {
                         String msg = localStrings.getLocalString(GenericCrudCommand.class,
@@ -257,7 +256,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                 e.getMessage());
                         Object[] params = new Object[] { e.getMessage()};
                         logger.log(Level.SEVERE, "GenericCrudCommand.invocation_failure", params);
-                        throw new ComponentException(msg, e);
+                        throw new MultiException(new IllegalStateException(msg, e));
                     } catch (InvocationTargetException e) {
                         String msg = localStrings.getLocalString(GenericCrudCommand.class,
                                 "GenericCrudCommand.invocation_failure",
@@ -265,7 +264,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                 e.getMessage());
                         Object[] params = new Object[] { e.getMessage()};
                         logger.log(Level.SEVERE, "GenericCrudCommand.invocation_failure", params);
-                        throw new ComponentException(msg, e);
+                        throw new MultiException(new IllegalStateException(msg, e));
                     }
                     Object value = delegate.getValue(component, annotated, genericType, type);
                     if (value==null) {
@@ -281,7 +280,8 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                         genericReturnType = ((Field) annotated).getGenericType();
                     }
                     if (genericReturnType==null) {
-                        throw new ComponentException("Cannot determine parametized type from " + annotated.toString());
+                        throw new MultiException(new IllegalArgumentException(
+                                "Cannot determine parametized type from " + annotated.toString()));
                     }
 
                     final Class<? extends ConfigBeanProxy> itemType = Types.erasure(Types.getTypeArgument(genericReturnType, 0));
@@ -295,7 +295,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                     annotated.toString());
                             Object[] params = new Object[] {annotated.toString()};
                             logger.log(Level.SEVERE, "GenericCrudCommand.nongeneric_type", params);
-                            throw new ComponentException(msg);
+                            throw new MultiException(new IllegalArgumentException(msg));
                     }
                     if (!ConfigBeanProxy.class.isAssignableFrom(itemType)) {
                         String msg = localStrings.getLocalString(GenericCrudCommand.class,
@@ -304,7 +304,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                 annotated.toString());
                         Object[] params = new Object[] { annotated.toString()};
                         logger.log(Level.SEVERE, "GenericCrudCommand.wrong_type", params);
-                        throw new ComponentException(msg);
+                        throw new MultiException(new IllegalArgumentException(msg));
                         
                     }
                     Properties props = convertStringToProperties(value.toString(), ':');
@@ -323,7 +323,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                 e.getMessage(), itemType.getName());
                         Object[] params = new Object[] { e.getMessage(), itemType.getName()};
                         logger.log(Level.SEVERE, "GenericCrudCommand.introspection_failure", params);
-                        throw new ComponentException(msg, e);
+                        throw new MultiException(new IllegalStateException(msg, e));
                     }
                     for (final Map.Entry<Object, Object> entry : props.entrySet()) {
                         ConfigBeanProxy child = (ConfigBeanProxy) component;
@@ -349,7 +349,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                 }
 
                                 @Override
-                                public <V> V getValue(Object component, AnnotatedElement annotated, Type genericType, Class<V> type) throws ComponentException {
+                                public <V> V getValue(Object component, AnnotatedElement annotated, Type genericType, Class<V> type) throws MultiException {
                                     String name = annotated.getAnnotation(Attribute.class).value();
                                     if ((name==null || name.length()==0) && annotated instanceof Method) {
 
@@ -374,7 +374,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                 transactionFailure.getMessage(), itemType);
                             Object[] params = new Object[] { transactionFailure.getMessage(), itemType};
                             logger.log(Level.SEVERE, "GenericCrudCommand.transactionException", params);
-                            throw new ComponentException(msg, transactionFailure);
+                            throw new MultiException(new IllegalStateException(msg, transactionFailure));
                         }
 
                     }

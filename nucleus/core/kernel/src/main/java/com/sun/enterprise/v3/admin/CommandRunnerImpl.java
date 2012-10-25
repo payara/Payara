@@ -417,26 +417,6 @@ public class CommandRunnerImpl implements CommandRunner {
                     report.getTopMessagePart().addChild();
             childPart.setMessage(usage);
             return report.getActionExitCode();
-        } catch (ComponentException e) {
-            // If the cause is UnacceptableValueException -- we want the message
-            // from it.  It is wrapped with a less useful Exception.
-
-            Exception exception = e;
-            Throwable cause = e.getCause();
-            if (cause != null
-                    && (cause instanceof UnacceptableValueException
-                    || cause instanceof IllegalArgumentException)) {
-                // throw away the wrapper.
-                exception = (Exception) cause;
-            }
-            logger.log(Level.SEVERE, "invocation.exception", exception);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(exception.getMessage());
-            report.setFailureCause(exception);
-            ActionReport.MessagePart childPart =
-                    report.getTopMessagePart().addChild();
-            childPart.setMessage(getUsageText(command, model));
-            return report.getActionExitCode();
         }
         catch (MultiException e) {
             // If the cause is UnacceptableValueException -- we want the message
@@ -996,7 +976,7 @@ public class CommandRunnerImpl implements CommandRunner {
      * @throws ComponentException if option is invalid
      */
     static void validateParameters(final CommandModel model,
-            final ParameterMap parameters) throws ComponentException {
+            final ParameterMap parameters) throws MultiException {
 
         ParameterMap adds = null; // renamed password parameters
         
@@ -1036,7 +1016,7 @@ public class CommandRunnerImpl implements CommandRunner {
             }
             
             if (!validOption) {
-                throw new ComponentException(" Invalid option: " + key);
+                throw new MultiException(new IllegalArgumentException(" Invalid option: " + key));
             }
         }
         parameters.mergeAll(adds);
@@ -1205,17 +1185,21 @@ public class CommandRunnerImpl implements CommandRunner {
                     if (!skipValidation(command)) {
                         validateParameters(model, parameters);
                     }
-                } catch (ComponentException e) {
+                } catch (MultiException e) {
                     // If the cause is UnacceptableValueException -- we want the message
                     // from it.  It is wrapped with a less useful Exception.
 
                     Exception exception = e;
-                    Throwable cause = e.getCause();
-                    if (cause != null
-                            && (cause instanceof UnacceptableValueException)) {
-                        // throw away the wrapper.
-                        exception = (Exception) cause;
+                    for (Throwable cause : e.getErrors()) {
+                        if (cause != null
+                                && (cause instanceof UnacceptableValueException)) {
+                            // throw away the wrapper.
+                            exception = (Exception) cause;
+                            break;
+                        }
+                 
                     }
+                    
                     logger.severe(exception.getMessage());
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     report.setMessage(exception.getMessage());

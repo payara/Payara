@@ -92,8 +92,9 @@ import javax.inject.Named;
 
 import org.jvnet.hk2.annotations.Service;
 
-import org.jvnet.hk2.component.ComponentException;
 import javax.inject.Singleton;
+
+import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -1025,7 +1026,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             try {
                     deployer = habitat.getService(deployerClass);
                     engineInfo.setDeployer(deployer);
-            } catch (ComponentException e) {
+            } catch (MultiException e) {
                 report.failure(logger, "Cannot instantiate or inject "+deployerClass, e);
                 engineInfo.stop(logger);
                 return false;

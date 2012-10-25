@@ -43,6 +43,7 @@ package com.sun.enterprise.v3.admin;
 import static org.junit.Assert.*;
 
 import org.glassfish.common.util.admin.CommandModelImpl;
+import org.glassfish.hk2.api.MultiException;
 import org.junit.Test;
 import org.junit.Before;
 import org.glassfish.api.Param;
@@ -52,7 +53,6 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandModel;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.ComponentException;
 
 /**
  * junit test to test CommandRunner class
@@ -78,9 +78,9 @@ public class CommandRunnerTest {
         try {
             cr.validateParameters(new CommandModelImpl(DummyAdminCommand.class), params);
         }
-        catch (ComponentException ce) {
+        catch (MultiException ce) {
             String expectedMessage = " Invalid option: one";
-            assertEquals(expectedMessage, ce.getMessage());
+            assertTrue(ce.getMessage().contains(expectedMessage));
         }
     }
 

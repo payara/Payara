@@ -46,12 +46,12 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ReadableArchiveFactory;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.ComponentException;
 import javax.inject.Singleton;
 
 import java.io.File;
@@ -143,7 +143,7 @@ public class ArchiveFactory implements ContractProvider {
 
             archive.create(path);
             return archive;
-        } catch (ComponentException e) {
+        } catch (MultiException e) {
             LogRecord lr = new LogRecord(Level.SEVERE, IMPLEMENTATION_NOT_FOUND);
             lr.setParameters(new Object[] { protocol });
             lr.setThrown(e);
@@ -210,7 +210,7 @@ public class ArchiveFactory implements ContractProvider {
             }
             archive.open(path);
             return archive;
-        } catch (ComponentException e) {
+        } catch (MultiException e) {
             LogRecord lr = new LogRecord(Level.SEVERE, IMPLEMENTATION_NOT_FOUND);
             lr.setParameters(new Object[] { provider });
             lr.setThrown(e);

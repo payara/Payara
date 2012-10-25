@@ -105,7 +105,7 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
                     "Exception while creating the command model for the generic command {0} : {1}",
                     commandName, e.getMessage());
             logger.severe(msg);
-            throw new ComponentException(msg, e);
+            throw new RuntimeException(msg, e);
 
         }
         

@@ -63,12 +63,12 @@ import org.glassfish.api.deployment.archive.Archive;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.*;
+import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.*;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.component.ComponentException;
 import org.xml.sax.SAXParseException;
 
 import java.io.*;
@@ -522,7 +522,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
             if (scanner==null || !(scanner instanceof ModuleScanner)) {
                 logger.log(Level.SEVERE, "Cannot find module scanner for " + this.getManifest());
             }
-        } catch (ComponentException e) {
+        } catch (MultiException e) {
             // XXX To do
             logger.log(Level.SEVERE, "Cannot find scanner for " + this.getModuleType(), e);
         }

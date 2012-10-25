@@ -59,7 +59,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.ParamDefaultCalculator;
 import org.glassfish.api.admin.CommandModel;
 import org.glassfish.api.admin.ParameterMap;
-import org.jvnet.hk2.component.ComponentException;
+import org.glassfish.hk2.api.MultiException;
 import org.jvnet.hk2.component.MultiMap;
 import org.jvnet.hk2.config.InjectionResolver;
 
@@ -109,7 +109,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
     }
 
     @Override
-    public <V> V getValue(Object component, AnnotatedElement target, Type genericType, Class<V> type) throws ComponentException {
+    public <V> V getValue(Object component, AnnotatedElement target, Type genericType, Class<V> type) throws MultiException {
 	// look for the name in the list of parameters passed.
 	Param param = target.getAnnotation(Param.class);
 	String paramName = CommandModel.getParamName(param, target);
