@@ -60,9 +60,6 @@ import com.sun.enterprise.security.store.PasswordAdapter;
 //import com.sun.enterprise.util.system.GFSystem;
 import java.io.*;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
 import java.util.*;
 import com.sun.enterprise.util.zip.ZipFile;
 
@@ -905,127 +902,6 @@ public class RepositoryManager extends MasterPasswordFileManager {
             throw new RepositoryException(
                     _strMgr.getString("timerDbnNotCreated"), ioe);
         }
-    }
-
-    protected void handleDerby(final RepositoryConfig config) throws RepositoryException {
-        final String DL = "derby.log"; // this is the file that derby creates its log in.
-        final File derbyLog = new File(DL);
-        try {
-            final PEFileLayout layout = getFileLayout(config);
-            final File derbySqlFile = layout.getDerbyEjbTimerSqlFile();
-            final String tableStatement = formatSqlStatement(derbySqlFile);
-            final String dbDir = layout.getDerbyEjbTimerDatabaseDirectory().getAbsolutePath();
-            createEjbTimerDatabaseTable(tableStatement, dbDir);
-        }
-        catch (final Exception ae) {
-            final String c = readDerbyLogFile(derbyLog);
-            throw new RepositoryException(_strMgr.getString("derbyEjbTimerDBNotCreated", c), ae);
-        }
-        finally {
-            if (!derbyLog.delete())
-                derbyLog.deleteOnExit();
-        }
-    }
-
-    /**
-     * A very rudimentary method to read the sql file and get the large
-     * create-table statement out of it. This statement needs to be the first
-     * statement in the file.
-     */
-    private String formatSqlStatement(final File sqlf) throws Exception {
-        final StringBuilder sb = new StringBuilder(); //use it whenever possible!
-        final char SQL_DELIMITER = ';';
-        final BufferedReader br = new BufferedReader(new FileReader(sqlf));
-        String line = null;
-        try {
-            while ((line = br.readLine()) != null) {
-                line = line.replaceAll("\\t", " ");
-                sb.append(line);
-                if (line.indexOf(SQL_DELIMITER) != -1)
-                    break;
-            }
-        }
-        finally {
-            br.close();
-        }
-        //this line should contain "create table" ..., but no check for now
-        String fs = sb.toString();
-        final int indexOfSemiColon = fs.indexOf(SQL_DELIMITER);
-        if (indexOfSemiColon != -1) {
-            fs = fs.substring(0, indexOfSemiColon);
-        }
-        if (Boolean.getBoolean(DEBUG)) {
-            System.out.println(fs);
-        }
-
-        return (fs);
-    }
-
-    private void createEjbTimerDatabaseTable(final String createStatement, final String dbDir) throws Exception {
-        checkDerbyDriver();
-        final String url = getDatabaseUrl(dbDir);
-        final Connection conn = DriverManager.getConnection(url);
-        deleteTable(conn);
-        final Statement cs = conn.createStatement();
-        try {
-            cs.executeUpdate(createStatement);
-        }
-        finally {
-            cs.close();
-        }
-    }
-
-    private void deleteTable(final Connection conn) throws Exception {
-        final Statement ds = conn.createStatement();
-        final String deleteTable = "delete table " + PEFileLayout.EJB_TIMER_TABLE_NAME;
-        try {
-            ds.executeUpdate(deleteTable);
-        }
-        catch (final Exception e) {
-            // There is an excellent chance that an Exception will get
-            // thrown -- we are just making sure the table is deleted, if
-            // it happens to exist, before creating a fresh new one.  We definitely
-            // don't want to throw this back out to the caller.
-            // thus -- ignore this Exception
-            // wbn July 2007
-        }
-        finally {
-            ds.close();
-        }
-    }
-
-    private String getDatabaseUrl(final String dbDir) {
-        final StringBuilder sb = new StringBuilder("jdbc:derby:");
-        sb.append(FileUtils.makeForwardSlashes(dbDir));
-        sb.append(";create=true");
-        return (sb.toString());
-    }
-
-    private void checkDerbyDriver() throws Exception {
-        final String DERBY_DRIVER_CLASS_NAME = "org.apache.derby.jdbc.EmbeddedDriver";
-        Class.forName(DERBY_DRIVER_CLASS_NAME);
-    }
-
-    /**
-     * By default, </code> derby database will create a file called "derby.log"
-     * in the current directory </code> when embedded database is created. We
-     * need the contents to be read and returned as a String. It is expected
-     * that this file is not huge. Use judiciously. It is being used only to
-     * return the errors in case the embedded database could not be created.
-     * Under normal circumstances, database creation should *always* succeed
-     * while creating the domain.
-     */
-    private String readDerbyLogFile(final File log) {
-        final StringBuilder sb = new StringBuilder();
-        try {
-            final String s = FileUtils.readSmallFile(log);
-            sb.append(s);
-        }
-        catch (final Exception e) {
-            final String msg = _strMgr.getString("noDerbyLog");
-            sb.append(msg);
-        }
-        return (sb.toString());
     }
 
     /**

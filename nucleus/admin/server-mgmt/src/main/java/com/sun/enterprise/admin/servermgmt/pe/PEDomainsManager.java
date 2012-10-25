@@ -159,8 +159,6 @@ public class PEDomainsManager extends RepositoryManager
             //createTimerDbn(domainConfig);
             //createMQInstance(domainConfig);
             //createJBIInstance(getDefaultInstance(), domainConfig);
-            //if (layout.getDerbyEjbTimerSqlFile().exists()) //will be cleaned up once derby integrates, 05/19/2005
-                //handleDerby(domainConfig);
             setPermissions(domainConfig);
         } catch (DomainException de) {
             //rollback
