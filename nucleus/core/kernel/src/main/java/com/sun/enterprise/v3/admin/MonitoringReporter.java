@@ -41,6 +41,8 @@ package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.*;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import static com.sun.enterprise.util.StringUtils.ok;
 import com.sun.enterprise.v3.common.ActionReporter;
 import com.sun.enterprise.v3.common.PlainTextActionReporter;
@@ -88,6 +90,9 @@ import java.util.Map;
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 public class MonitoringReporter extends V2DottedNameSupport {
 
+    private TreeMap nodeTreeToProcess = null; // used for get
+    private List<org.glassfish.flashlight.datatree.TreeNode> nodeListToProcess = null; // used for list
+    
     public enum OutputType {
 
         GET, LIST
@@ -117,6 +122,30 @@ public class MonitoringReporter extends V2DottedNameSupport {
     public void prepareGet(AdminCommandContext c, String arg, Boolean data) {
         aggregateDataOnly = data;
         prepare(c, arg, OutputType.GET);
+    }
+    
+    public Collection<? extends AccessCheck> getAccessChecksForGet() {
+        final Collection<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        for (Object obj : nodeTreeToProcess.keySet()) {
+            final String name = obj.toString().replace('.','/');
+            accessChecks.add(new AccessCheck(name, "read"));
+        }
+        return accessChecks;
+    }
+    
+    public Collection<? extends AccessCheck> getAccessChecksForList() {
+        final Collection<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        for (org.glassfish.flashlight.datatree.TreeNode tn1 : nodeListToProcess) {
+            /*
+             * doList discards nodes that do not have children, but we 
+             * include them here in building the access checks 
+             * because the user needs read access to the node
+             * in order to find out that it does or does not have children.
+             */
+            String name = tn1.getCompletePathName().replace('.', '/');
+            accessChecks.add(new AccessCheck(name, "read"));
+        }
+        return accessChecks;
     }
 
     public void prepareList(AdminCommandContext c, String arg) {
@@ -346,8 +375,10 @@ public class MonitoringReporter extends V2DottedNameSupport {
             setSuccess();
             userarg = arg;
 
-            if (!validate())
+            if (!validate()) {
                 return;
+            }
+            prepareNodesToProcess();
         }
         catch (Exception e) {
             setError(Strings.get("admin.get.monitoring.unknown", e.getMessage()));
@@ -362,7 +393,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
 
     // mostly just copied over from old "get" implementation
     // That's why it is excruciatingly unreadable...
-    private void runLocally() {
+    private void prepareNodesToProcess() {
 
         // don't run if this is DAS **and** DAS is not in the server list.
         // otherwise we are in an instance and definitely want to run!
@@ -397,36 +428,52 @@ public class MonitoringReporter extends V2DottedNameSupport {
             }
         }
 
-        if (!singleStat)
+        if (!singleStat) {
             localPattern = null; // signal to method call below.  localPattern was already used above...
+        } 
+        
+        if (outputType == OutputType.GET) {
+            nodeTreeToProcess = prepareNodeTreeToProcess(localPattern, ltn);
+        }
+        else if (outputType == OutputType.LIST) {
+            nodeListToProcess = ltn;
+        }
+    }
+    
+    private void runLocally() {
 
-        if (outputType == OutputType.GET)
-            doGet(localPattern, ltn);
-        else if (outputType == OutputType.LIST)
-            doList(localPattern, ltn);
+        if (outputType == OutputType.GET) {
+            doGet();
+        } else if (outputType == OutputType.LIST) {
+            doList();
+        }
 
         if (plainReporter != null) {
             plainReporter.appendMessage(cliOutput.toString());
         }
     }
 
-    // Byron Nevins -- copied from original implementation
-    private void doGet(String localPattern, List<org.glassfish.flashlight.datatree.TreeNode> ltn) {
+    private TreeMap prepareNodeTreeToProcess(final String pattern, final List<org.glassfish.flashlight.datatree.TreeNode> ltn) {
         TreeMap map = new TreeMap();
 
         for (org.glassfish.flashlight.datatree.TreeNode tn1 : sortTreeNodesByCompletePathName(ltn)) {
             if (!tn1.hasChildNodes()) {
-                insertNameValuePairs(map, tn1, localPattern);
+                insertNameValuePairs(map, tn1, pattern);
             }
         }
-
+        return map;
+    }
+    
+    // Byron Nevins -- copied from original implementation
+    private void doGet() {
+        
         ActionReport.MessagePart topPart = reporter.getTopMessagePart();
-        Iterator it = map.keySet().iterator();
+        Iterator it = nodeTreeToProcess.keySet().iterator();
 
         while (it.hasNext()) {
             Object obj = it.next();
             String line = obj.toString();
-            line = line.replace(SLASH, "/") + " = " + map.get(obj);
+            line = line.replace(SLASH, "/") + " = " + nodeTreeToProcess.get(obj);
 
             if (plainReporter != null)
                 cliOutput.append(line).append('\n');
@@ -438,11 +485,11 @@ public class MonitoringReporter extends V2DottedNameSupport {
         setSuccess();
     }
 
-    private void doList(String localPattern, List<org.glassfish.flashlight.datatree.TreeNode> ltn) {
+    private void doList() {
         // list means only print things that have children.  Don't print the children.
         ActionReport.MessagePart topPart = reporter.getTopMessagePart();
 
-        for (org.glassfish.flashlight.datatree.TreeNode tn1 : ltn) {
+        for (org.glassfish.flashlight.datatree.TreeNode tn1 : nodeListToProcess) {
             if (tn1.hasChildNodes()) {
                 String line = tn1.getCompletePathName();
 

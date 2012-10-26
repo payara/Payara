@@ -109,10 +109,15 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand,
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
         if (monitor) {
-            return true; //preAuthorizationForMonitoring(context);
+            return preAuthorizationForMonitoring(context);
         } else {
             return preAuthorizationForNonMonitoring(context);
         }
+    }
+    
+    private boolean preAuthorizationForMonitoring(final AdminCommandContext context) {
+        mr.prepareGet(context, pattern, aggregateDataOnly);
+        return true;
     }
     
     private boolean preAuthorizationForNonMonitoring(final AdminCommandContext context) {
@@ -134,7 +139,7 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand,
     @Override
     public Collection<? extends AccessCheck> getAccessChecks() {
         if (monitor) {
-            return Collections.EMPTY_LIST; //getAccessChecksForMonitoring();
+            return mr.getAccessChecksForGet();
         } else {
             return getAccessChecksForNonMonitoring();
         }
@@ -194,8 +199,7 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand,
     }
 
     private void getMonitorAttributes(AdminCommandContext ctxt) {
-        mr.prepareGet(ctxt, pattern, aggregateDataOnly);
-
+        
         String s = "Get Command: " + mr.toString();
 
         if (Boolean.parseBoolean(System.getenv("AS_DEBUG")))

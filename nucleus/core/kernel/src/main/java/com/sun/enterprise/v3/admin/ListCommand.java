@@ -64,6 +64,7 @@ import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
 
 /**
  * User: Jerome Dochez
@@ -73,7 +74,8 @@ import com.sun.enterprise.config.serverbeans.Domain;
 @Service(name="list")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-public class ListCommand extends V2DottedNameSupport implements AdminCommand {
+public class ListCommand extends V2DottedNameSupport implements AdminCommand,
+        AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
 
     @Inject
     private MonitoringReporter mr;
@@ -100,6 +102,64 @@ public class ListCommand extends V2DottedNameSupport implements AdminCommand {
     @Inject @Optional
     private MonitoringRuntimeDataRegistry mrdr;
     
+    private Map<Dom, String> matchingNodes;
+    
+    private TreeNode[] parentNodes;
+
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        if (monitor) {
+            return preAuthorizationForMonitoring(context);
+        } else {
+            return preAuthorizationForNonMonitoring(context);
+        }
+    }
+    
+    private boolean preAuthorizationForMonitoring(final AdminCommandContext context) {
+        mr.prepareList(context, pattern);
+        return true;
+    }
+
+    private boolean preAuthorizationForNonMonitoring(final AdminCommandContext context) {
+        // first let's get the parent for this pattern.
+        parentNodes = getAliasedParent(domain, pattern);
+        Map<Dom, String> dottedNames =  new HashMap<Dom, String>();
+        for (TreeNode parentNode : parentNodes) {
+               dottedNames.putAll(getAllDottedNodes(parentNode.node));
+        }
+        // reset the pattern.
+        pattern = parentNodes[0].relativeName;
+
+        matchingNodes = getMatchingNodes(dottedNames, pattern);
+        if (matchingNodes.isEmpty() && pattern.lastIndexOf('.')!=-1) {
+            // it's possible the user is just looking for an attribute, let's remove the
+            // last element from the pattern.
+            matchingNodes = getMatchingNodes(dottedNames, pattern.substring(0, pattern.lastIndexOf(".")));
+        }
+        return true;
+    }
+    
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        if (monitor) {
+            return getAccessChecksForMonitoring();
+        } else {
+            return getAccessChecksForNonMonitoring();
+        }
+    }
+    
+    private Collection<? extends AccessCheck> getAccessChecksForMonitoring() {
+        return mr.getAccessChecksForList();
+    }
+    
+    private Collection<? extends AccessCheck> getAccessChecksForNonMonitoring() {
+        final Collection<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        for (Map.Entry<Dom,String> entry : matchingNodes.entrySet()) {
+            accessChecks.add(new AccessCheck(AccessRequired.Util.resourceNameFromDom((Dom)entry.getKey()), "read"));
+        }
+        return accessChecks;
+    }
+    
     public void execute(AdminCommandContext context) {
 
         ActionReport report = context.getActionReport();
@@ -117,21 +177,6 @@ public class ListCommand extends V2DottedNameSupport implements AdminCommand {
             return;
         }
         
-        // first let's get the parent for this pattern.
-         TreeNode[] parentNodes = getAliasedParent(domain, pattern);
-        Map<Dom, String> dottedNames =  new HashMap<Dom, String>();
-        for (TreeNode parentNode : parentNodes) {
-               dottedNames.putAll(getAllDottedNodes(parentNode.node));
-        }
-        // reset the pattern.
-        pattern = parentNodes[0].relativeName;
-
-        Map<Dom, String> matchingNodes = getMatchingNodes(dottedNames, pattern);
-        if (matchingNodes.isEmpty() && pattern.lastIndexOf('.')!=-1) {
-            // it's possible the user is just looking for an attribute, let's remove the
-            // last element from the pattern.
-            matchingNodes = getMatchingNodes(dottedNames, pattern.substring(0, pattern.lastIndexOf(".")));
-        }
         List<Map.Entry> matchingNodesSorted = sortNodesByDottedName(matchingNodes);
         for (Map.Entry<Dom, String> node : matchingNodesSorted) {
             ActionReport.MessagePart part = report.getTopMessagePart().addChild();
@@ -145,7 +190,6 @@ public class ListCommand extends V2DottedNameSupport implements AdminCommand {
     }
     
     private void listMonitorElements(AdminCommandContext ctxt) {
-        mr.prepareList(ctxt, pattern);
         mr.execute();
     }
 
