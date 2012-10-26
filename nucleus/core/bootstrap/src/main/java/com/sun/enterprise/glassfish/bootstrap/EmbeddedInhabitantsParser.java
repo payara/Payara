@@ -95,7 +95,7 @@ public class EmbeddedInhabitantsParser implements PopulatorPostProcessor {
 		String enableCLI = System.getenv("GF_EMBEDDED_ENABLE_CLI");
 		if (enableCLI == null || !enableCLI.equalsIgnoreCase("true")) {
 
-			if ("com.sun.enterprise.v3.admin.PrivateAdminAdapter".equals(
+			if ("com.sun.enterprise.v3.admin.PublicAdminAdapter".equals(
 					descriptorImpl.getImplementation())
 					|| "com.sun.enterprise.server.logging.LogManagerService".equals(
 							descriptorImpl.getImplementation())
