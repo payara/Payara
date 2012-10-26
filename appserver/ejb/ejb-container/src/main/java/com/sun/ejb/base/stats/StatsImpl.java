@@ -63,8 +63,6 @@ public abstract class StatsImpl
     protected static final Logger _logger = EjbContainerUtilImpl.getLogger();
 
     private GenericStatsImpl	    genericStatsDelegate;
-    protected boolean		    monitorOn = false;
-    protected boolean		    registered = true;
 
     protected StatsImpl() {
     }

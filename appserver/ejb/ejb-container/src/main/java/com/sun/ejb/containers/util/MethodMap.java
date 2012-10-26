@@ -183,7 +183,6 @@ public final class MethodMap extends HashMap {
             if( !occupied.contains(bucket) ) {
 
                 MethodInfo methodInfo = new MethodInfo();
-                methodInfo.key = next;
                 methodInfo.value = entry.getValue();
 
                 // cache declaring class so we can avoid the method call
@@ -246,7 +245,6 @@ public final class MethodMap extends HashMap {
 
     private static class MethodInfo {
         public Class declaringClass;
-        public Method key;
         public Object value;
     }
 }

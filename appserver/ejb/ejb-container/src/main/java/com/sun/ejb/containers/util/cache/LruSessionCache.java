@@ -73,9 +73,6 @@ public class LruSessionCache
     
     protected boolean removeIfIdle = false;
     
-    public int passivationCount = 0;
-    protected Object passivationCountLock = new Object();
-    
     private int numVictimsAccessed = 0;
     
     protected SFSBContainerCallback     container;
