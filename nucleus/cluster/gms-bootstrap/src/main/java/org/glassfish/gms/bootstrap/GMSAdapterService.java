@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.logging.LogLevel;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -75,6 +76,10 @@ import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+
 /**
  * This service is responsible for loading the group management
  * service. In the DAS, GMS will only be enabled if there is at least
@@ -90,8 +95,23 @@ import com.sun.logging.LogDomains;
 @RunLevel(StartupRunLevel.VAL)
 public class GMSAdapterService implements PostConstruct, ConfigListener {
 
-    final static Logger logger = LogDomains.getLogger(
-        GMSAdapterService.class, LogDomains.CORE_LOGGER);
+    //final static Logger logger = LogDomains.getLogger(
+    //    GMSAdapterService.class, LogDomains.CORE_LOGGER);
+
+    @LoggerInfo(subsystem = "CLSTR", description="Group Management Service Logger")
+    private static final String GMSBS_LOGGER_NAME = "javax.enterprise.cluster.gms.bootstrap";
+
+
+    @LogMessagesResourceBundle
+    private static final String LOG_MESSAGES_RB = "org.glassfish.cluster.gms.bootstrap.LogMessages";
+
+    static final Logger GMSBS_LOGGER = Logger.getLogger(GMSBS_LOGGER_NAME, LOG_MESSAGES_RB);
+
+    @LogMessageInfo(message = "Unable to load GMS classes. Group management service is not available.",
+                    level="WARNING",
+                    cause="GMS implementation classes are not present. See https://glassfish.dev.java.net/issues/show_bug.cgi?id=12850.",
+                    action="Check that shoal-gms-impl.jar file is present.")
+    private static final String GMSBS_GMSADAPTER_NOT_AVAILABLE="NLCS-CLSTR-10001";
 
     private static final StringManager strings =
         StringManager.getManager(GMSAdapterService.class);
@@ -118,8 +138,7 @@ public class GMSAdapterService implements PostConstruct, ConfigListener {
 
     List<GMSAdapter> gmsAdapters = new LinkedList<GMSAdapter>();
 
-    final static private Level TRACE_LEVEL = Level.FINE;
-
+    final static private Level TRACE_LEVEL = LogLevel.FINE;
 
     /**
      * Starts the application loader service.
@@ -178,8 +197,8 @@ public class GMSAdapterService implements PostConstruct, ConfigListener {
      * Create a GMSAdapter for each cluster that has gms enabled.
      */
     private void checkAllClusters(Clusters clusters) {
-        if (logger.isLoggable(TRACE_LEVEL)) {
-            logger.log(TRACE_LEVEL, "In DAS. Checking all clusters.");
+        if (GMSBS_LOGGER.isLoggable(TRACE_LEVEL)) {
+            GMSBS_LOGGER.log(TRACE_LEVEL, "In DAS. Checking all clusters.");
         }
         for (Cluster cluster : clusters.getCluster()) {
             checkCluster(cluster);
@@ -189,8 +208,8 @@ public class GMSAdapterService implements PostConstruct, ConfigListener {
     private GMSAdapter checkCluster(Cluster cluster) {
         GMSAdapter result = null;
         String gmsEnString = cluster.getGmsEnabled();
-        if (logger.isLoggable(TRACE_LEVEL)) {
-            logger.log(TRACE_LEVEL, String.format("cluster %s found with gms-enabled='%s'",
+        if (GMSBS_LOGGER.isLoggable(TRACE_LEVEL)) {
+            GMSBS_LOGGER.log(TRACE_LEVEL, String.format("cluster %s found with gms-enabled='%s'",
                         cluster.getName(), gmsEnString));
         }
         if (gmsEnString != null && Boolean.parseBoolean(gmsEnString)) {
@@ -206,18 +225,18 @@ public class GMSAdapterService implements PostConstruct, ConfigListener {
         GMSAdapter result = null;
         synchronized(lock) {
             result = getGMSAdapterByName(cluster.getName());
-            if (logger.isLoggable(TRACE_LEVEL)) {
-                logger.log(TRACE_LEVEL, "lookup GMSAdapter by clusterName=" + cluster.getName() + " returned " + result);
+            if (GMSBS_LOGGER.isLoggable(TRACE_LEVEL)) {
+                GMSBS_LOGGER.log(TRACE_LEVEL, "lookup GMSAdapter by clusterName=" + cluster.getName() + " returned " + result);
             }
             if (result == null) {
-                if (logger.isLoggable(TRACE_LEVEL)) {
-                    logger.log(TRACE_LEVEL, "creating gms-adapter for clustername " + cluster.getName() + " since no gms adapter found for clustername " + cluster.getName());
+                if (GMSBS_LOGGER.isLoggable(TRACE_LEVEL)) {
+                    GMSBS_LOGGER.log(TRACE_LEVEL, "creating gms-adapter for clustername " + cluster.getName() + " since no gms adapter found for clustername " + cluster.getName());
                 }
                 result = gmsAdapterProvider.get();
 
                 // see https://glassfish.dev.java.net/issues/show_bug.cgi?id=12850
                 if (result == null) {
-                    logger.log(Level.WARNING, "gmsadapter.not.available");
+                    GMSBS_LOGGER.log(LogLevel.WARNING, GMSBS_GMSADAPTER_NOT_AVAILABLE);
                     return null;
                 }
                 boolean initResult = result.initialize(cluster.getName());
@@ -226,8 +245,8 @@ public class GMSAdapterService implements PostConstruct, ConfigListener {
                 }
                 ServiceLocatorUtilities.addOneConstant(habitat, result, cluster.getName(), GMSAdapter.class);
                 
-                if (logger.isLoggable(TRACE_LEVEL)) {
-                    logger.log(TRACE_LEVEL, "loadModule: registered created gmsadapter for cluster " + cluster.getName() + " initialized result=" + initResult);
+                if (GMSBS_LOGGER.isLoggable(TRACE_LEVEL)) {
+                    GMSBS_LOGGER.log(TRACE_LEVEL, "loadModule: registered created gmsadapter for cluster " + cluster.getName() + " initialized result=" + initResult);
                 }
                 gmsAdapters.add(result);
             }
@@ -248,8 +267,8 @@ public class GMSAdapterService implements PostConstruct, ConfigListener {
                 public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
                     if (changedType == Cluster.class && type == TYPE.ADD) {  //create-cluster
                         Cluster cluster = (Cluster) changedInstance;
-                        if (logger.isLoggable(TRACE_LEVEL)) {
-                            logger.log(TRACE_LEVEL, "ClusterChangeEvent add cluster " + cluster.getName());
+                        if (GMSBS_LOGGER.isLoggable(TRACE_LEVEL)) {
+                            GMSBS_LOGGER.log(TRACE_LEVEL, "ClusterChangeEvent add cluster " + cluster.getName());
                         }
                         GMSAdapter localGmsAdapter = checkCluster(cluster);
                         if (localGmsAdapter != null) {
@@ -264,8 +283,8 @@ public class GMSAdapterService implements PostConstruct, ConfigListener {
                     }
                     if (changedType == Cluster.class && type == TYPE.REMOVE) {  //remove-cluster
                         Cluster cluster = (Cluster) changedInstance;
-                        if (logger.isLoggable(TRACE_LEVEL)) {
-                            logger.log(TRACE_LEVEL, "ClusterChangeEvent remove cluster " + cluster.getName());
+                        if (GMSBS_LOGGER.isLoggable(TRACE_LEVEL)) {
+                            GMSBS_LOGGER.log(TRACE_LEVEL, "ClusterChangeEvent remove cluster " + cluster.getName());
                         }
                         synchronized(lock) {
                             GMSAdapter localGmsAdapter = getGMSAdapterByName(cluster.getName());
@@ -282,7 +301,7 @@ public class GMSAdapterService implements PostConstruct, ConfigListener {
                     }
                     return null;
                 }
-            }, logger);
+            }, GMSBS_LOGGER);
         }
         return null;
     }

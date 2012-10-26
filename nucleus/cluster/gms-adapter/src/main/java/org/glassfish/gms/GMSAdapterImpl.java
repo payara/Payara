@@ -49,8 +49,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.logging.LogLevel;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -64,6 +64,9 @@ import org.glassfish.gms.bootstrap.HealthHistory;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.types.Property;
@@ -116,8 +119,8 @@ import com.sun.logging.LogDomains;
 @Service()
 public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
 
-    private static final Logger logger =
-        LogDomains.getLogger(GMSAdapterImpl.class, LogDomains.GMS_LOGGER);
+    //private static final Logger logger =
+    //    LogDomains.getLogger(GMSAdapterImpl.class, LogDomains.GMS_LOGGER);
     
     private static final String BEGINS_WITH = "^";
     private static final String GMS_PROPERTY_PREFIX = "GMS_";
@@ -176,6 +179,155 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
 
     private HealthHistory hHistory;
 
+    @LoggerInfo(subsystem = "CLSTR", description="Group Management Service Adapter Logger", publish=true)
+    private static final String GMS_LOGGER_NAME = "javax.enterprise.cluster.gms";
+
+
+    @LogMessagesResourceBundle
+    private static final String LOG_MESSAGES_RB = "org.glassfish.cluster.gms.LogMessages";
+
+    static final Logger GMS_LOGGER = Logger.getLogger(GMS_LOGGER_NAME, LOG_MESSAGES_RB);
+
+    //gmsservice.no.cluster.name=GMSAD1001: no clustername to lookup
+    //GMSAD1001.diag.cause.1=Required information was not passed into method.
+    //GMSAD1001.diag.check.1=File issue with all relevant information.
+    @LogMessageInfo(message = "no clustername to lookup",
+        level="SEVERE",
+        cause="Required information was not passed into method.",
+        action="File issue with all relevant information.")
+    private static final String GMS_NO_CLUSTER_NAME="NLCS-CLSTR-10101";
+
+    //gmsservice.multiple.adapter=GMSAD1002: Multiple gms-adapter service for cluster {0}
+    //GMSAD1002.diag.cause.1=GMs module is being initialized more than once for the same cluster.
+    //GMSAD1002.diag.check.1=File issue with all relevant information.
+    @LogMessageInfo(message = "Multiple gms-adapter service for cluster {0}",
+        level="SEVERE",
+        cause="GMs module is being initialized more than once for the same cluster.",
+        action="File issue with all relevant information.")
+    private static final String GMS_MULTIPLE_ADAPTER="NLCS-CLSTR-10102";
+
+    //gmsservice.nocluster.warning=GMSAD1003: GMS cannot initialize with unknown cluster
+    //GMSAD1003.diag.cause.1=No cluster was found with this name in the domain configuration.
+    //GMSAD1003.diag.check.1=Check that domain exists in domain.xml.
+    @LogMessageInfo(message = "GMS cannot initialize with unknown cluster",
+        level="WARNING",
+        cause="No cluster was found with this name in the domain configuration.",
+        action="Check that domain exists in domain.xml.")
+    private static final String GMS_NO_CLUSTER_WARNING="NLCS-CLSTR-10103";
+
+    //gmsservice.started=GMSAD1004: Started GMS for instance {0} in group {1}
+    @LogMessageInfo(message = "Started GMS for instance {0} in group {1}", level="INFO")
+    private static final String GMS_STARTED="NLCS-CLSTR-10104";
+
+
+    //gmsservice.member.joined.group=GMSAD1005: Member {0} joined group {1}
+    @LogMessageInfo(message = "Member {0} joined group {1}", level="INFO")
+    private static final String GMS_JOINED="NLCS-CLSTR-10105";
+
+
+    //gmsservice.alive.ready.signal=GMSAD1007: AliveAndReady for signal: {0} for member: {1} of group: {2} current:[{3}] previous:[{4}]
+    @LogMessageInfo(message = "AliveAndReady for signal: {0} for member: {1} of group: {2} current:[{3}] previous:[{4}]", level="INFO")
+    private static final String GMS_ALIVE_AND_READY="NLCS-CLSTR-10107";
+
+    //gmsservice.server_shutdown.received=GMSAD1008: GMSAdapter for member: {0} group: {1} received GlassfishEventType: {2}
+    @LogMessageInfo(message = "GMSAdapter for member: {0} group: {1} received GlassfishEventType: {2}", level="INFO")
+    private static final String GMS_SERVER_SHUTDOWN_RECEIVED="NLCS-CLSTR-10108";
+
+
+    //gmsexception.new.health.history=GMSAD1009: An exception occurred while creating the HealthHistory object: {0}
+    //GMSAD1009.diag.cause.1=An unexpected exception occurred.
+    //GMSAD1009.diag.check.1=See server log for more details.
+    @LogMessageInfo(message = "An exception occurred while creating the HealthHistory object: {0}",
+        level="WARNING",
+        cause="An unexpected exception occurred.",
+        action="See server log for more details.")
+    private static final String GMS_EXCEPTION_NEW_HEALTH_HISTORY="NLCS-CLSTR-10109";
+
+
+    //gmsexception.processing.config.props=GMSAD1010: An exception occurred while processing GMS configuration properties: {0}
+    //GMSAD1010.diag.cause.1=An unexpected exception occurred.
+    //GMSAD1010.diag.check.1=See server log for more details.
+    @LogMessageInfo(message = "An exception occurred while processing GMS configuration properties: {0}",
+        level="WARNING",
+        cause="An unexpected exception occurred.",
+        action="See server log for more details.")
+    private static final String GMS_EXCEPTION_PROCESSING_CONFIG="NLCS-CLSTR-10110";
+
+
+    //gmsexception.ignoring.property=GMSAD1011: Ignoring group-management-service property {0} with value of {1} due to {2}
+    //# todo: can we remove this try/catch?
+    //GMSAD1011.diag.cause.1=An illegal argument was passed into the Shoal GMS implementation.
+    //GMSAD1011.diag.check.1=Check the server log file for more information from Shoal-GMS.
+    @LogMessageInfo(message = "Ignoring group-management-service property {0} with value of {1} due to {2}",
+        level="WARNING",
+        cause="An illegal argument was passed into the Shoal GMS implementation.",
+        action="Check the server log file for more information from Shoal-GMS.")
+    private static final String GMS_EXCEPTION_IGNORING_PROPERTY="NLCS-CLSTR-10111";
+
+    //gmsexception.cluster.property.error=GMSAD1012: Error processing cluster property:{0} value:{1} due to exception {2}
+    //# todo: can we remove this try/catch?
+    //GMSAD1012.diag.cause.1=An unexpected exception occurred.
+    //GMSAD1012.diag.check.1=Check the server log file for more information from Shoal-GMS.
+    @LogMessageInfo(message = "Error processing cluster property:{0} value:{1} due to exception {2}",
+        level="WARNING",
+        cause="An unexpected exception occurred.",
+        action="Check the server log file for more information from Shoal-GMS.")
+    private static final String GMS_EXCEPTION_CLUSTER_PROPERTY_ERROR="NLCS-CLSTR-10112";
+
+    //gmsexception.cannot.get.group.module=GMSAD1013: Exception in getting GMS module for group {0}: {1}
+    //GMSAD1013.diag.cause.1=There was a problem withing the GMS implementation.
+    //GMSAD1013.diag.check.1=Check the server log file for more information from Shoal-GMS.
+    @LogMessageInfo(message = "Exception in getting GMS module for group {0}: {1}",
+        level="SEVERE",
+        cause="An unexpected exception occurred.",
+        action="Check the server log file for more information from Shoal-GMS.")
+    private static final String GMS_EXCEPTION_CANNOT_GET_GROUP_MODULE="NLCS-CLSTR-10113";
+
+    //gmsexception.update.health.history=GMSAD1014: An exception occurred while updating the instance health history table: {0}
+    //GMSAD1014.diag.cause.1=An unexpected exception occurred.
+    //GMSAD1014.diag.check.1=Check the log for Shoal-GMS exceptions.
+    @LogMessageInfo(message = "An exception occurred while updating the instance health history table: {0}",
+        level="WARNING",
+        cause="An unexpected exception occurred.",
+        action="Check the log file for more information from Shoal-GMS.")
+    private static final String GMS_EXCEPTION_UPDATE_HEALTH_HISTORY="NLCS-CLSTR-10114";
+
+    //gmsservice.failurerecovery.start.notification=GMSAD1015: start failure recovery callback for component: {0} failed member: {1}
+    @LogMessageInfo(message = "start failure recovery callback for component: {0} failed member: {1}", level="INFO")
+    private static final String GMS_FAILURERECOVERY_START="NLCS-CLSTR-10115";
+
+    //gmsservice.failurerecovery.completed.notification=GMSAD016: complete failure recovery callback for component: {0} failed member: {1}
+    @LogMessageInfo(message = "complete failure recovery callback for component: {0} failed member: {1}", level="INFO")
+    private static final String GMS_FAILURE_RECOVERY_COMPLETED="NLCS-CLSTR-10116";
+
+    //gmsservice.failed.to.start=GMSAD1017: GMS failed to start. See stack trace for additional information.
+    @LogMessageInfo(message = "GMS failed to start. See stack trace for additional information.",
+        level="SEVERE",
+        cause="An unexpected exception occurred.",
+        action="Check the log file for more information")
+    private static final String GMS_FAILED_TO_START="NLCS-CLSTR-10117";
+
+    //gmsservice.failed.to.start.unexpected=GMSAD1018: GMS failed to start due to a runtime exception. See stack trace for additional information.
+    @LogMessageInfo(message = "GMS failed to start due to a runtime exception. See stack trace for additional information.",
+        level="SEVERE",
+        cause="An unexpected exception occurred.",
+        action="Check the log file for more information"
+    )
+    private static final String GMS_FAILED_TO_START_UNEXCEPTED="NLCS-CLSTR-10118";
+
+    //gmsservice.bind.int.address.invalid=GMSAD1019: GMS bind interface address {0} is invalid. Will use default value instead.
+    //GMSAD1019.diag.cause.1=The specified bind interface address is not an active local address, so it cannot be used on this node.
+    //GMSAD1019.diag.check.1=Check that you have specified the proper address. See server log for more details from GMS subsystem.
+    @LogMessageInfo(message = "GMS bind interface address {0} is invalid. Will use default value instead.",
+        level="SEVERE",
+        cause="The specified bind interface address is not an active local address, so it cannot be used on this node.",
+        action="Check that you have specified the proper address. See server log for more details from GMS subsystem.")
+    private static final String GMS_BIND_INT_ADDRESS_INVALID="NLCS-CLSTR-10119";
+
+    //gmsservice.listener.port.required=GMSAD1020: GMS listener port is required for cluster {0}. Will attempt to use default of {1}.
+    @LogMessageInfo(message = "GMS listener port is required for cluster {0}. Will attempt to use default of {1}.", level="WARNING")
+    private static final String GMS_LISTENER_PORT_REQUIRED="NLCS-CLSTR-10120";
+
     @Override
     public void postConstruct() {
     }
@@ -193,7 +345,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         if (initialized.compareAndSet(false, true)) {
             this.clusterName = clusterName;
             if (clusterName == null) {
-                logger.log(Level.SEVERE, "gmsservice.no.cluster.name");
+                GMS_LOGGER.log(LogLevel.SEVERE, GMS_NO_CLUSTER_NAME);
                 return false;
             }
             try {
@@ -202,7 +354,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                 // ignore
             }
             if (gms != null) {
-                logger.log(Level.SEVERE, "gmsservice.multiple.adapter",
+                GMS_LOGGER.log(LogLevel.SEVERE, GMS_MULTIPLE_ADAPTER,
                     clusterName);
                 return false;
             }
@@ -222,7 +374,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                 }
             }
             if (cluster == null) {
-                logger.log(Level.WARNING, "gmsservice.nocluster.warning");
+                GMS_LOGGER.log(LogLevel.WARNING, GMS_NO_CLUSTER_WARNING);
                 return false;       //don't enable GMS
             } else if (isDas) {
                 // only want to do this in the case of the DAS
@@ -230,22 +382,22 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
             }
 
             clusterConfig = domain.getConfigNamed(clusterName + "-config");
-            if (logger.isLoggable(Level.CONFIG)) {
-                logger.log(Level.CONFIG,
+            if (GMS_LOGGER.isLoggable(LogLevel.CONFIG)) {
+                GMS_LOGGER.log(LogLevel.CONFIG,
                     "clusterName=" + clusterName +
                     " clusterConfig=" + clusterConfig);
             }
             try {
                 initializeGMS();
             } catch (GMSException e) {
-                logger.log(Level.SEVERE, "gmsservice.failed.to.start", e);
+                GMS_LOGGER.log(LogLevel.SEVERE, GMS_FAILED_TO_START, e);
                 // prevent access to a malformed gms object.
                 return false;
 
             // also ensure for any unchecked exceptions (such as NPE during initialization) during initialization
             // that the malformed gms object is not allowed to be accesssed through the gms adapter.
             } catch (Throwable t) {
-                logger.log(Level.SEVERE, "gmsservice.failed.to.start.unexpected", t);
+                GMS_LOGGER.log(LogLevel.SEVERE, GMS_FAILED_TO_START_UNEXCEPTED, t);
                 // prevent access to a malformed gms object.
                 return false;
             }
@@ -277,7 +429,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
             hHistory = new HealthHistory(cluster);
             Dom.unwrap(cluster).addListener(hHistory);
         } catch (Throwable t) {
-            logger.log(Level.WARNING, "gmsexception.new.health.history",
+            GMS_LOGGER.log(LogLevel.WARNING, GMS_EXCEPTION_NEW_HEALTH_HISTORY,
                 t.getLocalizedMessage());
         }
     }
@@ -361,8 +513,8 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                                     if (NetworkUtility.isBindAddressValid(value)) {
                                             configProps.put(keyName, value);
                                     } else {
-                                            logger.log(Level.SEVERE,
-                                    "gmsservice.bind.int.address.invalid",
+                                            GMS_LOGGER.log(LogLevel.SEVERE,
+                                                GMS_BIND_INT_ADDRESS_INVALID,
                                     value);
                                     }
                             }
@@ -386,8 +538,8 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                     if (clusterConfig != null) {
                             Property prop = clusterConfig.getGroupManagementService().getProperty(keyName);
                             if (prop == null) {
-                                    if (logger.isLoggable(Level.FINE)) {
-                                            logger.log(Level.FINE, String.format(
+                                    if (GMS_LOGGER.isLoggable(LogLevel.FINE)) {
+                                            GMS_LOGGER.log(LogLevel.FINE, String.format(
                                     "No config property found for %s",
                                     keyName));
                                     }
@@ -421,16 +573,14 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
 
 
                 default:
-                    if (logger.isLoggable(Level.FINE)) {
-                            logger.log(Level.FINE, String.format(
+                    if (GMS_LOGGER.isLoggable(LogLevel.FINE)) {
+                            GMS_LOGGER.log(LogLevel.FINE, String.format(
                             "service provider key %s ignored", keyName));
                     }
                     break;
             }  /* end switch over ServiceProviderConfigurationKeys enum */
             } catch (Throwable t) {
-                logger.log(Level.WARNING,
-                    "gmsexception.processing.config.props",
-                    t.getLocalizedMessage());
+                GMS_LOGGER.log(LogLevel.WARNING, GMS_EXCEPTION_PROCESSING_CONFIG, t.getLocalizedMessage());
             }
         } /* end for loop over ServiceProviderConfigurationKeys */
 
@@ -446,22 +596,22 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                 if (name == null || value == null) {
                     continue;
                 }
-                if (logger.isLoggable(Level.CONFIG)) {
-                    logger.log(Level.CONFIG,
+                if (GMS_LOGGER.isLoggable(LogLevel.CONFIG)) {
+                    GMS_LOGGER.log(LogLevel.CONFIG,
                         "processing group-management-service property name=" +
                             name + " value= " + value);
                 }
                 if (value.startsWith("${")) {
-                    if (logger.isLoggable(Level.CONFIG)) {
-                        logger.log(Level.CONFIG,
+                    if (GMS_LOGGER.isLoggable(LogLevel.CONFIG)) {
+                        GMS_LOGGER.log(LogLevel.CONFIG,
                             "skipping group-management-service property name=" +
                                 name +
                                 " since value is unresolved symbolic token=" +
                                 value);
                     }
                 } else {
-                    if (logger.isLoggable(Level.CONFIG)) {
-                        logger.log(Level.CONFIG,
+                    if (GMS_LOGGER.isLoggable(LogLevel.CONFIG)) {
+                        GMS_LOGGER.log(LogLevel.CONFIG,
                             "processing group-management-service property name=" +
                                 name + " value= " + value);
                     }
@@ -470,7 +620,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                     }
                     configProps.put(name, value);
                     if (! validateGMSProperty(name)) {
-                        logger.log(Level.WARNING, "gmsexception.ignoring.property",
+                        GMS_LOGGER.log(LogLevel.WARNING, GMS_EXCEPTION_IGNORING_PROPERTY,
                                        new Object [] {name, value, ""} );
                     }
                 }
@@ -484,14 +634,14 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                 if (name == null || value == null) {
                     continue;
                 }
-                if (logger.isLoggable(Level.CONFIG)) {
-                    logger.log(Level.CONFIG,
+                if (GMS_LOGGER.isLoggable(LogLevel.CONFIG)) {
+                    GMS_LOGGER.log(LogLevel.CONFIG,
                         "processing cluster property name=" + name +
                         " value= " + value);
                 }
                 if (value.startsWith("${")) {
-                    if (logger.isLoggable(Level.CONFIG)) {
-                        logger.log(Level.CONFIG,
+                    if (GMS_LOGGER.isLoggable(LogLevel.CONFIG)) {
+                        GMS_LOGGER.log(LogLevel.CONFIG,
                             "skipping cluster property name=" + name +
                             " since value is unresolved symbolic token=" +
                             value);
@@ -520,11 +670,11 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                         } else {
                             // handle normal case.  one to one mapping.
                             configProps.put(name, value);
-                            logger.log(Level.CONFIG,
+                            GMS_LOGGER.log(LogLevel.CONFIG,
                         "processing cluster property name=" + name +
                         " value= " + value);
                             if (! validateGMSProperty(name)) {
-                                logger.log(Level.WARNING, "gmsexception.cluster.property.error",
+                                GMS_LOGGER.log(LogLevel.WARNING, GMS_EXCEPTION_CLUSTER_PROPERTY_ERROR,
                                            new Object [] {name, value, ""} );
                             }
                         }
@@ -549,20 +699,20 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
             gmsPortProp.getValue().trim().charAt(0) == '$') {
 
             clusterPort = "9090";
-            logger.log(Level.WARNING, "gmsservice.listener.port.required",
+            GMS_LOGGER.log(LogLevel.WARNING, GMS_LISTENER_PORT_REQUIRED,
                 new Object [] {cluster.getName(), clusterPort});
         } else {
             clusterPort = gmsPortProp.getValue();
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "will use gms listener port: " +
+            if (GMS_LOGGER.isLoggable(LogLevel.FINE)) {
+                GMS_LOGGER.log(LogLevel.FINE, "will use gms listener port: " +
                     clusterPort);
             }
         }
 
         // get cluster member server refs
         Set<String> instanceNames = new HashSet<String>();
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, String.format(
+        if (GMS_LOGGER.isLoggable(LogLevel.FINE)) {
+            GMS_LOGGER.log(LogLevel.FINE, String.format(
                 "checking cluster.getServerRef() for '%s'",
                 cluster.getName()));
         }
@@ -574,8 +724,8 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
              * now. If we want to skip it, here's the place to
              * check.
              */
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, String.format(
+            if (GMS_LOGGER.isLoggable(LogLevel.FINE)) {
+                GMS_LOGGER.log(LogLevel.FINE, String.format(
                     "adding server ref %s to set of instance names",
                     sRef.getRef()));
             }
@@ -590,8 +740,8 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         for (String name : instanceNames) {
             Server server = servers.getServer(name);
             if (server != null) {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, String.format(
+                if (GMS_LOGGER.isLoggable(LogLevel.FINE)) {
+                    GMS_LOGGER.log(LogLevel.FINE, String.format(
                         "found server for name %s",
                         name));
                 }
@@ -599,8 +749,8 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                 if (node != null) {
                     String host = scheme + node.getNodeHost() + ":" +
                         clusterPort;
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE, String.format(
+                    if (GMS_LOGGER.isLoggable(LogLevel.FINE)) {
+                        GMS_LOGGER.log(LogLevel.FINE, String.format(
                             "Adding host '%s' to discovery list", host));
                     }
                     sb.append(host).append(SEP);
@@ -613,8 +763,8 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
             try {
                 ServerDirs sDirs = new ServerDirs(env.getInstanceRoot());
                 File dasPropsFile = sDirs.getDasPropertiesFile();
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, String.format(
+                if (GMS_LOGGER.isLoggable(LogLevel.FINE)) {
+                    GMS_LOGGER.log(LogLevel.FINE, String.format(
                         "found das.props file at %s",
                         dasPropsFile.getAbsolutePath()));
                 }
@@ -623,13 +773,13 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                     dasProps.getProperty("agent.das.host") +
                     ":" +
                     clusterPort;
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, String.format(
+                if (GMS_LOGGER.isLoggable(LogLevel.FINE)) {
+                    GMS_LOGGER.log(LogLevel.FINE, String.format(
                         "adding '%s' from das.props file", host));
                 }
                 sb.append(host).append(SEP);
             } catch (IOException ioe) {
-                logger.log(Level.WARNING, ioe.toString());
+                GMS_LOGGER.log(LogLevel.WARNING, ioe.toString());
             }
         }
 
@@ -638,8 +788,8 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         if (lastCommaIndex != -1) {
             sb.deleteCharAt(lastCommaIndex);
         }
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, String.format(
+        if (GMS_LOGGER.isLoggable(LogLevel.FINE)) {
+            GMS_LOGGER.log(LogLevel.FINE, String.format(
                 "returning discovery list '%s'",
                 sb.toString()));
         }
@@ -717,8 +867,8 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                             // handle cases where gms is not set and for some reason this handler did not get unregistered.
                             return;
                         }
-                        if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
-                            logger.log(Level.INFO, "gmsservice.server_shutdown.received",
+                        if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+                            GMS_LOGGER.log(LogLevel.INFO, GMS_SERVER_SHUTDOWN_RECEIVED,
                                        new Object[]{gms.getInstanceName(), gms.getGroupName(), event.name()});
 
                             // todo: remove these when removing the test register ones above.
@@ -739,7 +889,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
 //                            long waittime = MAX_WAIT_DURATION - elapsedDuration;
 //                            if (waittime > 0L && waittime <= MAX_WAIT_DURATION) {
 //                                try {
-//                                    logger.info("wait " + waittime + " ms before signaling joined and ready");
+//                                    GMS_LOGGER.info("wait " + waittime + " ms before signaling joined and ready");
 //                                    Thread.sleep(waittime);
 //                                } catch(Throwable t) {}
 //                            }
@@ -751,7 +901,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                 events.register(glassfishEventListener);
                 gms.join();
                 joinTime = System.currentTimeMillis();
-                logger.log(Level.INFO, "gmsservice.member.joined.group",
+                GMS_LOGGER.log(LogLevel.INFO, GMS_JOINED,
                     new Object [] {instanceName, clusterName});
             } catch (GMSException e) {
                 // failed to start so unregister event listener that calls GMS.
@@ -759,14 +909,14 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                 throw e;
             }
 
-            logger.log(Level.INFO, "gmsservice.started",
+            GMS_LOGGER.log(LogLevel.INFO, GMS_STARTED,
                 new Object[] {instanceName, clusterName});
 
         } else throw new GMSException("gms object is null.");
     }
 
     private void printProps(Properties prop) {
-        if (!logger.isLoggable(Level.CONFIG)) {
+        if (!GMS_LOGGER.isLoggable(LogLevel.CONFIG)) {
             return;
         }
 
@@ -774,7 +924,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         for (String key : prop.stringPropertyNames()) {
             sb.append(key).append(" = ").append(prop.get(key)).append("  ");
         }
-        logger.log(Level.CONFIG,
+        GMS_LOGGER.log(LogLevel.CONFIG,
             "Printing all GMS properties: ", sb.toString());
     }
 
@@ -794,7 +944,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         try {
             return GMSFactory.getGMSModule(groupName);
         } catch (GMSException e) {
-            logger.log(Level.SEVERE, "gmsexception.cannot.get.group.module",
+            GMS_LOGGER.log(LogLevel.SEVERE, GMS_EXCEPTION_CANNOT_GET_GROUP_MODULE,
                 new Object [] {groupName , e.getLocalizedMessage()});
             return null;
         }
@@ -802,8 +952,8 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
 
     @Override
     public void processNotification(Signal signal) {
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "GMSService: Received a notification ",
+        if (GMS_LOGGER.isLoggable(LogLevel.FINE)) {
+            GMS_LOGGER.log(LogLevel.FINE, "GMSService: Received a notification ",
                 signal.getClass().getName());
         }
         try {
@@ -818,18 +968,18 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                 hHistory.updateHealth(signal);
             }
         } catch (Throwable t) {
-            logger.log(Level.WARNING, "gmsexception.update.health.history",
+            GMS_LOGGER.log(LogLevel.WARNING, GMS_EXCEPTION_UPDATE_HEALTH_HISTORY,
                 t.getLocalizedMessage());
         }
         // testing only.  one must set cluster property GMS_TEST_FAILURE_RECOVERY to true for the following to execute. */
         if (testFailureRecoveryHandler && signal instanceof FailureRecoverySignal) {
             FailureRecoverySignal frsSignal = (FailureRecoverySignal)signal;
-            logger.log(Level.INFO, "gmsservice.failurerecovery.start.notification", new Object[]{frsSignal.getComponentName(), frsSignal.getMemberToken()});
+            GMS_LOGGER.log(LogLevel.INFO, GMS_FAILURERECOVERY_START, new Object[]{frsSignal.getComponentName(), frsSignal.getMemberToken()});
             try {
                 Thread.sleep(20 * 1000); // sleep 20 seconds. simulate wait time to allow instance to restart and do self recovery before another instance does it.
             } catch (InterruptedException ignored) {
             }
-            logger.log(Level.INFO, "gmsservice.failurerecovery.completed.notification", new Object[]{frsSignal.getComponentName(), frsSignal.getMemberToken()});
+            GMS_LOGGER.log(LogLevel.INFO, GMS_FAILURE_RECOVERY_COMPLETED, new Object[]{frsSignal.getComponentName(), frsSignal.getMemberToken()});
         }
         if (this.aliveAndReadyLoggingEnabled) {
             if (signal instanceof JoinedAndReadyNotificationSignal ||
@@ -853,7 +1003,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                 }
                 AliveAndReadyView current = arSignal.getCurrentView();
                 AliveAndReadyView previous = arSignal.getPreviousView();
-                logger.log(Level.INFO, "gmsservice.alive.ready.signal",
+                GMS_LOGGER.log(LogLevel.INFO, GMS_ALIVE_AND_READY,
                     new Object [] {
                         signal.getClass().getSimpleName() + signalSubevent,
                         signal.getMemberToken(),

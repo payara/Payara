@@ -92,6 +92,11 @@
             <groupId>org.shoal</groupId>
             <artifactId>shoal-gms-impl</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.annotations</groupId>
+            <artifactId>logging-annotation-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

@@ -50,13 +50,16 @@ import org.glassfish.api.admin.*;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import javax.inject.Inject;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
+import org.glassfish.api.logging.LogLevel;
 import java.util.logging.Logger;
 
 
@@ -71,8 +74,32 @@ import java.util.logging.Logger;
 })
 public class GMSAnnounceAfterStartClusterCommand implements AdminCommand {
 
-    private static final Logger logger = LogDomains.getLogger(
-        GMSAnnounceAfterStartClusterCommand.class, LogDomains.GMS_LOGGER);
+    //private static final Logger logger = LogDomains.getLogger(
+    //    GMSAnnounceAfterStartClusterCommand.class, LogDomains.GMS_LOGGER);
+
+    @LoggerInfo(subsystem = "CLSTR", description="Group Management Service Admin Logger", publish=true)
+    private static final String GMS_ADMIN_LOGGER_NAME = "javax.enterprise.cluster.gms.admin";
+
+
+    @LogMessagesResourceBundle
+    private static final String LOG_MESSAGES_RB = "org.glassfish.cluster.gms.LogMessages";
+
+    static final Logger GMS_ADMIN_LOGGER = Logger.getLogger(GMS_ADMIN_LOGGER_NAME, LOG_MESSAGES_RB);
+
+    //after.start=GMSAD3001: GMSAnnounceAfterStartClusterCommand: exitCode:{0} members {1} clusterMembers:{2}
+    @LogMessageInfo(message = "GMSAnnounceAfterStartClusterCommand: exitCode:{0} members {1} clusterMembers:{2}",
+        level="INFO")
+    private static final String GMSADMIN_AFTER_START="NLCS-CLSTR-30001";
+
+    //group.start.exception=GMSAD3002: An exception occurred while announcing GMS group startup: {0}
+    //GMSAD3002.diag.cause.1=An unexpected exception occurred in the GMS implementation.
+    //GMSAD3002.diag.check.1=Check the server log file for more information from Shoal-GMS.
+    @LogMessageInfo(message = "An exception occurred while announcing GMS group startup: {0}",
+        level="WARNING",
+        cause="An unexpected exception occurred in the GMS implementation.",
+        action="Check the server log file for more information from Shoal-GMS.")
+    private static final String GMS_START_EXCEPTION="NLCS-CLSTR-30002";
+
 
     @Inject
     private ServerEnvironment env;
@@ -132,7 +159,7 @@ public class GMSAnnounceAfterStartClusterCommand implements AdminCommand {
 
                     default:
                 }
-                logger.log(Level.INFO, "after.start", new Object [] {
+                GMS_ADMIN_LOGGER.log(LogLevel.INFO, GMSADMIN_AFTER_START, new Object [] {
                     report.getActionExitCode(), members, gmsInfo.clusterMembers
                 });
                 try {
@@ -145,7 +172,7 @@ public class GMSAnnounceAfterStartClusterCommand implements AdminCommand {
                     }
                 } catch (Throwable t) {
                     // ensure gms group startup announcement does not interfere with starting cluster.
-                    logger.log(Level.WARNING, "group.start.exception",
+                    GMS_ADMIN_LOGGER.log(LogLevel.WARNING, GMS_START_EXCEPTION,
                         t.getLocalizedMessage());
                 }
             }

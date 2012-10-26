@@ -50,6 +50,9 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import javax.inject.Inject;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
@@ -60,7 +63,7 @@ import com.sun.enterprise.ee.cms.core.GroupManagementService;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
+import org.glassfish.api.logging.LogLevel;
 import java.util.logging.Logger;
 
 
@@ -81,8 +84,27 @@ import java.util.logging.Logger;
 })
 public class GMSAnnounceBeforeStopClusterCommand implements AdminCommand {
 
-    private static final Logger logger = LogDomains.getLogger(
-        GMSAnnounceBeforeStopClusterCommand.class, LogDomains.GMS_LOGGER);
+    //private static final Logger logger = LogDomains.getLogger(
+    //    GMSAnnounceBeforeStopClusterCommand.class, LogDomains.GMS_LOGGER);
+
+    @LoggerInfo(subsystem = "CLSTR", description="Group Management Service Admin Logger", publish=true)
+    private static final String GMS_LOGGER_NAME = "javax.enterprise.cluster.gms.admin";
+
+
+    @LogMessagesResourceBundle
+    private static final String LOG_MESSAGES_RB = "org.glassfish.cluster.gms.LogMessages";
+
+    static final Logger GMS_LOGGER = Logger.getLogger(GMS_LOGGER_NAME, LOG_MESSAGES_RB);
+
+    //cluster.stop.exception=GMSAD3005: An exception occurred while announcing GMS group shutdown: {0}
+    //GMSAD3005.diag.cause.1=An unexpected exception occurred in the GMS implementation.
+    //GMSAD3005.diag.check.1=Check the server log file for more information from Shoal-GMS.
+    @LogMessageInfo(message = "An exception occurred while announcing GMS group shutdown: {0}",
+        level="WARNING",
+        cause="An unexpected exception occurred in the GMS implementation.",
+        action="Check the server log file for more information from Shoal-GMS.")
+    private static final String GMS_CLUSTER_STOP_EXCEPTION="NLCS-CLSTR-30005";
+
 
     @Inject
     private ServerEnvironment env;
@@ -135,8 +157,8 @@ public class GMSAnnounceBeforeStopClusterCommand implements AdminCommand {
 
                                     // ensure gms group startup announcement does not interfere with starting cluster.
                                     // any exception here should not interfer with starting cluster.
-                                    logger.log(Level.WARNING,
-                                        "cluster.stop.exception",
+                                    GMS_LOGGER.log(LogLevel.WARNING,
+                                        GMS_CLUSTER_STOP_EXCEPTION,
                                         t.getLocalizedMessage());
                                 }
                             } // else from GMS perspective treat remaining instances getting started as INSTANCE_START, not GROUP_START.

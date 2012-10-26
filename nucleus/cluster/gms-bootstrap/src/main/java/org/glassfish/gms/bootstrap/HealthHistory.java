@@ -46,6 +46,9 @@ import com.sun.enterprise.config.serverbeans.ServerRef;
 import com.sun.enterprise.ee.cms.core.*;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
@@ -53,8 +56,8 @@ import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.logging.LogLevel;
 
 /**
  * Used to hold cluster history. This information is backed by
@@ -64,11 +67,49 @@ import java.util.logging.Logger;
  */
 public final class HealthHistory implements ConfigListener {
 
-    private final static Logger logger = LogDomains.getLogger(
-        HealthHistory.class, LogDomains.CORE_LOGGER);
+    //private final static Logger logger = LogDomains.getLogger(
+    //    HealthHistory.class, LogDomains.CORE_LOGGER);
 
     private static final StringManager strings =
         StringManager.getManager(HealthHistory.class);
+
+    @LoggerInfo(subsystem = "CLSTR", description="Group Management Service Logger", publish=true)
+    private static final String GMSBS_LOGGER_NAME = "javax.enterprise.cluster.gms.bootstrap";
+
+
+    @LogMessagesResourceBundle
+    private static final String LOG_MESSAGES_RB = "org.glassfish.cluster.gms.bootstrap.LogMessages";
+
+    static final Logger GMSBS_LOGGER = Logger.getLogger(GMSBS_LOGGER_NAME, LOG_MESSAGES_RB);
+
+    @LogMessageInfo(message = "Adding instance {0} to health history table.", level="INFO")
+    private static final String GMS_ADDING_INSTANCE="NLCS-CLSTR-20001";
+
+    @LogMessageInfo(message = "Instance {0} was not in map when deleted from health history table.",
+                    level="WARNING",
+                    cause="More than one call may have been made to remove this instance" +
+                          " from the cluster. This has no other effect on the health history information.",
+                    action="No action is necessary.")
+    private static final String GMS_INSTANCE_NOT_PRESENT="NLCS-CLSTR-20002";
+
+    // deleting_instance=GMSBS2003: Deleting instance {0} from health history table.
+    @LogMessageInfo(message = "Deleting instance {0} from health history table.", level="INFO")
+    private static final String GMS_DELETE_INSTANCE="NLCS-CLSTR-20003";
+
+    // duplicate_instance=GMSBS2004: Duplicate instance {0} ignored in health history.
+    @LogMessageInfo(message = "Duplicate instance {0} ignored in health history.",
+                    level="WARNING",
+                    cause="There may be more than one instance in the cluster with the same name.",
+                    action="Check that instance names are unique within the cluster.")
+    private static final String GMS_DUPLICATE_INSTANCE="NLCS-CLSTR-20004";
+
+    // key_already.present=GMSBS2005: State already known for instance {0}. Not adding to health history table.
+    @LogMessageInfo(message = "State already known for instance {0}. Not adding to health history table.", level="INFO")
+    private static final String GMS_INSTANCE_ALREADY_PRESENT="NLCS-CLSTR-20005";
+
+    // unknown_instance=GMSBS2006: New state {0} added for unknown instance {1}
+    @LogMessageInfo(message = "New state {0} added for unknown instance {1}", level="INFO")
+    private static final String GMS_INSTANCE_UNKNOWN_STATE="NLCS-CLSTR-20006";
 
     // NOT_RUNNING means there is no time information associated
     public static enum STATE {
@@ -110,15 +151,14 @@ public final class HealthHistory implements ConfigListener {
             if (server.isDas()) {
                 continue;
             }
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, String.format(
+            if (GMSBS_LOGGER.isLoggable(LogLevel.FINE)) {
+                GMSBS_LOGGER.log(LogLevel.FINE, String.format(
                     "instance name in HealthHistory constructor %s",
                     server.getName()));
             }
             if (healthMap.putIfAbsent(server.getName(),
                 new InstanceHealth(STATE.NOT_RUNNING, NOTIME)) != null) {
-                logger.log(Level.WARNING,
-                    "duplicate.instance", server.getName());
+                GMSBS_LOGGER.log(LogLevel.WARNING, GMS_DUPLICATE_INSTANCE, server.getName());
             }
         }
     }
@@ -157,8 +197,8 @@ public final class HealthHistory implements ConfigListener {
      * TODO: add try/catch around everything for safety
      */
     public void updateHealth(Signal signal) {
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "signal: " + signal.toString());
+        if (GMSBS_LOGGER.isLoggable(LogLevel.FINE)) {
+            GMSBS_LOGGER.log(LogLevel.FINE, "signal: " + signal.toString());
         }
         String name = signal.getMemberToken();
         long time = signal.getStartTime();
@@ -185,13 +225,13 @@ public final class HealthHistory implements ConfigListener {
                 (JoinedAndReadyNotificationSignal) signal;
             RejoinSubevent sub = jar.getRejoinSubevent();
             if (sub == null) {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, "it's a joined and ready");
+                if (GMSBS_LOGGER.isLoggable(LogLevel.FINE)) {
+                    GMSBS_LOGGER.log(LogLevel.FINE, "it's a joined and ready");
                 }
                 state = STATE.RUNNING;
             } else {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, "it's a rejoin");
+                if (GMSBS_LOGGER.isLoggable(LogLevel.FINE)) {
+                    GMSBS_LOGGER.log(LogLevel.FINE, "it's a rejoin");
                 }
                 state = STATE.REJOINED;
                 time = sub.getGroupJoinTime();
@@ -203,21 +243,21 @@ public final class HealthHistory implements ConfigListener {
             state = STATE.SHUTDOWN;
             time = System.currentTimeMillis();
         } else {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, String.format(
+            if (GMSBS_LOGGER.isLoggable(LogLevel.FINE)) {
+                GMSBS_LOGGER.log(LogLevel.FINE, String.format(
                     "Signal %s not handled in updateHealth",
                     signal.toString()));
             }
             return;
         }
         InstanceHealth ih = new InstanceHealth(state, time);
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, String.format(
+        if (GMSBS_LOGGER.isLoggable(LogLevel.FINE)) {
+            GMSBS_LOGGER.log(LogLevel.FINE, String.format(
                 "updating health with %s : %s for signal %s",
                 name, ih.toString(), signal.toString()));
         }
         if (healthMap.put(name, ih) == null) {
-            logger.log(Level.INFO, "unknown.instance",
+            GMSBS_LOGGER.log(LogLevel.INFO, GMS_INSTANCE_UNKNOWN_STATE,
                 new Object [] {state, name});
         }
     }
@@ -241,10 +281,10 @@ public final class HealthHistory implements ConfigListener {
     }
 
     private void deleteInstance(String name) {
-        logger.log(Level.INFO, "deleting.instance", name);
+        GMSBS_LOGGER.log(LogLevel.INFO, GMS_DELETE_INSTANCE, name);
         InstanceHealth oldHealth = healthMap.remove(name);
         if (oldHealth == null) {
-            logger.log(Level.WARNING, "delete.key.not.present", name);
+            GMSBS_LOGGER.log(LogLevel.WARNING, GMS_INSTANCE_NOT_PRESENT, name);
         }
     }
 
@@ -257,11 +297,11 @@ public final class HealthHistory implements ConfigListener {
      * be consistent with startup behavior.
      */
     private void addInstance(String name) {
-        logger.log(Level.INFO, "adding.instance", name);
+        GMSBS_LOGGER.log(LogLevel.INFO, GMS_ADDING_INSTANCE, name);
         InstanceHealth oldHealth = healthMap.putIfAbsent(name,
             new InstanceHealth(STATE.NOT_RUNNING, NOTIME));
         if (oldHealth != null) {
-            logger.log(Level.INFO, "key.already.present", name);
+            GMSBS_LOGGER.log(LogLevel.INFO, GMS_INSTANCE_ALREADY_PRESENT, name);
         }
     }
 
