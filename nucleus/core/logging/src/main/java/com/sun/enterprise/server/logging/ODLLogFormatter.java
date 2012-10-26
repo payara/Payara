@@ -68,7 +68,7 @@ import java.util.logging.Formatter;
 @Service()
 @ContractsProvided({ODLLogFormatter.class, Formatter.class})
 @PerLookup
-public class ODLLogFormatter extends Formatter {
+public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
 
     private static final String AS_COMPONENT_NAME = "AS";
 
@@ -118,6 +118,8 @@ public class ODLLogFormatter extends Formatter {
     private String recordDateFormat;
 
     private BitSet includeSuppAttrsBits = new BitSet();
+
+    private LogEventBroadcaster logEventBroadcasterDelegate;
 
     private static final String FIELD_BEGIN_MARKER = "[";
     private static final String FIELD_END_MARKER = "]";
@@ -182,6 +184,8 @@ public class ODLLogFormatter extends Formatter {
 
         try {
 
+            LogEventImpl logEvent = new LogEventImpl();
+            
             // creating message from log record using resource bundle and appending parameters
             String message = getLogMessage(record);
             boolean multiLine = isMultiLine(message);
@@ -197,20 +201,25 @@ public class ODLLogFormatter extends Formatter {
             SimpleDateFormat dateFormatter = new SimpleDateFormat(getRecordDateFormat() != null ? getRecordDateFormat() : RFC_3339_DATE_FORMAT);
             date.setTime(record.getMillis());
             recordBuffer.append(FIELD_BEGIN_MARKER);
-            recordBuffer.append(dateFormatter.format(date));
+            String timestamp=dateFormatter.format(date);
+            logEvent.setTimestamp(timestamp);
+            recordBuffer.append(timestamp);
             recordBuffer.append(FIELD_END_MARKER);
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
             // Adding organization ID
             recordBuffer.append(FIELD_BEGIN_MARKER);
+            logEvent.setComponentId(AS_COMPONENT_NAME);
             recordBuffer.append(AS_COMPONENT_NAME);
             recordBuffer.append(FIELD_END_MARKER);
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
             // Adding messageType
-            Level logRecord = record.getLevel();
+            Level logLevel = record.getLevel();
             recordBuffer.append(FIELD_BEGIN_MARKER);
-            recordBuffer.append(getMapplingLogRecord(logRecord));
+            String odlLevel = getMapplingLogRecord(logLevel);
+            logEvent.setLevel(odlLevel);
+            recordBuffer.append(odlLevel);
             recordBuffer.append(FIELD_END_MARKER);
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
@@ -218,12 +227,14 @@ public class ODLLogFormatter extends Formatter {
             recordBuffer.append(FIELD_BEGIN_MARKER);
             String msgId  = UniformLogFormatter.getMessageId(record);            
             recordBuffer.append((msgId == null) ? "" : msgId);
+            logEvent.setMessageId(msgId);
             recordBuffer.append(FIELD_END_MARKER);
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
             // Adding logger Name / module Name
             recordBuffer.append(FIELD_BEGIN_MARKER);
             recordBuffer.append(record.getLoggerName());
+            logEvent.setLogger(record.getLoggerName());
             recordBuffer.append(FIELD_END_MARKER);
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
@@ -232,6 +243,7 @@ public class ODLLogFormatter extends Formatter {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("tid: _ThreadID=");
                 recordBuffer.append(record.getThreadID());
+                logEvent.setThreadId(record.getThreadID());
                 String threadName;
                 if (record instanceof GFLogRecord) {
                     threadName = ((GFLogRecord)record).getThreadName();
@@ -239,6 +251,7 @@ public class ODLLogFormatter extends Formatter {
                     threadName = Thread.currentThread().getName();
                 }
                 recordBuffer.append(" _ThreadName=");
+                logEvent.setThreadName(threadName);
                 recordBuffer.append(threadName);
                 recordBuffer.append(FIELD_END_MARKER);
                 recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);                
@@ -250,6 +263,7 @@ public class ODLLogFormatter extends Formatter {
             {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("userId: ");
+                logEvent.setUser(userID);
                 recordBuffer.append(userID);
                 recordBuffer.append(FIELD_END_MARKER);
                 recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
@@ -261,6 +275,7 @@ public class ODLLogFormatter extends Formatter {
             {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("ecid: ");
+                logEvent.setECId(ecID);
                 recordBuffer.append(ecID);
                 recordBuffer.append(FIELD_END_MARKER);
                 recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
@@ -270,7 +285,8 @@ public class ODLLogFormatter extends Formatter {
             if (includeSuppAttrsBits.get(SupplementalAttribute.TIME_MILLIS.ordinal())) {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("timeMillis: ");
-                recordBuffer.append(record.getMillis());
+                logEvent.setTimeMillis(record.getMillis());
+                recordBuffer.append(record.getMillis());                
                 recordBuffer.append(FIELD_END_MARKER);
                 recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);                
             }
@@ -279,7 +295,8 @@ public class ODLLogFormatter extends Formatter {
             if (includeSuppAttrsBits.get(SupplementalAttribute.LEVEL_VALUE.ordinal())) {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("levelValue: ");
-                recordBuffer.append(record.getLevel().intValue());
+                logEvent.setLevelValue(logLevel.intValue());
+                recordBuffer.append(logLevel.intValue());
                 recordBuffer.append(FIELD_END_MARKER);
                 recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);                
             }
@@ -287,8 +304,10 @@ public class ODLLogFormatter extends Formatter {
             // Adding extra Attributes - record number
             if (RECORD_NUMBER_IN_KEY_VALUE) {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
+                recordNumber++;
                 recordBuffer.append("RECORDNUMBER: ");
-                recordBuffer.append(recordNumber++);
+                logEvent.getSupplementalAttributes().put("RECORDNUMBER", recordNumber);
+                recordBuffer.append(recordNumber);
                 recordBuffer.append(FIELD_END_MARKER);
                 recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
             }
@@ -310,11 +329,13 @@ public class ODLLogFormatter extends Formatter {
                     (level.intValue() <= Level.FINE.intValue())) {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("CLASSNAME: ");
+                logEvent.getSupplementalAttributes().put("CLASSNAME", record.getSourceClassName());
                 recordBuffer.append(record.getSourceClassName());
                 recordBuffer.append(FIELD_END_MARKER);
                 recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("METHODNAME: ");
+                logEvent.getSupplementalAttributes().put("METHODNAME", record.getSourceMethodName());
                 recordBuffer.append(record.getSourceMethodName());
                 recordBuffer.append(FIELD_END_MARKER);
                 recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
@@ -329,10 +350,12 @@ public class ODLLogFormatter extends Formatter {
                 recordBuffer.append(LINE_SEPARATOR);
             }
             recordBuffer.append(message);
+            logEvent.setMessage(message);
             if (multiLine) {
                 recordBuffer.append(FIELD_END_MARKER).append(FIELD_END_MARKER);    
             }
             recordBuffer.append(LINE_SEPARATOR);
+            informLogEventListeners(logEvent);
             return recordBuffer.toString();
         } catch (Exception ex) {
             new ErrorManager().error(
@@ -484,5 +507,16 @@ public class ODLLogFormatter extends Formatter {
             includeSuppAttrsBits.set(SupplementalAttribute.TID.ordinal(), 
                     SupplementalAttribute.MAX_VALUE.ordinal());
         }
+    }
+
+    void setLogEventBroadcaster(LogEventBroadcaster logEventBroadcaster) {
+        logEventBroadcasterDelegate = logEventBroadcaster;        
+    }
+
+    @Override
+    public void informLogEventListeners(LogEvent logEvent) {
+        if (logEventBroadcasterDelegate != null) {
+            logEventBroadcasterDelegate.informLogEventListeners(logEvent);
+        }        
     }
 }

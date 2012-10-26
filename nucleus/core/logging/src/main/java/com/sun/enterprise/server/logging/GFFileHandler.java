@@ -67,6 +67,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -83,7 +84,7 @@ import java.util.logging.*;
 @Service
 @Singleton
 @ContractsProvided({GFFileHandler.class, java.util.logging.Handler.class})
-public class GFFileHandler extends StreamHandler implements PostConstruct, PreDestroy {
+public class GFFileHandler extends StreamHandler implements PostConstruct, PreDestroy, LogEventBroadcaster {
 
     private final static LocalStringManagerImpl LOCAL_STRINGS = 
         new LocalStringManagerImpl(GFFileHandler.class);
@@ -114,9 +115,6 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
 
     private String gffileHandlerFormatter = "";
     private String currentgffileHandlerFormatter = "";
-
-    // For now the mimimum rotation value is 0.5 MB.
-    private static final int MINIMUM_FILE_ROTATION_VALUE = 500000;
 
     // Initially the LogRotation will be off until the domain.xml value is read.
     private int limitForFileRotation = 0;
@@ -156,6 +154,8 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     private String RECORD_END_MARKER = "|#]";
     private String RECORD_FIELD_SEPARATOR = "|";
     private String RECORD_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+    
+    private List<LogEventListener> logEventListeners = new ArrayList<LogEventListener>();
 
     String recordBeginMarker;
     String recordEndMarker;
@@ -244,20 +244,8 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         }
 
         // start the Queue consumer thread.
-
-        pump = new Thread() {
-            public void run() {
-                try {
-                    while (!done.isSignalled()) {
-                        log();
-                    }
-                } catch (RuntimeException e) {
-
-                }
-            }
-        };
-        pump.setDaemon(true);
-        pump.start();
+        initializePump();
+        
         LogRecord lr = new LogRecord(Level.INFO, LogFacade.GF_VERSION_INFO);
         lr.setParameters(new Object[]{ Version.getFullVersion()});        
         lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
@@ -409,6 +397,8 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                 formatterClass = new UniformLogFormatter();
                 setFormatter(formatterClass);
             }
+            
+            formatterClass.setLogEventBroadcaster(this);
 
             if (formatterClass != null) {
                 recordBeginMarker = manager.getProperty(cname + ".logFormatBeginMarker");
@@ -457,6 +447,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
             }
             String includeFields = manager.getProperty(LogManagerService.INCLUDE_FIELDS_PROPERTY);
             formatterClass.setIncludeFields(includeFields);
+            formatterClass.setLogEventBroadcaster(this);
         } else {
             // this loop is used for any other formatter
             try {
@@ -488,6 +479,22 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         if (maxHistoryFiles < 0)
             maxHistoryFiles = 10;
 
+    }
+
+    void initializePump() {
+        pump = new Thread() {
+            public void run() {
+                try {
+                    while (!done.isSignalled()) {
+                        log();
+                    }
+                } catch (RuntimeException e) {
+
+                }
+            }
+        };
+        pump.setDaemon(true);
+        pump.start();        
     }
 
     public void preDestroy() {
@@ -550,7 +557,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     public File getCurrentLogFile() {
         return absoluteFile;
     }
-
+    
     /**
      * A package private method to set the limit for File Rotation.
      */
@@ -762,7 +769,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     public void log() {
 
         LogRecord record;
-
+        
         // take is blocking so we take one record off the queue
         try {
             record = pendingRecords.take();
@@ -822,6 +829,13 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                 // too bad, record is lost...
             }
         }
+        
+        Formatter formatter = this.getFormatter();
+        if (!(formatter instanceof LogEventBroadcaster)) {
+            LogEvent logEvent = new LogEventImpl();
+            informLogEventListeners(logEvent);
+        }
+        
     }
 
     protected File getLogFileName() {
@@ -838,6 +852,24 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
             }
         }
         return count;
+    }
+    
+    public boolean addLogEventListener(LogEventListener listener) {
+        if (logEventListeners.contains(listener)) {
+            return false;
+        }
+        return logEventListeners.add(listener);
+    }
+    
+    public boolean removeLogEventListener(LogEventListener listener) {
+        return logEventListeners.remove(listener);
+    }
+    
+    
+    public void informLogEventListeners(LogEvent logEvent) {
+        for (LogEventListener listener : logEventListeners) {
+            listener.messageLogged(logEvent);
+        }
     }
 
 }

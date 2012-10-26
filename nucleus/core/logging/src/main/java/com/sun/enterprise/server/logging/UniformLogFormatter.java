@@ -77,7 +77,10 @@ import java.util.logging.Formatter;
 @Service()
 @ContractsProvided({UniformLogFormatter.class, Formatter.class})
 @PerLookup
-public class UniformLogFormatter extends Formatter {
+public class UniformLogFormatter extends Formatter implements LogEventBroadcaster {
+    private static final String RECORD_NUMBER = "RecordNumber";
+    private static final String METHOD_NAME = "MethodName";
+    private static final String CLASS_NAME = "ClassName";
     // loggerResourceBundleTable caches references to all the ResourceBundle
     // and can be searched using the LoggerName as the key 
     private HashMap loggerResourceBundleTable;
@@ -127,6 +130,8 @@ public class UniformLogFormatter extends Formatter {
     private static final String RFC_3339_DATE_FORMAT =
             "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
+    private LogEventBroadcaster logEventBroadcasterDelegate;
+    
     public UniformLogFormatter() {
         super();
         loggerResourceBundleTable = new HashMap();
@@ -238,6 +243,8 @@ public class UniformLogFormatter extends Formatter {
 
         try {
 
+            LogEventImpl logEvent = new LogEventImpl();
+            
             SimpleDateFormat dateFormatter = new SimpleDateFormat(getRecordDateFormat() != null ? getRecordDateFormat() : RFC_3339_DATE_FORMAT);
 
             StringBuilder recordBuffer = new StringBuilder(getRecordBeginMarker() != null ? getRecordBeginMarker() : RECORD_BEGIN_MARKER);
@@ -246,15 +253,24 @@ public class UniformLogFormatter extends Formatter {
             // _REVISIT_: Use HiResolution timer to analyze the number of
             // Microseconds spent on formatting date object
             date.setTime(record.getMillis());
-            recordBuffer.append(dateFormatter.format(date));
+            String timestamp = dateFormatter.format(date);
+            logEvent.setTimestamp(timestamp);
+            recordBuffer.append(timestamp);
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
+            logEvent.setLevel(record.getLevel().getName());
             recordBuffer.append(record.getLevel()).append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
-            recordBuffer.append(getProductId()).append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+            
+            String compId = getProductId();
+            logEvent.setComponentId(compId);
+            recordBuffer.append(compId).append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+            
+            logEvent.setLogger(record.getLoggerName());
             recordBuffer.append(record.getLoggerName()).append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
             recordBuffer.append("_ThreadID").append(NV_SEPARATOR);
             //record.setThreadID((int) Thread.currentThread().getId());
+            logEvent.setThreadId(record.getThreadID());
             recordBuffer.append(record.getThreadID()).append(NVPAIR_SEPARATOR);
 
             recordBuffer.append("_ThreadName").append(NV_SEPARATOR);
@@ -264,20 +280,25 @@ public class UniformLogFormatter extends Formatter {
             } else {
                 threadName = Thread.currentThread().getName();
             }
+            logEvent.setThreadName(threadName);
             recordBuffer.append(threadName);
             recordBuffer.append(NVPAIR_SEPARATOR);
             
             // Include the raw long time stamp value in the log
             recordBuffer.append("_TimeMillis").append(NV_SEPARATOR);
+            logEvent.setTimeMillis(record.getMillis());
             recordBuffer.append(record.getMillis()).append(NVPAIR_SEPARATOR);
             
             // Include the integer level value in the log            
             recordBuffer.append("_LevelValue").append(NV_SEPARATOR);
             Level level = record.getLevel();
-            recordBuffer.append(level.intValue()).append(NVPAIR_SEPARATOR);
+            int levelValue = level.intValue();
+            logEvent.setLevelValue(levelValue);
+            recordBuffer.append(levelValue).append(NVPAIR_SEPARATOR);
             
             String msgId = getMessageId(record);
             if (msgId != null && !msgId.isEmpty()) {
+                logEvent.setMessageId(msgId);
                 recordBuffer.append("_MessageID").append(NV_SEPARATOR);
                 recordBuffer.append(msgId).append(NVPAIR_SEPARATOR);                
             }
@@ -286,17 +307,22 @@ public class UniformLogFormatter extends Formatter {
             // included for FINER and FINEST log levels.
             if (LOG_SOURCE_IN_KEY_VALUE ||
                     (level.intValue() <= Level.FINE.intValue())) {
-                recordBuffer.append("ClassName").append(NV_SEPARATOR);
+                recordBuffer.append(CLASS_NAME).append(NV_SEPARATOR);
+                logEvent.getSupplementalAttributes().put(CLASS_NAME, record.getSourceClassName());
                 recordBuffer.append(record.getSourceClassName());
                 recordBuffer.append(NVPAIR_SEPARATOR);
-                recordBuffer.append("MethodName").append(NV_SEPARATOR);
+                
+                recordBuffer.append(METHOD_NAME).append(NV_SEPARATOR);
+                logEvent.getSupplementalAttributes().put(METHOD_NAME, record.getSourceMethodName());
                 recordBuffer.append(record.getSourceMethodName());
                 recordBuffer.append(NVPAIR_SEPARATOR);
             }
 
             if (RECORD_NUMBER_IN_KEY_VALUE) {
-                recordBuffer.append("RecordNumber").append(NV_SEPARATOR);
-                recordBuffer.append(recordNumber++).append(NVPAIR_SEPARATOR);
+                recordNumber++;
+                recordBuffer.append(RECORD_NUMBER).append(NV_SEPARATOR);
+                logEvent.getSupplementalAttributes().put(RECORD_NUMBER, recordNumber);
+                recordBuffer.append(recordNumber).append(NVPAIR_SEPARATOR);
             }
             
             // Not needed as per the current logging message format. Fixing bug 16849.
@@ -320,13 +346,14 @@ public class UniformLogFormatter extends Formatter {
                     PrintWriter pw = new PrintWriter(sw);
                     record.getThrown().printStackTrace(pw);
                     pw.close();
-                    recordBuffer.append(sw.toString());
+                    logMessage = sw.toString();
                     sw.close();
                 } else {
                     // case 2: Log an error message (using original severity)
                     logMessage = "The log message is empty or null. Please log an issue against the component in the logger field.";
-                    recordBuffer.append(logMessage);
                 }
+                logEvent.setMessage(logMessage);
+                recordBuffer.append(logMessage);
             } else {
                 if (logMessage.indexOf("{0") >= 0 && logMessage.contains("}") && record.getParameters() != null) {
                     // If we find {0} or {1} etc., in the message, then it's most
@@ -346,21 +373,26 @@ public class UniformLogFormatter extends Formatter {
                         }
                     }
                 }
-                recordBuffer.append(logMessage);
+                
+                StringBuffer logMessageBuffer = new StringBuffer();
+                logMessageBuffer.append(logMessage);
     
                 Throwable throwable = getThrowable(record);                
                 if (throwable != null) {
-                    recordBuffer.append(LINE_SEPARATOR);
+                    logMessageBuffer.append(LINE_SEPARATOR);
                     StringWriter sw = new StringWriter();
                     PrintWriter pw = new PrintWriter(sw);
                     throwable.printStackTrace(pw);
                     pw.close();
-                    recordBuffer.append(sw.toString());
+                    logMessageBuffer.append(sw.toString());
                     sw.close();
-                }
+                } 
+                logMessage = logMessageBuffer.toString();
+                logEvent.setMessage(logMessage);
+                recordBuffer.append(logMessage);                
             }
-
             recordBuffer.append(getRecordEndMarker() != null ? getRecordEndMarker() : RECORD_END_MARKER).append(LINE_SEPARATOR).append(LINE_SEPARATOR);
+            informLogEventListeners(logEvent);
             return recordBuffer.toString();
 
         } catch (Exception ex) {
@@ -452,5 +484,26 @@ public class UniformLogFormatter extends Formatter {
 
     public void setRecordDateFormat(String recordDateFormat) {
         this.recordDateFormat = recordDateFormat;
+    }
+
+    /**
+     * @return the logEventBroadcaster
+     */
+    LogEventBroadcaster getLogEventBroadcaster() {
+        return logEventBroadcasterDelegate;
+    }
+
+    /**
+     * @param logEventBroadcaster the logEventBroadcaster to set
+     */
+    void setLogEventBroadcaster(LogEventBroadcaster logEventBroadcaster) {
+        this.logEventBroadcasterDelegate = logEventBroadcaster;
+    }
+
+    @Override
+    public void informLogEventListeners(LogEvent logEvent) {
+        if (logEventBroadcasterDelegate != null) {
+            logEventBroadcasterDelegate.informLogEventListeners(logEvent);
+        }        
     }
 }
