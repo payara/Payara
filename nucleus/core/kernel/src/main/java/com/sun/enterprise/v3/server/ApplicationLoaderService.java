@@ -40,23 +40,11 @@
 
 package com.sun.enterprise.v3.server;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Provider;
-
+import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import com.sun.enterprise.util.io.FileUtils;
+import com.sun.enterprise.v3.common.HTMLActionReporter;
+import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -70,7 +58,6 @@ import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.deployment.common.ApplicationConfigInfo;
 import org.glassfish.deployment.common.DeploymentContextImpl;
-import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.InstalledLibrariesResolver;
 import org.glassfish.deployment.monitor.DeploymentLifecycleStatsProvider;
@@ -83,27 +70,21 @@ import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ContainerRegistry;
 import org.glassfish.internal.data.EngineInfo;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.internal.deployment.DeploymentTracing;
-import org.glassfish.internal.deployment.DeploymentOrder;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.glassfish.internal.deployment.SnifferManager;
+import org.glassfish.internal.deployment.*;
 import org.glassfish.security.services.impl.AuthenticationServiceImpl;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.config.serverbeans.AppTenant;
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.ApplicationRef;
-import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.ServerTags;
-import com.sun.enterprise.config.serverbeans.SystemApplications;
-import com.sun.enterprise.deploy.shared.ArchiveFactory;
-import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.v3.common.HTMLActionReporter;
-import com.sun.logging.LogDomains;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This service is responsible for loading all deployed applications...
@@ -336,6 +317,10 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         // initialization order.
         // See https://glassfish.dev.java.net/issues/show_bug.cgi?id=7179
         habitat.getService(PostStartup.class, "ResourceManager");
+
+        // Application scoped resource is loaded after ResourceManager
+        // http://java.net/jira/browse/GLASSFISH-19161
+        habitat.getService(PostStartup.class, "ApplicationScopedResourcesManager");
 
     }
 
