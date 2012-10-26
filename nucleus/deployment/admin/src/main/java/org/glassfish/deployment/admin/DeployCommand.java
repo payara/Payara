@@ -95,7 +95,6 @@ import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
 
 import org.glassfish.deployment.versioning.VersioningService;
-import org.jvnet.hk2.tracing.TracingUtilities;
 
 
 /**
@@ -552,10 +551,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                         "Error while closing deployable artifact : ",
                         path.getAbsolutePath()), e);
             }
-            if (tracing!=null) {
-                tracing.print(System.out);
-                TracingUtilities.dump("org.glassfish.javaee.core.deployment.DolProvider", System.out);
-            }
+            
             if (report.getActionExitCode().equals(ActionReport.ExitCode.SUCCESS)) {
                 // Set the app name in the result so that embedded deployer can retrieve it.
                 report.setResultType(String.class, name);
