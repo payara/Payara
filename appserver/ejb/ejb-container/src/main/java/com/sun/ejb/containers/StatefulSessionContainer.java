@@ -3451,12 +3451,10 @@ public final class StatefulSessionContainer
 
 class PeriodicTask
         extends java.util.TimerTask {
-    ClassLoader classLoader;
     AsynchronousTask task;
     EjbContainerUtil ejbContainerUtil;
 
     PeriodicTask(ClassLoader classLoader, Runnable target, EjbContainerUtil ejbContainerUtil) {
-        this.classLoader = classLoader;
         this.task = new AsynchronousTask(classLoader, target);
         this.ejbContainerUtil = ejbContainerUtil;
     }
@@ -3470,7 +3468,6 @@ class PeriodicTask
     public boolean cancel() {
         boolean cancelled = super.cancel();
 
-        this.classLoader = null;
         this.task = null;
 
         return cancelled;

@@ -100,8 +100,6 @@ public class StatelessSessionContainer
 
     // All stateless EJBs have the same instanceKey, since all stateless EJBs
     // are identical. Note: the first byte of instanceKey must be left empty.
-    private Method homeCreateMethod 	 = null;
-    private Method localHomeCreateMethod = null;
 
     // All stateless EJB instances of a particular class (i.e. all bean 
     // instances created by this container instance) have the same 
@@ -112,17 +110,14 @@ public class StatelessSessionContainer
 
     // Data members for RemoteHome view
     private EJBObjectImpl theEJBObjectImpl = null;
-    private EJBObject theEJBObject = null;
     private EJBObject theEJBStub = null;
 
     // Data members for Remote business view. Any objects representing the
     // Remote business interface are not subtypes of EJBObject.
     private EJBObjectImpl theRemoteBusinessObjectImpl = null;
-    private java.rmi.Remote theRemoteBusinessObject = null;
-    private Map<String, java.rmi.Remote> theRemoteBusinessStubs = 
+    private Map<String, java.rmi.Remote> theRemoteBusinessStubs =
         new HashMap<String, java.rmi.Remote>();
 
-    private boolean isPoolClosed = false;
     protected AbstractPool pool;
 
     private IASEjbExtraDescriptors iased 	 = null;
@@ -145,26 +140,6 @@ public class StatelessSessionContainer
         throws Exception
         {
             super(conType, desc, loader);
-
-
-        try {
-            // get the ejbCreate method for stateless beans
-            if ( hasLocalHomeView ) {
-                localHomeCreateMethod = 
-                    localHomeIntf.getMethod("create", NO_PARAMS);
-            }
-            if ( hasRemoteHomeView ) {
-                homeCreateMethod = 
-                    homeIntf.getMethod("create", NO_PARAMS);
-            }
-        } catch (Exception ex) {
-            if(_logger.isLoggable(Level.SEVERE)) {
-                _logger.log(Level.SEVERE,
-                    "ejb.get_ejbcreate_method_exception",logParams);
-                _logger.log(Level.SEVERE,"",ex);
-            }
-            throw ex;
-        }
 
         ejbContainer = ejbContainerUtilImpl.getEjbContainer();
 
@@ -218,8 +193,7 @@ public class StatelessSessionContainer
             if( hasRemoteHomeView ) {
                 // Create theEJBObjectImpl
                 theEJBObjectImpl = instantiateEJBObjectImpl();
-                theEJBObject = (EJBObject) theEJBObjectImpl.getEJBObject();
-                
+
                 // connect the EJBObject to the ProtocolManager 
                 // (creates the stub 
                 // too). Note: cant do this in constructor above because 
@@ -236,10 +210,7 @@ public class StatelessSessionContainer
                 theRemoteBusinessObjectImpl = 
                     instantiateRemoteBusinessObjectImpl();
 
-                theRemoteBusinessObject = 
-                    theRemoteBusinessObjectImpl.getEJBObject();
-                
-                for(RemoteBusinessIntfInfo next : 
+                for(RemoteBusinessIntfInfo next :
                         remoteBusinessIntfInfo.values()) {
                     java.rmi.Remote stub = next.referenceFactory.
                         createRemoteReference(statelessInstanceKey);
@@ -702,8 +673,6 @@ public class StatelessSessionContainer
                 }
             }
 
-
-            isPoolClosed = true;
 
             if (pool != null) {
                 pool.close();

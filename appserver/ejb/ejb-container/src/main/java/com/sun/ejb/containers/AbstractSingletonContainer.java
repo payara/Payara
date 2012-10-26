@@ -92,8 +92,7 @@ public abstract class AbstractSingletonContainer
     // Data members for Remote business view. Any objects representing the
     // Remote business interface are not subtypes of EJBObject.
     private EJBObjectImpl theRemoteBusinessObjectImpl = null;
-    private java.rmi.Remote theRemoteBusinessObject = null;
-    private Map<String, java.rmi.Remote> theRemoteBusinessStubs = 
+    private Map<String, java.rmi.Remote> theRemoteBusinessStubs =
         new HashMap<String, java.rmi.Remote>();
 
     // Information about a web service ejb endpoint.  Used as a conduit
@@ -185,10 +184,7 @@ public abstract class AbstractSingletonContainer
                 theRemoteBusinessObjectImpl = 
                     instantiateRemoteBusinessObjectImpl();
 
-                theRemoteBusinessObject =
-                    theRemoteBusinessObjectImpl.getEJBObject();
-
-                for(RemoteBusinessIntfInfo next : 
+                for(RemoteBusinessIntfInfo next :
                         remoteBusinessIntfInfo.values()) {
                     java.rmi.Remote stub = next.referenceFactory.
                         createRemoteReference(singletonInstanceKey);

@@ -691,13 +691,7 @@ public class NonBlockingPool
     private class PoolResizeTimerTask
         extends java.util.TimerTask
     {
-        Object		lock;
-        
         PoolResizeTimerTask() {}
-        
-        PoolResizeTimerTask(Object lock) {
-            this.lock = lock;
-        }
         
         public void run() {
             

@@ -397,13 +397,7 @@ public abstract class AbstractPool
     private class AbstractPoolTimerTask
         extends java.util.TimerTask
     {
-        Object		lock;
-        
         AbstractPoolTimerTask() {}
-        
-        AbstractPoolTimerTask(Object lock) {
-            this.lock = lock;
-        }
         
         public void run() {
             //We need to set the context class loader for this (deamon)thread!!

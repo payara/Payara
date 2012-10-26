@@ -4858,14 +4858,12 @@ public abstract class BaseContainer
 
         static JndiInfo newPortableLocal(String name, Object obj) {
             JndiInfo jndiInfo = new JndiInfo(name, obj);
-            jndiInfo.local = true;
             jndiInfo.portable = true;
             return jndiInfo;
         }
 
         static JndiInfo newPortableRemote(String name, Object obj) {
             JndiInfo jndiInfo = new JndiInfo(name, obj);
-            jndiInfo.local = false;
             jndiInfo.portable = true;
             jndiInfo.cosNaming = isCosNamingObject(obj);
             return jndiInfo;
@@ -4873,7 +4871,6 @@ public abstract class BaseContainer
 
         static JndiInfo newNonPortableRemote(String name, Object obj) {
             JndiInfo jndiInfo = new JndiInfo(name, obj);
-            jndiInfo.local = false;
             jndiInfo.portable = false;
             jndiInfo.cosNaming = isCosNamingObject(obj);
             return jndiInfo;
@@ -4925,7 +4922,6 @@ public abstract class BaseContainer
 
         String name;
         Object object;
-        boolean local;
         boolean cosNaming;
         boolean portable;
         boolean internal;
