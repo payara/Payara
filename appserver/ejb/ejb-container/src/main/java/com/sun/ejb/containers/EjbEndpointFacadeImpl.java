@@ -92,12 +92,6 @@ public class EjbEndpointFacadeImpl implements EjbEndpointFacade {
         inv.container = container_;
         inv.transactionAttribute = Container.TX_NOT_INITIALIZED;
 
-        // If the endpoint has at least one handler, method
-        // authorization will be performed by a container-provided handler
-        // before any application handler handleRequest methods are called.
-        // Otherwise, the ejb container will do the authorization.
-        inv.securityPermissions =  Container.SEC_NOT_INITIALIZED;
-
         // AS per latest spec change, the MessageContext object in WebSvcCtxt
         // should be the same one as used in the ejb's interceptors'
         // TODO    

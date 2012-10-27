@@ -265,7 +265,6 @@ public class EJBHomeInvocationHandler
                 // additional lookups in BaseContainer.
 
                 inv.transactionAttribute = invInfo.txAttr;
-                inv.securityPermissions = invInfo.securityPermissions;
                 inv.invocationInfo = invInfo;
                 
                 if( ejbObjectImpl != null && invInfo.startsWithCreate ) {

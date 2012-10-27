@@ -3971,11 +3971,7 @@ public abstract class BaseContainer
         // Let preInvoke do tx attribute lookup.
         inv.transactionAttribute = Container.TX_NOT_INITIALIZED;
      
-        // There is never any client tx context so no need to do authorization.
-        // If run-as is specified for the bean, it should be used.
-        inv.securityPermissions = com.sun.ejb.Container.SEC_UNCHECKED;
-     
-        inv.method = getTimeoutMethod(timerState); 
+        inv.method = getTimeoutMethod(timerState);
         inv.beanMethod = inv.method;
 
         ClassLoader originalClassLoader = null;

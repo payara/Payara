@@ -203,7 +203,6 @@ public final class EJBLocalObjectInvocationHandler
         // Set cached invocation params.  This will save additional lookups
         // in BaseContainer.
         inv.transactionAttribute = invInfo.txAttr;
-        inv.securityPermissions = invInfo.securityPermissions;
         inv.invocationInfo = invInfo;
         inv.beanMethod = invInfo.targetMethod1;
 

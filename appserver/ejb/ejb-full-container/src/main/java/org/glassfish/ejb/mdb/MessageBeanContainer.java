@@ -1038,8 +1038,8 @@ public final class MessageBeanContainer extends BaseContainer implements
             // The previous context class loader will be restored in
             // afterMessageDelivery.
 
-            invocation.originalContextClassLoader = Utility
-                    .setContextClassLoader(getClassLoader());
+            invocation.setOriginalContextClassLoader(
+                    Utility.setContextClassLoader(getClassLoader()));
             invocation.isMessageDriven = true;
             invocation.method = method;
 
@@ -1254,8 +1254,8 @@ public final class MessageBeanContainer extends BaseContainer implements
             }
 
             // Reset original class loader
-            Utility
-                    .setContextClassLoader(invocation.originalContextClassLoader);
+            Utility.setContextClassLoader(
+                    invocation.getOriginalContextClassLoader());
 
             if (invocation.exception != null) {
 

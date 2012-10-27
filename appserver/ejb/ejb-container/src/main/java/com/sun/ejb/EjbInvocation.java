@@ -223,7 +223,7 @@ public class EjbInvocation
      * Used by MessageBeanContainer to keep track of the context class
      * loader that was active before message delivery began.
      */
-    public ClassLoader originalContextClassLoader;
+    private ClassLoader originalContextClassLoader;
     
     /**
      * Used for web service invocations to hold SOAP message context.
@@ -283,6 +283,14 @@ public class EjbInvocation
 
     // True if lock is currently held for this invocation
     private boolean holdingSFSBSerializedLock = false;
+
+    public ClassLoader getOriginalContextClassLoader() {
+        return originalContextClassLoader;
+    }
+
+    public void setOriginalContextClassLoader(ClassLoader originalContextClassLoader) {
+        this.originalContextClassLoader = originalContextClassLoader;
+    }
 
     public EjbFutureTask getEjbFutureTask() {
         return asyncFuture;
