@@ -50,6 +50,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilderException;
@@ -60,6 +61,7 @@ import org.glassfish.admin.rest.RestResource;
 import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
+import org.glassfish.admin.rest.model.ResponseBody;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.jersey.internal.util.collection.Ref;
@@ -129,12 +131,6 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
     public void setSubjectRef(Ref<Subject> subjectRef) {
         this.subjectRef = subjectRef;
     }
-
-    /*
-    public void setHabitat(LocatorBridge habitat) {
-        this.habitat = habitat;
-    }
-    */
 
     @Override
     public Object getDefaultValue(String propertyName) {
@@ -281,5 +277,20 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
         }
         // All the candidate names are in use.  Return an empty name.
         return "";
+    }
+
+    protected Response created(URI location, ResponseBody responseBody) {
+        return Response
+                .status(Status.CREATED)
+                .header("Location", location)
+                .entity(responseBody).build();
+    }
+
+    protected Response updated(ResponseBody responseBody) {
+        return Response.ok().entity(responseBody).build();
+    }
+
+    protected Response deleted(ResponseBody responseBody) {
+        return Response.ok().entity(responseBody).build();
     }
 }
