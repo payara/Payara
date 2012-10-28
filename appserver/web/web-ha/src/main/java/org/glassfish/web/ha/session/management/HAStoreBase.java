@@ -58,6 +58,8 @@ import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import org.apache.catalina.*;
 import org.apache.catalina.session.StoreBase;
 import com.sun.enterprise.web.ServerConfigLookup;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 /**
  *
@@ -73,8 +75,15 @@ public abstract class HAStoreBase extends StoreBase {
     /**
      * The logger to use for logging ALL web container related messages.
      */
-    protected static final Logger _logger
-        = ReplicationStore._logger;
+    @LogMessagesResourceBundle
+    private static final String SHARED_LOGMESSAGE_RESOURCE =
+            "org.glassfish.web.ha.session.management.LogMessages";
+
+    @LoggerInfo(subsystem="WEB", description="WEB HA Logger", publish=true)
+    private static final String WEB_HA_LOGGER = "javax.enterprise.web.ha";
+
+    public static final Logger _logger =
+            Logger.getLogger(WEB_HA_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 
 
     /** Creates a new instance of HAStoreBase */

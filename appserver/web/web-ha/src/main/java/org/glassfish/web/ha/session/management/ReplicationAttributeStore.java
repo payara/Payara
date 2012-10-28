@@ -63,10 +63,6 @@ import java.util.logging.Logger;
 public class ReplicationAttributeStore extends ReplicationStore {
     
 
-    private static final Logger _logger 
-        = ReplicationStore._logger;
-    
-
     /** Creates a new instance of ReplicationAttributeStore */
     public ReplicationAttributeStore(ServerConfigLookup serverConfigLookup, JavaEEIOUtils ioUtils) {
         super(serverConfigLookup, ioUtils);

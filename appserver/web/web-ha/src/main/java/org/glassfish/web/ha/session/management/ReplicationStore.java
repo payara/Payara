@@ -74,15 +74,6 @@ import java.util.zip.GZIPInputStream;
  */
 public class ReplicationStore extends HAStoreBase {
 
-    @LogMessagesResourceBundle
-    private static final String SHARED_LOGMESSAGE_RESOURCE =
-            "org.glassfish.web.ha.session.management.LogMessages";
-
-    @LoggerInfo(subsystem="WEB", description="WEB HA Logger", publish=true)
-    private static final String WEB_HA_LOGGER = "javax.enterprise.web.ha";
-
-    public static final Logger _logger =
-            Logger.getLogger(WEB_HA_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 
     @LogMessageInfo(
             message = "Exception during removing synchronized from backing store",
