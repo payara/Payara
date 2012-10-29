@@ -171,7 +171,7 @@ public class SerialInitContextFactory implements InitialContextFactory {
             }
         }
 
-        if (useLB || initialized)  {
+        if (useLB && initialized)  {
             // If myEnv already contains the IIOP_URL, don't get a new one:
             // this getInitialContext call came from an internal
             // new InitialContext call.
