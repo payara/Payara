@@ -62,7 +62,7 @@ public abstract class ReplicationManagerBase<T extends Storeable> extends Persis
 
     protected static final String name = "ReplicationManagerBase";
 
-    protected Logger logger = ReplicationStore._logger;
+    protected Logger _logger = HAStoreBase._logger;
 
     @LogMessageInfo(
             message = "Failed to remove session from backing store",
@@ -105,7 +105,7 @@ public abstract class ReplicationManagerBase<T extends Storeable> extends Persis
         try {
             backingStore.remove(id);
         } catch (BackingStoreException e) {
-            logger.warning(FAILED_TO_REMOVE_SESSION);
+            _logger.warning(FAILED_TO_REMOVE_SESSION);
         }
     }
 
@@ -114,8 +114,8 @@ public abstract class ReplicationManagerBase<T extends Storeable> extends Persis
     }
 
     public Session findSession(String id, String version) throws IOException {
-        if(logger.isLoggable(Level.FINE)) {
-            logger.fine("in findSession: version=" + version);
+        if(_logger.isLoggable(Level.FINE)) {
+            _logger.fine("in findSession: version=" + version);
         }
         if(!this.isSessionIdValid(id) || version == null) {
             return null;
@@ -125,22 +125,22 @@ public abstract class ReplicationManagerBase<T extends Storeable> extends Persis
         long cachedVersion = -1L;
         try {
             requiredVersion = (Long.valueOf(version)).longValue();
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Required version " + requiredVersion);
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.fine("Required version " + requiredVersion);
             }
         } catch (NumberFormatException ex) {
-             logger.log(Level.INFO, REQUIRED_VERSION_NFE, ex);
+             _logger.log(Level.INFO, REQUIRED_VERSION_NFE, ex);
             //deliberately do nothing
         }
-        if(logger.isLoggable(Level.FINE)) {
-            logger.fine("findSession:requiredVersion=" + requiredVersion);
+        if(_logger.isLoggable(Level.FINE)) {
+            _logger.fine("findSession:requiredVersion=" + requiredVersion);
         }
         Session cachedSession = sessions.get(id);
         if(cachedSession != null) {
             cachedVersion = cachedSession.getVersion();
         }
-        if(logger.isLoggable(Level.FINE)) {
-            logger.fine("findSession:cachedVersion=" + cachedVersion);
+        if(_logger.isLoggable(Level.FINE)) {
+            _logger.fine("findSession:cachedVersion=" + cachedVersion);
         }
         //if version match return cached session else purge it from cache
         //if relaxCacheVersionSemantics is set true then we return the
@@ -162,21 +162,21 @@ public abstract class ReplicationManagerBase<T extends Storeable> extends Persis
         } else {
             loadedSession = swapIn(id);
         }
-        if(logger.isLoggable(Level.FINE)) {
-            logger.fine("findSession:swappedInSession=" + loadedSession);
+        if(_logger.isLoggable(Level.FINE)) {
+            _logger.fine("findSession:swappedInSession=" + loadedSession);
         }
 
         if(loadedSession == null || loadedSession.getVersion() < cachedVersion) {
-            if(logger.isLoggable(Level.FINE)) {
-                logger.fine("ReplicationManagerBase>>findSession:returning cached version:" + cachedVersion);
+            if(_logger.isLoggable(Level.FINE)) {
+                _logger.fine("ReplicationManagerBase>>findSession:returning cached version:" + cachedVersion);
             }
             return cachedSession;
         }
         if(loadedSession.getVersion() < requiredVersion && (!isRelaxCacheVersionSemantics())) {
             loadedSession = null;
         }
-        if(logger.isLoggable(Level.FINE)) {
-            logger.fine("ReplicationManagerBase>>findSession:returning:" + loadedSession);
+        if(_logger.isLoggable(Level.FINE)) {
+            _logger.fine("ReplicationManagerBase>>findSession:returning:" + loadedSession);
         }
         return (loadedSession);
 
@@ -197,16 +197,16 @@ public abstract class ReplicationManagerBase<T extends Storeable> extends Persis
 
 
     public void removeSessionFromManagerCache(Session session) {
-        if(logger.isLoggable(Level.FINE)) {
-            logger.fine("in " + this.getClass().getName() + ">>removeSessionFromManagerCache:session = " + session);
+        if(_logger.isLoggable(Level.FINE)) {
+            _logger.fine("in " + this.getClass().getName() + ">>removeSessionFromManagerCache:session = " + session);
         }
         if(session == null) {
             return;
         }
         Session removed = null;
         removed = sessions.remove(session.getIdInternal());
-        if (removed != null && logger.isLoggable(Level.FINE)){
-            logger.fine("Remove from manager cache id=" + session.getId());
+        if (removed != null && _logger.isLoggable(Level.FINE)){
+            _logger.fine("Remove from manager cache id=" + session.getId());
         }
     }
 

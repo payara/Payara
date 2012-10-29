@@ -61,7 +61,7 @@ import java.util.logging.Logger;
  */
 public class ModifiedAttributeHASession extends BaseHASession {
     
-    private static final Logger _logger = ReplicationStore._logger;
+    private static final Logger _logger = HAStoreBase._logger;
 
     private transient Map<String, SessionAttributeState> _attributeStates = new HashMap<String, SessionAttributeState>();
     private transient boolean _dirtyFlag = false;

@@ -73,7 +73,7 @@ public class HASessionStoreValve extends ValveBase {
      * The logger to use for logging ALL web container related messages.
      */
     private static final Logger _logger 
-        = ReplicationStore._logger;
+        = HAStoreBase._logger;
     
     /** Creates a new instance of HASessionStoreValve */
     public HASessionStoreValve() {

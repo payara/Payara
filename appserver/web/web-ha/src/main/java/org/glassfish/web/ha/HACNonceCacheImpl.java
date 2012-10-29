@@ -54,7 +54,7 @@ import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.BackingStoreFactory;
 import javax.inject.Inject;
 
-import org.glassfish.web.ha.session.management.ReplicationStore;
+import org.glassfish.web.ha.session.management.HAStoreBase;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -77,7 +77,7 @@ public class HACNonceCacheImpl  implements CNonceCache {
     private Map<String, String> props;
     private static final String BS_TYPE_REPLICATED ="replicated";
     private static final Logger logger =
-            ReplicationStore._logger;
+            HAStoreBase._logger;
 
     public HACNonceCacheImpl() {
     }

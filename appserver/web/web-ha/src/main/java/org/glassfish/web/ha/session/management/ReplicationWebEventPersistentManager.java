@@ -71,10 +71,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.glassfish.logging.annotation.LoggerInfo;
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
-
 
 /**
  *
@@ -84,7 +80,6 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 @PerLookup
 public class ReplicationWebEventPersistentManager<T extends Storeable> extends ReplicationManagerBase<T>
         implements WebEventPersistentManager {
-    
 
     @Inject
     private ServiceLocator services;
@@ -98,24 +93,6 @@ public class ReplicationWebEventPersistentManager<T extends Storeable> extends R
     private String clusterName = "";
 
     private String instanceName = "";
-
-    /**
-     * The logger to use for logging ALL web container related messages.
-     */
-    @LogMessagesResourceBundle
-    private static final String SHARED_LOGMESSAGE_RESOURCE =
-            "org.glassfish.web.ha.session.management.LogMessages";
-
-    @LoggerInfo(subsystem="WEB", description="WEB HA Logger", publish=true)
-    private static final String WEB_HA_LOGGER = "javax.enterprise.web.ha";
-
-    protected static final Logger _logger =
-            Logger.getLogger(WEB_HA_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
-
-    /*
-    private static final Logger _logger 
-        = ReplicationStore._logger;
-        */
 
     @LogMessageInfo(
             message = "Could not create backing store",

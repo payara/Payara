@@ -59,12 +59,9 @@ import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.Storeable;
 import org.glassfish.ha.store.util.SimpleMetadata;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 import java.io.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -73,7 +70,6 @@ import java.util.zip.GZIPInputStream;
  * @author Rajiv Mordani
  */
 public class ReplicationStore extends HAStoreBase {
-
 
     @LogMessageInfo(
             message = "Exception during removing synchronized from backing store",
