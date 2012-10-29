@@ -40,14 +40,17 @@
 
 package org.glassfish.admin.cli.resources;
 
-import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.RefContainer;
 import com.sun.enterprise.config.serverbeans.ResourceRef;
 import com.sun.enterprise.config.serverbeans.Resources;
-import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
@@ -60,12 +63,13 @@ import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 
 /**
  * List Resource Refs Command
@@ -83,7 +87,8 @@ import javax.inject.Inject;
         path="list-resource-refs", 
         description="list-resource-refs")
 })
-public class ListResourceRefs implements AdminCommand {
+public class ListResourceRefs implements AdminCommand, AdminCommandSecurity.Preauthorization,
+            AdminCommandSecurity.AccessCheckProvider {
     
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListResourceRefs.class);
 
@@ -91,48 +96,56 @@ public class ListResourceRefs implements AdminCommand {
     private String target = SystemPropertyConstants.DAS_SERVER_NAME;
 
     @Inject
-    private IterableProvider<Server> servers;
-
-    @Inject
-    private Clusters clusters;
+    private ConfigBeansUtilities configBeansUtilities;
     
     @Inject
-    private ConfigBeansUtilities configBeansUtilities;
+    private Domain domain;
 
+    @AccessRequired.To("read")
+    private RefContainer refContainer;
+    
+    private List<ResourceRef> resourceRefs = null;
+
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        refContainer = CLIUtil.chooseRefContainer(domain, target, configBeansUtilities);
+        if (refContainer != null) {
+            resourceRefs = refContainer.getResourceRef();
+        }
+        return true;
+    }
+
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final Collection<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        for (ResourceRef rr : resourceRefs) {
+            accessChecks.add(new AccessCheck(rr, "read", true /* isFailureFatal */));
+        }
+        return accessChecks;
+    }
+    
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the parameter names and the values the parameter values
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         
         try {
-            Server targetServer = configBeansUtilities.getServerNamed(target);
-            if(targetServer != null){
-                List<ResourceRef> resourceRefs = targetServer.getResourceRef();
+            if (resourceRefs != null) {
                 processResourceRefs(report, resourceRefs);
-            } else {
-                List<com.sun.enterprise.config.serverbeans.Cluster> clusterList = clusters.getCluster();
-                if(clusterList != null){
-                    for(com.sun.enterprise.config.serverbeans.Cluster cl : clusterList){
-                        if(cl.getName().equals(target)){
-                            List<ResourceRef> resourceRefs = cl.getResourceRef();
-                            processResourceRefs(report, resourceRefs);
-                            break;
-                        }
-                    }
-                }
+                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             }
         } catch (Exception e) {
             report.setMessage(localStrings.getLocalString("list.resource.refs.failed",
                     "list-resource-refs failed"));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
-            return;
         }
-        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+            
     }
 
     private void processResourceRefs(ActionReport report, List<ResourceRef> resourceRefs) {
