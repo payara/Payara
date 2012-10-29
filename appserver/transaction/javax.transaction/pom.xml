@@ -53,20 +53,30 @@
     <packaging>jar</packaging>
     <properties>
         <extension.name>javax.transaction</extension.name>
-        <spec.version>1.1</spec.version>
+        <spec.version>1.2</spec.version>
     </properties>
     <name>${extension.name} API v.${spec.version}</name>
-    <url>http://jcp.org/en/jsr/detail?id=907</url>
+    <url>http://java.net/projects/jta-spec/</url>
  
     <developers>
         <developer>
-            <id>sankara</id>
-            <name>Sankara Rao</name>
-            <url>http://weblogs.java.net/blog/sankara/</url>
+            <id>paul_parkinson</id>
+            <name>Paul Parkinson</name>
             <organization>Oracle, Inc.</organization>
             <roles>
                 <role>lead</role>
             </roles>
         </developer>
     </developers>
+
+    <dependencies>
+                <dependency>
+                    <groupId>javax.enterprise</groupId>
+                    <artifactId>cdi-api</artifactId>
+                    <version>1.0-SP4</version>
+                    <scope>provided</scope>
+                    <optional>true</optional>
+                </dependency>
+    </dependencies>
+
 </project>
