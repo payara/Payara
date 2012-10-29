@@ -247,15 +247,19 @@ public class AppClientGroupFacadeGenerator {
                 ".class";
         final File mainClassFile = File.createTempFile("main", ".class");
         final OutputStream os = new BufferedOutputStream(new FileOutputStream(mainClassFile));
-
+        InputStream is = null;
         try {
-            InputStream is = openByteCodeStream(mainClassResourceName);
+            is = openByteCodeStream(mainClassResourceName);
             DeploymentUtils.copyStream(is, os);
-            os.close();
             is.close();
             clientArtifactsManager.add(mainClassFile, mainClassResourceName, true);
         } catch (Exception e) {
             throw new DeploymentException(e);
+        } finally {
+            os.close();
+            if (is != null) {
+                is.close();
+            }
         }
 
     }
