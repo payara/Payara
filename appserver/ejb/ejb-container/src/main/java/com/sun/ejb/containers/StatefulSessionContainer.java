@@ -1230,10 +1230,10 @@ public final class StatefulSessionContainer
             // tell the TM to release resources held by the bean
             transactionManager.componentDestroyed(sc);
 
-            if (checkpointPolicy.isHAEnabled()) {
+//            if (checkpointPolicy.isHAEnabled()) {
                 //Remove any SFSBClientVersions
                 //TODO SFSBClientVersionManager.removeClientVersion(getContainerId(), sessionKey);
-            }
+//            }
         }
     }
 
