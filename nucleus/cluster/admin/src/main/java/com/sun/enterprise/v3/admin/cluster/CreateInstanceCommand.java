@@ -284,13 +284,20 @@ public class CreateInstanceCommand implements AdminCommand {
             bootHelper.close();
             return 0;
         }
-        catch (Exception ex) {
-            String msg = Strings.get("create.instance.local.boot.failed", instance, node, nodeHost);
-            logger.log(Level.SEVERE, msg, ex);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(msg);
-            return 1;
+        catch (IOException ex) {
+            return reportFailure(ex, report);
         }
+        catch (SecureAdminBootstrapHelper.BootstrapException ex) {
+            return reportFailure(ex, report);
+        }
+    }
+    
+    private int reportFailure(final Exception ex, final ActionReport report) {
+        String msg = Strings.get("create.instance.local.boot.failed", instance, node, nodeHost);
+        logger.log(Level.SEVERE, msg, ex);
+        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        report.setMessage(msg);
+        return 1;
     }
 
     /**
@@ -346,7 +353,7 @@ public class CreateInstanceCommand implements AdminCommand {
         }
     }
 
-    public void createInstanceFilesystem(AdminCommandContext context) {
+    private void createInstanceFilesystem(AdminCommandContext context) {
         ActionReport report = ctx.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
@@ -434,7 +441,7 @@ public class CreateInstanceCommand implements AdminCommand {
      * This ensures we don't step on another domain's node files on a remote
      * instance. See bug GLASSFISH-14985.
      */
-    public boolean validateDasOptions(AdminCommandContext context) {
+    private boolean validateDasOptions(AdminCommandContext context) {
         boolean isDasOptionsValid = true;
         if (theNode.isLocal() || (!theNode.isLocal() && theNode.getType().equals("SSH"))) {
             ActionReport report = ctx.getActionReport();
@@ -447,7 +454,6 @@ public class CreateInstanceCommand implements AdminCommand {
             String dasPort = Integer.toString(dasServer.getAdminPort());
 
             ArrayList<String> command = new ArrayList<String>();
-            String humanCommand = null;
 
             if (!theNode.isLocal()) {
                 // Only specify the DAS host if the node is remote. See issue 13993

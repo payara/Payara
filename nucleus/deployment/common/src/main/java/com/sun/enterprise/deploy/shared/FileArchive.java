@@ -128,6 +128,12 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
      * exclude stale entries
      */
     private StaleFileManager staleFileManager;
+    
+    /*
+     * Records whether open or create has been invoked.  Otherwise we can't
+     * be sure that the staleFileManager field has been set.
+     */
+    private boolean isOpenedOrCreated = false;
 
     /** 
      * Open an abstract archive
@@ -143,6 +149,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
         if (!archive.exists()) {
             throw new FileNotFoundException(uri.getSchemeSpecificPart());
         }
+        isOpenedOrCreated = true;
         staleFileManager = StaleFileManager.Util.getInstance(archive);
     }
 
@@ -186,6 +193,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
         if (!archive.exists() && !archive.mkdirs()) {
           throw new IOException("Unable to create directory for " + archive.getAbsolutePath());
         }
+        isOpenedOrCreated = true;
     }
 
     /**
@@ -518,10 +526,21 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
         return staleFileManager().isEntryValid(entry, isLogging, logger);
     }
 
+    private StaleFileManager myStaleFileManager() {
+       /*
+        * If the FileArchive has been opened or created then its
+        * staleFileManager has been set.
+        */
+       if ( ! isOpenedOrCreated) {
+           throw new IllegalStateException();
+       }
+       return staleFileManager;
+    }
+    
     private StaleFileManager staleFileManager() {
         ReadableArchive parent = getParentArchive();
         if (parent == null) {
-            return staleFileManager;
+            return myStaleFileManager();
         }
         if (parent instanceof FileArchive) {
             return ((FileArchive) parent).staleFileManager();
@@ -564,7 +583,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
                     if ( ! entries[i].equals(StaleFileManager.Util.markerFile(archive))) {
                         final boolean fileDeleteOK = FileUtils.deleteFile(entries[i]);
                         if (fileDeleteOK) {
-                            staleFileManager.recordDeletedEntry(entries[i]);
+                            myStaleFileManager().recordDeletedEntry(entries[i]);
                         }
                         allDeletesSucceeded &= fileDeleteOK;
                     }
@@ -646,7 +665,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
             return false;
         }
         final boolean result = input.delete();
-        staleFileManager.recordDeletedEntry(input);
+        myStaleFileManager().recordDeletedEntry(input);
         return result;
     }
 

@@ -79,15 +79,13 @@ public class CLIUtil {
         if (tmp != null) {
             return tmp;
         }
-        if (tmp == null) {
-            Server targetServer = domain.getServerNamed(target);
-            if (targetServer != null) {
-                config = domain.getConfigNamed(targetServer.getConfigRef());
-            }
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                config = domain.getConfigNamed(cluster.getConfigRef());
-            }
+        Server targetServer = domain.getServerNamed(target);
+        if (targetServer != null) {
+            config = domain.getConfigNamed(targetServer.getConfigRef());
+        }
+        com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
+        if (cluster != null) {
+            config = domain.getConfigNamed(cluster.getConfigRef());
         }
         return config;
     }

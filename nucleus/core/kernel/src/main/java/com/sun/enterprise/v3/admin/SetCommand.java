@@ -152,7 +152,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                 return false;
             }
             
-            final SetOperation setExecution = new SetOperation(value);
+            final SetOperation setExecution = new SetOperation();
             if ( ! setExecution.prepare(context, value)) {
                 // fast failure
                 return false;
@@ -415,12 +415,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
      */
     private class SetOperation {
         
-        private final String value; 
         private SetAction setAction = null; // utlimately this is the one to use
-        
-        SetOperation(final String value) {
-            this.value = value;
-        }
         
         private Collection<? extends AccessCheck> getAccessChecks() {
             return setAction.getAccessChecks();
@@ -538,6 +533,12 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                         return true;
                     }
                     // create and set the property
+                    if ( ! (parentNode instanceof ConfigBean)) {
+                        throw new ClassCastException(
+                                localStrings.getLocalString("admin.set.DomNotConfigBean",
+                                    "Expected object of type Dom ({0}) to be a ConfigBean but it is not",
+                                    parentNode.getClass().getName()));
+                    }
                     recordConfigBeanCreateAndSet((ConfigBean) parentNode, attrName,
                             value, propTargetName);
                     return true;
@@ -782,10 +783,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                 new HashMap<ConfigBean, Map<String,String>>();
         private final Collection<BeanAction> beanActions = new ArrayList<BeanAction>();
         
-        /* The next two flags are here so the inner classes can see them */
-        boolean delPropertySuccess = false;
-        boolean setElementSuccess = false;
-
         private NonPropertyAction(final String value) {
             this.value = value;
         }

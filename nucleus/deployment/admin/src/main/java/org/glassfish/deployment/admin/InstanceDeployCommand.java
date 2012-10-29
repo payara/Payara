@@ -291,25 +291,28 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters
 
         final URI baseURI = baseDir.toURI();
         final ZipFile zipFile = new ZipFile(generatedContentParam);
-        for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries.hasMoreElements();) {
-            final ZipEntry zipEntry = entries.nextElement();
-            final URI outputFileURI = Util.resolve(baseURI, zipEntry.getName());
-            final File outputFile = new File(outputFileURI);
-            if (zipEntry.isDirectory()) {
-                if ( ! outputFile.exists() && ! outputFile.mkdirs()) {
-                    throw new IOException(localStrings.getLocalString("instancedeploy.command.errcredir",
-                        "Error creating directory {0}.  No further information about the failure is available.", baseDir.getAbsolutePath()));
-                }
-            } else {
-                final FileOutputStream os = new FileOutputStream(outputFile);
-                try {
-                    FileUtils.copy(zipFile.getInputStream(zipEntry), os, zipEntry.getSize());
-                } catch (IOException e) {
-                    os.close();
+        try {
+            for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries.hasMoreElements();) {
+                final ZipEntry zipEntry = entries.nextElement();
+                final URI outputFileURI = Util.resolve(baseURI, zipEntry.getName());
+                final File outputFile = new File(outputFileURI);
+                if (zipEntry.isDirectory()) {
+                    if ( ! outputFile.exists() && ! outputFile.mkdirs()) {
+                        throw new IOException(localStrings.getLocalString("instancedeploy.command.errcredir",
+                            "Error creating directory {0}.  No further information about the failure is available.", baseDir.getAbsolutePath()));
+                    }
+                } else {
+                    final FileOutputStream os = new FileOutputStream(outputFile);
+                    try {
+                        FileUtils.copy(zipFile.getInputStream(zipEntry), os, zipEntry.getSize());
+                    } catch (IOException e) {
+                        os.close();
+                    }
                 }
             }
+        } finally {
+            zipFile.close();
         }
-        zipFile.close();
     }
 
     /**
