@@ -86,8 +86,6 @@ public class Utils {
     }
 
     private static synchronized ServiceLocator getNewHabitat(final ConfigApiTest test) {
-
-        String name = test.getFileName();
         final ServiceLocator sl = getNewHabitat();
 
         final String fileName = test.getFileName();

@@ -100,13 +100,10 @@ import org.glassfish.grizzly.http.util.HttpStatus;
  */
 public abstract class AdminAdapter extends StaticHttpHandler implements Adapter, PostConstruct, EventListener {
 
-    private final static Logger logger = LogHelper.getDefaultLogger();
     public final static String VS_NAME="__asadmin";
     public final static String PREFIX_URI = "/" + VS_NAME;
     private final static LocalStringManagerImpl adminStrings = new LocalStringManagerImpl(AdminAdapter.class);
     private final static Logger aalogger = LogDomains.getLogger(AdminAdapter.class, LogDomains.ADMIN_LOGGER);
-    private final static String GET = "GET";
-    private final static String POST = "POST";
     private static final GFBase64Decoder decoder = new GFBase64Decoder();
     private static final String BASIC = "Basic ";
 
@@ -158,12 +155,10 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     final Class<? extends Privacy> privacyClass;
 
     private boolean isRegistered = false;
-    
-    private SecureAdmin secureAdmin = null;
             
     CountDownLatch latch = new CountDownLatch(1);
 
-
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected AdminAdapter(Class<? extends Privacy> privacyClass) {
         super((Set) null);
         this.privacyClass = privacyClass;
@@ -180,8 +175,6 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         
         epd = new AdminEndpointDecider(config, aalogger);
         addDocRoot(env.getProps().get(SystemPropertyConstants.INSTANCE_ROOT_PROPERTY) + "/asadmindocroot/");
-        
-        secureAdmin = domain.getSecureAdmin();
     }
 
     /**
@@ -410,66 +403,6 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         if (i < 0)
             return new String[] { "", "" };
         return new String[] { dec.substring(0, i), dec.substring(i + 1) };
-    }
-
-    private boolean checkAccess(Subject subject, String originHost, ActionReport report, Response res)
-            throws Exception {
-        
-        if (authenticator == null) return true;
-        
-        AdminAccessController.Access access = authenticator.chooseAccess(subject, originHost);
-        /*
-         * Admin requests through this adapter are assumed to change the
-         * configuration, which means the access granted needs to be FULL.
-         */
-        switch (access)  {
-            case FULL:
-                return true;
-
-            case FORBIDDEN:
-                /*
-                 * The request authenticated OK but it is remote and this is the DAS;
-                 * that's why FORBIDDEN rather than FULL came back.
-                 * 
-                 * For user-friendliness respond with Forbidden.
-                 */
-                reportAuthFailure(res, report,
-                        "adapter.auth.remoteReqSecAdminOff",
-                        "Remote configuration is currently disabled",
-                        HttpURLConnection.HTTP_FORBIDDEN);
-
-                break;
-
-            case NONE:
-//                if (env.isDas()) {
-                    reportAuthFailure(res, report, "adapter.auth.userpassword",
-                        "Invalid user name or password",
-                        HttpURLConnection.HTTP_UNAUTHORIZED,
-                        "WWW-Authenticate", "BASIC");
-//                } else {
-//                    reportAuthFailure(res, report, "adapter.auth.notOnInstance",
-//                            "Configuration access to an instance is not allowed; please connect to the domain admin server instead to make configuration changes",
-//                        HttpURLConnection.HTTP_FORBIDDEN);
-//                }
-                break;
-                
-            default:
-                final String msg = adminStrings.getLocalString("admin.adapter.unkAuth", 
-                        "Unknown admin access {0} returned; expected one of {1}",
-                        access.name(), AdminAccessController.Access.values());
-                throw new IllegalStateException(msg);
-
-        }
-
-        return access == AdminAccessController.Access.FULL;
-    }
-
-    private void reportAuthFailure(final Response res,
-            final ActionReport report,
-            final String msgKey,
-            final String msg,
-            final int httpStatus) throws IOException {
-        reportAuthFailure(res, report, msgKey, msg, httpStatus, null, null);
     }
 
     private void reportAuthFailure(final Response res,

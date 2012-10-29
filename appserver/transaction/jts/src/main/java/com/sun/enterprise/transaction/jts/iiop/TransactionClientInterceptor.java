@@ -49,12 +49,12 @@ import com.sun.corba.ee.spi.presentation.rmi.StubAdapter;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 
 public class TransactionClientInterceptor extends LocalObject
-        implements ClientRequestInterceptor, Comparable {
-
+        implements ClientRequestInterceptor, Comparable<TransactionClientInterceptor> {
+    
     private String name;
     private int order;
 
-    private JavaEETransactionManager tm;
+    private transient JavaEETransactionManager tm;
 
     /**
      * Create the interceptor.
@@ -67,7 +67,7 @@ public class TransactionClientInterceptor extends LocalObject
         tm = habitat.getService(JavaEETransactionManager.class);
     }
 
-    public int compareTo(Object o) {
+    public int compareTo(TransactionClientInterceptor o) {
 	int otherOrder = -1;
 	if(o instanceof TransactionClientInterceptor) {
 	    otherOrder = ((TransactionClientInterceptor)o).order;
