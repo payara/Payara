@@ -396,8 +396,6 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     public boolean containsCMPEntity() {
         
         Set ejbs = getEjbs();
-        if (ejbs==null)
-            return false;
         for (Iterator ejbsItr = ejbs.iterator();ejbsItr.hasNext();) {
             if (ejbsItr.next() instanceof EjbCMPEntityDescriptor) {
                 return true;
@@ -623,14 +621,7 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     }
     return super.getName();
     }
-    
-    private void doMethodDescriptorConversions() throws Exception {
-    for (Iterator itr = getEjbs().iterator(); itr.hasNext();) {
-        EjbDescriptor ejbDescriptor = (EjbDescriptor) itr.next();
-        ejbDescriptor.doMethodDescriptorConversions();
-    }
-    }
-    
+
         // START OF IASRI 4645310 
     /**
      * Sets the unique id for a stand alone ejb module. It traverses through 
