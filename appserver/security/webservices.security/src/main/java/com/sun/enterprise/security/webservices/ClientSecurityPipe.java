@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -103,6 +103,7 @@ public class ClientSecurityPipe extends AbstractFilterPipeImpl
         this.helper = that.helper;
     }
 		       
+    @Override
     public void preDestroy() {
         //Give the AuthContext a chance to cleanup 
         //create a dummy request packet
@@ -123,6 +124,7 @@ public class ClientSecurityPipe extends AbstractFilterPipeImpl
         
     }    
     
+    @Override
     public final Pipe copy(PipeCloner cloner) {
         return new ClientSecurityPipe(this, cloner);
     }
@@ -132,6 +134,7 @@ public class ClientSecurityPipe extends AbstractFilterPipeImpl
     }
     
 
+    @Override
     public Packet process(Packet request) {
 
 	/*
@@ -173,7 +176,7 @@ public class ClientSecurityPipe extends AbstractFilterPipeImpl
 		  new Object[] { helper.getModelName() }),e);
 	} 
 
-	Packet response = null;
+	Packet response;
 
 	if (status == AuthStatus.FAILURE) {
 	    if (_logger.isLoggable(Level.FINE)) {
@@ -195,37 +198,35 @@ public class ClientSecurityPipe extends AbstractFilterPipeImpl
 	// send the request
 	Packet response = next.process(info.getRequestPacket());
 	
-	// check for response
-	Message m = response.getMessage();
+	       // check for response
+        Message m = response.getMessage();
 
-	if (m != null) {
+        if (m != null) {
 
-	    if (cAC != null) {
-		
-		AuthStatus status = AuthStatus.SUCCESS;
+            if (cAC != null) {
 
-		info.setResponsePacket(response);
-		
-		try {
+                AuthStatus status;
 
-		    status = cAC.validateResponse(info,clientSubject,null);
+                info.setResponsePacket(response);
 
-		} catch (Exception e) {
+                try {
 
-		    throw new WebServiceException
-			(localStrings.getLocalString
-			 ("enterprise.webservice.cantValidateResponse",
-			  "Cannot validate response for {0}",
-			  new Object[] { helper.getModelName() }),e);
-		}
+                    status = cAC.validateResponse(info, clientSubject, null);
 
-		if (status == AuthStatus.SEND_CONTINUE) {
-		    response = processSecureRequest(info, cAC, clientSubject);
-		} else {
-		    response = info.getResponsePacket();
-		} 
-	    }
-	}
+                } catch (Exception e) {
+
+                    throw new WebServiceException(localStrings.getLocalString("enterprise.webservice.cantValidateResponse",
+                            "Cannot validate response for {0}",
+                            new Object[]{helper.getModelName()}), e);
+                }
+
+                if (status == AuthStatus.SEND_CONTINUE) {
+                    response = processSecureRequest(info, cAC, clientSubject);
+                } else {
+                    response = info.getResponsePacket();
+                }
+            }
+        }
 
 	return response;
     }
@@ -251,6 +252,7 @@ public class ClientSecurityPipe extends AbstractFilterPipeImpl
 	return s;
     }
 			
+    @Override
     public JAXBElement startSecureConversation(Packet packet) 
             throws WSSecureConversationException {
 

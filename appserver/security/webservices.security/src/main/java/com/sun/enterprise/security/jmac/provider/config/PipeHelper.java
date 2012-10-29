@@ -92,7 +92,6 @@ import com.sun.xml.ws.api.WSBinding;
 import com.sun.xml.ws.api.message.Message;
 
 import com.sun.xml.ws.api.model.JavaMethod;
-import com.sun.xml.ws.policy.PolicyMap;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
@@ -201,21 +200,15 @@ public class PipeHelper extends ConfigHelper {
             addModel(info, map);
 	    c.getAuthContext(c.getAuthContextID(info),s,m);
 	}
-	return;
     }
 
     public void authorize(Packet request) throws Exception {
 
 	// SecurityContext constructor should set initiator to
 	// unathenticated if Subject is null or empty
+	Subject s = (Subject) request.invocationProperties.get(PipeConstants.CLIENT_SUBJECT);
 
-	Subject s = (Subject) request.invocationProperties.get
-	    (PipeConstants.CLIENT_SUBJECT);
-
-
-        if (s == null || (s!= null &&
-                s.getPrincipals().isEmpty() &&
-                s.getPublicCredentials().isEmpty())) {
+        if (s == null || (s.getPrincipals().isEmpty() && s.getPublicCredentials().isEmpty())) {
             SecurityContext.setUnauthenticatedContext();
         } else {
 	    SecurityContext sC = new SecurityContext(s);
@@ -237,7 +230,7 @@ public class PipeHelper extends ConfigHelper {
             if (ejbDelegate != null) {
                 ejbDelegate.setSOAPMessage(request.getMessage(), inv);
             }
-            Exception ie = null;
+            Exception ie;
             Method m = null;
             if (seiModel != null) {
                 JavaMethod jm = request.getMessage().getMethod(seiModel);
@@ -252,6 +245,7 @@ public class PipeHelper extends ConfigHelper {
                         try {
                             m = (Method) AppservAccessController.doPrivileged(new PrivilegedExceptionAction() {
 
+                                @Override
                                 public Object run() throws Exception {
                                     ClassLoader loader =
                                             Thread.currentThread().getContextClassLoader();
@@ -305,7 +299,7 @@ public class PipeHelper extends ConfigHelper {
                 HttpServletRequest httpServletRequest =
                     (HttpServletRequest)request.get(
                     MessageContext.SERVLET_REQUEST);
-                uri = httpServletRequest.getRequestURI().toString();
+                uri = httpServletRequest.getRequestURI();
 	    } 
             String endpointName = null;
             if (map != null) {
@@ -335,10 +329,8 @@ public class PipeHelper extends ConfigHelper {
  	return (wsdlModel == null ? "unknown" : wsdlModel.getName());
     }
 
+    @Deprecated // should be unused, but left for compilation
     public void  addModelAndPolicy(Packet request) {
- 	WSDLPort wsdlModel = (WSDLPort) getProperty(PipeConstants.WSDL_MODEL);
- 	PolicyMap policyMap = (PolicyMap)getProperty(PipeConstants.POLICY);
-
     }
   
     // always returns response with embedded fault
@@ -390,10 +382,12 @@ public class PipeHelper extends ConfigHelper {
 	}
     }
  
+    @Override
     public void disable() {
 	listenerWrapper.disableWithRefCount();
     }
     
+    @Override
     protected HandlerContext getHandlerContext(Map map) {
         String realmName = null;
         WebServiceEndpoint wSE = (WebServiceEndpoint)
@@ -410,6 +404,7 @@ public class PipeHelper extends ConfigHelper {
 
         final String fRealmName = realmName;
         return new HandlerContext() {
+            @Override
             public String getRealmName() {
                 return fRealmName;
             }
@@ -444,7 +439,7 @@ public class PipeHelper extends ConfigHelper {
 
     private static String getAppCtxt(Map map) {
 
-        String rvalue = null;
+        String rvalue;
         WebServiceEndpoint wse = 
             (WebServiceEndpoint) map.get(PipeConstants.SERVICE_ENDPOINT);
         // endpoint
@@ -527,7 +522,7 @@ public class PipeHelper extends ConfigHelper {
                 md = bd.getModuleDescriptor();
             }
 
-            Application a = bd.getApplication();
+            Application a = (bd == null) ? null : bd.getApplication();
             if (a != null) {
                 if (a.isVirtual()) {
                     rvalue = a.getRegistrationName();

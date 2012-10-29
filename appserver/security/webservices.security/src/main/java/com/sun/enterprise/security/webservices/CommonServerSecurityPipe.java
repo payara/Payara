@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,20 +53,15 @@ import javax.security.auth.message.AuthStatus;
 
 import javax.xml.ws.WebServiceException;
 
-import com.sun.enterprise.security.jmac.provider.PacketMessageInfo;
-import com.sun.enterprise.security.jmac.provider.PacketMapMessageInfo;
-import com.sun.enterprise.security.jmac.provider.config.PipeHelper;
 import com.sun.enterprise.security.jmac.provider.PacketMapMessageInfo;
 import com.sun.enterprise.security.jmac.provider.PacketMessageInfo;
 import com.sun.enterprise.security.jmac.provider.config.PipeHelper;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 
-import com.sun.xml.ws.api.model.wsdl.WSDLPort;
 import com.sun.xml.ws.api.pipe.Pipe;
 import com.sun.xml.ws.api.pipe.PipeCloner;
 import com.sun.xml.ws.api.pipe.helper.AbstractFilterPipeImpl;
-import com.sun.xml.ws.api.message.Message;
 import com.sun.xml.ws.api.message.Packet;
 
 
@@ -108,6 +103,7 @@ public class CommonServerSecurityPipe extends AbstractFilterPipeImpl {
     /**
      * This method is called once in server side and at most one in client side.
      */
+    @Override
     public void preDestroy() {
 	helper.disable();
          try {
@@ -130,23 +126,25 @@ public class CommonServerSecurityPipe extends AbstractFilterPipeImpl {
     /**
      * This is used in creating subsequent pipes.
      */
+    @Override
     public Pipe copy(PipeCloner cloner) {
         return new CommonServerSecurityPipe(this, cloner);
     }
     
+    @Override
     public Packet process(Packet request) {
         if (isHttpBinding) {
             return next.process(request);
         }
         
-        Packet response = null;
+        Packet response;
         try {
             response = processRequest(request);
         } catch(Exception e) {
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "Failure in security pipe process", e);
             }
-            response = helper.makeFaultResponse(response,e);
+            response = helper.makeFaultResponse(null, e);
         }
 
         return response;
@@ -218,6 +216,7 @@ public class CommonServerSecurityPipe extends AbstractFilterPipeImpl {
 		    try {
 			response = (Packet)Subject.doAsPrivileged
 			    (clientSubject,new PrivilegedExceptionAction() {
+                                @Override
 				public Object run() throws Exception {
 				    // proceed to invoke the endpoint
 				    return next.process(validatedRequest);

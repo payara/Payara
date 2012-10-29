@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,7 +78,7 @@ import com.sun.logging.LogDomains;
  */
 public class BaseAuthConfig {
 
-    private static Logger logger = LogDomains.getLogger(BaseAuthConfig.class,LogDomains.SECURITY_LOGGER);
+    private static final Logger logger = LogDomains.getLogger(BaseAuthConfig.class,LogDomains.SECURITY_LOGGER);
 
     private Object defaultContext_;
 
@@ -96,7 +96,7 @@ public class BaseAuthConfig {
 
     private boolean onePolicy_;
 
-    private Object contextLock = new Object();
+    private final Object contextLock = new Object();
 
     private ExplicitNull explicitNull = new ExplicitNull();
 
@@ -114,7 +114,7 @@ public class BaseAuthConfig {
 	onePolicy_ = true;
 
 	if(logger.isLoggable(Level.FINE)){
-	    logger.fine("WSS: New BAC defaultContext: " + defaultContext_);
+	    logger.log(Level.FINE, "WSS: New BAC defaultContext: {0}", defaultContext_);
 	}
     }
 
@@ -212,8 +212,7 @@ public class BaseAuthConfig {
 	}
 
 	if(logger.isLoggable(Level.FINE)){
-	    logger.fine("WSS: new BAC defaultContext_: " + defaultContext_ +
-			" superMSD index: " + superIndex_ + " onePolicy_: " + onePolicy_);
+	    logger.log(Level.FINE, "WSS: new BAC defaultContext_: {0} superMSD index: {1} onePolicy_: {2}", new Object[]{defaultContext_, superIndex_, onePolicy_});
 	}
     }
 
@@ -248,7 +247,7 @@ public class BaseAuthConfig {
     private static boolean
 	isMatchingMSD(MethodDescriptor targetMD, MessageSecurityDescriptor mSD) {
 	ArrayList messageDescriptors = mSD.getMessageDescriptors();
-	if (messageDescriptors.size() == 0) {
+	if (messageDescriptors.isEmpty()) {
 	    // If this happens the dd is invalid.
 	    // Unfortunately the deployment system does not catch such problems.
 	    // This case will be treated the same as if there was an empty message
@@ -298,7 +297,7 @@ public class BaseAuthConfig {
 	    if (defaultContext_ != null) { 
 		rvalue = defaultContext_;
 		if(logger.isLoggable(Level.FINE)){
-		    logger.fine("WSS: ForMethod returning default_context: " + rvalue);
+		    logger.log(Level.FINE, "WSS: ForMethod returning default_context: {0}", rvalue);
 		}
 		return rvalue;
 	    }
@@ -322,8 +321,7 @@ public class BaseAuthConfig {
 			rvalue = explicitNull;
 			match = -1;
 			if(logger.isLoggable(Level.FINE)){
-			    logger.fine("WSS: ForMethod detected conflicting policies: " + 
-					match + "." + i);
+			    logger.log(Level.FINE, "WSS: ForMethod detected conflicting policies: {0}.{1}", new Object[]{match, i});
 			}
 			break;
 		    }
@@ -335,7 +333,7 @@ public class BaseAuthConfig {
 		    rvalue = explicitNull;
 		}
 		if(logger.isLoggable(Level.FINE)){
-		    logger.fine("WSS: ForMethod returning matched context: " + rvalue);
+		    logger.log(Level.FINE, "WSS: ForMethod returning matched context: {0}", rvalue);
 		}
 	    }
 	} else if (onePolicy_ && contexts_.size() > 0) {
@@ -352,7 +350,7 @@ public class BaseAuthConfig {
 
 	    rvalue = contexts_.get(0);
 	    if(logger.isLoggable(Level.FINE)){
-		logger.fine("WSS: ForMethod resorting to first context: " + rvalue);
+		logger.log(Level.FINE, "WSS: ForMethod resorting to first context: {0}", rvalue);
 	    }
  
 	} else {
@@ -360,26 +358,6 @@ public class BaseAuthConfig {
 	        logger.fine("WSS: Unable to select policy for SOAP Message");
             }
 	    throw new RuntimeException("Unable to select policy for Message");
-	}
-	return rvalue;
-    }
-
-    // determine if all methods are covered by an AuthCOntext (i.e policy)
-    // so that we can tell if there is one policy that covers all.
-    private boolean methodIsCovered(Method m) {
-	boolean rvalue = true; 
-	if (messageSecurityDescriptors_ != null) {
-	    MethodDescriptor targetMD = new MethodDescriptor(m);
-	    for (int i = 0; i < messageSecurityDescriptors_.size(); i++) {
-		if (i == 0) {
-		    rvalue = false;
-		}
-		if (isMatchingMSD(targetMD,(MessageSecurityDescriptor) 
-				  messageSecurityDescriptors_.get(i))) {
-		    rvalue = true;
-		    break;
-		}
-	    }
 	}
 	return rvalue;
     }
@@ -427,7 +405,7 @@ public class BaseAuthConfig {
 	    if (defaultContext_ != null) {
 		rvalue = defaultContext_;
 		if(logger.isLoggable(Level.FINE)){
-		    logger.fine("WSS: ForOpCode returning default_context: " + rvalue);
+		    logger.log(Level.FINE, "WSS: ForOpCode returning default_context: {0}", rvalue);
 		}
 	    }
 	}
@@ -485,7 +463,7 @@ public class BaseAuthConfig {
 
     private static String getOpName(SOAPMessageContext soapMC) {
 
-	String rvalue = null;
+	String rvalue;
 
 	// first look for a the property value in the context
 	QName qName = (QName) soapMC.get(MessageContext.WSDL_OPERATION);
@@ -540,7 +518,7 @@ public class BaseAuthConfig {
 				// set to null if operation policy differs from superPolicy
 				contextsForOpNames_.put(opName,null);
 			    } else {
-				contextsForOpNames_.put(opName,new Integer(i));
+				contextsForOpNames_.put(opName,Integer.valueOf(i));
 			    }
 			}
 		    }
@@ -567,7 +545,7 @@ public class BaseAuthConfig {
                 rvalue = explicitNull;
             }
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine("WSS: ForOpName=" + operation + " context: " + rvalue);
+                logger.log(Level.FINE, "WSS: ForOpName={0} context: {1}", new Object[]{operation, rvalue});
             }
 	} 
 	return rvalue;
@@ -661,7 +639,7 @@ public class BaseAuthConfig {
 	}
 
 	if(logger.isLoggable(Level.FINE)){
-	    logger.fine("WSS: getContext returning: " + rvalue);
+	    logger.log(Level.FINE, "WSS: getContext returning: {0}", rvalue);
 	}
 
 	return rvalue;
@@ -764,15 +742,21 @@ public class BaseAuthConfig {
     // internal class used to differentiate not protected from policy undefined or
     // not determined.
 
-    class ExplicitNull {
+    static class ExplicitNull {
 
 	ExplicitNull() {
 	}
 
+        @Override
 	public boolean equals(Object other) {
 	    return (other != null && other instanceof ExplicitNull ? true : false);
 	}
 
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
+        @Override
 	public String toString() {
 	    return "ExplicitNull";
 	}

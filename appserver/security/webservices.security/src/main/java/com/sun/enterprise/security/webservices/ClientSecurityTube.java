@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -108,16 +108,17 @@ public class ClientSecurityTube extends AbstractFilterTubeImpl
         this.helper = that.helper;
     }
 		       
+    @Override
     public void preDestroy() {
         //Give the AuthContext a chance to cleanup 
         //create a dummy request packet
         try {
             Packet request = new Packet();
-            PacketMessageInfo info = new PacketMapMessageInfo(request, new Packet());
+            PacketMessageInfo locInfo = new PacketMapMessageInfo(request, new Packet());
             Subject subj = getClientSubject(request);
-            ClientAuthContext cAC = helper.getClientAuthContext(info, subj);
-             if (cAC != null && WSIT_CLIENT_AUTH_CONTEXT.equals(cAC.getClass().getName())) {
-                cAC.cleanSubject(info, subj);
+            ClientAuthContext locCAC = helper.getClientAuthContext(locInfo, subj);
+             if (locCAC != null && WSIT_CLIENT_AUTH_CONTEXT.equals(locCAC.getClass().getName())) {
+                locCAC.cleanSubject(locInfo, subj);
             }
         } catch (Exception ex) {
         //ignore exceptions
@@ -142,13 +143,13 @@ public class ClientSecurityTube extends AbstractFilterTubeImpl
             info.getMap().put(javax.xml.ws.Endpoint.WSDL_SERVICE,
                     helper.getProperty(PipeConstants.WSDL_SERVICE));
 
-            Subject clientSubject = getClientSubject(request);
+            Subject locClientSubject = getClientSubject(request);
             
-            cAC = helper.getClientAuthContext(info, clientSubject);
+            cAC = helper.getClientAuthContext(info, locClientSubject);
 
             if (cAC != null) {
                 // proceed to process message sescurity
-                status = cAC.secureRequest(info, clientSubject);
+                status = cAC.secureRequest(info, locClientSubject);
             }
             if (status == AuthStatus.FAILURE) {
                 if (_logger.isLoggable(Level.FINE)) {
@@ -176,7 +177,7 @@ public class ClientSecurityTube extends AbstractFilterTubeImpl
             Message m = response.getMessage();
             if (m != null) {
                 if (cAC != null) {
-                    AuthStatus status = AuthStatus.SUCCESS;
+                    AuthStatus status;
                     info.setResponsePacket(response);
                     try {
                         status = cAC.validateResponse(info, clientSubject, null);
@@ -226,26 +227,27 @@ public class ClientSecurityTube extends AbstractFilterTubeImpl
 	return s;
     }
 			
+    @Override
     public JAXBElement startSecureConversation(Packet packet) 
             throws WSSecureConversationException {
 
-	PacketMessageInfo info = new PacketMapMessageInfo(packet,new Packet());
+	PacketMessageInfo locInfo = new PacketMapMessageInfo(packet,new Packet());
 	JAXBElement token = null;
 
 	try {
 
 	    // gets the subject from the packet (puts one there if not found)
-	    Subject clientSubject = getClientSubject(packet);
+	    Subject locClientSubject = getClientSubject(packet);
 
 	    // put MessageInfo in properties map, since MessageInfo 
 	    // is not passed to getAuthContext, key idicates function
 	    HashMap map = new HashMap();
-	    map.put(PipeConstants.SECURITY_TOKEN,info);
+	    map.put(PipeConstants.SECURITY_TOKEN,locInfo);
 
-	    helper.getSessionToken(map,info,clientSubject);
+	    helper.getSessionToken(map,locInfo,locClientSubject);
 
 	    // helper returns token in map of msgInfo, using same key
-	    Object o = info.getMap().get(PipeConstants.SECURITY_TOKEN);
+	    Object o = locInfo.getMap().get(PipeConstants.SECURITY_TOKEN);
 
 	    if (o != null && o instanceof JAXBElement) {
 		token = (JAXBElement) o;
