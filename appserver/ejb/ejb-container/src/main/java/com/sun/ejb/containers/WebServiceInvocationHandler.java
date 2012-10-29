@@ -82,7 +82,7 @@ public final class WebServiceInvocationHandler extends EJBLocalRemoteObject
     private boolean hasHandlers_;
     private Map invocationInfoMap_;
 
-    protected static final LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(WebServiceInvocationHandler.class);
 
 
