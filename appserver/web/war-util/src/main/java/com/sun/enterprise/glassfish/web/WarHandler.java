@@ -51,6 +51,7 @@ import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.sniffer.WarDetector;
@@ -153,8 +154,8 @@ public class WarHandler extends AbstractArchiveHandler {
     public String getVersionIdentifier(ReadableArchive archive) {
         String versionIdentifierValue = null;
         try {
-            GlassFishWebXmlParser gfWebXMLParser = new GlassFishWebXmlParser(null);
-            versionIdentifierValue = gfWebXMLParser.extractVersionIdentifierValue(archive);
+            WebXmlParser webXmlParser = getWebXmlParser(archive);
+            versionIdentifierValue = webXmlParser.getVersionIdentifier();
         } catch (XMLStreamException e) {
             logger.log(Level.SEVERE, e.getMessage());
         } catch (IOException e) {
@@ -195,49 +196,58 @@ public class WarHandler extends AbstractArchiveHandler {
                 cloader.addRepository(url.toString());
             }
 
-            WebXmlParser webXmlParser = null;
-            boolean hasWSLDD = (new File(base, WEBLOGIC_XML)).exists();
-            if (!gfDDOverWLSDD && !ignoreWLSDD && hasWSLDD) {
-                webXmlParser = new WeblogicXmlParser(base.getAbsolutePath());
-            } else if ((new File(base, GLASSFISH_WEB_XML)).exists()) {
-                webXmlParser = new GlassFishWebXmlParser(base.getAbsolutePath());
-            } else if ((new File(base, SUN_WEB_XML)).exists()) {
-                webXmlParser = new SunWebXmlParser(base.getAbsolutePath());
-            } else if (gfDDOverWLSDD && !ignoreWLSDD && hasWSLDD) {
-                webXmlParser = new WeblogicXmlParser(base.getAbsolutePath());
-            } else { // default
-                if (gfDDOverWLSDD || ignoreWLSDD) {
-                    webXmlParser = new GlassFishWebXmlParser(base.getAbsolutePath());
-                } else {
-                    webXmlParser = new WeblogicXmlParser(base.getAbsolutePath());
-                }
-            }
-
+            WebXmlParser webXmlParser = getWebXmlParser(context.getSource());
             configureLoaderAttributes(cloader, webXmlParser, base);
             configureLoaderProperties(cloader, webXmlParser, base);
             
             configureContextXmlAttribute(cloader, base, context);
             
-        } catch(MalformedURLException malex) {
-            logger.log(Level.SEVERE, malex.getMessage());
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, malex.getMessage(), malex);            
-            }
         } catch(XMLStreamException xse) {
             logger.log(Level.SEVERE, xse.getMessage());
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, xse.getMessage(), xse);
             }
-        } catch(FileNotFoundException fnfe) {
-            logger.log(Level.SEVERE, fnfe.getMessage());
+            xse.printStackTrace();
+        } catch(IOException ioe) {
+            logger.log(Level.SEVERE, ioe.getMessage());
             if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, fnfe.getMessage(), fnfe);
+                logger.log(Level.FINE, ioe.getMessage(), ioe);
             }
+            ioe.printStackTrace();
         }
 
         cloader.start();
 
         return cloader;
+    }
+
+    protected WebXmlParser getWebXmlParser(ReadableArchive archive)
+            throws XMLStreamException, IOException {
+
+        WebXmlParser webXmlParser = null;
+        boolean hasWSLDD = archive.exists(WEBLOGIC_XML);
+        File runtimeAltDDFile = archive.getArchiveMetaData(
+                    DeploymentProperties.RUNTIME_ALT_DD, File.class);
+        if (runtimeAltDDFile != null &&
+                "glassfish-web.xml".equals(runtimeAltDDFile.getPath()) &&
+                runtimeAltDDFile.isFile()) {
+            webXmlParser = new GlassFishWebXmlParser(archive);
+        } else if (!gfDDOverWLSDD && !ignoreWLSDD && hasWSLDD) {
+            webXmlParser = new WeblogicXmlParser(archive);
+        } else if (archive.exists(GLASSFISH_WEB_XML)) {
+            webXmlParser = new GlassFishWebXmlParser(archive);
+        } else if (archive.exists(SUN_WEB_XML)) {
+            webXmlParser = new SunWebXmlParser(archive);
+        } else if (gfDDOverWLSDD && !ignoreWLSDD && hasWSLDD) {
+            webXmlParser = new WeblogicXmlParser(archive);
+        } else { // default
+            if (gfDDOverWLSDD || ignoreWLSDD) {
+                webXmlParser = new GlassFishWebXmlParser(archive);
+            } else {
+                webXmlParser = new WeblogicXmlParser(archive);
+            }
+        }
+        return webXmlParser;
     }
 
     protected void configureLoaderAttributes(WebappClassLoader cloader,
@@ -414,28 +424,24 @@ public class WarHandler extends AbstractArchiveHandler {
          */
         protected abstract void read(InputStream input) throws XMLStreamException;
 
-        protected void init(File xmlFile)     
+        protected void init(InputStream input)     
                 throws XMLStreamException, FileNotFoundException {
 
-            InputStream input = null;
-            if (xmlFile.exists()) {
-                input = new FileInputStream(xmlFile);
-                try {
-                    read(input);
-                } finally {
-                    if (parser != null) {
-                        try {
-                            parser.close();
-                        } catch(Exception ex) {
-                            // ignore
-                        }
+            try {
+                read(input);
+            } finally {
+                if (parser != null) {
+                    try {
+                        parser.close();
+                    } catch(Exception ex) {
+                        // ignore
                     }
-                    if (input != null) {
-                        try {
-                            input.close();
-                        } catch(Exception ex) {
-                            // ignore
-                        }
+                }
+                if (input != null) {
+                    try {
+                        input.close();
+                    } catch(Exception ex) {
+                        // ignore
                     }
                 }
             }
@@ -470,17 +476,20 @@ public class WarHandler extends AbstractArchiveHandler {
     }
 
     protected abstract class WebXmlParser extends BaseXmlParser {
-
         protected boolean delegate = true;
 
         protected boolean ignoreHiddenJarFiles = false;
         protected boolean useBundledJSF = false;
         protected String extraClassPath = null;
 
-        WebXmlParser(String baseStr) 
-                throws XMLStreamException, FileNotFoundException {
+        protected String versionIdentifier = null;
 
-            init(new File(baseStr, getXmlFileName()));
+        WebXmlParser(ReadableArchive archive) 
+                throws XMLStreamException, IOException {
+
+            if (archive.exists(getXmlFileName())) {
+                init(archive.getEntry(getXmlFileName()));
+            }
         }
 
         protected abstract String getXmlFileName();
@@ -500,6 +509,10 @@ public class WarHandler extends AbstractArchiveHandler {
         boolean isUseBundledJSF() {
             return useBundledJSF;
         }
+
+        String getVersionIdentifier() {
+            return versionIdentifier;
+        }
     }
 
     protected class SunWebXmlParser extends WebXmlParser {
@@ -512,8 +525,10 @@ public class WarHandler extends AbstractArchiveHandler {
          * sun-web-app_2_4-0.dtd.
          */
 
-        SunWebXmlParser(String baseStr) throws XMLStreamException, FileNotFoundException {
-            super(baseStr);
+        SunWebXmlParser(ReadableArchive archive)
+                throws XMLStreamException, IOException {
+
+            super(archive);
         }
 
         @Override
@@ -605,6 +620,8 @@ public class WarHandler extends AbstractArchiveHandler {
                         } else if("useBundledJsf".equalsIgnoreCase(propName)) {
                             useBundledJSF = Boolean.valueOf(value);
                         }
+                    } else if ("version-identifier".equals(name)) {
+                        versionIdentifier = parser.getElementText();
                     } else {
                         skipSubTree(name);
                     }
@@ -619,50 +636,10 @@ public class WarHandler extends AbstractArchiveHandler {
 
     protected class GlassFishWebXmlParser extends SunWebXmlParser {
 
-        GlassFishWebXmlParser(String baseStr) throws XMLStreamException, FileNotFoundException {
-            super(baseStr);
-        }
+        GlassFishWebXmlParser(ReadableArchive archive)
+                throws XMLStreamException, IOException {
 
-        protected String extractVersionIdentifierValue(ReadableArchive archive) throws XMLStreamException, IOException{
-
-            InputStream input = null;
-            String versionIdentifierValue = null;
-
-            try
-            {
-                input = archive.getEntry( getXmlFileName() );
-
-                if (input != null) {
-
-                    // parse elements only from glassfish-web
-                    parser = getXMLInputFactory().createXMLStreamReader(input);
-
-                    int event = 0;
-                    skipRoot(getRootElementName());
-
-                    while (parser.hasNext() && (event = parser.next()) != END_DOCUMENT) {
-                         if (event == START_ELEMENT) {
-                             String name = parser.getLocalName();
-                            if ("version-identifier".equals(name)) {
-                                versionIdentifierValue = parser.getElementText();
-                            } else {
-                                 skipSubTree(name);
-                            }
-                         }
-                    }
-                }
-            }
-            finally {
-                if (input != null) {
-                    try {
-                        input.close();
-                    } catch(Exception e) {
-                        // ignore
-                    }
-                }
-            }
-
-            return  versionIdentifierValue;
+            super(archive);
         }
 
         @Override
@@ -677,8 +654,10 @@ public class WarHandler extends AbstractArchiveHandler {
     }
 
     protected class WeblogicXmlParser extends WebXmlParser {
-        WeblogicXmlParser(String baseStr) throws XMLStreamException, FileNotFoundException {
-            super(baseStr);
+        WeblogicXmlParser(ReadableArchive archive)
+                throws XMLStreamException, IOException {
+
+            super(archive);
         }
 
         @Override
@@ -714,7 +693,9 @@ public class WarHandler extends AbstractArchiveHandler {
         ContextXmlParser(File contextXmlFile)
                 throws XMLStreamException, FileNotFoundException {
 
-            init(contextXmlFile);
+            if (contextXmlFile.exists()) {
+                init(new FileInputStream(contextXmlFile));
+            }
         }
 
         /**
