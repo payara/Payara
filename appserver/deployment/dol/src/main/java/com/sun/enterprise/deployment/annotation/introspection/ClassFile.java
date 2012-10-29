@@ -126,16 +126,14 @@ public class ClassFile {
             return false;
         }
         
-        majorVersion = headerBuffer.getShort();
-        minorVersion = headerBuffer.getShort();
+        headerBuffer.getShort(); // major version
+        headerBuffer.getShort(); // minor version
         int constantPoolSize = headerBuffer.getShort();
 
         return constantPoolInfo.containsAnnotation(constantPoolSize, headerBuffer);
         
     }
     
-    public short	       	majorVersion;
-    public short       		minorVersion;
     public ConstantPoolInfo	constantPool[];
     public short	        accessFlags;
     public ConstantPoolInfo	thisClass;
