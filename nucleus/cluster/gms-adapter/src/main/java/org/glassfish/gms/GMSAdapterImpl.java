@@ -138,7 +138,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
     private Cluster cluster = null;
     private String clusterName = null;
     private Config clusterConfig = null;
-    private long joinTime = 0L;
+    //private long joinTime = 0L;
 
     private ConcurrentHashMap<CallBack, JoinNotificationActionFactory> callbackJoinActionFactoryMapping =
             new ConcurrentHashMap<CallBack, JoinNotificationActionFactory>();
@@ -900,7 +900,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                 };
                 events.register(glassfishEventListener);
                 gms.join();
-                joinTime = System.currentTimeMillis();
+                //joinTime = System.currentTimeMillis();
                 GMS_LOGGER.log(LogLevel.INFO, GMS_JOINED,
                     new Object [] {instanceName, clusterName});
             } catch (GMSException e) {
