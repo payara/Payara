@@ -39,6 +39,7 @@
  */
 package org.glassfish.flashlight.cli;
 
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.*;
 import org.glassfish.api.admin.*;
@@ -74,7 +75,7 @@ import javax.inject.Inject;
         path="enable-monitoring",
         description="enable-monitoring")
 })
-public class EnableMonitoring implements AdminCommand {
+public class EnableMonitoring implements AdminCommand, AdminCommandSecurity.Preauthorization {
     // do NOT inject this.
     private MonitoringService ms;
     @Inject
@@ -94,19 +95,38 @@ public class EnableMonitoring implements AdminCommand {
     final private LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(EnableMonitoring.class);
 
-    public void execute(AdminCommandContext context) {
-        ActionReport report = context.getActionReport();
+    @AccessRequired.To("update")
+    private Config targetConfig;
 
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        final ActionReport report = context.getActionReport();
         try {
-            ms = targetService.getConfig(target).getMonitoringService();
+            targetConfig = targetService.getConfig(target);
+            if (targetConfig != null) {
+                ms = targetConfig.getMonitoringService();
+                return true;
+            }
+            fail(report, "unknown.target", "Could not find target {0}", target);
+            return false;
         }
         catch (Exception e) {
-            report.setMessage(localStrings.getLocalString("target.service.exception",
+            fail(report, "target.service.exception",
                     "Encountered exception trying to locate the MonitoringService element "
-                    + "in the target ({0}) configuration: {1}", target, e.getMessage()));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
+                    + "in the target ({0}) configuration: {1}", target, e.getMessage());
+            return false;
         }
+    }
+    
+    private void fail(final ActionReport report, final String messageKey,
+            final String fallbackMessageText, final Object... args) {
+        report.setMessage(localStrings.getLocalString(messageKey, fallbackMessageText, args));
+        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+    }
+    
+    @Override
+    public void execute(AdminCommandContext context) {
+        ActionReport report = context.getActionReport();
 
         int pidInt = -1;
 

@@ -40,6 +40,7 @@
 
 package org.glassfish.flashlight.cli;
 
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.admin.*;
@@ -74,7 +75,7 @@ import javax.inject.Inject;
         path="disable-monitoring", 
         description="disable-monitoring")
 })
-public class DisableMonitoring implements AdminCommand {
+public class DisableMonitoring implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     // do NOT inject this.  We may need it for a different config tha ours.
     private MonitoringService ms;
@@ -92,21 +93,39 @@ public class DisableMonitoring implements AdminCommand {
     final private LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(DisableMonitoring.class);
 
+    @AccessRequired.To("update")
+    private Config targetConfig = null;
+
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        final ActionReport report = context.getActionReport();
+        try {
+            targetConfig = targetService.getConfig(target);
+            if (targetConfig != null) {
+                ms = targetConfig.getMonitoringService();
+                return true;
+            }
+            fail(report, "unknown.target", "Could not find target {0}", target);
+            return false;
+        }
+        catch (Exception e) {
+            fail(report, "target.service.exception",
+                    "Encountered exception trying to locate the MonitoringService element "
+                    + "in the target ({0}) configuration: {1}", target, e.getMessage());
+            return false;
+        }
+    }
+    
+    private void fail(final ActionReport report, final String messageKey,
+            final String fallbackMessageText, final Object... args) {
+        report.setMessage(localStrings.getLocalString(messageKey, fallbackMessageText, args));
+        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+    }
+    
+    @Override
     public void execute(AdminCommandContext context) {
 
         ActionReport report = context.getActionReport();
-
-        try {
-            // BN: Famous Last Words:  This can't fail!!!  I'm handling anyways...
-            ms = targetService.getConfig(target).getMonitoringService();
-        }
-        catch(Exception e) {
-            report.setMessage(localStrings.getLocalString("target.service.exception",
-                "Encountered exception trying to locate the MonitoringService element "
-                + "in the target ({0}) configuration: {1}", target, e.getMessage()));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
 
         try {
             if ((modules == null) || (modules.length() < 1)) {
