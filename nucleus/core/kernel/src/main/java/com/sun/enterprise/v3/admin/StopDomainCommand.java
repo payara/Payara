@@ -62,6 +62,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 @CommandLock(CommandLock.LockType.NONE)
 @Async
 @I18n("stop.domain.command")
+@AccessRequired(resource="domain", action="stop")
 @ExecuteOn(RuntimeType.DAS)
 public class StopDomainCommand extends StopServer implements AdminCommand {
 

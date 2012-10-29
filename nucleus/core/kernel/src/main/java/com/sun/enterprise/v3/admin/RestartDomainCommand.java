@@ -72,6 +72,7 @@ import org.glassfish.hk2.api.PerLookup;
         path="restart-domain", 
         description="restart-domain")
 })
+@AccessRequired(resource="domain", action={"stop","start"})
 public class RestartDomainCommand extends RestartServer implements AdminCommand {
 
     @Inject
