@@ -54,7 +54,7 @@ public class TransactionClientInterceptor extends LocalObject
     private String name;
     private int order;
 
-    private transient JavaEETransactionManager tm;
+    private JavaEETransactionManager tm;
 
     /**
      * Create the interceptor.
@@ -68,10 +68,8 @@ public class TransactionClientInterceptor extends LocalObject
     }
 
     public int compareTo(TransactionClientInterceptor o) {
-	int otherOrder = -1;
-	if(o instanceof TransactionClientInterceptor) {
-	    otherOrder = ((TransactionClientInterceptor)o).order;
-	}
+	int otherOrder = o.order;
+	
 	if (order < otherOrder) {
 	    return -1;
 	} else if (order == otherOrder) {
