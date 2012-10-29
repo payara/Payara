@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,21 +42,15 @@ package org.glassfish.webservices;
 
 import java.io.IOException;
 
-
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import com.sun.logging.LogDomains;
-
-
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletContext;
 
-
-
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
-import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
 
 /**
  * Implementation of the Ejb Message Dispatcher for EJB3 endpoints.
@@ -69,17 +63,15 @@ public class Ejb3MessageDispatcher implements EjbMessageDispatcher {
     
     private static WsUtil wsUtil = new WsUtil();
     
-
-    
-    
+    @Override
     public void invoke(HttpServletRequest req, 
                        HttpServletResponse resp,
                        ServletContext ctxt,
                        EjbRuntimeEndpointInfo endpointInfo) {
         
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "JAXWS WebServiceDispatcher " + req.getMethod() + 
-                   " entering for " + req.getRequestURI() + " and query string " + req.getQueryString());
+            logger.log(Level.FINE, "JAXWS WebServiceDispatcher {0} entering for {1} and query string {2}", 
+                    new Object[]{req.getMethod(), req.getRequestURI(), req.getQueryString()});
         }       
         String method = req.getMethod();
         try {
@@ -108,22 +100,19 @@ public class Ejb3MessageDispatcher implements EjbMessageDispatcher {
         ServletAdapter adapter;
         try {            
             try {
-
-                 adapterInfo =
-                        (AdapterInvocationInfo) endpointInfo.prepareInvocation(true);
+                adapterInfo = (AdapterInvocationInfo) endpointInfo.prepareInvocation(true);
                 adapter = adapterInfo.getAdapter();
                 if (adapter != null) {                    
                     adapter.handle(null, req, resp);
                 } else {
-                    logger.log(Level.SEVERE, 
-                            "Unable to find adpater for endpoint " + endpointInfo.getEndpoint().getName());
+                    logger.log(Level.SEVERE, "Unable to find adpater for endpoint {0}", endpointInfo.getEndpoint().getName());
                 }
             } finally {
                 // Always call release, even if an error happened
                 // during getImplementor(), since some of the
                 // preInvoke steps might have occurred.  It's ok
                 // if implementor is null.
-                endpointInfo.releaseImplementor(adapterInfo.getInv());
+                endpointInfo.releaseImplementor((adapterInfo == null) ? null : adapterInfo.getInv());
             }    
         } catch (Throwable e) {
             String errorMessage = "invocation error on ejb endpoint " +
@@ -140,11 +129,10 @@ public class Ejb3MessageDispatcher implements EjbMessageDispatcher {
                            ServletContext ctxt,
                            EjbRuntimeEndpointInfo endpointInfo)
                             throws IOException    {
-        AdapterInvocationInfo adapterInfo = null;
+        AdapterInvocationInfo adapterInfo;
         ServletAdapter adapter;
         try {
-             adapterInfo =
-                        (AdapterInvocationInfo) endpointInfo.prepareInvocation(true);
+             adapterInfo = (AdapterInvocationInfo) endpointInfo.prepareInvocation(true);
             adapter = adapterInfo.getAdapter();
             if (adapter != null) {
                 adapter.publishWSDL(ctxt, req, resp);
