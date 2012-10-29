@@ -104,7 +104,7 @@ public class DeleteResourceRef implements AdminCommand, AdminCommandSecurity.Pre
     
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
-        refContainer = chooseRefContainer();
+        refContainer = CLIUtil.chooseRefContainer(domain, target, configBeansUtilities);
         if (refContainer != null) {
             resourceRef = getResourceRef();
         }
@@ -113,19 +113,6 @@ public class DeleteResourceRef implements AdminCommand, AdminCommandSecurity.Pre
             setResourceRefDoNotExistMessage(context.getActionReport());
         }
         return resourceRef != null;
-    }
-    
-    private RefContainer chooseRefContainer() {
-        Config config = domain.getConfigs().getConfigByName(target);
-        if (config != null) {
-            return config;
-        }
-        Server server = configBeansUtilities.getServerNamed(target);
-        if (server != null) {
-            return server;
-        }
-        Cluster cluster = domain.getClusterNamed(target);
-        return cluster;
     }
     
     private ResourceRef getResourceRef() {
