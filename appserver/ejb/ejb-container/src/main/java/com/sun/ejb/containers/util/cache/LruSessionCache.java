@@ -62,9 +62,6 @@ public class LruSessionCache
     extends LruEJBCache
     implements EjbCacheStatsProviderDelegate
 {
-
-    protected int           numActivated;
-    
     protected int		    cacheIdleTimeoutInSeconds;
     protected int		    removalTimeoutInSeconds;
     
