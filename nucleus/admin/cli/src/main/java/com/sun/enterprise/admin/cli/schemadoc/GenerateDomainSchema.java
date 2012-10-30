@@ -77,6 +77,7 @@ import javax.inject.Inject;
         path="generate-domain-schema", 
         description="generate-domain-schema")
 })
+@AccessRequired(resource="domain", action="generate-schema")
 public class GenerateDomainSchema implements AdminCommand {
     @Inject
     private Domain domain;
