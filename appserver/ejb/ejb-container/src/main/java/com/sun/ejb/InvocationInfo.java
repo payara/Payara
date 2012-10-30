@@ -66,7 +66,6 @@ public class InvocationInfo {
 
 
     public int        txAttr;
-    public int        securityPermissions;
     public CachedPermission cachedPermission;
 
     public boolean    isBusinessMethod;

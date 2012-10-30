@@ -3019,7 +3019,6 @@ public abstract class BaseContainer
 
         invInfo.ejbName = ejbDescriptor.getName();
         invInfo.txAttr = txAttr;
-        invInfo.securityPermissions = Container.SEC_NOT_INITIALIZED;
         invInfo.methodIntf = methodIntf;
 
         invInfo.isBusinessMethod = isBusinessMethod(method);

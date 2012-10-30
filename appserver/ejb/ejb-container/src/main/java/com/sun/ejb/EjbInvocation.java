@@ -207,13 +207,6 @@ public class EjbInvocation
     public int transactionAttribute;
     
     /**
-     * The security attribute of the bean method. Set in generated
-     * EJBObject/Home/LocalObject/LocalHome class.
-     */
-    public int securityPermissions;
-    
-    
-    /**
      * Used by MessageBeanContainer.  true if container started
      * a transaction for this invocation.
      */

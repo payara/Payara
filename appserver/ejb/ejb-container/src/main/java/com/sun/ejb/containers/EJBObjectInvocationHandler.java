@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -196,7 +196,6 @@ public final class EJBObjectInvocationHandler
             // Set cached invocation params.  This will save additional lookups
             // in BaseContainer.
             inv.transactionAttribute = invInfo.txAttr;
-            inv.securityPermissions = invInfo.securityPermissions;
             inv.invocationInfo = invInfo;
             inv.beanMethod = invInfo.targetMethod1;
             inv.methodParams = args;
