@@ -39,7 +39,8 @@
  */
 package com.sun.enterprise.server.logging;
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.LogRecord;
 
 /**
@@ -55,7 +56,7 @@ public class LogEventImpl implements LogEvent {
     private String logger = "";
     private String message = "";
     private String messageId = "";
-    private Properties suppAttrs = new Properties();
+    private Map<String,Object> suppAttrs = new HashMap<String,Object>();
     private long threadId = 0L;
     private String threadName = "";
     private long timeMillis = 0L;
@@ -108,7 +109,7 @@ public class LogEventImpl implements LogEvent {
     }
 
     @Override
-    public Properties getSupplementalAttributes() {
+    public Map<String,Object> getSupplementalAttributes() {
         return suppAttrs;
     }
 

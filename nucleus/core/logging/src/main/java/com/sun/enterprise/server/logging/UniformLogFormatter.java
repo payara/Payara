@@ -307,15 +307,23 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
             // included for FINER and FINEST log levels.
             if (LOG_SOURCE_IN_KEY_VALUE ||
                     (level.intValue() <= Level.FINE.intValue())) {
-                recordBuffer.append(CLASS_NAME).append(NV_SEPARATOR);
-                logEvent.getSupplementalAttributes().put(CLASS_NAME, record.getSourceClassName());
-                recordBuffer.append(record.getSourceClassName());
-                recordBuffer.append(NVPAIR_SEPARATOR);
-                
-                recordBuffer.append(METHOD_NAME).append(NV_SEPARATOR);
-                logEvent.getSupplementalAttributes().put(METHOD_NAME, record.getSourceMethodName());
-                recordBuffer.append(record.getSourceMethodName());
-                recordBuffer.append(NVPAIR_SEPARATOR);
+                String sourceClassName = record.getSourceClassName();
+                sourceClassName = (sourceClassName == null) ? "" : sourceClassName;
+                // if (sourceClassName != null && !sourceClassName.isEmpty()) {
+                    recordBuffer.append(CLASS_NAME).append(NV_SEPARATOR);
+                    logEvent.getSupplementalAttributes().put(CLASS_NAME, sourceClassName);
+                    recordBuffer.append(sourceClassName);
+                    recordBuffer.append(NVPAIR_SEPARATOR);                    
+                // }
+
+                String sourceMethodName = record.getSourceMethodName();
+                sourceMethodName = (sourceMethodName == null) ? "" : sourceMethodName; 
+                // if (sourceMethodName != null && !sourceMethodName.isEmpty()) {
+                    recordBuffer.append(METHOD_NAME).append(NV_SEPARATOR);
+                    logEvent.getSupplementalAttributes().put(METHOD_NAME, sourceMethodName);
+                    recordBuffer.append(sourceMethodName);
+                    recordBuffer.append(NVPAIR_SEPARATOR);                    
+                // }
             }
 
             if (RECORD_NUMBER_IN_KEY_VALUE) {

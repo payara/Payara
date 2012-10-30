@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
@@ -62,6 +63,8 @@ import org.junit.Test;
  *
  */
 public class LoggingAnnotationsTest {
+
+    private static final String CANNOT_READ_TEST_CONFIGURATION_FILE_MSG = "Cannot read test configuration file ";
 
     private static final String TEST_EXCEPTION_MESSAGE = "Test exception message";
 
@@ -86,11 +89,14 @@ public class LoggingAnnotationsTest {
     @LogMessageInfo(message = "Cannot read test configuration file {0}", level="SEVERE",
             cause="An exception has occurred while reading the logging configuration file.",
             action="Take appropriate action based on the exception message.")
-    public static final String ERROR_READING_TEST_CONF_FILE = "TEST-LOGGING-00001";
+    public static final String ERROR_READING_TEST_CONF_FILE_ID = "TEST-LOGGING-00001";
     
     private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME, RB_NAME);
 
     private static final String LINE_SEP = System.getProperty("line.separator");
+
+    @LogMessageInfo(message = "FINE Level test message", level="FINE")
+    private static final String FINE_TEST_MESSAGE_ID = "TEST-LOGGING-00002";
 
     private static FileHandler uniformFormatHandler;
 
@@ -105,10 +111,12 @@ public class LoggingAnnotationsTest {
         
         // Add a file handler with UniformLogFormatter
         uniformFormatHandler = new FileHandler(ULF_LOG);
+        uniformFormatHandler.setLevel(Level.FINE);
         uniformFormatHandler.setFormatter(new UniformLogFormatter());
 
         // Add a file handler with ODLLogFormatter
         odlFormatHandler = new FileHandler(ODL_LOG);
+        odlFormatHandler.setLevel(Level.FINE);
         odlFormatHandler.setFormatter(new ODLLogFormatter());
         
         consoleHandler = new ConsoleHandler();
@@ -118,18 +126,55 @@ public class LoggingAnnotationsTest {
         LOGGER.addHandler(odlFormatHandler);
         LOGGER.addHandler(consoleHandler);        
         LOGGER.setUseParentHandlers(false);
+        LOGGER.setLevel(Level.FINE);
     }
     
     @Test
     public void testLogMessageWithExceptionArgument() throws IOException {
-        LOGGER.log(Level.SEVERE, ERROR_READING_TEST_CONF_FILE, 
+        LOGGER.log(Level.SEVERE, ERROR_READING_TEST_CONF_FILE_ID, 
                 new Object[] {TEST_CONF_FILE, new Exception(TEST_EXCEPTION_MESSAGE)});
-        validateLogContents(ULF_LOG);
-        validateLogContents(ODL_LOG);
+        String[] expectedContents = new String[] {
+                CANNOT_READ_TEST_CONFIGURATION_FILE_MSG + TEST_CONF_FILE,
+                TEST_EXCEPTION_MESSAGE
+        };
+        validateLogContents(ULF_LOG, expectedContents);
+        validateLogContents(ODL_LOG, expectedContents);
         System.out.println("Test passed successfully.");
     }
-    
-    private void validateLogContents(String file) throws IOException {
+
+    @Test
+    public void testFineLevelMessageWithSourceInfo() throws IOException {
+        LOGGER.fine(FINE_TEST_MESSAGE_ID);
+        String testMessage = "FINE Level test message";
+        String[] ulfContents = new String[] {testMessage, 
+                "ClassName=com.sun.enterprise.server.logging.LoggingAnnotationsTest;",
+                "MethodName=testFineLevelMessageWithSourceInfo;"};
+        validateLogContents(ULF_LOG, ulfContents);
+        String[] odlContents = new String[] {testMessage,
+                "[CLASSNAME: com.sun.enterprise.server.logging.LoggingAnnotationsTest]",
+                "[METHODNAME: testFineLevelMessageWithSourceInfo]"};
+        validateLogContents(ODL_LOG, odlContents);
+        System.out.println("Test passed successfully.");
+    }
+
+    @Test
+    public void testFineLevelMessageWithoutSourceInfo() throws IOException {
+        String msg = "Hello FINE World";
+        LogRecord rec = new LogRecord(Level.FINE, msg);
+        rec.setLoggerName(LOGGER_NAME);
+        rec.setSourceClassName(null);
+        rec.setSourceMethodName(null);
+        LOGGER.log(rec);
+        String[] ulfContents = new String[] {msg};
+        String contents = validateLogContents(ULF_LOG, ulfContents);
+        assertEquals(false,contents.contains("MethodName=testFineLevelMessageWithoutSourceInfo;"));
+        String[] odlContents = new String[] {msg};
+        contents = validateLogContents(ODL_LOG, odlContents);
+        assertEquals(false,contents.contains("[METHODNAME: testFineLevelMessageWithoutSourceInfo]"));
+        System.out.println("Test passed successfully.");
+    }
+
+    private String validateLogContents(String file, String[] messages) throws IOException {
         StringBuffer buf = new StringBuffer();
         BufferedReader reader=null;
         try {
@@ -140,10 +185,11 @@ public class LoggingAnnotationsTest {
                 buf.append(LINE_SEP);
             }
             String contents = buf.toString();
-            assertEquals("File " + file + " does not contain log message.", 
-                    true, contents.contains("Cannot read test configuration file " + TEST_CONF_FILE));
-            assertEquals("File " + file + " does not contain exception message", 
-                    true, contents.contains(TEST_EXCEPTION_MESSAGE));
+            for (String msg : messages) {
+                assertEquals("File " + file + " does not contain expected log message:" + msg, 
+                        true, contents.contains(msg));                
+            }
+            return contents;
         } finally {
             if (reader != null) {
                 reader.close();

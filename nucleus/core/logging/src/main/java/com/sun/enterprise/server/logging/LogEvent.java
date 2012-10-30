@@ -39,7 +39,7 @@
  */
 package com.sun.enterprise.server.logging;
 
-import java.util.Properties;
+import java.util.Map;
 
 public interface LogEvent {
 
@@ -119,6 +119,6 @@ public interface LogEvent {
      * Optional name-value pairs associated with this log event.
      * @return
      */
-    public abstract Properties getSupplementalAttributes();
+    public abstract Map<String,Object> getSupplementalAttributes();
 
 }

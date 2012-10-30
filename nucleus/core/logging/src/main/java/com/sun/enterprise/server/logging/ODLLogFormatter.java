@@ -74,7 +74,7 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
 
     // loggerResourceBundleTable caches references to all the ResourceBundle
     // and can be searched using the LoggerName as the key 
-    private HashMap loggerResourceBundleTable;
+    private Map<String, ResourceBundle> loggerResourceBundleTable;
 
     private LogManager logManager;
 
@@ -133,7 +133,7 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
     
     public ODLLogFormatter() {
         super();
-        loggerResourceBundleTable = new HashMap();
+        loggerResourceBundleTable = new HashMap<String,ResourceBundle>();
         logManager = LogManager.getLogManager();
     }
 
@@ -327,18 +327,24 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
             Level level = record.getLevel();
             if (LOG_SOURCE_IN_KEY_VALUE ||
                     (level.intValue() <= Level.FINE.intValue())) {
-                recordBuffer.append(FIELD_BEGIN_MARKER);
-                recordBuffer.append("CLASSNAME: ");
-                logEvent.getSupplementalAttributes().put("CLASSNAME", record.getSourceClassName());
-                recordBuffer.append(record.getSourceClassName());
-                recordBuffer.append(FIELD_END_MARKER);
-                recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
-                recordBuffer.append(FIELD_BEGIN_MARKER);
-                recordBuffer.append("METHODNAME: ");
-                logEvent.getSupplementalAttributes().put("METHODNAME", record.getSourceMethodName());
-                recordBuffer.append(record.getSourceMethodName());
-                recordBuffer.append(FIELD_END_MARKER);
-                recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+                String sourceClassName = record.getSourceClassName();
+                if (sourceClassName != null && !sourceClassName.isEmpty()) {
+                    recordBuffer.append(FIELD_BEGIN_MARKER);
+                    recordBuffer.append("CLASSNAME: ");
+                    logEvent.getSupplementalAttributes().put("CLASSNAME", sourceClassName);
+                    recordBuffer.append(sourceClassName);
+                    recordBuffer.append(FIELD_END_MARKER);
+                    recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);                    
+                }
+                String sourceMethodName = record.getSourceMethodName();
+                if (sourceMethodName != null && !sourceMethodName.isEmpty()) {
+                    recordBuffer.append(FIELD_BEGIN_MARKER);
+                    recordBuffer.append("METHODNAME: ");
+                    logEvent.getSupplementalAttributes().put("METHODNAME", sourceMethodName);
+                    recordBuffer.append(sourceMethodName);
+                    recordBuffer.append(FIELD_END_MARKER);
+                    recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);                    
+                }
             }
 
             if (_delegate != null) {
@@ -418,7 +424,7 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
         if (loggerName == null) {
             return null;
         }
-        ResourceBundle rb = (ResourceBundle) loggerResourceBundleTable.get(
+        ResourceBundle rb = loggerResourceBundleTable.get(
                 loggerName);
         /*
                 * Note that logManager.getLogger(loggerName) untrusted code may create loggers with
