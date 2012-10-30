@@ -43,6 +43,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -224,7 +225,7 @@ public class NamedResourceManager {
             StringBuilder buf = new StringBuilder(name.length()+5);
             for(String t : TOKENIZER.split(name)) {
                 if(buf.length()>0)  buf.append('-');
-                buf.append(t.toLowerCase());
+                buf.append(t.toLowerCase(Locale.ENGLISH));
             }
             return buf.toString();  
         }

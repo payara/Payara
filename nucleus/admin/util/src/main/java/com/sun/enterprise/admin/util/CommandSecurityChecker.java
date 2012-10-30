@@ -44,7 +44,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.PrivilegedAction;
 import java.util.*;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -346,39 +345,11 @@ public class CommandSecurityChecker {
                 }
             }
             
-            /*
-             * Process any AccessRequired.Typed annotations.
-             */
-            final AccessRequired.Typed arTyped = c.getAnnotation(AccessRequired.Typed.class);
-            if (arTyped != null) {
-                isAnnotated = true;
-                addAccessChecksFromAnno(arTyped, command, accessChecks, c, isTaggable);
-            }
-            
-            final AccessRequired.Typed.List arTypedList = c.getAnnotation(AccessRequired.Typed.List.class);
-            if (arTypedList != null) {
-                for (AccessRequired.Typed arT : arTypedList.value()) {
-                    isAnnotated = true;
-                    addAccessChecksFromAnno(arT, command, accessChecks, c, isTaggable);
-                }
-            }
-            
             isAnnotated |= addAccessChecksFromFields(c, command, accessChecks, isTaggable);
-            
         }
         return isAnnotated;
     }
     
-    private void addAccessChecksFromAnno(final AccessRequired.Typed arTyped, 
-            final AdminCommand command,
-            final List<AccessCheckWork> accessChecks,
-            final Class<?> c,
-            final boolean isTaggable) {
-//        final List<String> keyValues = new ArrayList<String>();
-//        for (String key : arTyped.key()) {
-//            
-//        }
-    }
     private boolean addAccessChecksFromFields(
             final Class<?> c,
             final AdminCommand command,
@@ -506,14 +477,6 @@ public class CommandSecurityChecker {
         return sb.toString();
     }
     
-    private boolean addAccessChecksFromAnno(final AccessRequired.Typed arTyped,
-            final AdminCommand command,
-            final List<AccessCheckWork> accessChecks,
-            final boolean isTaggable) {
-//        final Class<?> type = arTyped.type();
-        return false; // not yet anyway
-    }
-    
     private String processTokens(final String expr, final AdminCommand command) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         
         final Matcher m = TOKEN_PATTERN.matcher(expr);
@@ -588,16 +551,16 @@ public class CommandSecurityChecker {
          * and the new child's type is the config bean class.
          */
         String resource;
-        if (restEndpoint.params().length == 0) {
+//        if (restEndpoint.params().length == 0) {
             resource = resourceNameFromRestEndpoint(restEndpoint.configBean(), 
                     restEndpoint.path(),
                     locator);
-        } else {
-            // TODO need to do something with the endpoint params
-            resource = resourceNameFromRestEndpoint(restEndpoint.configBean(), 
-                    restEndpoint.path(),
-                    locator);
-        }
+//        } else {
+//            // TODO need to do something with the endpoint params
+//            resource = resourceNameFromRestEndpoint(restEndpoint.configBean(), 
+//                    restEndpoint.path(),
+//                    locator);
+//        }
         final AccessCheck a = new AccessCheck(resource, action);
         String tag = null;
         if (isTaggable) {

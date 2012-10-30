@@ -154,42 +154,6 @@ public @interface AccessRequired {
     }
     
     /**
-     * Declares access control on an existing, non-null {@code ConfigBean}.  
-     * The system gets the name of the resource 
-     * from the {@code ConfigBean} itself and authorizes the specified actions
-     * using that resource.
-     */
-    @Target(ElementType.TYPE)
-    @Retention(RetentionPolicy.RUNTIME)
-    public @interface Typed {
-        
-        /**
-         * Type of the resource to be checked.
-         * @return 
-         */
-        public Class<?> type();
-        
-        /**
-         * Key values or ${fieldName} references to fields providing key values
-         * to be inserted where required in the resource path.
-         * @return 
-         */
-        public String[] key();
-        
-        /**
-         * Action(s) to be authorized on the ConfigBean
-         * @return 
-         */
-        public String[] action();
-        
-        @Target(ElementType.TYPE)
-        @Retention(RetentionPolicy.RUNTIME)
-        public @interface List {
-            public Typed[] value();
-        }
-    }
-    
-    /**
      * Represents an authorization check: a resource and an action to be 
      * authorized on that resource.
      * <p>
