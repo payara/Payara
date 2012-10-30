@@ -40,6 +40,9 @@
 package com.sun.enterprise.v3.admin;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
@@ -54,6 +57,7 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  *  This is the implementation for the JobManagerService
@@ -68,7 +72,10 @@ import javax.inject.Inject;
  */
 
 @Service
+@Singleton
 public class JobManagerService implements JobManager {
+
+
     @Inject
     Domain domain;
 
@@ -85,6 +92,7 @@ public class JobManagerService implements JobManager {
 
     private final static Logger logger = LogDomains.getLogger(JobManagerService.class, LogDomains.ADMIN_LOGGER);
 
+    private @Inject ExecutorService pool;
 
     /**
      * This will return a new id which is unused
@@ -227,4 +235,10 @@ public class JobManagerService implements JobManager {
         logger.fine(adminStrings.getLocalString("removed.expired.job","Removed expired job ",  obj));
 
     }
+
+    public ExecutorService getThreadPool() {
+        return pool ;
+    }
+
+
 }

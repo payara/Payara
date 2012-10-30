@@ -49,6 +49,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.uuid.UuidGenerator;
 import com.sun.enterprise.util.uuid.UuidGeneratorImpl;
+import com.sun.enterprise.v3.admin.JobManagerService;
 import com.sun.enterprise.v3.common.ActionReporter;
 import com.sun.enterprise.v3.common.PlainTextActionReporter;
 import com.sun.enterprise.v3.common.PropsFileActionReporter;
@@ -56,6 +57,9 @@ import com.sun.logging.LogDomains;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -73,6 +77,7 @@ import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.sse.EventChannel;
 import org.glassfish.jersey.media.sse.OutboundEvent;
+
 
 /**
  *
@@ -421,32 +426,46 @@ public class CommandResource {
     private void executeCommandInvocationAsync(final CommandRunner.CommandInvocation ci,
             final EventChannel ec,
             final AdminCommandListener listener) {
-        //TODO: It use new Thread. It is little bit dengerous. Better to use some configurable thread pool. Refactore it!
-        Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            ci.execute();
-                        } catch (Throwable thr) {
-                            logger.log(Level.WARNING, strings.getLocalString("sse.commandexecution.unexpectedexception",
-                                                    "Unexpected exception during command execution. {0}",
-                                                    thr.toString()));
-                            ActionReport ar = new PropsFileActionReporter(); //new RestActionReporter();
-                            ar.setFailureCause(thr);
-                            ar.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                            AdminCommandState acs = new AdminCommandStateImpl(AdminCommandState.State.COMPLETED, ar, true, "unknown");
-                            listener.onAdminCommandEvent(AdminCommandStateImpl.EVENT_STATE_CHANGED, acs);
-                        } finally {
-                            try {
-                                ec.close();
-                            } catch (IOException ex) {
-                                logger.log(Level.WARNING, null, ex);
-                            }
-                        }
-                    }
-                });
-        thread.start();
+
+        JobManagerService jobManagerService = Globals.getDefaultHabitat().getService(JobManagerService.class);
+        ExecutorService pool = jobManagerService.getThreadPool();
+        pool.execute(new AsyncInvocationHandler(ci,ec,listener));
     }
+
+    class AsyncInvocationHandler implements Runnable {
+        private CommandRunner.CommandInvocation commandInvocation;
+        private EventChannel eventChannel;
+        private AdminCommandListener listener;
+
+        AsyncInvocationHandler(CommandRunner.CommandInvocation inv, EventChannel channel, AdminCommandListener list) {
+            this.commandInvocation = inv;
+            this.eventChannel = channel;
+            this.listener = list;
+
+        }
+        @Override
+        public void run() {
+            try {
+                commandInvocation.execute();
+            } catch (Throwable thr) {
+                logger.log(Level.WARNING, strings.getLocalString("sse.commandexecution.unexpectedexception",
+                        "Unexpected exception during command execution. {0}",
+                        thr.toString()));
+                ActionReport actionReport = new PropsFileActionReporter(); //new RestActionReporter();
+                actionReport.setFailureCause(thr);
+                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                AdminCommandState acs = new AdminCommandStateImpl(AdminCommandState.State.COMPLETED, actionReport, true, "unknown");
+                listener.onAdminCommandEvent(AdminCommandStateImpl.EVENT_STATE_CHANGED, acs);
+            } finally {
+                try {
+                    eventChannel.close();
+                } catch (IOException ex) {
+                    logger.log(Level.WARNING, null, ex);
+                }
+            }
+        }
+    }
+
 
     private Response executeCommand(CommandName commandName, Payload.Inbound inbound,
             ParameterMap params, boolean supportsMultiparResult, String xIndentHeader,

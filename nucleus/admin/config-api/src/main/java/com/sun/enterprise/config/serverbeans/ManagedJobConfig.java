@@ -50,8 +50,8 @@ import javax.validation.constraints.Pattern;
 import java.beans.PropertyVetoException;
 
 /**
- * This config bean will define parameters for Managed Jobs
- * A Managed jobs are commands which are annotated with @ManagedJob,@Progress
+ * This config bean will define parameters for Managed jobs
+ * A Managed job is a commands which is annotated with either @ManagedJob,@Progress
  * or running with --detach
  * @author Bhakti Mehta
  */
