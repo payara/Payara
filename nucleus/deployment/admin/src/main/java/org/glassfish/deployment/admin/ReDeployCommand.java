@@ -64,6 +64,7 @@ import java.util.Properties;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.io.File;
+import org.glassfish.api.admin.AccessRequired;
 
 /**
  *
@@ -77,6 +78,7 @@ import java.io.File;
 @I18n("redeploy.command")
 @ExecuteOn(value={RuntimeType.DAS})
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@AccessRequired.Delegate(DeployCommand.class)
 public class ReDeployCommand extends DeployCommandParameters implements AdminCommand {
 
     @Inject

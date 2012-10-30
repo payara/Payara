@@ -103,6 +103,12 @@ public @interface AccessRequired {
         public AccessRequired[] value();
     }
     
+    @Target(ElementType.TYPE)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface Delegate {
+        public Class value();
+    }
+    
     /**
      * Declares access control on an existing, non-null {@code ConfigBean}.  
      * The system gets the name of the resource 
