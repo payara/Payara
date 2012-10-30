@@ -70,6 +70,22 @@ public class V2ToV3ConfigUpgrade implements ConfigurationUpgrade, PostConstruct 
     @Inject
     Configs configs;
 
+    /**
+     * Report the JavaConfig beans for each config.
+     * <p>
+     * Lets the caller command prepare access checks for security authorization.
+     * @return 
+     */
+    public Collection<JavaConfig> getJavaConfigs() {
+        final Collection<JavaConfig> result = new ArrayList<JavaConfig>();
+        for (Config c : configs.getConfig()) {
+            if (c.getJavaConfig() != null) {
+                result.add(c.getJavaConfig());
+            }
+        }
+        return result;
+    }
+    
     @Override
     public void postConstruct() {
         // the 'prevent' defense

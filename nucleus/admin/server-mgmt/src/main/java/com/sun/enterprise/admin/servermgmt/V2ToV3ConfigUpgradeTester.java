@@ -45,6 +45,9 @@
 
 package com.sun.enterprise.admin.servermgmt;
 
+import com.sun.enterprise.config.serverbeans.JavaConfig;
+import java.util.ArrayList;
+import java.util.Collection;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.AdminCommand;
@@ -55,16 +58,29 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 
 @Service(name="test-upgrade", metadata="mode=debug")
 @PerLookup
-public class V2ToV3ConfigUpgradeTester  implements AdminCommand {
+public class V2ToV3ConfigUpgradeTester  implements AdminCommand,
+        AdminCommandSecurity.AccessCheckProvider {
     @Inject
     ServiceLocator habitat;
 
     @Inject
     V2ToV3ConfigUpgrade up;
 
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final Collection<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        for (JavaConfig jc : up.getJavaConfigs()) {
+            accessChecks.add(new AccessCheck(jc, "update", true /* isFailureFatal */));
+        }
+        return accessChecks;
+    }
+
+    @Override
     public void execute(AdminCommandContext context) {
         up.postConstruct();
         String msg = "Testing upgrade!";
