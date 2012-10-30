@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,25 +51,26 @@ import javax.enterprise.context.NormalScope;
  *  JTA transaction.
  *
  * The transaction scope is active when the return from a call to
- *  UserTransaction.getStatus or TransactionManager.getStatus is one of the
- *  following states:
- *      Status.STATUS_ACTIVE
- *      Status.STATUS_MARKED_ROLLBACK
- *      Status.STATUS_PREPARED,
- *      Status.STATUS_UNKNOWN,
- *      Status.STATUS_PREPARING,
- *      Status.STATUS_COMMITTING,
- *      Status.STATUS_ROLLING_BACK
+ *  <code>UserTransaction.getStatus</code> or
+ *  <code>TransactionManager.getStatus</code>
+ *  is one of the following states:
+ *      <li>Status.STATUS_ACTIVE</li>
+ *      <li>Status.STATUS_MARKED_ROLLBACK</li>
+ *      <li>Status.STATUS_PREPARED</li>
+ *      <li>Status.STATUS_UNKNOWN</li>
+ *      <li>Status.STATUS_PREPARING</li>
+ *      <li>Status.STATUS_COMMITTING</li>
+ *      <li>Status.STATUS_ROLLING_BACK</li>
  *
  * The transaction context is destroyed after any
- *  Synchronization.beforeCompletion methods are called and
+ *  <code>Synchronization.beforeCompletion</code> methods are called and
  *  after completion calls have been made on enlisted resources.
- *  Synchronization.afterCompletion calls may occur before the transaction
- *  context is destroyed, however, there is no guarantee.  [this is an open issue]
+ *  <code>Synchronization.afterCompletion</code> calls may occur before
+ *  the transaction context is destroyed, however, there is no guarantee.
  *
- * A javax.enterprise.context.ContextNotActiveException will be thrown if an
- *  object with this annotation is used when the transaction context is not
- *  active.
+ * A <code>javax.enterprise.context.ContextNotActiveException</code>
+ *  will be thrown if an object with this annotation is used when the
+ *  transaction context is not active.
  * The object with this annotation is associated with the JTA transaction where
  *  it is first used and this association is retained through any transaction
  *  suspend or resume calls as well as any beforeCompletion Synchronization
@@ -78,6 +79,8 @@ import javax.enterprise.context.NormalScope;
  *  (eg BMT, CMT, etc.) is of no consequence.
  * The contextual references used across different JTA transactions are
  *  distinct.
+ *
+ *  @since JTA1.2
  */
 @Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
