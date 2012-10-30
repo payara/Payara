@@ -1477,7 +1477,7 @@ public class RecoveryManager {
 	    }
     } 
 
-    public static int sizeOfInCompleTx() {
+    public static int sizeOfInCompleteTx() {
         return inCompleteTxMap.size();
     }
    

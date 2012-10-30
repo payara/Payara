@@ -378,13 +378,13 @@ public class TransactionServiceProperties {
                                     + "not requeired,  waiting for the next interval");
                         continue;
                     }
-                    if (RecoveryManager.sizeOfInCompleTx() <= prevSize) {
+                    if (RecoveryManager.sizeOfInCompleteTx() <= prevSize) {
                         if (_logger.isLoggable(Level.FINE))
                             _logger.log(Level.FINE, "Incomplete transaction recovery is "
                                     + "not required,  waiting for the next interval SIZE");
                        continue;
                     }
-                    prevSize = RecoveryManager.sizeOfInCompleTx();
+                    prevSize = RecoveryManager.sizeOfInCompleteTx();
                     recoveryManager.recoverIncompleteTx(false, null);
                 }
             } catch (Exception ex) {
