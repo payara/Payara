@@ -484,12 +484,13 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     void initializePump() {
         pump = new Thread() {
             public void run() {
-                try {
-                    while (!done.isSignalled()) {
+                while (!done.isSignalled()) {
+                    try {
                         log();
+                    } catch (Exception e) {
+                        // GLASSFISH-19125
+                        // Continue the loop without exiting
                     }
-                } catch (RuntimeException e) {
-
                 }
             }
         };
