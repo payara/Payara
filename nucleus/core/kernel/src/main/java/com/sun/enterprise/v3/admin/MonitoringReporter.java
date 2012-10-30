@@ -90,8 +90,9 @@ import java.util.Map;
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 public class MonitoringReporter extends V2DottedNameSupport {
 
-    private TreeMap nodeTreeToProcess = null; // used for get
-    private List<org.glassfish.flashlight.datatree.TreeNode> nodeListToProcess = null; // used for list
+    private final TreeMap nodeTreeToProcess = new TreeMap(); // used for get
+    private List<org.glassfish.flashlight.datatree.TreeNode> nodeListToProcess = 
+            new ArrayList<org.glassfish.flashlight.datatree.TreeNode>(); // used for list
     
     public enum OutputType {
 
@@ -346,6 +347,8 @@ public class MonitoringReporter extends V2DottedNameSupport {
             prepareDas(arg);
         else
             prepareInstance(arg);
+        
+        prepareNodesToProcess();
     }
 
     /**
@@ -378,7 +381,6 @@ public class MonitoringReporter extends V2DottedNameSupport {
             if (!validate()) {
                 return;
             }
-            prepareNodesToProcess();
         }
         catch (Exception e) {
             setError(Strings.get("admin.get.monitoring.unknown", e.getMessage()));
@@ -433,7 +435,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
         } 
         
         if (outputType == OutputType.GET) {
-            nodeTreeToProcess = prepareNodeTreeToProcess(localPattern, ltn);
+            prepareNodeTreeToProcess(localPattern, ltn);
         }
         else if (outputType == OutputType.LIST) {
             nodeListToProcess = ltn;
@@ -441,6 +443,12 @@ public class MonitoringReporter extends V2DottedNameSupport {
     }
     
     private void runLocally() {
+
+        // don't run if this is DAS **and** DAS is not in the server list.
+        // otherwise we are in an instance and definitely want to run!
+        if (isDas() && !dasIsInList()) {
+            return;
+        }
 
         if (outputType == OutputType.GET) {
             doGet();
@@ -453,15 +461,12 @@ public class MonitoringReporter extends V2DottedNameSupport {
         }
     }
 
-    private TreeMap prepareNodeTreeToProcess(final String pattern, final List<org.glassfish.flashlight.datatree.TreeNode> ltn) {
-        TreeMap map = new TreeMap();
-
+    private void prepareNodeTreeToProcess(final String pattern, final List<org.glassfish.flashlight.datatree.TreeNode> ltn) {
         for (org.glassfish.flashlight.datatree.TreeNode tn1 : sortTreeNodesByCompletePathName(ltn)) {
             if (!tn1.hasChildNodes()) {
-                insertNameValuePairs(map, tn1, pattern);
+                insertNameValuePairs(nodeTreeToProcess, tn1, pattern);
             }
         }
-        return map;
     }
     
     // Byron Nevins -- copied from original implementation
