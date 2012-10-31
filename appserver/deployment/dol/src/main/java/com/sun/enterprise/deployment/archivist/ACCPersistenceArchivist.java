@@ -86,8 +86,8 @@ public class ACCPersistenceArchivist extends PersistenceArchivist {
 
     @Override
     public Object open(Archivist main, ReadableArchive archive, RootDeploymentDescriptor descriptor) throws IOException, SAXParseException {
-        if(logger.isLoggable(Level.FINE)) {
-            logger.logp(Level.FINE, "ACCPersistencerArchivist",
+        if(deplLogger.isLoggable(Level.FINE)) {
+            deplLogger.logp(Level.FINE, "ACCPersistencerArchivist",
                     "readPersistenceDeploymentDescriptors", "archive = {0}",
                     archive.getURI());
         }

@@ -47,7 +47,6 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.PersistenceUnitsDescriptor;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
@@ -56,6 +55,7 @@ import org.xml.sax.SAXParseException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
@@ -63,17 +63,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Enumeration;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+
 public abstract class PersistenceArchivist extends ExtensionsArchivist {
     protected static final String JAR_EXT = ".jar";
     protected static final char SEPERATOR_CHAR = '/';
 
+    public static final Logger deplLogger = com.sun.enterprise.deployment.util.DOLUtils.deplLogger;
 
-    private static final Logger st_logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
-  /*
-    protected Logger logger = st_logger;
-  */
+  @LogMessageInfo(message = "Exception caught:  {0} for the subarchve indicated by the path:  {1}.", cause="An exception was caught when the subarchive was opened because the subarchive was not present.", action="Correct the archive so that the subarchive is present.", level="SEVERE")
+      private static final String EXCEPTION_CAUGHT = "AS-DEPLOYMENT-00004";
+
   public PersistenceArchivist() {
-    logger = st_logger;
   }
 
     public DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor) {
@@ -124,15 +125,15 @@ public abstract class PersistenceArchivist extends ExtensionsArchivist {
             throws IOException, SAXParseException {
 
         final String subArchiveURI = subArchive.getURI().getSchemeSpecificPart();
-        if (logger.isLoggable(Level.FINE)) {
-            logger.logp(Level.FINE, "Archivist",
+        if (deplLogger.isLoggable(Level.FINE)) {
+            deplLogger.logp(Level.FINE, "Archivist",
                     "readPersistenceDeploymentDescriptor",
                     "PURoot = [{0}] subArchive = {1}",
                     new Object[]{puRoot, subArchiveURI});
         }
         if (descriptor.getExtensionsDescriptors(PersistenceUnitsDescriptor.class, puRoot) != null) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.logp(Level.FINE, "Archivist",
+            if (deplLogger.isLoggable(Level.FINE)) {
+                deplLogger.logp(Level.FINE, "Archivist",
                         "readPersistenceDeploymentDescriptor",
                         "PU has been already read for = {0}",
                         subArchiveURI);
@@ -191,7 +192,11 @@ public abstract class PersistenceArchivist extends ExtensionsArchivist {
         } catch (IOException ioe) {
             // if there is any problem in opening the subarchive, and the subarchive is expected to be present, log the exception
             if(!expectAbscenceOfSubArchive) {
-                st_logger.log(Level.SEVERE, ioe.getMessage(), ioe);
+              LogRecord lr = new LogRecord(Level.SEVERE, EXCEPTION_CAUGHT);
+              Object args[] = { ioe.getMessage(), path };
+              lr.setParameters(args);
+              lr.setThrown(ioe);
+              deplLogger.log(lr);
             }
         }
         return returnedArchive;
@@ -224,8 +229,8 @@ public abstract class PersistenceArchivist extends ExtensionsArchivist {
             boolean probablePuRootJar = PersistenceArchivist.isProbablePuRootJar(jarName);
             if(!probablePuRootJar && isJarEntry(jarName) ) {
                 // A jar that is not in root of archive. Log that it will not be scanned
-                if (st_logger.isLoggable(Level.FINE)) {
-                    st_logger.logp(Level.FINE, "PersistenceArchivist",
+                if (deplLogger.isLoggable(Level.FINE)) {
+                    deplLogger.logp(Level.FINE, "PersistenceArchivist",
                             "readPersistenceDeploymentDescriptors",
                             "skipping {0} as it exists inside a directory in {1}.",
                             new Object[]{jarName, getPathOfSubArchiveToScan()});

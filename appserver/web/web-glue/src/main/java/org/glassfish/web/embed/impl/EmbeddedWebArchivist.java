@@ -91,8 +91,8 @@ public class EmbeddedWebArchivist extends WebArchivist {
                         try {
                             elements.add(classLoader.loadClass(toClassName(entry)));
                         } catch (ClassNotFoundException e) {
-                            logger.log(Level.FINER,
-                                    MessageFormat.format(
+                            deplLogger.log(Level.FINER,
+                                           MessageFormat.format(
                                             _logger.getResourceBundle().getString(CANNOT_LOAD_CLASS), entry),
                                     e);
                         }

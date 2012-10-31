@@ -59,6 +59,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
 import javax.security.auth.Subject;
 
 import com.sun.enterprise.deployment.Application;
@@ -79,9 +80,9 @@ import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.archive.ArchiveType;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  *
@@ -89,7 +90,10 @@ import org.glassfish.api.deployment.archive.ArchiveType;
  */
 public class ComponentValidator extends DefaultDOLVisitor implements ComponentVisitor {
 
-    private static final Logger _logger = LogDomains.getLogger(DOLUtils.class, LogDomains.DPL_LOGGER);
+    public static final Logger deplLogger = com.sun.enterprise.deployment.util.DOLUtils.deplLogger;
+
+    @LogMessageInfo(message = "Could not load {0}", level="FINE")
+    private static final String LOAD_ERROR = "AS-DEPLOYMENT-00014";
 
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ComponentValidator.class);
@@ -215,7 +219,11 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                         ejbRef.setType("Session");
                     }
                 } catch(Exception e) {
-                    _logger.log(Level.FINE, "Could not load " + homeIntf, e);
+                  LogRecord lr = new LogRecord(Level.FINE, LOAD_ERROR);
+                  Object args[] = { homeIntf };
+                  lr.setParameters(args);
+                  lr.setThrown(e);
+                  deplLogger.log(lr);
                 }
             }
         }

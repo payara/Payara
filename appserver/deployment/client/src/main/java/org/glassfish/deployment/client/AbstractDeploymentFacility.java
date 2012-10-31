@@ -42,7 +42,6 @@ package org.glassfish.deployment.client;
 
 import org.glassfish.api.admin.CommandException;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import java.io.File;
 import java.io.IOException;
 import java.io.EOFException;
@@ -70,6 +69,10 @@ import org.glassfish.deployment.common.DeploymentProperties;
 import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.deployment.deploy.shared.MemoryMappedArchive;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+
 /**
  * Provides common behavior for the local and remote deployment facilities.
  * <p>
@@ -93,6 +96,18 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
     private ServerConnectionIdentifier targetDAS;
     private Map<String, String> targetModuleWebURLs = 
         new HashMap<String, String>();
+
+    @LogMessagesResourceBundle
+    private static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.deployment.LogMessages";
+
+    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
+    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.system.tools.deployment.client";
+
+    public static final Logger deplLogger =
+        Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo(message = "Error in deleting file {0}", level="WARNING")
+    private static final String FILE_DELETION_ERROR = "AS-DEPLOYMENT-00017";
 
     /**
      * Defines behavior implemented in the local or remote deployment facility
@@ -292,13 +307,17 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
                 if (tempSourceFile != null) {
                     boolean isDeleted = tempSourceFile.delete();
                     if (!isDeleted) {
-                        Logger.getAnonymousLogger().log(Level.WARNING, "Error in deleting file " + tempSourceFile.getAbsolutePath());
+                        deplLogger.log(Level.WARNING,
+                                       FILE_DELETION_ERROR,
+                                       tempSourceFile.getAbsolutePath());
                     }
                 }
                 if (tempPlanFile != null) {
                     boolean isDeleted =tempPlanFile.delete();
                     if (!isDeleted) {
-                        Logger.getAnonymousLogger().log(Level.WARNING, "Error in deleting file " + tempPlanFile.getAbsolutePath());
+                        deplLogger.log(Level.WARNING,
+                                       FILE_DELETION_ERROR,
+                                       tempPlanFile.getAbsolutePath());
                     }
                 }
             }

@@ -45,13 +45,11 @@ import com.sun.enterprise.deployment.annotation.introspection.ConstantPoolInfo;
 import com.sun.enterprise.deployment.annotation.introspection.DefaultAnnotationScanner;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.logging.LogDomains;
 import java.io.ByteArrayOutputStream;
 import java.util.Enumeration;
 import java.util.jar.JarFile;
 import java.util.zip.ZipException;
 import org.glassfish.apf.Scanner;
-import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.apf.impl.JavaEEScanner;
 import org.glassfish.hk2.classmodel.reflect.*;
 import javax.inject.Inject;
@@ -69,9 +67,11 @@ import java.util.ArrayList;
 import java.util.jar.JarEntry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
 import java.net.URL;
 import java.util.concurrent.*;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * This is an abstract class of the Scanner interface for J2EE module.
@@ -97,8 +97,34 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
     
     private Set<String> entries = new HashSet<String>();
 
-    protected Logger logger = LogDomains.getLogger(DeploymentUtils.class, 
-        LogDomains.DPL_LOGGER);
+    public static final Logger deplLogger = com.sun.enterprise.deployment.util.DOLUtils.deplLogger;
+
+  @LogMessageInfo(message = "Exception caught during annotation scanning.", cause="An exception was caught that indicates that the annotation is incorrect.", action="Correct the annotation.", level="SEVERE")
+      private static final String ANNOTATION_SCANNING_EXCEPTION = "AS-DEPLOYMENT-00005";
+
+  @LogMessageInfo(message = "Adding {0} since {1} is annotated with {2}.", level="INFO")
+      private static final String ANNOTATION_ADDED = "AS-DEPLOYMENT-00006";
+
+  @LogMessageInfo(message = "Adding {0} since it is implementing {1}.", level="INFO")
+      private static final String INTERFACE_ADDED = "AS-DEPLOYMENT-00007";
+
+  @LogMessageInfo(message = "Inconsistent type definition.  {0} is neither an annotation nor an interface.", cause="The annotation is incorrect.", action="Correct the annotation.", level="SEVERE")
+      private static final String INCORRECT_ANNOTATION = "AS-DEPLOYMENT-00008";
+
+  @LogMessageInfo(message = "The exception {0} occurred while examining the jar at file path:  {1}.", level="WARNING")
+      private static final String JAR_EXCEPTION = "AS-DEPLOYMENT-00009";
+
+  @LogMessageInfo(message = "No classloader can be found to use", cause="The archive being processed is not correct.", action="Examine the archive to determine what is incorrect.", level="SEVERE")
+      private static final String NO_CLASSLOADER = "AS-DEPLOYMENT-00010";
+
+  @LogMessageInfo(message = "Error in annotation processing: {0}.", level="WARNING")
+      private static final String ANNOTATION_ERROR = "AS-DEPLOYMENT-00011";
+
+  @LogMessageInfo(message = "Cannot load {0}  reason : {1}.", level="WARNING")
+    private static final String CLASSLOADING_ERROR = "AS-DEPLOYMENT-00012";
+
+  @LogMessageInfo(message = "An exception was caught during library jar processing:  {0}.", level="WARNING")
+    private static final String LIBRARY_JAR_ERROR = "AS-DEPLOYMENT-00013";
 
     public void process(ReadableArchive archiveFile,
             T bundleDesc, ClassLoader classLoader, Parser parser) throws IOException {
@@ -128,11 +154,13 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         try {
             classParser.awaitTermination();
         } catch (InterruptedException e) {
-            logger.log(Level.SEVERE, "Annotation scanning interrupted", e);
+            deplLogger.log(Level.SEVERE,
+                           ANNOTATION_SCANNING_EXCEPTION,
+                           e);
             return;
         }
         Level logLevel = (System.getProperty("glassfish.deployment.dump.scanning")!=null?Level.INFO:Level.FINE);
-        boolean shouldLog = logger.isLoggable(logLevel);
+        boolean shouldLog = deplLogger.isLoggable(logLevel);
         ParsingContext context = classParser.getContext();
         for (String annotation: defaultScanner.getAnnotations()) {
             Type type = context.getTypes().getBy(annotation);
@@ -149,8 +177,16 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
                     Type t = (ae instanceof Member?((Member) ae).getDeclaringType():(Type) ae);
                     if (t.wasDefinedIn(scannedURI)) {
                         if (shouldLog) {
-                            logger.log(logLevel, "Adding " + t.getName()
-                                    + " since " + ae.getName() + " is annotated with " + at.getName());
+                          if (Level.INFO.equals(logLevel)) {
+                            deplLogger.log(Level.INFO,
+                                           ANNOTATION_ADDED,
+                                           new Object[] { t.getName(),
+                                                          ae.getName(),
+                                                          at.getName() });
+                          } else {
+                            deplLogger.log(Level.FINE, "Adding " + t.getName()
+                                           + " since " + ae.getName() + " is annotated with " + at.getName());
+                          }
                         }
                         entries.add(t.getName());
                     }
@@ -162,18 +198,28 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
                 InterfaceModel im = (InterfaceModel) type;
                 for (ClassModel cm : im.allImplementations()) {
                     if (shouldLog) {
-                        logger.log(logLevel, "Adding " + cm.getName()
-                                + " since it is implementing " + im.getName());
+                      if (Level.INFO.equals(logLevel)) {
+                        deplLogger.log(Level.INFO,
+                                       INTERFACE_ADDED,
+                                       new Object[] { cm.getName(),
+                                                      im.getName() });
+                      } else {
+                        deplLogger.log(Level.FINE,
+                                       "Adding " + cm.getName()
+                                       + " since it is implementing " + im.getName());
+                      }
                     }
                     entries.add(cm.getName());
                 }
             } else {
-                logger.log(Level.SEVERE, "Inconsistent type definition, " + annotation +
-                        " is neither an annotation nor an interface");
+                deplLogger.log(Level.SEVERE,
+                               INCORRECT_ANNOTATION,
+                               annotation);
             }
         }
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Done with results");
+        if (deplLogger.isLoggable(Level.FINE)) {
+            deplLogger.log(Level.FINE,
+                           "Done with results");
         }
 
     }
@@ -205,7 +251,10 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
                 classParser.parse(jarFile, null);
             }
         } catch (ZipException ze) {
-            logger.log(Level.WARNING, ze.getMessage() +  ": file path: " + jarFile.getPath());
+            deplLogger.log(Level.WARNING,
+                           JAR_EXCEPTION,
+                           new Object[] { ze.getMessage(),
+                                          jarFile.getPath() });
         }
     }
     
@@ -235,20 +284,28 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
     public Set<Class> getElements() {
         Set<Class> elements = new HashSet<Class>();
         if (getClassLoader() == null) {
-            AnnotationUtils.getLogger().severe("Class loader null");
+            deplLogger.log(Level.SEVERE,
+                           NO_CLASSLOADER);
             return elements;
         }        
 
         for (String className : entries) {
-            if (AnnotationUtils.getLogger().isLoggable(Level.FINE)) {
-                AnnotationUtils.getLogger().fine("Getting " + className);
+            if (deplLogger.isLoggable(Level.FINE)) {
+                deplLogger.fine("Getting " + className);
             }
             try {                
                 elements.add(classLoader.loadClass(className));
             } catch (NoClassDefFoundError err) {
-                AnnotationUtils.getLogger().log(Level.WARNING, "Error in annotation processing: " + err);
+                deplLogger.log(Level.WARNING,
+                               ANNOTATION_ERROR,
+                               err);
             } catch(ClassNotFoundException cnfe) {
-                AnnotationUtils.getLogger().log(Level.WARNING, "Cannot load " + className + " reason : " + cnfe.getMessage(), cnfe);
+              LogRecord lr = new LogRecord(Level.WARNING, CLASSLOADING_ERROR);
+              Object args[] = { className,
+                                cnfe.getMessage() };
+              lr.setParameters(args);
+              lr.setThrown(cnfe);
+              deplLogger.log(lr);
             }
         }
         return elements;
@@ -273,7 +330,9 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         } catch (Exception ex) {
             // we log a warning and proceed for any problems in 
             // adding library jars to the scan list
-            logger.log(Level.WARNING, ex.getMessage());
+            deplLogger.log(Level.WARNING,
+                           LIBRARY_JAR_ERROR,
+                           ex.getMessage());
         }       
     }
 
@@ -306,7 +365,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
             // if the passed in parser is null, it means no annotation scanning
             // has been done yet, we need to construct a new parser
             // and do the annotation scanning here
-            ParsingContext pc = new ParsingContext.Builder().logger(logger).executorService(getExecutorService()).build();
+            ParsingContext pc = new ParsingContext.Builder().logger(deplLogger).executorService(getExecutorService()).build();
             parser = new Parser(pc);
             needScanAnnotation = true;
         }

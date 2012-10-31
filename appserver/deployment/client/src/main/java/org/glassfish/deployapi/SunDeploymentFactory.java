@@ -43,13 +43,14 @@ package org.glassfish.deployapi;
 import org.glassfish.deployment.client.ServerConnectionIdentifier;
 import org.glassfish.deployment.common.DeploymentUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  *Concrete implementation of the JSR 88 DeploymentFactory interface.
@@ -88,7 +89,10 @@ public class SunDeploymentFactory implements DeploymentFactory {
     private final static String HTTPS_PROTOCOL = "s1ashttps";
     private final static String HTTP_PROTOCOL = "s1ashttp";
 
-    private static final Logger sLogger=LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
+    public static final Logger deplLogger = org.glassfish.deployment.client.AbstractDeploymentFacility.deplLogger;
+
+    @LogMessageInfo(message = "Deployment manager load failure.  Unable to find {0}",cause="A deployment manager is not available.",action="Correct the reference to the deployment manager.", level="SEVERE")
+    private static final String NO_DEPLOYMENT_MANAGER = "AS-DEPLOYMENT-00019";
 
     /** Creates a new instance of SunDeploymentFactory */
     public SunDeploymentFactory() {
@@ -181,8 +185,8 @@ public class SunDeploymentFactory implements DeploymentFactory {
      * @return <tt>true</tt> if the factory can handle the uri.
      */
     public boolean handlesURI(String uri) {
-        if (sLogger.isLoggable(Level.FINE)) {
-            sLogger.fine("handlesURI: URI ["+uri+"]");// NOI18N
+        if (deplLogger.isLoggable(Level.FINE)) {
+            deplLogger.fine("handlesURI: URI ["+uri+"]");// NOI18N
         }
         
         if (uri != null) {
@@ -190,8 +194,9 @@ public class SunDeploymentFactory implements DeploymentFactory {
                 parseURIForHostInfo(uri);
                 return true;
             } catch (Exception ex) {
-                sLogger.log(Level.SEVERE, "enterprise.deployment.backend.deplyomentManagerLoadFailure", // NOI18N
-                new Object[] {uri});
+              deplLogger.log(Level.SEVERE,
+                             NO_DEPLOYMENT_MANAGER,
+                             uri);
             }
         }
         return false;

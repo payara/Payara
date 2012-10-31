@@ -54,6 +54,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
 
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
@@ -61,7 +62,8 @@ import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.glassfish.deployment.common.DeploymentUtils;
 
 import com.sun.enterprise.util.shared.ArchivistUtils;
-import com.sun.logging.LogDomains;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * This singleton object is responsible to resolving all the 
@@ -78,7 +80,10 @@ public class DeploymentFactoryInstaller {
     private static final String J2EE_DEPLOYMENT_MANAGER = "J2EE-DeploymentFactory-Implementation-Class";
     private static final String J2EE_HOME = "com.sun.enterprise.home";
     
-    private static final Logger sLogger=LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
+    public static final Logger deplLogger = org.glassfish.deployment.client.AbstractDeploymentFacility.deplLogger;
+
+    @LogMessageInfo(message = "Deployment manager load failure.  Unable to find {0}",cause="A deployment manager is not available.",action="Correct the reference to the deployment manager.", level="SEVERE")
+    private static final String NO_DEPLOYMENT_MANAGER = "AS-DEPLOYMENT-00018";
 
     /** Creates a single instance of DeploymentManagerFactoryResolver */
     private DeploymentFactoryInstaller() {
@@ -103,13 +108,14 @@ public class DeploymentFactoryInstaller {
         File repository = new File(System.getProperty("com.sun.aas.installRoot")+File.separator+
             J2EE_DEPLOYMENT_MANAGER_REPOSITORY);
         
-        if (sLogger.isLoggable(Level.FINE)) {
-            sLogger.fine("J2EE Deployment factory repository = " 
-                    + repository.getAbsolutePath());
+        if (deplLogger.isLoggable(Level.FINE)) {
+            deplLogger.fine("J2EE Deployment factory repository = " 
+                            + repository.getAbsolutePath());
         }
         if (!repository.exists()) {
-            sLogger.log(Level.SEVERE, "enterprise.deployment.backend.deplyomentManagerLoadFailure",
-                new Object[] {"Cannot find any deployment manager"});
+            deplLogger.log(Level.SEVERE,
+                           NO_DEPLOYMENT_MANAGER,
+                           repository.getAbsolutePath());
             return null;
         }
         
@@ -141,9 +147,9 @@ public class DeploymentFactoryInstaller {
     
     protected void installDeploymentFactory(final File installedDM) throws IOException {
         
-        if (sLogger.isLoggable(Level.FINE)) {
-            sLogger.fine("Installing Deployment factory = " 
-                    + installedDM.getAbsolutePath());
+        if (deplLogger.isLoggable(Level.FINE)) {
+            deplLogger.fine("Installing Deployment factory = " 
+                            + installedDM.getAbsolutePath());
         }
         
         // let's check first that we indeed have a valid 
@@ -173,8 +179,9 @@ public class DeploymentFactoryInstaller {
         try {
             factory=urlClassLoader.loadClass(className);
         } catch (ClassNotFoundException cnfe) {
-            sLogger.log(Level.SEVERE, "enterprise.deployment.backend.deplyomentManagerLoadFailure",
-                new Object[] {"Unable to load declared DeploymentManagerFactory"});
+            deplLogger.log(Level.SEVERE,
+                           NO_DEPLOYMENT_MANAGER,
+                           className);
             throw new IllegalArgumentException(className + " is not present in the " + installedDM.getName());
         }
         
@@ -184,9 +191,11 @@ public class DeploymentFactoryInstaller {
         try {            
             df = factory.newInstance();
         } catch (Exception ie) {
-            sLogger.log(Level.SEVERE, "enterprise.deployment.backend.deplyomentManagerLoadFailure",
-                    new Object[]{className});
-            sLogger.log(Level.SEVERE, "Error occurred", ie);
+            LogRecord lr = new LogRecord(Level.SEVERE, NO_DEPLOYMENT_MANAGER);
+            Object args[] = { className };
+            lr.setParameters(args);
+            lr.setThrown(ie);
+            deplLogger.log(lr);
             throw new IllegalArgumentException("Cannot install " + installedDM.getName());
         }
         if (df instanceof DeploymentFactory) {
@@ -208,9 +217,11 @@ public class DeploymentFactoryInstaller {
             try {
                 installDeploymentFactory(elligibleFiles[i]);
             } catch(Exception ioe) {
-                sLogger.log(Level.SEVERE, "enterprise.deployment.backend.deplyomentManagerLoadFailure",
-                    new Object[] {elligibleFiles[i].getName()});
-                sLogger.log(Level.SEVERE, "Error occurred", ioe);
+              LogRecord lr = new LogRecord(Level.SEVERE, NO_DEPLOYMENT_MANAGER);
+              Object args[] = { elligibleFiles[i].getName() };
+              lr.setParameters(args);
+              lr.setThrown(ioe);
+              deplLogger.log(lr);
             }
         }        
     }       

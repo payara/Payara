@@ -95,7 +95,10 @@ import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 /**
  * Utility class for convenienve methods
@@ -111,8 +114,24 @@ public class DOLUtils {
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DOLUtils.class);
 
-    private static Logger logger=null;
-    
+    @LogMessagesResourceBundle
+    private static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.deployment.LogMessages";
+
+    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
+    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.system.tools.deployment.dol";
+
+    public static final Logger deplLogger =
+        Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo(message = "Ignore {0} in archive {1}, as WLS counterpart runtime xml {2} is present in the same archive.", level="WARNING")
+      private static final String COUNTERPART_CONFIGDD_EXISTS = "AS-DEPLOYMENT-00001";
+
+    @LogMessageInfo(message = "Exception caught:  {0}.", level="WARNING")
+      private static final String EXCEPTION_CAUGHT = "AS-DEPLOYMENT-00002";
+
+    @LogMessageInfo(message = "{0} module [{1}] contains characteristics of other module type: {2}.", level="WARNING")
+      private static final String INCOMPATIBLE_TYPE = "AS-DEPLOYMENT-00003";
+
     // The system property to control the precedence between GF DD
     // and WLS DD when they are both present. When this property is 
     // set to true, GF DD will have higher precedence over WLS DD.
@@ -130,10 +149,7 @@ public class DOLUtils {
      * @return a logger to use in the DOL implementation classes
      */
     public static synchronized Logger getDefaultLogger() {
-        if (logger==null) {
-            logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
-        }
-        return logger;
+        return deplLogger;
     }
 
     public static boolean equals(Object a, Object b) {
@@ -461,11 +477,12 @@ public class DOLUtils {
             }
             for (int i = 1; i < confDDFiles.size(); i++) {
                 if (warnIfMultipleDDs) {
-                    logger.log(Level.WARNING, "counterpart.configdd.exists",
-                        new Object[] {
-                        confDDFiles.get(i).getDeploymentDescriptorPath(),
-                        archive.getURI().getSchemeSpecificPart(),
-                        confDD.getDeploymentDescriptorPath()});
+                    deplLogger.log(Level.WARNING,
+                                   COUNTERPART_CONFIGDD_EXISTS,
+                                   new Object[] {
+                                     confDDFiles.get(i).getDeploymentDescriptorPath(),
+                                     archive.getURI().getSchemeSpecificPart(),
+                                     confDD.getDeploymentDescriptorPath()});
                 }
             }
             confDD.setErrorReportingString(archive.getURI().getSchemeSpecificPart());
@@ -493,7 +510,9 @@ public class DOLUtils {
             ArchivistFactory archivistFactory = habitat.getService(ArchivistFactory.class);
             subArchivist.setExtensionArchivists(archivistFactory.getExtensionsArchivists(sniffers, subArchivist.getModuleType()));
         } catch (Exception e) {
-            logger.log(Level.WARNING, e.getMessage(), e);
+            deplLogger.log(Level.WARNING,
+                           EXCEPTION_CAUGHT,
+                           new Object[] { e.getMessage(), e });
         }
     }
 
@@ -531,10 +550,11 @@ public class DOLUtils {
         for (Sniffer sniffer : sniffers) {
             for (String incompatType : allIncompatTypes) {
                 if (sniffer.getModuleType().equals(incompatType)) {
-                    logger.warning(type + " module [" +
-                        md.getArchiveUri() +
-                        "] contains characteristics of other module type: " +
-                        incompatType);
+                  deplLogger.log(Level.WARNING,
+                                 INCOMPATIBLE_TYPE,
+                                 new Object[] { type,
+                                                md.getArchiveUri(),
+                                                incompatType });
 
                     sniffersToRemove.add(sniffer);
                 }

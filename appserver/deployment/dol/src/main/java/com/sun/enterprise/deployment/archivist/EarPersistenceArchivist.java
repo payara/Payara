@@ -71,8 +71,8 @@ public class EarPersistenceArchivist extends PersistenceArchivist {
     @Override
     public Object open(Archivist main, ReadableArchive earArchive, final RootDeploymentDescriptor descriptor) throws IOException, SAXParseException {
 
-        if(logger.isLoggable(Level.FINE)) {
-            logger.logp(Level.FINE, "EarArchivist",
+        if(deplLogger.isLoggable(Level.FINE)) {
+            deplLogger.logp(Level.FINE, "EarArchivist",
                     "readPersistenceDeploymentDescriptors", "archive = {0}",
                     earArchive.getURI());
         }

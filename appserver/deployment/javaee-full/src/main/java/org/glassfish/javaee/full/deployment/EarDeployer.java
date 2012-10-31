@@ -65,7 +65,6 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -73,6 +72,10 @@ import java.util.logging.Level;
 import java.io.IOException;
 import java.io.File;
 import java.net.URI;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 /**
  * EarDeployer to deploy composite Java EE applications.
@@ -106,8 +109,21 @@ public class EarDeployer implements Deployer {
     @Inject
     Events events;
 
-    final static Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
-    
+    @LogMessagesResourceBundle
+    private static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.deployment.LogMessages";
+
+    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
+    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.system.tools.deployment.javaee";
+
+    public static final Logger deplLogger =
+        Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo(message = "Skipped processing for module {0} as its module type was not recognized", level="WARNING")
+    private static final String UNRECOGNIZED_MODULE_TYPE = "AS-DEPLOYMENT-00015";
+
+    @LogMessageInfo(message = "Error occurred", level="WARNING")
+    private static final String ERROR_OCCURRED = "AS-DEPLOYMENT-00016";
+
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EarDeployer.class);
 
     public MetaData getMetaData() {
@@ -140,7 +156,9 @@ public class EarDeployer implements Deployer {
                         sContext.getActionReport().setActionExitCode(ActionReport.ExitCode.WARNING);
                         String msg = localStrings.getLocalString("skipmoduleprocessing", "Skipped processing for module {0} as its module type was not recognized", bundle.getArchiveUri());
                         sContext.getActionReport().setMessage(msg);
-                        logger.warning(msg);  
+                        deplLogger.log(Level.WARNING,
+                                       UNRECOGNIZED_MODULE_TYPE,
+                                       bundle.getArchiveUri());
                         return null;
                     }
                     info.addMetaData(application);
@@ -281,7 +299,9 @@ public class EarDeployer implements Deployer {
                 return null;
             }
         } catch(Exception e) {
-            logger.log(Level.WARNING, "Error occurred", e);  
+            deplLogger.log(Level.WARNING,
+                           ERROR_OCCURRED,
+                           e);  
             throw e;
         }
         return deployment.prepareModule(orderedContainers, md.getArchiveUri(), bundleContext, tracker);
@@ -318,7 +338,9 @@ public class EarDeployer implements Deployer {
                     subArchive = context.getSource().getSubArchive(moduleUri);
                     subArchive.setParentArchive(context.getSource());
                 } catch(IOException ioe) {
-                    logger.log(Level.WARNING, "Error occurred", ioe);  
+                    deplLogger.log(Level.WARNING,
+                                   ERROR_OCCURRED,
+                                   ioe);  
                     return null;
                 }
                 

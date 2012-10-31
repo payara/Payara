@@ -47,7 +47,6 @@ import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
@@ -74,7 +73,7 @@ import java.util.List;
 @Contract
 public abstract class ExtensionsArchivist  {
 
-    protected Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
+    public static final Logger deplLogger = com.sun.enterprise.deployment.util.DOLUtils.deplLogger;
 
     // standard DD file associated with this archivist
     protected DeploymentDescriptorFile standardDD;
@@ -167,11 +166,11 @@ public abstract class ExtensionsArchivist  {
          try {
              is = archive.getEntry(standardDD.getDeploymentDescriptorPath());
              if (is == null) {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, "Deployment descriptor: " +
-                                    standardDD.getDeploymentDescriptorPath(),
-                                    " does not exist in archive: " + 
-                                    archive.getURI().getSchemeSpecificPart());
+                if (deplLogger.isLoggable(Level.FINE)) {
+                    deplLogger.log(Level.FINE, "Deployment descriptor: " +
+                                   standardDD.getDeploymentDescriptorPath(),
+                                   " does not exist in archive: " + 
+                                   archive.getURI().getSchemeSpecificPart());
                 }
 
              } else {

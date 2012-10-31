@@ -68,8 +68,8 @@ public class WarPersistenceArchivist extends PersistenceArchivist {
     public Object open(Archivist main, ReadableArchive warArchive, RootDeploymentDescriptor descriptor) throws IOException, SAXParseException {
         final String CLASSES_DIR = "WEB-INF/classes/";
 
-        if(logger.isLoggable(Level.FINE)) {
-            logger.logp(Level.FINE, "WarPersistenceArchivist",
+        if(deplLogger.isLoggable(Level.FINE)) {
+            deplLogger.logp(Level.FINE, "WarPersistenceArchivist",
                     "readPersistenceDeploymentDescriptors", "archive = {0}",
                     warArchive.getURI());
         }

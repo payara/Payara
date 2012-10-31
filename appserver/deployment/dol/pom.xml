@@ -198,6 +198,11 @@
             <artifactId>annotation-framework</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+          <groupId>org.glassfish.annotations</groupId>
+          <artifactId>logging-annotation-processor</artifactId>
+          <optional>true</optional>
+        </dependency>        
     </dependencies>
     <repositories>
         <repository>
