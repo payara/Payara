@@ -45,13 +45,10 @@ import com.sun.enterprise.config.modularity.annotation.ActivateOnStartup;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
 import com.sun.enterprise.config.modularity.parser.ConfigurationParser;
 import com.sun.enterprise.module.bootstrap.StartupContext;
-import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
-import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigInjector;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -84,35 +81,10 @@ public class StartupConfigBeanOverrider implements PostConstruct {
     @Override
     public void postConstruct() {
         LOG.info("Starting the config overriding procedure");
-        List<ActiveDescriptor<?>> descriptor = serviceLocator.getDescriptors(BuilderHelper.createContractFilter(ConfigInjector.class.getName()));
-        Class<?> clz = null;
-        for (ActiveDescriptor desc : descriptor) {
-            if (desc.getName() == null) {
-                continue;
-            }
-            ConfigInjector injector = serviceLocator.getService(ConfigInjector.class, desc.getName());
-            if (injector != null) {
-                String clzName = injector.getClass().getName().substring(0, injector.getClass().getName().length() - 8);
-                if (clzName == null) {
-                    continue;
-                }
-                try {
-                    clz = injector.getClass().getClassLoader().loadClass(clzName);
-                    if (clz == null) {
-                        LOG.log(Level.FINE, "Cannot find the class mapping to:  " + clzName);
-                        continue;
-                    }
-                } catch (Throwable e) {
-                    LOG.log(Level.FINE, "Cannot load the class", e);
-                    continue;
-                }
-            }
-            if (clz != null) {
-                if (clz.isAnnotationPresent(ActivateOnStartup.class)) {
-                    LOG.info("Overriding Config specified by: " + clz.getName());
-                    applyConfigIfNeeded(clz);
-                }
-            }
+        List<Class> configBeans = configModularityUtils.getAnnotatedConfigBeans(ActivateOnStartup.class);
+        for (Class clz : configBeans) {
+            LOG.info("Overriding Config specified by: " + clz.getName());
+            applyConfigIfNeeded(clz);
         }
         LOG.info("Finished the config overriding procedure");
     }
@@ -123,7 +95,7 @@ public class StartupConfigBeanOverrider implements PostConstruct {
                     configModularityUtils.getDefaultConfigurations(clz, configModularityUtils.getRuntimeTypePrefix(startupContext));
             configurationParser.parseAndSetConfigBean(configBeanDefaultValueList);
         } catch (Throwable tr) {
-            LOG.log(Level.FINER,"Cannot override or load the default configuration",tr);
+            LOG.log(Level.FINER, "Cannot override or load the default configuration", tr);
         }
     }
 }

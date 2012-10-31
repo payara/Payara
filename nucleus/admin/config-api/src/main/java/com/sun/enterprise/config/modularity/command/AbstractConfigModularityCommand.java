@@ -59,6 +59,7 @@ import java.util.StringTokenizer;
 public class AbstractConfigModularityCommand {
     @Inject
     private ConfigModularityUtils configModularityUtils;
+    protected final static String LINE_SEPARATOR=System.getProperty("line.separator");
 
     protected String replaceExpressionsWithValues(String location, ServiceLocator serviceLocator) {
         StringTokenizer tokenizer = new StringTokenizer(location, "/", false);

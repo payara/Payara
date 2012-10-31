@@ -41,6 +41,7 @@
 package com.sun.enterprise.config.modularity.command;
 
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
+import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
 import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
 import com.sun.enterprise.config.serverbeans.Config;
@@ -63,6 +64,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.Dom;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -86,7 +88,6 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
     private final Logger LOG = Logger.getLogger(CreateModuleConfigCommand.class.getName());
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CreateModuleConfigCommand.class);
-    private static final String DEFAULT_FORMAT = "";
 
     @Inject
     private ConfigModularityUtils configModularityUtils;
@@ -143,7 +144,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
         if (!isAll && (serviceName == null)) {
             //TODO check for usability options, should we create the default configs, show them or fail the execution?
             report.setMessage(localStrings.getLocalString("create.module.config.no.service.no.all",
-                    DEFAULT_FORMAT, target));
+                    "As no service name specified and the --all is not used either. Showing all default configurations not merged with domain configuration under target {0}.", target));
 
             try {
                 defaultConfigurationElements = getAllDefaultConfigurationElements(target);
@@ -152,7 +153,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
                 }
             } catch (Exception e) {
                 String msg = localStrings.getLocalString("create.module.config.failure",
-                        DEFAULT_FORMAT, e.getLocalizedMessage());
+                        "Failed to execute the command due to {0}. For more details check the log file.", e.getLocalizedMessage());
                 LOG.log(Level.INFO, msg, e);
                 report.setMessage(msg);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -161,7 +162,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
             }
         } else if (isAll && dryRun) {
             report.setMessage(localStrings.getLocalString("create.module.config.show.all",
-                    DEFAULT_FORMAT, target));
+                    "Showing all default configurations not merged with domain configuration under target {0}.", target));
             try {
                 defaultConfigurationElements = getAllDefaultConfigurationElements(target);
                 if (defaultConfigurationElements != null) {
@@ -169,7 +170,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
                 }
             } catch (Exception e) {
                 String msg = localStrings.getLocalString("create.module.config.show.all.failed",
-                        DEFAULT_FORMAT, target, e.getLocalizedMessage());
+                        "Failed to show all default configurations not merged with domain configuration under target {0} due to {1}.", target, e.getLocalizedMessage());
                 LOG.log(Level.INFO, msg, e);
                 report.setMessage(msg);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -177,13 +178,14 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
                 return;
             }
         } else if (isAll && !dryRun) {
-            report.setMessage(localStrings.getLocalString("create.module.config.creating.all",
-                    DEFAULT_FORMAT, target));
+            report.appendMessage(localStrings.getLocalString("create.module.config.creating.all",
+                    "Creating all default configuration elements that are not present in the domain.xml under target {0}.", target));
+            report.appendMessage(LINE_SEPARATOR);
             try {
-                createAllMissingElements(target);
+                createAllMissingElements(report);
             } catch (Exception e) {
                 String msg = localStrings.getLocalString("create.module.config.creating.all.failed",
-                        DEFAULT_FORMAT, target, e.getLocalizedMessage());
+                        "Failed to create all default configuration elements that are not present in the domain.xml under target {0} due to {1}.", target, e.getLocalizedMessage());
                 LOG.log(Level.INFO, msg, e);
                 report.setMessage(msg);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -195,7 +197,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
             Class configBeanType = configModularityUtils.getClassFor(serviceName);
             if (configBeanType == null) {
                 String msg = localStrings.getLocalString("create.module.config.not.such.a.service.found",
-                        DEFAULT_FORMAT, className, serviceName);
+                        "A ConfigBean of type {0} which translates to your service name\\'s configuration elements does not exist.", className, serviceName);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(msg);
                 return;
@@ -207,12 +209,12 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
                         report.setMessage(serviceDefaultConfig);
                     }
                 } else {
-                    createMissingElementFor(configBeanType, serviceName, target, report);
+                    createMissingElementFor(configBeanType, report);
                 }
 
             } catch (Exception e) {
                 String msg = localStrings.getLocalString("create.module.config.creating.for.service.name.failed",
-                        DEFAULT_FORMAT, serviceName, target, e.getMessage());
+                        "Failed to create module configuration for {0} under the target {1} due to {2}.", serviceName, target, e.getMessage());
                 LOG.log(Level.INFO, msg, e);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(msg);
@@ -223,19 +225,31 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 
-    private boolean createMissingElementFor(Class configBeanType, String serviceName, String target, ActionReport report) throws Exception {
+    private boolean createMissingElementFor(Class configBeanType, ActionReport report) throws Exception {
         boolean defaultConfigCreated = false;
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
             if (config.checkIfExtensionExists(configBeanType)) {
-                report.setMessage(localStrings.getLocalString("create.module.config.already.exists", DEFAULT_FORMAT, serviceName));
+                report.appendMessage(localStrings.getLocalString("create.module.config.already.exists",
+                        "Configuration for {0} already exists. The command didn't change the existing configuration.", Dom.convertName(configBeanType.getSimpleName())));
+                report.appendMessage(LINE_SEPARATOR);
+                return false;
             }
             config.getExtensionByType(configBeanType);
+            report.appendMessage(localStrings.getLocalString("create.module.config.done",
+                    "Configuration for {0} added to domain.xml", Dom.convertName(configBeanType.getSimpleName())));
+            report.appendMessage(LINE_SEPARATOR);
             defaultConfigCreated = true;
         } else if (configBeanType.isAssignableFrom(DomainExtension.class)) {
             if (domain.checkIfExtensionExists(configBeanType)) {
-                report.setMessage(localStrings.getLocalString("create.module.config.already.exists", DEFAULT_FORMAT, serviceName));
+                report.appendMessage(localStrings.getLocalString("create.module.config.already.exists",
+                        "Configuration for {0} already exists. The command didn't change the existing configuration.", Dom.convertName(configBeanType.getSimpleName())));
+                report.appendMessage(LINE_SEPARATOR);
+                return false;
             }
             domain.getExtensionByType(configBeanType);
+            report.appendMessage(localStrings.getLocalString("create.module.config.done",
+                    "Configuration for {0} added to domain.xml", Dom.convertName(configBeanType.getSimpleName())));
+            report.appendMessage(LINE_SEPARATOR);
             defaultConfigCreated = true;
         }
         return defaultConfigCreated;
@@ -250,13 +264,13 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
             StringBuilder builder = new StringBuilder();
             for (ConfigBeanDefaultValue value : defaults) {
                 builder.append(localStrings.getLocalString("at.location",
-                        "At Location:"));
+                        "At Location: "));
                 builder.append(replaceExpressionsWithValues(value.getLocation(), serviceLocator));
-                builder.append(System.getProperty("line.separator"));
+//                builder.append(LINE_SEPARATOR);
                 String substituted = replacePropertiesWithDefaultValues(value.getCustomizationTokens(),
                         value.getXmlConfiguration());
                 builder.append(substituted);
-                builder.append(System.getProperty("line.separator"));
+//                builder.append(LINE_SEPARATOR);
             }
             builder.deleteCharAt(builder.length() - 1);
             return builder.toString();
@@ -271,14 +285,22 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
         return xmlConfig;
     }
 
-    private void createAllMissingElements(String target) throws Exception {
-        //reburies scanning and finding all snippets and then checking which
-        // ones are not present in the domain.xml and then creating them.
+    private void createAllMissingElements(ActionReport report) throws Exception {
+        List<Class> clzs = configModularityUtils.getAnnotatedConfigBeans(CustomConfiguration.class);
+        for (Class clz : clzs) {
+            createMissingElementFor(clz, report);
+        }
     }
 
     private String getAllDefaultConfigurationElements(String target) throws Exception {
-        //reburies scanning and finding all snippets and then checking which
-        // ones are not present in the domain.xml and then returning them in one go.
-        return "";
+        //TODO for now just cover the config beans with annotations, at a later time cover all config beans of type
+        // config extension or domain extension.
+        List<Class> clzs = configModularityUtils.getAnnotatedConfigBeans(CustomConfiguration.class);
+        StringBuilder sb = new StringBuilder();
+        for (Class clz : clzs) {
+            sb.append(getDefaultConfigFor(clz));
+//            sb.append(LINE_SEPARATOR);
+        }
+        return sb.toString();
     }
 }

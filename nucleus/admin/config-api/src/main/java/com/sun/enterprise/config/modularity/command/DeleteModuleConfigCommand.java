@@ -84,7 +84,7 @@ import java.util.logging.Logger;
  * @author Masoud Kalali
  */
 @TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTER,
-        CommandTarget.CONFIG, CommandTarget.STANDALONE_INSTANCE})
+        CommandTarget.CONFIG, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DOMAIN})
 @ExecuteOn(RuntimeType.ALL)
 @Service(name = "delete-module-config")
 @PerLookup
@@ -147,7 +147,7 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
         Class configBeanType = configModularityUtils.getClassFor(serviceName);
         if (configBeanType == null) {
             String msg = localStrings.getLocalString("delete.module.config.not.such.a.service.found",
-                    DEFAULT_FORMAT);
+                    "Your service name does not match any service installed on this domain.");
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(msg);
             return;

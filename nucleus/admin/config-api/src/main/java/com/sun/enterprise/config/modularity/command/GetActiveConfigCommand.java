@@ -41,6 +41,7 @@
 package com.sun.enterprise.config.modularity.command;
 
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
+import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -77,9 +78,9 @@ import java.util.logging.Logger;
  * @author Masoud Kalali
  */
 @TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTER,
-        CommandTarget.CONFIG, CommandTarget.STANDALONE_INSTANCE})
+        CommandTarget.CONFIG, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DOMAIN})
 @ExecuteOn(RuntimeType.ALL)
-@Service(name = "get-active-config")
+@Service(name = "get-active-module-config")
 @PerLookup
 @I18n("get.active.config")
 public final class GetActiveConfigCommand extends AbstractConfigModularityCommand implements AdminCommand {
@@ -87,7 +88,6 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
     private final Logger LOG = Logger.getLogger(GetActiveConfigCommand.class.getName());
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(GetActiveConfigCommand.class);
-    private static final String DEFAULT_FORMAT = "";
 
     private ActionReport report;
 
@@ -103,6 +103,13 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
+
+    @Param(optional = true, defaultValue = "false", name = "all")
+    private Boolean isAll;
+
+    @Param(name = "serviceName", primary = true, optional = true)
+    private String serviceName;
+
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
@@ -110,13 +117,11 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
     @Inject
     ServerEnvironmentImpl serverenv;
 
-    @Param(name = "serviceName", primary = true, optional = false)
-    private String serviceName;
 
     @Override
     public void execute(AdminCommandContext context) {
-        ActionReport report = context.getActionReport();
-        if (serviceName == null) {
+         report = context.getActionReport();
+        if (serviceName == null && isAll==false) {
             report.setMessage(localStrings.getLocalString("get.active.config.service.name.required",
                     "You need to specify a service name to get it's active configuration."));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -135,35 +140,66 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
             }
         }
 
-        String className = configModularityUtils.convertConfigElementNameToClassName(serviceName);
-        Class configBeanType = configModularityUtils.getClassFor(serviceName);
-        if (configBeanType == null) {
-            String msg = localStrings.getLocalString("get.active.config.not.such.a.service.found",
-                    DEFAULT_FORMAT, className, serviceName);
+        if (isAll == true && serviceName != null) {
+            report.setMessage(localStrings.getLocalString("get.active.config.target.service.and.all.exclusive",
+                    "Specifying a service name and using --all=true are exclusive to each other."));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(msg);
             return;
         }
-        try {
-            String serviceDefaultConfig = getActiveConfigFor(configBeanType);
-            if (serviceDefaultConfig != null) {
-                report.setMessage(serviceDefaultConfig);
-                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+        if (serviceName != null) {
+            String className = configModularityUtils.convertConfigElementNameToClassName(serviceName);
+            Class configBeanType = configModularityUtils.getClassFor(serviceName);
+            if (configBeanType == null) {
+                String msg = localStrings.getLocalString("get.active.config.not.such.a.service.found",
+                        "A ConfigBean of type {0} which translates to your service name\\'s does not exist.", className, serviceName);
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage(msg);
+                return;
             }
+            try {
+                String serviceDefaultConfig = getActiveConfigFor(configBeanType);
+                if (serviceDefaultConfig != null) {
+                    report.setMessage(serviceDefaultConfig);
+                    report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                    return;
+                }
+            } catch (Exception e) {
+                String msg = localStrings.getLocalString("get.active.config.getting.active.config.for.service.failed",
+                        "Failed to get active configuration for {0} under the target {1} due to {2}.", serviceName, target, e.getMessage());
+                LOG.log(Level.INFO, msg, e);
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage(msg);
+                report.setFailureCause(e);
+                return;
+            }
+        }
+        //TODO for now just cover the config beans with annotations, at a later time cover all config beans of type
+        // config extension or domain extension.
+        List<Class> clzs = configModularityUtils.getAnnotatedConfigBeans(CustomConfiguration.class);
+        StringBuilder sb = new StringBuilder();
+
+        try {
+            for (Class clz : clzs) {
+                sb.append(getActiveConfigFor(clz));
+                sb.append(LINE_SEPARATOR);
+            }
+            report.setMessage(sb.toString());
         } catch (Exception e) {
             String msg = localStrings.getLocalString("get.active.config.getting.active.config.for.service.failed",
-                    DEFAULT_FORMAT, serviceName, target, e.getMessage());
+                    "Failed to get active configuration for {0} under the target {1} due to {2}.", serviceName, target, e.getMessage());
             LOG.log(Level.INFO, msg, e);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(msg);
             report.setFailureCause(e);
+            return;
         }
     }
 
     private String getActiveConfigFor(Class configBeanType) throws InvocationTargetException, IllegalAccessException {
 
         if (configModularityUtils.hasCustomConfig(configBeanType)) {
-            List<ConfigBeanDefaultValue> defaults = configModularityUtils.getDefaultConfigurations(configBeanType, configModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
+            List<ConfigBeanDefaultValue> defaults = configModularityUtils.getDefaultConfigurations(configBeanType,
+                    configModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
             return getCompleteConfiguration(defaults);
         }
 
@@ -183,32 +219,31 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
         return null;
     }
 
-    private String getCompleteConfiguration(List<ConfigBeanDefaultValue> defaults) throws InvocationTargetException, IllegalAccessException {
+    private String getCompleteConfiguration(List<ConfigBeanDefaultValue> defaults)
+            throws InvocationTargetException, IllegalAccessException {
         StringBuilder builder = new StringBuilder();
         for (ConfigBeanDefaultValue value : defaults) {
             builder.append(localStrings.getLocalString("at.location",
-                    "At Location:"));
+                    "At Location: "));
             builder.append(replaceExpressionsWithValues(value.getLocation(), serviceLocator));
-            builder.append(System.getProperty("line.separator"));
+            builder.append(LINE_SEPARATOR);
             String substituted = configModularityUtils.replacePropertiesWithCurrentValue(
                     getDependentConfigElement(value), value);
             builder.append(substituted);
-            builder.append(System.getProperty("line.separator"));
+            builder.append(LINE_SEPARATOR);
         }
         builder.deleteCharAt(builder.length() - 1);
         return builder.toString();
-
     }
 
-    private String getDependentConfigElement(ConfigBeanDefaultValue defaultValue) throws InvocationTargetException, IllegalAccessException {
+
+    private String getDependentConfigElement(ConfigBeanDefaultValue defaultValue)
+            throws InvocationTargetException, IllegalAccessException {
         ConfigBeanProxy configBean = configModularityUtils.getCurrentConfigBeanForDefaultValue(defaultValue);
         if (configBean != null) {
             return configModularityUtils.serializeConfigBean(configBean);
         } else {
             return defaultValue.getXmlConfiguration();
         }
-
     }
-
-
 }

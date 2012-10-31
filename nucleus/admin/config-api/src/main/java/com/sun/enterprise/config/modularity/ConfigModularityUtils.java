@@ -93,6 +93,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -510,6 +511,7 @@ public final class ConfigModularityUtils {
 
     public <T extends ConfigBeanProxy> T getCurrentConfigBeanForDefaultValue(ConfigBeanDefaultValue defaultValue)
             throws InvocationTargetException, IllegalAccessException {
+        //TODO make this method target aware!
         Class parentClass = getOwningClassForLocation(defaultValue.getLocation());
         Class configBeanClass = getClassForFullName(defaultValue.getConfigBeanClassName());
         Method m = findSuitableCollectionGetter(parentClass, configBeanClass);
@@ -665,16 +667,35 @@ public final class ConfigModularityUtils {
         if (configBean == null) return null;
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         XMLOutputFactory xmlFactory = XMLOutputFactory.newInstance();
+        XMLStreamWriter writer = null;
+        IndentingXMLStreamWriter indentingXMLStreamWriter = null;
+        String s = null;
         try {
-            XMLStreamWriter writer = xmlFactory.createXMLStreamWriter(new BufferedOutputStream(bos));
-            IndentingXMLStreamWriter indentingXMLStreamWriter = new IndentingXMLStreamWriter(writer);
+            writer = xmlFactory.createXMLStreamWriter(new BufferedOutputStream(bos));
+            indentingXMLStreamWriter = new IndentingXMLStreamWriter(writer);
             Dom configBeanDom = Dom.unwrap(configBean);
+            configBeanDom.writeToXml();
             configBeanDom.writeTo(configBeanDom.model.getTagName(), indentingXMLStreamWriter);
-            indentingXMLStreamWriter.close();
+            indentingXMLStreamWriter.flush();
+            s = bos.toString();
         } catch (XMLStreamException e) {
-            return null;
+            return s;
+        } finally {
+            try {
+                if (bos != null)
+                    bos.close();
+                if (writer != null)
+                    writer.close();
+                if (indentingXMLStreamWriter != null)
+                    indentingXMLStreamWriter.close();
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            } catch (XMLStreamException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+
         }
-        return bos.toString();
+        return s;
     }
 
     /**
@@ -835,5 +856,41 @@ public final class ConfigModularityUtils {
         if (serverType.isSingleInstance() || serverType.isDas()) return "admin";
         if (serverType.isInstance()) return "instance";
         return "";
+    }
+
+
+    public List<Class> getAnnotatedConfigBeans(Class annotationType) {
+        List<Class> prox = new ArrayList<Class>();
+        List<ActiveDescriptor<?>> descriptor = serviceLocator.getDescriptors(BuilderHelper.createContractFilter(ConfigInjector.class.getName()));
+        Class<?> clz = null;
+        for (ActiveDescriptor desc : descriptor) {
+            if (desc.getName() == null) {
+                continue;
+            }
+            ConfigInjector injector = serviceLocator.getService(ConfigInjector.class, desc.getName());
+            if (injector != null) {
+                String clzName = injector.getClass().getName().substring(0, injector.getClass().getName().length() - 8);
+                if (clzName == null) {
+                    continue;
+                }
+                try {
+                    clz = injector.getClass().getClassLoader().loadClass(clzName);
+                    if (clz == null) {
+                        LOG.log(Level.FINE, "Cannot find the class mapping to:  " + clzName);
+                        continue;
+                    }
+                } catch (Throwable e) {
+                    LOG.log(Level.FINE, "Cannot load the class", e);
+                    continue;
+                }
+            }
+            if (clz != null) {
+                if (clz.isAnnotationPresent(annotationType)) {
+                    LOG.info("Overriding Config specified by: " + clz.getName());
+                    prox.add(clz);
+                }
+            }
+        }
+        return prox;
     }
 }
