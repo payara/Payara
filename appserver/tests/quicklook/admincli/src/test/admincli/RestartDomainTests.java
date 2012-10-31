@@ -57,7 +57,7 @@ public class RestartDomainTests {
     @Test
     public void restartDomainTest() throws Exception {
 	outPutFile = "admincli-restart.output";
-	expectedOutPut = "Successfully restarted the domain";
+	expectedOutPut = "Command restart-domain executed successfully.";
 	testErr = "Restart domain failed.";
 	parseTestResults(outPutFile, expectedOutPut, testErr);    
     }
