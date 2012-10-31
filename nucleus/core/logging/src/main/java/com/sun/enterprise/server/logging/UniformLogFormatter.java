@@ -308,22 +308,22 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
             if (LOG_SOURCE_IN_KEY_VALUE ||
                     (level.intValue() <= Level.FINE.intValue())) {
                 String sourceClassName = record.getSourceClassName();
-                sourceClassName = (sourceClassName == null) ? "" : sourceClassName;
-                // if (sourceClassName != null && !sourceClassName.isEmpty()) {
+                // sourceClassName = (sourceClassName == null) ? "" : sourceClassName;
+                if (sourceClassName != null && !sourceClassName.isEmpty()) {
                     recordBuffer.append(CLASS_NAME).append(NV_SEPARATOR);
                     logEvent.getSupplementalAttributes().put(CLASS_NAME, sourceClassName);
                     recordBuffer.append(sourceClassName);
                     recordBuffer.append(NVPAIR_SEPARATOR);                    
-                // }
+                }
 
                 String sourceMethodName = record.getSourceMethodName();
-                sourceMethodName = (sourceMethodName == null) ? "" : sourceMethodName; 
-                // if (sourceMethodName != null && !sourceMethodName.isEmpty()) {
+                // sourceMethodName = (sourceMethodName == null) ? "" : sourceMethodName; 
+                if (sourceMethodName != null && !sourceMethodName.isEmpty()) {
                     recordBuffer.append(METHOD_NAME).append(NV_SEPARATOR);
                     logEvent.getSupplementalAttributes().put(METHOD_NAME, sourceMethodName);
                     recordBuffer.append(sourceMethodName);
                     recordBuffer.append(NVPAIR_SEPARATOR);                    
-                // }
+                }
             }
 
             if (RECORD_NUMBER_IN_KEY_VALUE) {
