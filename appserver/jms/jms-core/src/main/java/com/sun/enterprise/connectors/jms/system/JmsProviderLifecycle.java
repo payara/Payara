@@ -92,8 +92,6 @@ public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
     @Inject
     private Provider<ConnectorRuntime> connectorRuntimeProvider;
 
-    private Provider<JmsService> jmsServiceProvider;
-
     @Inject
     private ActiveJmsResourceAdapter activeJmsResourceAdapter;
 

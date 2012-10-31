@@ -105,8 +105,6 @@ public class JmsRaUtil {
     private int reconnectMaxRetries = DEFAULT_RECONNECT_RETRIES;
     private boolean reconnectEnabled = false;
 
-    ServerContext sc = null;
-    //ConfigContext ctx = null;
     JmsService js = null;
     MQAddressList list = null;
 
@@ -123,9 +121,6 @@ public class JmsRaUtil {
             this.js = js;
             } else {
                   this.js = (JmsService) Globals.get(JmsService.class);
-                //sc = ApplicationServer.getServerContext();
-                //ctx = sc.getConfigContext();
-                //this.js = ServerBeansFactory.getJmsServiceBean(ctx);
             }
             list = new MQAddressList(this.js);
 //            if (isClustered() && ! this.js.getType().equals(
@@ -156,7 +151,6 @@ public class JmsRaUtil {
     }
 
     public static boolean isClustered(List clusters, String instanceName) {
-              //ConfigContext ctxt = ApplicationServer.getServerContext().getConfigContext();
               return (enableClustering() && isServerClustered(clusters,
                 instanceName));
      }
@@ -234,14 +228,7 @@ public class JmsRaUtil {
         MdbContainer mdbc = null;
         try {
 
-            ServerContext sc = Globals.get(ServerContext.class);
             mdbc = Globals.get(MdbContainer.class);
-
-            //com.sun.enterprise.server.ServerContext sc =
-              //  com.sun.enterprise.server.ApplicationServer.getServerContext();
-
-            //mdbc = com.sun.enterprise.config.serverbeans.ServerBeansFactory.
-              //    getMdbContainerBean(sc.getConfigContext());
 
         }
         catch (Exception e) {
@@ -422,6 +409,10 @@ public class JmsRaUtil {
            _rarlogger.log(Level.WARNING, "jmsra.upgrade_check_failed",
                        e.getMessage() + ":" + jarFile );
            throw e;
+       } finally {
+           if (jFile != null) {
+               jFile.close();
+           }
        }
     }
 
