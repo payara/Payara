@@ -122,7 +122,6 @@ import com.sun.ejb.portable.EJBMetaDataImpl;
 import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
 import com.sun.enterprise.admin.monitor.callflow.CallFlowInfo;
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
-import com.sun.enterprise.admin.monitor.registry.MonitoredObjectType;
 import com.sun.enterprise.container.common.spi.JCDIService;
 import com.sun.enterprise.container.common.spi.JavaEEContainer;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
@@ -2400,17 +2399,6 @@ public abstract class BaseContainer
         }
     }
 
-    private void destroyTimers() {
-        if( isTimedObject() ) {
-            // EJBTimerService should be accessed only if needed 
-            // not to cause it to be loaded if it's not used.
-            EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
-            if( ejbTimerService != null ) {
-                ejbTimerService.destroyTimers(getContainerId());
-            }
-        }
-    }
-    
     private void stopTimers() {
         if( isTimedObject() ) {
             EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
@@ -4148,7 +4136,6 @@ public abstract class BaseContainer
 
                 try {
                    stopTimers();
-                   //destroyTimers();
                 } catch(Exception e) {
                     _logger.log(Level.FINE, "Error destroying timers for " +
                                 ejbDescriptor.getName(), e);
@@ -4699,38 +4686,6 @@ public abstract class BaseContainer
     protected abstract EjbMonitoringStatsProvider getMonitoringStatsProvider(
             String appName, String modName, String ejbName);
 
-    private MonitoredObjectType getEJBMonitoredObjectType()
-    {
-        MonitoredObjectType type    = MonitoredObjectType.NONE;
-        /*TODO
-        final Class<? extends BaseContainer>  thisClass = this.getClass();
-        
-        if ( StatelessSessionContainer.class.isAssignableFrom( thisClass ) )
-        {
-            type    = MonitoredObjectType.STATELESS_BEAN;
-        }
-        else if ( StatefulSessionContainer.class.isAssignableFrom( thisClass ) )
-        {
-            type    = MonitoredObjectType.STATEFUL_BEAN;
-        }
-        else if ( EntityContainer.class.isAssignableFrom( thisClass )  )
-        {
-            type    = MonitoredObjectType.ENTITY_BEAN;
-        }
-        else if ( MessageBeanContainer.class.isAssignableFrom( thisClass ) )
-        {
-            type    = MonitoredObjectType.MESSAGE_DRIVEN_BEAN;
-        }
-        else
-        {
-            throw new RuntimeException( "getEJBMonitoredObjectType: unknown: " + this.getClass().getName() );
-        }
-        */
-        return type;
-    }
-
-
-    
     protected void createMonitoringRegistry() {
 	String appName = null;
 	String modName = null;

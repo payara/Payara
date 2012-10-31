@@ -261,16 +261,7 @@ public class DomainXmlTransformer {
                         "ejb.embedded.no_matching_end_element", name));
     }
 
-    /** Create a new start element based on the original but that does not include 
-     * any attributes.
-     */
-    private StartElement getEmptyStartEvent(XMLEvent event) {
-        StartElement oldStartEvent = event.asStartElement();
-        return xmlEventFactory.createStartElement(oldStartEvent.getName(), 
-                null, oldStartEvent.getNamespaces());
-    }
-
-    /** Create a new start element based on the original but that does not include 
+    /** Create a new start element based on the original but that does not include
      * the specified attribute.
      */
     private StartElement getSkippedElementStartEvent(XMLEvent event) {

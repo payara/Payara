@@ -186,8 +186,6 @@ public class StaticRmiStubGenerator {
         // class path to be used for this application during javac & rmic
         String classPath =  deploymentCtx.getTransientAppMetaData(CMPDeployer.MODULE_CLASSPATH, String.class);
 
-        // getClassPath(ejbcCtx.getClasspathUrls(), stubsDir);
-
         // Warning: A class loader is passed in while constructing the
         //          application object
         final ClassLoader jcl = ejbBundle.getClassLoader();
@@ -427,31 +425,6 @@ public class StaticRmiStubGenerator {
 
         return stubClasses;
     }
-
-    /**
-     * Helper method - returns the class path as string with path separator.
-     *
-     * @param    paths      array of class paths
-     * @param    other      additional directory to be added to the class path
-     *
-     * @return   class path for the given application
-     */
-    private String getClassPath(String[] paths, File other) {
-
-        StringBuilder sb  = new StringBuilder();
-
-        for (int i=0; i<paths.length; i++) {
-            sb.append(paths[i]+File.pathSeparator);
-        }
-
-        if (other != null) {
-            sb.append(other.toString());
-        }
-
-        return sb.toString();
-    }
-
-
 
     private long now()
     {

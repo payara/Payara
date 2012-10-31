@@ -541,38 +541,6 @@ public class EJBTimerService {
         expungeTimer(timerId, false);
     }
 
-
-    private Date calcInitialFixedRateExpiration(long timerServiceWentDownAt,
-            RuntimeTimerState timerState)
-    {
-        if (!timerState.isPeriodic()) {
-            throw new IllegalStateException();
-        }
-        Date now = new Date();
-
-        long nowMillis = now.getTime();
-        long initialExpiration = timerState.getInitialExpiration().getTime();
-
-        long now2initialDiff = nowMillis - initialExpiration;
-        long count = now2initialDiff / timerState.getIntervalDuration();
-        long previousExpiration = 
-            initialExpiration  + (count * timerState.getIntervalDuration());
-
-        if ((previousExpiration >= timerServiceWentDownAt)
-                && (previousExpiration <= nowMillis))
-        {
-            //We certainly missed this one while the server was down
-            logger.log(Level.INFO, "ejb.deliver_missed_timer",
-                       new Object[] { timerState.getTimerId(),
-                                      new Date(previousExpiration) });
-            return now;
-        } else {
-            //Calculate the new expiration time
-            return calcNextFixedRateExpiration(timerState);
-        }
-
-    }
-
     protected Date calcNextFixedRateExpiration(RuntimeTimerState timerState) {
 
         if( !timerState.isPeriodic() ) {

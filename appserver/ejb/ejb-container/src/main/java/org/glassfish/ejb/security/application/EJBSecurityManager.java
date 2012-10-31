@@ -763,17 +763,6 @@ public final class EJBSecurityManager
     }
 
     /**
-     * Checks if any method permissions are set. If they are not set
-     * it is possible that this is a J2ee 1.2 APP and we would need to
-     * grant permissions for execution anyways
-     */
-    private boolean areMethodPermissionsSet() {
-        boolean empty =
-                deploymentDescriptor.getPermissionedMethodsByPermission().isEmpty();
-        return !empty;
-    }
-
-    /**
      * This method is used by MDB Container - Invocation Manager  to setup
      * the run-as identity information. It has to be coupled with
      * the postSetRunAsIdentity method.
