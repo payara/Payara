@@ -55,11 +55,6 @@ import org.jvnet.hk2.annotations.Service;
 public class NucleusAuthorizationPreprocessor implements AuthorizationPreprocessor {
 
     @Override
-    public String getURIScheme() {
-        return null;
-    }
-
-    @Override
     public void describeAuthorization(Subject subject, String resourceName, String action, 
         AdminCommand command, Map<String, Object> context, Map<String, String> subjectAttributes, Map<String, String> resourceAttributes, Map<String, String> actionAttributes) {
     }

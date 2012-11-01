@@ -58,14 +58,6 @@ import org.jvnet.hk2.annotations.Contract;
 public interface AuthorizationPreprocessor {
     
     /**
-     * Returns the URI scheme to use for the resource URI (excluding the
-     * terminating colon).
-     * 
-     * @return 
-     */
-    public String getURIScheme();
-    
-    /**
      * Optionally adds to the attributes that will be attached to the 
      * Subject, the resource, and the action used for an upcoming authorization
      * check.

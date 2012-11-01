@@ -93,6 +93,7 @@ public class CommandSecurityChecker {
     
     private static final Level PROGRESS_LEVEL = Level.FINE;
     private static final String LINE_SEP = System.getProperty("line.separator");
+    private static final String ADMIN_RESOURCE_SCHEME = "admin";
     
     @Inject
     private ServiceLocator locator;
@@ -234,7 +235,7 @@ public class CommandSecurityChecker {
             a.accessCheck.setSuccessful(azResult.getDecision() == AzResult.Decision.PERMIT);
             if (isTaggable) {
                 sb.append(a.tag).append(LINE_SEP).
-                   append("    ").append(a.accessCheck).append(LINE_SEP);
+                   append("    ").append(formattedAccessCheck(resourceURI, a.accessCheck)).append(LINE_SEP);
             }
             result &= ( (! a.accessCheck.isFailureFinal()) || a.accessCheck.isSuccessful());
         }
@@ -245,6 +246,19 @@ public class CommandSecurityChecker {
         return result;
     }
     
+    private String formattedAccessCheck(final URI resourceURI, final AccessCheck a) {
+        return (new StringBuilder("AccessCheck ")).
+                    append(resourceURI.toASCIIString()).
+                    append("=").
+                    append(a.action()).
+                    append(", isSuccessful=").
+                    append(a.isSuccessful()).
+                    append(", isFailureFatal=").
+                    append(a.isFailureFinal()).
+                    append("//").
+                    append(a.note()).
+                    toString();
+    }
     private void mapToAzAttrs(final Map<String,String> info, final Attributes attrs) {
         for (Map.Entry<String,String> i : info.entrySet()) {
             attrs.addAttribute(i.getKey(), i.getValue(), false /* replace */);
@@ -305,12 +319,7 @@ public class CommandSecurityChecker {
     }
     
     private URI resourceURIFromAccessCheck(final AccessCheck c) throws URISyntaxException {
-        final Iterator<AuthorizationPreprocessor> it = authPreprocessors.iterator();
-        String scheme = null;
-        if (it.hasNext()) {
-            scheme = it.next().getURIScheme();
-        }
-        return new URI(scheme,
+        return new URI(ADMIN_RESOURCE_SCHEME,
                         resourceNameFromAccessCheck(c) /* ssp */,
                         null /* fragment */);
     }
@@ -319,6 +328,9 @@ public class CommandSecurityChecker {
         String resourceName = c.resourceName();
         if (resourceName == null) {
             resourceName = AccessRequired.Util.resourceNameFromConfigBeanType(c.parent(), null, c.childType());
+        }
+        if ( ! resourceName.startsWith("/")) {
+            resourceName = '/' + resourceName;
         }
         return resourceName;
     }
