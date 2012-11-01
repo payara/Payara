@@ -157,7 +157,7 @@ public class ContainerTransactionStyle3 extends EjbTest implements EjbCheck {
         for (Enumeration ee = descriptor.getMethodContainerTransactions().keys(); ee.hasMoreElements();) {
             MethodDescriptor methodDescriptor = (MethodDescriptor) ee.nextElement();
             
-            if (methodDescriptor.getName().equals(MethodDescriptor.ALL_EJB_METHODS) ||
+            if (methodDescriptor.getName().equals(MethodDescriptor.ALL_METHODS) ||
                     methodDescriptor.getParameterClassNames() == null) // style 1 and 2
                 continue;
             

@@ -71,10 +71,12 @@ public final class MethodDescriptor extends Descriptor {
     /** Unused.*/
     public static final String ALL_OF_NAME = "AllOfName";
     /** The method descriptor name representing all methods.*/
-    public static final String ALL_EJB_METHODS = "*";
     public static final String ALL_METHODS = "*";
-    private static final String TIMER_METHOD = "Timer";
-    private static final String MESSAGE_ENDPOINT_METHOD = "MessageEndpoint";
+
+    /** Represents the bean timeout methods ejbClassSymbol. */
+    public static final String TIMER_METHOD = "Timer";
+    /** Represents the bean MessageEndpoint methods ejbClassSymbol. */
+    public static final String MESSAGE_ENDPOINT_METHOD = "MessageEndpoint";
     
     private String[] parameterClassNames = null;
     private String[] javaParameterClassNames = null;
@@ -93,7 +95,7 @@ public final class MethodDescriptor extends Descriptor {
     
     /** 
     * Constructs a method descriptor corresponding to methods on the ejb class defined by the ejbClassSymbol (or home
-    * and remote if null) with the same name (or all if ALL_EJB_METHODS) and paramater list (or just all by name of this is null).
+    * and remote if null) with the same name (or all if ALL_METHODS) and paramater list (or just all by name of this is null).
     * (Styles 1 2 and 3 in the ejb specification)
     */
     public MethodDescriptor(String name, String description, String[] parameterClassNames, String ejbClassSymbol) {
@@ -190,7 +192,7 @@ public final class MethodDescriptor extends Descriptor {
         if (isExact) {
             return true;
         }
-	boolean isExactName = !this.getName().equals(ALL_EJB_METHODS);
+	boolean isExactName = !this.getName().equals(ALL_METHODS);
 	boolean hasMethodIntf = getEjbClassSymbol()!=null;
 	boolean hasParamsListed = (this.getParameterClassNames() != null);
 	return isExactName && hasMethodIntf && hasParamsListed;
@@ -203,7 +205,7 @@ public final class MethodDescriptor extends Descriptor {
      * </p>
      */
     public int getStyle() {
-        if ( (getName().equals(ALL_EJB_METHODS)) ) {
+        if ( (getName().equals(ALL_METHODS)) ) {
             return 1;
         }
         if (getParameterClassNames()==null)
@@ -219,7 +221,7 @@ public final class MethodDescriptor extends Descriptor {
 
 	    if ( ejbClassSymbol == null || ejbClassSymbol.equals("") 
 		 || ejbClassSymbol.equals(EJB_BEAN) || ejbClassSymbol.equals(TIMER_METHOD)
-         || ejbClassSymbol.equals(MESSAGE_ENDPOINT_METHOD)) {
+                 || ejbClassSymbol.equals(MESSAGE_ENDPOINT_METHOD)) {
 		try {
                     if ( !(className.equals("")) ) {
                         // If declaring class is known, use it. Since method

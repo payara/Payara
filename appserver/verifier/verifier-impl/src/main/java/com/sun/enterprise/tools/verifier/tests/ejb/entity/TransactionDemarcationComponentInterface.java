@@ -195,7 +195,7 @@ import java.util.Enumeration;
 				 // corresponds to a or some methods on the component interface
 				 // according to the six styles
 				 // style 1)
-                 if (methodDescriptor.getName().equals(MethodDescriptor.ALL_EJB_METHODS)) {
+                 if (methodDescriptor.getName().equals(MethodDescriptor.ALL_METHODS)) {
 				     // if getEjbClassName() is Remote -> CARRY ON
 				     // if Remote - PASS
                      if (methodDescriptor.getEjbClassSymbol() == null) {

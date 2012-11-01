@@ -298,7 +298,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                         new MethodDescriptor("ejbTimeout",
                                                  "TimedObject timeout method",
                                                  new String[] {"javax.ejb.Timer"},
-                                                 MethodDescriptor.EJB_BEAN);
+                                                 MethodDescriptor.TIMER_METHOD);
                 ejb.setEjbTimeoutMethod(timedObjectMethod);
 
             } else if (ejb.getEjbTimeoutMethod() != null) {
@@ -637,6 +637,6 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                     " does not define timeout method " + 
                     timeoutMethodDescOrig.getFormattedString());        
         }
-        return new MethodDescriptor(m, MethodDescriptor.EJB_BEAN);
+        return new MethodDescriptor(m, MethodDescriptor.TIMER_METHOD);
     }
 }

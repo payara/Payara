@@ -887,11 +887,12 @@ public abstract class BaseContainer
 
     private void setInterceptorChain(InvocationInfo info) {
         if( info.aroundMethod != null ) {
-            MethodDescriptor md = new MethodDescriptor(info.aroundMethod, MethodDescriptor.EJB_BEAN);
             if (info.isEjbTimeout) {
+                MethodDescriptor md = new MethodDescriptor(info.aroundMethod, MethodDescriptor.TIMER_METHOD);
                 info.interceptorChain =
                         interceptorManager.getAroundTimeoutChain(md, info.aroundMethod);
             } else {
+                MethodDescriptor md = new MethodDescriptor(info.aroundMethod, MethodDescriptor.EJB_BEAN);
                 info.interceptorChain =
                         interceptorManager.getAroundInvokeChain(md, info.aroundMethod);
             }
@@ -3529,12 +3530,12 @@ public abstract class BaseContainer
      * this method if it's correct.
      */
     private void processTxAttrForScheduledTimeoutMethod(Method m) {
-        int txAttr = containerTransactionManager.findTxAttr(new MethodDescriptor(m, MethodDescriptor.EJB_BEAN));
+        int txAttr = containerTransactionManager.findTxAttr(new MethodDescriptor(m, MethodDescriptor.TIMER_METHOD));
         if( isBeanManagedTran ||
             txAttr == TX_REQUIRED ||
             txAttr == TX_REQUIRES_NEW ||
             txAttr == TX_NOT_SUPPORTED ) {
-            addInvocationInfo(m, MethodDescriptor.EJB_BEAN, null, true);
+            addInvocationInfo(m, MethodDescriptor.TIMER_METHOD, null, true);
         } else {
             throw new EJBException("Timeout method " + m +
                                "must have TX attribute of " +

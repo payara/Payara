@@ -104,7 +104,7 @@ public class ContainerTransactionStyle1 extends EjbTest implements EjbCheck {
 		for (Enumeration ee = descriptor.getMethodContainerTransactions().keys(); ee.hasMoreElements();) {
 		    MethodDescriptor methodDescriptor = (MethodDescriptor) ee.nextElement();
   
-		    if (methodDescriptor.getName().equals(MethodDescriptor.ALL_EJB_METHODS)) {
+		    if (methodDescriptor.getName().equals(MethodDescriptor.ALL_METHODS)) {
 			foundWildCard++;
 		    }
 		}
@@ -119,7 +119,7 @@ public class ContainerTransactionStyle1 extends EjbTest implements EjbCheck {
 		    result.passed(smh.getLocalString
 				  (getClass().getName() + ".passed",
 				   "Container Transaction method name [ {0} ] defined only once in [ {1} ] bean.",
-				   new Object[] {MethodDescriptor.ALL_EJB_METHODS, descriptor.getName()}));
+				   new Object[] {MethodDescriptor.ALL_METHODS, descriptor.getName()}));
 		} else if (foundWildCard > 1) {
 		    result.addErrorDetails(smh.getLocalString
 					   ("tests.componentNameConstructor",
@@ -128,7 +128,7 @@ public class ContainerTransactionStyle1 extends EjbTest implements EjbCheck {
 		    result.failed(smh.getLocalString
 				  (getClass().getName() + ".failed",
 				   "Error: Container Transaction method name [ {0} ] is defined [ {1} ] times in [ {2} ] bean.  Method name container transaction style [ {3} ] is allowed only once per bean.",
-				   new Object[] {MethodDescriptor.ALL_EJB_METHODS, new Integer(foundWildCard), descriptor.getName(),MethodDescriptor.ALL_EJB_METHODS}));
+				   new Object[] {MethodDescriptor.ALL_METHODS, new Integer(foundWildCard), descriptor.getName(),MethodDescriptor.ALL_METHODS}));
 		} else {
 		    result.addNaDetails(smh.getLocalString
 					  ("tests.componentNameConstructor",
@@ -137,7 +137,7 @@ public class ContainerTransactionStyle1 extends EjbTest implements EjbCheck {
 		    result.notApplicable(smh.getLocalString
 					 (getClass().getName() + ".notApplicable1",
 					  "Container Transaction method name [ {0} ] not defined in [ {1} ] bean.",
-					  new Object[] {MethodDescriptor.ALL_EJB_METHODS, descriptor.getName()}));
+					  new Object[] {MethodDescriptor.ALL_METHODS, descriptor.getName()}));
 		} 
 		
 	    } else {  // if (methodDescriptorsIterator.hasNext())

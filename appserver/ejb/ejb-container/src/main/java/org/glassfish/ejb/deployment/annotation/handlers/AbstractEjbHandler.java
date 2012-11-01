@@ -309,7 +309,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
             for(Method m : methods) {
                 if( (m.getAnnotation(Timeout.class) != null) ) {
                     timeoutMethodDesc = 
-                        new MethodDescriptor(m, MethodDescriptor.EJB_BEAN);
+                        new MethodDescriptor(m, MethodDescriptor.TIMER_METHOD);
                     break;
                 }
             }
@@ -323,7 +323,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
             timeoutMethodDesc = new MethodDescriptor
                 ("ejbTimeout", "@Timeout method", 
                  new String[] { "javax.ejb.Timer" }, 
-                 MethodDescriptor.EJB_BEAN);
+                 MethodDescriptor.TIMER_METHOD);
         }
 
         if( timeoutMethodDesc != null ) {
