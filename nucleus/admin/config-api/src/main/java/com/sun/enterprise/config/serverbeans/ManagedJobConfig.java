@@ -59,23 +59,23 @@ import java.beans.PropertyVetoException;
 public interface ManagedJobConfig extends DomainExtension, PropertyBag, Payload {
 
     /**
-     * Gets the value of jobInactivityLimit property
+     * Gets the value of inMemoryRetentionPeriod property
      * @return possible object is
      *         {@link String }
      */
-    @Attribute(defaultValue="24h")
+    @Attribute(defaultValue="1h")
     @Pattern(regexp = "[1-9]\\d*([hms]|[HMS])" , message = "{invalid.time.period.specified}"
             , payload = ManagedJobConfig.class)
-    String getJobInactivityLimit();
+    String getInMemoryRetentionPeriod();
 
     /**
-     * Sets the value of the jobInactivityLimit property.
+     * Sets the value of the inMemoryRetentionPeriod property.
      *
      * @param value allowed object is
      *              {@link String }
      */
-    @Param(name = "jobinactivitylimit", optional=true)
-    void setJobInactivityLimit(String value) throws PropertyVetoException;
+    @Param(name = "inmemoryretentionperiod", optional=true)
+    void setInMemoryRetentionPeriod(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of jobRetentionPeriod
