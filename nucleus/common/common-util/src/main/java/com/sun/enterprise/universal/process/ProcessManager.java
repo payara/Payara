@@ -50,8 +50,6 @@ package com.sun.enterprise.universal.process;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -76,6 +74,10 @@ public class ProcessManager {
         if (num > 0) {
             timeout = num;
         }
+    }
+    
+    public final void setEnvironment(String[] env) {
+        this.env = env;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -103,7 +105,7 @@ public class ProcessManager {
     public final int execute() throws ProcessManagerException {
         try {
             Runtime rt = Runtime.getRuntime();
-            process = rt.exec(cmdline);
+            process = rt.exec(cmdline, env);
             readStream("stderr", process.getErrorStream(), sb_err);
             readStream("stdout", process.getInputStream(), sb_out);
             writeStdin();
@@ -167,8 +169,9 @@ public class ProcessManager {
 
         PrintWriter pipe = null;
 
-        if(process == null)
+        if(process == null) {
             throw new ProcessManagerException(Strings.get("null.process"));
+        }
 
         try {
             pipe = new PrintWriter(new BufferedWriter(new OutputStreamWriter(process.getOutputStream())));
@@ -211,8 +214,9 @@ public class ProcessManager {
 
     ////////////////////////////////////////////////////////////////////////////
     private void waitForever() throws InterruptedException, ProcessManagerException {
-        if(process == null)
+        if(process == null) {
             throw new ProcessManagerException(Strings.get("null.process"));
+        }
 
         process.waitFor();
     }
@@ -257,10 +261,7 @@ public class ProcessManager {
             }
 
             List<String> cmds = new ArrayList<String>();
-
-            for (int i = 0; i < args.length; i++) {
-                cmds.add(args[i]);
-            }
+            cmds.addAll(Arrays.asList(args));
 
             ProcessManager pm = new ProcessManager(cmds);
             pm.execute();
@@ -275,6 +276,7 @@ public class ProcessManager {
     }
     ////////////////////////////////////////////////////////////////////////////
     private String[] cmdline;
+    private String[] env = null;
     private StringBuffer sb_out;
     private StringBuffer sb_err;
     private int exit = -1;
@@ -301,8 +303,9 @@ public class ProcessManager {
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                     sb.append(line).append('\n');
 
-                    if (echo)
+                    if (echo) {
                         System.out.println(line);
+                    }
                 }
             }
             catch (Exception e) {

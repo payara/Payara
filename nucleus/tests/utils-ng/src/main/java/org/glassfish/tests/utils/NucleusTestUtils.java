@@ -47,8 +47,10 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.testng.AssertJUnit.assertNotNull;
@@ -60,9 +62,26 @@ import static org.testng.AssertJUnit.assertNotNull;
 public class NucleusTestUtils {
     protected static final int DEFAULT_TIMEOUT_MSEC = 480000; // 8 minutes
     private static boolean verbose = true;
+    private static Map<String,String> env;
+    private static String[] envp = null;
+    private static String envProps[] = { 
+        "AS_ADMIN_PASSWORDFILE", 
+        "AS_LOGFILE", 
+        "AS_ADMIN_USER",
+    };
     protected static final File nucleusRoot = initNucleusRoot();
     
     private static File initNucleusRoot() {
+        // Initialize the environment with environment variables that can be 
+        // used when running commands
+        env = new HashMap<String,String>(System.getenv());
+        for (String s : envProps) {
+            String v = System.getProperty(s);
+            if (v != null) {
+                putEnv(s, v);
+            }
+        }
+        
         String nucleusRootProp = System.getProperty("nucleus.home");
         if (nucleusRootProp == null) {
            String basedir = System.getProperty("basedir");
@@ -77,6 +96,18 @@ public class NucleusTestUtils {
     // All methods are static, do not allow an object to be created.
     protected NucleusTestUtils() { } 
             
+    public static void putEnv(String name, String value) {
+        env.put(name, value);
+        if (!env.isEmpty()) {
+            envp = new String[env.size()];
+            int i = 0;
+            for (Map.Entry<String,String> me : env.entrySet()) {
+                envp[i++] = me.getKey() + "=" + me.getValue();
+            }
+        } else {
+            envp = null;
+        } 
+    }
     /**
      * Runs the command with the args given
      *
@@ -123,6 +154,8 @@ public class NucleusTestUtils {
         // the tests may be running unattended -- don't wait forever!
         pm.setTimeoutMsec(timeout);
         pm.setEcho(false);
+        pm.setEnvironment(envp);
+
         int exit;
         String myErr = "";
         try {
