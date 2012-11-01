@@ -92,12 +92,13 @@ import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.JerseyClientFactory;
+import org.glassfish.jersey.client.SslConfig;
 import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
 import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartClientBinder;
-import org.glassfish.jersey.media.sse.EventChannel;
+import org.glassfish.jersey.media.sse.SseFeature;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -121,7 +122,6 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.net.NetUtils;
-import org.glassfish.jersey.client.SslConfig;
 
 /**
  * Utility class for executing remote admin commands.
@@ -358,7 +358,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     public ActionReport getActionReport() {
         return actionReport;
     }
-    
+
     public String findPropertyInReport(String key) {
         if (actionReport == null) {
             return null;
@@ -495,7 +495,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 ParameterMap preparedParams = processParams(opts);
                 MediaType[] acceptMediaTypes = new MediaType[] {MEDIATYPE_MULTIPART, MEDIATYPE_ACTIONREPORT};
                 if (useSse()) {
-                    acceptMediaTypes = new MediaType[] {EventChannel.SERVER_SENT_EVENTS_TYPE};
+                    acceptMediaTypes = new MediaType[] {SseFeature.SERVER_SENT_EVENTS_TYPE};
                 }
                 Response response = doRestCommand(preparedParams, null, "POST", false, acceptMediaTypes);
                 MediaType resultMediaType = response.getMediaType();
@@ -532,13 +532,13 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     } catch (Exception ex) {
                         throw new CommandException(ex.getMessage(), ex);
                     }
-                } else if (EventChannel.SERVER_SENT_EVENTS_TYPE.isCompatible(resultMediaType)) {
+                } else if (SseFeature.SERVER_SENT_EVENTS_TYPE.isCompatible(resultMediaType)) {
                     try {
                         logger.log(Level.FINEST, "Response is SSE - about to read events");
                         closeSse = false;
                         GfSseEventReceiver eventReceiver = response.readEntity(GfSseEventReceiver.class);
                         GfSseInboundEvent event;
-                        String instanceId = null; 
+                        String instanceId = null;
                         do {
                             event = eventReceiver.readEvent();
                             fireEvent(event.getName(), event);
@@ -591,14 +591,14 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         Metrix.event("executeCommand() - done");
         return output;
     }
-    
+
     private void downloadPayloadFromManaged(String jobId) {
         if (jobId == null) {
             return;
         }
         try {
-            RemoteRestAdminCommand command = new RemoteRestAdminCommand("_get-payload", 
-                    this.host, this.port, this.secure, this.user, this.password, 
+            RemoteRestAdminCommand command = new RemoteRestAdminCommand("_get-payload",
+                    this.host, this.port, this.secure, this.user, this.password,
                     this.logger, this.scope, this.authToken, this.prohibitDirectoryUploads);
             ParameterMap params = new ParameterMap();
             params.add("DEFAULT", jobId);
@@ -1092,7 +1092,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 try {
                     boolean serverAppearsSecure = NetUtils.isSecurePort(host, port);
                     if (!serverAppearsSecure && secure) {
-                        logger.log(Level.SEVERE, AdminLoggerInfo.mServerIsNotSecure, 
+                        logger.log(Level.SEVERE, AdminLoggerInfo.mServerIsNotSecure,
                                 new Object[] { host, port });
                     }
                     throw new CommandException(se);
@@ -1114,7 +1114,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     strings.get("IOError", e.getMessage()), e);
             } catch (CommandException e) {
                 throw e;
-            } 
+            }
             catch (Exception e) {
                 // logger.log(Level.FINER, "doHttpCommand: exception", e);
                 if (logger.isLoggable(Level.FINER)) {
@@ -1349,7 +1349,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     AdminCacheUtils.getCache().put(createCommandCacheKey(), forCache.toString());
                 } catch (Exception ex) {
                     if (logger.isLoggable(Level.WARNING)) {
-                        logger.log(Level.WARNING, AdminLoggerInfo.mCantPutToCache, 
+                        logger.log(Level.WARNING, AdminLoggerInfo.mCantPutToCache,
                                 new Object[] { createCommandCacheKey() });
                     }
                 }
