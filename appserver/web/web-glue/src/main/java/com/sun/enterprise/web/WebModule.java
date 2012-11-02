@@ -289,6 +289,12 @@ public class WebModule extends PwcWebModule implements Context {
             level = "FINE")
     public static final String CONFIGURE_COOKIE_PROPERTIES = "AS-WEB-00181";
 
+    @LogMessageInfo(
+            message = "Unable to add listener of type: {0}, because it does not implement any of the required " +
+                    "ServletContextListener, ServletContextAttributeListener, ServletRequestListener, " +
+                    "ServletRequestAttributeListener, HttpSessionListener, or HttpSessionAttributeListener interfaces",
+            level = "WARNING")
+    public static final String INVALID_LISTENER_TYPE = "AS-WEB-00182";
 
     private static final String ALTERNATE_FROM = "from=";
     private static final String ALTERNATE_DOCBASE = "dir=";

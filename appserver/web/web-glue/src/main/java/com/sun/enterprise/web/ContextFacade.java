@@ -42,6 +42,7 @@ package com.sun.enterprise.web;
 
 import java.io.*;
 import java.net.*;
+import java.text.MessageFormat;
 import java.util.*;
 import javax.servlet.*;
 import javax.servlet.descriptor.JspConfigDescriptor;
@@ -62,7 +63,7 @@ import org.glassfish.embeddable.web.config.SecurityConfig;
  * @author Amy Roh
  */
 public class ContextFacade extends WebModule {
-        
+
     // ----------------------------------------------------------- Constructors
 
     /**
@@ -534,8 +535,9 @@ public class ContextFacade extends WebModule {
                     !HttpSessionListener.class.isAssignableFrom(clazz) &&
                     !HttpSessionAttributeListener.class.isAssignableFrom(clazz) &&
                     !HttpSessionIdListener.class.isAssignableFrom(clazz)) {
-                throw new IllegalArgumentException(sm.getString(
-                        "standardContext.invalidListenerType", clazz.getName()));
+                String msg = rb.getString(INVALID_LISTENER_TYPE);
+                msg = MessageFormat.format(msg, clazz.getName());
+                throw new IllegalArgumentException(msg);
             }
             try {
                 return createListenerInstance(clazz);
