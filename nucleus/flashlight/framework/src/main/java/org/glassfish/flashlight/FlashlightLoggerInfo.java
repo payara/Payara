@@ -65,7 +65,7 @@ public class FlashlightLoggerInfo {
     }
     
     @LogMessageInfo(
-            message = "Cannot process XML ProbeProvider, xml = {0}",
+            message = "Cannot process XML ProbeProvider, xml = {0}, \nException: {1}",
             cause = "Possible syntax error in the ProbeProvider XML",
             action = "Check the syntax of ProbeProvider XML",
             level = "SEVERE")
