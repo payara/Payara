@@ -119,7 +119,7 @@ public class TransactionAttributeHandler extends AbstractAttributeHandler
                                     && lcd.getLifecycleCallbackMethod().equals(annMethod.getName()) ) {
                                 try {
                                     Method m = lcd.getLifecycleCallbackMethodObject(loader);
-                                    MethodDescriptor md = new MethodDescriptor(m, MethodDescriptor.EJB_BEAN);
+                                    MethodDescriptor md = new MethodDescriptor(m, MethodDescriptor.LIFECYCLE_CALLBACK);
                                     if( TypeUtil.sameMethodSignature(m, annMethod) &&
                                             ejbDesc.getContainerTransactionFor(md) == null ) {
                                         // override by xml

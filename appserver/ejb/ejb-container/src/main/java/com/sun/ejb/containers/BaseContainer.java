@@ -4592,7 +4592,7 @@ public abstract class BaseContainer
 
                     Method callbackMethod = lcd.getLifecycleCallbackMethodObject(loader);
                     int lcTxAttr = containerTransactionManager.findTxAttr(
-                        new MethodDescriptor(callbackMethod, MethodDescriptor.EJB_BEAN));
+                        new MethodDescriptor(callbackMethod, MethodDescriptor.LIFECYCLE_CALLBACK));
                     // Since default attribute is set up, override the value if it's validateTxAttr
                     for (int t : validateTxAttr) {
                         if( lcTxAttr == t ) {

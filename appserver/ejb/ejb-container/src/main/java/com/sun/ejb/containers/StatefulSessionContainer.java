@@ -237,7 +237,7 @@ public final class StatefulSessionContainer
             Set<LifecycleCallbackDescriptor> lifecycleCallbackDescriptors) throws Exception {
         InvocationInfo inv = new InvocationInfo();
         inv.ejbName = ejbDescriptor.getName();
-        inv.methodIntf = MethodDescriptor.EJB_BEAN;
+        inv.methodIntf = MethodDescriptor.LIFECYCLE_CALLBACK;
         inv.txAttr = getTxAttrForLifecycleCallback(lifecycleCallbackDescriptors, 
                 -1, Container.TX_NOT_SUPPORTED, Container.TX_REQUIRES_NEW);
 

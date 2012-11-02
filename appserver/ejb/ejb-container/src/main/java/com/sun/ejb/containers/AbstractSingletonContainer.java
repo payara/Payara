@@ -141,12 +141,12 @@ public abstract class AbstractSingletonContainer
 
         postConstructInvInfo = new InvocationInfo();
         postConstructInvInfo.ejbName = ejbDescriptor.getName();
-        postConstructInvInfo.methodIntf = MethodDescriptor.EJB_BEAN;
+        postConstructInvInfo.methodIntf = MethodDescriptor.LIFECYCLE_CALLBACK;
         postConstructInvInfo.txAttr = getTxAttrForLifecycleCallback(ejbDescriptor.getPostConstructDescriptors());;
 
         preDestroyInvInfo = new InvocationInfo();
         preDestroyInvInfo.ejbName = ejbDescriptor.getName();
-        preDestroyInvInfo.methodIntf = MethodDescriptor.EJB_BEAN;
+        preDestroyInvInfo.methodIntf = MethodDescriptor.LIFECYCLE_CALLBACK;
         preDestroyInvInfo.txAttr = getTxAttrForLifecycleCallback(ejbDescriptor.getPreDestroyDescriptors());
 
     }

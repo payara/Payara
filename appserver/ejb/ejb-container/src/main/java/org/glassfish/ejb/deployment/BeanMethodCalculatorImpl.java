@@ -235,7 +235,7 @@ final public class BeanMethodCalculatorImpl {
                 for(LifecycleCallbackDescriptor lcd : lcds) {
                     try {
                         Method m = lcd.getLifecycleCallbackMethodObject(loader);
-                        MethodDescriptor md = new MethodDescriptor(m, MethodDescriptor.EJB_BEAN);
+                        MethodDescriptor md = new MethodDescriptor(m, MethodDescriptor.LIFECYCLE_CALLBACK);
                         methods.add(md);
                     } catch(Exception e) {
                         if (_logger.isLoggable(Level.FINE)) {
