@@ -50,16 +50,17 @@ import com.sun.corba.ee.spi.threadpool.NoSuchThreadPoolException;
 import com.sun.enterprise.connectors.work.monitor.WorkManagementProbeProvider;
 import com.sun.enterprise.connectors.work.monitor.WorkManagementStatsProvider;
 import com.sun.enterprise.connectors.work.context.WorkContextHandlerImpl;
-import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.logging.LogDomains;
 
 import javax.resource.spi.work.*;
+
+import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.enterprise.iiop.util.S1ASThreadPoolManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 
 /**
@@ -70,25 +71,37 @@ import org.glassfish.enterprise.iiop.util.S1ASThreadPoolManager;
 
 public final class CommonWorkManager implements WorkManager {
 
-    private static WorkManager wm = null;
-
     private ThreadPoolManager tpm;
     private ThreadPool tp;
 
-    private static final Logger logger =
-            LogDomains.getLogger(CommonWorkManager.class, LogDomains.RSR_LOGGER);
-
+    private static final Logger logger = LogFacade.getLogger();
+    
     private WorkManagementProbeProvider probeProvider = null;
     private WorkManagementStatsProvider statsProvider = null;
     private String dottedNamesHierarchy;
-
-    private StringManager localStrings = StringManager.getManager(
-            CommonWorkManager.class);
 
     private ConnectorRuntime runtime;
 	private String raName ;
     private ClassLoader rarClassLoader;
 
+    @LogMessageInfo(
+            message = "Failed to get the thread-pool [ {0} ] for resource adapter [ {1} ].",
+            comment = "Failed to find thread pool",
+            level = "SEVERE",
+            cause = "Could not find a thread pool according to the pool ID.",
+            action = "Check the thread-pool-id property in Resource Adapter Config.",
+            publish = true)
+    private static final String RAR_THREAD_POOL_NOT_FOUND = "AS-RAR-05001";
+    
+    @LogMessageInfo(
+            message = "Failed to get the default thread-pool for resource adapter [ {0} ].",
+            comment = "Failed to find the default thread pool.",
+            level = "SEVERE",
+            cause = "Could not find the default thread pool for resource adatper.",
+            action = "Check the thread-pool-id property in Resource Adapter Config.",
+            publish = true)
+    private static final String RAR_DEFAULT_THREAD_POOL_NOT_FOUND = "AS-RAR-05002";
+    
     /**
      * Private constructor.
      *
@@ -113,8 +126,7 @@ public final class CommonWorkManager implements WorkManager {
                         logger.finest("Got the thread pool [ "+threadPoolId+" ] for WorkManager of RAR [ "+raName+" ]");
                     }
                 } catch (NoSuchThreadPoolException e) {
-                    String msg = localStrings.getString("workmanager.threadpool_not_found", new Object[]{threadPoolId});
-                    logger.log(Level.SEVERE,msg);
+                    logger.log(Level.SEVERE, RAR_THREAD_POOL_NOT_FOUND, new Object[]{threadPoolId, raName});
                     ConnectorRuntimeException cre = new ConnectorRuntimeException(e.getMessage());
                     cre.initCause(e);
                     throw cre;
@@ -123,12 +135,16 @@ public final class CommonWorkManager implements WorkManager {
             if (tp == null) {
                 // in case the default thread-pool was not available.
                 // Set the message appropriately.
-                if(threadPoolId == null){
-                    threadPoolId = "default thread-pool of server";
+                String format = null;
+                format = logger.getResourceBundle().getString(RAR_DEFAULT_THREAD_POOL_NOT_FOUND);
+                if(format==null || format.trim().equals("")){
+                    format = "Failed to get the default thread-pool for resource adapter "+raName+".";
+                }else{
+                    format = MessageFormat.format(format, raName);
                 }
-                String msg = localStrings.getString("workmanager.threadpool_not_found", new Object[]{threadPoolId});
-                logger.log(Level.SEVERE, msg);
-                throw new ConnectorRuntimeException(msg);
+                ConnectorRuntimeException cre =  new ConnectorRuntimeException(format);
+                logger.log(Level.SEVERE, RAR_DEFAULT_THREAD_POOL_NOT_FOUND, raName);
+                throw cre;
             }
             registerWithMonitoringService();
         }
@@ -158,8 +174,11 @@ public final class CommonWorkManager implements WorkManager {
 
         StatsProviderManager.register(monitoringModuleName,PluginPoint.SERVER, dottedNamesHierarchy, statsProvider);
 
-        logger.log(Level.FINE, "Registered work-monitoring stats [ "+dottedNamesHierarchy+" ]  " +
-                "for [ " + raName + " ] with monitoring-stats-registry.");
+        if(logger.isLoggable(Level.FINE)){
+            logger.log(Level.FINE, "Registered work-monitoring stats [ "+dottedNamesHierarchy+" ]  " +
+                  "for [ " + raName + " ] with monitoring-stats-registry.");
+        }
+
     }
 
     private void deregisterFromMonitoringService(){
@@ -171,8 +190,10 @@ public final class CommonWorkManager implements WorkManager {
         }
         if (statsProvider != null) {
             StatsProviderManager.unregister(statsProvider);
-            logger.log(Level.FINE, "De-registered work-monitoring stats [ "+dottedNamesHierarchy+" ]" +
+            if(logger.isLoggable(Level.FINE)){
+                logger.log(Level.FINE, "De-registered work-monitoring stats [ "+dottedNamesHierarchy+" ]" +
                     "  for [ " + raName + " ] from monitoring-stats-registry.");
+            }
         }
     }
 
@@ -211,7 +232,7 @@ public final class CommonWorkManager implements WorkManager {
 
         if (logger.isLoggable(Level.FINEST)) {
             String msg = "doWork for [" + work.toString() + "] START";
-            logger.log(Level.FINEST, debugMsg(msg));
+            logger.log(Level.FINEST, msg);
         }
 
         WorkCoordinator wc = new WorkCoordinator
@@ -227,7 +248,7 @@ public final class CommonWorkManager implements WorkManager {
 
         if (logger.isLoggable(Level.FINEST)) {
             String msg = "doWork for [" + work.toString() + "] END";
-            logger.log(Level.FINEST, debugMsg(msg));
+            logger.log(Level.FINEST, msg);
         }
     }
 
@@ -266,7 +287,7 @@ public final class CommonWorkManager implements WorkManager {
 
         if (logger.isLoggable(Level.FINEST)) {
             String msg = "startWork for [" + work.toString() + "] START";
-            logger.log(Level.FINEST, debugMsg(msg));
+            logger.log(Level.FINEST, msg);
         }
 
         long acceptanceTime = System.currentTimeMillis();
@@ -284,7 +305,7 @@ public final class CommonWorkManager implements WorkManager {
 
         if (logger.isLoggable(Level.FINEST)) {
             String msg = "startWork for [" + work.toString() + "] END";
-            logger.log(Level.FINEST, debugMsg(msg));
+            logger.log(Level.FINEST, msg);
         }
         long startTime = System.currentTimeMillis();
 
@@ -296,7 +317,7 @@ public final class CommonWorkManager implements WorkManager {
      * @return work-context-handler
      */
     private WorkContextHandlerImpl createWorkContextHandler() {
-        WorkContextHandlerImpl contextHandler = new WorkContextHandlerImpl(runtime, raName, rarClassLoader);
+        WorkContextHandlerImpl contextHandler = new WorkContextHandlerImpl(runtime, rarClassLoader);
         return contextHandler;
     }
 
@@ -331,7 +352,7 @@ public final class CommonWorkManager implements WorkManager {
         validateWork(work, WorkCoordinator.getExecutionContext(execContext, work), contextHandler);
         if (logger.isLoggable(Level.FINEST)) {
             String msg = "scheduleWork for [" + work.toString() + "] START";
-            logger.log(Level.FINEST, debugMsg(msg));
+            logger.log(Level.FINEST, msg);
         }
 
         WorkCoordinator wc = new WorkCoordinator
@@ -347,7 +368,7 @@ public final class CommonWorkManager implements WorkManager {
 
         if (logger.isLoggable(Level.FINEST)) {
             String msg = "scheduleWork for [" + work.toString() + "] END";
-            logger.log(Level.FINEST, debugMsg(msg));
+            logger.log(Level.FINEST, msg);
         }
         return;
     }
@@ -365,9 +386,4 @@ public final class CommonWorkManager implements WorkManager {
         contextHandler.validateWork(workToBeValidated, context);
     }
 
-    private String debugMsg(String message) {
-        String msg = "[Thread " + Thread.currentThread().getName()
-                + "] -- " + message;
-        return msg;
-    }
 }

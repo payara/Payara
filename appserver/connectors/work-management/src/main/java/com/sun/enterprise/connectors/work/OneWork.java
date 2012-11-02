@@ -40,12 +40,10 @@
 
 package com.sun.enterprise.connectors.work;
 
-import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.logging.LogDomains;
-
-import javax.resource.spi.work.Work;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.resource.spi.work.Work;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import com.sun.enterprise.connectors.work.context.WorkContextHandlerImpl;
 
 /**
@@ -58,11 +56,7 @@ public final class OneWork implements com.sun.corba.ee.spi.threadpool.Work {
     private final Work work;
     private final WorkCoordinator coordinator;
     private long nqTime;
-    private WorkContextHandlerImpl contextHandler;
-    private static final Logger logger =
-            LogDomains.getLogger(OneWork.class, LogDomains.RSR_LOGGER);
-    private StringManager localStrings =
-            StringManager.getManager(OneWork.class);
+    private static final Logger logger = LogFacade.getLogger();
 
     private String name = "Resource adapter work";
     private boolean nameSet = false;
@@ -77,10 +71,9 @@ public final class OneWork implements com.sun.corba.ee.spi.threadpool.Work {
      * @param work Actual work submitted by Resource adapter.
      * @param coordinator <code>WorkCoordinator</code> object.
      */
-    OneWork (Work work, WorkCoordinator coordinator, WorkContextHandlerImpl contextHandler, ClassLoader tcc) {
+    OneWork (Work work, WorkCoordinator coordinator, ClassLoader tcc) {
         this.work = work;
         this.coordinator = coordinator;
-        this.contextHandler = contextHandler;
         this.tcc = tcc;
     }
 
@@ -132,11 +125,17 @@ public final class OneWork implements com.sun.corba.ee.spi.threadpool.Work {
         }
     }
 
+    @LogMessageInfo(
+            message = "The Work named [ {0} ], progress [ {1} ].",
+            comment = "Print Work status",
+            level = "INFO",
+            publish = false)
+    private static final String RAR_WORK_PROGRESS_INFO = "AS-RAR-05004";
+
     public void log(String message){
         if(nameSet){
             Object args[] = new Object[]{name, message};
-            String msg = localStrings.getString("log.work.hint", args);
-            logger.log(Level.INFO,msg);
+            logger.log(Level.INFO, RAR_WORK_PROGRESS_INFO, args);
         }
     }
 

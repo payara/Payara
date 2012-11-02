@@ -69,12 +69,8 @@
             <resource>
                 <directory>src/main/java</directory>
                 <includes>
-                    <include>**/*.properties</include>
                     <include>**/*.xml</include>
                 </includes>
-            </resource>
-             <resource>
-                <directory>src/main/resources</directory>
             </resource>
         </resources>
         <plugins>
@@ -83,9 +79,9 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                     <archive>
-		        <manifestEntries>
-                    <probe-provider-class-names>com.sun.enterprise.connectors.work.monitor.WorkManagementProbeProvider</probe-provider-class-names>
-                        </manifestEntries>
+                    <manifestEntries>
+                      <probe-provider-class-names>com.sun.enterprise.connectors.work.monitor.WorkManagementProbeProvider</probe-provider-class-names>
+                    </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
@@ -146,10 +142,16 @@
         </dependency>
 
         <dependency>
-	    <groupId>org.glassfish.main.orb</groupId>
+            <groupId>org.glassfish.main.orb</groupId>
             <artifactId>orb-connector</artifactId>
             <version>${project.parent.version}</version>
         </dependency> 
+        
+        <dependency>
+            <groupId>org.glassfish.annotations</groupId>
+            <artifactId>logging-annotation-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
 
     </dependencies>
 </project>

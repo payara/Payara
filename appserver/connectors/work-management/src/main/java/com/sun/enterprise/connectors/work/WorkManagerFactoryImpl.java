@@ -43,8 +43,8 @@ package com.sun.enterprise.connectors.work;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.appserv.connectors.internal.api.WorkManagerFactory;
-import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.logging.LogDomains;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Singleton;
@@ -83,12 +83,8 @@ public final class WorkManagerFactoryImpl implements WorkManagerFactory {
 
     private static final String WORK_MANAGER_CLASS = "workmanager.class";
 
-    private static final Logger logger =
-            LogDomains.getLogger(WorkManagerFactoryImpl.class, LogDomains.RSR_LOGGER);
-
-    private static final StringManager localStrings =
-            StringManager.getManager(WorkManagerFactoryImpl.class);
-
+    private static final Logger logger = LogFacade.getLogger();
+    
     private static final Map<String, WorkManager> workManagers;
 
     @Inject
@@ -103,7 +99,14 @@ public final class WorkManagerFactoryImpl implements WorkManagerFactory {
     public WorkManagerFactoryImpl() {
     }
 
-    private static Logger _logger = LogDomains.getLogger(WorkManagerFactoryImpl.class, LogDomains.RSR_LOGGER);
+    @LogMessageInfo(
+            message = "An error occurred during instantiation of the Work Manager class [ {0} ] for resource adapter [ {1} ].",
+            comment = "Failed to create Work Manager instance.",
+            level = "SEVERE",
+            cause = "Can not initiate the Work Manager class.",
+            action = "Check the Work Manager class type.",
+            publish = true)
+    private static final String RAR_INIT_WORK_MANAGER_ERR = "AS-RAR-05003";
 
     /**
      * This is called by the constructor of BootstrapContextImpl
@@ -132,8 +135,7 @@ public final class WorkManagerFactoryImpl implements WorkManagerFactory {
                 wm = (WorkManager) method.invoke(cls, new Object[]{});
             }
         } catch (Exception e) {
-            String msg = localStrings.getString("workmanager.instantiation_error", raName);
-            logger.log(Level.SEVERE, msg, e);
+            logger.log(Level.SEVERE, RAR_INIT_WORK_MANAGER_ERR, new Object[]{className, raName, e});
         }
 
         return wm;
@@ -169,10 +171,14 @@ public final class WorkManagerFactoryImpl implements WorkManagerFactory {
         boolean result = true;
         WorkManager wm = workManagers.remove(moduleName);
         if (wm == null) {
-            _logger.log(Level.FINE, "Failed to remove workManager for RAR [ " + moduleName + " ] from registry.");
+            if(logger.isLoggable(Level.FINE)){
+                logger.log(Level.FINE, "Failed to remove workManager for RAR [ " + moduleName + " ] from registry.");
+            }
             result = false;
         } else {
-            _logger.log(Level.FINE, "Removed the workManager for RAR [ " + moduleName + " ] from registry.");
+            if(logger.isLoggable(Level.FINE)){
+                logger.log(Level.FINE, "Removed the workManager for RAR [ " + moduleName + " ] from registry.");
+            }
 
             if(wm instanceof CommonWorkManager){
                 ((CommonWorkManager)wm).cleanUp();

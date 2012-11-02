@@ -40,11 +40,9 @@
 
 package com.sun.enterprise.connectors.work;
 
-import com.sun.logging.LogDomains;
 
 import javax.resource.spi.work.*;
 import java.io.*;
-import java.util.logging.Logger;
 
 /**
  * Proxy for WorkManager.<br>

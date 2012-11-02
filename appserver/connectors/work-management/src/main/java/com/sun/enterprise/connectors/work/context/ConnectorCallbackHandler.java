@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010, 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,8 +41,9 @@
 package com.sun.enterprise.connectors.work.context;
 
 import com.sun.enterprise.security.SecurityContext;
-import com.sun.enterprise.connectors.work.WorkCoordinator;
-import com.sun.logging.LogDomains;
+import com.sun.enterprise.connectors.work.LogFacade;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.security.common.Group;
 import org.glassfish.security.common.PrincipalImpl;
 
@@ -69,8 +70,7 @@ import java.security.Principal;
 //TODO V3 need contract based handlers for individual callbacks ?
 public class ConnectorCallbackHandler implements CallbackHandler {
 
-    private static final Logger logger =
-            LogDomains.getLogger(WorkCoordinator.class, LogDomains.RESOURCE_BUNDLE);
+    private static final Logger logger = LogFacade.getLogger();
 
     public static final List<String> supportedCallbacks = new ArrayList<String>();
 
@@ -88,14 +88,27 @@ public class ConnectorCallbackHandler implements CallbackHandler {
         this.handler = handler;
         if (securityMap != null && securityMap.size() > 0) {
             needMapping = true;
-            debug("translation required");
+            if(logger.isLoggable(Level.FINEST)){
+                logger.finest("translation required for security info ");
+            }
         } else {
-            debug("no translation required");
+            if(logger.isLoggable(Level.FINEST)){
+                logger.finest("no translation required for security info ");
+            }
         }
         this.executionSubject = executionSubject;
         this.securityMap = securityMap;
     }
 
+    @LogMessageInfo(
+            message = "Unsupported callback {0} during credential mapping.",
+            comment = "Unsupported callback class.",
+            level = "WARNING",
+            cause = "Resource adapter has used a callback that is not supported by application server.",
+            action = "Check whether the callback in question is supported by application server.",
+            publish = true)
+    private static final String RAR_UNSUPPORT_CALLBACK = "AS-RAR-05012";
+    
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
 
         Callback[] mappedCallbacks = callbacks;
@@ -115,13 +128,14 @@ public class ConnectorCallbackHandler implements CallbackHandler {
                                 asCallbacks.add(handleSupportedCallback(callback));
                             }
                         } catch (ClassNotFoundException cnfe) {
-                            logger.log(Level.FINEST, "class not found", cnfe);
+                            if(logger.isLoggable(Level.FINEST)){
+                                logger.log(Level.FINEST, "class not found", cnfe);
+                            }
                         }
                     }
                     if (!callbackSupported) {
                         UnsupportedCallbackException uce = new UnsupportedCallbackException(callback);
-                        Object params[] = {callback.getClass().getName(), uce};
-                        logger.log(Level.WARNING, "workcontext.unsupported_callback", params);
+                        logger.log(Level.WARNING, RAR_UNSUPPORT_CALLBACK, new Object[]{callback.getClass().getName(), uce});
                         throw uce;
                     }
                 }
@@ -218,7 +232,9 @@ public class ConnectorCallbackHandler implements CallbackHandler {
         for (String groupName : groups) {
             Group mappedGroup = (Group) securityMap.get(new Group(groupName));
             if (mappedGroup != null) {
-                debug("got mapped group as [" + groupName + "] for eis-group [" + mappedGroup.getName() + "]");
+                if(logger.isLoggable(Level.FINEST)){
+                    logger.finest("got mapped group as [" + groupName + "] for eis-group [" + mappedGroup.getName() + "]");
+                }
                 asGroupNames.add(mappedGroup.getName());
             }
         }
@@ -261,15 +277,16 @@ public class ConnectorCallbackHandler implements CallbackHandler {
         Principal asPrincipal = null;
         if (eisPrincipal != null) {
             asPrincipal = (PrincipalImpl) securityMap.get(eisPrincipal);
-            debug("got mapped principal as [" + asPrincipal + "] for eis-group [" + eisPrincipal.getName() + "]");
+            if(logger.isLoggable(Level.FINEST)){
+                logger.finest("got mapped principal as [" + asPrincipal + "] for eis-group [" + eisPrincipal.getName() + "]");
+            }
         } else if (eisName != null) {
             asPrincipal = ((PrincipalImpl) securityMap.get(new PrincipalImpl(eisName)));
-            debug("got mapped principal as [" + asPrincipal + "] for eis-group [" + eisName + "]");
+            if(logger.isLoggable(Level.FINEST)){
+                logger.finest("got mapped principal as [" + asPrincipal + "] for eis-group [" + eisName + "]");
+            }
         }
         return asPrincipal;
     }
 
-    public void debug(String message) {
-        logger.finest(message);
-    }
 }

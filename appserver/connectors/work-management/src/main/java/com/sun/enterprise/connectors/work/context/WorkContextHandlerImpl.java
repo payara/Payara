@@ -41,6 +41,7 @@
 package com.sun.enterprise.connectors.work.context;
 
 import com.sun.appserv.connectors.internal.api.WorkContextHandler;
+import com.sun.enterprise.connectors.work.LogFacade;
 import com.sun.enterprise.connectors.work.WorkCoordinator;
 import com.sun.enterprise.connectors.work.OneWork;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
@@ -52,8 +53,9 @@ import org.glassfish.security.common.Group;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.logging.annotation.LogMessageInfo;
+
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
-import com.sun.logging.LogDomains;
 
 import javax.inject.Inject;
 import javax.resource.spi.work.*;
@@ -77,8 +79,8 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
 
     private static final List<Class<? extends WorkContext>> containerSupportedContexts =
             new ArrayList<Class<? extends WorkContext>>();
-    private static final Logger logger =
-            LogDomains.getLogger(WorkCoordinator.class, LogDomains.RESOURCE_BUNDLE);
+    private static final Logger logger = LogFacade.getLogger();
+
     private final static Locale locale = Locale.getDefault();
 
     @Inject
@@ -98,7 +100,7 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
     public WorkContextHandlerImpl(){
     }
 
-    public WorkContextHandlerImpl(ConnectorRuntime runtime, String raName, ClassLoader cl) {
+    public WorkContextHandlerImpl(ConnectorRuntime runtime, ClassLoader cl) {
         this.runtime = runtime;
         this.rarCL = cl;
     }
@@ -131,6 +133,16 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
         return result;
     }
 
+    @LogMessageInfo(
+            message = "Unable to load Work Context class {0}.",
+            comment = "Can not find Work Context class.",
+            level = "WARNING",
+            cause = "Work Context class is not available to application server.",
+            action = "Make sure that the Work Context class is available to server.",
+            publish = true)
+    private static final String RAR_LOAD_WORK_CONTEXT_ERROR = "AS-RAR-05006";
+
+    
     /**
      * checks whether the container can handle the exact context type provided
      *
@@ -146,9 +158,7 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
                 clz =  loadClass(workContextClassName);
 
             } catch (ClassNotFoundException cnfe) {
-                debug(cnfe.toString());
-                Object params[] = {workContextClassName, cnfe};
-                logger.log(Level.WARNING, "workcontext.context_class_not_found", params);
+                logger.log(Level.WARNING, RAR_LOAD_WORK_CONTEXT_ERROR, new Object[]{workContextClassName, cnfe});
                 break;
             }
             if (workContextClass.equals(clz)) {
@@ -190,7 +200,7 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
                     }
                 }
             }else{
-                logger.log(Level.WARNING, "Unable to load context class [ "+contextClassName+" ]");
+                logger.log(Level.WARNING, RAR_LOAD_WORK_CONTEXT_ERROR, contextClassName);
             }
         } else {
             result = true;
@@ -201,6 +211,34 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
     private Class loadClass(String contextClassName) throws ClassNotFoundException {
         return rarCL.loadClass(contextClassName);
     }
+
+    @LogMessageInfo(
+            message = "Cannot specify both Execution Context [{0}] as well Transaction Context [{1}] for Work [{2}] execution. Only one can be specified.",
+            comment = "ExecutionContext conflict.",
+            level = "WARNING",
+            cause = "Submitted Work has Transaction Context as well it is a Work Context Provider which is specification violation.",
+            action = "Make sure that either Execution Context or Work Context Provider with Transaction Context is passed, but not both.",
+            publish = true)
+    private static final String RAR_EXECUTION_CONTEXT_CONFLICT = "AS-RAR-05007";
+
+    @LogMessageInfo(
+            message = "Duplicate Work Context for type [ {0} ].",
+            comment = "Duplicate Work Context.",
+            level = "WARNING",
+            cause = "Multiple Work Contexts of same type submitted.",
+            action = "Make sure that same context type is not submitted multiple times in the Work Context.",
+            publish = true)
+    private static final String RAR_EXECUTION_CONTEXT_DUPLICATE = "AS-RAR-05008";
+
+    @LogMessageInfo(
+            message = "Application server cannot handle the following Work Context : {0}.",
+            comment = "Unsupported Work Context.",
+            level = "WARNING",
+            cause = "Work Context in question is not supported by application server.",
+            action = "Check the application server documentation for supported Work Contexts.",
+            publish = true)
+    private static final String RAR_EXECUTION_CONTEXT_NOT_SUPPORT = "AS-RAR-05009";
+
 
     /**
      * validate the submitted work
@@ -223,9 +261,7 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
                 WorkRejectedException wre =
                         new WorkRejectedException();
                 wre.setErrorCode(WorkContextErrorCodes.CONTEXT_SETUP_FAILED);
-
-                Object params[] = {ec, wre};
-                logger.log(Level.WARNING, "workcontext.context_is_context_provider_and_execcontext", params);
+                logger.log(Level.WARNING, RAR_EXECUTION_CONTEXT_CONFLICT, new Object[]{ec, transactionContext, work, wre});
 
                 if(transactionContext instanceof WorkContext){
                     WorkContextLifecycleListener listener = getListener((WorkContext)transactionContext);
@@ -249,7 +285,7 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
                             // container does not support it, fail work submission.
                             WorkCompletedException wce = new WorkCompletedException();
                             wce.setErrorCode(WorkContextErrorCodes.DUPLICATE_CONTEXTS);
-                            logger.log(Level.WARNING, "workcontext.duplicate_work_context", ic.getClass().getName());
+                            logger.log(Level.WARNING, RAR_EXECUTION_CONTEXT_DUPLICATE, new Object[]{ic.getClass().getName(), wce});
                             notifyContextSetupFailure(listener, WorkContextErrorCodes.DUPLICATE_CONTEXTS);
                             throw wce;
                         }
@@ -257,9 +293,8 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
                         //JSR-322-WORK-CONTEXT-REQ   unable to handle the work context or its generic type
                         // (any of its super types) container does not support it, fail work submission.
                         WorkCompletedException wce = new WorkCompletedException();
-                        Object params[] = {ic.getClass().getName(), wce};
                         wce.setErrorCode(WorkContextErrorCodes.UNSUPPORTED_CONTEXT_TYPE);
-                        logger.log(Level.WARNING, "workcontext.cannot_handle_context", params);
+                        logger.log(Level.WARNING, RAR_EXECUTION_CONTEXT_NOT_SUPPORT, new Object[]{ic.getClass().getName(), wce});
                         notifyContextSetupFailure(listener, WorkContextErrorCodes.UNSUPPORTED_CONTEXT_TYPE);
                         throw wce;
                     }
@@ -358,6 +393,16 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
         return listener;
     }
 
+
+    @LogMessageInfo(
+            message = "Setting custom Work Context class [ {0} ] using most specific supportted Work Context class [ {1} ].",
+            comment = "Handle custom Work Context.",
+            level = "INFO",
+            cause = "Requested Work Context is not supported, but a super type of the context is supported.",
+            action = "",
+            publish = true)
+    private static final String RAR_USE_SUPER_WORK_CONTEXT = "AS-RAR-05010";
+
     /**
      * handles custom work contexts
      *
@@ -369,7 +414,7 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
                                           Class<? extends WorkContext> claz) {
         if (claz != null) {
             Object params[] = {ic.getClass().getName(), claz.getName()};
-            logger.log(Level.INFO, "workcontext.setting_most_specific_context", params);
+            logger.log(Level.INFO, RAR_USE_SUPER_WORK_CONTEXT, params);
         } else {
             debug("setting exact customWorkContext for WorkContext [ " + ic.getClass().getName() + " ]  ");
         }
@@ -392,7 +437,7 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
         }
         assignableClasses = sortBasedOnInheritence(assignableClasses);
         Object params[]= {ic.getClass().getName(), assignableClasses.get(0).getName()};
-        logger.log(Level.INFO, "workcontext.most_specific_work_context_supported", params);
+        logger.log(Level.INFO, RAR_USE_SUPER_WORK_CONTEXT, params);
         return assignableClasses.get(0);
     }
 
@@ -430,6 +475,15 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
         return count;
     }
 
+    @LogMessageInfo(
+            message = "Unable to set Security Context.",
+            comment = "Unable to set Security Context.",
+            level = "WARNING",
+            cause = "Unable to set Security Context.",
+            action = "Check the server.log for exceptions",
+            publish = true)
+    private static final String RAR_SETUP_SECURITY_CONTEXT_ERROR = "AS-RAR-05011";
+
     /**
      * setup security work context for the work
      *
@@ -450,7 +504,7 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
             securityWorkContext.setupSecurityContext(handler, executionSubject, serviceSubject);
             notifyContextSetupComplete(listener);
         } catch (Exception e) {
-            logger.log(Level.WARNING, "workcontext.security_context_setup_failure", e);
+            logger.log(Level.WARNING, RAR_SETUP_SECURITY_CONTEXT_ERROR, e);
             notifyContextSetupFailure(listener, WorkContextErrorCodes.CONTEXT_SETUP_FAILED);
             WorkCompletedException wce = new WorkCompletedException(e.getMessage());
             wce.initCause(e);
@@ -618,7 +672,9 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
     }
 
     public static void debug(String message) {
-        logger.finest(message);
+        if(logger.isLoggable(Level.FINEST)){
+            logger.log(Level.FINEST, message);
+        }
     }
 
     /**

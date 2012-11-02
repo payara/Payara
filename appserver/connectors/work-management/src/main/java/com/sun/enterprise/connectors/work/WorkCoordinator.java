@@ -45,12 +45,14 @@ import com.sun.corba.ee.spi.threadpool.WorkQueue;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.connectors.work.context.WorkContextHandlerImpl;
 import com.sun.enterprise.connectors.work.monitor.WorkManagementProbeProvider;
-import com.sun.logging.LogDomains;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ResourceAdapterAssociation;
 import javax.resource.spi.work.*;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -74,8 +76,6 @@ public final class WorkCoordinator {
     private volatile int waitMode;
     private volatile int state = CREATED;
 
-    private final boolean workIsBad = false;
-
     private final javax.resource.spi.work.Work work;
     private final long timeout;
     private long startTime;
@@ -87,8 +87,7 @@ public final class WorkCoordinator {
     private static int seed;
     private final int id;
 
-    private static final Logger logger =
-            LogDomains.getLogger(WorkCoordinator.class, LogDomains.RSR_LOGGER);
+    private static final Logger logger = LogFacade.getLogger();
 
     private WorkManagementProbeProvider probeProvider = null;
 
@@ -146,8 +145,18 @@ public final class WorkCoordinator {
             probeProvider.workSubmitted(raName);
             probeProvider.workQueued(raName);
         }
-        queue.addWork(new OneWork(work, this, contextHandler, Thread.currentThread().getContextClassLoader()));
+        queue.addWork(new OneWork(work, this, Thread.currentThread().getContextClassLoader()));
     }
+
+    @LogMessageInfo(
+            message = "Resource adapter association failed.",
+            comment = "Failed to associate Resource Adapter bean to Work instance.",
+            level = "SEVERE",
+            cause = "Resource Adapter throws exception during ManagedConnectionFactory.setResourceAdapter().",
+            action = "[1] If you are using third party resource adapter, contact resource adapter vendor." +
+                     "[2] If you are a resource adapter developer, please check the resource adapter code.",
+            publish = true)
+    private static final String RAR_RA_ASSOCIATE_ERROR = "AS-RAR-05005";
 
     /**
      * Pre-invoke operation. This does the following
@@ -191,7 +200,7 @@ public final class WorkCoordinator {
             try{
                 runtime.associateResourceAdapter(raName, (ResourceAdapterAssociation)work);
             }catch(ResourceException re){
-                logger.log(Level.SEVERE, "rardeployment.assoc_failed", re);
+                logger.log(Level.SEVERE, RAR_RA_ASSOCIATE_ERROR, re);
             }
         }
 
