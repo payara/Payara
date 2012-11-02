@@ -162,7 +162,7 @@ public class PendingConfigBeans implements ConfigBeanListener, PostConstruct, Tr
         }
         else
         {
-            Util.getLogger().log(Level.INFO, "PendingConfigBeans.onEntered: ignoring ConfigBean that does not have Domain as ancestor: {0}", 
+            Util.getLogger().log(Level.FINEST, "PendingConfigBeans.onEntered: ignoring ConfigBean that does not have Domain as ancestor: {0}",
                     cb.getProxyType().getName());
             if ( latch != null )
             {
