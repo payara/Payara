@@ -242,7 +242,7 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
             for (ServiceHandle<?> handle : serviceHandles) {
                 ActiveDescriptor<?> descriptor = handle.getActiveDescriptor();
                 if (descriptor.getName().equals(commandName)) {
-                    AdminCommand service = locator.getService(descriptor.getImplementationClass());
+                    AdminCommand service = locator.<AdminCommand>getService(descriptor.getImplementationClass());
                     if (service != null) {
                         TargetType targetType = descriptor.getImplementationClass().getAnnotation(TargetType.class);
                         targets = targetType.value();

@@ -68,7 +68,7 @@ public class EmbeddedInhabitantsParser implements PopulatorPostProcessor {
 //    }
 
         @Override
-        public DescriptorImpl process(DescriptorImpl descriptorImpl) {
+        public DescriptorImpl process(ServiceLocator serviceLocator, DescriptorImpl descriptorImpl) {
                 
                 boolean skip = RestService.class.getCanonicalName().equals(descriptorImpl.getImplementation()) ||
                                 ProxyRestManagementAdapter.class.getCanonicalName().equals(descriptorImpl.getImplementation()) ||

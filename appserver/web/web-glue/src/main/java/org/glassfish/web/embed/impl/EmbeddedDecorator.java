@@ -63,7 +63,7 @@ public class EmbeddedDecorator implements PopulatorPostProcessor {
 //    }
 
 	@Override
-	public DescriptorImpl process(DescriptorImpl descriptorImpl) {
+	public DescriptorImpl process(ServiceLocator serviceLocator, DescriptorImpl descriptorImpl) {
 		
 		if (WebArchivist.class.getCanonicalName().equals(descriptorImpl.getImplementation())) {
 			descriptorImpl.setImplementation(EmbeddedWebArchivist.class.getCanonicalName());

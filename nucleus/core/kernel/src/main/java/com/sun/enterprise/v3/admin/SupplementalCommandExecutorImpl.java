@@ -165,9 +165,9 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
         if (supplementalCommandsMap != null) return supplementalCommandsMap;
 
         supplementalCommandsMap = new ConcurrentHashMap<String, List<ServiceHandle<?>>>();
-        List<ServiceHandle<?>> supplementals = habitat.getAllServiceHandles(Supplemental.class);
-        for (ServiceHandle<?> handle : supplementals) {
-            ActiveDescriptor<?> inh = handle.getActiveDescriptor();
+        List<ServiceHandle<Supplemental>> supplementals = habitat.getAllServiceHandles(Supplemental.class);
+        for (ServiceHandle<Supplemental> handle : supplementals) {
+            ActiveDescriptor<Supplemental> inh = handle.getActiveDescriptor();
             String commandName = getOne("target", inh.getMetadata());
             if(supplementalCommandsMap.containsKey(commandName)) {
                 supplementalCommandsMap.get(commandName).add(handle);

@@ -101,10 +101,10 @@ public class ParentConfigListenerTest extends ConfigApiTest {
         ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(container.httpService);
 
         // let's check that my newly added listener is available in the habitat.
-        List<ServiceHandle<?>> networkListeners = habitat.getAllServiceHandles(NetworkListener.class);
+        List<ServiceHandle<NetworkListener>> networkListeners = habitat.getAllServiceHandles(NetworkListener.class);
         boolean found = false;
         
-        for (ServiceHandle<?> nlSH : networkListeners) {
+        for (ServiceHandle<NetworkListener> nlSH : networkListeners) {
             NetworkListener nl = (NetworkListener) nlSH.getService();
             if (nl.getName().equals("Funky-Listener")) {
                 found=true;

@@ -166,12 +166,13 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void addCompositeResources(Set<Class<?>> r, ServiceLocator habitat) {
-        List<ServiceHandle<?>> handles = habitat.getAllServiceHandles(RestResource.class);
-        for (ServiceHandle<?> handle : handles) {
-            ActiveDescriptor<?> ad = handle.getActiveDescriptor();
+        List<ServiceHandle<RestResource>> handles = habitat.getAllServiceHandles(RestResource.class);
+        for (ServiceHandle<RestResource> handle : handles) {
+            ActiveDescriptor<RestResource> ad = handle.getActiveDescriptor();
             if (!ad.isReified()) {
-                ad = habitat.reifyDescriptor(ad);
+                ad = (ActiveDescriptor<RestResource>) habitat.reifyDescriptor(ad);
             }
             r.add(ad.getImplementationClass());
         }

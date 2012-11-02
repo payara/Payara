@@ -44,13 +44,11 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.module.bootstrap.ContextDuplicatePostProcessor;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
@@ -109,17 +107,8 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
             final StartupContext startupContext = new StartupContext(gfProps.getProperties());
             
             ModulesRegistry modulesRegistry = SingleHK2Factory.getInstance().createModulesRegistry();
-            
-            Binder postProcessorBinder = new Binder() {
 
-				@Override
-				public void bind(DynamicConfiguration config) {
-					config.bind(BuilderHelper.createConstantDescriptor(new EmbeddedInhabitantsParser()));
-				}
-            	
-            };
-            
-            ServiceLocator serviceLocator = main.createServiceLocator(modulesRegistry, startupContext, postProcessorBinder, null);
+            ServiceLocator serviceLocator = main.createServiceLocator(modulesRegistry, startupContext, Arrays.asList((PopulatorPostProcessor)new EmbeddedInhabitantsParser(), new ContextDuplicatePostProcessor()), null);
 
             final ModuleStartup gfKernel = main.findStartupService(modulesRegistry, serviceLocator, null, startupContext);
             // create a new GlassFish instance

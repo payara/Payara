@@ -159,9 +159,9 @@ public class ConnectorResourceManagerLifecycleListener implements org.glassfish.
      * @return boolean representing connector-runtime initialization status.
      */
     public boolean isConnectorRuntimeInitialized() {
-        List<ServiceHandle<?>> serviceHandles =
+        List<ServiceHandle<ConnectorRuntime>> serviceHandles =
                 connectorRuntimeHabitat.getAllServiceHandles(ConnectorRuntime.class);
-        for(ServiceHandle<?> inhabitant : serviceHandles){
+        for(ServiceHandle<ConnectorRuntime> inhabitant : serviceHandles){
             // there will be only one implementation of connector-runtime
             return inhabitant.isActive();
         }

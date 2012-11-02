@@ -91,7 +91,7 @@ public class EmbeddedInhabitantsParser implements PopulatorPostProcessor {
 //    }
 
 	@Override
-	public DescriptorImpl process(DescriptorImpl descriptorImpl) {
+	public DescriptorImpl process(ServiceLocator serviceLocator, DescriptorImpl descriptorImpl) {
 
 		// we don't want to reconfigure the loggers.
 
