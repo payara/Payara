@@ -75,6 +75,9 @@ public final class MethodDescriptor extends Descriptor {
 
     /** Represents the bean timeout methods ejbClassSymbol. */
     public static final String TIMER_METHOD = "Timer";
+    /** Represents the bean lifecycle methods ejbClassSymbol. */
+    public static final String LIFECYCLE_CALLBACK = "LifecycleCallback";
+
     /** Represents the bean MessageEndpoint methods ejbClassSymbol. */
     public static final String MESSAGE_ENDPOINT_METHOD = "MessageEndpoint";
     
@@ -221,7 +224,7 @@ public final class MethodDescriptor extends Descriptor {
 
 	    if ( ejbClassSymbol == null || ejbClassSymbol.equals("") 
 		 || ejbClassSymbol.equals(EJB_BEAN) || ejbClassSymbol.equals(TIMER_METHOD)
-                 || ejbClassSymbol.equals(MESSAGE_ENDPOINT_METHOD)) {
+                 || ejbClassSymbol.equals(LIFECYCLE_CALLBACK) || ejbClassSymbol.equals(MESSAGE_ENDPOINT_METHOD)) {
 		try {
                     if ( !(className.equals("")) ) {
                         // If declaring class is known, use it. Since method
