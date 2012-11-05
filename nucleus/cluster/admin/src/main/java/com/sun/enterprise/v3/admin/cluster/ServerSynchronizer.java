@@ -79,7 +79,7 @@ import org.glassfish.hk2.api.PostConstruct;
  *
  * The list of files in the config directory to synchronize is in
  * META-INF/config-files in this module, or in config/config-files
- * in te domain directory.
+ * in the domain directory.
  *
  * @author Bill Shannon
  */
