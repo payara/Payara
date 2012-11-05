@@ -68,6 +68,8 @@ import org.jvnet.hk2.config.*;
 @PerLookup
 public class GenericListCommand  extends GenericCrudCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
+    @Param(primary=true, optional=true)
+    String name;
     @Param(name="long", shortName="l", defaultValue="false", optional=true) 
     boolean longOpt;
     @Param(name="header", shortName="h", defaultValue="true", optional=true)
@@ -122,7 +124,9 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
             try {
                 List<ConfigBeanProxy> children = (List<ConfigBeanProxy>) targetMethod.invoke(parentBean);
                 for (ConfigBeanProxy child : children) {
-                    checks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(child), "read"));
+                    if (name == null || name.equals(Dom.unwrap(child).getKey())) {
+                        checks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(child), "read"));
+                    }
                 }
             } catch (Exception ex) { 
                 String msg = localStrings.getLocalString(GenericCrudCommand.class,
@@ -195,6 +199,9 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
         try {       
             List<ConfigBeanProxy> children = (List<ConfigBeanProxy>) targetMethod.invoke(parentBean);
             for (ConfigBeanProxy child : children) {
+                if (name != null && !name.equals(Dom.unwrap(child).getKey())) {
+                    continue;
+                }
                 Map<String,String> map = new HashMap<String,String>();
                 if (longOpt) {
                     String data[] = getColumnData(child, cols);
@@ -224,7 +231,6 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
             if (!list.isEmpty()) {
                 props.put(elementName(Dom.unwrap(parentBean).document, parentType, targetType), list);
             }
-            
         } catch (Exception e) {
             String msg = localStrings.getLocalString(GenericCrudCommand.class,
                     "GenericCrudCommand.method_invocation_exception",
