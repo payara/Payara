@@ -52,7 +52,7 @@ import org.glassfish.admin.restconnector.Constants;
 public class RestManagementAdapter extends RestAdapter {
 
     public RestManagementAdapter() {
-        setRrp(new RestManagementResourceProvider());
+        setRestResourceProvider(new RestManagementResourceProvider());
     }
 
 }

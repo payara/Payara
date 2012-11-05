@@ -52,7 +52,7 @@ import org.jvnet.hk2.annotations.Service;
 public class RestCommandAdapter extends RestAdapter {
 
     public RestCommandAdapter() {
-        setRrp(new RestCommandResourceProvider());
+        setRestResourceProvider(new RestCommandResourceProvider());
     }
 
 }

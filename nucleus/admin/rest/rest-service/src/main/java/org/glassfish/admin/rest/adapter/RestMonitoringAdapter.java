@@ -52,7 +52,7 @@ import org.jvnet.hk2.annotations.Service;
 public class RestMonitoringAdapter extends RestAdapter {
 
     public RestMonitoringAdapter() {
-        setRrp(new RestMonitoringResourceProvider());
+        setRestResourceProvider(new RestMonitoringResourceProvider());
     }
 
 }

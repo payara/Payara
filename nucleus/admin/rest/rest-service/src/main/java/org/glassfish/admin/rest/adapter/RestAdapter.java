@@ -102,7 +102,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
 
     protected final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RestService.class);
 
-    private RestResourceProvider rrp;
+    private RestResourceProvider restResourceProvider;
 
     @Inject
     protected ServiceLocator habitat;
@@ -140,7 +140,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     }
 
     protected String getContextRoot() {
-        return getRrp().getContextRoot();
+        return getRestResourceProvider().getContextRoot();
     }
 
     @Override
@@ -156,7 +156,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
             res.setCharacterEncoding(Constants.ENCODING);
             if (latch.await(20L, TimeUnit.SECONDS)) {
                 if(serverEnvironment.isInstance()) {
-                    if(!Method.GET.equals(req.getMethod()) && !getRrp().enableModifAccessToInstances()) {
+                    if(!Method.GET.equals(req.getMethod()) && !getRestResourceProvider().enableModifAccessToInstances()) {
                         reportError(req, res, HttpURLConnection.HTTP_FORBIDDEN,
                                 localStrings.getLocalString("rest.resource.only.GET.on.instance",
                                 "Only GET requests are allowed on an instance that is not DAS."));
@@ -181,7 +181,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                 String context = getContextRoot();
                 logger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
                 if ((context != null) && (!"".equals(context)) && (adapter == null)) {
-                    adapter = exposeContext(getRrp().
+                    adapter = exposeContext(getRestResourceProvider().
                             getResourceClasses(habitat), sc, habitat);
                     logger.log(Level.INFO, "rest.rest_interface_initialized", context);
                 }
@@ -264,12 +264,12 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
         return type;
     }
 
-    protected RestResourceProvider getRrp() {
-        return rrp;
+    protected RestResourceProvider getRestResourceProvider() {
+        return restResourceProvider;
     }
 
-    protected void setRrp(RestResourceProvider rrp) {
-        this.rrp = rrp;
+    protected void setRestResourceProvider(RestResourceProvider rrp) {
+        this.restResourceProvider = rrp;
     }
 
     public static class SubjectReferenceFactory implements Factory<Ref<Subject>> {
@@ -312,7 +312,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
         try {
             ClassLoader apiClassLoader = sc.getCommonClassLoader();
             Thread.currentThread().setContextClassLoader(apiClassLoader);
-            ResourceConfig rc = getRrp().getResourceConfig(classes, sc, habitat, getSubjectReferenceFactory());
+            ResourceConfig rc = getRestResourceProvider().getResourceConfig(classes, sc, habitat, getSubjectReferenceFactory());
             return getJerseyContainer(rc);
         } finally {
             Thread.currentThread().setContextClassLoader(originalContextClassLoader);
