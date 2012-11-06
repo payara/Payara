@@ -109,8 +109,8 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
     ArchiveFactory archiveFactory;
     
     // the archive abstraction directory.
-    File archive;
-    URI uri;
+    File archive = null;
+    URI uri = null;
     
     // the currently opened entry
     OutputStream os=null;
@@ -258,9 +258,11 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
     @Override
     public Collection<String> getDirectories() throws IOException {
         List<String> results = new ArrayList<String>();
-        for (File f : archive.listFiles()) {
-            if (f.isDirectory() && isEntryValid(f)) {
-                results.add(f.getName());
+        if (archive != null)  {
+            for (File f : archive.listFiles()) {
+                if (f.isDirectory() && isEntryValid(f)) {
+                    results.add(f.getName());
+                }
             }
         }
         return results;
@@ -305,7 +307,10 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
      */
     @Override
     public boolean exists() {
-        return archive.exists();
+        if (archive != null) {
+            return archive.exists();
+        }
+        return false;
     }
 
     /**
@@ -613,7 +618,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
      * @param logger logger to which to report inability to get the list of files from the directory
      */
     void getListOfFiles(File directory, List<String> files, List embeddedArchives, final Logger logger) {
-        if(directory == null || !directory.isDirectory())
+        if(archive == null || directory == null || !directory.isDirectory())
             return;
         final File[] fileList = directory.listFiles();
         if (fileList == null) {
@@ -692,7 +697,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
         
         File newFile = new File(archive, name);
         if (newFile.exists()) {
-            if (!deleteEntry(name, false /* isLogging */)) {
+            if (!deleteEntry(name, false /* isLogging */) && uri != null) {
                 deplLogger.log(Level.FINE, 
                         "Could not delete file {0} in FileArchive {1} during putNextEntry; continuing", 
                         new Object[]{name, uri.toASCIIString()});
