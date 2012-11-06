@@ -63,8 +63,8 @@ public class ReplicationAttributeStore extends ReplicationStore {
     
 
     /** Creates a new instance of ReplicationAttributeStore */
-    public ReplicationAttributeStore(ServerConfigLookup serverConfigLookup, JavaEEIOUtils ioUtils) {
-        super(serverConfigLookup, ioUtils);
+    public ReplicationAttributeStore(JavaEEIOUtils ioUtils) {
+        super(ioUtils);
         setLogLevel();
     }
     
@@ -79,6 +79,9 @@ public class ReplicationAttributeStore extends ReplicationStore {
      * @exception IOException if an input/output error occurs
      */    
     public void valveSave(Session session) throws IOException {
+        if (!(session instanceof HASession)) {
+            return;
+        }
         HASession haSess = (HASession)session;
         if( haSess.isPersistent() && !haSess.isDirty() ) {
             this.updateLastAccessTime(session);
@@ -99,7 +102,10 @@ public class ReplicationAttributeStore extends ReplicationStore {
      *
      * @exception IOException if an input/output error occurs
      */    
-    public void save(Session session) throws IOException {        
+    public void save(Session session) throws IOException {
+        if (!(session instanceof HASession)) {
+            return;
+        }
         HASession haSess = (HASession)session;
         if( haSess.isPersistent() && !haSess.isDirty() ) {
             this.updateLastAccessTime(session);
@@ -123,14 +129,22 @@ public class ReplicationAttributeStore extends ReplicationStore {
     public void doValveSave(Session session) throws IOException {
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ReplicationAttributeStore>>doValveSave:valid =" + ((StandardSession)session).getIsValid());
-            _logger.fine("ReplicationAttributeStore>>valveSave:ssoId=" + ((HASession)session).getSsoId());                    
+            if (session instanceof HASession) {
+                _logger.fine("ReplicationAttributeStore>>valveSave:ssoId=" + ((HASession)session).getSsoId());
+            }
         }         
         
         // begin 6470831 do not save if session is not valid
         if( !((StandardSession)session).getIsValid() ) {
             return;
         }
-        // end 6470831        
+        // end 6470831
+
+        if (!(session instanceof ModifiedAttributeHASession) ||
+                !(session instanceof BaseHASession)) {
+            return;
+        }
+
         ModifiedAttributeHASession modAttrSession
                 = (ModifiedAttributeHASession)session;
         String userName = "";
@@ -173,6 +187,12 @@ public class ReplicationAttributeStore extends ReplicationStore {
         if( !((StandardSession)session).getIsValid() ) {
             return;
         }
+
+        if (!(session instanceof ModifiedAttributeHASession) ||
+                !(session instanceof HASession)) {
+            return;
+        }
+
         // end 6470831        
         ModifiedAttributeHASession modAttrSession
                 = (ModifiedAttributeHASession)session;
@@ -725,13 +745,13 @@ public class ReplicationAttributeStore extends ReplicationStore {
         }
 
         String thisAttrName = null;
-        SessionAttributeMetadata.Operation thisAttrOp = null;
+        //SessionAttributeMetadata.Operation thisAttrOp = null;
         Object thisAttrVal = null;
         Iterator it = attributeList.iterator();
         while (it.hasNext()) { 
             SessionAttributeMetadata nextAttrMetadata = (SessionAttributeMetadata)it.next();
             thisAttrName = nextAttrMetadata.getAttributeName();
-            thisAttrOp = nextAttrMetadata.getOperation();
+            //thisAttrOp = nextAttrMetadata.getOperation();
             byte[] nextAttrState = nextAttrMetadata.getState();
             thisAttrVal = null;
             try { 

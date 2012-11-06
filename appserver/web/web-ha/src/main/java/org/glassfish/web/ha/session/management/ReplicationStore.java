@@ -99,8 +99,8 @@ public class ReplicationStore extends HAStoreBase {
     /**
      * Creates a new instance of ReplicationStore
      */
-    public ReplicationStore(ServerConfigLookup serverConfigLookup, JavaEEIOUtils ioUtils) {
-        super(serverConfigLookup, ioUtils);
+    public ReplicationStore(JavaEEIOUtils ioUtils) {
+        super(ioUtils);
         //setLogLevel();
     }
 
@@ -123,6 +123,9 @@ public class ReplicationStore extends HAStoreBase {
      */
     public void valveSave(Session session) throws IOException {
 
+        if (!(session instanceof HASession)) {
+            return;
+        }
         HASession haSess = (HASession)session;
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ReplicationStore>>valveSave id=" + haSess.getIdInternal() +
@@ -149,11 +152,16 @@ public class ReplicationStore extends HAStoreBase {
      */
     public void doValveSave(Session session) throws IOException {
         if(_logger.isLoggable(Level.FINE)) {
-            _logger.fine("ReplicationStore>>doValveSave:id =" + ((HASession)session).getIdInternal());
+            if (session instanceof HASession) {
+                _logger.fine("ReplicationStore>>doValveSave:id =" + ((HASession)session).getIdInternal());
+            }
             _logger.fine("ReplicationStore>>doValveSave:valid =" + session.getIsValid());
         }
         // begin 6470831 do not save if session is not valid
         if( !session.getIsValid() ) {
+            return;
+        }
+        if (!(session instanceof BaseHASession)) {
             return;
         }
         // end 6470831
@@ -239,6 +247,9 @@ public class ReplicationStore extends HAStoreBase {
      * @exception IOException if an input/output error occurs
      */
     public void save(Session session) throws IOException {
+        if (!(session instanceof HASession)) {
+            return;
+        }
         HASession haSess = (HASession)session;
         if( haSess.isPersistent() && !haSess.isDirty() ) {
             this.updateLastAccessTime(session);
@@ -264,6 +275,9 @@ public class ReplicationStore extends HAStoreBase {
      * @exception IOException if an input/output error occurs
      */
     public void doSave(Session session) throws IOException {
+        if (!(session instanceof HASession)) {
+            return;
+        }
         byte[] sessionState = this.getByteArray(session, isReplicationCompressionEnabled());
         BackingStore<String, SimpleMetadata> backingStore = getSimpleMetadataBackingStore();
         if(_logger.isLoggable(Level.FINE)) {
@@ -450,7 +464,10 @@ public class ReplicationStore extends HAStoreBase {
      * @exception IOException if an input/output error occurs
      */    
     public void updateLastAccessTime(Session session) throws IOException {
-        
+
+        if (!(session instanceof BaseHASession)) {
+            return;
+        }
         BackingStore<String, ? extends Storeable> backingStore = getStoreableBackingStore();
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ReplicationStore>>updateLastAccessTime: replicator: " + backingStore);                       

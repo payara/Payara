@@ -68,8 +68,6 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
  */
 public abstract class HAStoreBase extends StoreBase {
 
-    protected ServerConfigLookup serverConfigLookup;
-
     protected JavaEEIOUtils ioUtils;
 
     /**
@@ -87,9 +85,8 @@ public abstract class HAStoreBase extends StoreBase {
 
 
     /** Creates a new instance of HAStoreBase */
-    public HAStoreBase(ServerConfigLookup serverConfigLookup, JavaEEIOUtils ioUtils) {
+    public HAStoreBase(JavaEEIOUtils ioUtils) {
         this.ioUtils =  ioUtils;
-        this.serverConfigLookup = serverConfigLookup;
     }
     
     /**

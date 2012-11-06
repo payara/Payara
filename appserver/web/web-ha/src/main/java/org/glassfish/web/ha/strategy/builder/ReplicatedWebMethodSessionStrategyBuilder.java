@@ -87,17 +87,17 @@ public class ReplicatedWebMethodSessionStrategyBuilder extends BasePersistenceSt
         if (this.getPersistenceScope().equals("session")) {
             setupReplicationWebEventPersistentManager(SimpleMetadata.class,
                     new FullSessionFactory(),
-                    new ReplicationStore(serverConfigLookup, ioUtils),
+                    new ReplicationStore(ioUtils),
                     ctx, serverConfigLookup);
         } else if (this.getPersistenceScope().equals("modified-session")) {
             setupReplicationWebEventPersistentManager(SimpleMetadata.class,
                     new ModifiedSessionFactory(),
-                    new ReplicationStore(serverConfigLookup, ioUtils),
+                    new ReplicationStore(ioUtils),
                     ctx, serverConfigLookup);
         } else if (this.getPersistenceScope().equals("modified-attribute")) {
             setupReplicationWebEventPersistentManager(CompositeMetadata.class,
                     new ModifiedAttributeSessionFactory(),
-                    new ReplicationAttributeStore(serverConfigLookup, ioUtils),
+                    new ReplicationAttributeStore(ioUtils),
                     ctx, serverConfigLookup);
         } else {
             throw new IllegalArgumentException(this.getPersistenceScope());
