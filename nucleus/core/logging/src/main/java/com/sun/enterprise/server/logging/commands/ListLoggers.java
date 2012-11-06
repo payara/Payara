@@ -52,11 +52,10 @@ import java.util.Set;
 import java.util.Locale;
 
 import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
@@ -64,15 +63,18 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.hk2.api.PerLookup;
+
 import com.sun.enterprise.server.logging.LoggerInfoMetadata;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 @ExecuteOn({RuntimeType.DAS})
 @Service(name = "list-loggers")
-@Singleton
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.loggers")
 @RestEndpoints({
@@ -83,13 +85,12 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 })
 public class ListLoggers implements AdminCommand {
 
-    private static final int JUSTIFY_LOGGER = 50;
-    private static final int JUSTIFY_SUBSYS = 15;
     private static final String UNKNOWN = "?";
     
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListLoggers.class);
     
-    private static final String SPACES = "                                                            ";
+    @Param(optional=true, name="_internal", defaultValue="false")    
+    private boolean listInternalLoggers;
     
     @Inject
     private LoggerInfoMetadata loggerInfoMetadataService;
@@ -101,13 +102,8 @@ public class ListLoggers implements AdminCommand {
         String header_subsystem = localStrings.getLocalString("list.loggers.header.subsystem", "Subsystem");
         String header_description = localStrings.getLocalString("list.loggers.header.description", "Logger Description");
         
-        report.getTopMessagePart().addChild().setMessage(
-                justify(header_name, JUSTIFY_LOGGER) + 
-                justify(header_subsystem, JUSTIFY_SUBSYS) + 
-                header_description);
-        report.getTopMessagePart().addChild().setMessage(
-                "=======================================================================================");
-        
+        ColumnFormatter colFormatter = new ColumnFormatter(new String[]{header_name, header_subsystem, header_description});
+                
         // An option to specify client locale should be supported. However, it probably
         // should not be specific to this command. For now, localize using the default locale.
         Locale locale = Locale.getDefault();
@@ -125,17 +121,17 @@ public class ListLoggers implements AdminCommand {
                 boolean published = loggerInfoMetadataService.isPublished(logger);
                 if (subsystem == null) subsystem = UNKNOWN;
                 if (desc == null) desc = UNKNOWN;
-                if (published) {
-                    final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-                    part.setMessage(justify(logger, JUSTIFY_LOGGER)
-                            + justify(subsystem, JUSTIFY_SUBSYS)
-                            + desc
-                            );
+                if (published || listInternalLoggers) {
+                    colFormatter.addRow(new Object[]{logger, subsystem, desc});
                     loggerSubsystems.put(logger, subsystem);
                     loggerDescriptions.put(logger, desc); //Needed for REST xml and JSON output
                     loggerList.add(logger); //Needed for REST xml and JSON output                                    
                 }
             }
+            
+            report.appendMessage(colFormatter.toString());
+            report.appendMessage(System.getProperty("line.separator"));
+            
             // Populate the extraProperties data structure for REST...
             Properties restData = new Properties();
             restData.put("loggerSubsystems", loggerSubsystems);
@@ -153,14 +149,5 @@ public class ListLoggers implements AdminCommand {
         }
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
-    
-    private String justify(String s, int width) {
-        int numSpaces = width - s.length();
-
-        if (numSpaces > 0)
-            return s + SPACES.substring(0, numSpaces);
-        else
-            return s + "\t"; 
-    }
-    
+        
 }
