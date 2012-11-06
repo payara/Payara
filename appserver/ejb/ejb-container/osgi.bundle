@@ -51,7 +51,6 @@
                         com.sun.ejb.monitoring.probes; \
                         com.sun.ejb.spi.io; \
                         com.sun.ejb.spi.container; \
-                        org.glassfish.ejb; \
                         org.glassfish.ejb.deployment.annotation.handlers; \
                         org.glassfish.ejb.deployment.descriptor; \
                         org.glassfish.ejb.deployment.descriptor.runtime; version=${project.osgi.version}
