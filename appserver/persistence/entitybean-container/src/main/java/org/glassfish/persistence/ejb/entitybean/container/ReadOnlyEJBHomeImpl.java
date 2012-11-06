@@ -60,6 +60,7 @@ public final class ReadOnlyEJBHomeImpl
     extends EntityBeanHomeImpl
     implements ReadOnlyEJBHome
 {
+    // robContainer initialized in ReadOnlyBeanContainer.initializeHome()
     private ReadOnlyBeanContainer robContainer;
 
     ReadOnlyEJBHomeImpl(EjbDescriptor ejbDescriptor,
@@ -83,12 +84,16 @@ public final class ReadOnlyEJBHomeImpl
     public void _refresh_com_sun_ejb_containers_read_only_bean_(Object primaryKey)
         throws java.rmi.RemoteException
     {
-        robContainer.setRefreshFlag(primaryKey);
+        if (robContainer != null) {
+            robContainer.setRefreshFlag(primaryKey);
+        }
     }
 
     public void _refresh_All() throws java.rmi.RemoteException
     {
-        robContainer.refreshAll();
+        if (robContainer != null) {
+            robContainer.refreshAll();
+        }
     }
 
     protected boolean invokeSpecialEJBHomeMethod(Method method, Class methodClass, 
