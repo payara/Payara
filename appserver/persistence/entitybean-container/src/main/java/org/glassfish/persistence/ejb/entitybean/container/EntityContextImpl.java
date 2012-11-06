@@ -81,7 +81,7 @@ public class EntityContextImpl
     private int			    _pkHashCode;
     private EntityContextImpl	    _next;
 
-    private EntityContainer _container = null;
+    transient private EntityContainer _container = null;
 
     EntityContextImpl(Object ejb, BaseContainer container) {
         super(ejb, container);

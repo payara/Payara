@@ -58,7 +58,7 @@ public final class ReadOnlyContextImpl
     private boolean removed = false;
 
     // only non-null when associated with a primary-key
-    private ReadOnlyBeanInfo robInfo;
+    transient private ReadOnlyBeanInfo robInfo;
     
     ReadOnlyContextImpl(EnterpriseBean ejb, BaseContainer container) {
         super(ejb, container);
