@@ -174,37 +174,40 @@ public class DeploymentImpl implements Deployment {
         // Make jars accessible to each other - Example:
         //    /ejb1.jar <----> /ejb2.jar
         // If there are any application (/lib) jars, make them accessible
+        // war's must be able to access the ejbs
 
         if (jarBDAs != null) {
-            ListIterator<BeanDeploymentArchive> jarIter = jarBDAs.listIterator();
-            while (jarIter.hasNext()) {
+            for (BeanDeploymentArchive oneJarBDA : jarBDAs) {
                 boolean modifiedArchive = false;
-                BeanDeploymentArchive jarBDA = (BeanDeploymentArchive)jarIter.next();
-                ListIterator<BeanDeploymentArchive> jarIter1 = jarBDAs.listIterator();
-                while (jarIter1.hasNext()) {
-                    BeanDeploymentArchive jarBDA1 = (BeanDeploymentArchive)jarIter1.next();
-                    if (jarBDA1.getId().equals(jarBDA.getId())) {
+                for (BeanDeploymentArchive otherJarBDA : jarBDAs) {
+                    if (otherJarBDA.getId().equals(oneJarBDA.getId())) {
                         continue;
                     }
-                    jarBDA.getBeanDeploymentArchives().add(jarBDA1);
+                    oneJarBDA.getBeanDeploymentArchives().add(otherJarBDA);
                     modifiedArchive = true;
                 }
 
                 // Make /lib jars (application) accessible
                 if (libJarBDAs != null) {
-                    ListIterator<BeanDeploymentArchive> libJarIter = libJarBDAs.listIterator();
-                    while (libJarIter.hasNext()) {
-                        BeanDeploymentArchive libJarBDA = (BeanDeploymentArchive)libJarIter.next();
-                        jarBDA.getBeanDeploymentArchives().add(libJarBDA);
+                    for (BeanDeploymentArchive libJarBDA : libJarBDAs) {
+                        oneJarBDA.getBeanDeploymentArchives().add(libJarBDA);
+                        modifiedArchive = true;
+                    }
+                }
+
+                // make the wars able to access the ejbs
+                if (warBDAs != null) {
+                    for (BeanDeploymentArchive oneWarBDA : warBDAs) {
+                        oneJarBDA.getBeanDeploymentArchives().add(oneWarBDA);
                         modifiedArchive = true;
                     }
                 }
 
                 if (modifiedArchive) {
-                    int idx = getBeanDeploymentArchives().indexOf(jarBDA);
+                    int idx = getBeanDeploymentArchives().indexOf(oneJarBDA);
                     if (idx >= 0) {
                         getBeanDeploymentArchives().remove(idx);
-                        getBeanDeploymentArchives().add(jarBDA);
+                        getBeanDeploymentArchives().add(oneJarBDA);
                     }
                     modifiedArchive = false;
                 }
@@ -219,11 +222,9 @@ public class DeploymentImpl implements Deployment {
             ListIterator<BeanDeploymentArchive> warIter = warBDAs.listIterator();
             boolean modifiedArchive = false;
             while (warIter.hasNext()) {
-                BeanDeploymentArchive warBDA = (BeanDeploymentArchive)warIter.next();
+                BeanDeploymentArchive warBDA = warIter.next();
                 if (jarBDAs != null) {
-                    ListIterator<BeanDeploymentArchive> jarIter = jarBDAs.listIterator();
-                    while (jarIter.hasNext()) {
-                        BeanDeploymentArchive jarBDA = (BeanDeploymentArchive)jarIter.next();
+                    for (BeanDeploymentArchive jarBDA : jarBDAs) {
                         warBDA.getBeanDeploymentArchives().add(jarBDA);
                         modifiedArchive = true;
                     }
@@ -232,9 +233,7 @@ public class DeploymentImpl implements Deployment {
                 // Make /lib jars (application) accessible
 
                 if (libJarBDAs != null) {
-                    ListIterator<BeanDeploymentArchive> libJarIter = libJarBDAs.listIterator();
-                    while (libJarIter.hasNext()) {
-                        BeanDeploymentArchive libJarBDA = (BeanDeploymentArchive)libJarIter.next();
+                    for (BeanDeploymentArchive libJarBDA : libJarBDAs) {
                         warBDA.getBeanDeploymentArchives().add(libJarBDA);
                         modifiedArchive = true;
                     }
