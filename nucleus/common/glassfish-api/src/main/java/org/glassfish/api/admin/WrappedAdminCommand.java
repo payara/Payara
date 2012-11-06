@@ -79,17 +79,27 @@ public abstract class WrappedAdminCommand implements AdminCommand {
     }
 
     /**
-     * Get parameter value for wrapped command..
+     * Get root of wrapped command.
+     * 
+     * @return command.
+     */
+    protected AdminCommand getUnwrappedCommand() {
+        AdminCommand unwrappedCommand = wrappedCommand;
+        while (unwrappedCommand instanceof WrappedAdminCommand) {
+            unwrappedCommand = ((WrappedAdminCommand)unwrappedCommand).getWrappedCommand();
+        }
+        return unwrappedCommand;
+    }
+
+    /**
+     * Get parameter value for wrapped command.
      * 
      * @param name parameter name
      * 
      * @return parameter value or null in case of any problem.
      */
     protected String getParamValue(String name) {
-        AdminCommand unwrappedCommand = this;
-        while (unwrappedCommand instanceof WrappedAdminCommand) {
-            unwrappedCommand = ((WrappedAdminCommand)unwrappedCommand).getWrappedCommand();
-        }
+        AdminCommand unwrappedCommand = getUnwrappedCommand();
         Class<?> commandClass = unwrappedCommand.getClass(); 
         for (final Field field : commandClass.getDeclaredFields()) {
             Param param = field.getAnnotation(Param.class);
