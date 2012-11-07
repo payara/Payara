@@ -52,7 +52,10 @@ public class AnnotationUtil {
      * on given type.
      */
     public static boolean presentTransitive(Class<? extends Annotation> annotationClass, Class type) {
-        if (type.isAnnotationPresent(ManagedJob.class)) {
+        if (type == null) {
+            return false;
+        }
+        if (type.isAnnotationPresent(annotationClass)) {
             return true;
         }
         //Search for annotated annotations

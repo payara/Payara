@@ -490,5 +490,9 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
         }
         return null;
     }
+    
+    /** Decorator class if particular command
+     */
+    public abstract Class getDecoratorClass();
  
 }

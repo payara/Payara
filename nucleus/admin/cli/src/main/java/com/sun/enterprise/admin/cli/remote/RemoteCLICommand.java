@@ -496,7 +496,7 @@ public class RemoteCLICommand extends CLICommand {
                 ((ClientCookieStore) cookieManager.getCookieStore()).touchStore();
             }
         }
-        
+
     }
 
     /**
@@ -785,6 +785,8 @@ public class RemoteCLICommand extends CLICommand {
                 }
             }
             throw ex;
+        } finally {
+            rac.statusPrinter.deleteLastMessage();
         }
         ActionReport ar = rac.getActionReport();
         //logger.log(Level.INFO, Metrix.getInstance().toString());

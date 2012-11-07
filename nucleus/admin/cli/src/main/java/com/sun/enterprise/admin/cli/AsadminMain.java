@@ -62,7 +62,6 @@ import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.api.admin.InvalidCommandException;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.common.util.admin.AsadminInput;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -285,8 +284,7 @@ public class AsadminMain {
         switch (exitCode) {
             case SUCCESS:
                 if (!po.isTerse()) {
-                    logger.fine(
-                            strings.get("CommandSuccessful", command));
+                    logger.fine(strings.get((po.isDetachedCommand() ? "CommandSuccessfulStarted" : "CommandSuccessful"), command));
                 }
                 break;
 

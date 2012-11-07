@@ -1155,7 +1155,6 @@ public class CommandRunnerImpl implements CommandRunner {
                             new DelegatedInjectionResolver(model, inv.typedParams(),
                             ufm.optionNameToFileMap());
                     if (injectParameters(model, command, injectionTarget, context).equals(ActionReport.ExitCode.SUCCESS)) {
-                        //TODO: MMar - it must be registered ProgressStatusRegistry here in this case (non standard flow)
                         inv.setReport(doCommand(model, command, context, progressHelper));
                     }
                     return;

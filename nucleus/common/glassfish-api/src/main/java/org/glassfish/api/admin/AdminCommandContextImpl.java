@@ -59,7 +59,7 @@ public class AdminCommandContextImpl implements  AdminCommandContext {
     private final Payload.Inbound inboundPayload;
     private final Payload.Outbound outboundPayload;
     private Subject subject;
-    private ProgressStatus dummyProgressStatus; //This implementation provides only unconnected ProgressStatus
+    private ProgressStatus progressStatus = new ErrorProgressStatus();
     private final AdminCommandEventBroker eventBroker;
 
     public AdminCommandContextImpl(Logger logger, ActionReport report) {
@@ -114,15 +114,83 @@ public class AdminCommandContextImpl implements  AdminCommandContext {
 
     @Override
     public ProgressStatus getProgressStatus() {
-        if (dummyProgressStatus == null) {
-            dummyProgressStatus = new ProgressStatusImpl();
-        }
-        return dummyProgressStatus;
+        return progressStatus;
     }
 
     @Override
     public AdminCommandEventBroker getEventBroker() {
         return this.eventBroker;
+    }
+    
+    static class ErrorProgressStatus implements ProgressStatus {
+        
+        private IllegalStateException exception = new IllegalStateException("Annotation @Progress not present.");
+        
+        @Override
+        public void setTotalStepCount(int totalStepCount) {
+            throw exception;
+        }
+
+        @Override
+        public int getTotalStepCount() {
+            throw exception;
+        }
+
+        @Override
+        public int getRemainingStepCount() {
+            throw exception;
+        }
+
+        @Override
+        public void progress(int steps, String message) {
+            throw exception;
+        }
+
+        @Override
+        public void progress(int steps) {
+            throw exception;
+        }
+
+        @Override
+        public void progress(String message) {
+            throw exception;
+        }
+
+        @Override
+        public void setCurrentStepCount(int stepCount) {
+            throw exception;
+        }
+
+        @Override
+        public void complete(String message) {
+            throw exception;
+        }
+
+        @Override
+        public void complete() {
+            throw exception;
+        }
+
+        @Override
+        public boolean isComplete() {
+            throw exception;
+        }
+
+        @Override
+        public ProgressStatus createChild(String name, int allocatedSteps) {
+            throw exception;
+        }
+
+        @Override
+        public ProgressStatus createChild(int allocatedSteps) {
+            throw exception;
+        }
+
+        @Override
+        public String getId() {
+            throw exception;
+        }
+        
     }
 
 }

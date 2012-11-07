@@ -42,6 +42,7 @@ package org.glassfish.config.support;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.CopyConfig;
+import com.sun.enterprise.util.AnnotationUtil;
 import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
@@ -98,7 +99,8 @@ public class GenericDeleteCommand extends GenericCrudCommand implements AdminCom
 	    // the target type are not used for the Delete method parameters.
             model = new GenericCommandModel(targetType, false, delete.cluster(), delete.i18n(),
                     new LocalStringManagerImpl(targetType),
-                    habitat.<DomDocument>getService(DomDocument.class), commandName, false,
+                    habitat.<DomDocument>getService(DomDocument.class), commandName, 
+                    AnnotationUtil.presentTransitive(ManagedJob.class, delete.decorator()),
                     delete.resolver(), delete.decorator());
             if (logger.isLoggable(level)) {
                 for (String paramName : model.getParametersNames()) {
@@ -206,5 +208,14 @@ public class GenericDeleteCommand extends GenericCrudCommand implements AdminCom
             result.failure(logger, msg);
         }
 
+    }
+    
+    @Override
+    public Class getDecoratorClass() {
+        if (delete != null) {
+            return delete.decorator();
+        } else {
+            return null;
+        }
     }
 }

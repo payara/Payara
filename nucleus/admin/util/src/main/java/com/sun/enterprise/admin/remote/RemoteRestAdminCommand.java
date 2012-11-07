@@ -541,24 +541,26 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                         String instanceId = null;
                         do {
                             event = eventReceiver.readEvent();
-                            fireEvent(event.getName(), event);
-                            if (AdminCommandState.EVENT_STATE_CHANGED.equals(event.getName())) {
-                                AdminCommandState acs = event.getData(AdminCommandState.class, MediaType.APPLICATION_JSON_TYPE);
-                                if (acs.getId() != null) {
-                                    instanceId = acs.getId();
-                                    if (logger.isLoggable(Level.FINEST)) {
-                                        logger.log(Level.FINEST, "Command instance ID: {0}", instanceId);
+                            if (event != null) {
+                                fireEvent(event.getName(), event);
+                                if (AdminCommandState.EVENT_STATE_CHANGED.equals(event.getName())) {
+                                    AdminCommandState acs = event.getData(AdminCommandState.class, MediaType.APPLICATION_JSON_TYPE);
+                                    if (acs.getId() != null) {
+                                        instanceId = acs.getId();
+                                        if (logger.isLoggable(Level.FINEST)) {
+                                            logger.log(Level.FINEST, "Command instance ID: {0}", instanceId);
+                                        }
                                     }
-                                }
-                                if (acs.getState() == AdminCommandState.State.COMPLETED ||
-                                        acs.getState() == AdminCommandState.State.RECORDED) {
-                                    if (acs.getActionReport() != null) {
-                                        setActionReport(acs.getActionReport());
-                                    }
-                                    closeSse = true;
-                                    if (!acs.isOutboundPayloadEmpty()) {
-                                        logger.log(Level.FINEST, "Romote command holds data. Must load it");
-                                        downloadPayloadFromManaged(instanceId);
+                                    if (acs.getState() == AdminCommandState.State.COMPLETED ||
+                                            acs.getState() == AdminCommandState.State.RECORDED) {
+                                        if (acs.getActionReport() != null) {
+                                            setActionReport(acs.getActionReport());
+                                        }
+                                        closeSse = true;
+                                        if (!acs.isOutboundPayloadEmpty()) {
+                                            logger.log(Level.FINEST, "Romote command holds data. Must load it");
+                                            downloadPayloadFromManaged(instanceId);
+                                        }
                                     }
                                 }
                             }
@@ -678,7 +680,9 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
      * Return the output of the command.
      */
     public ParameterMap processParams(ParameterMap opts) throws CommandException {
-
+        if (opts == null) {
+            opts = new ParameterMap();
+        }
         // first, make sure we have the command model
         getCommandModel();
         // XXX : This is to take care of camel case from ReST calls that

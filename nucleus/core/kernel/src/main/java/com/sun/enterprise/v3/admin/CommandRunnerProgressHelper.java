@@ -48,6 +48,7 @@ import org.glassfish.api.admin.SupplementalCommandExecutor.SupplementalCommand;
 import org.glassfish.api.admin.progress.ProgressStatusBase;
 import org.glassfish.api.admin.progress.ProgressStatusEvent;
 import org.glassfish.api.admin.progress.ProgressStatusMirroringImpl;
+import org.glassfish.config.support.GenericCrudCommand;
 
 /** Helper class for {@code ProgressStatus} manipulation during 
  * {@code CommandRunner} execution.<br/><br/>
@@ -75,7 +76,15 @@ class CommandRunnerProgressHelper {
     private ProgressStatusMirroringImpl progressMirroring = null;
     
     public CommandRunnerProgressHelper(AdminCommand command, String name, Job commandInstance, ProgressStatus clientProgressStatus) {
-        progressAnnotation = command.getClass().getAnnotation(Progress.class);
+        if (command instanceof GenericCrudCommand) {
+            GenericCrudCommand gcc = (GenericCrudCommand) command;
+            Class decorator = gcc.getDecoratorClass();
+            if (decorator != null) {
+                progressAnnotation = (Progress) decorator.getAnnotation(Progress.class);
+            }
+        } else {
+            progressAnnotation = command.getClass().getAnnotation(Progress.class);
+        }
         if (progressAnnotation != null) {
             if (progressAnnotation.name() == null || progressAnnotation.name().isEmpty()) {
                 commandProgress = new CommandProgressImpl(name, createIdForCommandProgress(commandInstance));

@@ -164,10 +164,16 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
                     lastMsgLength = outMsg.length();
                 }
             }
-            if (commandProgress.isComplete()) {
-                System.out.println("");
-                System.out.println("");
+        }
+    }
+    
+    public synchronized void deleteLastMessage() {
+        if (lastMsgLength > 0) {
+            System.out.print('\r');
+            for (int i = 0; i < lastMsgLength; i++) {
+                System.out.print(' ');
             }
+            System.out.print('\r');
         }
     }
 

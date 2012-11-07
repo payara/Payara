@@ -194,10 +194,6 @@ public final class GfSseEventReceiver implements Closeable {
                 }
             }
             inboundEvent.setId(s);
-        } else if(name.equals("retry")) {
-            // TODO
-        } else {
-            // ignore
         }
     }
 

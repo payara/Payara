@@ -40,6 +40,7 @@
 
 package org.glassfish.config.support;
 
+import com.sun.enterprise.util.AnnotationUtil;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.ExceptionUtil;
 import java.util.logging.Level;
@@ -92,7 +93,7 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
             model = new GenericCommandModel(targetType, true, create.cluster(), create.i18n(),
                     new LocalStringManagerImpl(targetType),
                     habitat.<DomDocument>getService(DomDocument.class),
-                    commandName, false, create.resolver(), create.decorator());
+                    commandName, AnnotationUtil.presentTransitive(ManagedJob.class, create.decorator()), create.resolver(), create.decorator());
             if (logger.isLoggable(level)) {
                 for (String paramName : model.getParametersNames()) {
                     CommandModel.ParamModel param = model.getModelFor(paramName);
@@ -243,6 +244,15 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
             return msg;
         } else {
             return e.getMessage();
+        }
+    }
+    
+    @Override
+    public Class getDecoratorClass() {
+        if (create != null) {
+            return create.decorator();
+        } else {
+            return null;
         }
     }
 

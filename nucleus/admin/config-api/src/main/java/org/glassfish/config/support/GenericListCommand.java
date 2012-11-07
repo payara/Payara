@@ -410,4 +410,10 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
             return false;
         }
     }
+    
+    @Override
+    public Class getDecoratorClass() {
+        return null; //No decorator support
+    }
+    
 }
