@@ -135,6 +135,7 @@
         <command-security-plugin.version>1.0.2</command-security-plugin.version>
         <mail.version>1.4.5</mail.version>
         <copyright-plugin.version>1.31</copyright-plugin.version>
+        <jdk.version>1.6.0-22</jdk.version>
     </properties>
     
     <modules>
@@ -157,7 +158,6 @@
     <build>
         <defaultGoal>install</defaultGoal>
         <sourceDirectory>src/main/java</sourceDirectory>
-        <!-- make the target/*.jar names match the name as found in  installed modules/ -->
         <finalName>${project.artifactId}</finalName>
 
         <resources>
@@ -348,20 +348,16 @@
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
-                    <!-- configuration for the checkout mojo -->
                     <checkoutDirectory>.</checkoutDirectory>
                     <skipCheckoutIfExists>true</skipCheckoutIfExists>
-                    <!-- configuration for the run mojo -->
                     <distribution>
                         <groupId>org.glassfish.distributions</groupId>
                         <artifactId>web</artifactId>
                         <version>${project.version}</version>
                     </distribution>
-                    <!-- configuration for the zip mojo -->
                     <dir>${project.build.outputDirectory}</dir>
                 </configuration>
             </plugin>
-            <!-- Enforces maven 3.0.3 and jdk 1.7.0-02 and above to be used -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -375,10 +371,8 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-<!--                                    <version>[1.7.0-2,)</version>
-                                    <message>You need JDK 1.7.0_02 and above!</message>-->
-                                    <version>[1.6.0-22,)</version>
-                                    <message>You need JDK 1.6.0_22 and above!</message>
+                                    <version>[${jdk.version},)</version>
+                                    <message>You need JDK ${jdk.version} and above!</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>[3.0.3,)</version>
@@ -454,9 +448,9 @@
                 </configuration>
             </plugin>
 
-      <!-- This is needed so that the bundle generator can
-           operate on the manifest file
-        -->
+            <!-- This is needed so that the bundle generator can
+                 operate on the manifest file
+              -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
