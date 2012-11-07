@@ -747,7 +747,11 @@ public class RemoteCLICommand extends CLICommand {
                 rac.registerListener("AdminCommandInstance\\.stateChanged", new DetachListener(logger, rac));
 
             }
-            output = rac.executeCommand(options);
+            try {
+                output = rac.executeCommand(options);
+            } finally {
+                rac.statusPrinter.deleteLastMessage();
+            }
             ar = rac.getActionReport();
             if (!returnActionReport && !returnOutput) {
                 if (output.length() > 0) {
@@ -785,8 +789,6 @@ public class RemoteCLICommand extends CLICommand {
                 }
             }
             throw ex;
-        } finally {
-            rac.statusPrinter.deleteLastMessage();
         }
         ActionReport ar = rac.getActionReport();
         //logger.log(Level.INFO, Metrix.getInstance().toString());
