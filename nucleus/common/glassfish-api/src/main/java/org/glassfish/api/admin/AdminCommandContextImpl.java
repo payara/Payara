@@ -59,7 +59,7 @@ public class AdminCommandContextImpl implements  AdminCommandContext {
     private final Payload.Inbound inboundPayload;
     private final Payload.Outbound outboundPayload;
     private Subject subject;
-    private ProgressStatus progressStatus = new ErrorProgressStatus();
+    private ProgressStatus progressStatus; //new ErrorProgressStatus();
     private final AdminCommandEventBroker eventBroker;
 
     public AdminCommandContextImpl(Logger logger, ActionReport report) {
@@ -114,6 +114,9 @@ public class AdminCommandContextImpl implements  AdminCommandContext {
 
     @Override
     public ProgressStatus getProgressStatus() {
+        if (progressStatus == null) {
+            progressStatus = new ProgressStatusImpl();
+        }
         return progressStatus;
     }
 
