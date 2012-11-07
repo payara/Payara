@@ -147,9 +147,11 @@ public class ServerProviderContainerContractInfo extends ProviderContainerContra
            // See EMFWrapper.lookupEntityManagerFactory() for corresponding look up logic
            if (containingBundle.isApplication()) {
                // ear level pu
+               assert containingBundle instanceof Application;
                Application.class.cast(containingBundle).addEntityManagerFactory(
                        unitName, persistenceRootUri, emf);
            } else {
+               assert containingBundle instanceof BundleDescriptor;
                BundleDescriptor.class.cast(containingBundle).addEntityManagerFactory(
                        unitName, emf);
            }
