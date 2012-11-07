@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved. 
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -141,7 +141,7 @@
    </target>
 
    <target name="create-zip-artifact">
-       <zip file="target/${package.name}.zip" basedir="target/stage"/>
+       <zip file="target/${package.name}.zip" basedir="target/stage" excludes="**/.ade_path/**"/>
            
        <attachArtifact file="target/${package.name}.zip"/>
    </target>
