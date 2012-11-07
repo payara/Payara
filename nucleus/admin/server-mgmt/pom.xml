@@ -54,6 +54,10 @@
     <name>admin-server-management</name>
     <description>Server Management</description>
 
+    <properties>
+        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
+    </properties>
+
     <build>
         <resources>
             <resource>
