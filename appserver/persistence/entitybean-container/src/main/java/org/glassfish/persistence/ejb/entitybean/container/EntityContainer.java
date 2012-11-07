@@ -1032,7 +1032,8 @@ public class EntityContainer
      */
     public EJBLocalObject getEJBLocalObjectForPrimaryKey
         (Object pkey, EJBContext ctx) {
-
+        // EntityContextImpl should always be used in conjunction with EntityContainer so we can always cast
+        assert ctx instanceof EntityContextImpl;
         EntityContextImpl context = (EntityContextImpl) ctx;
         EJBLocalObjectImpl ejbLocalObjectImpl = 
             internalGetEJBLocalObjectImpl(pkey);

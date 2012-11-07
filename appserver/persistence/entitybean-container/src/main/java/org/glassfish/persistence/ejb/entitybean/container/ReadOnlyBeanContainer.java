@@ -252,6 +252,8 @@ public class ReadOnlyBeanContainer
                                boolean activeTx)
         throws Exception
     {
+        // ReadOnlyContextImpl should always be used in conjunction with ReadOnlyBeanContainer
+        assert entityCtx instanceof ReadOnlyContextImpl;
         ReadOnlyContextImpl context = (ReadOnlyContextImpl) entityCtx;
                
         ReadOnlyBeanInfo robInfo = context.getReadOnlyBeanInfo();
@@ -352,17 +354,15 @@ public class ReadOnlyBeanContainer
         }
     }
         
-    private void callLoad(EntityBean ejb, EntityContextImpl entityCtx,
+    private void callLoad(EntityBean ejb, ReadOnlyContextImpl context,
                           int pkLevelSequenceNum, long pkLastRefreshedAt,
                           long currentTime) throws Exception {
 
-        ReadOnlyContextImpl context = (ReadOnlyContextImpl) entityCtx;
-        
         if( _logger.isLoggable(Level.FINE) ) {
             _logger.log(Level.FINE, 
                         "Calling ejbLoad for read-only bean " +
                         ejbDescriptor.getName() + " primary key " + 
-                        entityCtx.getPrimaryKey() + " at " + 
+                        context.getPrimaryKey() + " at " +
                         new Date(currentTime));
         }
 
@@ -448,12 +448,16 @@ public class ReadOnlyBeanContainer
 
         // Set the read-only bean info on the context so we can access it
         // without doing a cache lookup.
+        // ReadOnlyContextImpl should always be used in conjunction with ReadOnlyBeanContainer
+        assert context instanceof ReadOnlyContextImpl;
         ReadOnlyContextImpl readOnlyContext = (ReadOnlyContextImpl) context;
         readOnlyContext.setReadOnlyBeanInfo(robInfo);       
     }
     
     protected void addPooledEJB(EntityContextImpl ctx) {
         try {
+            // ReadOnlyContextImpl should always be used in conjunction with ReadOnlyBeanContainer
+            assert ctx instanceof ReadOnlyContextImpl;
             ReadOnlyContextImpl readOnlyCtx = (ReadOnlyContextImpl)ctx;
             if( readOnlyCtx.getReadOnlyBeanInfo() != null ) {
 

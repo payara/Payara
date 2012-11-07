@@ -147,6 +147,8 @@ public class FIFOEJBObjectCache
     protected void itemAccessed(CacheItem item) { }
     
     protected void itemRemoved(CacheItem item) {
+        // LruCacheItem(more specifically EJBObjectCacheItem) should always be used in conjunction with FIFOEJBObjectCache
+        assert item instanceof LruCacheItem;
         LruCacheItem l = (LruCacheItem) item;
         
         // remove the item from the LRU list
@@ -199,6 +201,8 @@ public class FIFOEJBObjectCache
             if (item != null) {
                 value = item.getValue();
                 if (incrementRefCount) {
+                    // EJBObjectCacheItem should always be used in conjunction with FIFOEJBObjectCache
+                    assert item instanceof EJBObjectCacheItem;
                     EJBObjectCacheItem eoItem = (EJBObjectCacheItem) item;
                     eoItem.refCount++;
                     if (_printRefCount) {
@@ -260,6 +264,8 @@ public class FIFOEJBObjectCache
             } else {
                 oldValue = oldItem.getValue();
                 if (incrementRefCount) {
+                    // EJBObjectCacheItem should always be used in conjunction with FIFOEJBObjectCache
+                    assert oldItem instanceof EJBObjectCacheItem;
                     EJBObjectCacheItem oldEJBO = (EJBObjectCacheItem) oldItem;
                     oldEJBO.refCount++;
                     if (_printRefCount) {
@@ -300,7 +306,8 @@ public class FIFOEJBObjectCache
         synchronized (bucketLocks[index]) {
             for (item = buckets[index]; item != null; item = item.getNext()) {
                 if (hashCode == item.getHashCode() && key.equals(item.getKey())) {
-                    
+                    // EJBObjectCacheItem should always be used in conjunction with FIFOEJBObjectCache
+                    assert item instanceof EJBObjectCacheItem;
                     EJBObjectCacheItem eoItem = (EJBObjectCacheItem) item;
                     if (decrementRefCount) {
                         if (eoItem.refCount > 0) {
