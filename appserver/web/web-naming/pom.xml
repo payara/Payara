@@ -96,7 +96,7 @@
         <dependency>
             <!-- Needed for Startup service -->
             <groupId>org.glassfish.main.common</groupId>
-            <artifactId>glassfish-api</artifactId>
+            <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

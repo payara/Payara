@@ -41,7 +41,7 @@
 
 package org.apache.naming.resources;
 
-import org.glassfish.api.StartupRunLevel;
+import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
@@ -51,6 +51,6 @@ import org.jvnet.hk2.annotations.Service;
  * @author sanjeeb.sahoo@oracle.com
  */
 @Service
-@RunLevel(StartupRunLevel.VAL)
+@RunLevel(InitRunLevel.VAL) // This is an Init level service - see GLASSFISH-19216
 public class WebNamingStartup {
 }
