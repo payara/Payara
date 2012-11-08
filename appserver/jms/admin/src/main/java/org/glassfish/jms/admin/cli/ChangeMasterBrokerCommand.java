@@ -71,6 +71,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 import javax.inject.Inject;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.openmbean.CompositeData;
 
 
 /**
@@ -91,6 +92,20 @@ import javax.management.ObjectName;
 public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCommand {
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ChangeMasterBrokerCommand.class);
     // [usemasterbroker] [availability-enabled] [dbvendor] [dbuser] [dbpassword admin] [jdbcurl] [properties props] clusterName
+
+    private static enum BrokerStatusCode {
+        BAD_REQUEST(400), NOT_ALLOWED(405), UNAVAILABLE(503), PRECONDITION_FAILED(412);
+
+        private int code;
+
+        private BrokerStatusCode(int c) {
+            code = c;
+        }
+
+        public int getCode() {
+            return code;
+        }
+    }
 
     @Param (primary=true)//(name="newmasterbroker", alias="nmb", optional=false)
     String newMasterBroker;
@@ -183,10 +198,29 @@ public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCo
        String newMasterBroker = newMasterBrokerHost + ":" + newMasterBrokerPort;
       // System.out.println("1: IN deleteinstanceCheck supplimental oldMasterBroker = " + oldMasterBroker + " newmasterBroker " + newMasterBroker);
        try{
-            updateMasterBroker(oldMBServer.getName(), oldMasterBroker, newMasterBroker);
+           CompositeData result = updateMasterBroker(oldMBServer.getName(), oldMasterBroker, newMasterBroker);
+           boolean success = ((Boolean) result.get("Success")).booleanValue();
+           if (!success) {
+               int statusCode = ((Integer) result.get("StatusCode")).intValue();
+               String detailMessage = (String) result.get("DetailMessage");
+               String msg = " " + detailMessage;
+               if (BrokerStatusCode.BAD_REQUEST.getCode() == statusCode || BrokerStatusCode.NOT_ALLOWED.getCode() == statusCode ||
+                   BrokerStatusCode.UNAVAILABLE.getCode() == statusCode || BrokerStatusCode.PRECONDITION_FAILED.getCode() == statusCode) {
+                   msg = msg + ", " + localStrings.getLocalString("change.master.broker.errorMsg",
+                                                                  "but it didn't affect current master broker configuration.");
+               } else {
+                   msg = msg + ". " + localStrings.getLocalString("change.master.broker.otherErrorMsg",
+                                                                  "The cluster should be shutdown and configured with the new master broker then restarts.");
+               }
+
+               report.setMessage(localStrings.getLocalString("change.master.broker.CannotChangeMB",
+                                                             "Unable to change master broker.{0}", msg));
+               report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+               return;
+            }
        }catch(Exception e){
                       report.setMessage(localStrings.getLocalString("change.master.broker.CannotChangeMB",
-                                    "Unable to change master broker."));
+                                    "Unable to change master broker.{0}", ""));
                             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         return;
                  }
@@ -240,10 +274,11 @@ public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCo
 	    return jmsHost;
       }
 
-     private void updateMasterBroker(String serverName, String oldMasterBroker, String newMasterBroker) throws Exception {
+     private CompositeData updateMasterBroker(String serverName, String oldMasterBroker, String newMasterBroker) throws Exception {
         MQJMXConnectorInfo mqInfo = getMQJMXConnectorInfo(serverName, config,serverContext, domain, connectorRuntime);
 
          //MBeanServerConnection  mbsc = getMBeanServerConnection(tgtName);
+         CompositeData result = null;
          try {
              MBeanServerConnection mbsc = mqInfo.getMQMBeanServerConnection();
              ObjectName on = new ObjectName(
@@ -255,7 +290,7 @@ public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCo
                       "java.lang.String"};
                         params = new Object [] {oldMasterBroker, newMasterBroker};
 
-         mbsc.invoke(on, "changeMasterBroker", params, signature);
+             result = (CompositeData) mbsc.invoke(on, "changeMasterBroker", params, signature);
          } catch (Exception e) {
                      logAndHandleException(e, "admin.mbeans.rmb.error_creating_jms_dest");
          } finally {
@@ -267,6 +302,7 @@ public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCo
                        handleException(e);
                      }
                  }
+         return result;
      }
 }
 
