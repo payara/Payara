@@ -108,13 +108,14 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
         int longestTime = TIME.length();
         int longestState = STATE.length();
 
-        JobInfos jobInfos = new JobInfos();
+
         List<JobInfo> jobInfoList = new ArrayList<JobInfo>();
 
 
         for (Iterator<Job> iterator = jobManagerService.getJobs(); iterator.hasNext(); ) {
             Job job = iterator.next();
-            jobInfoList.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),job.getState().name(),"user","message"));
+            //Todo fix user
+            jobInfoList.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),job.getState().name(),"user",job.getActionReport().getMessage()));
         }
 
         JobInfos completedJobs = jobManagerService.getCompletedJobs();
