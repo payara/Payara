@@ -41,11 +41,15 @@ package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.event.AdminCommandEventBrokerImpl;
 import com.sun.enterprise.admin.remote.AdminCommandStateImpl;
+import com.sun.enterprise.admin.remote.JobPersistenceService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandEventBroker;
 import org.glassfish.api.admin.Job;
 import org.glassfish.api.admin.CommandProgress;
 import org.glassfish.api.admin.Payload;
+import org.glassfish.api.admin.progress.JobInfo;
+import org.glassfish.api.admin.progress.JobPersistence;
+import org.glassfish.internal.api.Globals;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -67,16 +71,24 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
 
     private final String commandName;
 
-    protected AdminCommandInstanceImpl(String id, String name) {
+    private final String scope;
+
+    private boolean isManagedJob;
+
+
+
+    protected AdminCommandInstanceImpl(String id, String name,String commandScope,boolean managedJob) {
         super(id);
         this.broker = new AdminCommandEventBrokerImpl();
         this.executionDate = new Date().getTime();
         this.commandName = name;
+        this.scope= commandScope;
+        isManagedJob = managedJob;
 
     }
 
-    protected AdminCommandInstanceImpl( String name) {
-        this(null,name);
+    protected AdminCommandInstanceImpl( String name,String scope,boolean managedJob) {
+        this(null,name,scope,managedJob);
     }
     
     @Override
@@ -122,6 +134,11 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
         }
         this.payload = outbound;
         complete(report);
+        if (isManagedJob) {
+            JobPersistence jobPersistenceService = Globals.getDefaultHabitat().getService(JobPersistenceService.class);
+            //todo fix user
+            jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,state.name(),"admin",report.getMessage()));
+        }
     }
 
     @Override

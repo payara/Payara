@@ -100,7 +100,7 @@ public interface ManagedJobConfig extends DomainExtension, PropertyBag, Payload 
      * Gets the value of persistingEnabled property
      * @return
      */
-    @Attribute (defaultValue="false",dataType=Boolean.class)
+    @Attribute (defaultValue="true",dataType=Boolean.class)
     boolean getPersistingEnabled();
 
 

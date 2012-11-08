@@ -39,10 +39,9 @@
  */
 package com.sun.enterprise.v3.admin;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
@@ -53,11 +52,16 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.Job;
 import org.glassfish.api.admin.JobManager;
 import org.glassfish.api.admin.AdminCommandState;
-import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.progress.JobInfo;
+import org.glassfish.api.admin.progress.JobInfos;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
 /**
  *  This is the implementation for the JobManagerService
@@ -77,7 +81,7 @@ public class JobManagerService implements JobManager {
 
 
     @Inject
-    Domain domain;
+    private Domain domain;
 
     private ManagedJobConfig managedJobConfig;
     
@@ -92,7 +96,14 @@ public class JobManagerService implements JobManager {
 
     private final static Logger logger = LogDomains.getLogger(JobManagerService.class, LogDomains.ADMIN_LOGGER);
 
-    private @Inject ExecutorService pool;
+     @Inject
+     private ExecutorService pool;
+
+    @Inject
+    private ServerEnvironment serverEnvironment;
+
+    private final String JOBS_FILE = "jobs.xml";
+
 
     /**
      * This will return a new id which is unused
@@ -121,20 +132,35 @@ public class JobManagerService implements JobManager {
      * @return true if id is in use
      */
     private boolean idInUse(String id) {
-        return jobRegistry.containsKey(id) ;
+
+        if (jobRegistry.containsKey(id)) {
+            return true;
+        }
+        if (getCompletedJobs() != null) {
+            for (JobInfo job : getCompletedJobs().getJobInfoList())  {
+                if ((job.jobId).equals(id)) {
+                    return true;
+                }
+
+            }
+        }
+        return false;
     }
 
     /**
      * This will create a new job with the name of command and a new unused id for the job
+     *
+     *
+     * @param scope
      * @param name  The name of the command
      * @return   a newly created job
      */
     @Override
-    public Job createJob(String name,boolean isManagedJob) {
+    public Job createJob(String scope, String name, boolean isManagedJob) {
         if (isManagedJob) {
-            return new AdminCommandInstanceImpl(getNewId(),name);
+            return new AdminCommandInstanceImpl(getNewId(),name,scope,true);
         } else {
-            return new AdminCommandInstanceImpl(name);
+            return new AdminCommandInstanceImpl(name,scope,false);
         }
     }
 
@@ -241,4 +267,26 @@ public class JobManagerService implements JobManager {
     }
 
 
+    /**
+        * This will load the jobs which have already completed
+        * and persisted in the jobs.xml
+        * @return JobsInfos which contains information about completed jobs
+        */
+       public JobInfos getCompletedJobs() {
+           try {
+               File file =
+                       new File(serverEnvironment.getConfigDirPath(),JOBS_FILE);
+
+               JAXBContext jaxbContext = JAXBContext.newInstance(JobInfos.class);
+               Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+               if (file != null && file.exists())  {
+                   JobInfos jobInfos = (JobInfos)unmarshaller.unmarshal(file);
+                   return jobInfos;
+               }
+           } catch (JAXBException e) {
+               throw new RuntimeException(adminStrings.getLocalString("error.reading.completed.jobs","Error reading completed jobs ",  e.getLocalizedMessage()));
+
+           }
+           return null;
+       }
 }

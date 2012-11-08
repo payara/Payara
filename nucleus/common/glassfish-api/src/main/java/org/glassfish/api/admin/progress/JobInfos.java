@@ -37,38 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.api.admin;
+package org.glassfish.api.admin.progress;
 
-import java.util.Iterator;
-
-import org.glassfish.api.admin.progress.JobInfos;
-import org.jvnet.hk2.annotations.Contract;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * This is the contract for the JobManagerService
- * The JobManager will be responsible for
- *  1. generating unique ids for jobs
- *  2. serving as a registry for jobs
- *  3. creating thread pools for jobs
- *  4.removing expired jobs
- *
- * @author Martin Mares
+ * This class contains information of all the jobs which will be
+ * persisted to jobs.xml
  * @author Bhakti Mehta
  */
+@XmlRootElement(name = "jobs")
+public class JobInfos {
+    private List<JobInfo> jobInfoList;
 
-@Contract
-public interface JobManager {
 
-    public Job createJob(String scope , String name, boolean isManagedJob);
-    
-    public void registerJob(Job instance) throws IllegalArgumentException;
-    
-    public Iterator<Job> getJobs();
-    
-    public Job get(String id);
+    @XmlElement(name = "job")
+    public List<JobInfo> getJobInfoList() {
 
-    public void purgeJob(String id);
+        return jobInfoList;
+    }
 
-    public JobInfos getCompletedJobs();
-    
+    public void setJobInfoList(List<JobInfo> jobInfoList) {
+        this.jobInfoList = jobInfoList;
+    }
+
+    public JobInfos() {
+        jobInfoList = new ArrayList<JobInfo>();
+    }
 }

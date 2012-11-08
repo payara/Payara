@@ -41,6 +41,9 @@ package com.sun.enterprise.admin.remote;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandState;
+import org.glassfish.api.admin.progress.JobInfo;
+import org.glassfish.api.admin.progress.JobPersistence;
+import org.glassfish.internal.api.Globals;
 
 /** Basic implementation. Good for unmarshaling. 
  *
@@ -48,10 +51,11 @@ import org.glassfish.api.admin.AdminCommandState;
  */
 public class AdminCommandStateImpl implements AdminCommandState {
     
-    private State state = State.PREPARED;
+    protected State state = State.PREPARED;
     private ActionReport actionReport;
     private boolean payloadIsEmpty;
-    private String id;
+    protected String id;
+
 
     public AdminCommandStateImpl(final State state, final ActionReport actionReport, 
             final boolean payloadIsEmpty, final String id) {
