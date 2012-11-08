@@ -240,21 +240,7 @@ public class CompositeUtil {
             if (json.has(attribute)) {
                 java.lang.Object o = json.get(attribute);
                 if (JSONArray.class.isAssignableFrom(o.getClass())) {
-                    JSONArray array = (JSONArray) o;
-                    List values = new ArrayList();
-                    Type type = Object.class;
-                    if (ParameterizedType.class.isAssignableFrom(param0.getClass())) {
-                        type = ((ParameterizedType) param0).getActualTypeArguments()[0];
-                    }
-
-                    for (int i = 0; i < array.length(); i++) {
-                        Object element = array.get(i);
-                        if (JSONObject.class.isAssignableFrom(element.getClass())) {
-                            values.add(unmarshallClass((Class) type, (JSONObject) element));
-                        } else {
-                            values.add(element);
-                        }
-                    }
+                    Object values = processJsonArray(param0, (JSONArray) o);
                     invoke(setter, attribute, model, values);
                 } else if (JSONObject.class.isAssignableFrom(o.getClass())) {
                     invoke(setter, attribute, model, unmarshallClass(param0.getClass(), (JSONObject) o));
@@ -268,6 +254,40 @@ public class CompositeUtil {
         }
         return model;
 
+    }
+
+    private Object processJsonArray(Type param0, JSONArray array) throws JSONException {
+//                    List values = new ArrayList();
+        Type type = null;
+        boolean isArray = false;
+        if (ParameterizedType.class.isAssignableFrom(param0.getClass())) {
+            type = ((ParameterizedType) param0).getActualTypeArguments()[0];
+        } else {
+            isArray = ((Class<?>)param0).isArray();
+            type = ((Class<?>)param0).getComponentType();
+        }
+        // TODO: We either have a List<T> or T[]. While this works, perhaps we should only support List<T>. It's cleaner.
+        Object values = isArray ?
+                Array.newInstance((Class<?>) type, array.length()) :
+                new ArrayList();
+
+        for (int i = 0; i < array.length(); i++) {
+            Object element = array.get(i);
+            if (JSONObject.class.isAssignableFrom(element.getClass())) {
+                if (isArray) {
+                    Array.set(values, i, unmarshallClass((Class) type, (JSONObject) element));
+                } else {
+                    ((List)values).add(unmarshallClass((Class) type, (JSONObject) element));
+                }
+            } else {
+                if (isArray) {
+                    Array.set(values, i, element);
+                } else {
+                    ((List)values).add(element);
+                }
+            }
+        }
+        return values;
     }
 
     private void invoke(Method m, String attribute, Object o, Object... args) {

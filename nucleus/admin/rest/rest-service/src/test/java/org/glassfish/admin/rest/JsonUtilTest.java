@@ -65,6 +65,11 @@ public class JsonUtilTest {
         Assert.assertEquals(array.length(), 2);
         Assert.assertTrue(contains(array, "one"));
         Assert.assertTrue(contains(array, "two"));
+
+        BaseModel model2 = CompositeUtil.instance().unmarshallClass(BaseModel.class, json);
+        Assert.assertNotNull(model2);
+        Assert.assertNotNull(model2.getStringArray());
+        Assert.assertEquals(2, model2.getStringArray().length);
     }
 
     private boolean contains(JSONArray array, String text) throws JSONException {
