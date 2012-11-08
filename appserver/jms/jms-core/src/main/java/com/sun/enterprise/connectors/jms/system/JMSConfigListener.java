@@ -162,7 +162,7 @@ public class JMSConfigListener implements ConfigListener{
                     if(oldServerRef  != null && newServerRef == null && !thisServer.isDas()) {//instance has been deleted
                         _logger.log(Level.FINE, "Got Cluster change event for server_ref"
                             + event.getSource() + " "
-                        + eventName + " " + oldServerRef + " " + newServerRef);
+                        + eventName + " " + oldServerRef + " " + null);
                         String url = getBrokerList();
                         aresourceAdapter.setClusterBrokerList(url);
                         break;
