@@ -123,6 +123,14 @@ public class TimerBean implements TimerLocal {
         return toPKeys(q.getResultList());
     }
 
+    public Set findTimerIdsByContainersAndState
+            (Collection<Long> containerIds, int state)  {
+        Query q = em.createNamedQuery("findTimerIdsByContainersAndState");
+        q.setParameter(1, containerIds);
+        q.setParameter(2, state);
+        return toPKeys(q.getResultList());
+    }
+
     public Set findTimerIdsByContainerAndOwner
         (long containerId, String ownerId) {
         Query q = em.createNamedQuery("findTimerIdsByContainerAndOwner");
@@ -409,6 +417,11 @@ public class TimerBean implements TimerLocal {
     public Set findActiveTimerIdsByContainer(long containerId) {
         return findTimerIdsByContainerAndState(containerId, 
                                EJBTimerService.STATE_ACTIVE);
+    }
+
+    public Set findActiveTimerIdsByContainers(Collection<Long> containerIds) {
+        return findTimerIdsByContainersAndState(containerIds,
+                EJBTimerService.STATE_ACTIVE);
     }
 
     public Set findCancelledTimerIdsByContainer(long containerId) {

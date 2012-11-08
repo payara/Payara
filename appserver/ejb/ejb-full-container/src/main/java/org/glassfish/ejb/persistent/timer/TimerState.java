@@ -82,6 +82,10 @@ import com.sun.logging.LogDomains;
         query="SELECT t.timerId FROM Timer t WHERE t.containerId = ?1 AND t.state=?2"
     ),
     @NamedQuery(
+        name="findTimerIdsByContainersAndState",
+        query="SELECT t.timerId FROM Timer t WHERE t.state=?2 AND t.containerId IN ?1"
+    ),
+    @NamedQuery(
         name="findTimerIdsByContainerAndOwner",
         query="SELECT t.timerId FROM Timer t WHERE t.containerId = ?1 AND t.ownerId=?2"
     ),

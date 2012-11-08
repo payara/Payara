@@ -102,6 +102,7 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     private long uniqueId;
     private Boolean disableNonportableJndiNames;
     private Set<EjbDescriptor> ejbs = new HashSet<EjbDescriptor>();
+    private Set<Long> ejbIDs = null;
     private Set<RelationshipDescriptor> relationships = new HashSet<RelationshipDescriptor>();
     private String relationshipsDescription;
     private String ejbClientJarUri;
@@ -271,7 +272,18 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     public Set<EjbDescriptor> getEjbs() {
     return Collections.unmodifiableSet(ejbs);
     }
-    
+
+    /**
+     * Setup EJB Ids during deployment and shouldn't be called at runtime
+     */
+    public void setupDataStructuresForRuntime() {
+        Set<Long> ids = new HashSet<Long>();
+        for (EjbDescriptor ejbDescriptor : ejbs) {
+            ids.add(ejbDescriptor.getUniqueId());
+        }
+        ejbIDs = Collections.unmodifiableSet(ids);
+    }
+
     /**
     * Returns true if I have an ejb descriptor by that name.
     */
@@ -363,6 +375,14 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
         return ejbList.toArray(new EjbDescriptor[ejbList.size()]);
     }
 
+    /**
+     *
+     * @return Collection of unique ID of EJBs within the same module
+     */
+    public Collection<Long> getDescriptorIds() {
+        return ejbIDs;
+    }
+
     public void addEjb(EjbDescriptor ejbDescriptor) {
         ejbDescriptor.setEjbBundleDescriptor(this);
         ejbs.add(ejbDescriptor);
@@ -376,17 +396,6 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     public void removeEjb(EjbDescriptor ejbDescriptor) {
         ejbDescriptor.setEjbBundleDescriptor(null);
         ejbs.remove(ejbDescriptor);
-    }
-
-    /**
-     * Called only from EjbDescriptor.replaceEjbDescriptor, in wizard mode.
-     */
-    protected void replaceEjb(EjbDescriptor oldEjbDescriptor, EjbDescriptor newEjbDescriptor) {
-    oldEjbDescriptor.setEjbBundleDescriptor(null);
-    ejbs.remove(oldEjbDescriptor);
-    newEjbDescriptor.setEjbBundleDescriptor(this);
-    ejbs.add(newEjbDescriptor);
-    //  no need to notify listeners in wizard mode ??
     }
 
     /**

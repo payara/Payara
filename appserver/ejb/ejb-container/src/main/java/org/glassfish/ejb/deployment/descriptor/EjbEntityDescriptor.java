@@ -102,26 +102,6 @@ public class EjbEntityDescriptor extends EjbDescriptor {
     }
 
     /**
-     * Replace all pointers to the old EntityDescriptor in this app
-     * with myself. Used when user switches from BMP to CMP or vice versa
-     * in deploytool wizard.
-     */
-    public void replaceEntityDescriptor(EjbEntityDescriptor oldEntityDesc) 
-    {
-	// first replace in bundleDesc
-	EjbBundleDescriptorImpl bundle = oldEntityDesc.getEjbBundleDescriptor();
-	bundle.replaceEjb(oldEntityDesc, this);
-
-	// now replace in all EjbReferences to the old Ejb in this app
-	Iterator refs = oldEntityDesc.getAllEjbReferencers().iterator();
-	while ( refs.hasNext() ) {
-	    EjbReferenceDescriptor ref = (EjbReferenceDescriptor)refs.next();
-	    ref.setEjbDescriptor(this);
-	}
-    }
- 
-
-    /**
      * Gets the container transaction type for this entity bean. Entity 
      * beans always have CONTAINER_TRANSACTION_TYPE transaction type.
      */

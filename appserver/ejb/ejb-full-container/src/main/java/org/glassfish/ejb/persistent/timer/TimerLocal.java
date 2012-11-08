@@ -87,7 +87,8 @@ public interface TimerLocal {
 
     Set findTimerIdsByContainer(long containerId);
     Set findActiveTimerIdsByContainer(long containerId);
-    Set findCancelledTimerIdsByContainer(long containerId);    
+    Set findActiveTimerIdsByContainers(Collection<Long> containerIds);
+    Set findCancelledTimerIdsByContainer(long containerId);
 
     Set findTimerIdsOwnedByThisServerByContainer(long containerId);
     Set findActiveTimerIdsOwnedByThisServerByContainer(long containerId);

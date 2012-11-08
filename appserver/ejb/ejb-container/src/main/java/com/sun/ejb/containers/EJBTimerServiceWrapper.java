@@ -40,6 +40,9 @@
 
 package com.sun.ejb.containers;
 
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+
 import java.util.Date;
 import java.util.Collection;
 import java.util.Set;
@@ -69,8 +72,7 @@ public class EJBTimerServiceWrapper implements TimerService {
 
     private EJBTimerService timerService_;
     private EJBContextImpl ejbContext_;
-    private long containerId_;
-    private long applicationId_;
+    private EjbDescriptor ejbDescriptor_;
 
     private boolean entity_;
 
@@ -82,9 +84,8 @@ public class EJBTimerServiceWrapper implements TimerService {
     {
         timerService_ = timerService;
         ejbContext_   = ejbContext;
-        BaseContainer container = (BaseContainer) ejbContext.getContainer(); 
-        containerId_  = container.getEjbDescriptor().getUniqueId();
-        applicationId_        = container.getEjbDescriptor().getApplication().getUniqueId();
+        BaseContainer container = (BaseContainer) ejbContext.getContainer();
+        ejbDescriptor_ = container.getEjbDescriptor();
         entity_       = false;
         timedObjectPrimaryKey_   = null;
     }
@@ -207,7 +208,7 @@ public class EJBTimerServiceWrapper implements TimerService {
         if( ejbContext_.isTimedObject() ) {        
             try {
                 timerIds = timerService_.getTimerIds
-                    (containerId_,  getTimedObjectPrimaryKey());
+                    (ejbDescriptor_.getUniqueId(),  getTimedObjectPrimaryKey());
             } catch(Exception fe) {
                 EJBException ejbEx = new EJBException();
                 ejbEx.initCause(fe);
@@ -231,6 +232,12 @@ public class EJBTimerServiceWrapper implements TimerService {
         checkCallPermission();
 
         Collection<Timer> timerWrappers = new HashSet();
+        Collection<Long> containerIds = ejbDescriptor_.getEjbBundleDescriptor().getDescriptorIds();
+        Collection<TimerPrimaryKey> timerIds =
+                timerService_.getTimerIds(containerIds);
+        for (TimerPrimaryKey timerPrimaryKey : timerIds) {
+            timerWrappers.add(new TimerWrapper(timerPrimaryKey, timerService_));
+        }
         return timerWrappers;
     }
 
@@ -282,8 +289,9 @@ public class EJBTimerServiceWrapper implements TimerService {
 
         TimerPrimaryKey timerId = null;
         try {
-            timerId = timerService_.createTimer
-                (containerId_, applicationId_, getTimedObjectPrimaryKey(), 
+            timerId = timerService_.createTimer(ejbDescriptor_.getUniqueId(),
+                    ejbDescriptor_.getApplication().getUniqueId(),
+                    getTimedObjectPrimaryKey(),
                 initialDuration, intervalDuration, tc);
         } catch(CreateException ce) {            
             EJBException ejbEx = new EJBException();
@@ -312,8 +320,9 @@ public class EJBTimerServiceWrapper implements TimerService {
 
         TimerPrimaryKey timerId = null;
         try {
-            timerId = timerService_.createTimer
-                (containerId_, applicationId_, getTimedObjectPrimaryKey(), 
+            timerId = timerService_.createTimer(ejbDescriptor_.getUniqueId(),
+                    ejbDescriptor_.getApplication().getUniqueId(),
+                    getTimedObjectPrimaryKey(),
                 initialExpiration, intervalDuration, tc);
         } catch(CreateException ce) {            
             EJBException ejbEx = new EJBException();
@@ -329,9 +338,10 @@ public class EJBTimerServiceWrapper implements TimerService {
 
         TimerPrimaryKey timerId = null;
         try {
-            timerId = timerService_.createTimer
-                (containerId_, applicationId_, getTimedObjectPrimaryKey(), 
-                new EJBTimerSchedule(schedule), tc);
+            timerId = timerService_.createTimer(ejbDescriptor_.getUniqueId(),
+                    ejbDescriptor_.getApplication().getUniqueId(),
+                    getTimedObjectPrimaryKey(),
+                    new EJBTimerSchedule(schedule), tc);
         } catch(CreateException ce) {            
             EJBException ejbEx = new EJBException();
             ejbEx.initCause(ce);

@@ -255,6 +255,7 @@ public class EjbDeployer
         }
 
         ejbBundle.setClassLoader(dc.getClassLoader());
+        ejbBundle.setupDataStructuresForRuntime();
 
         if (ejbBundle.containsCMPEntity()) {
             CMPService cmpService = cmpServiceProvider.get();

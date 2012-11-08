@@ -902,7 +902,19 @@ public class EJBTimerService {
 
         return timerIdsForTimedObject;
     }
-    
+
+    /**
+     * @param containerIds the EJBs which own the timers
+     * @return Collection of Timer Ids.
+     */
+    protected Collection<TimerPrimaryKey> getTimerIds(Collection<Long> containerIds) {
+        Collection<TimerPrimaryKey> timerIds = new HashSet<TimerPrimaryKey>();
+        for (long containerId : containerIds) {
+            timerIds.addAll(timerCache_.getNonPersistentActiveTimerIdsForContainer(containerId));
+        }
+        return timerIds;
+    }
+
     /**
      * Get the application class loader for the timed object
      * that created a given timer.
@@ -1869,7 +1881,6 @@ public class EJBTimerService {
                     result.add(key);
                 }
             }
-
             return result;
         }
 

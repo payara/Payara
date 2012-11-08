@@ -946,7 +946,21 @@ public class PersistentEJBTimerService extends EJBTimerService {
 
         return timerIdsForTimedObject;
     }
-    
+
+    /**
+     * Return the Ids of active timers owned by EJBs.
+     * Primary key of entity bean is unnecessary because all of the active
+     * timers are expected
+     *
+     * @return Collection of Timer Ids.
+     */
+    @Override
+    protected Collection<TimerPrimaryKey> getTimerIds(Collection<Long> containerIds) {
+        Collection<TimerPrimaryKey> timerIds = new HashSet<TimerPrimaryKey>(super.getTimerIds(containerIds));
+        timerIds.addAll(timerLocal_.findActiveTimerIdsByContainers(containerIds));
+        return timerIds;
+    }
+
     //
     // Logic used by TimerWrapper for javax.ejb.Timer methods.
     //
