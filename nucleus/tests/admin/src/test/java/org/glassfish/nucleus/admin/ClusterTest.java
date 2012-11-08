@@ -51,8 +51,8 @@ import org.testng.annotations.Test;
 public class ClusterTest {
     
     final String tn = "QLCluster";
-    final String port1 = "18080";
-    final String port2 = "28080";
+    final String port1 = "55123";
+    final String port2 = "55124";
     final String cname = "eec1";
     final String i1name = "eein1-with-a-very-very-very-long-name";
     final String i2name = "eein2";
@@ -68,12 +68,12 @@ public class ClusterTest {
     public void createInstancesTest() {           
         assertTrue("create instance1", nadmin("create-local-instance",
                 "--cluster", cname, "--systemproperties",
-                "HTTP_LISTENER_PORT=18080:HTTP_SSL_LISTENER_PORT=18181:IIOP_SSL_LISTENER_PORT=13800:" +
+                "HTTP_LISTENER_PORT=" + port1 + ":HTTP_SSL_LISTENER_PORT=18181:IIOP_SSL_LISTENER_PORT=13800:" +
                 "IIOP_LISTENER_PORT=13700:JMX_SYSTEM_CONNECTOR_PORT=17676:IIOP_SSL_MUTUALAUTH_PORT=13801:" +
                 "JMS_PROVIDER_PORT=18686:ASADMIN_LISTENER_PORT=14848", i1name));
         assertTrue("create instance2", nadmin("create-local-instance",
                 "--cluster", cname, "--systemproperties",
-                "HTTP_LISTENER_PORT=28080:HTTP_SSL_LISTENER_PORT=28181:IIOP_SSL_LISTENER_PORT=23800:" +
+                "HTTP_LISTENER_PORT=" + port2 + ":HTTP_SSL_LISTENER_PORT=28181:IIOP_SSL_LISTENER_PORT=23800:" +
                 "IIOP_LISTENER_PORT=23700:JMX_SYSTEM_CONNECTOR_PORT=27676:IIOP_SSL_MUTUALAUTH_PORT=23801:" +
                 "JMS_PROVIDER_PORT=28686:ASADMIN_LISTENER_PORT=24848", i2name));
     }
