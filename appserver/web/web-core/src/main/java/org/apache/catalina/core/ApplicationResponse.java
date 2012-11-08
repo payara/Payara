@@ -59,8 +59,6 @@
 package org.apache.catalina.core;
 
 
-import org.apache.catalina.util.StringManager;
-
 import javax.servlet.ServletResponse;
 import javax.servlet.ServletResponseWrapper;
 import java.util.Locale;
@@ -128,13 +126,6 @@ public class ApplicationResponse extends ServletResponseWrapper {
      * call?
      */
     protected boolean included = false;
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // ------------------------------------------------ ServletResponse Methods

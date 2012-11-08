@@ -96,7 +96,6 @@ import org.apache.catalina.InstanceListener;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Loader;
 import org.apache.catalina.Wrapper;
-import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.InstanceSupport;
@@ -116,9 +115,6 @@ import org.glassfish.web.valve.GlassFishValve;
 public class StandardWrapper
         extends ContainerBase
         implements ServletConfig, Wrapper {
-
-    private static final Logger log = StandardServer.log;
-    private static final ResourceBundle rb = log.getResourceBundle();
 
     private static final String[] DEFAULT_SERVLET_METHODS = new String[] {
                                                     "GET", "HEAD", "POST" };

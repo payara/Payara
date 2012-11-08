@@ -80,7 +80,6 @@ import org.apache.catalina.Request;
 import org.apache.catalina.Response;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.catalina.connector.RequestFacade;
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
 import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.logging.annotation.LogMessageInfo;

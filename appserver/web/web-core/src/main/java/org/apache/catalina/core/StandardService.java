@@ -61,7 +61,6 @@ package org.apache.catalina.core;
 
 import org.apache.catalina.*;
 import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.StringManager;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.management.NotificationBroadcasterSupport;

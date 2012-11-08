@@ -62,7 +62,6 @@ package org.apache.catalina.core;
 import org.apache.catalina.Host;
 import org.apache.catalina.Request;
 import org.apache.catalina.Response;
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
 import org.glassfish.logging.annotation.LogMessageInfo;
 

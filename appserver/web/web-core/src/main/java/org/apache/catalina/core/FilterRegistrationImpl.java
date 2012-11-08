@@ -42,7 +42,6 @@ package org.apache.catalina.core;
 
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
-import org.apache.catalina.util.StringManager;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.DispatcherType;

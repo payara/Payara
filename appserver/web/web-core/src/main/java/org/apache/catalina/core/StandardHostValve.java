@@ -63,7 +63,6 @@ import org.apache.catalina.connector.ClientAbortException;
 import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ResponseUtil;
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.valve.GlassFishValve;
@@ -128,12 +127,6 @@ final class StandardHostValve
      */
     private static final String info =
         "org.apache.catalina.core.StandardHostValve/1.0";
-
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // START SJSAS 6374691
@@ -643,7 +636,7 @@ final class StandardHostValve
             // BEGIN S1AS 4878272
             ((HttpServletResponse) response.getResponse()).sendError
                 (HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.setDetailMessage(sm.getString("standardHost.noContext"));
+            response.setDetailMessage(rb.getString(NO_CONTEXT_TO_PROCESS));
             // END S1AS 4878272
             return null;
         }

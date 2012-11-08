@@ -60,10 +60,9 @@ package org.apache.catalina.core;
 
 
 import org.apache.catalina.Globals;
-import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.InstanceSupport;
-import org.apache.catalina.util.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -73,7 +72,6 @@ import java.security.PrivilegedActionException;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import static org.apache.catalina.InstanceEvent.EventType.AFTER_FILTER_EVENT;
 import static org.apache.catalina.InstanceEvent.EventType.BEFORE_FILTER_EVENT;

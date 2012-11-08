@@ -41,13 +41,13 @@
 package org.apache.catalina.core;
 
 import org.apache.catalina.deploy.FilterDef;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.FilterRegistration;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 public class DynamicFilterRegistrationImpl
     extends FilterRegistrationImpl

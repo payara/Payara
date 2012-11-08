@@ -42,11 +42,9 @@ package org.apache.catalina.core;
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.Session;
-import org.apache.catalina.connector.Constants;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.connector.SessionTracker;
-import org.apache.catalina.util.StringManager;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 import java.util.ResourceBundle;

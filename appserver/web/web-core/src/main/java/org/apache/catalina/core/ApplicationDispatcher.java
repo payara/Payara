@@ -64,7 +64,7 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.connector.ResponseFacade;
 import org.apache.catalina.util.InstanceSupport;
-import org.apache.catalina.util.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -78,7 +78,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.text.MessageFormat;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import static org.apache.catalina.InstanceEvent.EventType.AFTER_DISPATCH_EVENT;
 
@@ -163,8 +162,6 @@ public final class ApplicationDispatcher
         action = "Verify if logger is null"
     )
     public static final String APPLICATION_DISPATCHER_WARNING = "AS-WEB-CORE-00022";
-
-
 
     // This attribute corresponds to a String[] which acts like a stack
     // containing the last two pushed elements

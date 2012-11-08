@@ -63,9 +63,7 @@ import org.apache.catalina.*;
 import org.apache.catalina.startup.ContextRuleSet;
 import org.apache.catalina.startup.ExpandWar;
 import org.apache.catalina.startup.NamingRuleSet;
-import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.digester.Digester;
-import org.apache.tomcat.util.digester.ObjectParamRule;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.ServletContext;

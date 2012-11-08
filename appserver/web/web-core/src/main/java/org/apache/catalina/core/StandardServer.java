@@ -62,7 +62,6 @@ package org.apache.catalina.core;
 import org.apache.catalina.*;
 import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.StringManager;
 
 import javax.management.ObjectName;
 import java.beans.PropertyChangeListener;

@@ -61,7 +61,6 @@ package org.apache.catalina.core;
 
 import org.apache.catalina.*;
 import org.apache.catalina.deploy.*;
-import org.apache.catalina.util.StringManager;
 import org.apache.naming.*;
 import org.glassfish.logging.annotation.LogMessageInfo;
 

@@ -66,7 +66,6 @@ import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.session.StandardSession;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.RequestUtil;
-import org.apache.catalina.util.StringManager;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.DispatcherType;
@@ -92,12 +91,6 @@ import java.util.*;
 public class ApplicationHttpRequest extends HttpServletRequestWrapper {
 
     // ------------------------------------------------------- Static Variables
-
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
     /**
      * The set of attribute names that are special for request dispatchers

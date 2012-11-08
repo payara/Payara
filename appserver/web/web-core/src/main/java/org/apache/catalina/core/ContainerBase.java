@@ -92,11 +92,10 @@ import org.apache.catalina.Response;
 import org.apache.catalina.Valve;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.StringManager;
 import org.apache.naming.resources.ProxyDirContext;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.valve.GlassFishValve;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * Abstract implementation of the <b>Container</b> interface, providing common
@@ -161,8 +160,8 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 public abstract class ContainerBase
     implements Container, Lifecycle, Pipeline {
 
-    private static final Logger log = StandardServer.log;
-    private static final ResourceBundle rb = log.getResourceBundle();
+    protected static final Logger log = StandardServer.log;
+    protected static final ResourceBundle rb = log.getResourceBundle();
 
     @LogMessageInfo(
         message = "ContainerBase.setLoader: stop: ",

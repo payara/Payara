@@ -125,9 +125,6 @@ public class StandardContext
     implements Context, ServletContext
 {
 
-    private static final Logger log = StandardServer.log;
-    private static final ResourceBundle rb = log.getResourceBundle();
-
     @LogMessageInfo(
         message = "Missing alternate docbase URL pattern or directory location",
         level = "WARNING"

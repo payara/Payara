@@ -60,18 +60,13 @@ package org.apache.catalina.core;
 
 
 import org.apache.catalina.*;
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
 import org.glassfish.web.valve.GlassFishValve;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.grizzly.http.util.DataChunk;
-import org.glassfish.grizzly.http.util.MessageBytes;
 // END GlassFish 1343
 
 /**

@@ -62,6 +62,7 @@ package org.apache.catalina.core;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.security.SecurityUtil;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
@@ -72,9 +73,7 @@ import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.ResourceBundle;
-import java.text.MessageFormat;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 
 /**

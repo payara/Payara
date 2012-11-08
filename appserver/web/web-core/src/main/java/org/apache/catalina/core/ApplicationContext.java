@@ -61,9 +61,8 @@ package org.apache.catalina.core;
 import org.apache.catalina.*;
 import org.apache.catalina.deploy.ApplicationParameter;
 import org.apache.catalina.util.Enumerator;
-import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ServerInfo;
-import org.apache.catalina.util.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.naming.directory.DirContext;
 import javax.servlet.*;
@@ -71,13 +70,11 @@ import javax.servlet.descriptor.JspConfigDescriptor;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-//import java.security.SecurityPermission;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * Standard implementation of <code>ServletContext</code> that represents

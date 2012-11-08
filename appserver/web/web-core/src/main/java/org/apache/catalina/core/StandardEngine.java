@@ -65,9 +65,7 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Standard implementation of the <b>Engine</b> interface.  Each
@@ -81,9 +79,6 @@ import java.util.logging.Logger;
 public class StandardEngine
     extends ContainerBase
     implements Engine {
-
-    private static final Logger log = StandardServer.log;
-    private static final ResourceBundle rb = log.getResourceBundle();
 
     @LogMessageInfo(
         message = "Child of an Engine must be a Host",

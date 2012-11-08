@@ -40,15 +40,13 @@
 
 package org.apache.catalina.core;
 
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.Globals;
 import org.glassfish.logging.annotation.LogMessageInfo;
-
-import javax.servlet.SessionCookieConfig;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import javax.servlet.SessionCookieConfig;
 
 /**
  * Class that may be used to configure various properties of cookies 
