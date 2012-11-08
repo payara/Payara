@@ -135,7 +135,7 @@
         <command-security-plugin.version>1.0.2</command-security-plugin.version>
         <mail.version>1.4.5</mail.version>
         <copyright-plugin.version>1.31</copyright-plugin.version>
-        <jdk.version>1.6.0-22</jdk.version>
+        <jdk.version>1.7.0-09</jdk.version>
     </properties>
     
     <modules>
