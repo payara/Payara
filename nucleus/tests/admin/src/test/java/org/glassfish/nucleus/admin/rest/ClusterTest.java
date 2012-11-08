@@ -75,16 +75,16 @@ public class ClusterTest extends RestTestBase {
         };
 
         Response response = post(URL_CLUSTER, newCluster);
-        assertTrue(isSuccess(response));
+        checkStatusForSuccess(response);
 
         response = get(URL_CLUSTER + "/" + clusterName + "/list-lifecycle-modules");
-        assertTrue(isSuccess(response));
+        checkStatusForSuccess(response);
 
         response = delete(URL_CLUSTER + "/" + clusterName); // + "/delete-cluster");
-        assertTrue(isSuccess(response));
+        checkStatusForSuccess(response);
 
         response = get(URL_CLUSTER + "/" + clusterName);
-        assertFalse(isSuccess(response));
+        checkStatusForFailure(response);
 
     }
 
@@ -103,17 +103,17 @@ public class ClusterTest extends RestTestBase {
         };
 
         Response response = post(URL_CLUSTER, newCluster);
-        assertTrue(isSuccess(response));
+        checkStatusForSuccess(response);
     }
 
     public void startCluster(String clusterName) {
         Response response = post(URL_CLUSTER + "/" + clusterName + "/start-cluster");
-        assertTrue(isSuccess(response));
+        checkStatusForSuccess(response);
     }
 
     public void stopCluster(String clusterName) {
         Response response = post(URL_CLUSTER + "/" + clusterName + "/stop-cluster");
-        assertTrue(isSuccess(response));
+        checkStatusForSuccess(response);
     }
 
     public void createClusterInstance(final String clusterName, final String instanceName) {
@@ -124,7 +124,7 @@ public class ClusterTest extends RestTestBase {
                 put("node", "localhost-domain1");
             }
         });
-        assertTrue(isSuccess(response));
+        checkStatusForSuccess(response);
     }
 
     public void deleteCluster(String clusterName) {
@@ -139,19 +139,19 @@ public class ClusterTest extends RestTestBase {
                     String instanceName = instance.get("name");
                     if (!"NOT_RUNNING".equalsIgnoreCase(status)) {
                         response = post("/domain/servers/server/" + instanceName + "/stop-instance");
-                        assertTrue(isSuccess(response));
+                        checkStatusForSuccess(response);
                     }
                     response = delete("/domain/servers/server/" + instanceName + "/delete-instance");
-                    assertTrue(isSuccess(response));
+                    checkStatusForSuccess(response);
                 }
             }
         }
 
 
         response = delete(URL_CLUSTER + "/" + clusterName);// + "/delete-cluster");
-        assertTrue(isSuccess(response));
+        checkStatusForSuccess(response);
 
-        response = get(URL_CLUSTER + "/" + clusterName);
-        assertFalse(isSuccess(response));
+//        response = get(URL_CLUSTER + "/" + clusterName);
+//        checkStatusForFailure(response);
     }
 }

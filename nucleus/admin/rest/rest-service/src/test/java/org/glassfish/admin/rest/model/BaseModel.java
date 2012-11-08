@@ -64,4 +64,7 @@ public interface BaseModel {
     @AttributeReference(configBean="com.sun.enterprise.config.serverbeans.Cluster", methodName="getConfigRef")
     String getConfigRef();
     void setConfigRef(String value);
+
+    String[] getStringArray();
+    void setStringArray(String[] array);
 }

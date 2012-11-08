@@ -39,9 +39,12 @@
  */
 package org.glassfish.admin.rest.utils;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -70,7 +73,17 @@ public class JsonUtil {
         } else if (RestModel.class.isAssignableFrom(object.getClass())) {
             result = getJsonForRestModel((RestModel)object, true);
         } else {
-            result = object;
+            Class<?> clazz = object.getClass();
+            if (clazz.isArray()) {
+                JSONArray array = new JSONArray();
+                final int lenth = Array.getLength(object);
+                for (int i = 0; i < lenth; i++) {
+                    array.put(getJsonObject(Array.get(object, i)));
+                }
+                result = array;
+            } else {
+                result = object;
+            }
         }
 
         return result;
@@ -83,7 +96,7 @@ public class JsonUtil {
                 String propName = m.getName().substring(3);
                 propName = propName.substring(0,1).toLowerCase(Locale.getDefault()) + propName.substring(1);
                 try {
-                    result.put(propName, getJsonObject(getRestModelProperty(model, m, hideConfidentialProperties)));
+                     result.put(propName, getJsonObject(getRestModelProperty(model, m, hideConfidentialProperties)));
                 } catch (Exception e) {
 
                 }

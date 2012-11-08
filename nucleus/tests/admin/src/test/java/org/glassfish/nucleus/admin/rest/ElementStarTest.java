@@ -64,17 +64,17 @@ public class ElementStarTest extends RestTestBase {
         instanceName2 = "instance_" + generateRandomString();
 
         Response response = post(URL_CREATE_INSTANCE, new HashMap<String, String>() {{ put("id", instanceName1); put("node", "localhost-domain1"); }});
-        assertTrue(isSuccess(response));
+        checkStatusForSuccess(response);
         response = post(URL_CREATE_INSTANCE, new HashMap<String, String>() {{ put("id", instanceName2); put("node", "localhost-domain1"); }});
-        assertTrue(isSuccess(response));
+        checkStatusForSuccess(response);
     }
 
     @AfterMethod
     public void after() {
         Response response = delete("/domain/servers/server/" + instanceName1 + "/delete-instance"); // TODO: This url should be fixed
-        assertTrue(isSuccess(response));
+        checkStatusForSuccess(response);
         response = delete("/domain/servers/server/" + instanceName2 + "/delete-instance");
-        assertTrue(isSuccess(response));
+        checkStatusForSuccess(response);
     }
 
     @Test(enabled=false)
@@ -109,13 +109,13 @@ public class ElementStarTest extends RestTestBase {
                     put("id", lbName);
                     put("target", instanceName1);
                 }});
-        assertTrue(isSuccess(response));
+        checkStatusForSuccess(response);
 
         response = post("/domain/lb-configs/lb-config/" + lbName + "/create-http-lb-ref",
                 new HashMap<String,String>() {{
                     put ("id", instanceName2);
                 }});
-        assertTrue(isSuccess(response));
+        checkStatusForSuccess(response);
 
         response = get ("/domain/lb-configs/lb-config/" + lbName + "/server-ref");
         Map<String, String> children = this.getChildResources(response);

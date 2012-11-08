@@ -171,7 +171,7 @@ public class MarshallingUtils {
 
     public static Map buildMapFromDocument(String text) {
         Map map = null;
-        if (text == null) {
+        if ((text == null) || text.isEmpty()) {
             return new HashMap();
         }
 
@@ -213,7 +213,8 @@ public class MarshallingUtils {
                 }
             }
         } else {
-            throw new RuntimeException ("An unknown document type was provided:  " + text.substring(0, 10));
+            System.out.println(text);
+            throw new RuntimeException ("An unknown document type was provided:  " + text); //.substring(0, 10));
         }
 
         return map;

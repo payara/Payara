@@ -63,6 +63,12 @@ public class CompositeUtilTest {
             "{\"name\":\"testModel\",\"count\":123, \"related\":[{\"id\":\"rel1\", \"description\":\"description 1\"},{\"id\":\"rel2\", \"description\":\"description 2\"}]}";
 
     @Test
+    public void modelGeneration() {
+        BaseModel model = CompositeUtil.instance().getModel(BaseModel.class);
+        Assert.assertNotNull(model);
+    }
+
+    @Test
     public void readInJson() throws Exception {
         JSONObject o = new JSONObject(json);
         BaseModel model = CompositeUtil.instance().unmarshallClass(BaseModel.class, o);

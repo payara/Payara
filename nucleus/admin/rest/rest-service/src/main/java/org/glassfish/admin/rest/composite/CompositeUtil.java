@@ -606,7 +606,7 @@ public class CompositeUtil {
     private String getInternalTypeString(Class<?> type) {
         return type.isPrimitive()
                 ? Primitive.getPrimitive(type.getName()).getInternalType()
-                : ("L" + getInternalName(type.getName()) + ";");
+                : (type.isArray() ? getInternalName(type.getName()) : ("L" + getInternalName(type.getName() + ";")));
     }
 
     private String getPropertyName(String name) {

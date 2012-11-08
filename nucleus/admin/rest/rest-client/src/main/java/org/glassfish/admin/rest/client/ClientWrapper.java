@@ -56,6 +56,7 @@ import javax.ws.rs.core.UriBuilder;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.JerseyClientFactory;
 import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
+import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
 import org.glassfish.jersey.jettison.JettisonBinder;
 import org.glassfish.jersey.media.multipart.MultiPartClientBinder;
 
@@ -77,9 +78,16 @@ public class ClientWrapper implements Client {
      * @param headers
      */
     public ClientWrapper(final Map<String, String> headers) {
+        this (headers, null, null);
+    }
+
+    public ClientWrapper(final Map<String, String> headers, String userName, String password) {
         realClient = JerseyClientFactory.newClient(new ClientConfig().
                 binders(new MultiPartClientBinder(), new JettisonBinder()));
         realClient.configuration().register(new CsrfProtectionFilter());
+        if ((userName != null) && (password != null)) {
+            realClient.configuration().register(new HttpBasicAuthFilter(userName, password));
+        }
         realClient.configuration().register(new ClientRequestFilter() {
 
             @Override

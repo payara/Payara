@@ -82,7 +82,10 @@ public class RestTestBase {
     private static final HttpBasicAuthFilter basicAuthFilter = new HttpBasicAuthFilter(AUTH_USER_NAME, AUTH_PASSWORD);
     protected static String adminHost;
     protected static String adminPort;
+    protected static String adminUser;
+    protected static String adminPass;
     protected static String instancePort;
+
     private static String currentTestClass = "";
     protected Client client;
 
@@ -91,6 +94,8 @@ public class RestTestBase {
         adminPort = getParameter("admin.port", "4848");
         instancePort = getParameter("instance.port", "8080");
         adminHost = getParameter("instance.host", "localhost");
+        adminUser = getParameter("user.name", "admin");
+        adminPass = getParameter("user.pass", "");
         baseUrl = "http://" + adminHost + ':' + adminPort + '/';
 
         final RestTestBase rtb = new RestTestBase();
@@ -103,7 +108,7 @@ public class RestTestBase {
 
             if (!currentTestClass.isEmpty()) {
                 RestTestBase rtb = new RestTestBase();
-                Client client = new ClientWrapper();
+                Client client = new ClientWrapper(new HashMap<String, String>(), adminUser, adminPass);
                 Response cr = client.target(rtb.getAddress("/domain/view-log")).
                         request().
                         get(Response.class);
@@ -128,8 +133,7 @@ public class RestTestBase {
 
 //    @BeforeMethod(alwaysRun = true)
     public void setup() {
-        currentTestClass = this.getClass().
-                getName();
+        currentTestClass = this.getClass().getName();
     }
 
     protected String getAddress(String address) {
@@ -145,7 +149,7 @@ public class RestTestBase {
         if (client == null) {
             client = new ClientWrapper(new HashMap<String, String>() {{
                 put("X-GlassFish-3", "dummy"); // from Constants in rest-service
-            }});
+            }}, adminUser, adminPass);
         }
         return client;
     }
@@ -188,12 +192,12 @@ public class RestTestBase {
 
     protected boolean isSuccess(Response response) {
         int status = response.getStatus();
-        return ((status == 200) || (status == 201));
+        return ((status >= 200) && (status <= 299));
     }
 
     protected void checkStatusForSuccess(Response cr) {
         int status = cr.getStatus();
-        if ((status < 200) || (status > 299)) {
+        if (!isSuccess(cr)) {
             String message = getErrorMessage(cr);
             fail("Expected a status between 200 and 299 (inclusive).  Found " + status
                     + ((message != null) ? ":  " + message : ""));
@@ -202,7 +206,7 @@ public class RestTestBase {
 
     protected void checkStatusForFailure(Response cr) {
         int status = cr.getStatus();
-        if ((status < 200) && (status > 299)) {
+        if (isSuccess(cr)) {
             fail("Expected a status less than 200 or greater than 299 (inclusive).  Found " + status);
         }
     }
