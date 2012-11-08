@@ -62,12 +62,15 @@ package org.apache.catalina.core;
 import org.apache.catalina.*;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.MessageFormat;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -83,9 +86,49 @@ import java.util.logging.Logger;
 public class StandardService
         implements Lifecycle, Service
  {
-    private static Logger log = Logger.getLogger(
-        StandardService.class.getName());
-   
+
+     private static final Logger log = StandardServer.log;
+     private static final ResourceBundle rb = log.getResourceBundle();
+
+     @LogMessageInfo(
+         message = "This service has already been started",
+         level = "INFO"
+     )
+     public static final String SERVICE_STARTED = "AS-WEB-CORE-00220";
+
+     @LogMessageInfo(
+         message = "Starting service {0}",
+         level = "INFO"
+     )
+     public static final String STARTING_SERVICE = "AS-WEB-CORE-00221";
+
+     @LogMessageInfo(
+         message = "Stopping service {0}",
+         level = "INFO"
+     )
+     public static final String STOPPING_SERVICE = "AS-WEB-CORE-00222";
+
+     @LogMessageInfo(
+         message = "This service has already been initialized",
+         level = "INFO"
+     )
+     public static final String SERVICE_HAS_BEEN_INIT = "AS-WEB-CORE-00223";
+
+     @LogMessageInfo(
+         message = "Error registering Service at domain {0}",
+         level = "SEVERE",
+         cause = "Could not register service",
+         action = "Verify the domain name and service name"
+     )
+     public static final String ERROR_REGISTER_SERVICE_EXCEPTION = "AS-WEB-CORE-00224";
+
+     @LogMessageInfo(
+         message = "Service initializing at {0} failed",
+         level = "SEVERE",
+         cause = "Could not pre-startup initialization",
+         action = "Verify if server was already initialized"
+     )
+     public static final String FAILED_SERVICE_INIT_EXCEPTION = "AS-WEB-CORE-00225";
 
     // ----------------------------------------------------- Instance Variables
 
@@ -108,12 +151,6 @@ public class StandardService
      */
     private LifecycleSupport lifecycle = new LifecycleSupport(this);
 
-
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
     /**
      * The <code>Server</code> that owns this Service, if any.
@@ -553,7 +590,7 @@ public class StandardService
         // Validate and update our current component state
         if (started) {
             if (log.isLoggable(Level.INFO)) {
-                log.info(sm.getString("standardService.start.started"));
+                log.log(Level.INFO, rb.getString(SERVICE_STARTED));
             }
         }
         
@@ -564,7 +601,8 @@ public class StandardService
         lifecycle.fireLifecycleEvent(BEFORE_START_EVENT, null);
 
         if (log.isLoggable(Level.INFO)) {
-            log.info(sm.getString("standardService.start.name", this.name));
+            String msg = MessageFormat.format(rb.getString(STARTING_SERVICE), this.name);
+            log.log(Level.INFO, msg);
         }
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
@@ -614,7 +652,8 @@ public class StandardService
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
 
         if (log.isLoggable(Level.INFO)) {
-            log.info(sm.getString("standardService.stop.name", this.name));
+            String msg = MessageFormat.format(rb.getString(STOPPING_SERVICE), this.name);
+            log.log(Level.INFO, msg);
         }
         started = false;
 
@@ -651,7 +690,7 @@ public class StandardService
         // Service shouldn't be used with embedded, so it doesn't matter
         if (initialized) {
             if (log.isLoggable(Level.INFO)) {
-                log.info(sm.getString("standardService.initialize.initialized"));
+                log.log(Level.INFO, rb.getString(SERVICE_HAS_BEEN_INIT));
             }
             return;
         }
@@ -665,10 +704,8 @@ public class StandardService
                 oname=new ObjectName(domain + ":type=Service,serviceName="+name);
                 this.controller=oname;
             } catch (Exception e) {
-                log.log(Level.SEVERE,
-                        sm.getString("standardService.register.failed",
-                                     domain),
-                        e);
+                String msg = MessageFormat.format(rb.getString(ERROR_REGISTER_SERVICE_EXCEPTION), domain);
+                log.log(Level.SEVERE, msg, e);
             }
             
             
@@ -703,9 +740,8 @@ public class StandardService
         try {
             initialize();
         } catch( Throwable t ) {
-            log.log(Level.SEVERE,
-                    sm.getString("standardService.initialize.failed", domain),
-                    t);
+            String msg = MessageFormat.format(rb.getString(FAILED_SERVICE_INIT_EXCEPTION), domain);
+            log.log(Level.SEVERE, msg, t);
         }
     }
 

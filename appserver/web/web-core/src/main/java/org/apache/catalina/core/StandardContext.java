@@ -61,6 +61,8 @@ package org.apache.catalina.core;
 import org.glassfish.grizzly.http.server.util.AlternateDocBase;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.server.util.MappingData;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.pfl.basic.logex.Log;
 import org.apache.catalina.*;
 import org.apache.catalina.deploy.*;
 import org.apache.catalina.loader.WebappLoader;
@@ -98,6 +100,7 @@ import java.net.URLDecoder;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -121,8 +124,416 @@ public class StandardContext
     extends ContainerBase
     implements Context, ServletContext
 {
-    private static final Logger log = Logger.getLogger(
-        StandardContext.class.getName());
+
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+        message = "Missing alternate docbase URL pattern or directory location",
+        level = "WARNING"
+    )
+    public static final String MISS_PATH_OR_URL_PATTERN_EXCEPTION = "AS-WEB-CORE-00065";
+
+    @LogMessageInfo(
+        message = "LoginConfig cannot be null",
+        level = "WARNING"
+    )
+    public static final String LOGIN_CONFIG_REQUIRED_EXCEPTION = "AS-WEB-CORE-00066";
+
+    // have two similar messages
+    @LogMessageInfo(
+        message = "Form login page {0} must start with a ''/''",
+        level = "WARNING"
+    )
+    public static final String LOGIN_CONFIG_LOGIN_PAGE_EXCEPTION = "AS-WEB-CORE-00067";
+
+    // have two similar messages
+    @LogMessageInfo(
+        message = "Form error page {0} must start with a ''/''",
+        level = "WARNING"
+    )
+    public static final String LOGIN_CONFIG_ERROR_PAGE_EXCEPTION = "AS-WEB-CORE-00068";
+
+    @LogMessageInfo(
+        message = "Child of a Context must be a Wrapper",
+        level = "WARNING"
+    )
+    public static final String NO_WRAPPER_EXCEPTION = "AS-WEB-CORE-00070";
+
+    // have to similar messages
+    @LogMessageInfo(
+        message = "JSP file {0} must start with a ''/''",
+        level = "WARNING"
+    )
+    public static final String WRAPPER_ERROR_EXCEPTION = "AS-WEB-CORE-00071";
+
+    @LogMessageInfo(
+        message = "Invalid <url-pattern> {0} in security constraint",
+        level = "WARNING"
+    )
+    public static final String SECURITY_CONSTRAINT_PATTERN_EXCEPTION = "AS-WEB-CORE-00072";
+
+    @LogMessageInfo(
+        message = "ErrorPage cannot be null",
+        level = "WARNING"
+    )
+    public static final String ERROR_PAGE_REQUIRED_EXCEPTION = "AS-WEB-CORE-00073";
+
+    @LogMessageInfo(
+        message = "Error page location {0} must start with a ''/''",
+        level = "WARNING"
+    )
+    public static final String ERROR_PAGE_LOCATION_EXCEPTION = "AS-WEB-CORE-00074";
+
+    @LogMessageInfo(
+        message = "Invalid status code {0} for error-page mapping. HTTP error codes are defined in the range from 400-600",
+        level = "SEVERE",
+        cause = "Invalid error page code",
+        action = "Verify the error code"
+    )
+    public static final String INVALID_ERROR_PAGE_CODE_EXCEPTION = "AS-WEB-CORE-00075";
+
+    @LogMessageInfo(
+        message = "Filter mapping specifies an unknown filter name {0}",
+        level = "WARNING"
+    )
+    public static final String FILTER_MAPPING_NAME_EXCEPTION = "AS-WEB-CORE-00076";
+
+    @LogMessageInfo(
+        message = "Filter mapping must specify either a <url-pattern> or a <servlet-name>",
+        level = "WARNING"
+    )
+    public static final String FILTER_MAPPING_EITHER_EXCEPTION = "AS-WEB-CORE-00077";
+
+    @LogMessageInfo(
+        message = "Invalid <url-pattern> {0} in filter mapping",
+        level = "WARNING"
+    )
+    public static final String FILTER_MAPPING_INVALID_URL_EXCEPTION = "AS-WEB-CORE-00078";
+
+    @LogMessageInfo(
+        message = "Unable to call method {0} on servlet context {1}, because this servlet context has already been initialized",
+        level = "WARNING"
+    )
+    public static final String SERVLET_CONTEXT_ALREADY_INIT_EXCEPTION = "AS-WEB-CORE-00079";
+
+    @LogMessageInfo(
+        message = "Filter name is null",
+        level = "WARNING"
+    )
+    public static final String NULL_FILTER_NAME_EXCEPTION = "AS-WEB-CORE-00080";
+
+    @LogMessageInfo(
+        message = "Unable to set {0} session tracking mode on servlet context {1}, because it is not supported",
+        level = "WARNING"
+    )
+    public static final String UNSUPPORTED_TRACKING_MODE_EXCEPTION = "AS-WEB-CORE-00081";
+
+    @LogMessageInfo(
+        message = "Unable to add listener of type: {0}, " +
+                  "because it does not implement any of the required ServletContextListener, " +
+                  "ServletContextAttributeListener, ServletRequestListener, ServletRequestAttributeListener, " +
+                  "HttpSessionListener, or HttpSessionAttributeListener interfaces",
+        level = "WARNING"
+    )
+    public static final String UNABLE_ADD_LISTENER_EXCEPTION = "AS-WEB-CORE-00082";
+
+    @LogMessageInfo(
+        message = "Both parameter name and parameter value are required, parameter name is {0}",
+        level = "WARNING"
+    )
+    public static final String PARAMETER_REQUIRED_EXCEPTION = "AS-WEB-CORE-00083";
+
+    @LogMessageInfo(
+        message = "Duplicate context initialization parameter {0}",
+        level = "WARNING"
+    )
+    public static final String DUPLICATE_PARAMETER_EXCEPTION = "AS-WEB-CORE-00084";
+
+    @LogMessageInfo(
+        message = "Invalid <url-pattern> {0} in servlet mapping",
+        level = "WARNING"
+    )
+    public static final String SERVLET_MAPPING_INVALID_URL_EXCEPTION = "AS-WEB-CORE-00085";
+
+    @LogMessageInfo(
+        message = "Servlet mapping specifies an unknown servlet name {0}",
+        level = "WARNING"
+    )
+    public static final String SERVLET_MAPPING_UNKNOWN_NAME_EXCEPTION = "AS-WEB-CORE-00086";
+
+    @LogMessageInfo(
+        message = "Unable to map Servlet [{0}] to URL pattern [{1}], because Servlet [{2}] is already mapped to it",
+        level = "WARNING"
+    )
+    public static final String DUPLICATE_SERVLET_MAPPING_EXCEPTION = "AS-WEB-CORE-00087";
+
+    @LogMessageInfo(
+        message = "Error creating instance listener {0}",
+        level = "SEVERE",
+        cause = "Could not create new instance",
+        action = "Verify the configuration of Wrapper and InstanceListener"
+    )
+    public static final String CREATING_INSTANCE_LISTENER_EXCEPTION = "AS-WEB-CORE-00088";
+
+    @LogMessageInfo(
+        message = "Error creating lifecycle listener {0}",
+        level = "SEVERE",
+        cause = "Could not create new instance for lifecycle listener",
+        action = "Verify the permit of current class to access newInstance()"
+    )
+    public static final String CREATING_LIFECYCLE_LISTENER_EXCEPTION = "AS-WEB-CORE-00089";
+
+    @LogMessageInfo(
+        message = "Error creating container listener {0}",
+        level = "SEVERE",
+        cause = "Could not create new instance for container listener",
+        action = "Verify the permit of current class to access newInstance()"
+    )
+    public static final String CREATING_CONTAINER_LISTENER_EXCEPTION = "AS-WEB-CORE-00090";
+
+    @LogMessageInfo(
+        message = "Reloading this Context has started",
+        level = "INFO"
+    )
+    public static final String RELOADING_STARTED = "AS-WEB-CORE-00091";
+
+    @LogMessageInfo(
+        message = "Error stopping context {0}",
+        level = "SEVERE",
+        cause = "Could not stop context component",
+        action = "Verify stop() to guarantee the whole domain is being stopped correctly"
+    )
+    public static final String STOPPING_CONTEXT_EXCEPTION = "AS-WEB-CORE-00092";
+
+    @LogMessageInfo(
+        message = "Error starting context {0}",
+        level = "SEVERE",
+        cause = "Could not start context component",
+        action = "Verify start() to guarantee the context component is being started correctly"
+    )
+    public static final String STARTING_CONTEXT_EXCEPTION = "AS-WEB-CORE-00093";
+
+    @LogMessageInfo(
+        message = "Error invoking requestInitialized method on ServletRequestListener {0}",
+        level = "WARNING"
+    )
+    public static final String REQUEST_INIT_EXCEPTION = "AS-WEB-CORE-00094";
+
+    @LogMessageInfo(
+        message = "Error invoking requestDestroyed method on ServletRequestListener {0}",
+        level = "WARNING"
+    )
+    public static final String REQUEST_DESTROY_EXCEPTION = "AS-WEB-CORE-00095";
+
+    @LogMessageInfo(
+        message = "Exception starting filter {0}",
+        level = "WARNING"
+    )
+    public static final String STARTING_FILTER_EXCEPTION = "AS-WEB-CORE-00096";
+
+    @LogMessageInfo(
+        message = "Servlet with name {0} does not have any servlet-class or jsp-file configured",
+        level = "WARNING"
+    )
+    public static final String SERVLET_WITHOUT_ANY_CLASS_OR_JSP = "AS-WEB-CORE-00097";
+
+    @LogMessageInfo(
+        message = "Filter with name {0} does not have any class configured",
+        level = "WARNING"
+    )
+    public static final String FILTER_WITHOUT_ANY_CLASS = "AS-WEB-CORE-00098";
+
+    @LogMessageInfo(
+        message = "Exception sending context destroyed event to listener instance of class {0}",
+        level = "WARNING"
+    )
+    public static final String LISTENER_STOP_EXCEPTION = "AS-WEB-CORE-00099";
+
+    @LogMessageInfo(
+        message = "Error starting resources in context {0}",
+        level = "SEVERE",
+        cause = "Could not get the proxy directory context",
+        action = "Verify the existence of the context"
+    )
+    public static final String STARTING_RESOURCES_EXCEPTION = "AS-WEB-CORE-00100";
+
+    @LogMessageInfo(
+        message = "Error stopping static resources",
+        level = "SEVERE",
+        cause = "Could not deallocate resource and destroy proxy",
+        action = "Verify if a fatal error that prevents this component from being used"
+    )
+    public static final String STOPPING_RESOURCES_EXCEPTION = "AS-WEB-CORE-00101";
+
+    @LogMessageInfo(
+        message = "Current container has already been started with a DirContext object",
+        level = "WARNING"
+    )
+    public static final String RESOURCES_STARTED = "AS-WEB-COUR-00102";
+
+    @LogMessageInfo(
+        message = "Error starting resources in context {0} with Exception message: {1}",
+        level = "SEVERE",
+        cause = "Could not get the proxy directory context",
+        action = "Verify the existence of the context"
+    )
+    public static final String STARTING_RESOURCE_EXCEPTION_MESSAGE = "AS-WEB-CORE-000103";
+
+    @LogMessageInfo(
+        message = "Form login page {0} must start with a ''/'' in Servlet 2.4",
+        level = "FINE"
+    )
+    public static final String FORM_LOGIN_PAGE_FINE = "AS-WEB-CORE-000104";
+
+    @LogMessageInfo(
+        message = "Form error page {0} must start with a ''/'' in Servlet 2.4",
+        level = "FINE"
+    )
+    public static final String FORM_ERROR_PAGE_FINE = "AS-WEB-CORE-000105";
+
+    @LogMessageInfo(
+        message = "JSP file {0} must start with a ''/'' in Servlet 2.4",
+        level = "FINE"
+    )
+    public static final String JSP_FILE_FINE = "AS-WEB-CORE-000106";
+
+    @LogMessageInfo(
+        message = "Container {0} has already been started",
+        level = "INFO"
+    )
+    public static final String CONTAINER_ALREADY_STARTED_EXCEPTION = "AS-WEB-CORE-00110";
+
+    @LogMessageInfo(
+        message = "Error initialzing resources{0}",
+        level = "WARNING"
+    )
+    public static final String INIT_RESOURCES_EXCEPTION = "AS-WEB-CORE-00111";
+
+    @LogMessageInfo(
+        message = "Error in dependency check for standard context {0}",
+        level = "WARNING"
+    )
+    public static final String DEPENDENCY_CHECK_EXCEPTION = "AS-WEB-CORE-00112";
+
+    @LogMessageInfo(
+        message = "Startup of context {0} failed due to previous errors",
+        level = "SEVERE",
+        cause = "Could not startup servlet",
+        action = "Verify the initialization process"
+    )
+    public static final String STARTUP_CONTEXT_FAILED_EXCEPTION = "AS-WEB-CORE-00113";
+
+    @LogMessageInfo(
+        message = "Exception during cleanup after start failed",
+        level = "SEVERE",
+        cause = "Stop staring up failed",
+        action = "Verify configurations to stop starting up"
+    )
+    public static final String CLEANUP_FAILED_EXCEPTION = "AS-WEB-CORE-00114";
+
+    @LogMessageInfo(
+        message = "Error invoking ServletContainerInitializer {0}",
+        level = "SEVERE",
+        cause = "Could not instantiate servlet container initializer",
+        action = "Verify the access permission of current class loader"
+    )
+    public static final String INVOKING_SERVLET_CONTAINER_INIT_EXCEPTION = "AS-WEB-CORE-00115";
+
+    @LogMessageInfo(
+        message = "Error resetting context {0}",
+        level = "SEVERE",
+        cause = "Could not restore original state",
+        action = "Verify if extend 'this' method, and make sure to clean up"
+    )
+    public static final String RESETTING_CONTEXT_EXCEPTION = "AS-WEB-CORE-00116";
+
+    @LogMessageInfo(
+        message = "URL pattern {0} must start with a ''/'' in Servlet 2.4",
+        level = "FINE"
+    )
+    public static final String URL_PATTERN_WARNING = "AS-WEB-CORE-00117";
+
+    @LogMessageInfo(
+        message = "Failed to create work directory {0}",
+        level = "SEVERE",
+        cause = "Could not create work directory",
+        action = "Verify the directory name, and access permission"
+    )
+    public static final String CREATE_WORK_DIR_EXCEPTION = "AS-WEB-CORE-00118";
+
+    @LogMessageInfo(
+        message = "The URL pattern {0} contains a CR or LF and so can never be matched",
+        level = "WARNING"
+    )
+    public static final String URL_PATTERN_CANNOT_BE_MATCHED_EXCEPTION = "AS-WEB-CORE-00119";
+
+    @LogMessageInfo(
+        message = "Missing name attribute in {0}",
+        level = "SEVERE",
+        cause = "Could not get the attribute",
+        action = "Verify the existence of the value associated with the key"
+    )
+    public static final String MISSING_ATTRIBUTE = "AS-WEB-CORE-00120";
+
+    @LogMessageInfo(
+        message = "Malformed name {0}, value of name attribute does not start with ''//''",
+        level = "SEVERE",
+        cause = "Illegal path name",
+        action = "Verify path name"
+    )
+    public static final String MALFORMED_NAME = "AS-WEB-CORE-00121";
+
+    @LogMessageInfo(
+        message = "Path {0} does not start with ''/''",
+        level = "WARNING"
+    )
+    public static final String INCORRECT_PATH = "AS-WEB-CORE-00122";
+
+    @LogMessageInfo(
+        message = "Path {0} does not start with ''/'' and is not empty",
+        level = "WARNING"
+    )
+    public static final String INCORRECT_OR_NOT_EMPTY_PATH = "AS-WEB-CORE-00123";
+
+    @LogMessageInfo(
+        message = "Error during mapping",
+        level = "WARNING"
+    )
+    public static final String MAPPING_ERROR_EXCEPTION = "AS-WEB-CORE-00124";
+
+    @LogMessageInfo(
+        message = "Unable to create custom ObjectInputStream",
+        level = "SEVERE",
+        cause = "Could not create custom ObjectInputStream",
+        action = "Verify input stream and class loader"
+    )
+    public static final String CANNOT_CREATE_OBJECT_INPUT_STREAM = "AS-WEB-CORE-00125";
+
+    @LogMessageInfo(
+        message = "Error during bindThread",
+        level = "WARNING"
+    )
+    public static final String BIND_THREAD_EXCEPTION = "AS-WEB-CORE-00126";
+
+    @LogMessageInfo(
+        message = "Servlet {0} threw load() exception",
+        level = "WARNING"
+    )
+    public static final String SERVLET_LOAD_EXCEPTION = "AS-WEB-CORE-00127";
+
+    @LogMessageInfo(
+        message = "Error updating ctx with jmx {0} {1} {2}",
+        level = "INFO"
+    )
+    public static final String ERROR_UPDATING_CTX_INFO = "AS-WEB-CORE-00128";
+
+    @LogMessageInfo(
+        message = "Error registering wrapper with jmx {0} {1} {2}",
+        level = "INFO"
+    )
+    public static final String ERROR_REGISTERING_WRAPPER_INFO = "AS-WEB-CORE-00129";
+
 
     private static final ClassLoader standardContextClassLoader =
         StandardContext.class.getClassLoader();
@@ -172,7 +583,7 @@ public class StandardContext
         }
 
         //START PWC 6403328
-        this.logPrefix = sm.getString("standardContext.logPrefix", logName());
+        this.logPrefix = logName() + " ServletContext.log():";
         //END PWC 6403328
     }
 
@@ -1202,8 +1613,8 @@ public class StandardContext
         // Bugzilla 32866
         if(getManager() != null) {
             if(log.isLoggable(Level.FINE)) {
-                log.fine("Propagating distributable=" + distributable
-                         + " to manager");
+                log.log(Level.FINE, "Propagating distributable=" + distributable
+                        + " to manager");
             }
             getManager().setDistributable(distributable);
         }
@@ -1240,9 +1651,7 @@ public class StandardContext
     public void addAlternateDocBase(String urlPattern, String docBase) {
 
         if (urlPattern == null || docBase == null) {
-            throw new IllegalArgumentException(
-                sm.getString(
-                    "standardContext.alternateDocBase.missingPathOrUrlPattern"));
+            throw new IllegalArgumentException(rb.getString(MISS_PATH_OR_URL_PATTERN_EXCEPTION));
         }
 
         AlternateDocBase alternateDocBase = new AlternateDocBase();
@@ -1352,35 +1761,31 @@ public class StandardContext
         // Validate the incoming property value
         if (config == null)
             throw new IllegalArgumentException
-                (sm.getString("standardContext.loginConfig.required"));
+                    (rb.getString(LOGIN_CONFIG_REQUIRED_EXCEPTION));
         String loginPage = config.getLoginPage();
         if ((loginPage != null) && !loginPage.startsWith("/")) {
             if (isServlet22()) {
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine(sm.getString(
-                        "standardContext.loginConfig.loginWarning",
-                        loginPage));
+                    String msg = MessageFormat.format(rb.getString(FORM_LOGIN_PAGE_FINE), loginPage);
+                    log.log(Level.FINE, msg);
                 }
                 config.setLoginPage("/" + loginPage);
             } else {
-                throw new IllegalArgumentException
-                    (sm.getString("standardContext.loginConfig.loginPage",
-                                  loginPage));
+                String msg = MessageFormat.format(rb.getString(LOGIN_CONFIG_LOGIN_PAGE_EXCEPTION), loginPage);
+                throw new IllegalArgumentException(msg);
             }
         }
         String errorPage = config.getErrorPage();
         if ((errorPage != null) && !errorPage.startsWith("/")) {
             if (isServlet22()) {
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine(sm.getString(
-                        "standardContext.loginConfig.errorWarning",
-                        errorPage));
+                    String msg = MessageFormat.format(rb.getString(FORM_ERROR_PAGE_FINE), errorPage);
+                    log.log(Level.FINE, msg);
                 }
                 config.setErrorPage("/" + errorPage);
             } else {
-                throw new IllegalArgumentException
-                    (sm.getString("standardContext.loginConfig.errorPage",
-                                  errorPage));
+                String msg = MessageFormat.format(rb.getString(LOGIN_CONFIG_ERROR_PAGE_EXCEPTION), errorPage);
+                throw new IllegalArgumentException(msg);
             }
         }
 
@@ -1478,8 +1883,8 @@ public class StandardContext
     @Override
     public void setPublicId(String publicId) {
         if (log.isLoggable(Level.FINEST))
-            log.finest("Setting deployment descriptor public ID to '" +
-                       publicId + "'");
+            log.log(Level.FINEST, "Setting deployment descriptor public ID to '" +
+                    publicId + "'");
 
         String oldPublicId = this.publicId;
         this.publicId = publicId;
@@ -1786,8 +2191,7 @@ public class StandardContext
     public synchronized void setResources(DirContext resources) {
 
         if (started) {
-            throw new IllegalStateException
-                (sm.getString("standardContext.resources.started"));
+            throw new IllegalStateException(rb.getString(RESOURCES_STARTED));
         }
 
         DirContext oldResources = this.webappResources;
@@ -1821,8 +2225,7 @@ public class StandardContext
                             DirContext resources) {
 
         if (started) {
-            throw new IllegalStateException
-                (sm.getString("standardContext.resources.started"));
+            throw new IllegalStateException(rb.getString(RESOURCES_STARTED));
         }
 
         DirContext oldResources = alternateDocBase.getWebappResources();
@@ -2122,8 +2525,7 @@ public class StandardContext
             boolean createRegistration) {
 
         if (!(child instanceof Wrapper)) {
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.notWrapper"));
+            throw new IllegalArgumentException(rb.getString(NO_WRAPPER_EXCEPTION));
         }
 
         Wrapper wrapper = (Wrapper) child;
@@ -2175,13 +2577,13 @@ public class StandardContext
         if ((jspFile != null) && !jspFile.startsWith("/")) {
             if (isServlet22()) {
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine(sm.getString("standardContext.wrapper.warning",
-                                          jspFile));
+                    String msg = MessageFormat.format(rb.getString(JSP_FILE_FINE), jspFile);
+                    log.log(Level.FINE, msg);
                 }
                 wrapper.setJspFile("/" + jspFile);
             } else {
-                throw new IllegalArgumentException
-                    (sm.getString("standardContext.wrapper.error", jspFile));
+                String msg = MessageFormat.format(rb.getString(WRAPPER_ERROR_EXCEPTION), jspFile);
+                throw new IllegalArgumentException(msg);
             }
         }
 
@@ -2241,10 +2643,9 @@ public class StandardContext
             for(int j = 0; j < patterns.length; j++) {
                 patterns[j] = adjustURLPattern(patterns[j]);
                 if(!validateURLPattern(patterns[j])) {
-                    throw new IllegalArgumentException
-                        (sm.getString
-                            ("standardContext.securityConstraint.pattern",
-                                patterns[j]));
+                    String msg = MessageFormat.format(rb.getString(SECURITY_CONSTRAINT_PATTERN_EXCEPTION),
+                                                      patterns[j]);
+                    throw new IllegalArgumentException(msg);
                 }
             }
         }
@@ -2306,19 +2707,17 @@ public class StandardContext
         // Validate the input parameters
         if (errorPage == null)
             throw new IllegalArgumentException
-                (sm.getString("standardContext.errorPage.required"));
+                    (rb.getString(ERROR_PAGE_REQUIRED_EXCEPTION));
         String location = errorPage.getLocation();
         if ((location != null) && !location.startsWith("/")) {
             if (isServlet22()) {
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine(sm.getString("standardContext.errorPage.warning",
-                                          location));
+                    log.log(Level.FINE, rb.getString(ERROR_PAGE_LOCATION_EXCEPTION));
                 }
                 errorPage.setLocation("/" + location);
             } else {
-                throw new IllegalArgumentException
-                    (sm.getString("standardContext.errorPage.error",
-                                  location));
+                String msg = MessageFormat.format(rb.getString(ERROR_PAGE_LOCATION_EXCEPTION), location);
+                throw new IllegalArgumentException(msg);
             }
         }
 
@@ -2334,8 +2733,8 @@ public class StandardContext
                 if ((errorCode >= 400) && (errorCode < 600)) {
                     statusPages.put(errorCode, errorPage);
                 } else {
-                    log.severe(sm.getString(
-                        "standardContext.invalidErrorPageCode", errorCode));
+                    String msg = MessageFormat.format(rb.getString(INVALID_ERROR_PAGE_CODE_EXCEPTION), errorCode);
+                    log.log(Level.SEVERE, msg);
                 }
             }
         } else {
@@ -2452,23 +2851,20 @@ public class StandardContext
         String servletName = filterMap.getServletName();
         String urlPattern = filterMap.getURLPattern();
         if (null == filterRegisMap.get(filterName)) {
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.filterMap.name", filterName));
+            String msg = MessageFormat.format(rb.getString(FILTER_MAPPING_NAME_EXCEPTION), filterName);
+            throw new IllegalArgumentException(msg);
         }
         if ((servletName == null) && (urlPattern == null)) {
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.filterMap.either"));
+            throw new IllegalArgumentException(rb.getString(FILTER_MAPPING_EITHER_EXCEPTION));
         }
         if ((servletName != null) && (urlPattern != null)) {
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.filterMap.either"));
+            throw new IllegalArgumentException(rb.getString(FILTER_MAPPING_EITHER_EXCEPTION));
         }
         // Because filter-pattern is new in 2.3, no need to adjust
         // for 2.2 backwards compatibility
         if ((urlPattern != null) && !validateURLPattern(urlPattern)) {
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.filterMap.pattern",
-                              urlPattern));
+            String msg = MessageFormat.format(rb.getString(FILTER_MAPPING_INVALID_URL_EXCEPTION), urlPattern);
+            throw new IllegalArgumentException(msg);
         }
 
         // Add this filter mapping to our registered set
@@ -2525,14 +2921,13 @@ public class StandardContext
             String filterName, String className) {
 
         if (isContextInitializedCalled) {
-            throw new IllegalStateException(
-                sm.getString("applicationContext.alreadyInitialized",
-                             "addFilter", getName()));
+            String msg = MessageFormat.format(rb.getString(SERVLET_CONTEXT_ALREADY_INIT_EXCEPTION),
+                                              new Object[] {"addFilter", getName()});
+            throw new IllegalStateException(msg);
         }
 
         if (filterName == null) {
-            throw new IllegalArgumentException(
-                sm.getString("standardContext.nullFilterName"));
+            throw new IllegalArgumentException(rb.getString(NULL_FILTER_NAME_EXCEPTION));
         }
 
         synchronized (filterDefs) {
@@ -2574,9 +2969,9 @@ public class StandardContext
             String filterName, Filter filter) {
 
         if (isContextInitializedCalled) {
-            throw new IllegalStateException(
-                sm.getString("applicationContext.alreadyInitialized",
-                             "addFilter", getName()));
+            String msg = MessageFormat.format(rb.getString(SERVLET_CONTEXT_ALREADY_INIT_EXCEPTION),
+                                              new Object[] {"addFilter", getName()});
+            throw new IllegalStateException(msg);
         }
 
         if (filterName == null || filter == null) {
@@ -2657,14 +3052,13 @@ public class StandardContext
             Class <? extends Filter> filterClass) {
 
         if (isContextInitializedCalled) {
-            throw new IllegalStateException(
-                sm.getString("applicationContext.alreadyInitialized",
-                             "addFilter", getName()));
+            String msg = MessageFormat.format(rb.getString(SERVLET_CONTEXT_ALREADY_INIT_EXCEPTION),
+                                             new Object[] {"addFilter", getName()});
+            throw new IllegalStateException(msg);
         }
 
         if (filterName == null) {
-            throw new IllegalArgumentException(
-                sm.getString("standardContext.nullFilterName"));
+            throw new IllegalArgumentException(rb.getString(NULL_FILTER_NAME_EXCEPTION));
         }
 
         synchronized (filterDefs) {
@@ -2784,16 +3178,15 @@ public class StandardContext
             Set<SessionTrackingMode> sessionTrackingModes) {
 
         if (sessionTrackingModes.contains(SessionTrackingMode.SSL)) {
-            throw new IllegalArgumentException(
-                sm.getString(
-                    "applicationContext.sessionTrackingModes.iae.unsupported",
-                    SessionTrackingMode.SSL, getName()));
+            String msg = MessageFormat.format(rb.getString(UNSUPPORTED_TRACKING_MODE_EXCEPTION),
+                                              new Object[] {SessionTrackingMode.SSL, getName()});
+            throw new IllegalArgumentException(msg);
         }
 
         if (isContextInitializedCalled) {
-            throw new IllegalStateException(
-                sm.getString("applicationContext.alreadyInitialized",
-                             "setSessionTrackingModes", getName()));
+            String msg = MessageFormat.format(rb.getString(SERVLET_CONTEXT_ALREADY_INIT_EXCEPTION),
+                                              new Object[] {"setSessionTrackingModes", getName()});
+            throw new IllegalStateException(msg);
         }
 
         this.sessionTrackingModes =
@@ -2888,9 +3281,9 @@ public class StandardContext
     private <T extends EventListener> void addListener(T t,
             boolean isProgrammatic) {
         if (isContextInitializedCalled) {
-            throw new IllegalStateException(
-                sm.getString("applicationContext.alreadyInitialized",
-                             "addListener", getName()));
+            String msg = MessageFormat.format(rb.getString(SERVLET_CONTEXT_ALREADY_INIT_EXCEPTION),
+                                              new Object[] {"addListener", getName()});
+            throw new IllegalStateException(msg);
         }
 
         if ((t instanceof ServletContextListener) && isProgrammatic &&
@@ -2974,8 +3367,10 @@ public class StandardContext
                 !HttpSessionAttributeListener.class.isAssignableFrom(clazz) &&
                 !HttpSessionIdListener.class.isAssignableFrom(clazz) &&
                 !HttpSessionListener.class.isAssignableFrom(clazz)) {
-            throw new IllegalArgumentException(sm.getString(
-                    "standardContext.invalidListenerType", clazz.getName()));
+            String msg = MessageFormat.format(rb.getString(UNABLE_ADD_LISTENER_EXCEPTION),
+                                              new Object[] {"standardContext.invalidListenerType",
+                                                            clazz.getName()});
+            throw new IllegalArgumentException(msg);
         }
 
         try {
@@ -3020,9 +3415,9 @@ public class StandardContext
     @Override
     public void declareRoles(String... roleNames) {
         if (isContextInitializedCalled) {
-            throw new IllegalStateException(
-                sm.getString("applicationContext.alreadyInitialized",
-                             "declareRoles", getName()));
+            String msg = MessageFormat.format(rb.getString(SERVLET_CONTEXT_ALREADY_INIT_EXCEPTION),
+                                              new Object[] {"declareRoles", getName()});
+            throw new IllegalStateException(msg);
         }
 
         for (String roleName : roleNames) {
@@ -3089,8 +3484,8 @@ public class StandardContext
             addServletMapping(pattern, servletName, true);
         } else {
             if (log.isLoggable(Level.FINE)) {
-                log.fine("Skipping " + pattern + " , no servlet "
-                         + servletName);
+                log.log(Level.FINE, "Skipping " + pattern + " , no servlet "
+                        + servletName);
             }
         }
     }
@@ -3171,12 +3566,14 @@ public class StandardContext
      */
     public void addParameter(String name, String value) {
         // Validate the proposed context initialization parameter
-        if ((name == null) || (value == null))
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.parameter.required"));
-        if (parameters.get(name) != null)
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.parameter.duplicate", name));
+        if ((name == null) || (value == null)) {
+            String msg = MessageFormat.format(rb.getString(PARAMETER_REQUIRED_EXCEPTION), name);
+            throw new IllegalArgumentException(msg);
+        }
+        if (parameters.get(name) != null) {
+            String msg = MessageFormat.format(rb.getString(DUPLICATE_PARAMETER_EXCEPTION), name);
+            throw new IllegalArgumentException(msg);
+        }
 
         // Add this parameter to our defined set
         synchronized (parameters) {
@@ -3298,8 +3695,8 @@ public class StandardContext
             for (String pattern : urlPatterns) {
                 pattern = adjustURLPattern(RequestUtil.urlDecode(pattern));
                 if (!validateURLPattern(pattern)) {
-                    throw new IllegalArgumentException(sm.getString(
-                        "standardContext.servletMap.pattern", pattern));
+                    String msg = MessageFormat.format(rb.getString(SERVLET_MAPPING_INVALID_URL_EXCEPTION), pattern);
+                    throw new IllegalArgumentException(msg);
                 }
 
                 // Ignore any conflicts with the container provided
@@ -3360,14 +3757,14 @@ public class StandardContext
         // Validate the proposed mapping
         ServletRegistrationImpl regis = servletRegisMap.get(name);
         if (null == regis) {
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.servletMap.name", name));
+            String msg = MessageFormat.format(rb.getString(SERVLET_MAPPING_UNKNOWN_NAME_EXCEPTION), name);
+            throw new IllegalArgumentException(msg);
         }
 
         pattern = adjustURLPattern(RequestUtil.urlDecode(pattern));
         if (!validateURLPattern(pattern)) {
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.servletMap.pattern", pattern));
+            String msg = MessageFormat.format(rb.getString(SERVLET_MAPPING_INVALID_URL_EXCEPTION), pattern);
+            throw new IllegalArgumentException(msg);
         }
 
         /*
@@ -3387,9 +3784,9 @@ public class StandardContext
                         !existing.equals(Constants.JSP_SERVLET_NAME) &&
                         !name.equals(Constants.DEFAULT_SERVLET_NAME) &&
                         !name.equals(Constants.JSP_SERVLET_NAME)) {
-                    throw new IllegalArgumentException(sm.getString(
-                        "standardContext.duplicateServletMapping",
-                        name, pattern, existing));
+                    String msg = MessageFormat.format(rb.getString(DUPLICATE_SERVLET_MAPPING_EXCEPTION),
+                                                      new Object[] {name, pattern, existing});
+                    throw new IllegalArgumentException(msg);
                 }
                 if (existing.equals(Constants.DEFAULT_SERVLET_NAME) ||
                         existing.equals(Constants.JSP_SERVLET_NAME)) {
@@ -3425,9 +3822,9 @@ public class StandardContext
             String servletName, String className) {
 
         if (isContextInitializedCalled) {
-            throw new IllegalStateException(
-                sm.getString("applicationContext.alreadyInitialized",
-                             "addServlet", getName()));
+            String msg = MessageFormat.format(rb.getString(SERVLET_CONTEXT_ALREADY_INIT_EXCEPTION),
+                                                      new Object[] {"addServlet", getName()});
+            throw new IllegalStateException(msg);
         }
         synchronized (children) {
             if (findChild(servletName) == null) {
@@ -3475,9 +3872,9 @@ public class StandardContext
             Class <? extends Servlet> servletClass) {
 
         if (isContextInitializedCalled) {
-            throw new IllegalStateException(
-                sm.getString("applicationContext.alreadyInitialized",
-                             "addServlet", getName()));
+            String msg = MessageFormat.format(rb.getString(SERVLET_CONTEXT_ALREADY_INIT_EXCEPTION),
+                                              new Object[] {"addServlet", getName()});
+            throw new IllegalStateException(msg);
         }
         // Make sure servlet name is unique for this context
         synchronized (children) {
@@ -3548,9 +3945,9 @@ public class StandardContext
             String... urlPatterns) {
 
         if (isContextInitializedCalled) {
-            throw new IllegalStateException(
-                sm.getString("applicationContext.alreadyInitialized",
-                             "addServlet", getName()));
+            String msg = MessageFormat.format(rb.getString(SERVLET_CONTEXT_ALREADY_INIT_EXCEPTION),
+                   new Object[] {"addServlet", getName()});
+            throw new IllegalStateException(msg);
         }
 
         if (servletName == null || servlet == null) {
@@ -3760,10 +4157,9 @@ public class StandardContext
                     Class clazz = Class.forName(instanceListener);
                     wrapper.addInstanceListener((InstanceListener)clazz.newInstance());
                 } catch(Throwable t) {
-                    log.log(Level.SEVERE,
-                        sm.getString("standardContext.instanceListener",
-                            instanceListener),
-                        t);
+                    String msg = MessageFormat.format(rb.getString(CREATING_INSTANCE_LISTENER_EXCEPTION),
+                                                      instanceListener);
+                    log.log(Level.SEVERE, msg, t);
                     return (null);
                 }
             }
@@ -3785,10 +4181,9 @@ public class StandardContext
                         (LifecycleListener)clazz.newInstance());
                 }
             } catch(Throwable t) {
-                log.log(Level.SEVERE,
-                    sm.getString("standardContext.lifecycleListener",
-                                 wrapperLifecycle),
-                    t);
+                String msg = MessageFormat.format(rb.getString(CREATING_LIFECYCLE_LISTENER_EXCEPTION),
+                                                  wrapperLifecycle);
+                log.log(Level.SEVERE, msg, t);
                 return (null);
             }
         }
@@ -3801,10 +4196,9 @@ public class StandardContext
                 wrapper.addContainerListener((ContainerListener)
                     clazz.newInstance());
             } catch(Throwable t) {
-                log.log(Level.SEVERE,
-                    sm.getString("standardContext.containerListener",
-                                 wrapperListener),
-                    t);
+                String msg = MessageFormat.format(rb.getString(CREATING_CONTAINER_LISTENER_EXCEPTION),
+                                                  wrapperListener);
+                log.log(Level.SEVERE, msg, t);
                 return (null);
             }
         }
@@ -4328,16 +4722,16 @@ public class StandardContext
     public synchronized void reload() {
 
         // Validate our current component state
-        if (!started)
-            throw new IllegalStateException
-                (sm.getString("containerBase.notStarted", logName()));
-
+        if (!started) {
+            String msg = MessageFormat.format(rb.getString(CONTAINER_NOT_STARTED_EXCEPTION), logName());
+            throw new IllegalStateException(msg);
+        }
         // Make sure reloading is enabled
         //      if (!reloadable)
         //          throw new IllegalStateException
         //              (sm.getString("standardContext.notReloadable"));
         if (log.isLoggable(Level.INFO)) {
-            log.info(sm.getString("standardContext.reloadingStarted"));
+            log.log(Level.INFO, rb.getString(RELOADING_STARTED));
         }
 
         // Stop accepting requests temporarily
@@ -4346,17 +4740,15 @@ public class StandardContext
         try {
             stop();
         } catch (LifecycleException e) {
-            log.log(Level.SEVERE,
-                    sm.getString("standardContext.stoppingContext", this),
-                    e);
+            String msg = MessageFormat.format(rb.getString(STOPPING_CONTEXT_EXCEPTION), this);
+            log.log(Level.SEVERE, msg, e);
         }
 
         try {
             start();
         } catch (LifecycleException e) {
-            log.log(Level.SEVERE,
-                    sm.getString("standardContext.startingContext", this),
-                    e);
+            String msg = MessageFormat.format(rb.getString(STARTING_CONTEXT_EXCEPTION), this);
+            log.log(Level.SEVERE, msg, e);
         }
 
         setPaused(false);
@@ -4403,8 +4795,7 @@ public class StandardContext
     public void removeChild(Container child) {
 
         if (!(child instanceof Wrapper))
-            throw new IllegalArgumentException
-                (sm.getString("standardContext.notWrapper"));
+            throw new IllegalArgumentException(rb.getString(NO_WRAPPER_EXCEPTION));
 
         super.removeChild(child);
     }
@@ -4796,10 +5187,9 @@ public class StandardContext
                 try {
                     listener.requestInitialized(event);
                 } catch (Throwable t) {
-                    log(sm.getString(
-                        "standardContextValve.requestListener.requestInit",
-                        listener.getClass().getName()),
-                        t);
+                    String msg = MessageFormat.format(rb.getString(REQUEST_INIT_EXCEPTION),
+                                                      listener.getClass().getName());
+                    log.log(Level.WARNING, msg, t);
                     request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
                 // START SJSAS 6329662
                 } finally {
@@ -4833,10 +5223,9 @@ public class StandardContext
                 try {
                     listener.requestDestroyed(event);
                 } catch (Throwable t) {
-                    log(sm.getString(
-                        "standardContextValve.requestListener.requestDestroyed",
-                        listener.getClass().getName()),
-                        t);
+                    String msg = MessageFormat.format(rb.getString(REQUEST_DESTROY_EXCEPTION),
+                            listener.getClass().getName());
+                    log.log(Level.WARNING, msg, t);
                     request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, t);
                 // START SJSAS 6329662
                 } finally {
@@ -4858,22 +5247,22 @@ public class StandardContext
     public boolean filterStart() {
 
         if (log.isLoggable(Level.FINE))
-            log.fine("Starting filters");
+            log.log(Level.FINE, "Starting filters");
         // Instantiate and record a FilterConfig for each defined filter
         boolean ok = true;
         synchronized (filterConfigs) {
             filterConfigs.clear();
             for (String name : filterDefs.keySet()) {
                 if(log.isLoggable(Level.FINE)) {
-                    log.fine(" Starting filter '" + name + "'");
+                    log.log(Level.FINE, " Starting filter '" + name + "'");
                 }
                 try {
                     filterConfigs.put(name,
                         new ApplicationFilterConfig(this,
                                                     filterDefs.get(name)));
                 } catch(Throwable t) {
-                    getServletContext().log
-                        (sm.getString("standardContext.filterStart", name), t);
+                    String msg = MessageFormat.format(rb.getString(STARTING_FILTER_EXCEPTION), name);
+                    getServletContext().log(msg, t);
                     ok = false;
                 }
             }
@@ -4891,13 +5280,13 @@ public class StandardContext
     public boolean filterStop() {
 
         if (log.isLoggable(Level.FINE))
-            log.fine("Stopping filters");
+            log.log(Level.FINE, "Stopping filters");
 
         // Release all Filter and FilterConfig instances
         synchronized (filterConfigs) {
             for (String filterName : filterConfigs.keySet()) {
                 if(log.isLoggable(Level.FINE)) {
-                    log.fine(" Stopping filter '" + filterName + "'");
+                    log.log(Level.FINE, " Stopping filter '" + filterName + "'");
                 }
                 ApplicationFilterConfig filterConfig = (ApplicationFilterConfig)filterConfigs.get(filterName);
                 filterConfig.release();
@@ -4949,20 +5338,16 @@ public class StandardContext
             servletRegisMap.values();
         for (ServletRegistrationImpl regis : servletRegistrations) {
             if (null == regis.getClassName() && null == regis.getJspFile()) {
-                throw new IllegalStateException(
-                    sm.getString(
-                        "standardContext.servletWithoutAnyClassOrJspFile",
-                        regis.getName()));
+                String msg = MessageFormat.format(rb.getString(SERVLET_WITHOUT_ANY_CLASS_OR_JSP), regis.getName());
+                throw new IllegalStateException(msg);
             }
         }
         Collection<FilterRegistrationImpl> filterRegistrations =
             filterRegisMap.values();
         for (FilterRegistrationImpl regis : filterRegistrations) {
             if (null == regis.getClassName()) {
-                throw new IllegalStateException(
-                    sm.getString(
-                        "standardContext.filterWithoutAnyClass",
-                        regis.getName()));
+                String msg = MessageFormat.format(rb.getString(FILTER_WITHOUT_ANY_CLASS), regis.getName());
+                throw new IllegalStateException(msg);
             }
         }
 
@@ -4986,8 +5371,8 @@ public class StandardContext
                                          String listenerClassName)
             throws Exception {
         if (log.isLoggable(Level.FINE)) {
-            log.fine("Configuring event listener class '" +
-                     listenerClassName + "'");
+            log.log(Level.FINE, "Configuring event listener class '" +
+                    listenerClassName + "'");
         }
         return createListener((Class<EventListener>)
             loader.loadClass(listenerClassName));
@@ -5030,9 +5415,9 @@ public class StandardContext
                 context.setRestricted(false);
                 fireContainerEvent(ContainerEvent.AFTER_CONTEXT_DESTROYED,
                                    listener);
-                getServletContext().log(sm.getString(
-                        "standardContext.listenerStop",
-                        listener.getClass().getName()), t);
+                String msg = MessageFormat.format(rb.getString(LISTENER_STOP_EXCEPTION),
+                                                  listener.getClass().getName());
+                getServletContext().log(msg, t);
                 ok = false;
             }
         }
@@ -5097,15 +5482,12 @@ public class StandardContext
             this.resources = proxyDirContext;
         } catch(Throwable t) {
             if(log.isLoggable(Level.FINE)) {
-                log.log(Level.SEVERE,
-                    sm.getString("standardContext.resourcesStart",
-                        getName()),
-                    t);
+                String msg = MessageFormat.format(rb.getString(STARTING_RESOURCES_EXCEPTION), getName());
+                log.log(Level.SEVERE, msg, t);
             } else {
-                log.log(Level.SEVERE,
-                    sm.getString("standardContext.resourcesStart",
-                        getName()) +
-                        ": " + t.getMessage());
+                String msg = MessageFormat.format(rb.getString(STARTING_RESOURCE_EXCEPTION_MESSAGE),
+                                                  new Object[] {getName(), t.getMessage()});
+                log.log(Level.SEVERE, msg);
             }
             ok = false;
         }
@@ -5139,15 +5521,12 @@ public class StandardContext
                 alternateDocBase.setResources(proxyDirContext);
             } catch(Throwable t) {
                 if(log.isLoggable(Level.FINE)) {
-                    throw new LifecycleException(
-                        sm.getString("standardContext.resourcesStart",
-                            getName()),
-                        t);
+                    String msg = MessageFormat.format(rb.getString(STARTING_RESOURCES_EXCEPTION), getName());
+                    throw new LifecycleException(msg, t);
                 } else {
-                    throw new LifecycleException(
-                        sm.getString("standardContext.resourcesStart",
-                            getName()) +
-                            ": " + t.getMessage());
+                    String msg = MessageFormat.format(rb.getString(STARTING_RESOURCE_EXCEPTION_MESSAGE),
+                                                      new Object[] {getName(), t.getMessage()});
+                    throw new LifecycleException(msg);
                 }
             }
         }
@@ -5170,8 +5549,7 @@ public class StandardContext
                 }
             }
         } catch (Throwable t) {
-            log.log(Level.SEVERE,
-                    sm.getString("standardContext.resourcesStop"), t);
+            log.log(Level.SEVERE, rb.getString(STOPPING_RESOURCES_EXCEPTION), t);
             ok = false;
         }
 
@@ -5197,9 +5575,7 @@ public class StandardContext
                 try {
                     ((Lifecycle)alternateResources).stop();
                 } catch(Throwable t) {
-                    log.log(Level.SEVERE,
-                        sm.getString("standardContext.resourcesStop"),
-                        t);
+                    log.log(Level.SEVERE, rb.getString(STOPPING_RESOURCES_EXCEPTION), t);
                     ok = false;
                 }
             }
@@ -5209,9 +5585,7 @@ public class StandardContext
                 try {
                     ((BaseDirContext)alternateWebappResources).release();
                 } catch(Throwable t) {
-                    log.log(Level.SEVERE,
-                        sm.getString("standardContext.resourcesStop"),
-                        t);
+                    log.log(Level.SEVERE, rb.getString(STOPPING_RESOURCES_EXCEPTION), t);
                     ok = false;
                 }
             }
@@ -5259,10 +5633,8 @@ public class StandardContext
                 try {
                     wrapper.load();
                 } catch(ServletException e) {
-                    getServletContext().log
-                        (sm.getString("standardWrapper.loadException",
-                            getName()),
-                            StandardWrapper.getRootCause(e));
+                    String msg = MessageFormat.format(rb.getString(SERVLET_LOAD_EXCEPTION), getName());
+                    getServletContext().log(msg, StandardWrapper.getRootCause(e));
                     // NOTE: load errors (including a servlet that throws
                     // UnavailableException from the init() method) are NOT
                     // fatal to application startup
@@ -5304,8 +5676,8 @@ public class StandardContext
 
         if (started) {
             if (log.isLoggable(Level.INFO)) {
-                log.info(sm.getString("containerBase.alreadyStarted",
-                                      logName()));
+                String msg = MessageFormat.format(rb.getString(CONTAINER_ALREADY_STARTED_EXCEPTION), logName());
+                log.log(Level.INFO, msg);
             }
             return;
         }
@@ -5320,8 +5692,8 @@ public class StandardContext
             }
         }
         if (log.isLoggable(Level.FINE)) {
-            log.fine("Starting " +
-                ("".equals(getName()) ? "ROOT" : getName()));
+            log.log(Level.FINE, "Starting " +
+                    ("".equals(getName()) ? "ROOT" : getName()));
         }
 
         // Set JMX object name for proper pipeline registration
@@ -5336,7 +5708,7 @@ public class StandardContext
         // Add missing components as necessary
         if (webappResources == null) {   // (1) Required by Loader
             if (log.isLoggable(Level.FINE)) {
-                log.fine("Configuring default Resources");
+                log.log(Level.FINE, "Configuring default Resources");
             }
             try {
                 if ((docBase != null) && (docBase.endsWith(".war")) &&
@@ -5345,8 +5717,7 @@ public class StandardContext
                 else
                     setResources(new FileDirContext());
             } catch (IllegalArgumentException e) {
-                throw new LifecycleException(
-                    sm.getString("standardContext.resourcesInit"), e);
+                throw new LifecycleException(rb.getString(INIT_RESOURCES_EXCEPTION), e);
             }
         }
 
@@ -5357,7 +5728,7 @@ public class StandardContext
             for(AlternateDocBase alternateDocBase : alternateDocBases) {
                 String docBase = alternateDocBase.getDocBase();
                 if(log.isLoggable(Level.FINE)) {
-                    log.fine("Configuring alternate resources");
+                    log.log(Level.FINE, "Configuring alternate resources");
                 }
                 try {
                     if(docBase != null && docBase.endsWith(".war") &&
@@ -5369,8 +5740,7 @@ public class StandardContext
                             new FileDirContext());
                     }
                 } catch(IllegalArgumentException e) {
-                    throw new LifecycleException(
-                        sm.getString("standardContext.resourcesInit"), e);
+                    throw new LifecycleException(rb.getString(INIT_RESOURCES_EXCEPTION), e);
                 }
             }
 
@@ -5391,9 +5761,8 @@ public class StandardContext
         try {
             ExtensionValidator.validateApplication(getResources(), this);
         } catch (IOException ioe) {
-            throw new LifecycleException(
-                sm.getString("standardContext.dependencyCheck", this),
-                ioe);
+            String msg = MessageFormat.format(rb.getString(DEPENDENCY_CHECK_EXCEPTION), this);
+            throw new LifecycleException(msg, ioe);
         }
 
         // Reading the "catalina.useNaming" environment variable
@@ -5464,8 +5833,8 @@ public class StandardContext
         }
 
         if (!getConfigured()) {
-            throw new LifecycleException(
-                sm.getString("standardContext.startFailed", getName()));
+            String msg = MessageFormat.format(rb.getString(STARTUP_CONTEXT_FAILED_EXCEPTION), getName());
+            throw new LifecycleException(msg);
         }
 
         // Store some required info as ServletContext attributes
@@ -5507,12 +5876,12 @@ public class StandardContext
             // Load and initialize all "load on startup" servlets
             loadOnStartup(findChildren());
         } catch (Throwable t) {
-            log.severe(sm.getString("standardContext.startFailed", getName()));
+            String msg = MessageFormat.format(rb.getString(STARTUP_CONTEXT_FAILED_EXCEPTION), getName());
+            log.log(Level.SEVERE, msg);
             try {
                 stop();
             } catch (Throwable tt) {
-                log.log(Level.SEVERE,
-                        sm.getString("standardContext.startCleanup"), tt);
+                log.log(Level.SEVERE, rb.getString(CLEANUP_FAILED_EXCEPTION), tt);
             }
             throw new LifecycleException(t);
         } finally {
@@ -5522,7 +5891,7 @@ public class StandardContext
 
         // Set available status depending upon startup success
         if (log.isLoggable(Level.FINEST)) {
-            log.finest("Startup successfully completed");
+            log.log(Level.FINEST, "Startup successfully completed");
         }
 
         setAvailable(true);
@@ -5586,19 +5955,17 @@ public class StandardContext
                 }
                 try {
                     if (log.isLoggable(Level.FINE)) {
-                        log.fine("Calling ServletContainerInitializer [" + initializer + "] onStartup with classes " +
-                                e.getValue());
+                        log.log(Level.FINE, "Calling ServletContainerInitializer [" + initializer
+                                + "] onStartup with classes " + e.getValue());
                     }
                     ServletContainerInitializer iniInstance =
                         initializer.newInstance();
                     iniInstance.onStartup(
                         initializerList.get(initializer), ctxt);
                 } catch (Throwable t) {
-                    log.log(Level.SEVERE,
-                        sm.getString(
-                            "standardContext.servletContainerInitializer.error",
-                            initializer.getCanonicalName()),
-                        t);
+                    String msg = MessageFormat.format(rb.getString(INVOKING_SERVLET_CONTAINER_INIT_EXCEPTION),
+                                                      initializer.getCanonicalName());
+                    log.log(Level.SEVERE, msg, t);
                     throw new LifecycleException(t);
                 }
             }
@@ -5620,12 +5987,12 @@ public class StandardContext
         ClassLoader parent = null;
         if (getPrivileged()) {
             if (log.isLoggable(Level.FINE)) {
-                log.fine("Configuring privileged default Loader");
+                log.log(Level.FINE, "Configuring privileged default Loader");
             }
             parent = this.getClass().getClassLoader();
         } else {
             if (log.isLoggable(Level.FINE)) {
-                log.fine("Configuring non-privileged default Loader");
+                log.log(Level.FINE, "Configuring non-privileged default Loader");
             }
             parent = getParentClassLoader();
         }
@@ -5657,8 +6024,10 @@ public class StandardContext
 
         // Validate and update our current component state
         if (!started) {
-            if(log.isLoggable(Level.INFO))
-                log.info(sm.getString("containerBase.notStarted", logName()));
+            if(log.isLoggable(Level.INFO)) {
+                String msg = MessageFormat.format(rb.getString(CONTAINER_NOT_STARTED_EXCEPTION), logName());
+                log.log(Level.INFO, msg);
+            }
             return;
         }
 
@@ -5801,15 +6170,15 @@ public class StandardContext
         try {
             resetContext();
         } catch( Exception ex ) {
-            log.log(Level.SEVERE, sm.getString("standardContext.reset", this),
-                    ex);
+            String msg = MessageFormat.format(rb.getString(RESETTING_CONTEXT_EXCEPTION), this);
+            log.log(Level.SEVERE, msg, ex);
         }
 
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(AFTER_STOP_EVENT, null);
 
         if (log.isLoggable(Level.FINE))
-            log.fine("Stopping complete");
+            log.log(Level.FINE, "Stopping complete");
 
         if(oname != null) {
             // Send j2ee.object.deleted notification
@@ -5865,7 +6234,7 @@ public class StandardContext
         sessionListeners.clear();
 
         if (log.isLoggable(Level.FINE)) {
-            log.fine("resetContext " + oname);
+            log.log(Level.FINE, "resetContext " + oname);
         }
     }
 
@@ -5952,8 +6321,8 @@ public class StandardContext
         if (!isServlet22())
             return (urlPattern);
         if (log.isLoggable(Level.FINE)) {
-            log.fine(sm.getString("standardContext.urlPattern.patternWarning",
-                                  urlPattern));
+            String msg = MessageFormat.format(rb.getString(URL_PATTERN_WARNING), urlPattern);
+            log.log(Level.FINE, msg);
         }
         return ("/" + urlPattern);
 
@@ -5998,7 +6367,7 @@ public class StandardContext
             try {
                 ContextBindings.bindThread(this, this);
             } catch (Throwable e) {
-                log.log(Level.WARNING, "Error during bindThread", e);
+                log.log(Level.WARNING, rb.getString(BIND_THREAD_EXCEPTION), e);
             }
         }
 
@@ -6263,9 +6632,8 @@ public class StandardContext
             }
         }
         if (!dir.mkdirs() && !dir.isDirectory()) {
-            log.log(Level.SEVERE,
-                    sm.getString("standardContext.createWorkDirFailed",
-                                 dir.getAbsolutePath()));
+            String msg = MessageFormat.format(rb.getString(CREATE_WORK_DIR_EXCEPTION), dir.getAbsolutePath());
+            log.log(Level.SEVERE, msg);
         }
 
         // Set the appropriate servlet context attribute
@@ -6297,7 +6665,8 @@ public class StandardContext
             return true;
         }
         if (urlPattern.indexOf('\n') >= 0 || urlPattern.indexOf('\r') >= 0) {
-            log.warning(sm.getString("standardContext.crlfinurl", urlPattern));
+            String msg = MessageFormat.format(rb.getString(URL_PATTERN_CANNOT_BE_MATCHED_EXCEPTION), urlPattern);
+            log.log(Level.WARNING, msg);
             return false;
         }
         if (urlPattern.startsWith("*.")) {
@@ -6325,9 +6694,10 @@ public class StandardContext
         if (log.isLoggable(Level.INFO)) {
             if(urlPattern.endsWith("*") && (urlPattern.length() < 2 ||
                     urlPattern.charAt(urlPattern.length()-2) != '/')) {
-                log.info("Suspicious url pattern: \"" + urlPattern + "\"" +
-                        " in context [" + getName() + "] - see" +
-                        " section SRV.11.2 of the Servlet specification" );
+                String msg = "Suspicious url pattern: \"" + urlPattern + "\"" +
+                             " in context [" + getName() + "] - see" +
+                             " section SRV.11.2 of the Servlet specification";
+                log.log(Level.INFO, msg);
             }
         }
     }
@@ -6507,7 +6877,7 @@ public class StandardContext
 
         onameStr="j2eeType=WebModule,name=" + name + suffix;
         if( log.isLoggable(Level.FINE))
-            log.fine("Registering " + onameStr + " for " + oname);
+            log.log(Level.FINE, "Registering " + onameStr + " for " + oname);
 
         // default case - no domain explictely set.
         if( getDomain() == null ) domain=hst.getDomain();
@@ -6526,10 +6896,9 @@ public class StandardContext
             }
         } catch(Exception ex) {
             if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO,
-                        "Error updating ctx with jmx " + this + " " +
-                        oname + " " + ex.toString(),
-                        ex );
+                String msg = MessageFormat.format(rb.getString(ERROR_UPDATING_CTX_INFO),
+                                                  new Object[] {this, oname, ex.toString()});
+                log.log(Level.INFO, msg, ex);
             }
         }
     }
@@ -6544,10 +6913,9 @@ public class StandardContext
             }
         } catch(Exception ex) {
             if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO,
-                        "Error registering ctx with jmx " + this + " " +
-                        oname + " " + ex.toString(),
-                        ex );
+                String msg = MessageFormat.format(rb.getString(ERROR_UPDATING_CTX_INFO),
+                        new Object[] {this, oname, ex.toString()});
+                log.log(Level.INFO, msg, ex);
             }
         }
     }
@@ -6555,7 +6923,7 @@ public class StandardContext
     private void registerJMX() {
         try {
             if (log.isLoggable(Level.FINE)) {
-                log.fine("Checking for " + oname );
+                log.log(Level.FINE, "Checking for " + oname);
             }
             controller = oname;
              // Send j2ee.object.created notification
@@ -6568,10 +6936,10 @@ public class StandardContext
                 ((StandardWrapper)child).registerJMX( this );
             }
         } catch (Exception ex) {
-            log.log(Level.INFO,
-                    "Error registering wrapper with jmx " + this + " " +
-                    oname + " " + ex.toString(),
-                    ex );
+
+            String msg = MessageFormat.format(rb.getString(ERROR_REGISTERING_WRAPPER_INFO),
+                                              new Object[] {this, oname, ex.toString()});
+            log.log(Level.INFO, msg, ex);
         }
     }
 
@@ -6622,13 +6990,13 @@ public class StandardContext
         // "Life" update
         String path=oname.getKeyProperty("name");
         if( path == null ) {
-            log.severe(sm.getString(
-                "standardContext.missingNameAttributeInName", getName()));
+            String msg = MessageFormat.format(rb.getString(MISSING_ATTRIBUTE), getName());
+            log.log(Level.SEVERE, msg);
             return null;
         }
         if( ! path.startsWith( "//")) {
-            log.severe(sm.getString("standardContext.malformedName",
-                                    getName()));
+            String msg = MessageFormat.format(rb.getString(MALFORMED_NAME), getName());
+            log.log(Level.SEVERE, msg);
         }
         path=path.substring(2);
         int delim=path.indexOf( "/" );
@@ -6643,7 +7011,7 @@ public class StandardContext
             }
         } else {
             if (log.isLoggable(Level.FINE)) {
-                log.fine("Setting path " +  path );
+                log.log(Level.FINE, "Setting path " + path);
             }
             this.setName( path );
         }
@@ -6853,9 +7221,9 @@ public class StandardContext
      */
     public boolean setInitParameter(String name, String value) {
         if (isContextInitializedCalled) {
-            throw new IllegalStateException(
-                sm.getString("applicationContext.alreadyInitialized",
-                             "setInitParameter", getName()));
+            String msg = MessageFormat.format(rb.getString(SERVLET_CONTEXT_ALREADY_INIT_EXCEPTION),
+                                              new Object[] {"setInitParameter", getName()});
+            throw new IllegalStateException(msg);
         }
         return context.setInitParameter(name, value);
     }
@@ -7090,9 +7458,8 @@ public class StandardContext
         throws MalformedURLException {
 
         if (path == null || !path.startsWith("/")) {
-            throw new MalformedURLException(
-                sm.getString("applicationContext.resourcePaths.iae",
-                             path));
+            String msg = MessageFormat.format(rb.getString(INCORRECT_PATH), path);
+            throw new MalformedURLException(msg);
         }
 
         path = RequestUtil.normalize(path);
@@ -7169,8 +7536,8 @@ public class StandardContext
             return null;
         }
         if (!path.startsWith("/")) {
-            throw new IllegalArgumentException
-                (sm.getString("applicationContext.resourcePaths.iae", path));
+            String msg = MessageFormat.format(rb.getString(INCORRECT_PATH), path);
+            throw new IllegalArgumentException(msg);
         }
 
         path = RequestUtil.normalize(path);
@@ -7252,9 +7619,8 @@ public class StandardContext
         }
 
         if (!path.startsWith("/") && !path.isEmpty()) {
-            throw new IllegalArgumentException(
-                sm.getString("applicationContext.requestDispatcher.iae",
-                             path));
+            String msg = MessageFormat.format(rb.getString(INCORRECT_OR_NOT_EMPTY_PATH), path);
+            throw new IllegalArgumentException(msg);
         }
 
         // Get query string
@@ -7311,7 +7677,7 @@ public class StandardContext
             }
         } catch (Exception e) {
             // Should never happen
-            log(sm.getString("applicationContext.mapping.error"), e);
+            log.log(Level.WARNING, rb.getString(MAPPING_ERROR_EXCEPTION), e);
             return (null);
         }
 
@@ -7472,9 +7838,7 @@ public class StandardContext
                 try {
                     ois = new CustomObjectInputStream(is, classLoader);
                 } catch (IOException ioe) {
-                    log.log(Level.SEVERE,
-                            "Unable to create custom ObjectInputStream",
-                            ioe);
+                    log.log(Level.SEVERE, rb.getString(CANNOT_CREATE_OBJECT_INPUT_STREAM), ioe);
                 }
             }
         }

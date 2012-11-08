@@ -75,8 +75,14 @@ import java.net.Socket;
 import java.security.AccessControlException;
 import java.util.List;
 import java.util.Random;
+import java.util.ResourceBundle;
+import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 /**
  * Standard implementation of the <b>Server</b> interface, available for use
@@ -89,8 +95,73 @@ import java.util.logging.Logger;
 public final class StandardServer
     implements Lifecycle, Server
  {
-    private static Logger log = Logger.getLogger(
-        StandardServer.class.getName());
+
+     @LogMessagesResourceBundle
+     public static final String SHARED_LOG_MESSAGE_RESOURCE =
+             "org.apache.catalina.core.LogMessages";
+
+     @LoggerInfo(subsystem = "WEB", description = "WEB Core Logger", publish = true)
+     public static final String WEB_CORE_LOGGER = "javax.enterprise.web.core";
+
+     public static final Logger log =
+             Logger.getLogger(WEB_CORE_LOGGER, SHARED_LOG_MESSAGE_RESOURCE);
+
+     private static final ResourceBundle rb = log.getResourceBundle();
+
+     @LogMessageInfo(
+         message = "LifecycleException occurred during service initialization: {0}",
+         level = "SEVERE",
+         cause = "This service was already initialized",
+         action = "Verify if the service is not already initialized")
+     public static final String LIFECYCLE_EXCEPTION_DURING_SERVICE_INIT = "AS-WEB-CORE-00003";
+
+     @LogMessageInfo(
+         message = "Exception StandardServer.await: create[{0}]",
+         level = "SEVERE",
+         cause = "An I/O error occurred when opening the socket",
+         action = "Verify the port number and try again")
+     public static final String STANDARD_SERVER_AWAIT_CREATE_EXCEPTION = "AS-WEB-CORE-00004";
+
+     @LogMessageInfo(
+         message = "StandardServer.accept security exception: {0}",
+         level = "WARNING",
+         cause = "Could not get connection",
+         action = "Verify the connection settings and try again")
+     public static final String STANDARD_SERVER_ACCEPT_SECURITY_EXCEPTION = "AS-WEB-CORE-00005";
+
+     @LogMessageInfo(
+         message = "StandardServer.await: accept: {0}",
+         level = "SEVERE",
+         cause = "Could not get input stream",
+         action = "Verify the input stream and try again")
+     public static final String STANDARD_SERVER_AWAIT_ACCEPT_EXCEPTION = "AS-WEB-CORE-00006";
+
+     @LogMessageInfo(
+         message = "StandardServer.await: read: {0}",
+         level = "WARNING",
+         cause = "Could not read from input stream",
+         action = "Verify the input stream and try again")
+     public static final String STANDARD_SERVER_AWAIT_READ_EXCEPTION = "AS-WEB-CORE-00007";
+
+     @LogMessageInfo(
+         message = "StandardServer.await: Invalid command {0} received",
+         level = "WARNING",
+         cause = "Invalid command",
+         action = "Verify the command")
+     public static final String STANDARD_SERVER_AWAIT_INVALID_COMMAND_RECEIVED_EXCEPTION = "AS-WEB-CORE-00008";
+
+     @LogMessageInfo(
+         message = "This service has already been initialized",
+         level = "INFO")
+     public static final String STANDARD_SERVER_INITIALIZE_INITIALIZED = "AS-WEB-CORE-00009";
+
+     @LogMessageInfo(
+         message = "Error registering: {0}",
+         level = "SEVERE",
+         cause = "Could not register ObjectName: \"Catalina:type=Server\"",
+         action = "Verify the configuration and try again")
+     public static final String ERROR_REGISTERING = "AS-WEB-CORE-00010";
+     //--------------------------------------------------------------
    
 
     // -------------------------------------------------------------- Constants
@@ -265,14 +336,6 @@ public final class StandardServer
      */
     private String shutdown = "SHUTDOWN";
 
-
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(Constants.Package);
-
-
     /**
      * Has this component been started?
      */
@@ -446,7 +509,9 @@ public final class StandardServer
                 try {
                     service.initialize();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, e.toString());
+                    String msg = MessageFormat.format(rb.getString(
+                            LIFECYCLE_EXCEPTION_DURING_SERVICE_INIT), e.toString());
+                    log.log(Level.SEVERE, msg, e);
                 }
             }
 
@@ -477,9 +542,9 @@ public final class StandardServer
                 new ServerSocket(port, 1,
                                  InetAddress.getByName("127.0.0.1"));
         } catch (IOException e) {
-            log.log(Level.SEVERE,
-                    "StandardServer.await: create[" + port + "]: ",
-                    e);
+            String msg = MessageFormat.format(
+                    rb.getString(STANDARD_SERVER_AWAIT_CREATE_EXCEPTION), port);
+            log.log(Level.SEVERE, msg, e);
             System.exit(1);
         }
 
@@ -494,13 +559,16 @@ public final class StandardServer
                 socket.setSoTimeout(10 * 1000);  // Ten seconds
                 stream = socket.getInputStream();
             } catch (AccessControlException ace) {
-                log.log(Level.WARNING,
-                        "StandardServer.accept security exception: "
-                        + ace.getMessage(),
-                        ace);
+                String msg = MessageFormat.format(
+                        rb.getString(STANDARD_SERVER_ACCEPT_SECURITY_EXCEPTION),
+                                     ace.getMessage());
+                log.log(Level.WARNING, msg, ace);
                 continue;
             } catch (IOException e) {
-                log.log(Level.SEVERE, "StandardServer.await: accept: ", e);
+                String msg = MessageFormat.format(
+                        rb.getString(STANDARD_SERVER_AWAIT_ACCEPT_EXCEPTION),
+                                     e.toString());
+                log.log(Level.SEVERE, msg, e);
                 System.exit(1);
             }
 
@@ -517,7 +585,10 @@ public final class StandardServer
                 try {
                     ch = stream.read();
                 } catch (IOException e) {
-                    log.log(Level.WARNING, "StandardServer.await: read: ", e);
+                    String msg = MessageFormat.format(
+                            rb.getString(STANDARD_SERVER_AWAIT_READ_EXCEPTION),
+                                         e.toString());
+                    log.log(Level.WARNING, msg, e);
                     ch = -1;
                 }
                 if (ch < 32)  // Control character or EOF terminates loop
@@ -538,8 +609,10 @@ public final class StandardServer
             if (match) {
                 break;
             } else {
-                log.warning("StandardServer.await: Invalid command '" +
-                            command.toString() + "' received");
+                String msg = MessageFormat.format(
+                        rb.getString(STANDARD_SERVER_AWAIT_INVALID_COMMAND_RECEIVED_EXCEPTION),
+                                     command.toString());
+                log.log(Level.WARNING, msg);
             }
         }
 
@@ -741,7 +814,7 @@ public final class StandardServer
         // Validate and update our current component state
         if (started) {
             if (log.isLoggable(Level.FINE)) {
-                log.fine(sm.getString("standardServer.start.started"));
+                log.log(Level.FINE, "This server has already been started");
             }
             return;
         }
@@ -810,8 +883,7 @@ public final class StandardServer
         throws LifecycleException 
     {
         if (initialized) {
-                log.info(sm.getString(
-                    "standardServer.initialize.initialized"));
+            log.log(Level.INFO, STANDARD_SERVER_INITIALIZE_INITIALIZED);
             return;
         }
         // START GlassFish 2439
@@ -823,7 +895,8 @@ public final class StandardServer
             try {
                 oname=new ObjectName( "Catalina:type=Server");
             } catch (Exception e) {
-                log.log(Level.SEVERE, "Error registering ",e);
+                String msg = MessageFormat.format(ERROR_REGISTERING, e.toString());
+                log.log(Level.SEVERE, msg, e);
             }
         }
         

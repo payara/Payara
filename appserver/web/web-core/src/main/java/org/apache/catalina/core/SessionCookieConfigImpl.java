@@ -42,17 +42,19 @@ package org.apache.catalina.core;
 
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.Globals;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.SessionCookieConfig;
+
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
 /**
  * Class that may be used to configure various properties of cookies 
  * used for session tracking purposes.
  */
 public class SessionCookieConfigImpl implements SessionCookieConfig {
-
-    private static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
     private String name = Globals.SESSION_COOKIE_NAME;
     private String domain;
@@ -62,6 +64,16 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
     private boolean secure;
     private StandardContext ctx;
     private int maxAge = -1;
+
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+        message = "Unable to configure {0} session tracking cookie property for servlet context {1}, " +
+                  "because this servlet context has already been initialized",
+        level = "WARNING"
+    )
+    public static final String SESSION_COOKIE_CONFIG_ALREADY_INIT = "AS-WEB-CORE-00055";
 
 
     /**
@@ -81,9 +93,9 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      */
     public void setName(String name) {
         if (ctx.isContextInitializedCalled()) {
-            throw new IllegalStateException(
-                sm.getString("sessionCookieConfig.alreadyInitialized",
-                             "name", ctx.getName()));
+            String msg = MessageFormat.format(rb.getString(SESSION_COOKIE_CONFIG_ALREADY_INIT),
+                                              new Object[] {"name", ctx.getName()});
+            throw new IllegalStateException(msg);
         }
 
         this.name = name;
@@ -109,9 +121,9 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      */
     public void setDomain(String domain) {
         if (ctx.isContextInitializedCalled()) {
-            throw new IllegalStateException(
-                sm.getString("sessionCookieConfig.alreadyInitialized",
-                             "dnmain", ctx.getName()));
+            String msg = MessageFormat.format(rb.getString(SESSION_COOKIE_CONFIG_ALREADY_INIT),
+                                              new Object[] {"dnmain", ctx.getName()});
+            throw new IllegalStateException(msg);
         }
 
         this.domain = domain;
@@ -136,9 +148,9 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      */
     public void setPath(String path) {
         if (ctx.isContextInitializedCalled()) {
-            throw new IllegalStateException(
-                sm.getString("sessionCookieConfig.alreadyInitialized",
-                             "path", ctx.getName()));
+            String msg = MessageFormat.format(rb.getString(SESSION_COOKIE_CONFIG_ALREADY_INIT),
+                                              new Object[] {"path", ctx.getName()});
+            throw new IllegalStateException(msg);
         }
 
         this.path = path;
@@ -165,9 +177,9 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      */
     public void setComment(String comment) {
         if (ctx.isContextInitializedCalled()) {
-            throw new IllegalStateException(
-                sm.getString("sessionCookieConfig.alreadyInitialized",
-                             "comment", ctx.getName()));
+            String msg = MessageFormat.format(rb.getString(SESSION_COOKIE_CONFIG_ALREADY_INIT),
+                                              new Object[] {"comment", ctx.getName()});
+            throw new IllegalStateException(msg);
         }
 
         this.comment = comment;
@@ -195,9 +207,9 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      */
     public void setHttpOnly(boolean httpOnly) {
         if (ctx.isContextInitializedCalled()) {
-            throw new IllegalStateException(
-                sm.getString("sessionCookieConfig.alreadyInitialized",
-                             "httpOnly", ctx.getName()));
+            String msg = MessageFormat.format(rb.getString(SESSION_COOKIE_CONFIG_ALREADY_INIT),
+                                              new Object[] {"httpOnly", ctx.getName()});
+            throw new IllegalStateException(msg);
         }
 
         this.httpOnly = httpOnly;
@@ -229,9 +241,9 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      */
     public void setSecure(boolean secure) {
         if (ctx.isContextInitializedCalled()) {
-            throw new IllegalStateException(
-                sm.getString("sessionCookieConfig.alreadyInitialized",
-                             "secure", ctx.getName()));
+            String msg = MessageFormat.format(rb.getString(SESSION_COOKIE_CONFIG_ALREADY_INIT),
+                                              new Object[] {"secure", ctx.getName()});
+            throw new IllegalStateException(msg);
         }
 
         this.secure = secure;
@@ -254,9 +266,9 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
 
     public void setMaxAge(int maxAge) {
         if (ctx.isContextInitializedCalled()) {
-            throw new IllegalStateException(
-                sm.getString("sessionCookieConfig.alreadyInitialized",
-                             "maxAge", ctx.getName()));
+            String msg = MessageFormat.format(rb.getString(SESSION_COOKIE_CONFIG_ALREADY_INIT),
+                                              new Object[] {"maxAge", ctx.getName()});
+            throw new IllegalStateException(msg);
         }
 
         this.maxAge = maxAge;

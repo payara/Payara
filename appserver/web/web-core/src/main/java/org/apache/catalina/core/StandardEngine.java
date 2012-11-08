@@ -60,10 +60,12 @@ package org.apache.catalina.core;
 
 import org.apache.catalina.*;
 import org.apache.catalina.realm.JAASRealm;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -80,8 +82,28 @@ public class StandardEngine
     extends ContainerBase
     implements Engine {
 
-    private static final Logger log = Logger.getLogger(
-        StandardEngine.class.getName());
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+        message = "Child of an Engine must be a Host",
+        level = "WARNING"
+    )
+    public static final String CHILD_OF_ENGINE_MUST_BE_HOST_EXPECTION = "AS-WEB-CORE-00140";
+
+    @LogMessageInfo(
+        message = "Engine cannot have a parent Container",
+        level = "WARNING"
+    )
+    public static final String CANNOT_HAVE_PARENT_CONTAINER_EXCEPTION = "AS-WEB-CORE-00141";
+
+    @LogMessageInfo(
+        message = "Error registering",
+        level = "WARNING"
+    )
+    public static final String ERROR_REGISTERING_EXCEPTION = "AS-WEB-CORE-00142";
+
+
 
     // ----------------------------------------------------------- Constructors
 
@@ -270,8 +292,7 @@ public class StandardEngine
     public void addChild(Container child) {
 
         if (!(child instanceof Host))
-            throw new IllegalArgumentException
-                (sm.getString("standardEngine.notHost"));
+            throw new IllegalArgumentException(rb.getString(CHILD_OF_ENGINE_MUST_BE_HOST_EXPECTION));
         super.addChild(child);
 
     }
@@ -297,7 +318,7 @@ public class StandardEngine
     public void setParent(Container container) {
 
         throw new IllegalArgumentException
-            (sm.getString("standardEngine.notParent"));
+                (rb.getString(CANNOT_HAVE_PARENT_CONTAINER_EXCEPTION));
 
     }
 
@@ -319,12 +340,12 @@ public class StandardEngine
                     domain=getName();
                 }
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine( "Register " + domain );
+                    log.log(Level.FINE, "Register " + domain);
                 }
                 oname=new ObjectName(domain + ":type=Engine");
                 controller=oname;
             } catch (Throwable t) {
-                log.log(Level.INFO, "Error registering ", t);
+                log.log(Level.INFO, rb.getString(ERROR_REGISTERING_EXCEPTION), t);
             }
         }
         
@@ -383,7 +404,7 @@ public class StandardEngine
         */
         // START PWC 6296256
         if (log.isLoggable(Level.FINE)) {
-            log.fine("Starting Servlet Engine");
+            log.log(Level.FINE, "Starting Servlet Engine");
         }
         // END PWC 6296256
 
@@ -428,7 +449,7 @@ public class StandardEngine
         throws Exception
     {
         if (log.isLoggable(Level.FINE))
-            log.fine("Create ObjectName " + domain + " " + parent );
+            log.log(Level.FINE, "Create ObjectName " + domain + " " + parent);
         return new ObjectName( domain + ":type=Engine");
     }
     

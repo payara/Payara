@@ -43,10 +43,24 @@ package org.apache.catalina.core;
 import org.apache.catalina.deploy.FilterDef;
 
 import javax.servlet.FilterRegistration;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 public class DynamicFilterRegistrationImpl
     extends FilterRegistrationImpl
     implements FilterRegistration.Dynamic {
+
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+        message = "Unable to configure {0} for filter {1} of servlet context {2}, because this servlet context has already been initialized",
+        level = "WARNING"
+    )
+    public static final String DYNAMIC_FILTER_REGISTRATION_ALREADY_INIT = "AS-WEB-CORE-00041";
 
     /**
      * Constructor
@@ -58,10 +72,10 @@ public class DynamicFilterRegistrationImpl
 
     public void setAsyncSupported(boolean isAsyncSupported) {
         if (ctx.isContextInitializedCalled()) {
-            throw new IllegalStateException(
-                sm.getString("filterRegistration.alreadyInitialized",
-                             "async-supported", filterDef.getFilterName(),
-                             ctx.getName()));
+            String msg = MessageFormat.format(rb.getString(DYNAMIC_FILTER_REGISTRATION_ALREADY_INIT),
+                                              new Object[] {"async-supported", filterDef.getFilterName(),
+                                                            ctx.getName()});
+            throw new IllegalStateException(msg);
         }
 
         filterDef.setIsAsyncSupported(isAsyncSupported);

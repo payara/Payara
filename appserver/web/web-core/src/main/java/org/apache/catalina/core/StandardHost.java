@@ -64,6 +64,7 @@ import org.apache.catalina.authenticator.SingleSignOn;
 import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.valves.ValveBase;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.valve.GlassFishValve;
 
 import javax.management.MBeanServer;
@@ -74,10 +75,12 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.URL;       
+import java.net.URL;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -97,8 +100,71 @@ public class StandardHost
  {
     /* Why do we implement deployer and delegate to deployer ??? */
 
-    private static final Logger log =
-        Logger.getLogger(StandardHost.class.getName());
+     private static final Logger log = StandardServer.log;
+     private static final ResourceBundle rb = log.getResourceBundle();
+
+     @LogMessageInfo(
+         message = "Host name is required",
+         level = "WARNING"
+     )
+     public static final String HOST_NAME_REQUIRED_EXCEPTION = "AS-WEB-CORE-00155";
+
+     @LogMessageInfo(
+         message = "Child of a Host must be a Context",
+         level = "WARNING"
+     )
+     public static final String CHILD_MUST_BE_CONTEXT_EXCEPTION = "AS-WEB-CORE-00156";
+
+     @LogMessageInfo(
+         message = "MAPPING configuration error for request URI {0}",
+         level = "SEVERE",
+         cause = "No context has been selected",
+         action = "Verify the uri or default context"
+     )
+     public static final String MAPPING_CONF_REQUEST_URI_EXCEPTION = "AS-WEB-CORE-00157";
+
+     @LogMessageInfo(
+         message = "ErrorPage must not be null",
+         level = "WARNING"
+     )
+     public static final String ERROR_PAGE_CANNOT_BE_NULL_EXCEPTION = "AS-WEB-CORE-00158";
+
+     @LogMessageInfo(
+         message = "XML validation enabled",
+         level = "FINE"
+     )
+     public static final String XML_VALIDATION_ENABLED = "AS-WEB-CORE-00159";
+
+     @LogMessageInfo(
+         message = "Create Host deployer for direct deployment ( non-jmx )",
+         level = "INFO"
+     )
+     public static final String CREATE_HOST_DEPLOYER_INFO = "AS-WEB-CORE-00160";
+
+     @LogMessageInfo(
+         message = "Error creating deployer ",
+         level = "SEVERE",
+         cause = "Could not instantiate deployer",
+         action = "Verify access permission"
+     )
+     public static final String ERROR_CREATING_DEPLOYER_EXCEPTION = "AS-WEB-CORE-00161";
+
+     @LogMessageInfo(
+         message = "Error registering host {0}",
+         level = "SEVERE",
+         cause = "Initialization failed",
+         action = "Verify domain and host name"
+     )
+     public static final String ERROR_REGISTERING_HOST_EXCEPTION = "AS-WEB-CORE-00162";
+
+     @LogMessageInfo(
+         message = "Couldn't load specified error report valve class: {0}",
+         level = "SEVERE",
+         cause = "Could not load instance of host valve",
+         action = "Verify access permission"
+     )
+     public static final String LOAD_SPEC_ERROR_REPORT_EXCEPTION = "AS-WEB-CORE-00163";
+
     
     // ----------------------------------------------------------- Constructors
 
@@ -473,7 +539,7 @@ public class StandardHost
 
         if (name == null)
             throw new IllegalArgumentException
-                (sm.getString("standardHost.nullName"));
+                    (rb.getString(HOST_NAME_REQUIRED_EXCEPTION));
 
         // START OF PE 4989789
         // name = name.toLowerCase();      // Internally all names are lower case
@@ -683,7 +749,7 @@ public class StandardHost
 
         if (!(child instanceof Context))
             throw new IllegalArgumentException
-                (sm.getString("standardHost.notContext"));
+                       (rb.getString(CHILD_MUST_BE_CONTEXT_EXCEPTION));
         super.addChild(child);
 
     }
@@ -742,13 +808,13 @@ public class StandardHost
     public Context map(String uri) {
 
         if (log.isLoggable(Level.FINE))
-            log.fine("Mapping request URI '" + uri + "'");
+            log.log(Level.FINE, "Mapping request URI '" + uri + "'");
         if (uri == null)
             return (null);
 
         // Match on the longest possible context path prefix
         if (log.isLoggable(Level.FINEST))
-            log.finest("Trying the longest context path prefix");
+            log.log(Level.FINEST, "Trying the longest context path prefix");
         Context context = null;
         String mapuri = uri;
         while (true) {
@@ -764,19 +830,20 @@ public class StandardHost
         // If no Context matches, select the default Context
         if (context == null) {
             if (log.isLoggable(Level.FINEST))
-                log.finest("Trying the default context");
+                log.log(Level.FINEST, "Trying the default context");
             context = (Context) findChild("");
         }
 
         // Complain if no Context has been selected
         if (context == null) {
-            log.severe(sm.getString("standardHost.mappingError", uri));
+            String msg = MessageFormat.format(rb.getString(MAPPING_CONF_REQUEST_URI_EXCEPTION), uri);
+            log.log(Level.SEVERE, msg);
             return (null);
         }
 
         // Return the mapped Context (if any)
         if (log.isLoggable(Level.FINE))
-            log.fine(" Mapped to context '" + context.getPath() + "'");
+            log.log(Level.FINE, " Mapped to context '" + context.getPath() + "'");
         return (context);
 
     }
@@ -831,7 +898,7 @@ public class StandardHost
         // Validate the input parameters
         if (errorPage == null) {
             throw new IllegalArgumentException
-                (sm.getString("standardHost.errorPage.required"));
+                    (rb.getString(ERROR_PAGE_CANNOT_BE_NULL_EXCEPTION));
         }
 
         // Add the specified error page to our internal collections
@@ -917,11 +984,11 @@ public class StandardHost
         if (log.isLoggable(Level.FINE)) {
             if (xmlValidation) {
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine(sm.getString("standardHost.validationEnabled"));
+                    log.log(Level.FINE, rb.getString(XML_VALIDATION_ENABLED));
                 }
             } else {
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine(sm.getString("standardHost.validationDisabled"));
+                    log.log(Level.FINE, rb.getString(XML_VALIDATION_ENABLED));
                 }
             }
         }
@@ -1197,7 +1264,7 @@ public class StandardHost
         if( deployer!= null )
             return deployer;
         if (log.isLoggable(Level.INFO)) {
-            log.info( "Create Host deployer for direct deployment ( non-jmx ) ");
+            log.log(Level.INFO, rb.getString(CREATE_HOST_DEPLOYER_INFO));
         }
         try {
             Class<?> c=Class.forName( STANDARD_HOST_DEPLOYER );
@@ -1205,7 +1272,7 @@ public class StandardHost
             Method m=c.getMethod("setHost", new Class[] {Host.class} );
             m.invoke( deployer,  new Object[] { this } );
         } catch( Throwable t ) {
-            log.log(Level.SEVERE, "Error creating deployer ", t);
+            log.log(Level.SEVERE, rb.getString(ERROR_CREATING_DEPLOYER_EXCEPTION), t);
         }
         return deployer;
     }
@@ -1256,8 +1323,8 @@ public class StandardHost
                 StandardEngine engine=(StandardEngine)parent;
                 domain=engine.getName();
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine("Registering host " + getName()
-                             + " with domain " + domain);
+                    log.log(Level.FINE, "Registering host " + getName()
+                            + " with domain " + domain);
                 }
                 oname=new ObjectName(domain + ":type=Host,host=" +
                         this.getName());
@@ -1268,8 +1335,8 @@ public class StandardHost
                         new Notification("j2ee.object.created", this, sequenceNumber++);
                 sendNotification(notification);
             } catch(Throwable t) {
-                log.log(Level.SEVERE, "Error registering host " + getName(),
-                        t);
+                String msg = MessageFormat.format(rb.getString(ERROR_REGISTERING_HOST_EXCEPTION), getName());
+                log.log(Level.SEVERE, msg, t);
             }
         }
         // START CR 6368085
@@ -1282,7 +1349,7 @@ public class StandardHost
         throws Exception
     {
         if( log.isLoggable(Level.FINE))
-            log.fine("Create ObjectName " + domain + " " + parent );
+            log.log(Level.FINE, "Create ObjectName " + domain + " " + parent);
         return new ObjectName( domain + ":type=Host,host=" + getName());
     }
 
@@ -1308,11 +1375,9 @@ public class StandardHost
                 host.setErrorReportValve(valve);
                 // END SJSAS 6374691
             } catch (Throwable t) {
-                log.log(
-                    Level.SEVERE,
-                    sm.getString("standardHost.invalidErrorReportValveClass", 
-                                 errorReportValveClass),
-                    t);
+                String msg = MessageFormat.format(rb.getString(LOAD_SPEC_ERROR_REPORT_EXCEPTION),
+                                                  errorReportValveClass);
+                log.log(Level.SEVERE, msg, t);
             }
         }
     }

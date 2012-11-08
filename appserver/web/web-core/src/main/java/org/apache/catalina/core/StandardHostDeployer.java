@@ -65,13 +65,17 @@ import org.apache.catalina.startup.ExpandWar;
 import org.apache.catalina.startup.NamingRuleSet;
 import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.digester.Digester;
+import org.apache.tomcat.util.digester.ObjectParamRule;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -86,8 +90,151 @@ import java.util.logging.Logger;
 
 public class StandardHostDeployer implements Deployer {
 
-    private static Logger log = Logger.getLogger(
-        StandardHostDeployer.class.getName());
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+        message = "Context path is required",
+        level = "WARNING"
+    )
+    public static final String CONTEXT_PATH_REQUIRED_EXCEPTION = "AS-WEB-CORE-00170";
+
+    @LogMessageInfo(
+        message = "Invalid context path: {0}",
+        level = "WARNING"
+    )
+    public static final String INVALID_CONTEXT_PATH_EXCEPTION = "AS-WEB-CORE-00171";
+
+    @LogMessageInfo(
+        message = "Context path {0} is already in use",
+        level = "WARNING"
+    )
+    public static final String CONTEXT_PATH_ALREADY_USED_EXCEPTION = "AS-WEB-CORE-00172";
+
+    @LogMessageInfo(
+        message = "URL to web application archive is required",
+        level = "WARNING"
+    )
+    public static final String URL_WEB_APP_ARCHIVE_REQUIRED_EXCEPTION = "AS-WEB-CORE-00173";
+
+    @LogMessageInfo(
+        message = "Installing web application at context path {0} from URL {1}",
+        level = "INFO"
+    )
+    public static final String INSTALLING_WEB_APP_INFO = "AS-WEB-CORE-00174";
+
+    @LogMessageInfo(
+        message = "Invalid URL for web application archive: {0}",
+        level = "WARNING"
+    )
+    public static final String INVALID_URL_WEB_APP_EXCEPTION = "AS-WEB-CORE-00175";
+
+    @LogMessageInfo(
+        message = "Only web applications in the Host web application directory can be installed, invalid URL: {0}",
+        level = "WARNING"
+    )
+    public static final String HOST_WEB_APP_DIR_CAN_BE_INSTALLED_EXCEPTION = "AS-WEB-CORE-00176";
+
+    @LogMessageInfo(
+        message = "Context path {0} must match the directory or WAR file name: {1}",
+        level = "WARNING"
+    )
+    public static final String CONSTEXT_PATH_MATCH_DIR_WAR_NAME_EXCEPTION = "AS-WEB-CORE-00177";
+
+    @LogMessageInfo(
+        message = "Error installing",
+        level = "WARNING"
+    )
+    public static final String ERROR_INSTALLING_EXCEPTION = "AS-WEB-CORE-00178";
+
+    @LogMessageInfo(
+        message = "Error deploying application at context path {0}",
+        level = "SEVERE",
+        cause = "Could not initiate life cycle listener",
+        action = "Verify the access permission"
+    )
+    public static final String ERROR_DEPLOYING_APP_CONTEXT_PATH_EXCEPTION = "AS-WEB-CORE-00179";
+
+    @LogMessageInfo(
+        message = "URL to configuration file is required",
+        level = "WARNING"
+    )
+    public static final String URL_CONFIG_FILE_REQUIRED_EXCEPTION = "AS-WEB-CORE-00180";
+
+    @LogMessageInfo(
+        message = "Use of configuration file is not allowed",
+        level = "WARNING"
+    )
+    public static final String USE_CONFIG_FILE_NOT_ALLOWED = "AS-WEB-CORE-00181";
+
+    @LogMessageInfo(
+        message = "Processing Context configuration file URL {0}",
+        level = "INFO"
+    )
+    public static final String PROCESSING_CONTEXT_CONFIG_INFO = "AS-WEB-CORE-00182";
+
+    @LogMessageInfo(
+        message = "Installing web application from URL {0}",
+        level = "INFO"
+    )
+    public static final String INSTALLING_WEB_APP_FROM_URL_INFO = "AS-WEB-CORE-00183";
+
+    @LogMessageInfo(
+        message = "Context path {0} is not currently in use",
+        level = "WARNING"
+    )
+    public static final String CONTEXT_PATH_NOT_IN_USE = "AS-WEB-CORE-00184";
+
+    @LogMessageInfo(
+        message = "Removing web application at context path {0}",
+        level = "INFO"
+    )
+    public static final String REMOVING_WEB_APP_INFO = "AS-WEB-CORE-00185";
+
+    @LogMessageInfo(
+        message = "Error removing application at context path {0}",
+        level = "SEVERE",
+        cause = "Could not remove an existing child Container",
+        action = "Verify if there are any I/O errors"
+    )
+    public static final String ERROR_REMOVING_APP_EXCEPTION = "AS-WEB-CORE-00186";
+
+    @LogMessageInfo(
+        message = "Starting web application at context path {0}",
+        level = "INFO"
+    )
+    public static final String STARTING_WEB_APP_INFO = "AS-WEB-CORE-00187";
+
+    @LogMessageInfo(
+        message = "Starting web application at context path {0} failed",
+        level = "SEVERE",
+        cause = "Could not start web application at current context path",
+        action = "Verify if start() is called before any of the public " +
+                 "methods of this component are utilized, and it should " +
+                 "send START_EVENT to any registered listeners"
+    )
+    public static final String STARTING_WEB_APP_FAILED_EXCEPTION = "AS-WEB-CORE-00188";
+
+    @LogMessageInfo(
+        message = "Stopping web application at context path {0}",
+        level = "INFO"
+    )
+    public static final String STOPPING_WEB_APP_INFO = "AS-WEB-CORE-00189";
+
+    @LogMessageInfo(
+        message = "Stopping web application at context path {0} failed",
+        level = "SEVERE",
+        cause = "Could not terminate the active use of the public methods of this component",
+        action = "Verify if stop() is the last one called on a given instance of this component, " +
+                 "and it should send STOP_EVENT to any registered listeners"
+    )
+    public static final String STOPPING_WEB_APP_FAILED_EXCEPTION = "AS-WEB-CORE-00190";
+
+    @LogMessageInfo(
+        message = "Failed to remove file {0}",
+        level = "WARNING"
+    )
+    public static final String FAILED_REMOVE_FILE = "AS-WEB-CORE-00191";
 
     // ----------------------------------------------------------- Constructors
 
@@ -157,13 +304,6 @@ public class StandardHostDeployer implements Deployer {
     private String overrideConfigFile = null;
 
 
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
-
-
     // -------------------------------------------------------- Depoyer Methods
 
     public Host getHost() {
@@ -217,21 +357,25 @@ public class StandardHostDeployer implements Deployer {
         // Validate the format and state of our arguments
         if (contextPath == null)
             throw new IllegalArgumentException
-                (sm.getString("standardHost.pathRequired"));
-        if (!contextPath.equals("") && !contextPath.startsWith("/"))
-            throw new IllegalArgumentException
-                (sm.getString("standardHost.pathFormat", contextPath));
+                    (rb.getString(CONTEXT_PATH_REQUIRED_EXCEPTION));
+        if (!contextPath.equals("") && !contextPath.startsWith("/")) {
+            String msg = MessageFormat.format(rb.getString(INVALID_CONTEXT_PATH_EXCEPTION), contextPath);
+            throw new IllegalArgumentException(msg);
+        }
         if (findDeployedApp(contextPath) != null)
-            throw new IllegalStateException
-                (sm.getString("standardHost.pathUsed", contextPath));
+        {
+            String msg = MessageFormat.format(rb.getString(CONTEXT_PATH_ALREADY_USED_EXCEPTION), contextPath);
+            throw new IllegalStateException(msg);
+        }
         if (war == null)
             throw new IllegalArgumentException
-                (sm.getString("standardHost.warRequired"));
+                    (rb.getString(URL_WEB_APP_ARCHIVE_REQUIRED_EXCEPTION));
 
         // Calculate the document base for the new web application
         if (log.isLoggable(Level.INFO)) {
-            log.info(sm.getString("standardHost.installing",
-                                  contextPath, war.toString()));
+            String msg = MessageFormat.format(rb.getString(INSTALLING_WEB_APP_INFO),
+                                              new Object[] {contextPath, war.toString()});
+            log.log(Level.INFO, msg);
         }
         String url = war.toString();
         String docBase = null;
@@ -239,8 +383,8 @@ public class StandardHostDeployer implements Deployer {
         if (url.startsWith("jar:")) {
             url = url.substring(4, url.length() - 2);
             if (!url.toLowerCase(Locale.ENGLISH).endsWith(".war")) {
-                throw new IllegalArgumentException
-                    (sm.getString("standardHost.warURL", url));
+                String msg = MessageFormat.format(rb.getString(INVALID_URL_WEB_APP_EXCEPTION), url);
+                throw new IllegalArgumentException(msg);
             }
             isWAR = true;
         }
@@ -248,9 +392,10 @@ public class StandardHostDeployer implements Deployer {
             docBase = url.substring(7);
         else if (url.startsWith("file:"))
             docBase = url.substring(5);
-        else
-            throw new IllegalArgumentException
-                (sm.getString("standardHost.warURL", url));
+        else {
+            String msg = MessageFormat.format(rb.getString(INVALID_URL_WEB_APP_EXCEPTION), url);
+            throw new IllegalArgumentException(msg);
+        }
 
         // Determine if directory/war to install is in the host appBase
         boolean isAppBase = false;
@@ -267,8 +412,8 @@ public class StandardHostDeployer implements Deployer {
         // For security, if deployXML is false only allow directories
         // and war files from the hosts appBase
         if (!host.isDeployXML() && !isAppBase) {
-            throw new IllegalArgumentException
-                (sm.getString("standardHost.installBase", url));
+            String msg = MessageFormat.format(rb.getString(HOST_WEB_APP_DIR_CAN_BE_INSTALLED_EXCEPTION), url);
+            throw new IllegalArgumentException(msg);
         }
 
         // Make sure contextPath and directory/war names match when
@@ -280,12 +425,14 @@ public class StandardHostDeployer implements Deployer {
             }
             if (contextPath.length() == 0) {
                 if (!filename.equals("ROOT")) {
-                    throw new IllegalArgumentException
-                        (sm.getString("standardHost.pathMatch", "/", "ROOT"));
+                    String msg = MessageFormat.format(rb.getString(CONSTEXT_PATH_MATCH_DIR_WAR_NAME_EXCEPTION),
+                                                      new Object[] {"/", "ROOT"});
+                    throw new IllegalArgumentException(msg);
                 }
             } else if (!filename.equals(contextPath.substring(1))) {
-                throw new IllegalArgumentException
-                    (sm.getString("standardHost.pathMatch", contextPath, filename));
+                String msg = MessageFormat.format(rb.getString(CONSTEXT_PATH_MATCH_DIR_WAR_NAME_EXCEPTION),
+                                                  new Object[] {contextPath, filename});
+                throw new IllegalArgumentException(msg);
             }
         }
 
@@ -312,7 +459,7 @@ public class StandardHostDeployer implements Deployer {
         } catch (ClassNotFoundException e) {
             log.log(Level.INFO, "", e);
         } catch (Exception e) {
-            log.log(Level.INFO, "Error installing", e);
+            log.log(Level.INFO, rb.getString(ERROR_INSTALLING_EXCEPTION), e);
             throw new IOException(e.toString());
         }
 
@@ -355,21 +502,24 @@ public class StandardHostDeployer implements Deployer {
         // Validate the format and state of our arguments
         if (contextPath == null)
             throw new IllegalArgumentException
-                (sm.getString("standardHost.pathRequired"));
-        if (!contextPath.equals("") && !contextPath.startsWith("/"))
-            throw new IllegalArgumentException
-                (sm.getString("standardHost.pathFormat", contextPath));
-        if (findDeployedApp(contextPath) != null)
-            throw new IllegalStateException
-                (sm.getString("standardHost.pathUsed", contextPath));
+                    (rb.getString(CONTEXT_PATH_REQUIRED_EXCEPTION));
+        if (!contextPath.equals("") && !contextPath.startsWith("/")) {
+            String msg = MessageFormat.format(rb.getString(INVALID_CONTEXT_PATH_EXCEPTION), contextPath);
+            throw new IllegalArgumentException(msg);
+        }
+        if (findDeployedApp(contextPath) != null) {
+            String msg = MessageFormat.format(rb.getString(CONTEXT_PATH_ALREADY_USED_EXCEPTION), contextPath);
+            throw new IllegalStateException(msg);
+        }
         if (war == null)
             throw new IllegalArgumentException
-                (sm.getString("standardHost.warRequired"));
+                    (rb.getString(URL_WEB_APP_ARCHIVE_REQUIRED_EXCEPTION));
 
         // Calculate the document base for the new web application
         if (log.isLoggable(Level.INFO)) {
-            log.info(sm.getString("standardHost.installing",
-                                  contextPath, war.toString()));
+            String msg = MessageFormat.format(rb.getString(INSTALLING_WEB_APP_INFO),
+                                              new Object[] {contextPath, war.toString()});
+            log.log(Level.INFO, msg);
         }
         String url = war.toString();
         String docBase = null;
@@ -377,8 +527,8 @@ public class StandardHostDeployer implements Deployer {
         if (url.startsWith("jar:")) {
             url = url.substring(4, url.length() - 2);
             if (!url.toLowerCase(Locale.ENGLISH).endsWith(".war")) {
-                throw new IllegalArgumentException
-                    (sm.getString("standardHost.warURL", url));
+                String msg = MessageFormat.format(rb.getString(INVALID_URL_WEB_APP_EXCEPTION), url);
+                throw new IllegalArgumentException(msg);
             }
             isWAR = true;
         }
@@ -386,9 +536,10 @@ public class StandardHostDeployer implements Deployer {
             docBase = url.substring(7);
         else if (url.startsWith("file:"))
             docBase = url.substring(5);
-        else
-            throw new IllegalArgumentException
-                (sm.getString("standardHost.warURL", url));
+        else {
+            String msg = MessageFormat.format(rb.getString(INVALID_URL_WEB_APP_EXCEPTION), url);
+            throw new IllegalArgumentException(msg);
+        }
 
         // Expand war file if host wants wars unpacked
         if (isWAR && host.isUnpackWARs()) {
@@ -417,9 +568,8 @@ public class StandardHostDeployer implements Deployer {
             //StandardServer server = (StandardServer) engine.getService().getServer();
             //server.storeContext(context);
         } catch (Exception e) {
-            log.log(Level.SEVERE,
-                    sm.getString("standardHost.installError", contextPath),
-                    e);
+            String msg = MessageFormat.format(rb.getString(ERROR_DEPLOYING_APP_CONTEXT_PATH_EXCEPTION), contextPath);
+            log.log(Level.SEVERE, msg, e);
             throw new IOException(e.toString());
         }
 
@@ -458,14 +608,15 @@ public class StandardHostDeployer implements Deployer {
         // Validate the format and state of our arguments
         if (config == null)
             throw new IllegalArgumentException
-                (sm.getString("standardHost.configRequired"));
+                    (rb.getString(URL_CONFIG_FILE_REQUIRED_EXCEPTION));
 
         if (!host.isDeployXML())
             throw new IllegalArgumentException
-                (sm.getString("standardHost.configNotAllowed"));
+                    (rb.getString(USE_CONFIG_FILE_NOT_ALLOWED));
 
         if (log.isLoggable(Level.INFO)) {
-            log.info(sm.getString("standardHost.installingXML", config));
+            String msg = MessageFormat.format(rb.getString(PROCESSING_CONTEXT_CONFIG_INFO), config);
+            log.log(Level.INFO, msg);
         }
 
         // Calculate the document base for the new web application (if needed)
@@ -474,7 +625,8 @@ public class StandardHostDeployer implements Deployer {
         if (war != null) {
             String url = war.toString();
             if (log.isLoggable(Level.INFO)) {
-                log.info(sm.getString("standardHost.installingWAR", url));
+                String msg = MessageFormat.format(rb.getString(INSTALLING_WEB_APP_FROM_URL_INFO), url);
+                log.log(Level.INFO, msg);
             }
             // Calculate the WAR file absolute pathname
             if (url.startsWith("jar:")) {
@@ -487,7 +639,7 @@ public class StandardHostDeployer implements Deployer {
                 docBase = url.substring(5);
             else
                 throw new IllegalArgumentException
-                    (sm.getString("standardHost.warURL", url));
+                        (rb.getString(INVALID_URL_WEB_APP_EXCEPTION));
 
         }
 
@@ -514,8 +666,8 @@ public class StandardHostDeployer implements Deployer {
             stream.close();
             stream = null;
         } catch (Exception e) {
-            host.log
-                (sm.getString("standardHost.installError", docBase), e);
+            String msg = MessageFormat.format(rb.getString(ERROR_DEPLOYING_APP_CONTEXT_PATH_EXCEPTION), docBase);
+            host.log(msg, e);
             throw new IOException(e.toString());
         } finally {
             if (stream != null) {
@@ -583,27 +735,30 @@ public class StandardHostDeployer implements Deployer {
         // Validate the format and state of our arguments
         if (contextPath == null)
             throw new IllegalArgumentException
-                (sm.getString("standardHost.pathRequired"));
-        if (!contextPath.equals("") && !contextPath.startsWith("/"))
-            throw new IllegalArgumentException
-                (sm.getString("standardHost.pathFormat", contextPath));
+                    (rb.getString(CONTEXT_PATH_REQUIRED_EXCEPTION));
+        if (!contextPath.equals("") && !contextPath.startsWith("/")) {
+            String msg = MessageFormat.format(rb.getString(INVALID_CONTEXT_PATH_EXCEPTION), contextPath);
+            throw new IllegalArgumentException(msg);
+        }
 
         // Locate the context and associated work directory
         Context context = findDeployedApp(contextPath);
-        if (context == null)
-            throw new IllegalArgumentException
-                (sm.getString("standardHost.pathMissing", contextPath));
+        if (context == null) {
+            String msg = MessageFormat.format(rb.getString(CONTEXT_PATH_NOT_IN_USE), contextPath);
+            throw new IllegalArgumentException(msg);
+        }
 
         // Remove this web application
         if (log.isLoggable(Level.INFO)) {
-            log.info(sm.getString("standardHost.removing", contextPath));
+            String msg = MessageFormat.format(rb.getString(REMOVING_WEB_APP_INFO), contextPath);
+            log.log(Level.INFO, msg);
         }
         try {
             host.removeChild(context);
             host.fireContainerEvent(REMOVE_EVENT, context);
         } catch (Exception e) {
-            log.log(Level.SEVERE,
-                    sm.getString("standardHost.removeError", contextPath), e);
+            String msg = MessageFormat.format(rb.getString(ERROR_REMOVING_APP_EXCEPTION), contextPath);
+            log.log(Level.SEVERE, msg, e);
             throw new IOException(e.toString());
         }
 
@@ -634,19 +789,22 @@ public class StandardHostDeployer implements Deployer {
         // Validate the format and state of our arguments
         if (contextPath == null)
             throw new IllegalArgumentException
-                (sm.getString("standardHost.pathRequired"));
-        if (!contextPath.equals("") && !contextPath.startsWith("/"))
-            throw new IllegalArgumentException
-                (sm.getString("standardHost.pathFormat", contextPath));
+                    (rb.getString(CONTEXT_PATH_REQUIRED_EXCEPTION));
+        if (!contextPath.equals("") && !contextPath.startsWith("/")) {
+            String msg = MessageFormat.format(rb.getString(INVALID_CONTEXT_PATH_EXCEPTION), contextPath);
+            throw new IllegalArgumentException(msg);
+        }
 
         // Locate the context and associated work directory
         Context context = findDeployedApp(contextPath);
-        if (context == null)
-            throw new IllegalArgumentException
-                (sm.getString("standardHost.pathMissing", contextPath));
+        if (context == null) {
+            String msg = MessageFormat.format(rb.getString(CONTEXT_PATH_NOT_IN_USE), contextPath);
+            throw new IllegalArgumentException(msg);
+        }
 
         // Remove this web application
-        host.log(sm.getString("standardHost.removing", contextPath));
+        String msgInfo = MessageFormat.format(rb.getString(REMOVING_WEB_APP_INFO), contextPath);
+        host.log(msgInfo);
         try {
             // Get the work directory for the Context
             File workDir = 
@@ -725,7 +883,8 @@ public class StandardHostDeployer implements Deployer {
 
             host.fireContainerEvent(REMOVE_EVENT, context);
         } catch (Exception e) {
-            host.log(sm.getString("standardHost.removeError", contextPath), e);
+            String msgException = MessageFormat.format(rb.getString(ERROR_REMOVING_APP_EXCEPTION), contextPath);
+            host.log(msgException, e);
             throw new IOException(e.toString());
         }
 
@@ -750,24 +909,27 @@ public class StandardHostDeployer implements Deployer {
         // Validate the format and state of our arguments
         if (contextPath == null)
             throw new IllegalArgumentException
-                (sm.getString("standardHost.pathRequired"));
-        if (!contextPath.equals("") && !contextPath.startsWith("/"))
-            throw new IllegalArgumentException
-                (sm.getString("standardHost.pathFormat", contextPath));
+                    (rb.getString(CONTEXT_PATH_REQUIRED_EXCEPTION));
+        if (!contextPath.equals("") && !contextPath.startsWith("/")) {
+            String msg = MessageFormat.format(rb.getString(INVALID_CONTEXT_PATH_EXCEPTION), contextPath);
+            throw new IllegalArgumentException(msg);
+        }
         Context context = findDeployedApp(contextPath);
-        if (context == null)
-            throw new IllegalArgumentException
-                (sm.getString("standardHost.pathMissing", contextPath));
+        if (context == null) {
+            String msg = MessageFormat.format(rb.getString(CONTEXT_PATH_NOT_IN_USE), contextPath);
+            throw new IllegalArgumentException(msg);
+        }
         if (log.isLoggable(Level.INFO)) {
-            log.info(sm.getString("standardHost.start", contextPath));
+            String msg = MessageFormat.format(rb.getString(STARTING_WEB_APP_INFO), contextPath);
+            log.log(Level.INFO, msg);
         }
         try {
             ((Lifecycle) context).start();
         } catch (LifecycleException e) {
-            log.log(Level.SEVERE, sm.getString("standardHost.start",
-                    contextPath), e);
-            throw new IllegalStateException(sm.getString("standardHost.start",
-                    contextPath), e);
+            String msg = MessageFormat.format(rb.getString(STARTING_WEB_APP_FAILED_EXCEPTION), contextPath);
+
+            log.log(Level.SEVERE, msg, e);
+            throw new IllegalStateException(msg, e);
         }
     }
 
@@ -790,24 +952,27 @@ public class StandardHostDeployer implements Deployer {
         // Validate the format and state of our arguments
         if (contextPath == null)
             throw new IllegalArgumentException
-                (sm.getString("standardHost.pathRequired"));
-        if (!contextPath.equals("") && !contextPath.startsWith("/"))
-            throw new IllegalArgumentException
-                (sm.getString("standardHost.pathFormat", contextPath));
+                    (rb.getString(CONTEXT_PATH_REQUIRED_EXCEPTION));
+        if (!contextPath.equals("") && !contextPath.startsWith("/")) {
+            String msg = MessageFormat.format(rb.getString(INVALID_CONTEXT_PATH_EXCEPTION), contextPath);
+            throw new IllegalArgumentException(msg);
+        }
         Context context = findDeployedApp(contextPath);
-        if (context == null)
-            throw new IllegalArgumentException
-                (sm.getString("standardHost.pathMissing", contextPath));
+        if (context == null) {
+            String msg = MessageFormat.format(rb.getString(CONTEXT_PATH_NOT_IN_USE), contextPath);
+            throw new IllegalArgumentException(msg);
+        }
         if (log.isLoggable(Level.INFO)) {
-            log.info(sm.getString("standardHost.stop", contextPath));
+            String msg = MessageFormat.format(rb.getString(STOPPING_WEB_APP_INFO), contextPath);
+            log.log(Level.INFO, msg);
+
         }
         try {
             ((Lifecycle) context).stop();
         } catch (LifecycleException e) {
-            log.log(Level.SEVERE, sm.getString("standardHost.stop",
-                    contextPath), e);
-            throw new IllegalStateException(sm.getString("standardHost.stop",
-                    contextPath), e);
+            String msg = MessageFormat.format(rb.getString(STOPPING_WEB_APP_FAILED_EXCEPTION), contextPath);
+            log.log(Level.SEVERE, msg, e);
+            throw new IllegalStateException(msg, e);
         }
 
     }
@@ -831,13 +996,15 @@ public class StandardHostDeployer implements Deployer {
         }
         if (contextPath == null)
             throw new IllegalArgumentException
-                (sm.getString("standardHost.pathRequired"));
-        else if (!contextPath.equals("") && !contextPath.startsWith("/"))
-            throw new IllegalArgumentException
-                (sm.getString("standardHost.pathFormat", contextPath));
-        if (host.findChild(contextPath) != null)
-            throw new IllegalStateException
-                (sm.getString("standardHost.pathUsed", contextPath));
+                    (rb.getString(CONTEXT_PATH_REQUIRED_EXCEPTION));
+        else if (!contextPath.equals("") && !contextPath.startsWith("/")) {
+            String msg = MessageFormat.format(rb.getString(INVALID_CONTEXT_PATH_EXCEPTION), contextPath);
+            throw new IllegalArgumentException(msg);
+        }
+        if (host.findChild(contextPath) != null) {
+            String msg = MessageFormat.format(rb.getString(CONTEXT_PATH_ALREADY_USED_EXCEPTION), contextPath);
+            throw new IllegalStateException(msg);
+        }
         if (this.overrideDocBase != null)
             context.setDocBase(this.overrideDocBase);
         if (this.overrideConfigFile != null)
@@ -908,9 +1075,8 @@ public class StandardHostDeployer implements Deployer {
 
     protected void deleteFile(File dir) {
         if (!dir.delete()) {
-          log.log(Level.WARNING,
-                  sm.getString("standardHost.removeFileFailed",
-                               dir.getAbsolutePath()));
+            String msg = MessageFormat.format(rb.getString(FAILED_REMOVE_FILE), dir.getAbsolutePath());
+            log.log(Level.WARNING, msg);
         }
     }
 

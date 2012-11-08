@@ -41,19 +41,37 @@
 package org.apache.catalina.core;
 
 import org.apache.catalina.util.StringManager;
-
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
 import javax.servlet.ServletRegistration;
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
 public class ServletRegistrationImpl implements ServletRegistration {
 
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
     protected StandardWrapper wrapper;
     protected StandardContext ctx;
+
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+        message = "Unable to configure {0} for servlet {1} of servlet context {2}, " +
+                   "because this servlet context has already been initialized",
+        level = "WARNING"
+    )
+    public static final String SERVLET_REGISTRATION_ALREADY_INIT = "AS-WEB-CORE-00053";
+
+    @LogMessageInfo(
+        message = "Unable to configure mapping for servlet {0} of servlet context {1}, because URL patterns are null or empty",
+        level = "WARNING"
+    )
+    public static final String SERVLET_REGISTRATION_MAPPING_URL_PATTERNS_EXCEPTION = "AS-WEB-CORE-00054";
 
     /**
      * Constructor
@@ -86,10 +104,10 @@ public class ServletRegistrationImpl implements ServletRegistration {
 
     public boolean setInitParameter(String name, String value) {
         if (ctx.isContextInitializedCalled()) {
-            throw new IllegalStateException(
-                sm.getString("servletRegistration.alreadyInitialized",
-                             "init parameter", wrapper.getName(),
-                             ctx.getName()));
+            String msg = MessageFormat.format(rb.getString(SERVLET_REGISTRATION_ALREADY_INIT),
+                                              new Object[] {"init parameter", wrapper.getName(),
+                                                            ctx.getName()});
+            throw new IllegalStateException(msg);
         }
         return wrapper.setInitParameter(name, value, false);
     }
@@ -108,16 +126,16 @@ public class ServletRegistrationImpl implements ServletRegistration {
 
     public Set<String> addMapping(String... urlPatterns) {
         if (ctx.isContextInitializedCalled()) {
-            throw new IllegalStateException(
-                sm.getString("servletRegistration.alreadyInitialized",
-                             "mapping", wrapper.getName(), ctx.getName()));
+            String msg = MessageFormat.format(rb.getString(SERVLET_REGISTRATION_ALREADY_INIT),
+                                              new Object[] {"mapping", wrapper.getName(),
+                                                            ctx.getName()});
+            throw new IllegalStateException(msg);
         }
 
         if (urlPatterns == null || urlPatterns.length == 0) {
-            throw new IllegalArgumentException(
-                sm.getString(
-                    "servletRegistration.mappingWithNullOrEmptyUrlPatterns",
-                    wrapper.getName(), ctx.getName()));
+            String msg = MessageFormat.format(rb.getString(SERVLET_REGISTRATION_MAPPING_URL_PATTERNS_EXCEPTION),
+                                              new Object[] {wrapper.getName(), ctx.getName()});
+            throw new IllegalArgumentException(msg);
         }
 
         return ctx.addServletMapping(wrapper.getName(), urlPatterns);

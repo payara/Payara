@@ -102,15 +102,7 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
  */
 class ApplicationDispatcherForward {
 
-    @LogMessagesResourceBundle
-    public static final String SHARED_LOGMESSAGE_RESOURCE =
-            "org.apache.catalina.core.LogMessages";
-
-    @LoggerInfo(subsystem="WEB", description="WEB Core Logger", publish=true)
-    public static final String WEB_CORE_LOGGER = "javax.enterprise.web.core";
-
-    public static final Logger log =
-            Logger.getLogger(WEB_CORE_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+    public static final Logger log = StandardServer.log;
 
     public static final ResourceBundle rb = log.getResourceBundle();
 

@@ -86,6 +86,8 @@ import java.util.logging.Logger;
 
 public final class ApplicationContextFacade
     implements ServletContext {
+
+    private static final Logger log = StandardServer.log;
         
     // ---------------------------------------------------------- Attributes
     /**
@@ -128,10 +130,6 @@ public final class ApplicationContextFacade
     private HashMap<String, Method> objectCache;
     
     
-    private static Logger sysLog = Logger.getLogger(
-        ApplicationContextFacade.class.getName());
-    
-        
     // ----------------------------------------------------------- Constructors
 
 
@@ -1000,9 +998,8 @@ public final class ApplicationContextFacade
 
         Throwable realException;
 
-        if (sysLog.isLoggable(Level.FINE)) {   
-            sysLog.log(Level.FINE, "ApplicationContextFacade." + methodName,
-                       ex);
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "ApplicationContextFacade." + methodName, ex);
         }
 
 	if (ex instanceof PrivilegedActionException) {

@@ -70,6 +70,10 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.security.Principal;
 import java.security.PrivilegedActionException;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import static org.apache.catalina.InstanceEvent.EventType.AFTER_FILTER_EVENT;
 import static org.apache.catalina.InstanceEvent.EventType.BEFORE_FILTER_EVENT;
@@ -87,6 +91,14 @@ import static org.apache.catalina.InstanceEvent.EventType.BEFORE_FILTER_EVENT;
 
 final class ApplicationFilterChain implements FilterChain {
 
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+        message = "Filter execution threw an exception",
+        level = "WARNING"
+    )
+    public static final String FILTER_EXECUTION_EXCEPTION = "AS-WEB-CORE-00023";
 
     // -------------------------------------------------------------- Constants
 
@@ -140,13 +152,6 @@ final class ApplicationFilterChain implements FilterChain {
     private StandardWrapper wrapper = null;
 
 
-    /**
-     * The string manager for our package.
-     */
-    private static final StringManager sm =
-      StringManager.getManager(Constants.Package);
-
-    
     /**
      * Static class array used when the SecurityManager is turned on and 
      * <code>doFilter</code is invoked.
@@ -274,7 +279,7 @@ final class ApplicationFilterChain implements FilterChain {
                     support.fireInstanceEvent(AFTER_FILTER_EVENT,
                                               filter, request, response, e);
                 throw new ServletException
-                  (sm.getString("filterChain.filter"), e);
+                        (rb.getString(FILTER_EXECUTION_EXCEPTION), e);
             }
             return;
         }

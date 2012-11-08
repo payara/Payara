@@ -47,7 +47,10 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.connector.SessionTracker;
 import org.apache.catalina.util.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
 import javax.servlet.ServletRequest;
 
 /**
@@ -62,12 +65,25 @@ import javax.servlet.ServletRequest;
  */
 public class RequestFacadeHelper {
     //use the same resource properties as in org.apache.catalina.connector.RequestFacade
-    private static final StringManager sm =
-            StringManager.getManager(Constants.Package);
 
     private Request request;
 
     private Response response;
+
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+        message = "Must not use request object outside the scope of a servlet's service or a filter's doFilter method",
+        level = "WARNING"
+    )
+    public static final String VALIDATE_REQUEST_EXCEPTION = "AS-WEB-CORE-00051";
+
+    @LogMessageInfo(
+        message = "Null response object",
+        level = "WARNING"
+    )
+    public static final String VALIDATE_RESPONSE_EXCEPTION = "AS-WEB-CORE-00052";
 
     public RequestFacadeHelper(Request request) {
         this.request = request;
@@ -156,15 +172,13 @@ public class RequestFacadeHelper {
 
     private void validateRequest() {
         if (request == null) {
-            throw new IllegalStateException(
-                    sm.getString("requestFacade.nullRequest"));
+            throw new IllegalStateException(rb.getString(VALIDATE_REQUEST_EXCEPTION));
         }
     }
 
     private void validateResponse() {
         if (response == null) {
-            throw new IllegalStateException(
-                    sm.getString("responseFacade.nullResponse"));
+            throw new IllegalStateException(rb.getString(VALIDATE_RESPONSE_EXCEPTION));
         }
     }
 }

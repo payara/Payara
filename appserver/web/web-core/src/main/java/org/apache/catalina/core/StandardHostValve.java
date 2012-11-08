@@ -65,7 +65,9 @@ import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ResponseUtil;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.valve.GlassFishValve;
+
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -74,6 +76,8 @@ import java.io.*;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 // END SJSAS 6374691
 
 /**
@@ -91,12 +95,29 @@ import java.util.logging.Logger;
 final class StandardHostValve
     extends ValveBase {
 
-
-    private static final Logger log = Logger.getLogger(
-        StandardHostValve.class.getName());
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
 
     private static final ClassLoader standardHostValveClassLoader =
         StandardHostValve.class.getClassLoader();
+
+    @LogMessageInfo(
+        message = "Remote Client Aborted Request, IOException: {0}",
+        level = "FINE"
+    )
+    public static final String REMOTE_CLIENT_ABORTED_EXCEPTION = "AS-WEB-CORE-00195";
+
+    @LogMessageInfo(
+        message = "The error-page {0} does not exist",
+        level = "WARNING"
+    )
+    public static final String ERROR_PAGE_NOT_EXIST = "AS-WEB-CORE-00196";
+
+    @LogMessageInfo(
+        message = "No Context configured to process this request",
+        level = "WARNING"
+    )
+    public static final String NO_CONTEXT_TO_PROCESS = "AS-WEB-CORE-00197";
 
 
     // ----------------------------------------------------- Instance Variables
@@ -280,8 +301,9 @@ final class StandardHostValve
         // If this is an aborted request from a client just log it and return
         if (realError instanceof ClientAbortException ) {
             if (log.isLoggable(Level.FINE)) {
-                log.fine(sm.getString("standardHost.clientAbort",
-                                      realError.getCause().getMessage()));
+                String msg = MessageFormat.format(rb.getString(REMOTE_CLIENT_ABORTED_EXCEPTION),
+                                                  realError.getCause().getMessage());
+                log.log(Level.FINE, msg);
             }
             return;
         }
@@ -358,7 +380,8 @@ final class StandardHostValve
             if (errorPage.getLocation() != null) {
                 File file = new File(context.getDocBase(), errorPage.getLocation());
                 if (!file.exists()) {
-                    log.warning("The error-page " +file.getAbsolutePath()+" does not exist");
+                    String msg = MessageFormat.format(rb.getString(ERROR_PAGE_NOT_EXIST), file.getAbsolutePath());
+                    log.log(Level.WARNING, msg);
                 }
             }
             setErrorPageContentType(response, errorPage.getLocation(), context);
@@ -376,7 +399,8 @@ final class StandardHostValve
                 if (errorPage.getLocation() != null) {
                     File file = new File(context.getDocBase(), errorPage.getLocation());
                     if (!file.exists()) {
-                        log.warning("The error-page " +file.getAbsolutePath()+" does not exist");
+                        String msg = MessageFormat.format(rb.getString(ERROR_PAGE_NOT_EXIST), file.getAbsolutePath());
+                        log.log(Level.WARNING, msg);
                     }
                 }
                 try {
@@ -512,7 +536,7 @@ final class StandardHostValve
             logger.log(this.toString() + ": " + message);
         } else {
             if (log.isLoggable(Level.INFO)) {
-                log.info(this.toString() + ": " + message);
+                log.log(Level.INFO, this.toString() + ": " + message);
             }
         }
     }

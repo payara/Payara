@@ -71,6 +71,10 @@ import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.ResourceBundle;
+import java.text.MessageFormat;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 
 /**
@@ -84,8 +88,16 @@ import java.util.logging.Logger;
 
 final class ApplicationFilterConfig implements FilterConfig, Serializable {
 
-    private static Logger log = Logger.getLogger(
-        ApplicationFilterConfig.class.getName());
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+        message = "ApplicationFilterConfig.doAsPrivilege",
+        level = "SEVERE",
+        cause = "Could not release allocated filter instance",
+        action = "Verify the privilege"
+    )
+    public static final String DO_AS_PRIVILEGE = "AS-WEB-CORE-00024";
  
     // ----------------------------------------------------------- Constructors
 
@@ -311,9 +323,9 @@ final class ApplicationFilterConfig implements FilterConfig, Serializable {
                     SecurityUtil.doAsPrivilege("destroy",
                                                filter); 
                     SecurityUtil.remove(filter);
-                } catch(java.lang.Exception ex){                    
-                    log.log(Level.SEVERE,
-                            "ApplicationFilterConfig.doAsPrivilege", ex);
+                } catch(java.lang.Exception ex){
+                    String msg = rb.getString(DO_AS_PRIVILEGE);
+                    log.log(Level.SEVERE, msg, ex);
                 }
             } else { 
                 filter.destroy();
@@ -367,9 +379,9 @@ final class ApplicationFilterConfig implements FilterConfig, Serializable {
                         SecurityUtil.doAsPrivilege("destroy",
                                                    filter);  
                         SecurityUtil.remove(filter);
-                    } catch(java.lang.Exception ex){    
-                        log.log(Level.SEVERE,
-                                "ApplicationFilterConfig.doAsPrivilege", ex);
+                    } catch(java.lang.Exception ex){
+                        String msg = rb.getString(DO_AS_PRIVILEGE);
+                        log.log(Level.SEVERE, msg, ex);
                     }
                 } else { 
                     filter.destroy();

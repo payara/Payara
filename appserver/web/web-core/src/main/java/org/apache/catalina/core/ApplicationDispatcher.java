@@ -73,8 +73,12 @@ import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.text.MessageFormat;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import static org.apache.catalina.InstanceEvent.EventType.AFTER_DISPATCH_EVENT;
 
@@ -94,6 +98,73 @@ import static org.apache.catalina.InstanceEvent.EventType.AFTER_DISPATCH_EVENT;
 
 public final class ApplicationDispatcher
     implements RequestDispatcher {
+
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+        message = "Cannot forward after response has been committed",
+        level = "INFO"
+    )
+    public static final String ILLEGAL_STATE_EXCEPTION = "AS-WEB-CORE-00014";
+
+    @LogMessageInfo(
+        message = "Servlet {0} is currently unavailable",
+        level = "WARNING"
+    )
+    public static final String UNAVAILABLE_SERVLET = "AS-WEB-CORE-00015";
+
+    @LogMessageInfo(
+        message = "Allocate exception for servlet {0}",
+        level = "SEVERE",
+        cause = "Could not allocate servlet instance",
+        action = "Verify the configuration of wrapper"
+    )
+    public static final String ALLOCATE_SERVLET_EXCEPTION = "AS-WEB-CORE-00016";
+
+    @LogMessageInfo(
+        message = "Exceeded maximum depth for nested request dispatches: {0}",
+        level = "INFO"
+    )
+    public static final String MAX_DISPATCH_DEPTH_REACHED = "AS-WEB-CORE-00017";
+
+    @LogMessageInfo(
+        message = "Servlet.service() for servlet {0} threw exception",
+        level = "WARNING"
+    )
+    public static final String SERVLET_SERVICE_EXCEPTION = "AS-WEB-CORE-00018";
+
+    @LogMessageInfo(
+        message = "Release filters exception for servlet {0}",
+        level = "SEVERE",
+        cause = "Could not release filter chain",
+        action = "Verify the availability of current filter chain"
+    )
+    public static final String RELEASE_FILTERS_EXCEPTION = "AS-WEB-CORE-00019";
+
+    @LogMessageInfo(
+        message = "Deallocate exception for servlet {0}",
+        level = "SEVERE",
+        cause = "Could not deallocate the allocated servlet instance",
+        action = "Verify the availability of servlet instance"
+    )
+    public static final String DEALLOCATE_SERVLET_EXCEPTION = "AS-WEB-CORE-00020";
+
+    @LogMessageInfo(
+        message = "ApplicationDispatcher[{0}]: {1}",
+        level = "INFO"
+    )
+    public static final String APPLICATION_DISPATCHER_INFO = "AS-WEB-CORE-00021";
+
+    @LogMessageInfo(
+        message = "ApplicationDispatcher[{0}]: {1}",
+        level = "WARNING",
+        cause = "Could not get logger from parent context",
+        action = "Verify if logger is null"
+    )
+    public static final String APPLICATION_DISPATCHER_WARNING = "AS-WEB-CORE-00022";
+
+
 
     // This attribute corresponds to a String[] which acts like a stack
     // containing the last two pushed elements
@@ -221,17 +292,13 @@ public final class ApplicationDispatcher
         this.name = name;
 
         if (log.isLoggable(Level.FINE))
-            log.fine("servletPath=" + this.servletPath + ", pathInfo=" +
-                this.pathInfo + ", queryString=" + queryString +
-                ", name=" + this.name);
-
+            log.log(Level.FINE, "servletPath= " + this.servletPath + ", pathInfo= "
+                    + this.pathInfo + ", queryString= " + queryString + ", name= "
+                    + this.name + "");
     }
 
 
     // ----------------------------------------------------- Instance Variables
-
-    private static final Logger log = Logger.getLogger(
-        ApplicationDispatcher.class.getName());
 
     //START OF 6364900
     /**
@@ -280,12 +347,6 @@ public final class ApplicationDispatcher
      * The servlet path for this RequestDispatcher.
      */
     private String servletPath = null;
-
-    /**
-     * The StringManager for this package.
-     */
-    private static final StringManager sm =
-      StringManager.getManager(Constants.Package);
 
     /**
      * The Wrapper associated with the resource that will be forwarded to
@@ -391,16 +452,17 @@ public final class ApplicationDispatcher
             // headers/cookies
             if (response.isCommitted()) {
                 if (log.isLoggable(Level.FINE))
-                    log.fine("  Forward on committed response --> ISE");
+                    log.log(Level.FINE, "Forward on committed response --> ISE");
                 throw new IllegalStateException
-                    (sm.getString("applicationDispatcher.forward.ise"));
+                        (rb.getString(ILLEGAL_STATE_EXCEPTION));
             }
 
             try {
                 response.resetBuffer();
             } catch (IllegalStateException e) {
                 if (log.isLoggable(Level.FINE))
-                    log.fine("  Forward resetBuffer() returned ISE: " + e);
+                    log.log(Level.FINE,
+                           "Forward resetBuffer() returned ISE: " + e.toString(), e);
                 throw e;
             }
         }
@@ -739,8 +801,9 @@ public final class ApplicationDispatcher
 
         // Check for the servlet being marked unavailable
         if (wrapper.isUnavailable()) {
-            log(sm.getString("applicationDispatcher.isUnavailable",
-                             wrapper.getName()));
+            String msg = MessageFormat.format(rb.getString(UNAVAILABLE_SERVLET),
+                                              wrapper.getName());
+            log.log(Level.WARNING, msg);
             if (hresponse == null) {
                 ;       // NOTE - Not much we can do generically
             } else {
@@ -748,30 +811,27 @@ public final class ApplicationDispatcher
                 if ((available > 0L) && (available < Long.MAX_VALUE))
                     hresponse.setDateHeader("Retry-After", available);
                 hresponse.sendError
-                    (HttpServletResponse.SC_SERVICE_UNAVAILABLE,
-                     sm.getString("applicationDispatcher.isUnavailable",
-                                  wrapper.getName()));
+                        (HttpServletResponse.SC_SERVICE_UNAVAILABLE, msg);
             }
             unavailable = true;
         }
 
         // Allocate a servlet instance to process this request
+        String allocateServletMsg =
+                MessageFormat.format(rb.getString(ALLOCATE_SERVLET_EXCEPTION),
+                                     wrapper.getName());
         try {
             if (!unavailable) {
                 servlet = wrapper.allocate();
             }
         } catch (ServletException e) {
-            log(sm.getString("applicationDispatcher.allocateException",
-                             wrapper.getName()),
-                             StandardWrapper.getRootCause(e));
+            log.log(Level.SEVERE, allocateServletMsg,
+                    StandardWrapper.getRootCause(e));
             servletException = e;
             servlet = null;
         } catch (Throwable e) {
-            log(sm.getString("applicationDispatcher.allocateException",
-                             wrapper.getName()), e);
-            servletException = new ServletException
-                (sm.getString("applicationDispatcher.allocateException",
-                              wrapper.getName()), e);
+            log.log(Level.SEVERE, allocateServletMsg, e);
+            servletException = new ServletException(allocateServletMsg, e);
             servlet = null;
         }
                 
@@ -783,6 +843,9 @@ public final class ApplicationDispatcher
         InstanceSupport support = ((StandardWrapper) wrapper).getInstanceSupport();
 
         // Call the service() method for the allocated servlet instance
+        String servletServiceExceptionMsg =
+                MessageFormat.format(rb.getString(SERVLET_SERVICE_EXCEPTION),
+                                     wrapper.getName());
         RequestFacadeHelper reqFacHelper = RequestFacadeHelper.getInstance(request);
         try {
             String jspFile = wrapper.getJspFile();
@@ -803,10 +866,9 @@ public final class ApplicationDispatcher
                 if (reqFacHelper != null) {
                     reqFacHelper.incrementDispatchDepth();
                     if (reqFacHelper.isMaxDispatchDepthReached()) {
-                        throw new ServletException(sm.getString(
-                            "applicationDispatcher.maxDispatchDepthReached",
-                            new Object[] { Integer.valueOf(
-                                Request.getMaxDispatchDepth())}));
+                        String msg = MessageFormat.format(MAX_DISPATCH_DEPTH_REACHED,
+                                                          new Object[]{Integer.valueOf(Request.getMaxDispatchDepth())});
+                        throw new ServletException(msg);
                     }
                 }
                 // END OF S1AS 4703023 
@@ -833,14 +895,12 @@ public final class ApplicationDispatcher
         } catch (IOException e) {
             support.fireInstanceEvent(AFTER_DISPATCH_EVENT,
                                       servlet, request, response);
-            log(sm.getString("applicationDispatcher.serviceException",
-                             wrapper.getName()), e);
+            log.log(Level.WARNING, servletServiceExceptionMsg, e);
             ioException = e;
         } catch (UnavailableException e) {
             support.fireInstanceEvent(AFTER_DISPATCH_EVENT,
                                       servlet, request, response);
-            log(sm.getString("applicationDispatcher.serviceException",
-                             wrapper.getName()), e);
+            log.log(Level.WARNING, servletServiceExceptionMsg, e);
             servletException = e;
             wrapper.unavailable(e);
         } catch (ServletException e) {
@@ -848,15 +908,13 @@ public final class ApplicationDispatcher
                                       servlet, request, response);
             Throwable rootCause = StandardWrapper.getRootCause(e);
             if (!(rootCause instanceof ClientAbortException)) {
-                log(sm.getString("applicationDispatcher.serviceException",
-                    wrapper.getName()), rootCause);
+                log.log(Level.WARNING, servletServiceExceptionMsg, rootCause);
             }
             servletException = e;
         } catch (RuntimeException e) {
             support.fireInstanceEvent(AFTER_DISPATCH_EVENT,
                                       servlet, request, response);
-            log(sm.getString("applicationDispatcher.serviceException",
-                             wrapper.getName()), e);
+            log.log(Level.WARNING, servletServiceExceptionMsg, e);
             runtimeException = e;
         // START OF S1AS 4703023
         } finally {
@@ -871,29 +929,27 @@ public final class ApplicationDispatcher
             if (filterChain != null)
                 filterChain.release();
         } catch (Throwable e) {
-            log.log(Level.SEVERE,
-                    sm.getString("standardWrapper.releaseFilters",
-                                 wrapper.getName()),
-                    e);
+            String msg = MessageFormat.format(rb.getString(RELEASE_FILTERS_EXCEPTION),
+                                                           wrapper.getName());
+            log.log(Level.SEVERE, msg, e);
             // FIXME Exception handling needs to be simpiler to what is
             // in the StandardWrapperValue
         }
 
         // Deallocate the allocated servlet instance
+        String deallocateServletExceptionMsg =
+                MessageFormat.format(rb.getString(DEALLOCATE_SERVLET_EXCEPTION),
+                                                  wrapper.getName());
         try {
             if (servlet != null) {
                 wrapper.deallocate(servlet);
             }
         } catch (ServletException e) {
-            log(sm.getString("applicationDispatcher.deallocateException",
-                             wrapper.getName()), e);
+            log.log(Level.SEVERE, deallocateServletExceptionMsg, e);
             servletException = e;
         } catch (Throwable e) {
-            log(sm.getString("applicationDispatcher.deallocateException",
-                             wrapper.getName()), e);
-            servletException = new ServletException
-                (sm.getString("applicationDispatcher.deallocateException",
-                              wrapper.getName()), e);
+            log.log(Level.SEVERE, deallocateServletExceptionMsg, e);
+            servletException = new ServletException(deallocateServletExceptionMsg, e);
         }
 
         // Reset the old context class loader
@@ -922,8 +978,9 @@ public final class ApplicationDispatcher
                        "]: " + message);
         } else {
             if (log.isLoggable(Level.INFO)) {
-                log.info("ApplicationDispatcher[" +
-                         context.getPath() + "]: " + message);
+                String msg = MessageFormat.format(rb.getString(APPLICATION_DISPATCHER_INFO),
+                                                  context.getPath(), message);
+                log.log(Level.INFO, msg);
             }
         }
     }
@@ -941,8 +998,9 @@ public final class ApplicationDispatcher
             logger.log("ApplicationDispatcher[" + context.getPath() +
                 "] " + message, t, org.apache.catalina.Logger.WARNING);
         } else {
-            log.log(Level.WARNING, "ApplicationDispatcher[" +
-                    context.getPath() + "]: " + message, t);
+            String msg = MessageFormat.format(rb.getString(APPLICATION_DISPATCHER_WARNING),
+                                              context.getPath(), message);
+            log.log(Level.WARNING, msg, t);
         }
     }
 

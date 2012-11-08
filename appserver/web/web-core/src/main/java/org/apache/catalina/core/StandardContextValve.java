@@ -67,6 +67,7 @@ import org.glassfish.web.valve.GlassFishValve;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.grizzly.http.util.DataChunk;
@@ -98,18 +99,7 @@ final class StandardContextValve
         "org.apache.catalina.core.StandardContextValve/1.0";
 
 
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(Constants.Package);
-
-
     private StandardContext context = null;
-
-
-    private static final Logger log = Logger.getLogger(
-        StandardContextValve.class.getName());
 
 
     // ------------------------------------------------------------- Properties

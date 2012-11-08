@@ -43,6 +43,7 @@ package org.apache.catalina.core;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.util.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
@@ -50,14 +51,35 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.logging.Logger;
 
 public class FilterRegistrationImpl implements FilterRegistration {
 
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
-
     protected FilterDef filterDef;
     protected StandardContext ctx;
+
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+        message = "Unable to configure {0} for filter {1} of servlet context {2}, because this servlet context has already been initialized",
+        level = "WARNING"
+    )
+    public static final String FILTER_REGISTRATION_ALREADY_INIT = "AS-WEB-CORE-00043";
+
+    @LogMessageInfo(
+        message = "Unable to configure mapping for filter {0} of servlet context {1}, because servlet names are null or empty",
+        level = "WARNING"
+    )
+    public static final String FILTER_REGISTRATION_MAPPING_SERVLET_NAME_EXCEPTION = "AS-WEB-CORE-00044";
+
+    @LogMessageInfo(
+        message = "Unable to configure mapping for filter {0} of servlet context {1}, because URL patterns are null or empty",
+        level = "WARNING"
+    )
+    public static final String FILTER_REGISTRATION_MAPPING_URL_PATTERNS_EXCEPTION = "AS-WEB-CORE-00045";
 
     /**
      * Constructor
@@ -85,10 +107,10 @@ public class FilterRegistrationImpl implements FilterRegistration {
 
     public boolean setInitParameter(String name, String value) {
         if (ctx.isContextInitializedCalled()) {
-            throw new IllegalStateException(
-                sm.getString("filterRegistration.alreadyInitialized",
-                             "init parameter", filterDef.getFilterName(),
-                             ctx.getName()));
+            String msg = MessageFormat.format(rb.getString(FILTER_REGISTRATION_ALREADY_INIT),
+                                              new Object[] {"init parameter", filterDef.getFilterName(),
+                                                            ctx.getName()});
+            throw new IllegalStateException(msg);
         }
 
         return filterDef.setInitParameter(name, value, false);
@@ -115,18 +137,16 @@ public class FilterRegistrationImpl implements FilterRegistration {
             String... servletNames) {
 
         if (ctx.isContextInitializedCalled()) {
-            throw new IllegalStateException(
-                sm.getString("filterRegistration.alreadyInitialized",
-                             "servlet-name mapping",
-                             filterDef.getFilterName(),
-                             ctx.getName()));
+            String msg = MessageFormat.format(rb.getString(FILTER_REGISTRATION_ALREADY_INIT),
+                                              new Object[] {"servlet-name mapping", filterDef.getFilterName(),
+                                                            ctx.getName()});
+            throw new IllegalStateException(msg);
         }
 
         if ((servletNames==null) || (servletNames.length==0)) {
-            throw new IllegalArgumentException(
-                sm.getString(
-                    "filterRegistration.mappingWithNullOrEmptyServletNames",
-                    filterDef.getFilterName(), ctx.getName()));
+            String msg = MessageFormat.format(rb.getString(FILTER_REGISTRATION_MAPPING_SERVLET_NAME_EXCEPTION),
+                                              new Object[]  {filterDef.getFilterName(), ctx.getName()});
+            throw new IllegalArgumentException(msg);
         }
 
         for (String servletName : servletNames) {
@@ -150,17 +170,16 @@ public class FilterRegistrationImpl implements FilterRegistration {
             String... urlPatterns) {
 
         if (ctx.isContextInitializedCalled()) {
-            throw new IllegalStateException(
-                sm.getString("filterRegistration.alreadyInitialized",
-                             "url-pattern mapping", filterDef.getFilterName(),
-                             ctx.getName()));
+            String msg = MessageFormat.format(rb.getString(FILTER_REGISTRATION_ALREADY_INIT),
+                                              new Object[] {"url-pattern mapping", filterDef.getFilterName(),
+                                                            ctx.getName()});
+            throw new IllegalStateException(msg);
         }
 
         if ((urlPatterns==null) || (urlPatterns.length==0)) {
-            throw new IllegalArgumentException(
-                sm.getString(
-                    "filterRegistration.mappingWithNullOrEmptyUrlPatterns",
-                    filterDef.getFilterName(), ctx.getName()));
+            String msg = MessageFormat.format(rb.getString(FILTER_REGISTRATION_MAPPING_URL_PATTERNS_EXCEPTION),
+                                              new Object[] {filterDef.getFilterName(), ctx.getName()});
+            throw new IllegalArgumentException(msg);
         }
 
         for (String urlPattern : urlPatterns) {

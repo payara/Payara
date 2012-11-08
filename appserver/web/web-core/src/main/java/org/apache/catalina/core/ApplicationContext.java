@@ -74,6 +74,10 @@ import java.net.URL;
 //import java.security.SecurityPermission;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * Standard implementation of <code>ServletContext</code> that represents
@@ -87,6 +91,32 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ApplicationContext implements ServletContext {
 
     // ----------------------------------------------------------- Constructors
+
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+        message = "Not allowed to call this javax.servlet.ServletContext " +
+                  "method from a ServletContextListener that was neither " +
+                  "declared in the application's deployment descriptor nor " +
+                  "annotated with WebListener",
+        level = "INFO"
+    )
+    public static final String UNSUPPORTED_OPERATION_EXCEPTION = "AS-WEB-CORE-00011";
+
+    @LogMessageInfo(
+        message = "Exception thrown by attributes event listener",
+        level = "WARNING",
+        cause = "Could not modify attribute",
+        action = "Verify name and value from Servlet Context"
+    )
+    public static final String ATTRIBUTES_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00012";
+
+    @LogMessageInfo(
+        message = "Name cannot be null",
+        level = "INFO"
+    )
+    public static final String ILLEGAL_ARGUMENT_EXCEPTION = "AS-WEB-CORE-00013";
 
 
     /**
@@ -166,12 +196,6 @@ public class ApplicationContext implements ServletContext {
         new ConcurrentHashMap<String, String>();
 
     private volatile boolean parametersMerged = false;
-
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-      StringManager.getManager(Constants.Package);
 
     private boolean isRestricted;
 
@@ -281,7 +305,7 @@ public class ApplicationContext implements ServletContext {
     public boolean setInitParameter(String name, String value) {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         try {
             context.addParameter(name, value);
@@ -319,7 +343,7 @@ public class ApplicationContext implements ServletContext {
     public int getEffectiveMajorVersion() {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.getEffectiveMajorVersion();
     }
@@ -332,7 +356,7 @@ public class ApplicationContext implements ServletContext {
     public int getEffectiveMinorVersion() {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.getEffectiveMinorVersion();
     }
@@ -550,7 +574,8 @@ public class ApplicationContext implements ServletContext {
                     ContainerEvent.AFTER_CONTEXT_ATTRIBUTE_REMOVED,
                     listener);
                 // FIXME - should we do anything besides log these?
-                log(sm.getString("applicationContext.attributeEvent"), t);
+                log.log(Level.WARNING,
+                rb.getString(ATTRIBUTES_EVENT_LISTENER_EXCEPTION), t);
             }
         }
 
@@ -569,7 +594,7 @@ public class ApplicationContext implements ServletContext {
         // Name cannot be null
         if (name == null)
             throw new IllegalArgumentException
-                (sm.getString("applicationContext.setAttribute.namenull"));
+                    (rb.getString(ILLEGAL_ARGUMENT_EXCEPTION));
 
         // Null value is the same as removeAttribute()
         if (value == null) {
@@ -651,7 +676,8 @@ public class ApplicationContext implements ServletContext {
                         listener);
                 }
                 // FIXME - should we do anything besides log these?
-                log(sm.getString("applicationContext.attributeEvent"), t);
+                log.log(Level.WARNING, rb.getString(
+                        ATTRIBUTES_EVENT_LISTENER_EXCEPTION), t);
             }
         }
     }
@@ -665,7 +691,7 @@ public class ApplicationContext implements ServletContext {
             String servletName, String className) {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.addServlet(servletName, className);
     }
@@ -679,7 +705,7 @@ public class ApplicationContext implements ServletContext {
             String servletName, Servlet servlet) {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.addServlet(servletName, servlet);
     }
@@ -693,7 +719,7 @@ public class ApplicationContext implements ServletContext {
             Class <? extends Servlet> servletClass) {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.addServlet(servletName, servletClass);
     }
@@ -708,7 +734,7 @@ public class ApplicationContext implements ServletContext {
             throws ServletException {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.createServlet(clazz);
     }
@@ -721,7 +747,7 @@ public class ApplicationContext implements ServletContext {
     public ServletRegistration getServletRegistration(String servletName) {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.getServletRegistration(servletName);
     }
@@ -734,7 +760,7 @@ public class ApplicationContext implements ServletContext {
     public Map<String, ? extends ServletRegistration> getServletRegistrations() {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.getServletRegistrations();
     }
@@ -748,7 +774,7 @@ public class ApplicationContext implements ServletContext {
             String filterName, String className) {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.addFilter(filterName, className);
     }
@@ -762,7 +788,7 @@ public class ApplicationContext implements ServletContext {
             String filterName, Filter filter) {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.addFilter(filterName, filter);
     }
@@ -776,7 +802,7 @@ public class ApplicationContext implements ServletContext {
             Class <? extends Filter> filterClass) {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.addFilter(filterName, filterClass);
     }
@@ -791,7 +817,7 @@ public class ApplicationContext implements ServletContext {
             throws ServletException {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.createFilter(clazz);
     }
@@ -804,7 +830,7 @@ public class ApplicationContext implements ServletContext {
     public FilterRegistration getFilterRegistration(String filterName) {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.getFilterRegistration(filterName);
     }
@@ -817,7 +843,7 @@ public class ApplicationContext implements ServletContext {
     public Map<String, ? extends FilterRegistration> getFilterRegistrations() {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.getFilterRegistrations();
     }
@@ -831,7 +857,7 @@ public class ApplicationContext implements ServletContext {
     public SessionCookieConfig getSessionCookieConfig() {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.getSessionCookieConfig();        
     }
@@ -845,7 +871,7 @@ public class ApplicationContext implements ServletContext {
             Set<SessionTrackingMode> sessionTrackingModes) {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         context.setSessionTrackingModes(sessionTrackingModes);
     }
@@ -861,7 +887,7 @@ public class ApplicationContext implements ServletContext {
     public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.getDefaultSessionTrackingModes();
     }
@@ -877,7 +903,7 @@ public class ApplicationContext implements ServletContext {
     public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.getEffectiveSessionTrackingModes();
     }
@@ -889,7 +915,7 @@ public class ApplicationContext implements ServletContext {
     public void addListener(String className) {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         context.addListener(className);
     }
@@ -901,7 +927,7 @@ public class ApplicationContext implements ServletContext {
     public <T extends EventListener> void addListener(T t) {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         context.addListener(t);
     }
@@ -913,7 +939,7 @@ public class ApplicationContext implements ServletContext {
     public void addListener(Class <? extends EventListener> listenerClass) {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         context.addListener(listenerClass);
     }
@@ -928,7 +954,7 @@ public class ApplicationContext implements ServletContext {
             throws ServletException {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.createListener(clazz);
     }
@@ -943,7 +969,7 @@ public class ApplicationContext implements ServletContext {
     public JspConfigDescriptor getJspConfigDescriptor() {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.getJspConfigDescriptor();
     }
@@ -952,7 +978,7 @@ public class ApplicationContext implements ServletContext {
     public ClassLoader getClassLoader() {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         return context.getClassLoader();
     }
@@ -961,7 +987,7 @@ public class ApplicationContext implements ServletContext {
     public void declareRoles(String... roleNames) {
         if (isRestricted) {
             throw new UnsupportedOperationException(
-                sm.getString("applicationContext.restrictedMethod"));
+                rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
         context.declareRoles(roleNames);
     }
