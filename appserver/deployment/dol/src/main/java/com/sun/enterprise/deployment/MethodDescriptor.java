@@ -559,11 +559,18 @@ public final class MethodDescriptor extends Descriptor {
 	    MethodDescriptor otherMethodDescriptor = (MethodDescriptor) other;
 	    if (otherMethodDescriptor.getName().equals(getName())
 		&& stringArrayEquals(otherMethodDescriptor.getParameterClassNames(), getParameterClassNames())) {
+                    // If method names and params match, it still can be a wild-card method-name...
+                    // And wild-card can be present with farious interfaces or no method-intf at all...
                     if (getEjbClassSymbol()!=null && otherMethodDescriptor.getEjbClassSymbol()!=null) {                        
+                        // Method descriptors are equal if method-intf value is the same, even if they have
+                        // wild-card method names
                         return getEjbClassSymbol().equals(otherMethodDescriptor.getEjbClassSymbol());
+                    } else if (getName().equals(ALL_METHODS)) {
+                        // For wild-card method names, method descriptors are equal if method-intf value is not set in both
+                        return (getEjbClassSymbol() == null && otherMethodDescriptor.getEjbClassSymbol() == null);
                     }
-                    // if the ejb class symbol is not defined in both descriptor, we consider
-                    // the method described being the same.
+                    // If method name is provided, and parameters match, we consider the method described being the same
+                    // if the ejb class symbol (method-intf) is not defined in one of the descriptors
                     return true;
 	    }
 	}
