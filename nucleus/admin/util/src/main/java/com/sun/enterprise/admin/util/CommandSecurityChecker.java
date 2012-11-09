@@ -510,7 +510,12 @@ public class CommandSecurityChecker {
     private Field findField(final AdminCommand command, final String fieldName) throws NoSuchFieldException {
         Field result = null;
         for (Class c = command.getClass(); c != null && result == null; c = c.getSuperclass()) {
-            result = c.getDeclaredField(fieldName);
+            try {
+                result = c.getDeclaredField(fieldName);
+                return result;
+            } catch (NoSuchFieldException ex) {
+                continue; 
+            }
         }
         return result;
     }
