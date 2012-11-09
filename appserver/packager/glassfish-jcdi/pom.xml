@@ -117,10 +117,16 @@
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>weld-integration-fragment</artifactId>
             <version>${project.version}</version>
-        </dependency>   
-        
-    	<!-- now, listing package dependencies so that their content
-             can be excluded during staging -->	
+        </dependency>
+        <!-- must include the javax.transaction.cdi bundle in glassfish/modules -->
+        <dependency>
+            <groupId>org.glassfish.main</groupId>
+            <artifactId>javax.transaction.cdi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- now, listing package dependencies so that their content
+   can be excluded during staging -->
  
         <dependency>        
            <groupId>org.glassfish.main.packager</groupId>
