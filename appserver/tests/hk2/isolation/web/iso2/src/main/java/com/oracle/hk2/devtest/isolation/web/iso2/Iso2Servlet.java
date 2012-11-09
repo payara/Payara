@@ -37,44 +37,57 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.hk2.devtest.isolation.runner;
+package com.oracle.hk2.devtest.isolation.web.iso2;
 
-import org.glassfish.tests.utils.NucleusStartStopTest;
-import org.glassfish.tests.utils.NucleusTestUtils;
-import org.testng.Assert;
-import org.testng.annotations.Test;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
- * Ensures that different apps get different service locators
+ * Simple returns the name of the HABITAT property
  * 
  * @author jwells
- *
  */
-public class IsolationTest extends NucleusStartStopTest {
-    private final static String ISO1_WAR = "isolation/web/iso1/target/hk2-isolation-web-iso1.war";
-    private final static String ISO1_APP_NAME = "hk2-isolation-web-iso1";
+public class Iso2Servlet extends HttpServlet {
+    /**
+     * For serialization
+     */
+    private static final long serialVersionUID = -9177540431267005946L;
     
-    private final static String ISO2_WAR = "isolation/web/iso2/target/hk2-isolation-web-iso2.war";
-    private final static String ISO2_APP_NAME = "hk2-isolation-web-iso2";
-    
-    @Test
-    public void testWebAppsAreIsolated() {
-        boolean deployed1 = NucleusTestUtils.nadmin("deploy", ISO1_WAR);
-        boolean deployed2 = NucleusTestUtils.nadmin("deploy", ISO2_WAR);
+    private static final String HABITAT_ATTRIBUTE = "org.glassfish.servlet.habitat";
+
+    /**
+     * Just prints out the value of the ServiceLocator getName
+     */
+    @Override
+    public void doGet(HttpServletRequest request,
+            HttpServletResponse response)
+        throws IOException, ServletException {
+        ServletContext context = getServletContext();
         
-        try {
-            Assert.assertTrue(deployed1);
-            Assert.assertTrue(deployed2);
-        }
-        finally {
-            if (deployed1) {
-                NucleusTestUtils.nadmin("undeploy", ISO1_APP_NAME);
-            }
-            if (deployed2) {
-                NucleusTestUtils.nadmin("undeploy", ISO2_APP_NAME);
-            }
-        }
+        ServiceLocator locator = (ServiceLocator) context.getAttribute(HABITAT_ATTRIBUTE);
         
+        String reply = (locator == null) ? "null" : locator.getName();
+
+        response.setContentType("text/html");
+        PrintWriter writer = response.getWriter();
         
+        writer.println("<html>");
+        writer.println("<head>");
+        writer.println("<title>Iso1 WebApp</title>");
+        writer.println("</head>");
+        writer.println("<body bgcolor=white>");
+
+        writer.println(reply);
+
+        writer.println("</body>");
+        writer.println("</html>");
     }
 }

@@ -41,24 +41,19 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.glassfish.tests.hk2</groupId>
-        <artifactId>isolation</artifactId>
-        <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
+<web-app version="2.5"
+  xmlns="http://java.sun.com/xml/ns/javaee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+  <servlet>
+    <display-name>iso2</display-name>
+    <servlet-name>iso2</servlet-name>
+    <servlet-class>com.oracle.hk2.devtest.isolation.web.iso2.Iso2Servlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>iso2</servlet-name>
+    <url-pattern>/iso2</url-pattern>
+  </servlet-mapping>
+</web-app>
 
-    <groupId>org.glassfish.tests.hk2.isolation</groupId>
-    <artifactId>web</artifactId>
-    <packaging>pom</packaging>
-    <version>4.0-SNAPSHOT</version>
-
-    <name>GlassFish HK2 Isolation WebApps</name>  
-    <modules>
-        <module>iso1</module>
-        <module>iso2</module>
-    </modules>
-</project>
