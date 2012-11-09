@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,7 +60,8 @@ package org.apache.catalina.authenticator;
 
 
 import org.apache.catalina.*;
-import org.apache.catalina.util.StringManager;
+import org.apache.catalina.Logger;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.valves.ValveBase;
 
 import javax.servlet.ServletException;
@@ -69,9 +70,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.Principal;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
+
+
+import org.glassfish.logging.annotation.LogMessageInfo;
+
+
 
 
 /**
@@ -107,15 +115,80 @@ public class SingleSignOn
 
     // ----------------------------------------------------- Static Variables
 
-    private static final java.util.logging.Logger log =
-        java.util.logging.Logger.getLogger(
-            SingleSignOn.class.getName());
+    private static final java.util.logging.Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
 
-    /**
-     * The string manager for this package.
-     */
-    protected final static StringManager sm =
-        StringManager.getManager(Constants.Package);
+    @LogMessageInfo(
+            message = "Started",
+            level = "INFO"
+    )
+    public static final String START_COMPONENT_INFO = "AS-WEB-CORE-00295";
+
+    @LogMessageInfo(
+            message = "Stopped",
+            level = "INFO"
+    )
+    public static final String STOP_COMPONENT_INFO = "AS-WEB-CORE-00296";
+
+    @LogMessageInfo(
+            message = "Process session destroyed on {0}",
+            level = "INFO"
+    )
+    public static final String PROCESS_SESSION_DESTROYED_INFO = "AS-WEB-CORE-00297";
+
+    @LogMessageInfo(
+            message = "Process request for '{0}'",
+            level = "INFO"
+    )
+    public static final String PROCESS_REQUEST_INFO = "AS-WEB-CORE-00298";
+
+    @LogMessageInfo(
+            message = "Principal {0} has already been authenticated",
+            level = "INFO"
+    )
+    public static final String PRINCIPAL_BEEN_AUTHENTICATED_INFO = "AS-WEB-CORE-00299";
+
+    @LogMessageInfo(
+            message = "Checking for SSO cookie",
+            level = "INFO"
+    )
+    public static final String CHECK_SSO_COOKIE_INFO = "AS-WEB-CORE-00300";
+
+    @LogMessageInfo(
+            message = "SSO cookie is not present",
+            level = "INFO"
+    )
+    public static final String SSO_COOKIE_NOT_PRESENT_INFO = "AS-WEB-CORE-00301";
+
+    @LogMessageInfo(
+            message = "Checking for cached principal for {0}",
+            level = "INFO"
+    )
+    public static final String CHECK_CACHED_PRINCIPAL_INFO = "AS-WEB-CORE-00302";
+
+    @LogMessageInfo(
+            message = "Found cached principal {0} with auth type {1}",
+            level = "INFO"
+    )
+    public static final String FOUND_CACHED_PRINCIPAL_AUTH_TYPE_INFO = "AS-WEB-CORE-00303";
+
+    @LogMessageInfo(
+            message = "No cached principal found, erasing SSO cookie",
+            level = "INFO"
+    )
+    public static final String NO_CACHED_PRINCIPAL_FOUND_INFO = "AS-WEB-CORE-00304";
+
+    @LogMessageInfo(
+            message = "Associate sso id {0} with session {1}",
+            level = "INFO"
+    )
+    public static final String ASSOCIATE_SSO_WITH_SESSION_INFO = "AS-WEB-CORE-00305";
+
+    @LogMessageInfo(
+            message = "Registering sso id {0} for user {1} with auth type {2}",
+            level = "INFO"
+    )
+    public static final String REGISTERING_SSO_INFO = "AS-WEB-CORE-00306";
 
     /**
      * Descriptive information about this Valve implementation.
@@ -234,7 +307,7 @@ public class SingleSignOn
         // END CR 6411114
 
         if (debug >= 1)
-            log("Started");
+            log(rb.getString(START_COMPONENT_INFO));
 
     }
 
@@ -263,7 +336,7 @@ public class SingleSignOn
         // END CR 6411114
 
         if (debug >= 1)
-            log("Stopped");
+            log(rb.getString(STOP_COMPONENT_INFO));
         // START CR 6411114
         super.stop();
         // END CR 6411114
@@ -287,9 +360,10 @@ public class SingleSignOn
 
         // Look up the single session id associated with this session (if any)
         Session session = event.getSession();
-        if (debug >= 1)
-            log("Process session destroyed on " + session);
-
+        if (debug >= 1) {
+            String msg = MessageFormat.format(rb.getString(PROCESS_SESSION_DESTROYED_INFO), session);
+            log(msg);
+        }
         String ssoId = session.getSsoId();
         if (ssoId == null) {
             return;
@@ -339,18 +413,22 @@ public class SingleSignOn
         request.removeNote(Constants.REQ_SSO_VERSION_NOTE);
 
         // Has a valid user already been authenticated?
-        if (debug >= 1)
-            log("Process request for '" + hreq.getRequestURI() + "'");
+        if (debug >= 1) {
+            String msg = MessageFormat.format(rb.getString(PROCESS_REQUEST_INFO), hreq.getRequestURI());
+            log(msg);
+        }
         if (hreq.getUserPrincipal() != null) {
-            if (debug >= 1)
-                log(" Principal '" + hreq.getUserPrincipal().getName() +
-                    "' has already been authenticated");
+            if (debug >= 1) {
+                String msg = MessageFormat.format(rb.getString(PRINCIPAL_BEEN_AUTHENTICATED_INFO),
+                                                  hreq.getUserPrincipal());
+                log(msg);
+            }
             return END_PIPELINE;
         }
 
         // Check for the single sign on cookie
         if (debug >= 1)
-            log(" Checking for SSO cookie");
+            log(rb.getString(CHECK_SSO_COOKIE_INFO));
         Cookie cookie = null;
         Cookie versionCookie = null;
         Cookie cookies[] = hreq.getCookies();
@@ -369,24 +447,26 @@ public class SingleSignOn
         }
         if (cookie == null) {
             if (debug >= 1)
-                log(" SSO cookie is not present");
+                log(rb.getString(SSO_COOKIE_NOT_PRESENT_INFO));
             return INVOKE_NEXT;
         }
 
         // Look up the cached Principal associated with this cookie value
-        if (debug >= 1)
-            log(" Checking for cached principal for " + cookie.getValue());
-
+        if (debug >= 1) {
+            String msg = MessageFormat.format(rb.getString(CHECK_CACHED_PRINCIPAL_INFO), cookie.getValue());
+            log(msg);
+        }
         long version = 0;
         if (isVersioningSupported() && versionCookie != null) {
             version = Long.parseLong(versionCookie.getValue());
         }
         SingleSignOnEntry entry = lookup(cookie.getValue(), version);
         if (entry != null) {
-            if (debug >= 1)
-                log(" Found cached principal '" +
-                    entry.getPrincipal().getName() + "' with auth type '" +
-                    entry.getAuthType() + "'");
+            if (debug >= 1) {
+                String msg = MessageFormat.format(rb.getString(FOUND_CACHED_PRINCIPAL_AUTH_TYPE_INFO),
+                                                  new Object[] {entry.getPrincipal().getName(), entry.getAuthType()});
+                log(msg);
+            }
             request.setNote(Constants.REQ_SSOID_NOTE, cookie.getValue());
             if (isVersioningSupported()) {
                 long ver = entry.incrementAndGetVersion();
@@ -398,7 +478,7 @@ public class SingleSignOn
             ((HttpRequest) request).setUserPrincipal(entry.getPrincipal());
         } else {
             if (debug >= 1)
-                log(" No cached principal found, erasing SSO cookie");
+                log(rb.getString(NO_CACHED_PRINCIPAL_FOUND_INFO));
             cookie.setMaxAge(0);
             hres.addCookie(cookie);
         }
@@ -445,7 +525,7 @@ public class SingleSignOn
         }
 
         if (debug >= 1)
-            log("Associate sso id " + ssoId + " with session " + session);
+            log(rb.getString(ASSOCIATE_SSO_WITH_SESSION_INFO));
 
         SingleSignOnEntry sso = lookup(ssoId, ssoVersion);
         if (sso != null) {
@@ -495,10 +575,11 @@ public class SingleSignOn
     protected void register(String ssoId, Principal principal, String authType,
                   String username, char[] password, String realmName) {
 
-        if (debug >= 1)
-            log("Registering sso id '" + ssoId + "' for user '" +
-                principal.getName() + "' with auth type '" + authType + "'");
-
+        if (debug >= 1) {
+            String msg = MessageFormat.format(rb.getString(REGISTERING_SSO_INFO),
+                                              new Object[] {ssoId, principal.getName(), authType});
+            log(msg);
+        }
         synchronized (cache) {
             cache.put(ssoId, new SingleSignOnEntry(ssoId, 0L, principal, authType,
                                                    username, realmName));
@@ -521,7 +602,7 @@ public class SingleSignOn
             logger.log(this.toString() + ": " + message);
         } else {
             if (log.isLoggable(Level.INFO)) {
-                log.info(this.toString() + ": " + message);
+                log.log(Level.INFO, this.toString() + ": " + message);
             }
         }
     }

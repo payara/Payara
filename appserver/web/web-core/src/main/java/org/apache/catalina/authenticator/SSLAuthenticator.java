@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,14 +63,18 @@ import org.apache.catalina.Globals;
 import org.apache.catalina.HttpRequest;
 import org.apache.catalina.HttpResponse;
 import org.apache.catalina.LifecycleException;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.deploy.LoginConfig;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
-
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
 
 /**
@@ -83,6 +87,31 @@ import java.security.cert.X509Certificate;
 
 public class SSLAuthenticator
     extends AuthenticatorBase {
+
+
+    @LogMessageInfo(
+            message = "Looking up certificates",
+            level = "INFO"
+    )
+    public static final String LOOK_UP_CERTIFICATE_INFO = "AS-WEB-CORE-00310";
+
+    @LogMessageInfo(
+            message = "No certificates included with this request",
+            level = "INFO"
+    )
+    public static final String NO_CERTIFICATE_INCLUDED_INFO = "AS-WEB-CORE-00311";
+
+    @LogMessageInfo(
+            message = "No client certificate chain in this request",
+            level = "WARNING"
+    )
+    public static final String NO_CLIENT_CERTIFICATE_CHAIN = "AS-WEB-CORE-00312";
+
+    @LogMessageInfo(
+            message = "Cannot authenticate with the provided credentials",
+            level = "WARNING"
+    )
+    public static final String CANNOT_AUTHENTICATE_WITH_CREDENTIALS = "AS-WEB-CORE-00313";
 
 
     // ------------------------------------------------------------- Properties
@@ -131,8 +160,11 @@ public class SSLAuthenticator
         Principal principal =
             ((HttpServletRequest) request.getRequest()).getUserPrincipal();
         if (principal != null) {
-            if (debug >= 1)
-                log("Already authenticated '" + principal.getName() + "'");
+            if (debug >= 1) {
+                String msg = MessageFormat.format(rb.getString(SingleSignOn.PRINCIPAL_BEEN_AUTHENTICATED_INFO),
+                                                  principal.getName());
+                log(msg);
+            }
             return (true);
         }
 
@@ -140,7 +172,7 @@ public class SSLAuthenticator
         HttpServletResponse hres =
             (HttpServletResponse) response.getResponse();
         if (debug >= 1)
-            log(" Looking up certificates");
+            log(rb.getString(LOOK_UP_CERTIFICATE_INFO));
 
         X509Certificate certs[] = (X509Certificate[])
             request.getRequest().getAttribute(Globals.CERTIFICATES_ATTR);
@@ -150,14 +182,14 @@ public class SSLAuthenticator
         }
         if ((certs == null) || (certs.length < 1)) {
             if (debug >= 1)
-                log("  No certificates included with this request");
+                log(rb.getString(NO_CERTIFICATE_INCLUDED_INFO));
             /* S1AS 4878272
             hres.sendError(HttpServletResponse.SC_BAD_REQUEST,
                            sm.getString("authenticator.certificates"));
             */
             // BEGIN S1AS 4878272
             hres.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            response.setDetailMessage(sm.getString("authenticator.certificates"));
+            response.setDetailMessage(rb.getString(NO_CLIENT_CERTIFICATE_CHAIN));
             // END S1AS 4878272
             return (false);
         }
@@ -173,7 +205,7 @@ public class SSLAuthenticator
             */
             // BEGIN S1AS 4878272
             hres.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setDetailMessage(sm.getString("authenticator.unauthorized"));
+            response.setDetailMessage(rb.getString(CANNOT_AUTHENTICATE_WITH_CREDENTIALS));
             // END S1AS 4878272
             return (false);
         }

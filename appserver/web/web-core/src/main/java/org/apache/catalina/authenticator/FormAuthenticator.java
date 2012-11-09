@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,6 +62,7 @@ import org.apache.catalina.HttpRequest;
 import org.apache.catalina.HttpResponse;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Session;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityConstraint;
 
@@ -72,14 +73,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.Principal;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * An <b>Authenticator</b> and <b>Valve</b> implementation of FORM BASED
@@ -92,8 +91,13 @@ import org.glassfish.grizzly.http.util.MessageBytes;
 
 public class FormAuthenticator
     extends AuthenticatorBase {
-    private static Logger log = Logger.getLogger(
-        FormAuthenticator.class.getName());
+
+
+    @LogMessageInfo(
+            message = "Unexpected error forwarding or redirecting to login page",
+            level = "WARNING"
+    )
+    public static final String UNEXPECTED_ERROR_FORWARDING_TO_LOGIN_PAGE = "AS-WEB-CORE-290";
 
 
     // -------------------------------------------------- Instance Variables
@@ -160,7 +164,7 @@ public class FormAuthenticator
         // processing section of this method. 
         if (principal != null && !loginAction) {
             if (log.isLoggable(Level.FINE))
-                log.fine("Already authenticated '" + principal.getName() + "'");
+                log.log(Level.FINE, "Already authenticated '" + principal.getName() + "'");
             String ssoId = (String) request.getNote(Constants.REQ_SSOID_NOTE);
             if (ssoId != null) {
                 getSession(request, true);
@@ -175,14 +179,14 @@ public class FormAuthenticator
         if (!cache && !loginAction) {
             session = getSession(request, true);
             if (log.isLoggable(Level.FINE))
-                log.fine("Checking for reauthenticate in session " + session);
+                log.log(Level.FINE, "Checking for reauthenticate in session " + session);
             String username =
                 (String) session.getNote(Constants.SESS_USERNAME_NOTE);
             char[] password =
                 (char[]) session.getNote(Constants.SESS_PASSWORD_NOTE);
             if ((username != null) && (password != null)) {
                 if (log.isLoggable(Level.FINE))
-                    log.fine("Reauthenticating username '" + username + "'");
+                    log.log(Level.FINE, "Reauthenticating username '" + username + "'");
                 principal =
                     context.getRealm().authenticate(username, password);
                 if (principal != null) {
@@ -195,7 +199,7 @@ public class FormAuthenticator
                     }
                 }
                 if (log.isLoggable(Level.FINE))
-                    log.fine("Reauthentication failed, proceed normally");
+                    log.log(Level.FINE, "Reauthentication failed, proceed normally");
             }
         }
 
@@ -203,9 +207,11 @@ public class FormAuthenticator
         // authentication?  If so, forward the *original* request instead.
         if (matchRequest(request)) {
             session = getSession(request, true);
-            if (log.isLoggable(Level.FINE))
-                log.fine("Restore request from session '" +
-                         session.getIdInternal() + "'");
+            if (log.isLoggable(Level.FINE)) {
+                String msg = "Restore request from session '" +
+                             session.getIdInternal() + "'";
+                log.log(Level.FINE, msg);
+            }
             principal = (Principal)
                 session.getNote(Constants.FORM_PRINCIPAL_NOTE);
             register(request, response, principal, Constants.FORM_METHOD,
@@ -217,11 +223,11 @@ public class FormAuthenticator
             }
             if (restoreRequest(request, session)) {
                 if (log.isLoggable(Level.FINE))
-                    log.fine("Proceed to restored request");
+                    log.log(Level.FINE, "Proceed to restored request");
                 return (true);
             } else {
                 if (log.isLoggable(Level.FINE))
-                    log.fine("Restore of original request failed");
+                    log.log(Level.FINE, "Restore of original request failed");
                 hres.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return (false);
             }
@@ -236,9 +242,11 @@ public class FormAuthenticator
         // No -- Save this request and redirect to the form login page
         if (!loginAction) {
             session = getSession(request, true);
-            if (log.isLoggable(Level.FINE))
-                log.fine("Save request in session '" +
-                         session.getIdInternal() + "'");
+            if (log.isLoggable(Level.FINE)) {
+                String msg = "Save request in session '" +
+                             session.getIdInternal() + "'";
+                log.log(Level.FINE, msg);
+            }
             saveRequest(request, session);
 
             //START Apache bug 36136: Refactor the login and error page forward
@@ -267,7 +275,7 @@ public class FormAuthenticator
         char[] password = ((pwd != null)? pwd.toCharArray() : null);
 
         if (log.isLoggable(Level.FINE))
-            log.fine("Authenticating username '" + username + "'");
+            log.log(Level.FINE, "Authenticating username '" + username + "'");
         principal = realm.authenticate(username, password);
         if (principal == null) {
 
@@ -322,7 +330,7 @@ public class FormAuthenticator
         }
 
         if (log.isLoggable(Level.FINE)) {
-            log.fine("Redirecting to original '" + requestURI + "'");
+            log.log(Level.FINE, "Redirecting to original '" + requestURI + "'");
         }
 
         hres.sendRedirect(hres.encodeRedirectURL(requestURI));
@@ -469,7 +477,7 @@ public class FormAuthenticator
             response.finishResponse();
         } catch (Throwable t) {
             log.log(Level.WARNING,
-                    "Unexpected error forwarding or redirecting to login page",
+                    rb.getString(UNEXPECTED_ERROR_FORWARDING_TO_LOGIN_PAGE),
                     t);
         }
     }
@@ -511,7 +519,7 @@ public class FormAuthenticator
             disp.forward(request.getRequest(), response.getResponse());
         } catch (Throwable t) {
             log.log(Level.WARNING,
-                    "Unexpected error forwarding or redirecting to error page",
+                    rb.getString(UNEXPECTED_ERROR_FORWARDING_TO_LOGIN_PAGE),
                     t);
         }
     }

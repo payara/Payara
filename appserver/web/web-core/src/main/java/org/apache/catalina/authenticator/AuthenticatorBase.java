@@ -60,10 +60,11 @@ package org.apache.catalina.authenticator;
 
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardHost;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityConstraint;
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.valve.GlassFishValve;
 
 import javax.servlet.ServletException;
@@ -72,10 +73,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
+import java.text.MessageFormat;
 import java.util.Random;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -110,9 +111,31 @@ public abstract class AuthenticatorBase
     // END CR 6411114    
     
     // ----------------------------------------------------- Static Variables
-    
-    protected static final Logger log = Logger.getLogger(
-        AuthenticatorBase.class.getName());
+
+    protected static final Logger log = StandardServer.log;
+    protected  static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Configuration error:  Must be attached to a Context",
+            level = "WARNING"
+    )
+    public static final String CONFIG_ERROR_MUST_ATTACH_TO_CONTEXT = "AS-WEB-CORE-00280";
+
+    @LogMessageInfo(
+            message = "Authenticator[{0}]: {1}",
+            level = "INFO"
+    )
+    public static final String AUTHENTICATOR_INFO = "AS-WEB-CORE-00281";
+
+    @LogMessageInfo(
+            message = "Exception getting debug value",
+            level = "SEVERE",
+            cause = "Could not get the method or invoke underlying method",
+            action = "Verify the existence of such method and access permission"
+    )
+    public static final String GETTING_DEBUG_VALUE_EXCEPTION = "AS-WEB-CORE-00282";
+
+
 
     /**
      * Descriptive information about this implementation.
@@ -126,13 +149,6 @@ public abstract class AuthenticatorBase
      */
     protected static final int SESSION_ID_BYTES = 16;
     
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm =
-            StringManager.getManager(Constants.Package);
-
-
     /**
      * Authentication header
      */
@@ -263,7 +279,7 @@ public abstract class AuthenticatorBase
         
         if (!(container instanceof Context))
             throw new IllegalArgumentException
-                    (sm.getString("authenticator.notContext"));
+                    (rb.getString(CONFIG_ERROR_MUST_ATTACH_TO_CONTEXT));
         
         super.setContainer(container);
         this.context = (Context) container;
@@ -456,10 +472,13 @@ public abstract class AuthenticatorBase
         
         HttpRequest hrequest = (HttpRequest) request;
         HttpResponse hresponse = (HttpResponse) response;
-        if (log.isLoggable(Level.FINE))
-            log.fine("Security checking request " +
-                     ((HttpServletRequest) request.getRequest()).getMethod() + " " +
-                     ((HttpServletRequest) request.getRequest()).getRequestURI());
+        if (log.isLoggable(Level.FINE)) {
+            String msg = "Security checking request " +
+                         ((HttpServletRequest) request.getRequest()).getMethod() + " " +
+                         ((HttpServletRequest) request.getRequest()).getRequestURI();
+
+            log.log(Level.FINE, msg);
+        }
         LoginConfig config = this.context.getLoginConfig();
         
         // Have we got a cached authenticated Principal to record?
@@ -471,11 +490,13 @@ public abstract class AuthenticatorBase
                 if (session != null) {
                     principal = session.getPrincipal();
                     if (principal != null) {
-                        if (log.isLoggable(Level.FINE))
-                            log.fine("We have cached auth type " +
-                                     session.getAuthType() +
-                                     " for principal " +
-                                     session.getPrincipal());
+                        if (log.isLoggable(Level.FINE)) {
+                            String msg = "We have cached auth type " +
+                                         session.getAuthType() +
+                                         " for principal " +
+                                         session.getPrincipal();
+                            log.log(Level.FINE, msg);
+                        }
                         hrequest.setAuthType(session.getAuthType());
                         hrequest.setUserPrincipal(principal);
                     }
@@ -491,7 +512,7 @@ public abstract class AuthenticatorBase
         if ((constraints == null) /* &&
             (!Constants.FORM_METHOD.equals(config.getAuthMethod())) */ ) {
             if (log.isLoggable(Level.FINE))
-                log.fine(" Not subject to any constraint");
+                log.log(Level.FINE, " Not subject to any constraint");
             return processSecurityCheck(hrequest,hresponse,config);
         }
         
@@ -514,11 +535,11 @@ public abstract class AuthenticatorBase
         //END SJSAS 6202703
         
         if (log.isLoggable(Level.FINE))
-            log.fine(" Calling hasUserDataPermission()");
-        
+            log.log(Level.FINE, " Calling hasUserDataPermission()");
+
         if (!realm.hasUserDataPermission(hrequest, hresponse, constraints)) {
             if (log.isLoggable(Level.FINE))
-                log.fine(" Failed hasUserDataPermission() test");
+                log.log(Level.FINE, " Failed hasUserDataPermission() test");
             // ASSERT: Authenticator already set the appropriate
             // HTTP status code, so we do not have to do anything special
             return END_PIPELINE;
@@ -554,13 +575,13 @@ public abstract class AuthenticatorBase
             return processSecurityCheck(hrequest,hresponse,config);
         } else if(preAuthenticateCheckResult == Realm.AUTHENTICATE_NEEDED) {
             if (log.isLoggable(Level.FINE)) {
-                log.fine(" Calling authenticate()");
+                log.log(Level.FINE, " Calling authenticate()");
             }
             boolean authenticateResult = realm.invokeAuthenticateDelegate(
                     hrequest, hresponse, context, this, false);
             if(!authenticateResult) {
                 if(log.isLoggable(Level.FINE)) {
-                    log.fine(" Failed authenticate() test");
+                    log.log(Level.FINE, " Failed authenticate() test");
                 }
                 return END_PIPELINE;
             }
@@ -570,14 +591,14 @@ public abstract class AuthenticatorBase
         //END SJSAS 6202703
 
         if (log.isLoggable(Level.FINE)) {
-            log.fine(" Calling accessControl()");
+            log.log(Level.FINE, " Calling accessControl()");
         }
 
         if (!realm.hasResourcePermission(hrequest, hresponse,
                 constraints,
                 this.context)) {
             if (log.isLoggable(Level.FINE)) {
-                log.fine(" Failed accessControl() test");
+                log.log(Level.FINE, " Failed accessControl() test");
             }
 
             // START IASRI 4823322
@@ -616,7 +637,7 @@ public abstract class AuthenticatorBase
         
         // Any and all specified constraints have been satisfied
         if (log.isLoggable(Level.FINE))
-            log.fine("Successfully passed all security constraints");
+            log.log(Level.FINE, "Successfully passed all security constraints");
         return INVOKE_NEXT;
     }
 
@@ -789,8 +810,9 @@ public abstract class AuthenticatorBase
                     message);
         } else {
             if (log.isLoggable(Level.INFO)) {
-                log.info("Authenticator[" + context.getPath() +
-                         "]: " + message);
+                String msg = MessageFormat.format(rb.getString(AUTHENTICATOR_INFO),
+                                                  new Object[] {context.getPath(), message});
+                log.log(Level.INFO, msg);
             }
         }
     }
@@ -808,9 +830,10 @@ public abstract class AuthenticatorBase
             logger.log("Authenticator[" + context.getPath() + "]: " +
                 message, t, org.apache.catalina.Logger.WARNING);
         } else {
-            log.log(Level.WARNING,
-                "Authenticator[" + context.getPath() + "]: " + message, t);
-        }        
+            String msg = MessageFormat.format(rb.getString(AUTHENTICATOR_INFO),
+                                              new Object[] {context.getPath(), message});
+            log.log(Level.WARNING, msg, t);
+        }
     }
     
     
@@ -831,10 +854,11 @@ public abstract class AuthenticatorBase
             Principal principal, String authType,
             String username, char[] password) {
         
-        if (log.isLoggable(Level.FINE))
-            log.fine("Authenticated '" + principal.getName() + "' with type '"
-                     + authType + "'");
-        
+        if (log.isLoggable(Level.FINE)) {
+            String msg = "Authenticated '" + principal.getName() + "' with type '"
+                         + authType + "'";
+            log.log(Level.FINE, msg);
+        }
         // Cache the authentication information in our request
         request.setAuthType(authType);
         request.setUserPrincipal(principal);
@@ -921,8 +945,10 @@ public abstract class AuthenticatorBase
         if (requestURI.startsWith(contextPath) &&
                 requestURI.endsWith(Constants.FORM_ACTION)) {
             if (!authenticate(hrequest, hresponse, config)) {
-                if (log.isLoggable(Level.FINE))
-                    log.fine(" Failed authenticate() test ??" + requestURI );
+                if (log.isLoggable(Level.FINE)) {
+                    String msg = " Failed authenticate() test ??" + requestURI;
+                    log.log(Level.FINE, msg);
+                }
                 return END_PIPELINE;
             }
         }
@@ -1006,7 +1032,7 @@ public abstract class AuthenticatorBase
                 Integer result = (Integer) method.invoke(context, paramValues);
                 setDebug(result.intValue());
             } catch (Exception e) {
-                log.log(Level.SEVERE, "Exception getting debug value", e);
+                log.log(Level.SEVERE, rb.getString(GETTING_DEBUG_VALUE_EXCEPTION), e);
             }
         }
         /** CR 6411114 (Lifecycle implementation moved to ValveBase)
@@ -1033,9 +1059,9 @@ public abstract class AuthenticatorBase
         }
         if (log.isLoggable(Level.FINE)) {
             if (sso != null)
-                log.fine("Found SingleSignOn Valve at " + sso);
+                log.log(Level.FINE, "Found SingleSignOn Valve at " + sso);
             else
-                log.fine("No SingleSignOn Valve is present");
+                log.log(Level.FINE, "No SingleSignOn Valve is present");
         }
         
     }
