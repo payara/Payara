@@ -40,6 +40,8 @@
 package com.oracle.hk2.devtest.isolation.runner;
 
 import org.glassfish.tests.utils.NucleusStartStopTest;
+import org.glassfish.tests.utils.NucleusTestUtils;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
@@ -49,9 +51,24 @@ import org.testng.annotations.Test;
  *
  */
 public class IsolationTest extends NucleusStartStopTest {
+    private final static String ISO1_WAR = "isolation/web/iso1/target/hk2-isolation-web-iso1.war";
+    private final static String ISO1_APP_NAME = "hk2-isolation-web-iso1";
     
     @Test
     public void testWebAppsAreIsolated() {
+        NucleusTestUtils.nadmin("undeploy", ISO1_APP_NAME);
+        
+        boolean deployed1 = NucleusTestUtils.nadmin("deploy", ISO1_WAR);
+        
+        try {
+            Assert.assertTrue(deployed1);
+        }
+        finally {
+            if (deployed1) {
+                NucleusTestUtils.nadmin("undeploy", ISO1_APP_NAME);
+            }
+        }
+        
         
     }
 }
