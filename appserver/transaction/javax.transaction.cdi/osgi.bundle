@@ -38,6 +38,4 @@
 # holder.
 #
 
-# See https://glassfish.dev.java.net/issues/show_bug.cgi?id=11776
-Import-Package: !*
-Fragment-Host: system.bundle; extension:=framework
+-exportcontents: javax.transaction.cdi.*; version=${project.osgi.version}
