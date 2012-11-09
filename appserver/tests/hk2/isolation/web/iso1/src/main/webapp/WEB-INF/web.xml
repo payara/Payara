@@ -45,5 +45,15 @@
   xmlns="http://java.sun.com/xml/ns/javaee"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+  <servlet>
+    <display-name>iso1</display-name>
+    <servlet-name>iso1</servlet-name>
+    <servlet-class>com.oracle.hk2.devtest.isolation.web.iso1.Iso1Servlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>iso1</servlet-name>
+    <url-pattern>/iso1</url-pattern>
+  </servlet-mapping>
 </web-app>
 

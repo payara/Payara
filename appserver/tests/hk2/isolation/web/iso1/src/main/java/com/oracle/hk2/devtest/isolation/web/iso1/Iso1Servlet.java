@@ -42,10 +42,13 @@ package com.oracle.hk2.devtest.isolation.web.iso1;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Simple returns the name of the HABITAT property
@@ -57,6 +60,8 @@ public class Iso1Servlet extends HttpServlet {
      * For serialization
      */
     private static final long serialVersionUID = -9177540431267005946L;
+    
+    private static final String HABITAT_ATTRIBUTE = "org.glassfish.servlet.habitat";
 
     /**
      * Just prints out the value of the ServiceLocator getName
@@ -65,6 +70,11 @@ public class Iso1Servlet extends HttpServlet {
     public void doGet(HttpServletRequest request,
             HttpServletResponse response)
         throws IOException, ServletException {
+        ServletContext context = getServletContext();
+        
+        ServiceLocator locator = (ServiceLocator) context.getAttribute(HABITAT_ATTRIBUTE);
+        
+        String reply = (locator == null) ? "null" : locator.getName();
 
         response.setContentType("text/html");
         PrintWriter writer = response.getWriter();
@@ -75,7 +85,7 @@ public class Iso1Servlet extends HttpServlet {
         writer.println("</head>");
         writer.println("<body bgcolor=white>");
 
-        writer.println("Hello world!");
+        writer.println(reply);
 
         writer.println("</body>");
         writer.println("</html>");

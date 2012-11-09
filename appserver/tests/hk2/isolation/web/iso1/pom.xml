@@ -47,14 +47,15 @@
     <parent>
         <groupId>org.glassfish.tests.hk2.isolation</groupId>
         <artifactId>web</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>org.glassfish.tests.hk2.isolation.web</groupId>
     <artifactId>iso1</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>4.0-SNAPSHOT</version>
     <packaging>war</packaging>
+
     <name>Isolation servlet one</name>
     <build>
         <finalName>hk2-isolation-web-${project.artifactId}</finalName>
@@ -70,6 +71,11 @@
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <version>${servlet-api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
