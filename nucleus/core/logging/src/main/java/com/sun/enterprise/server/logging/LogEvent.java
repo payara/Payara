@@ -41,6 +41,13 @@ package com.sun.enterprise.server.logging;
 
 import java.util.Map;
 
+/**
+ * Event describing a log record being written to the log file.
+ * This event is issued from the GFFileHandler. Interested parties
+ * may register a LogEventListener with the GFFileHandler instance.
+ * The GFFileHandler instance may be injected using hk2 mechanisms
+ * to get a reference which can be used to register a LogEventListener.
+ */
 public interface LogEvent {
 
     /**
