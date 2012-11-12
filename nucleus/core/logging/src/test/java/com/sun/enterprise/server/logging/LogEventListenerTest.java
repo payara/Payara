@@ -52,7 +52,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * @author sanshriv
+ * Test class to exercise the LogEvent notification mechanism.
  *
  */
 public class LogEventListenerTest {
