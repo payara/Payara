@@ -156,7 +156,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private final String FILEHANDLER_FORMATTER_PROPERTY = "java.util.logging.FileHandler.formatter";
     private final String LOGFORMAT_DATEFORMAT_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat";
     
-    final static String INCLUDE_FIELDS_PROPERTY = "com.sun.enterprise.server.logging.ODLLogFormatter.includeFields";
+    final static String EXCLUDE_FIELDS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.excludeFields";
+    final static String MULTI_LINE_MODE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode";
 
     private String RECORD_BEGIN_MARKER = "[#|";
     private String RECORD_END_MARKER = "|#]";
@@ -170,7 +171,9 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
     Vector<Logger> loggerReference = new Vector<Logger>();
 
-    private String includeFields;
+    private String excludeFields;
+
+    private boolean multiLineMode = false;
 
     /*
         Returns properties based on the DAS/Cluster/Instance
@@ -302,6 +305,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             formatterClassname = props.get(CONSOLEHANDLER_FORMATTER_PROPERTY);
             consoleHandlerFormatterDetail = formatterClassname;
             Class formatterClass = LogManagerService.class.getClassLoader().loadClass(formatterClassname);
+            excludeFields  = props.get(EXCLUDE_FIELDS_PROPERTY);
+            multiLineMode  = Boolean.parseBoolean(props.get(MULTI_LINE_MODE_PROPERTY));
             if (formatterClass.getName().equals("com.sun.enterprise.server.logging.UniformLogFormatter")) {
                 // used to support UFL formatter in GF.
                 UniformLogFormatter formatter = (UniformLogFormatter) formatterClass.newInstance();
@@ -338,11 +343,12 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                     recordDateFormat = RECORD_DATE_FORMAT;
                 }
 
-
                 formatter.setRecordBeginMarker(recordBeginMarker);
                 formatter.setRecordEndMarker(recordEndMarker);
                 formatter.setRecordDateFormat(recordDateFormat);
                 formatter.setRecordFieldSeparator(recordFieldSeparator);
+                formatter.setExcludeFields(excludeFields);
+                formatter.setMultiLineMode(multiLineMode);
                 for (Handler handler : logMgr.getLogger("").getHandlers()) {
                     // only get the ConsoleHandler
                     handler.setFormatter(formatter);
@@ -350,8 +356,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             } else if (formatterClass.getName().equals("com.sun.enterprise.server.logging.ODLLogFormatter")) {
                 // used to support ODL formatter in GF.
                 ODLLogFormatter formatter = (ODLLogFormatter) formatterClass.newInstance();
-                includeFields  = props.get(INCLUDE_FIELDS_PROPERTY);
-                formatter.setIncludeFields(includeFields);
+                formatter.setExcludeFields(excludeFields);
+                formatter.setMultiLineMode(multiLineMode);
                 for (Handler handler : logMgr.getLogger("").getHandlers()) {
                     // only get the ConsoleHandler
                     handler.setFormatter(formatter);
@@ -566,11 +572,16 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     if (!val.equals(logFormatDateFormatDetail)) {
                                         generateAttributeChangeEvent(LOGFORMAT_DATEFORMAT_PROPERTY, logFormatDateFormatDetail, props);
                                     }
-                                } else if (a.equals(INCLUDE_FIELDS_PROPERTY)) {
+                                } else if (a.equals(EXCLUDE_FIELDS_PROPERTY)) {
                                     val = (val == null) ? "" : val;
-                                    includeFields = (includeFields == null) ? "" : includeFields;
-                                    if (!val.equals(includeFields)) {
-                                        generateAttributeChangeEvent(INCLUDE_FIELDS_PROPERTY, includeFields, props);
+                                    excludeFields = (excludeFields == null) ? "" : excludeFields;
+                                    if (!val.equals(excludeFields)) {
+                                        generateAttributeChangeEvent(EXCLUDE_FIELDS_PROPERTY, excludeFields, props);
+                                    }
+                                } else if (a.equals(MULTI_LINE_MODE_PROPERTY)) {
+                                    String oldVal = Boolean.toString(multiLineMode);
+                                    if (!val.equalsIgnoreCase(oldVal)) {
+                                        generateAttributeChangeEvent(MULTI_LINE_MODE_PROPERTY, oldVal, props);
                                     }
                                 }
                             }

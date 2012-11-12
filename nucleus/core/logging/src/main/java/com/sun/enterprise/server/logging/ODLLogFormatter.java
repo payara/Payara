@@ -117,9 +117,11 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
     private String recordFieldSeparator;
     private String recordDateFormat;
 
-    private BitSet includeSuppAttrsBits = new BitSet();
-
     private LogEventBroadcaster logEventBroadcasterDelegate;
+
+    private boolean multiLineMode;
+    
+    private ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
 
     private static final String FIELD_BEGIN_MARKER = "[";
     private static final String FIELD_END_MARKER = "]";
@@ -128,8 +130,6 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
 
     private static final String RFC_3339_DATE_FORMAT =
             "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
-
-    private static enum SupplementalAttribute {TID, USERID, ECID, TIME_MILLIS, LEVEL_VALUE, MAX_VALUE};
     
     public ODLLogFormatter() {
         super();
@@ -188,7 +188,7 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
             
             // creating message from log record using resource bundle and appending parameters
             String message = getLogMessage(record);
-            boolean multiLine = isMultiLine(message);
+            boolean multiLine = multiLineMode || isMultiLine(message);
 
             // Starting formatting message
             // Adding record begin marker
@@ -239,7 +239,7 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
             // Adding thread ID
-            if (includeSuppAttrsBits.get(SupplementalAttribute.TID.ordinal())) {
+            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TID)) {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("tid: _ThreadID=");
                 recordBuffer.append(record.getThreadID());
@@ -258,7 +258,7 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
             }
 
             // Adding user ID
-            if (includeSuppAttrsBits.get(SupplementalAttribute.USERID.ordinal()) && 
+            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.USERID) && 
                     userID != null && !("").equals(userID.trim())) 
             {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
@@ -270,7 +270,7 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
             }
 
             // Adding ec ID
-            if (includeSuppAttrsBits.get(SupplementalAttribute.ECID.ordinal()) && 
+            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.ECID) && 
                     ecID != null && !("").equals(ecID.trim())) 
             {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
@@ -282,7 +282,7 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
             }
             
             // Include the raw time stamp   
-            if (includeSuppAttrsBits.get(SupplementalAttribute.TIME_MILLIS.ordinal())) {
+            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TIME_MILLIS)) {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("timeMillis: ");
                 logEvent.setTimeMillis(record.getMillis());
@@ -292,7 +292,7 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
             }
 
             // Include the level value
-            if (includeSuppAttrsBits.get(SupplementalAttribute.LEVEL_VALUE.ordinal())) {
+            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.LEVEL_VALUE)) {
                 recordBuffer.append(FIELD_BEGIN_MARKER);
                 recordBuffer.append("levelValue: ");
                 logEvent.setLevelValue(logLevel.intValue());
@@ -360,7 +360,7 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
             if (multiLine) {
                 recordBuffer.append(FIELD_END_MARKER).append(FIELD_END_MARKER);    
             }
-            recordBuffer.append(LINE_SEPARATOR);
+            recordBuffer.append(LINE_SEPARATOR).append(LINE_SEPARATOR);
             informLogEventListeners(logEvent);
             return recordBuffer.toString();
         } catch (Exception ex) {
@@ -492,29 +492,6 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
         return "";
     }
 
-    public void setIncludeFields(String includeFields) {
-        includeSuppAttrsBits.clear();
-        if (includeFields != null) {
-            String[] fields = includeFields.split(",");
-            for (String field : fields) {
-                if (field.equals("tid")) {
-                    includeSuppAttrsBits.set(SupplementalAttribute.TID.ordinal());
-                } else if (field.equals("userId")) {
-                    includeSuppAttrsBits.set(SupplementalAttribute.USERID.ordinal());
-                } else if (field.equals("ecid")) {
-                    includeSuppAttrsBits.set(SupplementalAttribute.ECID.ordinal());
-                } else if (field.equals("timeMillis")) {
-                    includeSuppAttrsBits.set(SupplementalAttribute.TIME_MILLIS.ordinal());
-                } else if (field.equals("levelValue")) {
-                    includeSuppAttrsBits.set(SupplementalAttribute.LEVEL_VALUE.ordinal());
-                } 
-            }
-        } else {
-            includeSuppAttrsBits.set(SupplementalAttribute.TID.ordinal(), 
-                    SupplementalAttribute.MAX_VALUE.ordinal());
-        }
-    }
-
     void setLogEventBroadcaster(LogEventBroadcaster logEventBroadcaster) {
         logEventBroadcasterDelegate = logEventBroadcaster;        
     }
@@ -525,4 +502,16 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
             logEventBroadcasterDelegate.informLogEventListeners(logEvent);
         }        
     }
+
+    /**
+     * @param multiLineMode the multiLineMode to set
+     */
+    void setMultiLineMode(boolean value) {
+        this.multiLineMode = value;
+    }
+
+    void setExcludeFields(String excludeFields) {
+        excludeFieldsSupport.setExcludeFields(excludeFields);
+    }
+
 }

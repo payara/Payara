@@ -132,6 +132,12 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
 
     private LogEventBroadcaster logEventBroadcasterDelegate;
     
+    private boolean multiLineMode;
+    
+    private static final String INDENT = "  ";
+    
+    private ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
+    
     public UniformLogFormatter() {
         super();
         loggerResourceBundleTable = new HashMap();
@@ -268,33 +274,55 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
             logEvent.setLogger(record.getLoggerName());
             recordBuffer.append(record.getLoggerName()).append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
-            recordBuffer.append("_ThreadID").append(NV_SEPARATOR);
-            //record.setThreadID((int) Thread.currentThread().getId());
-            logEvent.setThreadId(record.getThreadID());
-            recordBuffer.append(record.getThreadID()).append(NVPAIR_SEPARATOR);
-
-            recordBuffer.append("_ThreadName").append(NV_SEPARATOR);
-            String threadName;
-            if (record instanceof GFLogRecord) {
-            	threadName = ((GFLogRecord)record).getThreadName();
-            } else {
-                threadName = Thread.currentThread().getName();
+            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TID)) {
+                recordBuffer.append("_ThreadID").append(NV_SEPARATOR);
+                logEvent.setThreadId(record.getThreadID());
+                recordBuffer.append(record.getThreadID()).append(NVPAIR_SEPARATOR);
+                recordBuffer.append("_ThreadName").append(NV_SEPARATOR);
+                String threadName;
+                if (record instanceof GFLogRecord) {
+                  threadName = ((GFLogRecord)record).getThreadName();
+                } else {
+                    threadName = Thread.currentThread().getName();
+                }
+                logEvent.setThreadName(threadName);
+                recordBuffer.append(threadName);
+                recordBuffer.append(NVPAIR_SEPARATOR);                
             }
-            logEvent.setThreadName(threadName);
-            recordBuffer.append(threadName);
-            recordBuffer.append(NVPAIR_SEPARATOR);
             
+            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.USERID)) {
+                String user = logEvent.getUser();
+                if (user != null && !user.isEmpty()) {
+                    recordBuffer.append("_UserId").append(NV_SEPARATOR);
+                    recordBuffer.append(user);
+                    recordBuffer.append(NVPAIR_SEPARATOR);                    
+                }
+            }
+
+            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.ECID)) {
+                String ecid = logEvent.getECId();
+                if (ecid != null && !ecid.isEmpty()) {
+                    recordBuffer.append("_ECId").append(NV_SEPARATOR);
+                    recordBuffer.append(ecid);
+                    recordBuffer.append(NVPAIR_SEPARATOR);                    
+                }
+            }
+
             // Include the raw long time stamp value in the log
-            recordBuffer.append("_TimeMillis").append(NV_SEPARATOR);
-            logEvent.setTimeMillis(record.getMillis());
-            recordBuffer.append(record.getMillis()).append(NVPAIR_SEPARATOR);
+            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TIME_MILLIS)) {
+                recordBuffer.append("_TimeMillis").append(NV_SEPARATOR);
+                logEvent.setTimeMillis(record.getMillis());
+                recordBuffer.append(record.getMillis()).append(NVPAIR_SEPARATOR);                
+            }
             
-            // Include the integer level value in the log            
-            recordBuffer.append("_LevelValue").append(NV_SEPARATOR);
+            // Include the integer level value in the log
             Level level = record.getLevel();
-            int levelValue = level.intValue();
-            logEvent.setLevelValue(levelValue);
-            recordBuffer.append(levelValue).append(NVPAIR_SEPARATOR);
+            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.LEVEL_VALUE)) {
+                recordBuffer.append("_LevelValue").append(NV_SEPARATOR);
+                int levelValue = level.intValue();
+                logEvent.setLevelValue(levelValue);
+                recordBuffer.append(levelValue).append(NVPAIR_SEPARATOR);                
+            }
             
             String msgId = getMessageId(record);
             if (msgId != null && !msgId.isEmpty()) {
@@ -342,6 +370,10 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
 
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
+            if (multiLineMode) {
+                recordBuffer.append(LINE_SEPARATOR);
+                recordBuffer.append(INDENT);
+            }
             String logMessage = record.getMessage();
             // in some case no msg is passed to the logger API. We assume that either:
             // 1. A message was logged in a previous logger call and now just the exception is logged.
@@ -513,5 +545,20 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
         if (logEventBroadcasterDelegate != null) {
             logEventBroadcasterDelegate.informLogEventListeners(logEvent);
         }        
+    }
+
+    /**
+     * @param multiLineMode the multiLineMode to set
+     */
+    void setMultiLineMode(boolean value) {
+        System.out.println("Setting multiline mode=" + value);
+        multiLineMode = value;
+    }
+
+    /**
+     * @param excludeFields the excludeFields to set
+     */
+    void setExcludeFields(String excludeFields) {
+        this.excludeFieldsSupport.setExcludeFields(excludeFields);
     }
 }

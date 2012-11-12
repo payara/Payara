@@ -94,7 +94,7 @@ public class SetLogAttributes implements AdminCommand {
     Properties properties;
 
     @Param(optional = true)
-    String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
+    String target = SystemPropertyConstants.DAS_SERVER_NAME;
 
     @Inject
     LoggingConfigImpl loggingConfig;
@@ -128,7 +128,8 @@ public class SetLogAttributes implements AdminCommand {
             "java.util.logging.FileHandler.pattern",
             "com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange",
             "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat",
-            "com.sun.enterprise.server.logging.ODLLogFormatter.includeFields"};
+            "com.sun.enterprise.server.logging.GFFileHandler.excludeFields",
+            "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode"};
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SetLogLevel.class);
 
@@ -177,7 +178,7 @@ public class SetLogAttributes implements AdminCommand {
                     targetConfigName = target;
                     isConfig = true;
 
-                    Server targetServer = domain.getServerNamed(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME);
+                    Server targetServer = domain.getServerNamed(SystemPropertyConstants.DAS_SERVER_NAME);
                     if (targetServer != null && targetServer.getConfigRef().equals(target)) {
                         isDas = true;
                     }

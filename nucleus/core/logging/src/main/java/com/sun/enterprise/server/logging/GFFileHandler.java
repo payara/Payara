@@ -141,13 +141,6 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     private BooleanLatch done = new BooleanLatch();
     private Thread pump;
 
-    // We maintain a list of the last MAX_RECENT_ERRORS WARNING
-    // or SEVERE error messages that were logged. The DAS (or any other 
-    // client) can then obtain these messages through the ServerRuntimeMBean
-    // and determine if the server instance (or Node Agent) is in an 
-    // error state.
-    private static final int MAX_RECENT_ERRORS = 4;
-
     boolean dayBasedFileRotation = false;
 
     private String RECORD_BEGIN_MARKER = "[#|";
@@ -386,6 +379,9 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
         EarlyLogHandler.earlyMessages.add(lr);
 
+        String excludeFields = manager.getProperty(LogManagerService.EXCLUDE_FIELDS_PROPERTY);
+        boolean multiLineMode = Boolean.parseBoolean(manager.getProperty(LogManagerService.MULTI_LINE_MODE_PROPERTY));
+
         if (UniformLogFormatter.class.getName().equals(formatterName)) {
             // this loop is used for UFL formatter
             UniformLogFormatter formatterClass = null;
@@ -397,7 +393,9 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                 formatterClass = new UniformLogFormatter();
                 setFormatter(formatterClass);
             }
-            
+
+            formatterClass.setExcludeFields(excludeFields);
+            formatterClass.setMultiLineMode(multiLineMode);
             formatterClass.setLogEventBroadcaster(this);
 
             if (formatterClass != null) {
@@ -445,8 +443,8 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                 formatterClass = new ODLLogFormatter();
                 setFormatter(formatterClass);
             }
-            String includeFields = manager.getProperty(LogManagerService.INCLUDE_FIELDS_PROPERTY);
-            formatterClass.setIncludeFields(includeFields);
+            formatterClass.setExcludeFields(excludeFields);
+            formatterClass.setMultiLineMode(multiLineMode);
             formatterClass.setLogEventBroadcaster(this);
         } else {
             // this loop is used for any other formatter
