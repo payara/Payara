@@ -42,10 +42,9 @@ package org.glassfish.api.admin;
 
 
 import java.util.UUID;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.ExecutionContext;
 import java.util.logging.Logger;
 import javax.security.auth.Subject;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.progress.ProgressStatusImpl;
 
 /**
@@ -116,7 +115,7 @@ public class AdminCommandContextImpl implements  AdminCommandContext {
     @Override
     public ProgressStatus getProgressStatus() {
         if (progressStatus == null) {
-            progressStatus = new ErrorProgressStatus();
+            progressStatus = new ProgressStatusImpl();
         }
         return progressStatus;
     }
