@@ -50,6 +50,7 @@ import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.cli.ProgramOptions.PasswordLocation;
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
+import com.sun.enterprise.admin.remote.sse.GfSseInboundEvent;
 import com.sun.enterprise.admin.util.CachedCommandModel;
 import com.sun.enterprise.admin.util.CommandModelData;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
@@ -72,6 +73,9 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
+import org.glassfish.api.admin.AdminCommandEventBroker;
+import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
+import org.glassfish.api.admin.AdminCommandState;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandModel.ParamModel;
 import org.glassfish.api.admin.CommandProgress;
@@ -81,6 +85,7 @@ import org.glassfish.common.util.admin.ManPageFinder;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jvnet.hk2.component.MultiMap;
 
 /**
  * A remote command handled by the asadmin CLI.
@@ -105,6 +110,8 @@ public class RemoteCLICommand extends CLICommand {
     protected List<String>              reExecutedOperands;
 
     private RemoteCLICommand.CLIRemoteAdminCommand       rac;
+    private final MultiMap<String, AdminCommandListener<GfSseInboundEvent>> listeners = 
+            new MultiMap<String, AdminCommandListener<GfSseInboundEvent>>();
 
     /**
      * A special RemoteAdminCommand that overrides methods so that
@@ -139,8 +146,8 @@ public class RemoteCLICommand extends CLICommand {
 
             sessionCache = new File(AsadminSecurityUtil.getDefaultClientDir(),
                     sessionFilePath.toString());
-            statusPrinter = new ProgressStatusPrinter(env.debug() || env.trace(), logger);
-            if (!programOpts.isTerse() && System.console() != null) {
+            statusPrinter = new ProgressStatusPrinter(env.debug() || env.trace() || System.console() == null, logger);
+            if (!programOpts.isTerse()) {
                 super.registerListener(CommandProgress.EVENT_PROGRESSSTATUS_CHANGE, statusPrinter);
                 super.registerListener(CommandProgress.EVENT_PROGRESSSTATUS_STATE, statusPrinter);
             }
@@ -744,8 +751,7 @@ public class RemoteCLICommand extends CLICommand {
             rac.statusPrinter.reset();
             options.set("DEFAULT", operands);
             if (programOpts.isDetachedCommand())  {
-                rac.registerListener("AdminCommandInstance\\.stateChanged", new DetachListener(logger, rac));
-
+                rac.registerListener(AdminCommandState.EVENT_STATE_CHANGED, new DetachListener(logger, rac));
             }
             try {
                 output = rac.executeCommand(options);
@@ -884,6 +890,13 @@ public class RemoteCLICommand extends CLICommand {
         BufferedReader r = getLocalManPage();
         return r != null ? r : super.getManPage();
     }
+    
+    public synchronized void registerListener(String regexpForName, AdminCommandListener listener) {
+        listeners.add(regexpForName, listener);
+        if (rac != null) {
+            rac.registerListener(regexpForName, listener);
+        }
+    }
 
     /**
      * Try to find a local version of the man page for this command.
@@ -907,7 +920,12 @@ public class RemoteCLICommand extends CLICommand {
                 programOpts.getPassword(), logger, programOpts.getAuthToken());
             rac.setFileOutputDirectory(outputDir);
             rac.setInteractive(programOpts.isInteractive());
-            rac.setOmitCache(!programOpts.isUseCache()); //todo: [mmar] Remove after implementation CLI->ReST done
+            rac.setOmitCache(!programOpts.isUseCache());
+            for (String key : listeners.keySet()) {
+                for (AdminCommandListener<GfSseInboundEvent> listener : listeners.get(key)) {
+                    rac.registerListener(key, listener);
+                }
+            }
         }
     }
 

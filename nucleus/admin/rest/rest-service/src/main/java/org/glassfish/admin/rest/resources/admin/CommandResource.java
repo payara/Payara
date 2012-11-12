@@ -68,6 +68,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
 import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommandEventBroker.BrokerListenerRegEvent;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.internal.util.collection.Ref;
@@ -385,20 +386,42 @@ public class CommandResource {
                 .parameters(params);
         final EventOutput ec = new EventOutput();
         AdminCommandListener listener = new AdminCommandListener() {
+            
+                    private AdminCommandEventBroker broker;
+                    
+                    private void unregister() {
+                        if (broker != null) {
+                            broker.unregisterListener(this);
+                        }
+                    }
+                    
                     @Override
                     public void onAdminCommandEvent(String name, Object event) {
-                        if (name == null || name.startsWith("client.")) {
+                        if (name == null || event == null) {
+                            return;
+                        }
+                        if (BrokerListenerRegEvent.EVENT_NAME_LISTENER_REG.equals(name)) {
+                            BrokerListenerRegEvent blre = (BrokerListenerRegEvent) event;
+                            broker = blre.broker;
+                            return;
+                        }
+                        if (name.startsWith(AdminCommandEventBroker.LOCAL_EVENT_PREFIX)) {
                             return; //Prevent events from client to be send back to client
                         }
-                        if (event == null) {
+                        if (ec.isClosed()) {
+                            unregister();
                             return;
                         }
-                        if (ec.isClosed()) {
-                            return;
+                        if ((event instanceof Number) || 
+                            (event instanceof CharSequence) ||
+                            (event instanceof Boolean)) {
+                            event = String.valueOf(event);
                         }
                         OutboundEvent outEvent = new OutboundEvent.Builder()
                                                     .name(name)
-                                                    .mediaType(MediaType.APPLICATION_JSON_TYPE)
+                                                    .mediaType(event instanceof String ? 
+                                                            MediaType.TEXT_PLAIN_TYPE : 
+                                                            MediaType.APPLICATION_JSON_TYPE)
                                                     .data(event.getClass(), event)
                                                     .build();
                         try {
@@ -408,6 +431,9 @@ public class CommandResource {
                                 logger.log(Level.FINE, strings.getLocalString("sse.writeevent.exception",
                                         "Can not write object as SSE (type = {0})",
                                         event.getClass().getName()), ex);
+                            }
+                            if (ec.isClosed()) {
+                                unregister();
                             }
                         }
                     }

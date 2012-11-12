@@ -48,7 +48,7 @@ import org.glassfish.api.ActionReport;
  */
 public interface AdminCommandState {
     
-    public static final String EVENT_STATE_CHANGED = "AdminCommandInstance.stateChanged";
+    public static final String EVENT_STATE_CHANGED = "AdminCommandInstance/stateChanged";
     
     public enum State {
         PREPARED, RUNNING, COMPLETED, RECORDED, FAILED;

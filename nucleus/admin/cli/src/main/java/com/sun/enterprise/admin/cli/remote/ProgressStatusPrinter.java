@@ -71,11 +71,11 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
     
     private ProgressStatusClient client = new ProgressStatusClient(null);
     private CommandProgress commandProgress;
-    private final boolean debug;
+    private final boolean disableAnimation;
     private final Logger logger;
 
-    public ProgressStatusPrinter(boolean debug, Logger logger) {
-        this.debug = debug;
+    public ProgressStatusPrinter(boolean disableAnimation, Logger logger) {
+        this.disableAnimation = disableAnimation;
         if (logger == null) {
             this.logger = Logger.getLogger(ProgressStatusPrinter.class.getName());
         } else {
@@ -147,7 +147,7 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
             }
             //Print
             if (printIt) {
-                if (debug) {
+                if (disableAnimation) {
                     System.out.println(outMsg);
                 } else {
                     if (!firstPrint) {
@@ -168,6 +168,9 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
     }
     
     public synchronized void deleteLastMessage() {
+        if (disableAnimation) {
+            System.out.println();
+        }
         if (lastMsgLength > 0) {
             System.out.print('\r');
             for (int i = 0; i < lastMsgLength; i++) {

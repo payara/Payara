@@ -47,6 +47,10 @@ package org.glassfish.api.admin;
  */
 public interface AdminCommandEventBroker<T> {
     
+    /** Local events are not transfered to remote listener using SSE
+     */
+    public static final String LOCAL_EVENT_PREFIX = "local/";
+    
     /** Fire event under defined name. Any object can be event. 
      * 
      * @param name Event name. Listener is registered to some name.
@@ -73,6 +77,10 @@ public interface AdminCommandEventBroker<T> {
      */
     public void unregisterListener(AdminCommandListener listener);
     
+    /** Returns true if exist exists registered listener for given eventName
+     */
+    public boolean listening(String eventName);
+    
     /** Listener for AdminCommand events.
      * 
      * @param <T> Type of event
@@ -82,4 +90,19 @@ public interface AdminCommandEventBroker<T> {
         public void onAdminCommandEvent(String name, T event);
         
     }
+    
+    public static class BrokerListenerRegEvent {
+        public static final String EVENT_NAME_LISTENER_REG = LOCAL_EVENT_PREFIX + "listener/register";
+        public static final String EVENT_NAME_LISTENER_UNREG = LOCAL_EVENT_PREFIX + "listener/unregister";
+        
+        public final AdminCommandEventBroker broker;
+        public final AdminCommandListener listener;
+
+        public BrokerListenerRegEvent(AdminCommandEventBroker broker, AdminCommandListener listener) {
+            this.broker = broker;
+            this.listener = listener;
+        }
+        
+    }
+    
 }

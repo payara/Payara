@@ -41,6 +41,7 @@
 package org.glassfish.api.admin;
 
 
+import java.util.UUID;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ExecutionContext;
 import java.util.logging.Logger;
@@ -115,7 +116,7 @@ public class AdminCommandContextImpl implements  AdminCommandContext {
     @Override
     public ProgressStatus getProgressStatus() {
         if (progressStatus == null) {
-            progressStatus = new ProgressStatusImpl();
+            progressStatus = new ErrorProgressStatus();
         }
         return progressStatus;
     }
@@ -127,71 +128,74 @@ public class AdminCommandContextImpl implements  AdminCommandContext {
     
     static class ErrorProgressStatus implements ProgressStatus {
         
-        private IllegalStateException exception = new IllegalStateException("Annotation @Progress not present.");
+        private static final String EXC_MESSAGE = "@Progress annotation is not present.";
+        private String id = null;
+        
         
         @Override
         public void setTotalStepCount(int totalStepCount) {
-            throw exception;
+            throw new IllegalStateException(EXC_MESSAGE);
         }
 
         @Override
         public int getTotalStepCount() {
-            throw exception;
+            return 0;
         }
 
         @Override
         public int getRemainingStepCount() {
-            throw exception;
+            return 0;
         }
 
         @Override
         public void progress(int steps, String message) {
-            throw exception;
+            throw new IllegalStateException(EXC_MESSAGE);
         }
 
         @Override
         public void progress(int steps) {
-            throw exception;
+            throw new IllegalStateException(EXC_MESSAGE);
         }
 
         @Override
         public void progress(String message) {
-            throw exception;
+            throw new IllegalStateException(EXC_MESSAGE);
         }
 
         @Override
         public void setCurrentStepCount(int stepCount) {
-            throw exception;
+            throw new IllegalStateException(EXC_MESSAGE);
         }
 
         @Override
         public void complete(String message) {
-            throw exception;
         }
 
         @Override
         public void complete() {
-            throw exception;
         }
 
         @Override
         public boolean isComplete() {
-            throw exception;
+            return true;
         }
 
         @Override
         public ProgressStatus createChild(String name, int allocatedSteps) {
-            throw exception;
+            throw new IllegalStateException(EXC_MESSAGE);
         }
 
         @Override
         public ProgressStatus createChild(int allocatedSteps) {
-            throw exception;
+            throw new IllegalStateException(EXC_MESSAGE);
         }
 
         @Override
-        public String getId() {
-            throw exception;
+        public synchronized String getId() {
+            if (id == null) {
+                id = UUID.randomUUID().toString();
+            }
+            return id;
         }
         
     }

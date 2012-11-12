@@ -131,12 +131,40 @@ public class AdminCommandEventBrokerImpl<T> implements AdminCommandEventBroker<T
             listenerGroups.add(lgrp);
         }
         lgrp.add(listener);
+        fireEvent(BrokerListenerRegEvent.EVENT_NAME_LISTENER_REG, 
+                new BrokerListenerRegEvent(this, listener));
+    }
+    
+    @Override
+    public synchronized boolean listening(String eventName) {
+        if (eventName == null) {
+            for (ListenerGroup listenerGroup : listenerGroups) {
+                if (!listenerGroup.listeners.isEmpty()) {
+                    return true;
+                }
+            }
+        } else {
+            for (ListenerGroup listenerGroup : listenerGroups) {
+                if (listenerGroup.matches(eventName) && !listenerGroup.listeners.isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
     public synchronized void unregisterListener(AdminCommandListener listener) {
+        boolean removed = false;
         for (ListenerGroup listenerGroup : listenerGroups) {
-            listenerGroup.remove(listener); //No break. Can be registered for more names
+            if (listenerGroup.remove(listener)) {
+                removed = true;
+            }
+            //No break. Can be registered for more names
+        }
+        if (removed) {
+            fireEvent(BrokerListenerRegEvent.EVENT_NAME_LISTENER_UNREG, 
+                new BrokerListenerRegEvent(this, listener));
         }
     }
     

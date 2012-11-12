@@ -43,6 +43,7 @@ import com.sun.enterprise.admin.event.AdminCommandEventBrokerImpl;
 import com.sun.enterprise.admin.remote.AdminCommandStateImpl;
 import com.sun.enterprise.admin.remote.JobPersistenceService;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.AdminCommandEventBroker;
 import org.glassfish.api.admin.Job;
 import org.glassfish.api.admin.CommandProgress;
@@ -129,7 +130,7 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
     
     @Override
     public void complete(ActionReport report, Payload.Outbound outbound) {
-        if (commandProgress != null) {
+        if (commandProgress != null && report != null && report.getActionExitCode() == ExitCode.SUCCESS) {
             commandProgress.complete();
         }
         this.payload = outbound;
