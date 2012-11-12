@@ -205,7 +205,7 @@ public class NucleusTestUtils {
      * @return true if b contains a
      */
     public static boolean matchString(String a, String b) {
-        if (a == b) return true;
+        if ((a == null) && (b == null)) return true;
         if (a == null) return false;
         if (b == null) return false;
         
