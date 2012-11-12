@@ -39,10 +39,12 @@
  */
 package com.sun.enterprise.v3.admin.commands;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.v3.admin.JobManagerService;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.progress.JobInfo;
 import org.glassfish.api.admin.progress.JobInfos;
@@ -52,10 +54,7 @@ import org.jvnet.hk2.annotations.Service;
 
 
 import javax.inject.Inject;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import java.io.*;
+
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
@@ -82,6 +81,9 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
 
     private final String JOBS_FILE = "jobs.xml";
 
+    @Param(optional = true, primary = true)
+    String jobID;
+
     @Inject
     private ServerEnvironment serverEnvironment;
 
@@ -92,10 +94,10 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
     private static final String NONE = "Nothing to list.";
 
 
-    final private static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(ListJobsCommand.class);
+    final private static StringManager localStrings =
+            StringManager.getManager(ListJobsCommand.class);
 
-    final private static Logger logger = LogDomains.getLogger(ListJobsCommand.class, LogDomains.PAAS_LOGGER);
+    final private static Logger logger = LogDomains.getLogger(ListJobsCommand.class, LogDomains.ADMIN_LOGGER);
 
 
     @Override
@@ -111,19 +113,35 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
 
         List<JobInfo> jobInfoList = new ArrayList<JobInfo>();
 
+        StringBuilder sb = new StringBuilder();
+        if (jobID != null) {
+            Job oneJob = jobManagerService.get(jobID);
+            JobInfo info = null;
+            if (oneJob != null) {
+                info = new JobInfo(oneJob.getId(),oneJob.getName(),oneJob.getCommandExecutionDate(),oneJob.getState().name(),"user",oneJob.getActionReport().getMessage());
+            }  else {
+                if (jobManagerService.getCompletedJobs() != null)
+                info = getCompletedJobForId(jobID);
+            }
 
-        for (Iterator<Job> iterator = jobManagerService.getJobs(); iterator.hasNext(); ) {
-            Job job = iterator.next();
-            //Todo fix user
-            String message = job.getActionReport() == null ? "" : job.getActionReport().getMessage();
-            jobInfoList.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),job.getState().name(),"user",message));
+          if (info!= null) {
+              jobInfoList.add(info);
+          }
+
+        }  else {
+
+            for (Iterator<Job> iterator = jobManagerService.getJobs(); iterator.hasNext(); ) {
+                Job job = iterator.next();
+                //Todo fix user
+                String message = job.getActionReport() == null ? "" : job.getActionReport().getMessage();
+                jobInfoList.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),job.getState().name(),"user",message));
+            }
+
+            JobInfos completedJobs = jobManagerService.getCompletedJobs();
+            if (completedJobs != null ) {
+                jobInfoList.addAll(completedJobs.getJobInfoList());
+            }
         }
-
-        JobInfos completedJobs = jobManagerService.getCompletedJobs();
-        if (completedJobs != null ) {
-            jobInfoList.addAll(completedJobs.getJobInfoList());
-        }
-
         for (JobInfo job :jobInfoList) {
             int  jobId = job.jobId.length();
             int time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(job.commandExecutionDate).length();
@@ -141,7 +159,6 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
 
         }
 
-        StringBuilder sb = new StringBuilder();
         if (jobInfoList.size() < 1) {
             sb.append(NONE);
         }
@@ -188,6 +205,15 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
     }
 
 
+    private JobInfo getCompletedJobForId(String id) {
+        for (JobInfo jobInfo: jobManagerService.getCompletedJobs().getJobInfoList()) {
+            if (jobInfo.jobId.equals(id)) {
+                return jobInfo;
+            }
+
+        }
+        return null;
+    }
 }
 
 
