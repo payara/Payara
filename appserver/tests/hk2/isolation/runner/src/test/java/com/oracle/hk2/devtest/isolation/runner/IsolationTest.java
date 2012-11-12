@@ -53,10 +53,25 @@ import org.testng.annotations.Test;
 public class IsolationTest extends NucleusStartStopTest {
     private final static String ISO1_WAR = "isolation/web/iso1/target/hk2-isolation-web-iso1.war";
     private final static String ISO1_APP_NAME = "hk2-isolation-web-iso1";
+    private final static String ISO1_URL = "http://localhost:8080/hk2-isolation-web-iso1/iso1";
     
     private final static String ISO2_WAR = "isolation/web/iso2/target/hk2-isolation-web-iso2.war";
     private final static String ISO2_APP_NAME = "hk2-isolation-web-iso2";
+    private final static String ISO2_URL = "http://localhost:8080/hk2-isolation-web-iso2/iso2";
     
+    private String getName(String rawHTML) {
+        int leftParen = rawHTML.indexOf("(");
+        int rightParen = rawHTML.indexOf(")");
+        
+        Assert.assertTrue(leftParen >= 0);
+        Assert.assertTrue(rightParen > leftParen);
+        
+        return rawHTML.substring(leftParen+1, rightParen);
+    }
+    
+    /**
+     * Ensures that the service locators in two web-apps are different
+     */
     @Test
     public void testWebAppsAreIsolated() {
         boolean deployed1 = NucleusTestUtils.nadmin("deploy", ISO1_WAR);
@@ -65,6 +80,14 @@ public class IsolationTest extends NucleusStartStopTest {
         try {
             Assert.assertTrue(deployed1);
             Assert.assertTrue(deployed2);
+            
+            String fromURL1 = NucleusTestUtils.getURL(ISO1_URL);
+            String fromURL2 = NucleusTestUtils.getURL(ISO2_URL);
+            
+            String iso1Name = getName(fromURL1);
+            String iso2Name = getName(fromURL2);
+            
+            Assert.assertNotEquals(iso1Name, iso2Name);
         }
         finally {
             if (deployed1) {

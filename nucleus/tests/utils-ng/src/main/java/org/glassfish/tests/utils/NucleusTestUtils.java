@@ -194,13 +194,33 @@ public class NucleusTestUtils {
         return System.getProperty("os.name").toLowerCase(Locale.ENGLISH).contains("win");
     }
     
-    /*
+    /**
      * Returns true if String b contains String a.
+     * Returns true if both strings are null.
+     * Returns false if only one of the strings is null.
+     * 
+     * @param a The possibly null string that must be contained
+     * in b
+     * @param b The possibly null string that must contain a
+     * @return true if b contains a
      */
     public static boolean matchString(String a, String b) {
+        if (a == b) return true;
+        if (a == null) return false;
+        if (b == null) return false;
+        
         return b.indexOf(a) != -1;
     }
 
+    /**
+     * This methods opens a connection to the given URL and
+     * returns the string that is returned from that URL.  This
+     * is useful for simple servlet retrieval
+     * 
+     * @param urlstr The URL to connect to
+     * @return The string returned from that URL, or empty
+     * string if there was a problem contacting the URL
+     */
     public static String getURL(String urlstr) {
         // @todo Java SE 7 use try with resources
         StringWriter ow = null;

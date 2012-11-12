@@ -74,7 +74,7 @@ public class Iso2Servlet extends HttpServlet {
         
         ServiceLocator locator = (ServiceLocator) context.getAttribute(HABITAT_ATTRIBUTE);
         
-        String reply = (locator == null) ? "null" : locator.getName();
+        String reply = "(" + ((locator == null) ? "null" : locator.getName()) + ")";
 
         response.setContentType("text/html");
         PrintWriter writer = response.getWriter();
@@ -83,7 +83,7 @@ public class Iso2Servlet extends HttpServlet {
         writer.println("<head>");
         writer.println("<title>Iso1 WebApp</title>");
         writer.println("</head>");
-        writer.println("<body bgcolor=white>");
+        writer.println("<body>");
 
         writer.println(reply);
 
