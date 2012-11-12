@@ -115,7 +115,8 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
         for (Iterator<Job> iterator = jobManagerService.getJobs(); iterator.hasNext(); ) {
             Job job = iterator.next();
             //Todo fix user
-            jobInfoList.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),job.getState().name(),"user",job.getActionReport().getMessage()));
+            String message = job.getActionReport() == null ? "" : job.getActionReport().getMessage();
+            jobInfoList.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),job.getState().name(),"user",message));
         }
 
         JobInfos completedJobs = jobManagerService.getCompletedJobs();
