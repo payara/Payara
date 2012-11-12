@@ -125,7 +125,7 @@ public abstract class AbstractRestResourceProvider implements RestResourceProvid
         UriConnegFilter.enableFor(rc, getMimeMappings(), null);
 
         rc.addClasses(CsrfProtectionFilter.class);
-
+        rc.addClasses(ExceptionFilter.class);
 
 //        TODO - JERSEY2
 //        RestConfig restConf = ResourceUtil.getRestConfig(habitat);
