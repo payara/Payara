@@ -174,7 +174,6 @@ public class DeploymentImpl implements Deployment {
         // Make jars accessible to each other - Example:
         //    /ejb1.jar <----> /ejb2.jar
         // If there are any application (/lib) jars, make them accessible
-        // war's must be able to access the ejbs
 
         if (jarBDAs != null) {
             for (BeanDeploymentArchive oneJarBDA : jarBDAs) {
@@ -191,14 +190,6 @@ public class DeploymentImpl implements Deployment {
                 if (libJarBDAs != null) {
                     for (BeanDeploymentArchive libJarBDA : libJarBDAs) {
                         oneJarBDA.getBeanDeploymentArchives().add(libJarBDA);
-                        modifiedArchive = true;
-                    }
-                }
-
-                // make the wars able to access the ejbs
-                if (warBDAs != null) {
-                    for (BeanDeploymentArchive oneWarBDA : warBDAs) {
-                        oneJarBDA.getBeanDeploymentArchives().add(oneWarBDA);
                         modifiedArchive = true;
                     }
                 }
