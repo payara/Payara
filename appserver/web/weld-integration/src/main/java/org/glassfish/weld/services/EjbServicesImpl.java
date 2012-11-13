@@ -142,10 +142,10 @@ public class EjbServicesImpl implements EjbServices
         } else if( sessionDesc.getRemoteBusinessClassNames().size() >= 1) {
             clientView = sessionDesc.getRemoteBusinessClassNames().iterator().next();
         }
-makeInterceptorChain
+
         return (clientView != null) ? sessionDesc.getPortableJndiName(clientView) : null;
 
-    }makeInterceptorChain
+    }
 
     public void registerInterceptors(EjbDescriptor<?> ejbDesc, InterceptorBindings interceptorBindings) {
 
