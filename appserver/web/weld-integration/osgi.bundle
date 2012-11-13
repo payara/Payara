@@ -38,9 +38,13 @@
 # holder.
 #
 
--exportcontents: org.glassfish.weld.*; version=${project.osgi.version}
+-exportcontents: org.glassfish.weld.*; \
+                 org.glassfish.cdi.*; version=${project.osgi.version}
 Bundle-Activator: org.glassfish.weld.WeldActivator
 
 # Because this module needs to run in web profile which does not have
 # full javaee deployment support, we mark corresponding package as optional.
-Import-Package: org.glassfish.javaee.full.deployment; resolution:= optional, *
+Import-Package: org.glassfish.javaee.full.deployment; resolution:= optional, \
+                javax.transaction;, \
+                javax.transaction.cdi;, \
+                *
