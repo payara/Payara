@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.gms.admin;
+package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.gms.tools.MulticastTester;

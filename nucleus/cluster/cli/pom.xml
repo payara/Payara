@@ -161,6 +161,14 @@
             <artifactId>ssl-impl</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.shoal</groupId>
+            <artifactId>shoal-gms-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.shoal</groupId>
+            <artifactId>shoal-gms-impl</artifactId>
+        </dependency>
     </dependencies>
 </project>
 
