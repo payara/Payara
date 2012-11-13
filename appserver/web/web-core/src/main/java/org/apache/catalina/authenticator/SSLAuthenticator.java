@@ -62,8 +62,6 @@ package org.apache.catalina.authenticator;
 import org.apache.catalina.Globals;
 import org.apache.catalina.HttpRequest;
 import org.apache.catalina.HttpResponse;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.deploy.LoginConfig;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
@@ -73,8 +71,6 @@ import java.io.IOException;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
-import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 
 /**

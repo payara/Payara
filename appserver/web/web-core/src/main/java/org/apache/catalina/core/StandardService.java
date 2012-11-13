@@ -744,9 +744,7 @@ public class StandardService
         }
     }
 
-    protected String type;
     protected String domain;
-    protected String suffix;
     protected ObjectName oname;
     protected ObjectName controller;
 

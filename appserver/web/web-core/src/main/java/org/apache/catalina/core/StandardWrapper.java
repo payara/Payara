@@ -417,7 +417,7 @@ public class StandardWrapper
      * Async support
      */
     private boolean isAsyncSupported = false;
-    private long asyncTimeout;
+    //private long asyncTimeout;
 
 
     /**

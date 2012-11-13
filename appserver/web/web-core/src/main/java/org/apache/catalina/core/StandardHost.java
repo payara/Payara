@@ -976,15 +976,7 @@ public class StandardHost
 
         // START SJSAS_PE 8.1 5034793
         if (log.isLoggable(Level.FINE)) {
-            if (xmlValidation) {
-                if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, rb.getString(XML_VALIDATION_ENABLED));
-                }
-            } else {
-                if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, rb.getString(XML_VALIDATION_ENABLED));
-                }
-            }
+            log.log(Level.FINE, XML_VALIDATION_ENABLED);
         }
         // END SJSAS_PE 8.1 5034793 
 

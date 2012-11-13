@@ -64,7 +64,6 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -148,10 +147,6 @@ public class StandardEngine
      * otherwise we loose some flexibility.
      */
     private String baseDir = null;
-    
-    /** Mbeans loaded by the engine.  
-     */ 
-    private List<ObjectName> mbeans;
 
     /**
      * The JVM Route ID for this Tomcat instance. All Route ID's must be unique

@@ -310,11 +310,6 @@ public final class ApplicationDispatcher
     private Context context = null;
 
     /**
-     * The debugging detail level for this component.
-     */
-    private int debug = 0;
-
-    /**
      * Descriptive information about this implementation.
      */
     private static final String info =
@@ -967,7 +962,7 @@ public final class ApplicationDispatcher
      * Log a message on the Logger associated with our Context (if any)
      *
      * @param message Message to be logged
-     */
+     *
     private void log(String message) {
         org.apache.catalina.Logger logger = context.getLogger();
         if (logger != null) {
@@ -988,7 +983,7 @@ public final class ApplicationDispatcher
      *
      * @param message Message to be logged
      * @param t Associated exception
-     */
+     *
     private void log(String message, Throwable t) {
         org.apache.catalina.Logger logger = context.getLogger();
         if (logger != null) {
@@ -999,7 +994,7 @@ public final class ApplicationDispatcher
                                               context.getPath(), message);
             log.log(Level.WARNING, msg, t);
         }
-    }
+    }  */
 
 
     /**

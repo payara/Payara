@@ -63,6 +63,7 @@ import org.apache.catalina.*;
 import org.apache.catalina.Logger;
 import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.valves.ValveBase;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -75,11 +76,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
-
-
-import org.glassfish.logging.annotation.LogMessageInfo;
-
-
 
 
 /**

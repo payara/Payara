@@ -62,7 +62,6 @@ import org.apache.catalina.HttpRequest;
 import org.apache.catalina.HttpResponse;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Session;
-import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityConstraint;
 
@@ -75,7 +74,6 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
 import org.glassfish.logging.annotation.LogMessageInfo;
