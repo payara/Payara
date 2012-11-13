@@ -74,9 +74,9 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
-import org.glassfish.jersey.media.sse.EventOutput;
+import org.glassfish.jersey.media.sse.EventChannel;
 import org.glassfish.jersey.media.sse.OutboundEvent;
-import org.glassfish.jersey.media.sse.SseFeature;
+import org.glassfish.jersey.media.sse.EventChannel;
 
 
 /**
@@ -294,7 +294,7 @@ public class CommandResource {
     @POST
     @Path("/{command:.*}/")
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces(SseFeature.SERVER_SENT_EVENTS)
+    @Produces(EventChannel.SERVER_SENT_EVENTS)
     public Response execCommandSimpInSseOut(@PathParam("command") String command,
                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
@@ -309,7 +309,7 @@ public class CommandResource {
     @POST
     @Path("/{command:.*}/")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(SseFeature.SERVER_SENT_EVENTS)
+    @Produces(EventChannel.SERVER_SENT_EVENTS)
     public Response execCommandMultInSseOut(@PathParam("command") String command,
                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
@@ -325,7 +325,7 @@ public class CommandResource {
 
     @POST
     @Path("/{command:.*}/")
-    @Produces(SseFeature.SERVER_SENT_EVENTS)
+    @Produces(EventChannel.SERVER_SENT_EVENTS)
     public Response execCommandEmptyInSseOut(@PathParam("command") String command,
                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId) {
@@ -384,7 +384,7 @@ public class CommandResource {
                 .subject(getSubject())
                 .managedJob()
                 .parameters(params);
-        final EventOutput ec = new EventOutput();
+        final EventChannel ec = new EventChannel();
         AdminCommandListener listener = new AdminCommandListener() {
             
                     private AdminCommandEventBroker broker;
@@ -449,7 +449,7 @@ public class CommandResource {
     }
 
     private void executeCommandInvocationAsync(final CommandRunner.CommandInvocation ci,
-            final EventOutput ec,
+            final EventChannel ec,
             final AdminCommandListener listener) {
 
         JobManagerService jobManagerService = Globals.getDefaultHabitat().getService(JobManagerService.class);
@@ -459,10 +459,10 @@ public class CommandResource {
 
     class AsyncInvocationHandler implements Runnable {
         private CommandRunner.CommandInvocation commandInvocation;
-        private EventOutput eventChannel;
+        private EventChannel eventChannel;
         private AdminCommandListener listener;
 
-        AsyncInvocationHandler(CommandRunner.CommandInvocation inv, EventOutput channel, AdminCommandListener list) {
+        AsyncInvocationHandler(CommandRunner.CommandInvocation inv, EventChannel channel, AdminCommandListener list) {
             this.commandInvocation = inv;
             this.eventChannel = channel;
             this.listener = list;

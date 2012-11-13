@@ -98,7 +98,7 @@ import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartClientBinder;
-import org.glassfish.jersey.media.sse.SseFeature;
+import org.glassfish.jersey.media.sse.EventChannel;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -495,7 +495,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 ParameterMap preparedParams = processParams(opts);
                 MediaType[] acceptMediaTypes = new MediaType[] {MEDIATYPE_MULTIPART, MEDIATYPE_ACTIONREPORT};
                 if (useSse()) {
-                    acceptMediaTypes = new MediaType[] {SseFeature.SERVER_SENT_EVENTS_TYPE};
+                    acceptMediaTypes = new MediaType[] {EventChannel.SERVER_SENT_EVENTS_TYPE};
                 }
                 Response response = doRestCommand(preparedParams, null, "POST", false, acceptMediaTypes);
                 MediaType resultMediaType = response.getMediaType();
@@ -532,7 +532,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     } catch (Exception ex) {
                         throw new CommandException(ex.getMessage(), ex);
                     }
-                } else if (SseFeature.SERVER_SENT_EVENTS_TYPE.isCompatible(resultMediaType)) {
+                } else if (EventChannel.SERVER_SENT_EVENTS_TYPE.isCompatible(resultMediaType)) {
                     try {
                         logger.log(Level.FINEST, "Response is SSE - about to read events");
                         closeSse = false;
