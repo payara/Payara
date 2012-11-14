@@ -184,7 +184,7 @@ public class ApplyHttpLbChanges implements AdminCommand {
                 if (code != HttpURLConnection.HTTP_OK) {
                     String url = conn.getURL().toString();
                     conn = null;
-                    throw new IOException(LbLogUtil.getStringManager().getString("HttpError", new Integer(code), response, url));
+                    throw new IOException(LbLogUtil.getStringManager().getString("HttpError", Integer.valueOf(code), response, url));
                 }
                 conn = null;
             }
