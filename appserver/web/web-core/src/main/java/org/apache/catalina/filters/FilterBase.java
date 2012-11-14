@@ -59,15 +59,18 @@
 
 package org.apache.catalina.filters;
 
+import java.text.MessageFormat;
 import java.util.Enumeration;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 
+import org.apache.catalina.core.StandardServer;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.util.IntrospectionUtils;
-import org.apache.catalina.util.StringManager;
 
 /**
  * Base class for filters that provides generic initialisation and a simple
@@ -78,8 +81,13 @@ import org.apache.catalina.util.StringManager;
  */
 public abstract class FilterBase implements Filter {
 
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
+    protected  static final ResourceBundle rb = StandardServer.log.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "The property \"{0}\" is not defined for filters of type \"{1}\"",
+            level = "WARNING"
+    )
+    public static final String PROPERTY_NOT_DEFINED_EXCEPTION = "AS-WEB-CORE-00465";
 
     protected abstract Logger getLogger();
 
@@ -90,8 +98,8 @@ public abstract class FilterBase implements Filter {
             String paramName = paramNames.nextElement();
             if (!IntrospectionUtils.setProperty(this, paramName,
                     filterConfig.getInitParameter(paramName))) {
-                String msg = sm.getString("filterbase.noSuchProperty",
-                        paramName, this.getClass().getName());
+                String msg = MessageFormat.format(rb.getString(PROPERTY_NOT_DEFINED_EXCEPTION),
+                                                  new Object[] {paramName, this.getClass().getName()});
                 if (isConfigProblemFatal()) {
                     throw new ServletException(msg);
                 } else {

@@ -59,14 +59,14 @@
 
 package org.apache.catalina.filters;
 
+import org.apache.catalina.core.StandardServer;
+import org.glassfish.logging.annotation.LogMessageInfo;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.SecureRandom;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.text.MessageFormat;
+import java.util.*;
 import java.util.logging.Logger;
 
 import javax.servlet.FilterChain;
@@ -91,8 +91,13 @@ import javax.servlet.http.HttpSession;
  */
 public class CsrfPreventionFilter extends FilterBase {
 
-    private static final Logger log = Logger.getLogger(
-        CsrfPreventionFilter.class.getName());
+    protected static final Logger log = StandardServer.log;
+
+    @LogMessageInfo(
+            message = "Unable to create Random source using class [{0}]",
+            level = "WARNING"
+    )
+    public static final String UNABLE_CREATE_RANDOM_SOURCE_EXCEPTION = "AS-WEB-CORE-00460";
 
     private String randomClass = SecureRandom.class.getName();
 
@@ -152,20 +157,20 @@ public class CsrfPreventionFilter extends FilterBase {
         // Set the parameters
         super.init(filterConfig);
 
+        String msg = MessageFormat.format(rb.getString(UNABLE_CREATE_RANDOM_SOURCE_EXCEPTION), randomClass);
+
         try {
             Class<?> clazz = Class.forName(randomClass);
             randomSource = (Random) clazz.newInstance();
         } catch (ClassNotFoundException e) {
-            ServletException se = new ServletException(sm.getString(
-                    "csrfPrevention.invalidRandomClass", randomClass), e);
+
+            ServletException se = new ServletException(msg, e);
             throw se;
         } catch (InstantiationException e) {
-            ServletException se = new ServletException(sm.getString(
-                    "csrfPrevention.invalidRandomClass", randomClass), e);
+            ServletException se = new ServletException(msg, e);
             throw se;
         } catch (IllegalAccessException e) {
-            ServletException se = new ServletException(sm.getString(
-                    "csrfPrevention.invalidRandomClass", randomClass), e);
+            ServletException se = new ServletException(msg, e);
             throw se;
         }
     }
