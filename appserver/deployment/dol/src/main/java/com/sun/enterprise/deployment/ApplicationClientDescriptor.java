@@ -48,6 +48,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
+import org.glassfish.deployment.common.JavaEEResourceType;
 
 import java.util.*;
     /**
@@ -673,52 +674,59 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
         return findReferencedPUsViaPURefs(this);
     }
 
-	@Override
-	public Set<ConnectorResourceDefinitionDescriptor> getConnectorResourceDefinitionDescriptors() {
-		throw new UnsupportedOperationException(localStrings.getLocalString(
-			    "enterprise.deployment.exceptionappclientnotsupportconnectorresourcedefinition",
-			    "The application client [{0}] do not support connector resource definitions", 
-		            new Object[] {getName()}));
-	}
-
-	@Override
-	public void addConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference) {
-		throw new UnsupportedOperationException(localStrings.getLocalString(
-			    "enterprise.deployment.exceptionappclientnotsupportconnectorresourcedefinition",
-			    "The application client [{0}] do not support connector resource definitions", 
-		            new Object[] {getName()}));
-	}
-
-	@Override
-	public void removeConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference) {
-		throw new UnsupportedOperationException(localStrings.getLocalString(
-			    "enterprise.deployment.exceptionappclientnotsupportconnectorresourcedefinition",
-			    "The application client [{0}] do not support connector resource definitions", 
-		            new Object[] {getName()}));
-	}
-
     @Override
-    public Set<AdministeredObjectDefinitionDescriptor> getAdministeredObjectDefinitionDescriptors() {
-        throw new UnsupportedOperationException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionappclientnotsupportadministeredobjectdefinition",
-                "The application client [{0}] do not support administered object definitions", 
-                    new Object[] {getName()}));
+    public Set<Descriptor> getResourceDescriptors(JavaEEResourceType type) {
+        switch(type) {
+            case CRD:
+                throw new UnsupportedOperationException(localStrings.getLocalString(
+                            "enterprise.deployment.exceptionappclientnotsupportconnectorresourcedefinition",
+                            "The application client [{0}] do not support connector resource definitions",
+                                new Object[] {getName()}));
+            case AODD:
+                throw new UnsupportedOperationException(localStrings.getLocalString(
+                            "enterprise.deployment.exceptionappclientnotsupportadministeredobjectdefinition",
+                            "The application client [{0}] do not support administered object definitions",
+                                new Object[] {getName()}));
+
+        }
+        return super.getResourceDescriptors(type);
     }
 
     @Override
-    public void addAdministeredObjectDefinitionDescriptor(AdministeredObjectDefinitionDescriptor reference) {
-        throw new UnsupportedOperationException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionappclientnotsupportadministeredobjectdefinition",
-                "The application client [{0}] do not support administered object definitions", 
-                    new Object[] {getName()}));
+    public void addResourceDescriptor(Descriptor descriptor) {
+
+        if(descriptor.getResourceType().equals(JavaEEResourceType.CRD)){
+            throw new UnsupportedOperationException(localStrings.getLocalString(
+            			    "enterprise.deployment.exceptionappclientnotsupportconnectorresourcedefinition",
+            			    "The application client [{0}] do not support connector resource definitions",
+            		            new Object[] {getName()}));
+        } else if (descriptor.getResourceType().equals(JavaEEResourceType.AODD)) {
+            throw new UnsupportedOperationException(localStrings.getLocalString(
+                            "enterprise.deployment.exceptionappclientnotsupportadministeredobjectdefinition",
+                            "The application client [{0}] do not support administered object definitions",
+                                new Object[] {getName()}));
+
+        } else {
+            super.addResourceDescriptor(descriptor);
+        }
+
     }
 
     @Override
-    public void removeAdministeredObjectDefinitionDescriptor(AdministeredObjectDefinitionDescriptor reference) {
-        throw new UnsupportedOperationException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionappclientnotsupportadministeredobjectdefinition",
-                "The application client [{0}] do not support administered object definitions", 
-                    new Object[] {getName()}));
-    }
+    public void removeResourceDescriptor(Descriptor descriptor) {
+        if(descriptor.getResourceType().equals(JavaEEResourceType.CRD)){
+            throw new UnsupportedOperationException(localStrings.getLocalString(
+            			    "enterprise.deployment.exceptionappclientnotsupportconnectorresourcedefinition",
+            			    "The application client [{0}] do not support connector resource definitions",
+            		            new Object[] {getName()}));
 
+        } else if (descriptor.getResourceType().equals(JavaEEResourceType.AODD)) {
+            throw new UnsupportedOperationException(localStrings.getLocalString(
+                            "enterprise.deployment.exceptionappclientnotsupportadministeredobjectdefinition",
+                            "The application client [{0}] do not support administered object definitions",
+                                new Object[] {getName()}));
+        } else {
+            super.removeResourceDescriptor(descriptor);
+        }
+    }
 }

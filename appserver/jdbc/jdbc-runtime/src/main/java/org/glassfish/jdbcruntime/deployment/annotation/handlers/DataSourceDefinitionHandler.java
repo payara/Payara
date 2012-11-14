@@ -40,26 +40,27 @@
 
 package org.glassfish.jdbcruntime.deployment.annotation.handlers;
 
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.annotation.context.*;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 import org.glassfish.apf.AnnotationHandlerFor;
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.JavaEEResourceType;
+import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.sql.DataSourceDefinition;
-import javax.interceptor.Interceptors;
-import javax.interceptor.Interceptor;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.AroundTimeout;
+import javax.interceptor.Interceptor;
+import javax.interceptor.Interceptors;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
-
-import com.sun.enterprise.deployment.annotation.context.*;
-import com.sun.enterprise.deployment.*;
 
 /**
  * @author Jagadish Ramu
@@ -91,7 +92,7 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
                     return getDefaultProcessedResult();
                 }
 
-            Set<DataSourceDefinitionDescriptor> dsdDescs = context.getDataSourceDefinitionDescriptors();
+            Set<Descriptor> dsdDescs = context.getResourceDescriptors(JavaEEResourceType.DSD);
             DataSourceDefinitionDescriptor desc = createDescriptor(dataSourceDefnAn);
             if(isDefinitionAlreadyPresent(dsdDescs, desc)){
                 merge(dsdDescs, dataSourceDefnAn);
@@ -197,11 +198,11 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
         return true;
     }
 
-    private boolean isDefinitionAlreadyPresent(Set<DataSourceDefinitionDescriptor> dsdDescs,
+    private boolean isDefinitionAlreadyPresent(Set<Descriptor> dsdDescs,
                                                DataSourceDefinitionDescriptor desc) {
         boolean result = false ;
-        for(DataSourceDefinitionDescriptor dsdDesc : dsdDescs){
-            if(dsdDesc.equals(desc)){
+        for(Descriptor descriptor : dsdDescs){
+            if(descriptor.equals(desc)){
                 result = true;
                 break;
             }
@@ -226,10 +227,10 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
     }
 
 
-    private void merge(Set<DataSourceDefinitionDescriptor> dsdDescs, DataSourceDefinition defn) {
+    private void merge(Set<Descriptor> dsdDescs, DataSourceDefinition defn) {
 
-        for (DataSourceDefinitionDescriptor desc : dsdDescs) {
-
+        for (Descriptor orgdesc : dsdDescs) {
+            DataSourceDefinitionDescriptor desc = (DataSourceDefinitionDescriptor)orgdesc;
             if (desc.getName().equals(defn.name())) {
 
                 if (desc.getClassName() == null) {

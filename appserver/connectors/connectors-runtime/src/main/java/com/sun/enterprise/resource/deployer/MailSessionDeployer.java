@@ -49,6 +49,7 @@ import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.deployment.*;
 import com.sun.logging.LogDomains;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.javaee.services.CommonResourceProxy;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
@@ -193,8 +194,8 @@ public class MailSessionDeployer implements ResourceDeployer {
 
         if (descriptor instanceof JndiNameEnvironment) {
             JndiNameEnvironment env = (JndiNameEnvironment) descriptor;
-            for (MailSessionDescriptor msd : env.getMailSessionDescriptors()) {
-                registerMSDReferredByApplication(appName, msd);
+            for (Descriptor msd : env.getResourceDescriptors(JavaEEResourceType.MSD)) {
+                registerMSDReferredByApplication(appName, (MailSessionDescriptor)msd);
             }
         }
 
@@ -203,15 +204,15 @@ public class MailSessionDeployer implements ResourceDeployer {
             EjbBundleDescriptor ejbDesc = (EjbBundleDescriptor) descriptor;
             Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ejbDesc.getEjbs();
             for (EjbDescriptor ejbDescriptor : ejbDescriptors) {
-                for (MailSessionDescriptor msd : ejbDescriptor.getMailSessionDescriptors()) {
-                    registerMSDReferredByApplication(appName, msd);
+                for (Descriptor msd : ejbDescriptor.getResourceDescriptors(JavaEEResourceType.MSD)) {
+                    registerMSDReferredByApplication(appName, (MailSessionDescriptor)msd);
                 }
             }
             //ejb interceptors
             Set<EjbInterceptor> ejbInterceptors = ejbDesc.getInterceptors();
             for (EjbInterceptor ejbInterceptor : ejbInterceptors) {
-                for (MailSessionDescriptor msd : ejbInterceptor.getMailSessionDescriptors()) {
-                    registerMSDReferredByApplication(appName, msd);
+                for (Descriptor msd : ejbInterceptor.getResourceDescriptors(JavaEEResourceType.MSD)) {
+                    registerMSDReferredByApplication(appName, (MailSessionDescriptor)msd);
                 }
             }
         }
@@ -220,8 +221,8 @@ public class MailSessionDeployer implements ResourceDeployer {
             // managed bean descriptors
             Set<ManagedBeanDescriptor> managedBeanDescriptors = ((BundleDescriptor) descriptor).getManagedBeans();
             for (ManagedBeanDescriptor mbd : managedBeanDescriptors) {
-                for (MailSessionDescriptor msd : mbd.getMailSessionDescriptors()) {
-                    registerMSDReferredByApplication(appName, msd);
+                for (Descriptor msd : mbd.getResourceDescriptors(JavaEEResourceType.MSD)) {
+                    registerMSDReferredByApplication(appName, (MailSessionDescriptor)msd);
                 }
             }
         }
@@ -270,8 +271,8 @@ public class MailSessionDeployer implements ResourceDeployer {
     private void unRegisterMailSessions(Descriptor descriptor) {
         if (descriptor instanceof JndiNameEnvironment) {
             JndiNameEnvironment env = (JndiNameEnvironment) descriptor;
-            for (MailSessionDescriptor msd : env.getMailSessionDescriptors()) {
-                unRegisterMSDReferredByApplication(msd);
+            for (Descriptor msd : env.getResourceDescriptors(JavaEEResourceType.MSD)) {
+                unRegisterMSDReferredByApplication((MailSessionDescriptor)msd);
             }
         }
 
@@ -280,15 +281,15 @@ public class MailSessionDeployer implements ResourceDeployer {
             EjbBundleDescriptor ejbDesc = (EjbBundleDescriptor) descriptor;
             Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ejbDesc.getEjbs();
             for (EjbDescriptor ejbDescriptor : ejbDescriptors) {
-                for (MailSessionDescriptor msd : ejbDescriptor.getMailSessionDescriptors()) {
-                    unRegisterMSDReferredByApplication(msd);
+                for (Descriptor msd : ejbDescriptor.getResourceDescriptors(JavaEEResourceType.MSD)) {
+                    unRegisterMSDReferredByApplication((MailSessionDescriptor)msd);
                 }
             }
             //ejb interceptors
             Set<EjbInterceptor> ejbInterceptors = ejbDesc.getInterceptors();
             for (EjbInterceptor ejbInterceptor : ejbInterceptors) {
-                for (MailSessionDescriptor msd : ejbInterceptor.getMailSessionDescriptors()) {
-                    unRegisterMSDReferredByApplication(msd);
+                for (Descriptor msd : ejbInterceptor.getResourceDescriptors(JavaEEResourceType.MSD)) {
+                    unRegisterMSDReferredByApplication((MailSessionDescriptor)msd);
                 }
             }
         }
@@ -297,8 +298,8 @@ public class MailSessionDeployer implements ResourceDeployer {
         if (descriptor instanceof BundleDescriptor) {
             Set<ManagedBeanDescriptor> managedBeanDescriptors = ((BundleDescriptor) descriptor).getManagedBeans();
             for (ManagedBeanDescriptor mbd : managedBeanDescriptors) {
-                for (MailSessionDescriptor msd : mbd.getMailSessionDescriptors()) {
-                    unRegisterMSDReferredByApplication(msd);
+                for (Descriptor msd : mbd.getResourceDescriptors(JavaEEResourceType.MSD)) {
+                    unRegisterMSDReferredByApplication((MailSessionDescriptor)msd);
                 }
             }
         }

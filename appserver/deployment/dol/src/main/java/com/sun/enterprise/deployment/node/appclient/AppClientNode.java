@@ -55,6 +55,7 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.ApplicationClientTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import org.glassfish.deployment.common.JavaEEResourceType;
 import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Node;
 
@@ -114,10 +115,10 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
                                "addMessageDestination");
         registerElementHandler(new XMLElement(TagNames.POST_CONSTRUCT), LifecycleCallbackNode.class, "addPostConstructDescriptor");
         registerElementHandler(new XMLElement(TagNames.PRE_DESTROY), LifecycleCallbackNode.class, "addPreDestroyDescriptor");
-        registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addJMSConnectionFactoryDefinitionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addJMSDestinationDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addResourceDescriptor");
 
         SaxParserHandler.registerBundleNode(this, ApplicationClientTagNames.APPLICATION_CLIENT_TAG);
     }
@@ -229,16 +230,16 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
         writeLifeCycleCallbackDescriptors(appclientNode, TagNames.PRE_DESTROY, appclientDesc.getPreDestroyDescriptors());
 
         // datasource-definition*
-        writeDataSourceDefinitionDescriptors(appclientNode, appclientDesc.getDataSourceDefinitionDescriptors().iterator());
+        writeDataSourceDefinitionDescriptors(appclientNode, appclientDesc.getResourceDescriptors(JavaEEResourceType.DSD).iterator());
         
         // mail-session*
-        writeMailSessionDescriptors(appclientNode, appclientDesc.getMailSessionDescriptors().iterator());
+        writeMailSessionDescriptors(appclientNode, appclientDesc.getResourceDescriptors(JavaEEResourceType.MSD).iterator());
 
         // jms-connection-factory-definition*
-        writeJMSConnectionFactoryDefinitionDescriptors(appclientNode, appclientDesc.getJMSConnectionFactoryDefinitionDescriptors().iterator());
+        writeJMSConnectionFactoryDefinitionDescriptors(appclientNode, appclientDesc.getResourceDescriptors(JavaEEResourceType.JMSCFDD).iterator());
 
         // jms-destination-definition*
-        writeJMSDestinationDefinitionDescriptors(appclientNode, appclientDesc.getJMSDestinationDefinitionDescriptors().iterator());
+        writeJMSDestinationDefinitionDescriptors(appclientNode, appclientDesc.getResourceDescriptors(JavaEEResourceType.JMSDD).iterator());
 
         appendTextChild(appclientNode, ApplicationClientTagNames.CALLBACK_HANDLER, appclientDesc.getCallbackHandler());
 

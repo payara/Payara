@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.deployment;
 
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.deployment.common.Descriptor;
 
 import java.util.Properties;
@@ -209,4 +210,21 @@ public class MailSessionDescriptor extends Descriptor {
         }
         return thisName;
     }
+
+    public boolean isConflict(MailSessionDescriptor other) {
+            return (getName().equals(other.getName())) &&
+                !(
+                    DOLUtils.equals(getUser(), other.getUser()) &&
+                    DOLUtils.equals(getPassword(), other.getPassword()) &&
+                    properties.equals(other.properties) &&
+                    getFrom() == other.getFrom() &&
+                    getHost() == other.getHost() &&
+                    getPassword() == other.getPassword() &&
+                    getStoreProtocol() == other.getStoreProtocol() &&
+                    getStoreProtocolClass() == other.getStoreProtocolClass() &&
+                    getTransportProtocol() == other.getTransportProtocol() &&
+                    getTransportProtocolClass() == other.getTransportProtocolClass() &&
+                    getDescription() == other.getDescription()
+                );
+        }
 }

@@ -47,6 +47,7 @@ import java.util.Set;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.TagNames;
+import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.ejb.deployment.EjbTagNames;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbCMPEntityDescriptor;
@@ -195,22 +196,22 @@ public class EjbEntityNode  extends InterfaceBasedEjbNode<EjbEntityDescriptor> {
         writeLifeCycleCallbackDescriptors(ejbNode, TagNames.PRE_DESTROY, ejbDesc.getPreDestroyDescriptors());
 
         // datasource-definition*
-        writeDataSourceDefinitionDescriptors(ejbNode, ejbDesc.getDataSourceDefinitionDescriptors().iterator());
+        writeDataSourceDefinitionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.DSD).iterator());
 
         // mail-session
-        writeMailSessionDescriptors(ejbNode, ejbDesc.getMailSessionDescriptors().iterator());
+        writeMailSessionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.MSD).iterator());
 
         // connector-resource-definition*
-        writeConnectorResourceDefinitionDescriptors(ejbNode, ejbDesc.getConnectorResourceDefinitionDescriptors().iterator());
+        writeConnectorResourceDefinitionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.CRD).iterator());
 
         // administered-object-definition
-        writeAdministeredObjectDefinitionDescriptors(ejbNode, ejbDesc.getAdministeredObjectDefinitionDescriptors().iterator());
+        writeAdministeredObjectDefinitionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.AODD).iterator());
 
         // jms-connection-factory-definition*
-        writeJMSConnectionFactoryDefinitionDescriptors(ejbNode, ejbDesc.getJMSConnectionFactoryDefinitionDescriptors().iterator());
+        writeJMSConnectionFactoryDefinitionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.JMSCFDD).iterator());
 
         // jms-destination-definition*
-        writeJMSDestinationDefinitionDescriptors(ejbNode, ejbDesc.getJMSDestinationDefinitionDescriptors().iterator());
+        writeJMSDestinationDefinitionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.JMSDD).iterator());
 
         // security-role-ref*
         writeRoleReferenceDescriptors(ejbNode, ejbDesc.getRoleReferences().iterator());

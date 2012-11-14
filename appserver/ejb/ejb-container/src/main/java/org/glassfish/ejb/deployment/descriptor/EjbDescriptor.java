@@ -93,6 +93,7 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
+import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.ejb.deployment.BeanMethodCalculatorImpl;
 import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
 import org.glassfish.ejb.deployment.util.EjbVisitor;
@@ -297,45 +298,13 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
             this.getResourceReferenceDescriptors().addAll(other.getResourceReferenceDescriptors());
             this.getServiceReferenceDescriptors().addAll(other.getServiceReferenceDescriptors());
             // XXX - why not addAll?
-            Set<DataSourceDefinitionDescriptor> dataSourceDescriptors = other.getDataSourceDefinitionDescriptors();
-            if(dataSourceDescriptors.size() > 0){
-                for(DataSourceDefinitionDescriptor desc : dataSourceDescriptors){
-                    this.addDataSourceDefinitionDescriptor(desc);
-                }
-            }
-            Set<MailSessionDescriptor> mailSessionDescriptors = other.getMailSessionDescriptors();
-            if (mailSessionDescriptors.size() > 0) {
-                for (MailSessionDescriptor desc : mailSessionDescriptors) {
-                    this.addMailSessionDescriptor(desc);
-                }
-            }
-            
-            Set<ConnectorResourceDefinitionDescriptor> connectorResourceDescriptors = other.getConnectorResourceDefinitionDescriptors();
-            if (connectorResourceDescriptors.size() > 0) {
-                for (ConnectorResourceDefinitionDescriptor desc : connectorResourceDescriptors) {
-                    this.addConnectorResourceDefinitionDescriptor(desc);
+            Set<Descriptor> allDescriptors = other.getResourceDescriptors(JavaEEResourceType.ALL);
+            if(allDescriptors.size() > 0){
+                for(Descriptor desc : allDescriptors){
+                    this.addResourceDescriptor(desc);
                 }
             }
 
-            Set<AdministeredObjectDefinitionDescriptor> administeredObjectDescriptors = other.getAdministeredObjectDefinitionDescriptors();
-            if (administeredObjectDescriptors.size() > 0) {
-                for (AdministeredObjectDefinitionDescriptor desc : administeredObjectDescriptors) {
-                    this.addAdministeredObjectDefinitionDescriptor(desc);
-                }
-            }
-
-            Set<JMSConnectionFactoryDefinitionDescriptor> jmsConnectionFactoryDescriptors = other.getJMSConnectionFactoryDefinitionDescriptors();
-            if (jmsConnectionFactoryDescriptors.size() > 0) {
-                for (JMSConnectionFactoryDefinitionDescriptor desc : jmsConnectionFactoryDescriptors) {
-                    this.addJMSConnectionFactoryDefinitionDescriptor(desc);
-                }
-            }
-            Set<JMSDestinationDefinitionDescriptor> jmsDestinationDescriptors = other.getJMSDestinationDefinitionDescriptors();
-            if (jmsDestinationDescriptors.size() > 0) {
-                for (JMSDestinationDefinitionDescriptor desc : jmsDestinationDescriptors) {
-                    this.addJMSDestinationDefinitionDescriptor(desc);
-                }
-            }
             this.getEntityManagerFactoryReferenceDescriptors().addAll(other.getEntityManagerFactoryReferenceDescriptors());
             this.getEntityManagerReferenceDescriptors().addAll(other.getEntityManagerReferenceDescriptors());
         }

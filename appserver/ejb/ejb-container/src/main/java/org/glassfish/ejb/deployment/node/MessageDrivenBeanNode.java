@@ -40,21 +40,16 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import java.util.Map;
-
+import com.sun.enterprise.deployment.node.*;
+import com.sun.enterprise.deployment.xml.TagNames;
+import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.ejb.deployment.EjbTagNames;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
 import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 import org.w3c.dom.Node;
 
-import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
-import com.sun.enterprise.deployment.node.LifecycleCallbackNode;
-import com.sun.enterprise.deployment.node.MailSessionNode;
-import com.sun.enterprise.deployment.node.MethodNode;
-import com.sun.enterprise.deployment.node.SecurityRoleRefNode;
-import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.TagNames;
+import java.util.Map;
 
 /**
  * This class handles message-driven related xml information
@@ -80,12 +75,11 @@ public class MessageDrivenBeanNode extends EjbNode<EjbMessageBeanDescriptor> {
 
         registerElementHandler(new XMLElement(TagNames.PRE_DESTROY), LifecycleCallbackNode.class, "addPreDestroyDescriptor");
 
-        registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addResourceDescriptor");
 
         registerElementHandler(new XMLElement(EjbTagNames.TIMEOUT_METHOD), MethodNode.class, "setEjbTimeoutMethod");
 
-
-        registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addResourceDescriptor");
 
         registerElementHandler(new XMLElement(TagNames.ROLE_REFERENCE), SecurityRoleRefNode.class, "addRoleReference");
     }
@@ -197,22 +191,22 @@ public class MessageDrivenBeanNode extends EjbNode<EjbMessageBeanDescriptor> {
         writeLifeCycleCallbackDescriptors(ejbNode, TagNames.PRE_DESTROY, ejbDesc.getPreDestroyDescriptors());
 
         // datasource-definition*
-        writeDataSourceDefinitionDescriptors(ejbNode, ejbDesc.getDataSourceDefinitionDescriptors().iterator());
+        writeDataSourceDefinitionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.DSD).iterator());
         
         //mail-seesion*
-        writeMailSessionDescriptors(ejbNode, ejbDesc.getMailSessionDescriptors().iterator());
+        writeMailSessionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.MSD).iterator());
         
         // connector-resource-definition*
-        writeConnectorResourceDefinitionDescriptors(ejbNode, ejbDesc.getConnectorResourceDefinitionDescriptors().iterator());
+        writeConnectorResourceDefinitionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.CRD).iterator());
 
         // administered-object-definition
-        writeAdministeredObjectDefinitionDescriptors(ejbNode, ejbDesc.getAdministeredObjectDefinitionDescriptors().iterator());
+        writeAdministeredObjectDefinitionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.AODD).iterator());
 
         // jms-connection-factory-definition*
-        writeJMSConnectionFactoryDefinitionDescriptors(ejbNode, ejbDesc.getJMSConnectionFactoryDefinitionDescriptors().iterator());
+        writeJMSConnectionFactoryDefinitionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.JMSCFDD).iterator());
 
         // jms-destination-definition*
-        writeJMSDestinationDefinitionDescriptors(ejbNode, ejbDesc.getJMSDestinationDefinitionDescriptors().iterator());
+        writeJMSDestinationDefinitionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.JMSDD).iterator());
 
         // security-role-ref*
         writeRoleReferenceDescriptors(ejbNode, ejbDesc.getRoleReferences().iterator());

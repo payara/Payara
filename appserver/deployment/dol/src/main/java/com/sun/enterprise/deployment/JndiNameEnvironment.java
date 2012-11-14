@@ -40,6 +40,9 @@
 
 package com.sun.enterprise.deployment;
 
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.JavaEEResourceType;
+
 import java.util.List;
 import java.util.Set;
 
@@ -158,32 +161,11 @@ public interface JndiNameEnvironment {
     public Set<LifecycleCallbackDescriptor> getPreDestroyDescriptors();
 
     /**
-     * Return a set of data-source-definition descriptors.
+     * Return a set of descriptors based on the type.
      *
-     * @return java.util.Set of data-source-definition objects
+     * @return java.util.Set of descriptor objects
      */
-    public Set<DataSourceDefinitionDescriptor> getDataSourceDefinitionDescriptors();    
-
-    /**
-     * Return a set of connector-resource-definition descriptors.
-     *
-     * @return java.util.Set of connector-resource-definition objects
-     */
-    public Set<ConnectorResourceDefinitionDescriptor> getConnectorResourceDefinitionDescriptors();    
-
-    /**
-     * Return a set of jms-connection-factory-definition descriptors.
-     *
-     * @return java.util.Set of jms-connection-factorty-definition objects
-     */
-    public Set<JMSConnectionFactoryDefinitionDescriptor> getJMSConnectionFactoryDefinitionDescriptors();
-
-    /**
-     * Return a set of jms-destination-definition descriptors.
-     *
-     * @return java.util.Set of jms-destination-definition objects
-     */
-    public Set<JMSDestinationDefinitionDescriptor> getJMSDestinationDefinitionDescriptors();
+    public Set<Descriptor> getResourceDescriptors(JavaEEResourceType type);
 
     /**
      * Return the pre-destroy descriptor corresponding to
@@ -221,13 +203,4 @@ public interface JndiNameEnvironment {
      */
     public List<InjectionCapable> getInjectableResourcesByClass(String className);
     public InjectionInfo getInjectionInfoByClass(Class clazz);
-
-    public Set<MailSessionDescriptor> getMailSessionDescriptors();
-
-    /**
-     * Return a set of administered-object-definition descriptors.
-     *
-     * @return java.util.Set of AdministeredObjectDefinitionDescriptor objects
-     */
-    public Set<AdministeredObjectDefinitionDescriptor> getAdministeredObjectDefinitionDescriptors();
 }

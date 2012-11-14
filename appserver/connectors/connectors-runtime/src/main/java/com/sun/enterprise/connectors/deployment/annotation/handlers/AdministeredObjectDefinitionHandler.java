@@ -39,38 +39,28 @@
  */
 package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.annotation.context.*;
+import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
+import org.glassfish.apf.AnnotationHandlerFor;
+import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.JavaEEResourceType;
+import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.AroundTimeout;
+import javax.interceptor.Interceptors;
+import javax.resource.AdministeredObjectDefinition;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
-
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.AroundTimeout;
-import javax.interceptor.Interceptors;
-import javax.resource.AdministeredObjectDefinition;
-
-import org.glassfish.apf.AnnotationHandlerFor;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.jvnet.hk2.annotations.Service;
-
-import com.sun.enterprise.deployment.AdministeredObjectDefinitionDescriptor;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.MetadataSource;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
-import com.sun.enterprise.deployment.annotation.context.EjbContext;
-import com.sun.enterprise.deployment.annotation.context.EjbInterceptorContext;
-import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
-import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
-import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
-import com.sun.enterprise.deployment.annotation.context.WebComponentsContext;
-import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 
 /**
  * @author Dapeng Hu
@@ -102,12 +92,12 @@ public class AdministeredObjectDefinitionHandler extends AbstractResourceHandler
             if (!canProcessAnnotation(annotatedClass, ejbClass, warClass, context)){
                 return getDefaultProcessedResult();
             }
-            Set<AdministeredObjectDefinitionDescriptor> aodDescs = context.getAdministeredObjectDefinitionDescriptors();
+            Set<Descriptor> aodDescs = context.getResourceDescriptors(JavaEEResourceType.AODD);
             AdministeredObjectDefinitionDescriptor desc = createDescriptor(adminObjectDefnAn);
             if(isDefinitionAlreadyPresent(aodDescs, desc)){
                 merge(aodDescs, adminObjectDefnAn);
             }else{
-                context.addAdministeredObjectDefinitionDescriptor(desc);
+                context.addResourceDescriptor(desc);
             }
         }
         return getDefaultProcessedResult();
@@ -208,11 +198,11 @@ public class AdministeredObjectDefinitionHandler extends AbstractResourceHandler
     }
 
     
-    private boolean isDefinitionAlreadyPresent(Set<AdministeredObjectDefinitionDescriptor> crdDescs,  
+    private boolean isDefinitionAlreadyPresent(Set<Descriptor> descriptors,
             AdministeredObjectDefinitionDescriptor desc) {
         boolean result = false ;
-        for(AdministeredObjectDefinitionDescriptor crdDesc : crdDescs){
-            if(crdDesc.equals(desc)){
+        for(Descriptor descriptor : descriptors){
+            if(descriptor.equals(desc)){
                 result = true;
                 break;
             }
@@ -220,10 +210,10 @@ public class AdministeredObjectDefinitionHandler extends AbstractResourceHandler
         return result;
     }
 
-    private void merge(Set<AdministeredObjectDefinitionDescriptor> crdDescs, AdministeredObjectDefinition defn) {
+    private void merge(Set<Descriptor> aodDescs, AdministeredObjectDefinition defn) {
 
-        for (AdministeredObjectDefinitionDescriptor desc : crdDescs) {
-
+        for (Descriptor descriptor : aodDescs) {
+            AdministeredObjectDefinitionDescriptor desc = (AdministeredObjectDefinitionDescriptor)descriptor;
             if (desc.getName().equals(defn.name())) {
 
                 if (desc.getDescription() == null) {

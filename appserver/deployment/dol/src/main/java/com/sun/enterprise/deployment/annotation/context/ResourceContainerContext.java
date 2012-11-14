@@ -42,6 +42,8 @@ package com.sun.enterprise.deployment.annotation.context;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.types.EjbReference;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.JavaEEResourceType;
 
 import java.util.Set;
 
@@ -187,79 +189,16 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
     public LifecycleCallbackDescriptor getPreDestroy(String className);
 
     /**
-     * Adds the specified data-source-definition to the receiver.
-     * @param desc DataSourceDefinitionDescriptor to add.
+     * Adds the specified descriptor to the receiver.
+     * @param desc Descriptor to add.
      */
-    public void addDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor desc);
+    public void addResourceDescriptor(Descriptor desc);
 
     /**
-     * get all datasource-definition descriptors
-     * @return datasource-definition descriptors
+     * get all descriptors based on the type
+     * @return Set of Descriptor
      */
-    public Set<DataSourceDefinitionDescriptor> getDataSourceDefinitionDescriptors();
-
-    /**
-     * Adds the specified mail-session-definition to the receiver.
-     *
-     * @param desc MailSessionDescriptor to add.
-     */
-    public void addMailSessionDescriptor(MailSessionDescriptor desc);
-
-    /**
-     * get all mail-session-definition descriptors
-     *
-     * @return mail-session-definition descriptors
-     */
-    public Set<MailSessionDescriptor> getMailSessionDescriptors();
-
-
-    /**
-     * get all connector-resource-definition descriptors
-     * @return connector-resource-definition descriptors
-     */
-    public Set<ConnectorResourceDefinitionDescriptor> getConnectorResourceDefinitionDescriptors();
-
-    /**
-     * Adds the specified connector-resource-definition to the receiver.
-     * @param desc ConnectorResourceDefinitionDescriptor to add.
-     */
-    public void addConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor desc);
-
-    /**
-     * get all administered-object-definition descriptors
-     * @return administered-object-definition descriptors
-     */
-    public Set<AdministeredObjectDefinitionDescriptor> getAdministeredObjectDefinitionDescriptors();
-
-    /**
-     * Adds the specified administered-object-definition to the receiver.
-     * @param desc AdministeredObjectDefinitionDescriptor to add.
-     */
-    public void addAdministeredObjectDefinitionDescriptor(AdministeredObjectDefinitionDescriptor desc);
-
-    /**
-     * get all jms-connection-factory-definition descriptors
-     * @return jms-connection-factory-definition descriptors
-     */
-    public Set<JMSConnectionFactoryDefinitionDescriptor> getJMSConnectionFactoryDefinitionDescriptors();
-
-    /**
-     * Adds the specified jms-connection-factory-definition to the receiver.
-     * @param desc JMSConnectionFactoryDefinitionDescriptor to add.
-     */
-    public void addJMSConnectionFactoryDefinitionDescriptor(JMSConnectionFactoryDefinitionDescriptor desc);
-
-    /**
-     * get all jms-destination-definition descriptors
-     * @return jms-destination-definition descriptors
-     */
-    public Set<JMSDestinationDefinitionDescriptor> getJMSDestinationDefinitionDescriptors();
-
-    /**
-     * Adds the specified jms-destination-definition to the receiver.
-     * @param desc JMSDestinationDefinitionDescriptor to add.
-     */
-    public void addJMSDestinationDefinitionDescriptor(JMSDestinationDefinitionDescriptor desc);
+    public Set<Descriptor> getResourceDescriptors(JavaEEResourceType type);
 
     public void addManagedBean(ManagedBeanDescriptor managedBeanDesc);
 }

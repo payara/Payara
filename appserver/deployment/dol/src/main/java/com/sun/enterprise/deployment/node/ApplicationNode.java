@@ -59,6 +59,7 @@ import com.sun.enterprise.deployment.xml.ApplicationTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
+import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Node;
@@ -167,12 +168,12 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         registerElementHandler(new XMLElement(TagNames.MESSAGE_DESTINATION),
                                MessageDestinationNode.class,
                                "addMessageDestination");
-        registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addConnectorResourceDefinitionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.ADMINISTERED_OBJECT), AdministeredObjectDefinitionNode.class, "addAdministeredObjectDefinitionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addJMSConnectionFactoryDefinitionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addJMSDestinationDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.ADMINISTERED_OBJECT), AdministeredObjectDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addResourceDescriptor");
 
         SaxParserHandler.registerBundleNode(this, ApplicationTagNames.APPLICATION);
     }
@@ -313,22 +314,22 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         writeMessageDestinations(appNode, application.getMessageDestinations().iterator());
 
         // datasource-definition*
-        writeDataSourceDefinitionDescriptors(appNode, application.getDataSourceDefinitionDescriptors().iterator());
+        writeDataSourceDefinitionDescriptors(appNode, application.getResourceDescriptors(JavaEEResourceType.DSD).iterator());
 
         // mail-session*
-        writeMailSessionDescriptors(appNode, application.getMailSessionDescriptors().iterator());
+        writeMailSessionDescriptors(appNode, application.getResourceDescriptors(JavaEEResourceType.MSD).iterator());
 
         // connector-resource-definition*
-        writeConnectorResourceDefinitionDescriptors(appNode, application.getConnectorResourceDefinitionDescriptors().iterator());
+        writeConnectorResourceDefinitionDescriptors(appNode, application.getResourceDescriptors(JavaEEResourceType.CRD).iterator());
         
         // administered-object-definition
-        writeAdministeredObjectDefinitionDescriptors(appNode, application.getAdministeredObjectDefinitionDescriptors().iterator());
+        writeAdministeredObjectDefinitionDescriptors(appNode, application.getResourceDescriptors(JavaEEResourceType.AODD).iterator());
 
         // jms-connection-factory-definition*
-        writeJMSConnectionFactoryDefinitionDescriptors(appNode, application.getJMSConnectionFactoryDefinitionDescriptors().iterator());
+        writeJMSConnectionFactoryDefinitionDescriptors(appNode, application.getResourceDescriptors(JavaEEResourceType.JMSCFDD).iterator());
 
         // jms-destination-definition*
-        writeJMSDestinationDefinitionDescriptors(appNode, application.getJMSDestinationDefinitionDescriptors().iterator());
+        writeJMSDestinationDefinitionDescriptors(appNode, application.getResourceDescriptors(JavaEEResourceType.JMSDD).iterator());
 
         return appNode;
     }

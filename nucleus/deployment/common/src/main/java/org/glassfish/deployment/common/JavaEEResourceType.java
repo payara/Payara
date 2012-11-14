@@ -58,6 +58,7 @@ public enum JavaEEResourceType {
      * JMSCFDDPOOL: JMSConnectionFactoryDefinitionDescriptor Pool
      * JMSDD: JMSDestinationDefinitionDescriptor
      * AODD: AdministeredObjectDefinitionDescriptor
+     * ALL: includes MSD, DSD, CRD, JMSDD, AODD, JMSCFDD
      */
-    MSD, DSD, DSDPOOL, CRD, CRDPOOL, JMSCFDD, JMSCFDDPOOL, JMSDD, AODD;
+    MSD, DSD, DSDPOOL, CRD, CRDPOOL, JMSCFDD, JMSCFDDPOOL, JMSDD, AODD, ALL;
 }

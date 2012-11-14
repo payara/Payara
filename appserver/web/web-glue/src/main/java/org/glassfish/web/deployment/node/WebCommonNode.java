@@ -48,6 +48,7 @@ import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.deployment.web.SessionConfig;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.web.deployment.descriptor.*;
 import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
@@ -117,12 +118,12 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
                                "addMessageDestination");
         registerElementHandler(new XMLElement(TagNames.POST_CONSTRUCT), LifecycleCallbackNode.class, "addPostConstructDescriptor");
         registerElementHandler(new XMLElement(TagNames.PRE_DESTROY), LifecycleCallbackNode.class, "addPreDestroyDescriptor");
-        registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addConnectorResourceDefinitionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addJMSConnectionFactoryDefinitionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addJMSDestinationDefinitionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.ADMINISTERED_OBJECT), AdministeredObjectDefinitionNode.class, "addAdministeredObjectDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.ADMINISTERED_OBJECT), AdministeredObjectDefinitionNode.class, "addResourceDescriptor");
     }
     
     /**
@@ -406,19 +407,19 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
         // pre-destroy
         writeLifeCycleCallbackDescriptors(jarNode, TagNames.PRE_DESTROY, webBundleDesc.getPreDestroyDescriptors());
         // datasource-definition*
-        writeDataSourceDefinitionDescriptors(jarNode, webBundleDesc.getDataSourceDefinitionDescriptors().iterator());
+        writeDataSourceDefinitionDescriptors(jarNode, webBundleDesc.getResourceDescriptors(JavaEEResourceType.DSD).iterator());
         // connector-resource-definition*
-        writeConnectorResourceDefinitionDescriptors(jarNode, webBundleDesc.getConnectorResourceDefinitionDescriptors().iterator());
+        writeConnectorResourceDefinitionDescriptors(jarNode, webBundleDesc.getResourceDescriptors(JavaEEResourceType.CRD).iterator());
         // jms-connection-factory-session*
-        writeJMSConnectionFactoryDefinitionDescriptors(jarNode, webBundleDesc.getJMSConnectionFactoryDefinitionDescriptors().iterator());
+        writeJMSConnectionFactoryDefinitionDescriptors(jarNode, webBundleDesc.getResourceDescriptors(JavaEEResourceType.JMSCFDD).iterator());
         // jms-destination-session*
-        writeJMSDestinationDefinitionDescriptors(jarNode, webBundleDesc.getJMSDestinationDefinitionDescriptors().iterator());
+        writeJMSDestinationDefinitionDescriptors(jarNode, webBundleDesc.getResourceDescriptors(JavaEEResourceType.JMSDD).iterator());
 
         // mail-session*
-        writeMailSessionDescriptors(jarNode, webBundleDesc.getMailSessionDescriptors().iterator());
+        writeMailSessionDescriptors(jarNode, webBundleDesc.getResourceDescriptors(JavaEEResourceType.MSD).iterator());
 
         // administered-object-definition
-        writeAdministeredObjectDefinitionDescriptors(jarNode, webBundleDesc.getAdministeredObjectDefinitionDescriptors().iterator());
+        writeAdministeredObjectDefinitionDescriptors(jarNode, webBundleDesc.getResourceDescriptors(JavaEEResourceType.AODD).iterator());
 
         // message-destination*
        writeMessageDestinations

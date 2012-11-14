@@ -40,38 +40,28 @@
 
 package com.sun.enterprise.connectors.jms.deployment.annotation.handlers;
 
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.annotation.context.*;
+import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
+import org.glassfish.apf.AnnotationHandlerFor;
+import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.JavaEEResourceType;
+import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.AroundTimeout;
+import javax.interceptor.Interceptors;
+import javax.jms.JMSDestinationDefinition;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
-
-import javax.jms.JMSDestinationDefinition;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.AroundTimeout;
-import javax.interceptor.Interceptors;
-
-import org.glassfish.apf.AnnotationHandlerFor;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.jvnet.hk2.annotations.Service;
-
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.JMSDestinationDefinitionDescriptor;
-import com.sun.enterprise.deployment.MetadataSource;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
-import com.sun.enterprise.deployment.annotation.context.EjbContext;
-import com.sun.enterprise.deployment.annotation.context.EjbInterceptorContext;
-import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
-import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
-import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
-import com.sun.enterprise.deployment.annotation.context.WebComponentsContext;
-import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 
 @Service
 @AnnotationHandlerFor(JMSDestinationDefinition.class)
@@ -100,12 +90,12 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
                 return getDefaultProcessedResult();
             }
 
-            Set<JMSDestinationDefinitionDescriptor> jmsddDescs = context.getJMSDestinationDefinitionDescriptors();
+            Set<Descriptor> jmsddDescs = context.getResourceDescriptors(JavaEEResourceType.JMSDD);
             JMSDestinationDefinitionDescriptor desc = createDescriptor(jmsDestinationDefnAn);
             if (isDefinitionAlreadyPresent(jmsddDescs, desc)) {
                 merge(jmsddDescs, jmsDestinationDefnAn);
             } else {
-                context.addJMSDestinationDefinitionDescriptor(desc);
+                context.addResourceDescriptor(desc);
             }
         }
         return getDefaultProcessedResult();
@@ -206,20 +196,20 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
         return true;
     }
 
-    private boolean isDefinitionAlreadyPresent(Set<JMSDestinationDefinitionDescriptor> jmsddDescs,
+    private boolean isDefinitionAlreadyPresent(Set<Descriptor> jmsddDescs,
                                                JMSDestinationDefinitionDescriptor desc) {
-        for (JMSDestinationDefinitionDescriptor jmsddDesc : jmsddDescs) {
-            if (jmsddDesc.equals(desc)) {
+        for (Descriptor descriptor : jmsddDescs) {
+            if (descriptor.equals(desc)) {
                 return true;
             }
         }
         return false;
     }
 
-    private void merge(Set<JMSDestinationDefinitionDescriptor> jmsddDescs, JMSDestinationDefinition defn) {
+    private void merge(Set<Descriptor> jmsddDescs, JMSDestinationDefinition defn) {
 
-        for (JMSDestinationDefinitionDescriptor desc : jmsddDescs) {
-
+        for (Descriptor descriptor : jmsddDescs) {
+            JMSDestinationDefinitionDescriptor desc = (JMSDestinationDefinitionDescriptor)descriptor;
             if (desc.getName().equals(defn.name())) {
 
                 if (desc.getClassName() == null) {

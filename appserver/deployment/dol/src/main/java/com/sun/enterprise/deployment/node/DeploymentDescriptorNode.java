@@ -40,35 +40,7 @@
 
 package com.sun.enterprise.deployment.node;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.logging.Level;
-
-import com.sun.enterprise.deployment.AdministeredObjectDefinitionDescriptor;
-import com.sun.enterprise.deployment.ConnectorResourceDefinitionDescriptor;
-import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
-import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
-import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
-import com.sun.enterprise.deployment.EnvironmentProperty;
-import com.sun.enterprise.deployment.JMSConnectionFactoryDefinitionDescriptor;
-import com.sun.enterprise.deployment.JMSDestinationDefinitionDescriptor;
-import com.sun.enterprise.deployment.JndiNameEnvironment;
-import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
-import com.sun.enterprise.deployment.MailSessionDescriptor;
-import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
-import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
-import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
@@ -82,6 +54,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.logging.Level;
 
 /**
  * Superclass of all Nodes implementation
@@ -196,10 +173,18 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
         String xmlRootTag = node.getXMLRootTag().getQName();
         if (addMethods!=null && addMethods.containsKey(xmlRootTag)) {
             try {
-                Method toInvoke = getDescriptor().getClass().getMethod(
-                                                                (String) addMethods.get(xmlRootTag), 
-                                                                new Class[] { node.getDescriptor().getClass() });
+
+                Method toInvoke = null;
+                    if((node.getDescriptor() instanceof Descriptor) && ((Descriptor)node.getDescriptor()).getResourceType()!=null) {
+                   toInvoke = getDescriptor().getClass().getMethod(
+                            (String) addMethods.get(xmlRootTag),new Class[] { Descriptor.class });
+
+                } else {
+                    toInvoke = getDescriptor().getClass().getMethod(
+                            (String) addMethods.get(xmlRootTag),new Class[] { node.getDescriptor().getClass() });
+                }
                 toInvoke.invoke(getDescriptor(), new Object[] {node.getDescriptor()});
+
             } catch (InvocationTargetException e) {
 		    Throwable t = e.getTargetException();
                     if (t instanceof IllegalArgumentException) {
@@ -972,7 +957,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      * @param dsDefinitionDescIterator the iterator over the descriptors to write
      */
     protected void writeDataSourceDefinitionDescriptors(Node parentNode,
-                                                        Iterator<DataSourceDefinitionDescriptor>
+                                                        Iterator<Descriptor>
                                                                 dsDefinitionDescIterator) {
         if(dsDefinitionDescIterator == null || !dsDefinitionDescIterator.hasNext()){
             return;
@@ -980,7 +965,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
 
         DataSourceDefinitionNode subNode = new DataSourceDefinitionNode();
         for(;dsDefinitionDescIterator.hasNext();){
-            DataSourceDefinitionDescriptor next = dsDefinitionDescIterator.next();
+            DataSourceDefinitionDescriptor next = (DataSourceDefinitionDescriptor)dsDefinitionDescIterator.next();
             subNode.writeDescriptor(parentNode, TagNames.DATA_SOURCE, next);
         }
     }
@@ -992,7 +977,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      * @param mailSessionDescriptorIterator the iterator over the descriptors to write
      */
     protected void writeMailSessionDescriptors(Node parentNode,
-                                               Iterator<MailSessionDescriptor>
+                                               Iterator<Descriptor>
                                                        mailSessionDescriptorIterator) {
         if (mailSessionDescriptorIterator == null || !mailSessionDescriptorIterator.hasNext()) {
             return;
@@ -1000,7 +985,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
 
         MailSessionNode subNode = new MailSessionNode();
         for (; mailSessionDescriptorIterator.hasNext(); ) {
-            MailSessionDescriptor next = mailSessionDescriptorIterator.next();
+            MailSessionDescriptor next = (MailSessionDescriptor)mailSessionDescriptorIterator.next();
             subNode.writeDescriptor(parentNode, TagNames.MAIL_SESSION, next);
         }
     }
@@ -1013,14 +998,14 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      * @param descIterator the iterator over the descriptors to write
      */
     protected void writeConnectorResourceDefinitionDescriptors(Node parentNode,
-                              Iterator<ConnectorResourceDefinitionDescriptor>  descIterator) {
+                              Iterator<Descriptor>  descIterator) {
         if(descIterator == null || !descIterator.hasNext()){
             return;
         }
 
         ConnectorResourceDefinitionNode subNode = new ConnectorResourceDefinitionNode();
         for(;descIterator.hasNext();){
-            ConnectorResourceDefinitionDescriptor next = descIterator.next();
+            ConnectorResourceDefinitionDescriptor next = (ConnectorResourceDefinitionDescriptor)descIterator.next();
             subNode.writeDescriptor(parentNode, TagNames.CONNECTOR_RESOURCE, next);
         }
     }
@@ -1032,14 +1017,14 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      * @param descIterator the iterator over the descriptors to write
      */
     protected void writeAdministeredObjectDefinitionDescriptors(Node parentNode,
-                              Iterator<AdministeredObjectDefinitionDescriptor>  descIterator) {
+                              Iterator<Descriptor>  descIterator) {
         if(descIterator == null || !descIterator.hasNext()){
             return;
         }
 
         AdministeredObjectDefinitionNode subNode = new AdministeredObjectDefinitionNode();
         for(;descIterator.hasNext();){
-            AdministeredObjectDefinitionDescriptor next = descIterator.next();
+            AdministeredObjectDefinitionDescriptor next = (AdministeredObjectDefinitionDescriptor)descIterator.next();
             subNode.writeDescriptor(parentNode, TagNames.ADMINISTERED_OBJECT, next);
         }
     }
@@ -1051,14 +1036,14 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      * @param descIterator the iterator over the descriptors to write
      */
     protected void writeJMSConnectionFactoryDefinitionDescriptors(Node parentNode,
-                              Iterator<JMSConnectionFactoryDefinitionDescriptor>  descIterator) {
+                              Iterator<Descriptor>  descIterator) {
         if (descIterator == null || !descIterator.hasNext()) {
             return;
         }
 
         JMSConnectionFactoryDefinitionNode subNode = new JMSConnectionFactoryDefinitionNode();
         for (;descIterator.hasNext();) {
-            JMSConnectionFactoryDefinitionDescriptor next = descIterator.next();
+            JMSConnectionFactoryDefinitionDescriptor next = (JMSConnectionFactoryDefinitionDescriptor)descIterator.next();
             subNode.writeDescriptor(parentNode, TagNames.JMS_CONNECTION_FACTORY, next);
         }
     }
@@ -1070,14 +1055,14 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      * @param descIterator the iterator over the descriptors to write
      */
     protected void writeJMSDestinationDefinitionDescriptors(Node parentNode,
-                              Iterator<JMSDestinationDefinitionDescriptor>  descIterator) {
+                              Iterator<Descriptor>  descIterator) {
         if (descIterator == null || !descIterator.hasNext()) {
             return;
         }
 
         JMSDestinationDefinitionNode subNode = new JMSDestinationDefinitionNode();
         for (;descIterator.hasNext();) {
-            JMSDestinationDefinitionDescriptor next = descIterator.next();
+            JMSDestinationDefinitionDescriptor next = (JMSDestinationDefinitionDescriptor)descIterator.next();
             subNode.writeDescriptor(parentNode, TagNames.JMS_DESTINATION, next);
         }
     }

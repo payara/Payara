@@ -40,38 +40,28 @@
 
 package com.sun.enterprise.connectors.jms.deployment.annotation.handlers;
 
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.annotation.context.*;
+import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
+import org.glassfish.apf.AnnotationHandlerFor;
+import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.JavaEEResourceType;
+import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.AroundTimeout;
+import javax.interceptor.Interceptors;
+import javax.jms.JMSConnectionFactoryDefinition;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
-
-import javax.jms.JMSConnectionFactoryDefinition;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.AroundTimeout;
-import javax.interceptor.Interceptors;
-
-import org.glassfish.apf.AnnotationHandlerFor;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.jvnet.hk2.annotations.Service;
-
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.JMSConnectionFactoryDefinitionDescriptor;
-import com.sun.enterprise.deployment.MetadataSource;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
-import com.sun.enterprise.deployment.annotation.context.EjbContext;
-import com.sun.enterprise.deployment.annotation.context.EjbInterceptorContext;
-import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
-import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
-import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
-import com.sun.enterprise.deployment.annotation.context.WebComponentsContext;
-import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 
 @Service
 @AnnotationHandlerFor(JMSConnectionFactoryDefinition.class)
@@ -100,12 +90,12 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
                 return getDefaultProcessedResult();
             }
 
-            Set<JMSConnectionFactoryDefinitionDescriptor> jmscfdDescs = context.getJMSConnectionFactoryDefinitionDescriptors();
+            Set<Descriptor> jmscfdDescs = context.getResourceDescriptors(JavaEEResourceType.JMSCFDD);
             JMSConnectionFactoryDefinitionDescriptor desc = createDescriptor(jmsConnectionFactoryDefnAn);
             if (isDefinitionAlreadyPresent(jmscfdDescs, desc)) {
                 merge(jmscfdDescs, jmsConnectionFactoryDefnAn);
             } else {
-                context.addJMSConnectionFactoryDefinitionDescriptor(desc);
+                context.addResourceDescriptor(desc);
             }
         }
         return getDefaultProcessedResult();
@@ -206,20 +196,20 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
         return true;
     }
 
-    private boolean isDefinitionAlreadyPresent(Set<JMSConnectionFactoryDefinitionDescriptor> jmscfdDescs,
+    private boolean isDefinitionAlreadyPresent(Set<Descriptor> jmscfdDescs,
                                                JMSConnectionFactoryDefinitionDescriptor desc) {
-        for (JMSConnectionFactoryDefinitionDescriptor jmscfdDesc : jmscfdDescs) {
-            if (jmscfdDesc.equals(desc)) {
+        for (Descriptor descriptor : jmscfdDescs) {
+            if (descriptor.equals(desc)) {
                 return true;
             }
         }
         return false;
     }
 
-    private void merge(Set<JMSConnectionFactoryDefinitionDescriptor> jmscfdDescs, JMSConnectionFactoryDefinition defn) {
+    private void merge(Set<Descriptor> jmscfdDescs, JMSConnectionFactoryDefinition defn) {
 
-        for (JMSConnectionFactoryDefinitionDescriptor desc : jmscfdDescs) {
-
+        for (Descriptor descriptor : jmscfdDescs) {
+            JMSConnectionFactoryDefinitionDescriptor desc = (JMSConnectionFactoryDefinitionDescriptor)descriptor;
             if (desc.getName().equals(defn.name())) {
 
                 if (desc.getClassName() == null) {

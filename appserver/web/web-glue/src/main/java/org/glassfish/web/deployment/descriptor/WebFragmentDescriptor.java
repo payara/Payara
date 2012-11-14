@@ -40,14 +40,16 @@
 
 package org.glassfish.web.deployment.descriptor;
 
-import java.util.Set;
-
 import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.web.EnvironmentEntry;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.deployment.web.SecurityConstraint;
 import com.sun.enterprise.deployment.web.ServletFilter;
-import com.sun.enterprise.deployment.types.EjbReference;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.JavaEEResourceType;
+
+import java.util.Set;
 
 /**
  * I am an object that represents all the deployment information about
@@ -302,70 +304,84 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
 
     @Override
     protected void combineDataSourceDefinitionDescriptors(JndiNameEnvironment env) {
-        for (DataSourceDefinitionDescriptor ddd: env.getDataSourceDefinitionDescriptors()) {
-            DataSourceDefinitionDescriptor ddDesc = getDataSourceDefinitionDescriptor(ddd.getName());
+        for (Descriptor ddd: env.getResourceDescriptors(JavaEEResourceType.DSD)) {
+            DataSourceDefinitionDescriptor ddDesc = (DataSourceDefinitionDescriptor)getResourceDescriptor(JavaEEResourceType.DSD, ddd.getName());
             if (ddDesc != null) {
-                if (ddDesc.isConflict(ddd)) {
+                if (ddDesc.isConflict((DataSourceDefinitionDescriptor)ddd)) {
                     conflictDataSourceDefinition = true;
                 }
             } else {
-                getDataSourceDefinitionDescriptors().add(ddd);
+                getResourceDescriptors(JavaEEResourceType.DSD).add(ddd);
+            }
+        }
+    }
+
+    @Override
+    public void combineMailSessionDescriptors(JndiNameEnvironment env) {
+        for (Descriptor ddd: env.getResourceDescriptors(JavaEEResourceType.MSD)) {
+            MailSessionDescriptor msDesc = (MailSessionDescriptor)getResourceDescriptor(JavaEEResourceType.MSD, ddd.getName());
+            if (msDesc != null) {
+                if (msDesc.isConflict((MailSessionDescriptor)ddd)) {
+                    conflictDataSourceDefinition = true;
+                }
+            } else {
+                getResourceDescriptors(JavaEEResourceType.MSD).add(ddd);
             }
         }
     }
 
     @Override
     public void combineConnectorResourceDefinitionDescriptors(JndiNameEnvironment env) {
-        for (ConnectorResourceDefinitionDescriptor crdd: env.getConnectorResourceDefinitionDescriptors()) {
-            ConnectorResourceDefinitionDescriptor desc = getConnectorResourceDefinitionDescriptor(crdd.getName());
+        for (Descriptor crdd: env.getResourceDescriptors(JavaEEResourceType.CRD)) {
+            ConnectorResourceDefinitionDescriptor desc = (ConnectorResourceDefinitionDescriptor)getResourceDescriptor(JavaEEResourceType.CRD,crdd.getName());
             if (desc != null) {
-                if (desc.isConflict(crdd)) {
+                if (desc.isConflict((ConnectorResourceDefinitionDescriptor)crdd)) {
                     conflictConnectorResourceDefinition = true;
                 }
             } else {
-                addConnectorResourceDefinitionDescriptor(crdd);
+                getResourceDescriptors(JavaEEResourceType.CRD).add(crdd);
             }
         }
     }
 
     @Override   
     public void combineAdministeredObjectDefinitionDescriptors(JndiNameEnvironment env) {
-        for (AdministeredObjectDefinitionDescriptor aodd: env.getAdministeredObjectDefinitionDescriptors()) {
-            AdministeredObjectDefinitionDescriptor desc = getAdministeredObjectDefinitionDescriptor(aodd.getName());
+        for (Descriptor aodd: env.getResourceDescriptors(JavaEEResourceType.AODD)) {
+            AdministeredObjectDefinitionDescriptor desc = (AdministeredObjectDefinitionDescriptor)getResourceDescriptor(JavaEEResourceType.AODD,aodd.getName());
             if (desc != null) {
-                if (desc.isConflict(aodd)) {
+                if (desc.isConflict((AdministeredObjectDefinitionDescriptor)aodd)) {
                     conflictAdminObjectDefinition = true;
                 }
             } else {
-                addAdministeredObjectDefinitionDescriptor(aodd);
+                getResourceDescriptors(JavaEEResourceType.AODD).add(aodd);
             }
         }
     }
 
     @Override
     public void combineJMSConnectionFactoryDefinitionDescriptors(JndiNameEnvironment env) {
-        for (JMSConnectionFactoryDefinitionDescriptor jmscfdd: env.getJMSConnectionFactoryDefinitionDescriptors()) {
-            JMSConnectionFactoryDefinitionDescriptor desc = getJMSConnectionFactoryDefinitionDescriptor(jmscfdd.getName());
+        for (Descriptor jmscfdd: env.getResourceDescriptors(JavaEEResourceType.JMSCFDD)) {
+            JMSConnectionFactoryDefinitionDescriptor desc = (JMSConnectionFactoryDefinitionDescriptor)getResourceDescriptor(JavaEEResourceType.JMSCFDD,jmscfdd.getName());
             if (desc != null) {
-                if (desc.isConflict(jmscfdd)) {
+                if (desc.isConflict((JMSConnectionFactoryDefinitionDescriptor)jmscfdd)) {
                     conflictJMSConnectionFactoryDefinition = true;
                 }
             } else {
-                addJMSConnectionFactoryDefinitionDescriptor(jmscfdd);
+                getResourceDescriptors(JavaEEResourceType.JMSCFDD).add(jmscfdd);
             }
         }
     }
 
     @Override
     public void combineJMSDestinationDefinitionDescriptors(JndiNameEnvironment env) {
-        for (JMSDestinationDefinitionDescriptor jmsddd: env.getJMSDestinationDefinitionDescriptors()) {
-            JMSDestinationDefinitionDescriptor desc = getJMSDestinationDefinitionDescriptor(jmsddd.getName());
+        for (Descriptor jmsddd: env.getResourceDescriptors(JavaEEResourceType.JMSDD)) {
+            JMSDestinationDefinitionDescriptor desc = (JMSDestinationDefinitionDescriptor)getResourceDescriptor(JavaEEResourceType.JMSDD,jmsddd.getName());
             if (desc != null) {
-                if (desc.isConflict(jmsddd)) {
+                if (desc.isConflict((JMSDestinationDefinitionDescriptor)jmsddd)) {
                     conflictJMSDestinationDefinition = true;
                 }
             } else {
-                addJMSDestinationDefinitionDescriptor(jmsddd);
+                getResourceDescriptors(JavaEEResourceType.JMSDD).add(jmsddd);
             }
         }
     }

@@ -44,6 +44,7 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.types.*;
 import org.glassfish.apf.context.AnnotationContext;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.JavaEEResourceType;
 
 import java.util.Set;
 
@@ -417,19 +418,19 @@ public class ResourceContainerContextImpl extends AnnotationContext
     }
 
     /**
-     * Adds the specified data-source-definition to the receiver.
-     * @param desc DataSourceDefinitionDescriptor to add.
+     * Adds the descriptor to the receiver.
+     * @param desc Descriptor to add.
      */
-    public void addDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor desc) {
-        getDataSourceDefinitionContainer().addDataSourceDefinitionDescriptor(desc);
+    public void addResourceDescriptor(Descriptor desc) {
+        getDataSourceDefinitionContainer().addResourceDescriptor(desc);
     }
 
     /**
-     * get all datasource-definition descriptors
-     * @return datasource-definition descriptors
+     * get all Descriptor descriptors based on the type
+     * @return Descriptor descriptors
      */
-    public Set<DataSourceDefinitionDescriptor> getDataSourceDefinitionDescriptors() {
-        return getDataSourceDefinitionContainer().getDataSourceDefinitionDescriptors();
+    public Set<Descriptor> getResourceDescriptors(JavaEEResourceType type) {
+        return getDataSourceDefinitionContainer().getResourceDescriptors(type);
     }
 
 
@@ -437,103 +438,20 @@ public class ResourceContainerContextImpl extends AnnotationContext
         return (WritableJndiNameEnvironment) descriptor;
     }
 
-    /**
-     * Adds the specified mail-session-definition to the receiver.
-     *
-     * @param desc MailSessionDescriptor to add.
-     */
-    public void addMailSessionDescriptor(MailSessionDescriptor desc) {
-        getMailSessionContainer().addMailSessionDescriptor(desc);
-    }
-
-    /**
-     * get all mail-session-definition descriptors
-     *
-     * @return mail-session-definition descriptors
-     */
-    public Set<MailSessionDescriptor> getMailSessionDescriptors() {
-        return getMailSessionContainer().getMailSessionDescriptors();
-    }
-
     protected WritableJndiNameEnvironment getConnectorResourceDefinitionContainer(){
         return (WritableJndiNameEnvironment)descriptor;
-    }
-
-    /**
-     * get all connector-resource-definition descriptors
-     * @return connector-resource-definition descriptors
-     */
-    public Set<ConnectorResourceDefinitionDescriptor> getConnectorResourceDefinitionDescriptors() {
-        return getConnectorResourceDefinitionContainer().getConnectorResourceDefinitionDescriptors();
-    }
-
-    /**
-     * Adds the specified connector-resource-definition to the receiver.
-     * @param desc ConnectorResourceDefinitionDescriptor to add.
-     */
-    public void addConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor desc) {
-        getConnectorResourceDefinitionContainer().addConnectorResourceDefinitionDescriptor(desc);
     }
 
     protected WritableJndiNameEnvironment getAdministeredObjectDefinitionContainer(){
         return (WritableJndiNameEnvironment)descriptor;
     }
 
-    /**
-     * get all administered-object-definition descriptors
-     * @return administered-object-definition descriptors
-     */
-    public Set<AdministeredObjectDefinitionDescriptor> getAdministeredObjectDefinitionDescriptors(){
-        return getAdministeredObjectDefinitionContainer().getAdministeredObjectDefinitionDescriptors();
-    }
-
-    /**
-     * Adds the specified administered-object-definition to the receiver.
-     * @param desc AdministeredObjectDefinitionDescriptor to add.
-     */
-    public void addAdministeredObjectDefinitionDescriptor(AdministeredObjectDefinitionDescriptor desc){
-        getAdministeredObjectDefinitionContainer().addAdministeredObjectDefinitionDescriptor(desc);
-    }
-
-
     protected WritableJndiNameEnvironment getJMSConnectionFactoryDefinitionContainer(){
         return (WritableJndiNameEnvironment)descriptor;
     }
 
-    /**
-     * get all jms-connection-factory-definition descriptors
-     * @return jms-connection-factory-definition descriptors
-     */
-    public Set<JMSConnectionFactoryDefinitionDescriptor> getJMSConnectionFactoryDefinitionDescriptors() {
-        return getJMSConnectionFactoryDefinitionContainer().getJMSConnectionFactoryDefinitionDescriptors();
-    }
-
-    /**
-     * Adds the specified jms-connection-factory-definition to the receiver.
-     * @param desc JMSConnectionFactoryDefinitionDescriptor to add.
-     */
-    public void addJMSConnectionFactoryDefinitionDescriptor(JMSConnectionFactoryDefinitionDescriptor desc) {
-        getJMSConnectionFactoryDefinitionContainer().addJMSConnectionFactoryDefinitionDescriptor(desc);
-    }
-
     protected WritableJndiNameEnvironment getJMSDestinationDefinitionContainer(){
         return (WritableJndiNameEnvironment)descriptor;
-    }
-
-    /**
-     * get all jms-destination-definition descriptors
-     * @return jms-destination-definition descriptors
-     */
-    public Set<JMSDestinationDefinitionDescriptor> getJMSDestinationDefinitionDescriptors() {
-        return getJMSDestinationDefinitionContainer().getJMSDestinationDefinitionDescriptors();
-    }
-
-    /**
-     * Adds the specified jms-destination-definition to the receiver.
-     * @param desc JMSDestinationDefinitionDescriptor to add.
-     */
-    public void addJMSDestinationDefinitionDescriptor(JMSDestinationDefinitionDescriptor desc) {
-        getJMSDestinationDefinitionContainer().addJMSDestinationDefinitionDescriptor(desc);
     }
 
     protected WritableJndiNameEnvironment getPreDestroyContainer() {

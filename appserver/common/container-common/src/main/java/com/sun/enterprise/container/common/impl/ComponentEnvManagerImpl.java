@@ -55,6 +55,7 @@ import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.api.naming.JNDIBinding;
 import org.glassfish.api.naming.NamingObjectProxy;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
@@ -307,18 +308,18 @@ public class ComponentEnvManagerImpl
     private void addAllDescriptorBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
 
         Set<Descriptor> allDescriptors = new HashSet<Descriptor>();
-        Set<DataSourceDefinitionDescriptor> dsds = env.getDataSourceDefinitionDescriptors();
-        Set<JMSConnectionFactoryDefinitionDescriptor> jmscfdds = env.getJMSConnectionFactoryDefinitionDescriptors();
-        Set<MailSessionDescriptor> msds =env.getMailSessionDescriptors();
-        Set<JMSDestinationDefinitionDescriptor> jmsddds = env.getJMSDestinationDefinitionDescriptors();
+        Set<Descriptor> dsds = env.getResourceDescriptors(JavaEEResourceType.DSD);
+        Set<Descriptor> jmscfdds = env.getResourceDescriptors(JavaEEResourceType.JMSCFDD);
+        Set<Descriptor> msds =env.getResourceDescriptors(JavaEEResourceType.MSD);
+        Set<Descriptor> jmsddds = env.getResourceDescriptors(JavaEEResourceType.JMSDD);
         if(!(env instanceof ApplicationClientDescriptor)) {
-            Set<ConnectorResourceDefinitionDescriptor> ccrdds = env.getConnectorResourceDefinitionDescriptors();
+            Set<Descriptor> ccrdds = env.getResourceDescriptors(JavaEEResourceType.CRD);
             allDescriptors.addAll(ccrdds);
         } else {
             _logger.fine("Do not support connector-resource in client module.");
         }
         if(!(env instanceof ApplicationClientDescriptor)) {
-           Set<AdministeredObjectDefinitionDescriptor> aodd = env.getAdministeredObjectDefinitionDescriptors();
+           Set<Descriptor> aodd = env.getResourceDescriptors(JavaEEResourceType.AODD);
            allDescriptors.addAll(aodd);
         } else {
            _logger.fine("Do not support administered-object in client module.");
@@ -333,12 +334,9 @@ public class ComponentEnvManagerImpl
             if (!dependencyAppliesToScope(descriptor, scope)) {
                 continue;
             }
+
             if(descriptor.getResourceType().equals(DSD)) {
                 if (((DataSourceDefinitionDescriptor)descriptor).isDeployed()) {
-                    continue;
-                }
-            } else if(descriptor.getResourceType().equals(MSD)) {
-                if (((MailSessionDescriptor)descriptor).isDeployed()) {
                     continue;
                 }
             }
@@ -410,18 +408,18 @@ public class ComponentEnvManagerImpl
     private void undeployAllDescriptors(JndiNameEnvironment env) {
 
         Set<Descriptor> allDescriptors = new HashSet<Descriptor>();
-        Set<DataSourceDefinitionDescriptor> dsds = env.getDataSourceDefinitionDescriptors();
-        Set<JMSConnectionFactoryDefinitionDescriptor> jmscfdds = env.getJMSConnectionFactoryDefinitionDescriptors();
-        Set<MailSessionDescriptor> msds =env.getMailSessionDescriptors();
-        Set<JMSDestinationDefinitionDescriptor> jmsddds = env.getJMSDestinationDefinitionDescriptors();
+        Set<Descriptor> dsds = env.getResourceDescriptors(JavaEEResourceType.DSD);
+        Set<Descriptor> jmscfdds = env.getResourceDescriptors(JavaEEResourceType.JMSCFDD);
+        Set<Descriptor> msds =env.getResourceDescriptors(JavaEEResourceType.MSD);
+        Set<Descriptor> jmsddds = env.getResourceDescriptors(JavaEEResourceType.JMSDD);
         if(!(env instanceof ApplicationClientDescriptor)) {
-            Set<ConnectorResourceDefinitionDescriptor> ccrdds = env.getConnectorResourceDefinitionDescriptors();
+            Set<Descriptor> ccrdds = env.getResourceDescriptors(JavaEEResourceType.CRD);
             allDescriptors.addAll(ccrdds);
         } else {
             _logger.fine("Do not support connector-resource in client module.");
         }
         if(!(env instanceof ApplicationClientDescriptor)) {
-            Set<AdministeredObjectDefinitionDescriptor> aodd = env.getAdministeredObjectDefinitionDescriptors();
+            Set<Descriptor> aodd = env.getResourceDescriptors(JavaEEResourceType.AODD);
             allDescriptors.addAll(aodd);
         } else {
             _logger.fine("Do not support administered-object in client module.");

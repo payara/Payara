@@ -41,6 +41,10 @@
 package com.sun.enterprise.deployment;
 
 
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.JavaEEResourceType;
+
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -53,6 +57,13 @@ import java.util.Set;
 public abstract class CommonResourceBundleDescriptor  extends BundleDescriptor {
 
     CommonResourceFunctionality commonResourceFunctionality = new CommonResourceFunctionality();
+    Set<Descriptor> dsdDescriptors = new HashSet<Descriptor>();
+    Set<Descriptor> msdDescriptors = new HashSet<Descriptor>();
+    Set<Descriptor> crdDescriptors = new HashSet<Descriptor>();
+    Set<Descriptor> aodDescriptors = new HashSet<Descriptor>();
+    Set<Descriptor> jmscfdDescriptors = new HashSet<Descriptor>();
+    Set<Descriptor> jmsddDescriptors = new HashSet<Descriptor>();
+    Set<Descriptor> allDescriptors = new HashSet<Descriptor>();
 
     public CommonResourceBundleDescriptor() {
         super();
@@ -62,132 +73,113 @@ public abstract class CommonResourceBundleDescriptor  extends BundleDescriptor {
         super(name, description);
     }
 
-    public Set<MailSessionDescriptor> getMailSessionDescriptors() {
-        return commonResourceFunctionality.getMailSessionDescriptors();
-    }
-
-    protected MailSessionDescriptor getMailSessionDescriptor(String name) {
-        return commonResourceFunctionality.getMailSessionDescriptor(name);
-    }
-
-    public void addMailSessionDescriptor(MailSessionDescriptor reference) {
-        commonResourceFunctionality.addMailSessionDescriptor(reference);
-    }
-
-    public void removeMailSessionDescriptor(MailSessionDescriptor reference) {
-        commonResourceFunctionality.removeMailSessionDescriptor(reference);
-    }
-
-    public Set<DataSourceDefinitionDescriptor> getDataSourceDefinitionDescriptors() {
-        return commonResourceFunctionality.getDataSourceDefinitionDescriptors();
-    }
-
-    protected DataSourceDefinitionDescriptor getDataSourceDefinitionDescriptor(String name) {
-        return commonResourceFunctionality.getDataSourceDefinitionDescriptor(name);
-    }
-
-    public void addDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
-        commonResourceFunctionality.addDataSourceDefinitionDescriptor(reference);
-    }
-
-    public void removeDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
-        commonResourceFunctionality.removeDataSourceDefinitionDescriptor(reference);
-    }
-    
-    // for connector-resource-definition
-    public Set<ConnectorResourceDefinitionDescriptor> getConnectorResourceDefinitionDescriptors() {
-        return commonResourceFunctionality.getConnectorResourceDefinitionDescriptors();
-    }
-
-    protected ConnectorResourceDefinitionDescriptor getConnectorResourceDefinitionDescriptor(String name) {
-        return commonResourceFunctionality.getConnectorResourceDefinitionDescriptor(name);
-    }
-
-    public void addConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference){
-        commonResourceFunctionality.addConnectorResourceDefinitionDescriptor(reference);
-    }
-
-    public void removeConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference){
-        commonResourceFunctionality.removeConnectorResourceDefinitionDescriptor(reference);
-    }
-
-    // for admin-object-definition
-    public Set<AdministeredObjectDefinitionDescriptor> getAdministeredObjectDefinitionDescriptors() {
-        return commonResourceFunctionality.getAdministeredObjectDefinitionDescriptors();
-    }
-
-    protected AdministeredObjectDefinitionDescriptor getAdministeredObjectDefinitionDescriptor(String name) {
-        return commonResourceFunctionality.getAdministeredObjectDefinitionDescriptor(name);
-    }
-
-    public void addAdministeredObjectDefinitionDescriptor(AdministeredObjectDefinitionDescriptor reference){
-        commonResourceFunctionality.addAdministeredObjectDefinitionDescriptor(reference);
-    }
-
-    public void removeAdministeredObjectDefinitionDescriptor(AdministeredObjectDefinitionDescriptor reference){
-        commonResourceFunctionality.removeAdministeredObjectDefinitionDescriptor(reference);
-    }
-
-    public Set<JMSConnectionFactoryDefinitionDescriptor> getJMSConnectionFactoryDefinitionDescriptors() {
-        return commonResourceFunctionality.getJMSConnectionFactoryDefinitionDescriptors();
-    }
-
-    protected JMSConnectionFactoryDefinitionDescriptor getJMSConnectionFactoryDefinitionDescriptor(String name) {
-        return commonResourceFunctionality.getJMSConnectionFactoryDefinitionDescriptor(name);
-    }
-
-    public void addJMSConnectionFactoryDefinitionDescriptor(JMSConnectionFactoryDefinitionDescriptor reference) {
-        commonResourceFunctionality.addJMSConnectionFactoryDefinitionDescriptor(reference);
-    }
-
-    public void removeJMSConnectionFactoryDefinitionDescriptor(JMSConnectionFactoryDefinitionDescriptor reference) {
-        commonResourceFunctionality.removeJMSConnectionFactoryDefinitionDescriptor(reference);
-    }
-
-    public Set<JMSDestinationDefinitionDescriptor> getJMSDestinationDefinitionDescriptors() {
-        return commonResourceFunctionality.getJMSDestinationDefinitionDescriptors();
-    }
-
-    protected JMSDestinationDefinitionDescriptor getJMSDestinationDefinitionDescriptor(String name) {
-        return commonResourceFunctionality.getJMSDestinationDefinitionDescriptor(name);
-    }
-
-    public void addJMSDestinationDefinitionDescriptor(JMSDestinationDefinitionDescriptor reference) {
-        commonResourceFunctionality.addJMSDestinationDefinitionDescriptor(reference);
-    }
-
-    public void removeJMSDestinationDefinitionDescriptor(JMSDestinationDefinitionDescriptor reference) {
-        commonResourceFunctionality.removeJMSDestinationDefinitionDescriptor(reference);
-    }
-
-    /*public void addDescriptor(Descriptor descriptor) {
-        if(descriptor.getResourceType().equals(JavaEEResourceType.DSD)) {
-            commonResourceFunctionality.addDataSourceDefinitionDescriptor((DataSourceDefinitionDescriptor)descriptor);
+    public void addResourceDescriptor(Descriptor descriptor) {
+        switch (descriptor.getResourceType()){
+            case DSD:
+                commonResourceFunctionality.addDataSourceDefinitionDescriptor((DataSourceDefinitionDescriptor)descriptor);
+                break;
+            case MSD:
+                commonResourceFunctionality.addMailSessionDescriptor((MailSessionDescriptor)descriptor);
+                break;
+            case CRD:
+                commonResourceFunctionality.addConnectorResourceDefinitionDescriptor((ConnectorResourceDefinitionDescriptor)descriptor);
+                break;
+            case AODD:
+                commonResourceFunctionality.addAdministeredObjectDefinitionDescriptor((AdministeredObjectDefinitionDescriptor)descriptor);
+                break;
+            case JMSCFDD:
+                commonResourceFunctionality.addJMSConnectionFactoryDefinitionDescriptor((JMSConnectionFactoryDefinitionDescriptor)descriptor);
+                break;
+            case JMSDD:
+                commonResourceFunctionality.addJMSDestinationDefinitionDescriptor((JMSDestinationDefinitionDescriptor)descriptor);
+                break;
         }
     }
 
-    public void removeDescriptor(Descriptor descriptor) {
-        if(descriptor.getResourceType().equals(JavaEEResourceType.DSD)) {
-            commonResourceFunctionality.removeDataSourceDefinitionDescriptor((DataSourceDefinitionDescriptor)descriptor);
+    public void removeResourceDescriptor(Descriptor descriptor) {
+        switch (descriptor.getResourceType()) {
+            case DSD:
+                commonResourceFunctionality.removeDataSourceDefinitionDescriptor((DataSourceDefinitionDescriptor)descriptor);
+                break;
+            case MSD:
+                commonResourceFunctionality.removeMailSessionDescriptor((MailSessionDescriptor)descriptor);
+                break;
+            case CRD:
+                commonResourceFunctionality.removeConnectorResourceDefinitionDescriptor((ConnectorResourceDefinitionDescriptor)descriptor);
+                break;
+            case AODD:
+                commonResourceFunctionality.removeAdministeredObjectDefinitionDescriptor((AdministeredObjectDefinitionDescriptor)descriptor);
+                break;
+            case JMSCFDD:
+                commonResourceFunctionality.removeJMSConnectionFactoryDefinitionDescriptor((JMSConnectionFactoryDefinitionDescriptor)descriptor);
+                break;
+            case JMSDD:
+                commonResourceFunctionality.removeJMSDestinationDefinitionDescriptor((JMSDestinationDefinitionDescriptor)descriptor);
+                break;
         }
     }
 
-    public Set<Descriptor> getDescriptors(String type) {
-        Set<Descriptor> descriptors = new HashSet<Descriptor>();
-        if(type.equals(JavaEEResourceType.DSD)) {
-            Set<DataSourceDefinitionDescriptor> dataSourceDefinitionDescriptors = commonResourceFunctionality.getDataSourceDefinitionDescriptors();
-            descriptors.addAll(dataSourceDefinitionDescriptors);
+    public Set<Descriptor> getResourceDescriptors(JavaEEResourceType type) {
+        switch (type) {
+            case DSD:
+                Set<DataSourceDefinitionDescriptor> dataSourceDefinitionDescriptors = commonResourceFunctionality.getDataSourceDefinitionDescriptors();
+                dsdDescriptors.addAll(dataSourceDefinitionDescriptors);
+                return dsdDescriptors;
+            case MSD:
+                Set<MailSessionDescriptor> mailSessionDescriptors = commonResourceFunctionality.getMailSessionDescriptors();
+                msdDescriptors.addAll(mailSessionDescriptors);
+                return msdDescriptors;
+            case CRD:
+                Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescriptors = commonResourceFunctionality.getConnectorResourceDefinitionDescriptors();
+                crdDescriptors.addAll(connectorResourceDefinitionDescriptors);
+                return crdDescriptors;
+            case AODD:
+                Set<AdministeredObjectDefinitionDescriptor> administeredObjectDefinitionDescriptors = commonResourceFunctionality.getAdministeredObjectDefinitionDescriptors();
+                aodDescriptors.addAll(administeredObjectDefinitionDescriptors);
+                return aodDescriptors;
+            case JMSCFDD:
+                Set<JMSConnectionFactoryDefinitionDescriptor> jmsConnectionFactoryDefinitionDescriptors = commonResourceFunctionality.getJMSConnectionFactoryDefinitionDescriptors();
+                jmscfdDescriptors.addAll(jmsConnectionFactoryDefinitionDescriptors);
+                return jmscfdDescriptors;
+            case JMSDD:
+                Set <JMSDestinationDefinitionDescriptor> jmsDestinationDefinitionDescriptors = commonResourceFunctionality.getJMSDestinationDefinitionDescriptors();
+                jmsddDescriptors.addAll(jmsDestinationDefinitionDescriptors);
+                return jmsddDescriptors;
+            case ALL:
+                allDescriptors.addAll(commonResourceFunctionality.getJMSDestinationDefinitionDescriptors());
+                allDescriptors.addAll(commonResourceFunctionality.getJMSConnectionFactoryDefinitionDescriptors());
+                allDescriptors.addAll(commonResourceFunctionality.getAdministeredObjectDefinitionDescriptors());
+                allDescriptors.addAll(commonResourceFunctionality.getConnectorResourceDefinitionDescriptors());
+                allDescriptors.addAll(commonResourceFunctionality.getMailSessionDescriptors());
+                allDescriptors.addAll(commonResourceFunctionality.getDataSourceDefinitionDescriptors());
+                return allDescriptors;
         }
-        return descriptors;
+        return null;
     }
 
-    protected Descriptor getDescriptor(String type, String name) {
+    protected Descriptor getResourceDescriptor(JavaEEResourceType type, String name) {
         Descriptor descriptor = null;
-        if(type.equals(JavaEEResourceType.DSD)) {
-            descriptor = commonResourceFunctionality.getDataSourceDefinitionDescriptor(name);
+        switch (type) {
+            case DSD:
+                descriptor = commonResourceFunctionality.getDataSourceDefinitionDescriptor(name);
+                break;
+            case MSD:
+                descriptor = commonResourceFunctionality.getMailSessionDescriptor(name);
+                break;
+            case CRD:
+                descriptor = commonResourceFunctionality.getConnectorResourceDefinitionDescriptor(name);
+                break;
+            case AODD:
+                descriptor = commonResourceFunctionality.getAdministeredObjectDefinitionDescriptor(name);
+                break;
+            case JMSCFDD:
+                descriptor = commonResourceFunctionality.getJMSConnectionFactoryDefinitionDescriptor(name);
+                break;
+            case JMSDD:
+                descriptor = commonResourceFunctionality.getJMSDestinationDefinitionDescriptor(name);
+                break;
         }
         return descriptor;
-    }*/
-
+    }
 }
 

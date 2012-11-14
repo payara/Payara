@@ -41,6 +41,7 @@
 package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.types.EjbReference;
+import org.glassfish.deployment.common.Descriptor;
 
 /**
  * Objects implementing this interface allow their
@@ -186,100 +187,21 @@ public interface WritableJndiNameEnvironment extends JndiNameEnvironment {
                 EntityManagerReferenceDescriptor reference);
 
     /**  
-     * Adds the specified data-source-definition to the receiver.
+     * Adds the specified descriptor to the receiver.
      *   
-     * @param reference DataSourceDefinitionDescriptor to add.
+     * @param reference Descriptor to add.
      *
      */
-    public void addDataSourceDefinitionDescriptor(
-				DataSourceDefinitionDescriptor reference);
+    public void addResourceDescriptor(
+            Descriptor reference);
 
     /**  
-     * Removes the specified data-source-definition from the receiver.
+     * Removes the specified descriptor from the receiver.
      *   
-     * @param reference DataSourceDefinitionDescriptor to remove.
+     * @param reference Descriptor to remove.
      *
      */
-    public void removeDataSourceDefinitionDescriptor(
-				DataSourceDefinitionDescriptor reference);
-
-    public void addMailSessionDescriptor(
-            com.sun.enterprise.deployment.MailSessionDescriptor reference);
-
-    public void removeMailSessionDescriptor(
-            com.sun.enterprise.deployment.MailSessionDescriptor reference);
-
-    /**  
-     * Adds the specified connector-resource-definition to the receiver.
-     *   
-     * @param reference ConnectorResourceDefinitionDescriptor to add.
-     *
-     */
-    public void addConnectorResourceDefinitionDescriptor(
-    		ConnectorResourceDefinitionDescriptor reference);
-
-    /**  
-     * Removes the specified connector-resource-definition from the receiver.
-     *   
-     * @param reference ConnectorResourceDefinitionDescriptor to remove.
-     *
-     */
-    public void removeConnectorResourceDefinitionDescriptor(
-    		ConnectorResourceDefinitionDescriptor reference);
-
-    /**  
-     * Adds the specified administered-object-definition to the receiver.
-     *   
-     * @param reference AdministeredObjectDefinitionDescriptor to add.
-     *
-     */
-    public void addAdministeredObjectDefinitionDescriptor(
-            AdministeredObjectDefinitionDescriptor reference);
-
-    /**  
-     * Removes the specified administered-object-definition from the receiver.
-     *   
-     * @param reference AdministeredObjectDefinitionDescriptor to remove.
-     *
-     */
-    public void removeAdministeredObjectDefinitionDescriptor(
-            AdministeredObjectDefinitionDescriptor reference);
-
-    /**
-     * Adds the specified jms-connection-factory-definition to the receiver.
-     *
-     * @param reference JMSConnectionFactoryDefinitionDescriptor to add.
-     *
-     */
-    public void addJMSConnectionFactoryDefinitionDescriptor(
-    		JMSConnectionFactoryDefinitionDescriptor reference);
-
-    /**
-     * Removes the specified jms-connection-factory-definition from the receiver.
-     *
-     * @param reference JMSConnectionFactoryDefinitionDescriptor to remove.
-     *
-     */
-    public void removeJMSConnectionFactoryDefinitionDescriptor(
-    		JMSConnectionFactoryDefinitionDescriptor reference);
-
-    /**
-     * Adds the specified jms-destination-definition to the receiver.
-     *
-     * @param reference JMSDestinationDefinitionDescriptor to add.
-     *
-     */
-    public void addJMSDestinationDefinitionDescriptor(
-    		JMSDestinationDefinitionDescriptor reference);
-
-    /**
-     * Removes the specified jms-destination-definition from the receiver.
-     *
-     * @param reference JMSDestinationDefinitionDescriptor to remove.
-     *
-     */
-    public void removeJMSDestinationDefinitionDescriptor(
-    		JMSDestinationDefinitionDescriptor reference);
-
+    public void removeResourceDescriptor(
+				Descriptor reference);
 }
 

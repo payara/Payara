@@ -68,6 +68,7 @@ import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.ejb.deployment.EjbTagNames;
 import org.w3c.dom.Node;
 
@@ -87,12 +88,12 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
         //jndiEnvironmentRefsGroup
         registerElementHandler(new XMLElement(TagNames.POST_CONSTRUCT), LifecycleCallbackNode.class, "addPostConstructDescriptor");       
         registerElementHandler(new XMLElement(TagNames.PRE_DESTROY), LifecycleCallbackNode.class, "addPreDestroyDescriptor");
-        registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addConnectorResourceDefinitionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.ADMINISTERED_OBJECT), AdministeredObjectDefinitionNode.class, "addAdministeredObjectDefinitionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addJMSConnectionFactoryDefinitionDescriptor");
-        registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addJMSDestinationDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.ADMINISTERED_OBJECT), AdministeredObjectDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addResourceDescriptor");
 
         registerElementHandler(new XMLElement(TagNames.ENVIRONMENT_PROPERTY), 
                EnvEntryNode.class, "addEnvironmentProperty");
@@ -187,22 +188,22 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
 
         //TODO V3 should we check for the availability of datasource-definition similar to above ? (hasCallbackDescriptor)
         // datasource-definition*
-        writeDataSourceDefinitionDescriptors(interceptorNode, descriptor.getDataSourceDefinitionDescriptors().iterator());
+        writeDataSourceDefinitionDescriptors(interceptorNode, descriptor.getResourceDescriptors(JavaEEResourceType.DSD).iterator());
 
         // mail-session*
-        writeMailSessionDescriptors(interceptorNode, descriptor.getMailSessionDescriptors().iterator());
+        writeMailSessionDescriptors(interceptorNode, descriptor.getResourceDescriptors(JavaEEResourceType.MSD).iterator());
 
         // connector-resource-definition*
-        writeConnectorResourceDefinitionDescriptors(interceptorNode, descriptor.getConnectorResourceDefinitionDescriptors().iterator());
+        writeConnectorResourceDefinitionDescriptors(interceptorNode, descriptor.getResourceDescriptors(JavaEEResourceType.CRD).iterator());
 
         // administered-object-definition
-        writeAdministeredObjectDefinitionDescriptors(interceptorNode, descriptor.getAdministeredObjectDefinitionDescriptors().iterator());
+        writeAdministeredObjectDefinitionDescriptors(interceptorNode, descriptor.getResourceDescriptors(JavaEEResourceType.AODD).iterator());
 
        // jms-connection-factory-definition*
-       writeJMSConnectionFactoryDefinitionDescriptors(interceptorNode, descriptor.getJMSConnectionFactoryDefinitionDescriptors().iterator());
+       writeJMSConnectionFactoryDefinitionDescriptors(interceptorNode, descriptor.getResourceDescriptors(JavaEEResourceType.JMSCFDD).iterator());
 
        // jms-destination-definition*
-       writeJMSDestinationDefinitionDescriptors(interceptorNode, descriptor.getJMSDestinationDefinitionDescriptors().iterator());
+       writeJMSDestinationDefinitionDescriptors(interceptorNode, descriptor.getResourceDescriptors(JavaEEResourceType.JMSDD).iterator());
 
         return interceptorNode;
     }

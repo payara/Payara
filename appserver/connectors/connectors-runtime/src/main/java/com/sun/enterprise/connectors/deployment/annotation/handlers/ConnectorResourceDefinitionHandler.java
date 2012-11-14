@@ -39,38 +39,28 @@
  */
 package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.annotation.context.*;
+import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
+import org.glassfish.apf.AnnotationHandlerFor;
+import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.JavaEEResourceType;
+import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.AroundTimeout;
+import javax.interceptor.Interceptors;
+import javax.resource.ConnectorResourceDefinition;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
-
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.AroundTimeout;
-import javax.interceptor.Interceptors;
-import javax.resource.ConnectorResourceDefinition;
-
-import org.glassfish.apf.AnnotationHandlerFor;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.jvnet.hk2.annotations.Service;
-
-import com.sun.enterprise.deployment.ConnectorResourceDefinitionDescriptor;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.MetadataSource;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
-import com.sun.enterprise.deployment.annotation.context.EjbContext;
-import com.sun.enterprise.deployment.annotation.context.EjbInterceptorContext;
-import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
-import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
-import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
-import com.sun.enterprise.deployment.annotation.context.WebComponentsContext;
-import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 
 /**
  * @author Dapeng Hu
@@ -104,12 +94,12 @@ public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler 
             if (!canProcessAnnotation(annotatedClass, ejbClass, warClass, context)){
                 return getDefaultProcessedResult();
             }
-            Set<ConnectorResourceDefinitionDescriptor> crdDescs = context.getConnectorResourceDefinitionDescriptors();
+            Set<Descriptor> crdDescs = context.getResourceDescriptors(JavaEEResourceType.CRD);
             ConnectorResourceDefinitionDescriptor desc = createDescriptor(connectorResourceDefnAn);
             if(isDefinitionAlreadyPresent(crdDescs, desc)){
                 merge(crdDescs, connectorResourceDefnAn);
             }else{
-                context.addConnectorResourceDefinitionDescriptor(desc);
+                context.addResourceDescriptor(desc);
             }
         }
         return getDefaultProcessedResult();
@@ -210,10 +200,10 @@ public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler 
     }
 
     
-    private boolean isDefinitionAlreadyPresent(Set<ConnectorResourceDefinitionDescriptor> crdDescs,  ConnectorResourceDefinitionDescriptor desc) {
+    private boolean isDefinitionAlreadyPresent(Set<Descriptor> crdDescs,  ConnectorResourceDefinitionDescriptor desc) {
         boolean result = false ;
-        for(ConnectorResourceDefinitionDescriptor crdDesc : crdDescs){
-            if(crdDesc.equals(desc)){
+        for(Descriptor descriptor : crdDescs){
+            if(descriptor.equals(desc)){
                 result = true;
                 break;
             }
@@ -221,10 +211,10 @@ public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler 
         return result;
     }
 
-    private void merge(Set<ConnectorResourceDefinitionDescriptor> crdDescs, ConnectorResourceDefinition defn) {
+    private void merge(Set<Descriptor> crdDescs, ConnectorResourceDefinition defn) {
 
-        for (ConnectorResourceDefinitionDescriptor desc : crdDescs) {
-
+        for (Descriptor orgDesc : crdDescs) {
+            ConnectorResourceDefinitionDescriptor desc = (ConnectorResourceDefinitionDescriptor)orgDesc;
             if (desc.getName().equals(defn.name())) {
 
                 if (desc.getClassName() == null) {

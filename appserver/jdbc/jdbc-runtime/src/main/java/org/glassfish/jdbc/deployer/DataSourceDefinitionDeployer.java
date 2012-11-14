@@ -45,6 +45,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.deployment.*;
+import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.javaee.services.CommonResourceProxy;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.jdbc.config.JdbcResource;
@@ -168,8 +169,8 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         if (descriptor instanceof JndiNameEnvironment) {
             JndiNameEnvironment env = (JndiNameEnvironment) descriptor;
-            for (DataSourceDefinitionDescriptor dsd : env.getDataSourceDefinitionDescriptors()) {
-                registerDSDReferredByApplication(appName, dsd);
+            for (Descriptor dsd : env.getResourceDescriptors(JavaEEResourceType.DSD)) {
+                registerDSDReferredByApplication(appName,(DataSourceDefinitionDescriptor) dsd);
             }
         }
 
@@ -178,15 +179,15 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             EjbBundleDescriptor ejbDesc = (EjbBundleDescriptor) descriptor;
             Set<? extends EjbDescriptor> ejbDescriptors = ejbDesc.getEjbs();
             for (EjbDescriptor ejbDescriptor : ejbDescriptors) {
-                for (DataSourceDefinitionDescriptor dsd : ejbDescriptor.getDataSourceDefinitionDescriptors()) {
-                    registerDSDReferredByApplication(appName, dsd);
+                for (Descriptor dsd : ejbDescriptor.getResourceDescriptors(JavaEEResourceType.DSD)) {
+                    registerDSDReferredByApplication(appName,(DataSourceDefinitionDescriptor) dsd);
                 }
             }
             //ejb interceptors
             Set<EjbInterceptor> ejbInterceptors = ejbDesc.getInterceptors();
             for (EjbInterceptor ejbInterceptor : ejbInterceptors) {
-                for (DataSourceDefinitionDescriptor dsd : ejbInterceptor.getDataSourceDefinitionDescriptors()) {
-                    registerDSDReferredByApplication(appName, dsd);
+                for (Descriptor dsd : ejbInterceptor.getResourceDescriptors(JavaEEResourceType.DSD)) {
+                    registerDSDReferredByApplication(appName,(DataSourceDefinitionDescriptor) dsd);
                 }
             }
         }
@@ -195,8 +196,8 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             // managed bean descriptors
             Set<ManagedBeanDescriptor> managedBeanDescriptors = ((BundleDescriptor)descriptor).getManagedBeans();
             for (ManagedBeanDescriptor mbd : managedBeanDescriptors) {
-                for (DataSourceDefinitionDescriptor dsd : mbd.getDataSourceDefinitionDescriptors()) {
-                    registerDSDReferredByApplication(appName, dsd);
+                for (Descriptor dsd : mbd.getResourceDescriptors(JavaEEResourceType.DSD)) {
+                    registerDSDReferredByApplication(appName, (DataSourceDefinitionDescriptor)dsd);
                 }
             }
         }
@@ -229,8 +230,8 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
     private void unRegisterDataSourceDefinitions(Descriptor descriptor) {
         if (descriptor instanceof JndiNameEnvironment) {
             JndiNameEnvironment env = (JndiNameEnvironment) descriptor;
-            for (DataSourceDefinitionDescriptor dsd : env.getDataSourceDefinitionDescriptors()) {
-                unregisterDSDReferredByApplication(dsd);
+            for (Descriptor dsd : env.getResourceDescriptors(JavaEEResourceType.DSD)) {
+                unregisterDSDReferredByApplication((DataSourceDefinitionDescriptor)dsd);
             }
         }
 
@@ -239,15 +240,15 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             EjbBundleDescriptor ejbDesc = (EjbBundleDescriptor) descriptor;
             Set<? extends EjbDescriptor> ejbDescriptors = ejbDesc.getEjbs();
             for (EjbDescriptor ejbDescriptor : ejbDescriptors) {
-                for (DataSourceDefinitionDescriptor dsd : ejbDescriptor.getDataSourceDefinitionDescriptors()) {
-                    unregisterDSDReferredByApplication(dsd);
+                for (Descriptor dsd : ejbDescriptor.getResourceDescriptors(JavaEEResourceType.DSD)) {
+                    unregisterDSDReferredByApplication((DataSourceDefinitionDescriptor)dsd);
                 }
             }
             //ejb interceptors
             Set<EjbInterceptor> ejbInterceptors = ejbDesc.getInterceptors();
             for (EjbInterceptor ejbInterceptor : ejbInterceptors) {
-                for (DataSourceDefinitionDescriptor dsd : ejbInterceptor.getDataSourceDefinitionDescriptors()) {
-                    unregisterDSDReferredByApplication(dsd);
+                for (Descriptor dsd : ejbInterceptor.getResourceDescriptors(JavaEEResourceType.DSD)) {
+                    unregisterDSDReferredByApplication((DataSourceDefinitionDescriptor)dsd);
                 }
             }
         }
@@ -256,8 +257,8 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         if(descriptor instanceof BundleDescriptor){
             Set<ManagedBeanDescriptor> managedBeanDescriptors = ((BundleDescriptor)descriptor).getManagedBeans();
             for (ManagedBeanDescriptor mbd : managedBeanDescriptors) {
-                for (DataSourceDefinitionDescriptor dsd : mbd.getDataSourceDefinitionDescriptors()) {
-                    unregisterDSDReferredByApplication(dsd);
+                for (Descriptor dsd : mbd.getResourceDescriptors(JavaEEResourceType.DSD)) {
+                    unregisterDSDReferredByApplication((DataSourceDefinitionDescriptor)dsd);
                 }
             }
         }
