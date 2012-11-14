@@ -69,10 +69,7 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletOutputStream;
@@ -80,24 +77,23 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import com.sun.appserv.ProxyHandler;
-import java.util.ArrayList;
-import java.util.Map;
 import org.apache.catalina.Connector;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.HttpResponse;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.CharsetMapper;
 import org.apache.catalina.util.RequestUtil;
-import org.apache.catalina.util.StringManager;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.CookieSerializerUtils;
 import org.glassfish.grizzly.http.util.CookieUtils;
 import org.glassfish.grizzly.http.util.FastHttpDateFormat;
 import org.glassfish.grizzly.http.util.MimeHeaders;
 import org.glassfish.grizzly.http.util.UEncoder;
+import org.glassfish.logging.annotation.LogMessageInfo;
 // START S1AS 6170450
 
 // END S1AS 6170450
@@ -115,8 +111,51 @@ public class Response
 
     // ------------------------------------------------------ Static variables
 
-    private static final Logger log = Logger.getLogger(
-        Response.class.getName());
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Error during finishResponse",
+            level = "WARNING"
+    )
+    public static final String ERROR_DURING_FINISH_RESPONSE = "AS-WEB-CORE-00395";
+
+    @LogMessageInfo(
+            message = "getWriter() has already been called for this response",
+            level = "WARNING"
+    )
+    public static final String GET_WRITER_BEEN_CALLED_EXCEPTION = "AS-WEB-CORE-00396";
+
+    @LogMessageInfo(
+            message = "getOutputStream() has already been called for this response",
+            level = "WARNING"
+    )
+    public static final String GET_OUTPUT_STREAM_BEEN_CALLED_EXCEPTION = "AS-WEB-CORE-00397";
+
+    @LogMessageInfo(
+            message = "Cannot reset buffer after response has been committed",
+            level = "WARNING"
+    )
+    public static final String CANNOT_RESET_BUFFER_EXCEPTION = "AS-WEB-CORE-00398";
+
+    @LogMessageInfo(
+            message = "Cannot change buffer size after data has been written",
+            level = "WARNING"
+    )
+    public static final String CANNOT_CHANGE_BUFFER_SIZE_EXCEPTION = "AS-WEB-CORE-00399";
+
+    @LogMessageInfo(
+            message = "Cannot call sendError() after the response has been committed",
+            level = "WARNING"
+    )
+    public static final String CANNOT_CALL_SEND_ERROR_EXCEPTION = "AS-WEB-CORE-00400";
+
+    @LogMessageInfo(
+            message = "Cannot call sendRedirect() after the response has been committed",
+            level = "WARNING"
+    )
+    public static final String CANNOT_CALL_SEND_REDIRECT_EXCEPTION = "AS-WEB-CORE-00401";
+
 
     /**
      * Whether or not to enforce scope checking of this object.
@@ -131,12 +170,6 @@ public class Response
      */
     protected static final String info =
         "org.apache.catalina.connector.Response/1.0";
-
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // ----------------------------------------------------------- Constructors
@@ -597,7 +630,7 @@ public class Response
         } catch(IOException e) {
 	    ;
         } catch(Throwable t) {
-	    log("Error during finishResponse", t);
+	    log(rb.getString(ERROR_DURING_FINISH_RESPONSE), t);
         }
     }
 
@@ -712,7 +745,7 @@ public class Response
 
         if (usingWriter)
             throw new IllegalStateException
-                (sm.getString("coyoteResponse.getOutputStream.ise"));
+                (rb.getString(GET_WRITER_BEEN_CALLED_EXCEPTION));
 
         usingOutputStream = true;
         if (outputStream == null) {
@@ -742,8 +775,7 @@ public class Response
         throws IOException {
 
         if (usingOutputStream)
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.getWriter.ise"));
+            throw new IllegalStateException(rb.getString(GET_OUTPUT_STREAM_BEEN_CALLED_EXCEPTION));
 
         /*
          * If the response's character encoding has not been specified as
@@ -818,8 +850,7 @@ public class Response
     public void resetBuffer(boolean resetWriterStreamFlags) {
 
         if (isCommitted())
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.resetBuffer.ise"));
+            throw new IllegalStateException(rb.getString(CANNOT_RESET_BUFFER_EXCEPTION));
 
         outputBuffer.reset();
                 
@@ -843,8 +874,7 @@ public class Response
     public void setBufferSize(int size) {
 
         if (isCommitted() || !outputBuffer.isNew())
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.setBufferSize.ise"));
+            throw new IllegalStateException(rb.getString(CANNOT_CHANGE_BUFFER_SIZE_EXCEPTION));
 
         outputBuffer.setBufferSize(size);
 
@@ -1365,8 +1395,7 @@ public class Response
         throws IOException {
 
         if (isCommitted())
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.sendError.ise"));
+            throw new IllegalStateException(rb.getString(CANNOT_CALL_SEND_ERROR_EXCEPTION));
 
         // Ignore any call from an included servlet
         if (included) {
@@ -1417,8 +1446,7 @@ public class Response
             throws IOException {
 
         if (isCommitted())
-            throw new IllegalStateException
-                (sm.getString("coyoteResponse.sendRedirect.ise"));
+            throw new IllegalStateException(rb.getString(CANNOT_CALL_SEND_REDIRECT_EXCEPTION));
 
         // Ignore any call from an included servlet
         if (included)

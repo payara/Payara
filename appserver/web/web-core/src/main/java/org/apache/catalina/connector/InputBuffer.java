@@ -60,16 +60,18 @@ package org.apache.catalina.connector;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ReadListener;
 
-import org.apache.catalina.util.StringManager;
+import org.apache.catalina.core.StandardServer;
 import org.glassfish.grizzly.ReadHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.util.ByteChunk.ByteInputChannel;
 import org.glassfish.grizzly.http.util.CharChunk;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * The buffer used by Tomcat request. This is a derivative of the Tomcat 3.3
@@ -83,14 +85,20 @@ public class InputBuffer extends Reader
     implements ByteInputChannel, CharChunk.CharInputChannel,
                CharChunk.CharOutputChannel {
 
-    private static final Logger log = Logger.getLogger(InputBuffer.class.getName());
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
 
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(Constants.Package);
+    @LogMessageInfo(
+            message = "Stream closed",
+            level = "WARNING"
+    )
+    public static final String STREAM_CLOSED = "AS-WEB-CORE-00350";
 
+    @LogMessageInfo(
+            message = "Already set read listener",
+            level = "WARNING"
+    )
+    public static final String ALREADY_SET_READ_LISTENER = "AS-WEB-CORE-00351";
 
     // -------------------------------------------------------------- Constants
 
@@ -180,7 +188,7 @@ public class InputBuffer extends Reader
     public void recycle() {
 
         if (log.isLoggable(Level.FINEST))
-            log.finest("recycle()");
+            log.log(Level.FINEST, "recycle()");
 
         grizzlyInputBuffer = null;
         grizzlyRequest = null;
@@ -229,7 +237,7 @@ public class InputBuffer extends Reader
     public int readByte()
         throws IOException {
         if (grizzlyInputBuffer.isClosed())
-            throw new IOException(sm.getString("inputBuffer.streamClosed"));
+            throw new IOException(rb.getString(STREAM_CLOSED));
 
         return grizzlyInputBuffer.readByte();
     }
@@ -238,7 +246,7 @@ public class InputBuffer extends Reader
     public int read(final byte[] b, final int off, final int len)
         throws IOException {
         if (grizzlyInputBuffer.isClosed())
-            throw new IOException(sm.getString("inputBuffer.streamClosed"));
+            throw new IOException(rb.getString(STREAM_CLOSED));
 
         return grizzlyInputBuffer.read(b, off, len);
     }
@@ -276,8 +284,7 @@ public class InputBuffer extends Reader
 
     public void setReadListener(ReadListener readListener) {
         if (hasSetReadListener) {
-            throw new IllegalStateException(
-                sm.getString("inputBuffer.alreadySetReadListener"));
+            throw new IllegalStateException(rb.getString(ALREADY_SET_READ_LISTENER));
         }
 
         readHandler = new ReadHandlerImpl(readListener);
@@ -319,7 +326,7 @@ public class InputBuffer extends Reader
         throws IOException {
 
         if (grizzlyInputBuffer.isClosed())
-            throw new IOException(sm.getString("inputBuffer.streamClosed"));
+            throw new IOException(rb.getString(STREAM_CLOSED));
 
         return grizzlyInputBuffer.readChar();
     }
@@ -336,7 +343,7 @@ public class InputBuffer extends Reader
         throws IOException {
 
         if (grizzlyInputBuffer.isClosed())
-            throw new IOException(sm.getString("inputBuffer.streamClosed"));
+            throw new IOException(rb.getString(STREAM_CLOSED));
 
         return grizzlyInputBuffer.read(cbuf, off, len);
     }
@@ -346,7 +353,7 @@ public class InputBuffer extends Reader
         throws IOException {
 
         if (grizzlyInputBuffer.isClosed())
-            throw new IOException(sm.getString("inputBuffer.streamClosed"));
+            throw new IOException(rb.getString(STREAM_CLOSED));
 
         if (n < 0) {
             throw new IllegalArgumentException();
@@ -360,7 +367,7 @@ public class InputBuffer extends Reader
         throws IOException {
 
         if (grizzlyInputBuffer.isClosed())
-            throw new IOException(sm.getString("inputBuffer.streamClosed"));
+            throw new IOException(rb.getString(STREAM_CLOSED));
 
         return grizzlyInputBuffer.ready();
     }
@@ -381,7 +388,7 @@ public class InputBuffer extends Reader
         throws IOException {
 
         if (grizzlyInputBuffer.isClosed())
-            throw new IOException(sm.getString("inputBuffer.streamClosed"));
+            throw new IOException(rb.getString(STREAM_CLOSED));
         grizzlyInputBuffer.reset();
     }
 

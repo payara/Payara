@@ -41,7 +41,6 @@
 package org.apache.catalina.connector;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
@@ -54,8 +53,6 @@ import javax.servlet.http.WebConnection;
  * @version $Revision: 1.23 $ $Date: 2007/07/09 20:46:45 $
  */
 public class WebConnectionImpl implements WebConnection {
-
-    protected static final Logger log = Logger.getLogger(Connector.class.getName());
 
     private ServletInputStream inputStream;
 

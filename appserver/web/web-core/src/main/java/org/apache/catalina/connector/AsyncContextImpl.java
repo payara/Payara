@@ -42,18 +42,17 @@ package org.apache.catalina.connector;
 
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.Globals;
-import org.apache.catalina.core.ApplicationDispatcher;
-import org.apache.catalina.core.ApplicationHttpRequest;
-import org.apache.catalina.core.ApplicationHttpResponse;
-import org.apache.catalina.core.DispatchTargetsInfo;
-import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.core.*;
 import org.apache.catalina.util.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -70,8 +69,33 @@ class AsyncContextImpl implements AsyncContext {
      */
     static enum AsyncEventType { COMPLETE, TIMEOUT, ERROR, START_ASYNC }
 
-    private static final Logger log =
-        Logger.getLogger(AsyncContextImpl.class.getName());
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Unable to determine target of zero-arg dispatcher",
+            level = "WARNING"
+    )
+    public static final String UNABLE_DETERMINE_TARGET_OF_DISPATCHER = "AS-WEB-CORE-00320";
+
+    @LogMessageInfo(
+            message = "Unable to acquire RequestDispatcher for {0}",
+            level = "WARNING"
+    )
+    public static final String UNABLE_ACQUIRE_REQUEST_DISPATCHER = "AS-WEB-CORE-00321";
+
+    @LogMessageInfo(
+            message = "Unable to acquire RequestDispatcher for {0} in servlet context {1}",
+            level = "WARNING"
+    )
+    public static final String UNABLE_ACQUIRE_REQUEST_DISPATCHER_IN_SERVLET_CONTEXT = "AS-WEB-CORE-00322";
+
+    @LogMessageInfo(
+            message = "Error invoking AsyncListener",
+            level = "WARNING"
+    )
+    public static final String ERROR_INVOKE_ASYNCLISTENER = "AS-WEB-CORE-00323";
+
 
     // Default timeout for async operations
     private static final long DEFAULT_ASYNC_TIMEOUT_MILLIS = 30000L;
@@ -182,7 +206,7 @@ class AsyncContextImpl implements AsyncContext {
         } else {
             // Should never happen, because any unmapped paths will be 
             // mapped to the DefaultServlet
-            log.warning("Unable to determine target of zero-arg dispatcher");
+            log.log(Level.WARNING, UNABLE_DETERMINE_TARGET_OF_DISPATCHER);
         }
     } 
 
@@ -204,8 +228,8 @@ class AsyncContextImpl implements AsyncContext {
         } else {
             // Should never happen, because any unmapped paths will be 
             // mapped to the DefaultServlet
-            log.warning("Unable to acquire RequestDispatcher for " +
-                        path);
+            String msg = MessageFormat.format(rb.getString(UNABLE_ACQUIRE_REQUEST_DISPATCHER), path);
+            log.log(Level.WARNING, msg);
         }
     }
 
@@ -227,8 +251,9 @@ class AsyncContextImpl implements AsyncContext {
         } else {
             // Should never happen, because any unmapped paths will be 
             // mapped to the DefaultServlet
-            log.warning("Unable to acquire RequestDispatcher for " + path +
-                        "in servlet context " + context.getContextPath());
+            String msg = MessageFormat.format(rb.getString(UNABLE_ACQUIRE_REQUEST_DISPATCHER_IN_SERVLET_CONTEXT),
+                                              new Object[] {path, context.getContextPath()});
+            log.log(Level.WARNING, msg);
         }
     }
 
@@ -517,8 +542,7 @@ class AsyncContextImpl implements AsyncContext {
                     break;
                 }
             } catch (IOException ioe) {
-                log.log(Level.WARNING,
-                        STRING_MANAGER.getString("async.listenerInvocationError"),
+                log.log(Level.WARNING, ERROR_INVOKE_ASYNCLISTENER,
                         ioe);
             }
         }
