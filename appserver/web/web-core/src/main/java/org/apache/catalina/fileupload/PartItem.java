@@ -60,17 +60,14 @@
 package org.apache.catalina.fileupload;
 
 import org.apache.catalina.Globals;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.RequestUtil;
-import org.apache.catalina.util.StringManager;
-import org.apache.catalina.valves.Constants;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.http.Part;
 import java.io.*;
 import java.nio.charset.Charset;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -101,13 +98,14 @@ class PartItem
      */
     private static final long serialVersionUID = 2237570099615271025L;
 
-    protected Logger log = Logger.getLogger(PartItem.class.getName());
+    private static final Logger log = StandardServer.log;
+    private final ResourceBundle rb = log.getResourceBundle();
 
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-            StringManager.getManager(Constants.Package);
+    @LogMessageInfo(
+            message = "file data is empty.",
+            level = "INFO"
+    )
+    public static final String FILE_DATA_IS_EMPTY_INFO = "AS-WEB-CORE-00455";
 
     // ----------------------------------------------------------- Data members
 
@@ -360,7 +358,7 @@ class PartItem
             fis = new FileInputStream(dfos.getFile());
             if (fis.read(fileData) != (int)getSize())
                 if (log.isLoggable(Level.INFO))
-                    log.log(Level.INFO, sm.getString("partItem.get"));
+                    log.log(Level.INFO, FILE_DATA_IS_EMPTY_INFO);
         } catch (IOException e) {
             fileData = null;
         } finally {
@@ -797,7 +795,7 @@ class PartItem
 
     private void deleteFile(File file) {
         if (!file.delete() && log.isLoggable(Level.FINE)) {
-            log.fine("Cannot delete file: " + file);
+            log.log(Level.FINE, "Cannot delete file: " + file);
         }
     }
 }

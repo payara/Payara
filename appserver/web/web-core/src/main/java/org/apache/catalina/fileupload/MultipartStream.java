@@ -62,10 +62,13 @@ package org.apache.catalina.fileupload;
 import java.io.ByteArrayOutputStream;
 import java.io.*;
 
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.catalina.util.StringManager;
+import org.apache.catalina.core.StandardServer;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * <p> Low level API for processing file uploads.
@@ -129,6 +132,16 @@ import org.apache.catalina.util.StringManager;
  * @version $Id: MultipartStream.java 607869 2008-01-01 16:42:17Z jochen $
  */
 public class MultipartStream {
+
+    private static final Logger log = StandardServer.log;
+    private final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Failed to skip {0} bytes in the underlying buffer of MultipartStream on close().",
+            level = "WANING"
+    )
+    public static final String FAILED_SKIP_BYTES_MULTIPART_STREAM_CLOSE_EXCEPTION = "AS-WEB-CORE-00450";
+
     /**
      * Internal class, which is used to invoke the
      * {@link ProgressListener}.
@@ -244,10 +257,6 @@ public class MultipartStream {
         CR, LF, DASH, DASH};
 
 
-    private static final StringManager sm =
-        StringManager.getManager(MultipartStream.class.getPackage().getName());
-    private static final Logger log =
-        Logger.getLogger(MultipartStream.class.getName());
 
     // ----------------------------------------------------------- Data members
 
@@ -917,8 +926,10 @@ public class MultipartStream {
                         }
                     }
                     if (skip(av) != av && log.isLoggable(Level.WARNING)) {
-                        log.warning(
-                                sm.getString("multipartStream.close.skipFailure", av));
+                        String msg = MessageFormat.format(rb.getString(
+                                                          FAILED_SKIP_BYTES_MULTIPART_STREAM_CLOSE_EXCEPTION),
+                                                          av);
+                        log.log(Level.WARNING, msg);
                     }
                 }
             }
