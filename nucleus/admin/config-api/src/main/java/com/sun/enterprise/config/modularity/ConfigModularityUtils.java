@@ -325,6 +325,17 @@ public final class ConfigModularityUtils {
     }
 
     public ConfigBeanProxy getOwner(ConfigBeanProxy parent, String parentElement, String childElement) throws InvocationTargetException, IllegalAccessException {
+
+        if (childElement.contains("CURRENT_INSTANCE_CONFIG_NAME")) {
+            Domain d = serviceLocator.<Domain>getService(Domain.class);
+            LOG.info("Configs size before CM apply changes: "+d.getConfigs().getConfig().size());
+            return serviceLocator.<Config>getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        }
+        if (childElement.contains("CURRENT_INSTANCE_SERVER_NAME")) {
+            Domain d = serviceLocator.<Domain>getService(Domain.class);
+            LOG.info("Servers size before CM apply changes: "+d.getServers().getServer().size());
+            return serviceLocator.<Server>getService(Server.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        }
         if (childElement.endsWith("]")) {
             String componentName;
             String elementName;
@@ -340,7 +351,6 @@ public final class ConfigModularityUtils {
                     return getNamedConfigBeanFromCollection(col, componentName, childClass);
                 } catch (Exception e) {
                     LOG.log(Level.INFO, "The provided path is not valid: " + childElement + " resolved to component name: " + componentName, e);
-
                 }
             }
             return null;
