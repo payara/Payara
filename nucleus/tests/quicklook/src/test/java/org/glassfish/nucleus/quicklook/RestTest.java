@@ -37,9 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.nucleus.quicklook;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -48,6 +48,7 @@ import org.testng.annotations.Test;
 
 @Test
 public class RestTest {
+
     public void testManagementEndpoint() {
         try {
             HttpURLConnection connection = getConnection("http://localhost:4848/management/domain.xml");
@@ -84,9 +85,80 @@ public class RestTest {
         }
     }
 
+    public void testPostGetDelete() {
+        deleteNode(); // This should almost always fail, so we don't check the status. Just need to clean up from any prior runs
+        assertEquals(200, createNode());
+        assertEquals(200, getNode());
+        assertEquals(200, deleteNode());
+    }
+
     protected HttpURLConnection getConnection(String url) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setRequestProperty("X-GlassFish-3", "true");
+        connection.setRequestProperty("X-Requested-By", "dummy");
         return connection;
+    }
+
+    private int createNode() {
+        HttpURLConnection connection = null;
+        try {
+            String parameters = "name=myConfigNode";
+            connection = getConnection("http://localhost:4848/management/domain/nodes/create-node-config");
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            connection.setRequestProperty("Content-Length", "" + Integer.toString(parameters.getBytes().length));
+            connection.setUseCaches(false);
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
+            connection.setRequestProperty("Content-Language", "en-US");
+            DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+            wr.writeBytes(parameters);
+            wr.flush();
+            wr.close();
+            return connection.getResponseCode();
+        } catch (Exception ex) {
+            fail(ex.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+
+        return -1;
+    }
+
+    private int getNode() {
+        HttpURLConnection connection = null;
+        try {
+            connection = getConnection("http://localhost:4848/management/domain/nodes/node/myConfigNode");
+            return connection.getResponseCode();
+        } catch (Exception ex) {
+            fail(ex.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+
+        return -1;
+    }
+
+    private int deleteNode() {
+        HttpURLConnection connection = null;
+        try {
+            connection = getConnection("http://localhost:4848/management/domain/nodes/delete-node-config?name=myConfigNode");
+            connection.setRequestMethod("DELETE");
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            connection.setDoOutput(true);
+            return connection.getResponseCode();
+        } catch (Exception ex) {
+            fail(ex.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+
+        return -1;
     }
 }
