@@ -1032,7 +1032,7 @@ public abstract class AuthenticatorBase
                 Integer result = (Integer) method.invoke(context, paramValues);
                 setDebug(result.intValue());
             } catch (Exception e) {
-                log.log(Level.SEVERE, rb.getString(GETTING_DEBUG_VALUE_EXCEPTION), e);
+                log.log(Level.SEVERE, GETTING_DEBUG_VALUE_EXCEPTION, e);
             }
         }
         /** CR 6411114 (Lifecycle implementation moved to ValveBase)
