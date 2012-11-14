@@ -59,8 +59,7 @@ public class FilterRegistrationImpl implements FilterRegistration {
     protected FilterDef filterDef;
     protected StandardContext ctx;
 
-    private static final Logger log = StandardServer.log;
-    private static final ResourceBundle rb = log.getResourceBundle();
+    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
 
     @LogMessageInfo(
         message = "Unable to configure {0} for filter {1} of servlet context {2}, because this servlet context has already been initialized",

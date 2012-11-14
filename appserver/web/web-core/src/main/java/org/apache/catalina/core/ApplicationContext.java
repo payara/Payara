@@ -572,7 +572,7 @@ public class ApplicationContext implements ServletContext {
                     listener);
                 // FIXME - should we do anything besides log these?
                 log.log(Level.WARNING,
-                rb.getString(ATTRIBUTES_EVENT_LISTENER_EXCEPTION), t);
+                        ATTRIBUTES_EVENT_LISTENER_EXCEPTION, t);
             }
         }
 
@@ -673,8 +673,7 @@ public class ApplicationContext implements ServletContext {
                         listener);
                 }
                 // FIXME - should we do anything besides log these?
-                log.log(Level.WARNING, rb.getString(
-                        ATTRIBUTES_EVENT_LISTENER_EXCEPTION), t);
+                log.log(Level.WARNING, ATTRIBUTES_EVENT_LISTENER_EXCEPTION, t);
             }
         }
     }

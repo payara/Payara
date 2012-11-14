@@ -473,7 +473,7 @@ public class StandardPipeline
                     try {
                         ((Lifecycle) oldBasic).stop();
                     } catch (LifecycleException e) {
-                        log.log(Level.SEVERE, rb.getString(SET_BASIC_STOP_EXCEPTION), e);
+                        log.log(Level.SEVERE, SET_BASIC_STOP_EXCEPTION, e);
                     }
                 }
             }
@@ -503,7 +503,7 @@ public class StandardPipeline
             try {
                 ((Lifecycle) valve).start();
             } catch (LifecycleException e) {
-                log.log(Level.SEVERE, rb.getString(SET_BASIC_START_EXCEPTION), e);
+                log.log(Level.SEVERE, SET_BASIC_START_EXCEPTION, e);
                 return;
             }
         }
@@ -550,7 +550,7 @@ public class StandardPipeline
                 try {
                     ((Lifecycle) valve).start();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, rb.getString(ADD_VALVE_EXCEPTION), e);
+                    log.log(Level.SEVERE, ADD_VALVE_EXCEPTION, e);
                 }
             }
             /** CR 6411114 (MBean registration moved to ValveBase.start())
@@ -598,7 +598,7 @@ public class StandardPipeline
                     ((Lifecycle) valve).start();
                 } catch (LifecycleException e) {
                     log.log(Level.SEVERE,
-                            rb.getString(ADD_VALVE_EXCEPTION), e);
+                            ADD_VALVE_EXCEPTION, e);
                 }
             }
         }
@@ -765,7 +765,7 @@ public class StandardPipeline
                             req.getInputStream(),
                             ((org.apache.catalina.connector.Response)req.getResponse()).getOutputStream()));
                 } else {
-                    log.log(Level.SEVERE, rb.getString(PROTOCOL_HANDLER_REQUIRED_EXCEPTION));
+                    log.log(Level.SEVERE, PROTOCOL_HANDLER_REQUIRED_EXCEPTION);
                 }
             }
         }
@@ -836,14 +836,14 @@ public class StandardPipeline
                     try {
                         ((Lifecycle) valve).stop();
                     } catch (LifecycleException e) {
-                        log.log(Level.SEVERE, rb.getString(REMOVE_VALVE_EXCEPTION), e);
+                        log.log(Level.SEVERE, REMOVE_VALVE_EXCEPTION, e);
                     }
                 }
             } else if (valve instanceof Lifecycle) {
                 try {
                     ((Lifecycle) valve).stop();
                 } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, rb.getString(REMOVE_VALVE_EXCEPTION), e);
+                    log.log(Level.SEVERE, REMOVE_VALVE_EXCEPTION, e);
                 }
             }
 

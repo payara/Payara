@@ -68,8 +68,7 @@ public class RequestFacadeHelper {
 
     private Response response;
 
-    private static final Logger log = StandardServer.log;
-    private static final ResourceBundle rb = log.getResourceBundle();
+    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
 
     @LogMessageInfo(
         message = "Must not use request object outside the scope of a servlet's service or a filter's doFilter method",

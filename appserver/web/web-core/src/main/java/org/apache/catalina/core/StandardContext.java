@@ -2709,7 +2709,7 @@ public class StandardContext
         if ((location != null) && !location.startsWith("/")) {
             if (isServlet22()) {
                 if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, rb.getString(ERROR_PAGE_LOCATION_EXCEPTION));
+                    log.log(Level.FINE, ERROR_PAGE_LOCATION_EXCEPTION);
                 }
                 errorPage.setLocation("/" + location);
             } else {
@@ -4728,7 +4728,7 @@ public class StandardContext
         //          throw new IllegalStateException
         //              (sm.getString("standardContext.notReloadable"));
         if (log.isLoggable(Level.INFO)) {
-            log.log(Level.INFO, rb.getString(RELOADING_STARTED));
+            log.log(Level.INFO, RELOADING_STARTED);
         }
 
         // Stop accepting requests temporarily
@@ -5546,7 +5546,7 @@ public class StandardContext
                 }
             }
         } catch (Throwable t) {
-            log.log(Level.SEVERE, rb.getString(STOPPING_RESOURCES_EXCEPTION), t);
+            log.log(Level.SEVERE, STOPPING_RESOURCES_EXCEPTION, t);
             ok = false;
         }
 
@@ -5572,7 +5572,7 @@ public class StandardContext
                 try {
                     ((Lifecycle)alternateResources).stop();
                 } catch(Throwable t) {
-                    log.log(Level.SEVERE, rb.getString(STOPPING_RESOURCES_EXCEPTION), t);
+                    log.log(Level.SEVERE, STOPPING_RESOURCES_EXCEPTION, t);
                     ok = false;
                 }
             }
@@ -5582,7 +5582,7 @@ public class StandardContext
                 try {
                     ((BaseDirContext)alternateWebappResources).release();
                 } catch(Throwable t) {
-                    log.log(Level.SEVERE, rb.getString(STOPPING_RESOURCES_EXCEPTION), t);
+                    log.log(Level.SEVERE, STOPPING_RESOURCES_EXCEPTION, t);
                     ok = false;
                 }
             }
@@ -5878,7 +5878,7 @@ public class StandardContext
             try {
                 stop();
             } catch (Throwable tt) {
-                log.log(Level.SEVERE, rb.getString(CLEANUP_FAILED_EXCEPTION), tt);
+                log.log(Level.SEVERE, CLEANUP_FAILED_EXCEPTION, tt);
             }
             throw new LifecycleException(t);
         } finally {
@@ -6364,7 +6364,7 @@ public class StandardContext
             try {
                 ContextBindings.bindThread(this, this);
             } catch (Throwable e) {
-                log.log(Level.WARNING, rb.getString(BIND_THREAD_EXCEPTION), e);
+                log.log(Level.WARNING, BIND_THREAD_EXCEPTION, e);
             }
         }
 
@@ -7674,7 +7674,7 @@ public class StandardContext
             }
         } catch (Exception e) {
             // Should never happen
-            log.log(Level.WARNING, rb.getString(MAPPING_ERROR_EXCEPTION), e);
+            log.log(Level.WARNING, MAPPING_ERROR_EXCEPTION, e);
             return (null);
         }
 
@@ -7835,7 +7835,7 @@ public class StandardContext
                 try {
                     ois = new CustomObjectInputStream(is, classLoader);
                 } catch (IOException ioe) {
-                    log.log(Level.SEVERE, rb.getString(CANNOT_CREATE_OBJECT_INPUT_STREAM), ioe);
+                    log.log(Level.SEVERE, CANNOT_CREATE_OBJECT_INPUT_STREAM, ioe);
                 }
             }
         }

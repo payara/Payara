@@ -335,7 +335,7 @@ public class StandardEngine
                 oname=new ObjectName(domain + ":type=Engine");
                 controller=oname;
             } catch (Throwable t) {
-                log.log(Level.INFO, rb.getString(ERROR_REGISTERING_EXCEPTION), t);
+                log.log(Level.INFO, ERROR_REGISTERING_EXCEPTION, t);
             }
         }
         

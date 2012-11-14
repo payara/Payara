@@ -457,7 +457,7 @@ public class StandardHostDeployer implements Deployer {
         } catch (ClassNotFoundException e) {
             log.log(Level.INFO, "", e);
         } catch (Exception e) {
-            log.log(Level.INFO, rb.getString(ERROR_INSTALLING_EXCEPTION), e);
+            log.log(Level.INFO, ERROR_INSTALLING_EXCEPTION, e);
             throw new IOException(e.toString());
         }
 

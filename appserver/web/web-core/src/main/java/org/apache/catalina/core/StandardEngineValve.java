@@ -97,8 +97,7 @@ final class StandardEngineValve
     private static final String info =
         "org.apache.catalina.core.StandardEngineValve/1.0";
 
-    private static final Logger log = StandardServer.log;
-    private static final ResourceBundle rb = log.getResourceBundle();
+    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
 
     @LogMessageInfo(
         message = "No Host matches server name {0}",

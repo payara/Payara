@@ -63,8 +63,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
     private StandardContext ctx;
     private int maxAge = -1;
 
-    private static final Logger log = StandardServer.log;
-    private static final ResourceBundle rb = log.getResourceBundle();
+    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
 
     @LogMessageInfo(
         message = "Unable to configure {0} session tracking cookie property for servlet context {1}, " +

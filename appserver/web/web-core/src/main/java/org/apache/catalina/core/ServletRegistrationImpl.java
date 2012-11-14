@@ -55,8 +55,7 @@ public class ServletRegistrationImpl implements ServletRegistration {
     protected StandardWrapper wrapper;
     protected StandardContext ctx;
 
-    private static final Logger log = StandardServer.log;
-    private static final ResourceBundle rb = log.getResourceBundle();
+    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
 
     @LogMessageInfo(
         message = "Unable to configure {0} for servlet {1} of servlet context {2}, " +

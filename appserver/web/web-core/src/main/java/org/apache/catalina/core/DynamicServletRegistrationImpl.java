@@ -56,8 +56,7 @@ public class DynamicServletRegistrationImpl
     extends ServletRegistrationImpl
     implements ServletRegistration.Dynamic {
 
-    private static final Logger log = StandardServer.log;
-    private static final ResourceBundle rb = log.getResourceBundle();
+    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
 
     @LogMessageInfo(
         message = "Unable to configure {0} for servlet {1} of servlet context {2}, " +
