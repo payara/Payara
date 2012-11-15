@@ -55,10 +55,12 @@ import org.glassfish.api.admin.AdminCommandState;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.progress.JobInfo;
 import org.glassfish.api.admin.progress.JobInfos;
+import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.security.auth.Subject;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -77,7 +79,7 @@ import javax.xml.bind.Unmarshaller;
 
 @Service
 @Singleton
-public class JobManagerService implements JobManager {
+public class JobManagerService implements JobManager,PostConstruct {
 
 
     @Inject
@@ -104,6 +106,8 @@ public class JobManagerService implements JobManager {
 
     private final String JOBS_FILE = "jobs.xml";
 
+    private JAXBContext jaxbContext;
+
 
     /**
      * This will return a new id which is unused
@@ -116,6 +120,16 @@ public class JobManagerService implements JobManager {
         }
         String nextIdToUse = String.valueOf(nextId);
         return !idInUse(nextIdToUse) ? String.valueOf(nextId): getNewId();
+    }
+
+    public JobInfo getCompletedJobForId(String id) {
+        for (JobInfo jobInfo: getCompletedJobs().getJobInfoList()) {
+            if (jobInfo.jobId.equals(id)) {
+                return jobInfo;
+            }
+
+        }
+        return null;
     }
 
 
@@ -156,11 +170,11 @@ public class JobManagerService implements JobManager {
      * @return   a newly created job
      */
     @Override
-    public Job createJob(String scope, String name, boolean isManagedJob) {
+    public Job createJob(String scope, String name, Subject subject,boolean isManagedJob) {
         if (isManagedJob) {
-            return new AdminCommandInstanceImpl(getNewId(),name,scope,true);
+            return new AdminCommandInstanceImpl(getNewId(),name,scope,subject,true);
         } else {
-            return new AdminCommandInstanceImpl(name,scope,false);
+            return new AdminCommandInstanceImpl(name,scope,subject,false);
         }
     }
 
@@ -268,25 +282,43 @@ public class JobManagerService implements JobManager {
 
 
     /**
-        * This will load the jobs which have already completed
-        * and persisted in the jobs.xml
-        * @return JobsInfos which contains information about completed jobs
-        */
-       public JobInfos getCompletedJobs() {
-           try {
-               File file =
-                       new File(serverEnvironment.getConfigDirPath(),JOBS_FILE);
+     * This will load the jobs which have already completed
+     * and persisted in the jobs.xml
+     * @return JobsInfos which contains information about completed jobs
+     */
+    public synchronized JobInfos getCompletedJobs() {
+        try {
+            File file =
+                    new File(serverEnvironment.getConfigDirPath(),JOBS_FILE);
 
-               JAXBContext jaxbContext = JAXBContext.newInstance(JobInfos.class);
-               Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-               if (file != null && file.exists())  {
-                   JobInfos jobInfos = (JobInfos)unmarshaller.unmarshal(file);
-                   return jobInfos;
-               }
-           } catch (JAXBException e) {
-               throw new RuntimeException(adminStrings.getLocalString("error.reading.completed.jobs","Error reading completed jobs ",  e.getLocalizedMessage()));
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            if (file != null && file.exists())  {
+                JobInfos jobInfos = (JobInfos)unmarshaller.unmarshal(file);
+                return jobInfos;
+            }
+        } catch (JAXBException e) {
+            throw new RuntimeException(adminStrings.getLocalString("error.reading.completed.jobs","Error reading completed jobs ",  e.getLocalizedMessage()));
 
-           }
-           return null;
-       }
+        }
+        return null;
+    }
+
+    private static JAXBContext initContext() throws JAXBException {
+
+        return JAXBContext.newInstance(JobInfos.class);
+
+    }
+
+    @Override
+    public void postConstruct() {
+        try {
+            jaxbContext = initContext();
+        } catch (JAXBException e) {
+            throw new RuntimeException(adminStrings.getLocalString("error.initializing.job.manager.service","Error initializing Job Manager service {0} ",  e.getLocalizedMessage()));
+        }
+    }
+
+    public JAXBContext getJAXBContext() {
+        return jaxbContext;
+    }
 }

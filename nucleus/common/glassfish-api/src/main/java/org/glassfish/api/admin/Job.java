@@ -41,6 +41,8 @@ package org.glassfish.api.admin;
 
 import org.glassfish.api.ActionReport;
 
+import javax.security.auth.Subject;
+
 /** Represents running (or finished) command instance.
  *
  *
@@ -61,6 +63,8 @@ public interface Job extends AdminCommandState {
     public void complete(ActionReport report, Payload.Outbound outbound);
     
     public AdminCommandEventBroker getEventBroker();
+
+    public Subject getSubject();
 
     public String getName();
 

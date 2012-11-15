@@ -51,9 +51,12 @@ import org.glassfish.api.admin.Payload;
 import org.glassfish.api.admin.progress.JobInfo;
 import org.glassfish.api.admin.progress.JobPersistence;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.security.services.common.SubjectUtil;
 
+import javax.security.auth.Subject;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 /** Represents running (or finished) command instance.
  *
@@ -72,24 +75,27 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
 
     private final String commandName;
 
+    private final Subject subject;
+
     private final String scope;
 
     private boolean isManagedJob;
 
 
 
-    protected AdminCommandInstanceImpl(String id, String name,String commandScope,boolean managedJob) {
+    protected AdminCommandInstanceImpl(String id, String name,String commandScope,Subject sub,boolean managedJob) {
         super(id);
         this.broker = new AdminCommandEventBrokerImpl();
         this.executionDate = new Date().getTime();
         this.commandName = name;
         this.scope= commandScope;
         isManagedJob = managedJob;
+        this.subject = sub;
 
     }
 
-    protected AdminCommandInstanceImpl( String name,String scope,boolean managedJob) {
-        this(null,name,scope,managedJob);
+    protected AdminCommandInstanceImpl( String name,String scope,Subject sub,boolean managedJob) {
+        this(null,name,scope,sub,managedJob);
     }
     
     @Override
@@ -106,6 +112,11 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
     @Override
     public AdminCommandEventBroker getEventBroker() {
         return this.broker;
+    }
+
+    @Override
+    public Subject getSubject() {
+        return subject;
     }
 
     @Override
@@ -137,8 +148,8 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
         complete(report);
         if (isManagedJob) {
             JobPersistence jobPersistenceService = Globals.getDefaultHabitat().getService(JobPersistenceService.class);
-            //todo fix user
-            jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,state.name(),"admin",report.getMessage()));
+            List<String> userList =  SubjectUtil.getUsernamesFromSubject(subject);
+            jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,state.name(),userList.get(0),report.getMessage()));
         }
     }
 

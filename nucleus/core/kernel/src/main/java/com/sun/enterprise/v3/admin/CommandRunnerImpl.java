@@ -1747,7 +1747,7 @@ public class CommandRunnerImpl implements CommandRunner {
             if(command1 != null && !isManagedJob) {
                 isManagedJob = AnnotationUtil.presentTransitive(ManagedJob.class, command1.getClass());
             }
-            Job commandInstance = jobRegistry.createJob(scope(),name(), isManagedJob);
+            Job commandInstance = jobRegistry.createJob(scope(),name(), subject,isManagedJob);
 
             for (NameListerPair nameListerPair : nameListerPairs) {
                 commandInstance.getEventBroker().registerListener(nameListerPair.nameRegexp, nameListerPair.listener);

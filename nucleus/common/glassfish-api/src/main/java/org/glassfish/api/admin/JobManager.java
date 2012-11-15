@@ -41,8 +41,12 @@ package org.glassfish.api.admin;
 
 import java.util.Iterator;
 
+import org.glassfish.api.admin.progress.JobInfo;
 import org.glassfish.api.admin.progress.JobInfos;
 import org.jvnet.hk2.annotations.Contract;
+
+import javax.security.auth.Subject;
+import javax.xml.bind.JAXBContext;
 
 /**
  * This is the contract for the JobManagerService
@@ -59,7 +63,7 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface JobManager {
 
-    public Job createJob(String scope , String name, boolean isManagedJob);
+    public Job createJob(String scope , String name, Subject subject, boolean isManagedJob);
     
     public void registerJob(Job instance) throws IllegalArgumentException;
     
@@ -70,5 +74,9 @@ public interface JobManager {
     public void purgeJob(String id);
 
     public JobInfos getCompletedJobs();
+
+    public JAXBContext getJAXBContext();
+
+    public JobInfo getCompletedJobForId(String id);
     
 }

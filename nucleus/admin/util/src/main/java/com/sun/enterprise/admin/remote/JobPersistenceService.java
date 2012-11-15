@@ -79,21 +79,23 @@ public class JobPersistenceService implements JobPersistence,PostConstruct {
     @Inject
     private JobManager jobManager;
 
+    private JAXBContext jaxbContext;
+
     private final static Logger logger = LogDomains.getLogger(JobPersistenceService.class, LogDomains.ADMIN_LOGGER);
 
 
     private static final LocalStringManagerImpl adminStrings =
             new LocalStringManagerImpl(JobPersistenceService.class);
     @Override
-    public void persist(JobInfo jobInfo) {
+    public synchronized void persist(JobInfo jobInfo) {
         File file = new File(
               serverEnvironment.getConfigDirPath(),JOBS_FILE);
         try {
-
+            jaxbMarshaller = jaxbContext.createMarshaller();
+            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             jobInfos.getJobInfoList().add(jobInfo);
             jaxbMarshaller.marshal(jobInfos, file);
             jobManager.purgeJob(jobInfo.jobId);
-
 
         } catch (JAXBException e) {
             throw new RuntimeException(adminStrings.getLocalString("error.persisting.jobs","Error while persisting jobs",jobInfo.jobId,e.getLocalizedMessage()));
@@ -107,20 +109,11 @@ public class JobPersistenceService implements JobPersistence,PostConstruct {
      */
     @Override
     public void postConstruct() {
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(JobInfos.class);
-            jaxbMarshaller = jaxbContext.createMarshaller();
-            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            jobInfos = jobManager.getCompletedJobs();
-            if (jobInfos == null)
-                jobInfos = new JobInfos();
-        } catch (JAXBException e) {
-            throw new RuntimeException(adminStrings.getLocalString("error.initializing.persistence.service","Error while persisting jobs",e.getLocalizedMessage()));
 
-        }
-
-
+        jaxbContext = jobManager.getJAXBContext();
+        jobInfos = jobManager.getCompletedJobs();
+        if (jobInfos == null)
+            jobInfos = new JobInfos();
     }
 
 
