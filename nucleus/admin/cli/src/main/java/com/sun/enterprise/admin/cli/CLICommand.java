@@ -564,25 +564,17 @@ public abstract class CLICommand implements PostConstruct {
                 if (opt.getParam().primary())
                     continue;
                 // include every option that was specified on the command line
-                // and every option that has a default value
-                String value = getOption(opt.getName());
-                if (value == null) {
-                    value = opt.getParam().defaultValue();
-                    if (value != null && value.length() == 0)
-                        value = null;
-                }
-                if (value != null) {
-                    sb.append("--").append(lc(opt.getName()));
-                    if (opt.getType() == Boolean.class ||
-                        opt.getType() == boolean.class) {
-                        if (Boolean.parseBoolean(value))
-                            sb.append("=").append("true");
-                        else
-                            sb.append("=").append("false");
-                    } else {    // STRING or FILE
-                        sb.append(" ").append(quote(value));
+                // and every option that has a default value                               
+                if (opt.getParam().multiple()) {
+                    List<String> paramValues = getOptions(opt.getName());
+                    for (String v : paramValues) {
+                        appendEchoOption(sb, opt, v);
+                    }             
+                } else {    
+                    String value = getOption(opt.getName());
+                    if (value != null) {
+                        appendEchoOption(sb, opt, value);
                     }
-                    sb.append(' ');
                 }
             }
             for (String o : operands)
@@ -595,6 +587,17 @@ public abstract class CLICommand implements PostConstruct {
 
         sb.setLength(sb.length() - 1);  // strip trailing space
         return sb.toString();
+    }
+    
+    private void appendEchoOption(StringBuilder sb, ParamModel opt, String value) {
+        sb.append("--").append(lc(opt.getName()));
+        if (opt.getType() == Boolean.class ||
+            opt.getType() == boolean.class) {
+            sb.append("=").append(Boolean.toString(Boolean.parseBoolean(value))); 
+        } else {    // STRING or FILE
+            sb.append(" ").append(quote(value));
+        }
+        sb.append(' ');
     }
 
     /**
@@ -1195,6 +1198,33 @@ public abstract class CLICommand implements PostConstruct {
         return val;
     }
 
+    /**
+     * Get option values, that might come from the command line
+     * or from the environment.  Return the default value for the
+     * option if not otherwise specified. This method works with options
+     * for with multiple() is true.
+     */
+    protected List<String> getOptions(String name) {
+        List<String> val = options.get(name);
+        if (val.isEmpty()) {
+            String v = env.getStringOption(name);
+            if (v != null) {
+                val.add(v);
+            }
+        }
+        if (val.isEmpty()) {
+            // no value, find the default
+            ParamModel opt = commandModel.getModelFor(name);
+            // if no value was specified and there's a default value, return it
+            if (opt != null) {
+                String def = opt.getParam().defaultValue();
+                if (ok(def)) {
+                    val.add(def);
+                }
+            }
+        }
+        return val;
+    }
     /**
      * Get a boolean option value, that might come from the command line
      * or from the environment.

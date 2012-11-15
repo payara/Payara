@@ -115,8 +115,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
 	String paramName = CommandModel.getParamName(param, target);
 	if (param.primary()) {
 	    // this is the primary parameter for the command
-	    // XXX - for now, only handle multiple values for primary
-	    List<String> value = parameters.get("DEFAULT");
+            List<String> value = parameters.get("DEFAULT");
 	    if (value != null && value.size() > 0) {
                 /*
                  * If the operands are uploaded files, replace the
@@ -142,6 +141,26 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
                 return paramValue;
 	    }
 	}
+        if (param.multiple()) {
+            List<String> value = parameters.get(paramName);
+            if (value != null && value.size() > 0) {
+                final List<String> filePaths = getUploadedFileParamValues(
+                        paramName,
+                        type, optionNameToUploadedFileMap);
+                if (filePaths != null) {
+                    value = filePaths;
+                    // replace the file name operands with the uploaded files
+                    parameters.set(paramName, value); 
+                } else {
+                    for (String s : value) {
+                        checkAgainstAcceptableValues(target, s);
+                    }
+                }
+            }
+            parameters.set(paramName, value);
+            V paramValue = (V) convertListToObject(target, type, value);
+            return paramValue;
+        }
 	String paramValueStr = getParamValueString(parameters, param, target, context);
 
         /*

@@ -441,19 +441,23 @@ public class RemoteAdminCommand {
                     continue;
                 }
                 String paramName = opt.getName();
-                // XXX - no multi-value support
-                String paramValue =
-		    options.getOne(paramName.toLowerCase(Locale.ENGLISH));
-                if (paramValue == null) {
-                    // is it an alias ?
-                    if (opt.isParamId(paramName)) {
-                        paramValue = options.getOne(
-			    opt.getParam().alias().toLowerCase(Locale.ENGLISH));
+                
+                List<String> paramValues = new ArrayList<String>(options.get(paramName.toLowerCase(Locale.ENGLISH)));
+                if (!opt.getParam().alias().isEmpty()){
+                    paramValues.addAll(options.get(opt.getParam().alias().toLowerCase(Locale.ENGLISH)));
+                }
+                if (!opt.getParam().multiple() && paramValues.size() > 1) {
+                    throw new CommandException(strings.get("tooManyOptions", 
+                            paramName));
+                }
+                if (paramValues.isEmpty()) {
+                    // perhaps it's set in the environment?
+                    String envValue = getFromEnvironment(paramName);
+                    if (envValue != null) {
+                        paramValues.add(envValue); 
                     }
                 }
-                if (paramValue == null) // perhaps it's set in the environment?
-                    paramValue = getFromEnvironment(paramName);
-                if (paramValue == null) {
+                if (paramValues.isEmpty()) {
                     /*
                      * Option still not set.  Note that we ignore the default
                      * value and don't send it explicitly on the assumption
@@ -463,18 +467,22 @@ public class RemoteAdminCommand {
                      * which should never happen here because validate()
                      * should check it first.
                      */
-                    if (!opt.getParam().optional())
+                    if (!opt.getParam().optional()) {
                         throw new CommandException(strings.get("missingOption",
                                 paramName));
+                    }
                     // optional param not set, skip it
                     continue;
                 }
-                if (opt.getType() == File.class) {
-                    addFileOption(uriString, paramName, paramValue);
-                } else if (opt.getParam().password()) {
-                    addPasswordOption(uriString, paramName, paramValue);
-                } else {
-                    addStringOption(uriString, paramName, paramValue);
+                for (String paramValue : paramValues) {
+                    if (opt.getType() == File.class ||
+                            opt.getType() == File[].class) {
+                        addFileOption(uriString, paramName, paramValue);
+                    } else if (opt.getParam().password()) {
+                        addPasswordOption(uriString, paramName, paramValue);
+                    } else {
+                        addStringOption(uriString, paramName, paramValue);
+                    }
                 }
             }
 
