@@ -271,14 +271,10 @@ public class MQAddressList {
 
       private JmsService getJmsServiceForMasterBroker(String clusterName)  {
          Domain domain = Globals.get(Domain.class);
-         Clusters clusters = domain.getClusters();
-         List clusterList = clusters.getCluster();
          Cluster cluster = domain.getClusterNamed(clusterName);
 
-        //final String myCluster      = ClusterHelper.getClusterByName(domainCC, clusterName).getName();
-	    final Server[] buddies      = this.getServersInCluster(cluster);//ServerHelper.getServersInCluster(domainCC, myCluster);
+        final Server[] buddies = getServersInCluster(cluster);
         final Config cfg =  getConfigForServer(buddies[0]);
-        //final Config cfg             =  ServerHelper.getConfigForServer(domainCC, buddies[0].getName());
         return cfg.getExtensionByType(JmsService.class);
 	}
 
@@ -572,8 +568,6 @@ public class MQAddressList {
         // For LOCAL/EMBEDDED Clustered instances and
         // standalone server instances, use
         // their nodeagent's hostname as the jms host name.
-        ServerContext serverContext = Globals.get(ServerContext.class);
-        Server server = serverContext.getConfigBean();
         if (overridedHostName != null && !overridedHostName.trim().equals("")) {
            hostName = overridedHostName;
         }
@@ -626,6 +620,9 @@ public class MQAddressList {
 
 
     private JmsHost getResolvedJmsHost(Server as) throws Exception{
+        if (as == null) {
+            return null;
+        }
         logFine("getResolvedJmsHost " + as);
 //        final JmsService jmsService     = Globals.get(JmsService.class);
   //      JmsHost jmsHost                 = null;
