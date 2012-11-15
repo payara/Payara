@@ -47,6 +47,7 @@ import javax.inject.Named;
 import org.glassfish.admin.restconnector.RestConfig;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
+import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
@@ -81,6 +82,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 })
 public class SetRestConfig implements AdminCommand {
 
+    @AccessRequired.To("update")
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;

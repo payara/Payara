@@ -69,6 +69,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetRestConfig implements AdminCommand {
 
+    @AccessRequired.To("read")
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
