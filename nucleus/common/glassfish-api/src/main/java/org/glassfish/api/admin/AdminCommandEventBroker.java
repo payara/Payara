@@ -95,12 +95,20 @@ public interface AdminCommandEventBroker<T> {
         public static final String EVENT_NAME_LISTENER_REG = LOCAL_EVENT_PREFIX + "listener/register";
         public static final String EVENT_NAME_LISTENER_UNREG = LOCAL_EVENT_PREFIX + "listener/unregister";
         
-        public final AdminCommandEventBroker broker;
-        public final AdminCommandListener listener;
+        private final AdminCommandEventBroker broker;
+        private final AdminCommandListener listener;
 
         public BrokerListenerRegEvent(AdminCommandEventBroker broker, AdminCommandListener listener) {
             this.broker = broker;
             this.listener = listener;
+        }
+
+        public AdminCommandEventBroker getBroker() {
+            return broker;
+        }
+
+        public AdminCommandListener getListener() {
+            return listener;
         }
         
     }

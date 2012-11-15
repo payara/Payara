@@ -39,9 +39,13 @@
  */
 package com.sun.enterprise.admin.event;
 
+import com.sun.enterprise.admin.util.AdminLoggerInfo;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.glassfish.api.admin.AdminCommandEventBroker;
 
@@ -82,23 +86,35 @@ public class AdminCommandEventBrokerImpl<T> implements AdminCommandEventBroker<T
     }
     
     private final List<ListenerGroup> listenerGroups = new ArrayList<ListenerGroup>();
+    private static final Logger logger = AdminLoggerInfo.getLogger();
 
     public AdminCommandEventBrokerImpl() {
     }
     
     @Override
-    public synchronized void fireEvent(String name, Object event) {
+    public void fireEvent(String name, Object event) {
         if (name == null) {
             throw new IllegalArgumentException("Argument name must be defined");
         }
         if (event == null) {
             return;
         }
-        for (ListenerGroup listenerGroup : listenerGroups) {
-            if (listenerGroup.matches(name)) {
-                for (AdminCommandListener listener : listenerGroup.listeners) {
-                    listener.onAdminCommandEvent(name, event);
+        IdentityHashMap<AdminCommandListener, AdminCommandListener> deduplicated 
+                = new IdentityHashMap<AdminCommandListener, AdminCommandListener>();
+        synchronized (this) {
+            for (ListenerGroup listenerGroup : listenerGroups) {
+                if (listenerGroup.matches(name)) {
+                    for (AdminCommandListener listener : listenerGroup.listeners) {
+                        deduplicated.put(listener, listener);
+                    }
                 }
+            }
+        }//Call all listeners
+        for (AdminCommandListener listener : deduplicated.keySet()) {
+            try {
+                listener.onAdminCommandEvent(name, event);
+            } catch (Exception ex) {
+                logger.log(Level.WARNING, AdminLoggerInfo.mExceptionFromEventListener, ex);
             }
         }
     }

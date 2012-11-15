@@ -402,7 +402,7 @@ public class CommandResource {
                         }
                         if (BrokerListenerRegEvent.EVENT_NAME_LISTENER_REG.equals(name)) {
                             BrokerListenerRegEvent blre = (BrokerListenerRegEvent) event;
-                            broker = blre.broker;
+                            broker = blre.getBroker();
                             return;
                         }
                         if (name.startsWith(AdminCommandEventBroker.LOCAL_EVENT_PREFIX)) {

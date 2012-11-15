@@ -250,6 +250,7 @@ public class CLIUtil {
         /*
          * Now get the list of remote commands.
          */
+        po.removeDetach();
         RemoteCLICommand cmd =
             new RemoteCLICommand("list-commands", po, env);
         ActionReport report = cmd.executeAndReturnActionReport("list-commands");

@@ -279,7 +279,7 @@ public class RemoteCLICommand extends CLICommand {
         
         @Override
         protected boolean useSse() throws CommandException {
-            return programOpts.isDetachedCommand() || super.useSse();
+            return programOpts.isDetachedCommand() || listeners.size() > 0 || super.useSse();
         }
         
         @Override

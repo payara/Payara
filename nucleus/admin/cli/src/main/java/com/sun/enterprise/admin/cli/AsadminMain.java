@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.admin.cli;
 
+import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -196,7 +197,7 @@ public class AsadminMain {
         //long startTime = System.currentTimeMillis();
         AsadminMain asadminMain = new AsadminMain();
         int code = asadminMain.doMain(args);
-        //asadminMain.logger.log(Level.INFO, "Overal duration: {0} ms", (System.currentTimeMillis() - startTime));
+        //System.out.println("Overal duration: " + (System.currentTimeMillis() - startTime)+" ms");
         System.exit(code);
     }
 
@@ -253,6 +254,12 @@ public class AsadminMain {
          * our extension directory.
          */
         Thread.currentThread().setContextClassLoader(ecl);
+        
+        /*
+         * Preinit of remote command help us with performance. Made parallel 
+         * initialisation of underliing frameworks
+         */
+        RemoteRestAdminCommand.preinit();
 
         /*
          * Create a habitat that can load from the extension directory.

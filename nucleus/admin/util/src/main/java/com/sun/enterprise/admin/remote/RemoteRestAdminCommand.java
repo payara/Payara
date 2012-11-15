@@ -172,25 +172,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     private static final int defaultReadTimeout; // read timeout for URL conns
 
     //JAX-RS Client related attributes
-    private final Client client;
-    {
-        Metrix.event("Initialize jersey client - start");
-        client = JerseyClientFactory.newClient(new ClientConfig().binders(new MultiPartClientBinder()));
-        // client = ClientFactory.newClient(); - Move to this standard initialisation when people from Jersey will produce Multipart as a Feature not just module.
-        client.configuration()
-                .register(new CsrfProtectionFilter("CLI"))
-                .register(new ActionReportJsonReader())
-                //.register(new ActionReportJson2Reader())
-                .register(new ParameterMapFormWriter())
-                .register(new PayloadPartProvider())
-                .register(new AdminCommandStateJsonReader())
-                .register(new ProgressStatusDTOJsonReader())
-                .register(new ProgressStatusEventJsonReader())
-                .register(GfSseEventReceiverReader.class); //Must be managed (it uses injection)
-//                .register(MultiPartReaderClientSide.class)
-//                .register(MultiPartWriter.class);
-        Metrix.event("Initialize jersey client - done");
-    }
+    private Client client;
 
     private String              responseFormatType = "hk2-agent";
     private OutputStream        userOut;
@@ -479,7 +461,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     protected boolean useSse() throws CommandException {
         return getCommandModel().isManagedJob();
     }
-
+    
     public String executeCommand(ParameterMap opts) throws CommandException {
         Metrix.event("executeCommand() - start");
         //Just to be sure. Cover get help
@@ -833,6 +815,27 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     strings.get("internal", e.getMessage()), e);
         }
     }
+    
+    private static Client createClient() {
+        Client c = JerseyClientFactory.newClient(new ClientConfig().binders(new MultiPartClientBinder()));
+        c.configuration()
+            .register(new CsrfProtectionFilter("CLI"))
+            .register(new ActionReportJsonReader())
+            .register(new ParameterMapFormWriter())
+            .register(new PayloadPartProvider())
+            .register(new AdminCommandStateJsonReader())
+            .register(new ProgressStatusDTOJsonReader())
+            .register(new ProgressStatusEventJsonReader())
+            .register(GfSseEventReceiverReader.class); //Must be managed (it uses injection)
+        return c;
+    }
+    
+    private WebTarget createTarget(URI uri) {
+        if (client == null) {
+            client = createClient();
+        }
+        return client.target(uri);
+    }
 
     /**
      * This method will try to execute the command repeatedly, for example,
@@ -880,7 +883,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
 
         do {
             Metrix.event("doRestCommand() - about to create target");
-            WebTarget target = client.target(uri);
+            WebTarget target = createTarget(uri);
             Metrix.event("doRestCommand() - about to configure security");
             target.configuration().setProperty(ClientProperties.SSL_CONFIG, new SslConfig(new BasicHostnameVerifier(host), getSslContext()));
             /*
@@ -1133,10 +1136,13 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         outboundPayload = null; // no longer needed
         return null;
     }
-
+    
     protected SSLContext getSslContext() {
+        return createStandardSslContext(interactive);
+    }
+
+    protected static SSLContext createStandardSslContext(boolean interactive) {
         try {
-            Metrix.event("getSslContext() - start");
             String protocol = "TLSv1";
             SSLContext cntxt = SSLContext.getInstance(protocol);
             /*
@@ -1147,7 +1153,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             AsadminTrustManager atm = new AsadminTrustManager();
             atm.setInteractive(interactive);
             cntxt.init(null, new TrustManager[] {atm}, null);
-            Metrix.event("getSslContext() - done");
             return cntxt;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1632,5 +1637,27 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
 
     private static boolean ok(String s) {
         return s != null && s.length() > 0;
+    }
+    
+    /** CLI can use this method to inicialise internal structures of used services
+     * like jersey and ssl in parallel with other logic
+     */
+    public static void preinit() {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Client c = createClient();
+                    c.target("http://localhost:4848");
+                } catch (Throwable th) {
+                }
+                try {
+                    createStandardSslContext(System.console() != null);
+                } catch (Throwable th) {
+                }
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
     }
 }

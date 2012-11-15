@@ -170,6 +170,13 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>nucleus-jersey</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
 
         <!-- additional dependencies required to create default domain -->
         <dependency>

@@ -58,6 +58,7 @@ import javax.inject.Inject;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
+import org.glassfish.api.ActionReport.MessagePart;
 
 
 /**
@@ -118,13 +119,15 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
             Job oneJob = jobManagerService.get(jobID);
             JobInfo info = null;
             if (oneJob != null) {
-                info = new JobInfo(oneJob.getId(),oneJob.getName(),oneJob.getCommandExecutionDate(),oneJob.getState().name(),"user",oneJob.getActionReport().getMessage());
+                String message = oneJob.getActionReport() == null ? "" : oneJob.getActionReport().getMessage();
+                info = new JobInfo(oneJob.getId(),oneJob.getName(),oneJob.getCommandExecutionDate(),oneJob.getState().name(),"user",message);
             }  else {
-                if (jobManagerService.getCompletedJobs() != null)
-                info = getCompletedJobForId(jobID);
+                if (jobManagerService.getCompletedJobs() != null) {
+                    info = getCompletedJobForId(jobID);
+                }
             }
 
-          if (info!= null) {
+          if (info != null && !skipJob(info.jobName)) {
               jobInfoList.add(info);
           }
 
@@ -132,14 +135,20 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
 
             for (Iterator<Job> iterator = jobManagerService.getJobs(); iterator.hasNext(); ) {
                 Job job = iterator.next();
-                //Todo fix user
-                String message = job.getActionReport() == null ? "" : job.getActionReport().getMessage();
-                jobInfoList.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),job.getState().name(),"user",message));
+                if (!skipJob(job.getName())) {
+                    //Todo fix user
+                    String message = job.getActionReport() == null ? "" : job.getActionReport().getMessage();
+                    jobInfoList.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),job.getState().name(),"user",message));
+                }
             }
 
             JobInfos completedJobs = jobManagerService.getCompletedJobs();
             if (completedJobs != null ) {
-                jobInfoList.addAll(completedJobs.getJobInfoList());
+                for (JobInfo info : completedJobs.getJobInfoList()) {
+                    if (!skipJob(info.jobName)) {
+                        jobInfoList.add(info);
+                    }
+                }
             }
         }
         for (JobInfo job :jobInfoList) {
@@ -189,12 +198,12 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
 
             sb.append(String.format(formattedLine, info.jobName, info.jobId,  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(info.commandExecutionDate), info.exitCode));
         }
-
         report.setMessage(sb.toString());
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-
-
-
+    }
+    
+    private static boolean skipJob(String name) {
+        return name == null || "attach".equals(name) || name.startsWith("_");
     }
 
 

@@ -470,7 +470,12 @@ public class ProgramOptions {
             return (ok(value)) ? Boolean.parseBoolean(value) : true;
         }
         return false;
-
+    }
+    
+    public void removeDetach() {
+        if (options.containsKey(DETACH)) {
+            options.remove(DETACH);
+        }
     }
 
     /**

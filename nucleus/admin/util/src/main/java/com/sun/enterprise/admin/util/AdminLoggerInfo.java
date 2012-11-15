@@ -198,5 +198,13 @@ public class AdminLoggerInfo {
             publish = true,
             level = "WARNING")
     public final static String mCannotWriteCache = LOGMSG_PREFIX + "-0017";
+    
+    @LogMessageInfo(
+            message = "Unexpected exception from command event listener.",
+            cause = "An error occured while calling registered listener.",
+            action = "Check the server logs and contact Oracle support",
+            publish = true,
+            level = "WARNING")
+    public final static String mExceptionFromEventListener = LOGMSG_PREFIX + "-0018";
 
 }

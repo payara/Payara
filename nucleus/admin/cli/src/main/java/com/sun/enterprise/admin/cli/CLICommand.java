@@ -211,20 +211,23 @@ public abstract class CLICommand implements PostConstruct {
         checkUnsupportedLegacyCommand(name);
 
         // next, try to load our own implementation of the command
+        ProgramOptions po = habitat.getService(ProgramOptions.class);
         CLICommand cmd = habitat.getService(CLICommand.class, name);
-        if (cmd != null)
+        if (cmd != null) {
+            po.removeDetach();
             return cmd;
+        }
 
         // nope, must be a remote command
         logger.finer("Assuming it's a remote command: " + name);
         Environment environment = habitat.getService(Environment.class);
         if (useRest()) {
             return new RemoteCLICommand(name,
-                habitat.<ProgramOptions>getService(ProgramOptions.class),
+                po,
                 environment);
         } else {
             return new RemoteCommand(name,
-                habitat.<ProgramOptions>getService(ProgramOptions.class),
+                po,
                 environment);
         }
     }
