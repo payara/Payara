@@ -143,6 +143,9 @@ public class GenericAnnotationDetector extends AnnotationScanner {
                     try {
                         ClassReader cr = new ClassReader(is);
                         cr.accept(this, crFlags);
+                        if (found) {
+                            return;
+                        } 
                     } finally {
                         is.close();
                     }
@@ -163,6 +166,9 @@ public class GenericAnnotationDetector extends AnnotationScanner {
                                     try {
                                         ClassReader cr = new ClassReader(is);
                                         cr.accept(this, crFlags);
+                                        if (found) {
+                                            return;
+                                        } 
                                     } finally {
                                         is.close();
                                     }
