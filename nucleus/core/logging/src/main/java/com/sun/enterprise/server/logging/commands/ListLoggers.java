@@ -43,13 +43,13 @@ package com.sun.enterprise.server.logging.commands;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Locale;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.inject.Inject;
 
@@ -110,12 +110,13 @@ public class ListLoggers implements AdminCommand {
 
         try {
             Set<String> loggers = loggerInfoMetadataService.getLoggerNames();
+            Set<String> sortedLoggers = new TreeSet<String>(loggers);
             // The following Map & List are used to hold the REST data
-            Map<String, String> loggerSubsystems = new HashMap<String, String>();
-            Map<String, String> loggerDescriptions = new HashMap<String, String>();
-            List<String> loggerList = new ArrayList<String>(loggers);
-            Collections.sort(loggerList);
-            for (String logger : loggers) {
+            Map<String, String> loggerSubsystems = new TreeMap<String, String>();
+            Map<String, String> loggerDescriptions = new TreeMap<String, String>();
+            List<String> loggerList = new ArrayList<String>();
+            
+            for (String logger : sortedLoggers) {
                 String subsystem = loggerInfoMetadataService.getSubsystem(logger);
                 String desc = loggerInfoMetadataService.getDescription(logger, locale);
                 boolean published = loggerInfoMetadataService.isPublished(logger);
