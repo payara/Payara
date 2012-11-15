@@ -58,6 +58,7 @@ import org.apache.felix.shell.ShellService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
+import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandException;
@@ -94,6 +95,7 @@ import org.osgi.framework.ServiceReference;
         path="osgi",
         description="Remote OSGi Shell Access")
 })
+@AccessRequired(resource="domain/osgi/shell", action="execute")
 public class OSGiShellCommand implements AdminCommand, PostConstruct {
 
     private static final Logger log = Logger.getLogger(OSGiShellCommand.class.getPackage().getName());
