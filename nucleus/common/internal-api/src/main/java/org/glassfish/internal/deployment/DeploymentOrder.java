@@ -43,6 +43,8 @@ package org.glassfish.internal.deployment;
 import java.util.Iterator;
 import java.util.Comparator;
 import java.util.TreeSet;
+import java.util.List;
+import java.util.ArrayList;
 
 import com.sun.enterprise.config.serverbeans.Application;
 
@@ -106,11 +108,17 @@ public class DeploymentOrder {
   private static final TreeSet application_deployments = 
     new TreeSet(APPLICATION_COMPARATOR);
 
-  public static void addApplicationDeployment(Application app) {
+  public static void addApplicationDeployment(ApplicationOrderInfo app) {
     application_deployments.add(app);
   }
 
   public static Iterator getApplicationDeployments() {
-    return application_deployments.iterator();
+    List<Application> appList = new ArrayList<Application>();
+    Iterator<ApplicationOrderInfo> it = application_deployments.iterator();
+    while (it.hasNext()) {
+      ApplicationOrderInfo appOrderInfo = it.next();
+      appList.add(appOrderInfo.getApplication());
+    }
+    return appList.iterator();
   }
 }

@@ -88,11 +88,11 @@ public class DeploymentType implements Comparator {
   private final Class cls;
 
   public final static DeploymentType INTERNAL_APP = 
-    new DeploymentType(INTERNAL_APP_NAME, Application.class) {
+    new DeploymentType(INTERNAL_APP_NAME, ApplicationOrderInfo.class) {
       public boolean isInstance(Object obj) {
         if (super.isInstance(obj)) {
-          Application app = (Application)obj;
-          if (app.getObjectType().startsWith(SYSTEM_PREFIX)) {
+          ApplicationOrderInfo appOrderInfo = (ApplicationOrderInfo)obj;
+          if (appOrderInfo.getApplication().getObjectType().startsWith(SYSTEM_PREFIX)) {
             return true;
           }
         }
@@ -101,11 +101,11 @@ public class DeploymentType implements Comparator {
     };
 
   public final static DeploymentType DEFAULT_APP = 
-    new DeploymentType(DEFAULT_APP_NAME, Application.class) {
+    new DeploymentType(DEFAULT_APP_NAME, ApplicationOrderInfo.class) {
       public boolean isInstance(Object obj) {
         if (super.isInstance(obj)) {
-          Application app = (Application)obj;
-          if (app.getObjectType().equals(USER)) {
+          ApplicationOrderInfo appOrderInfo = (ApplicationOrderInfo)obj;
+          if (appOrderInfo.getApplication().getObjectType().equals(USER)) {
             return true;
           }
         }
@@ -114,12 +114,12 @@ public class DeploymentType implements Comparator {
     };
 
   public final static DeploymentType CONNECTOR = 
-    new DeploymentType(CONNECTOR_NAME, Application.class) {
+    new DeploymentType(CONNECTOR_NAME, ApplicationOrderInfo.class) {
       public boolean isInstance(Object obj) {
         if (super.isInstance(obj)) {
-          Application app = (Application)obj;
-          if ((app.containsSnifferType(ServerTags.CONNECTOR)) &&
-              (app.isStandaloneModule())) {
+          ApplicationOrderInfo appOrderInfo = (ApplicationOrderInfo)obj;
+          if ((appOrderInfo.getApplication().containsSnifferType(ServerTags.CONNECTOR)) &&
+              (appOrderInfo.getApplication().isStandaloneModule())) {
             return true;
           }
         }
@@ -138,21 +138,33 @@ public class DeploymentType implements Comparator {
 
   // Compares two instances of the current type
   public int compare(Object o1, Object o2) {
-    if ((o1 instanceof Application) && (o2 instanceof Application)) {
-      return compare((Application)o1, (Application)o2);
+    if ((o1 instanceof ApplicationOrderInfo) && (o2 instanceof ApplicationOrderInfo)) {
+      return compare((ApplicationOrderInfo)o1, (ApplicationOrderInfo)o2);
     }
     return defaultCompare(o1, o2);
   }
 
   protected int defaultCompare(Object o1, Object o2) {
+    if (o1 instanceof ApplicationOrderInfo && o2 instanceof ApplicationOrderInfo ) {
+      ApplicationOrderInfo o1App = (ApplicationOrderInfo)o1;
+      ApplicationOrderInfo o2App = (ApplicationOrderInfo)o2;
+      return o1App.getOriginalOrder() - o2App.getOriginalOrder();
+    }
+    /*
+     * The following is for WLS compatibility where ties amone
+     * applications with the same deployment order are resolved
+     * by comparing the application name.
+     */
+    /*
     if (o1 instanceof ApplicationName && o2 instanceof ApplicationName ) {
       return ((ApplicationName)o1).getName().compareTo(((ApplicationName)o2).getName());
     }
+    */
     return 0;
   }
 
-  protected int compare(Application d1, Application d2) {
-    int comp = new Integer(d1.getDeploymentOrder()).compareTo(new Integer(d2.getDeploymentOrder()));
+  protected int compare(ApplicationOrderInfo d1, ApplicationOrderInfo d2) {
+    int comp = new Integer(d1.getApplication().getDeploymentOrder()).compareTo(new Integer(d2.getApplication().getDeploymentOrder()));
     if (comp == 0) {
       return defaultCompare(d1,d2);
     }

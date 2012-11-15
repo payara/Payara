@@ -146,6 +146,8 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
     private String deploymentTracingEnabled = null;
 
+    private Map<Application,Integer> appOrderInfoMap = new HashMap<Application,Integer>();
+    private int appOrder = 0;
 
     /**
      * Starts the application loader service.
@@ -173,22 +175,39 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
         domain = habitat.getService(Domain.class);
 
+        /*
+         * Build a map that associates an application with its
+         * order in domain.xml.  If the deployment-order attribute
+         * is not used for any application, then the applications
+         * are loaded in the order they occur in domain.xml.  Also, for
+         * applications with the same deployment-order attribute,
+         * the applications are loaded in the order they occur in domain.xml.
+         * Otherwise, applications are loaded according to the
+         * deploynment-order attribute.
+         */
         systemApplications = domain.getSystemApplications();
+        for (Application systemApp : systemApplications.getApplications()) {
+          appOrderInfoMap.put(systemApp, new Integer(appOrder++));
+        }
+        List<Application> standaloneAdapters =
+            applications.getApplicationsWithSnifferType(ServerTags.CONNECTOR, true);
+        for (Application standaloneAdapter : standaloneAdapters) {
+          appOrderInfoMap.put(standaloneAdapter, new Integer(appOrder++));
+        }
+        List<Application> allApplications = applications.getApplications();
+        for (Application app : allApplications) {
+          appOrderInfoMap.put(app, new Integer(appOrder++));
+        }
         
         for (Application systemApp : systemApplications.getApplications()) {
             // check to see if we need to load up this system application
             if (Boolean.valueOf(systemApp.getDeployProperties().getProperty
                 (ServerTags.LOAD_SYSTEM_APP_ON_STARTUP))) {
                 if (deployment.isAppEnabled(systemApp) || loadAppOnDAS(systemApp.getName())) {
-                  DeploymentOrder.addApplicationDeployment(systemApp);
+                  DeploymentOrder.addApplicationDeployment(new ApplicationOrderInfo(systemApp, appOrderInfoMap.get(systemApp).intValue()));
                 }
             }
         }
-
-        List<Application> allApplications = applications.getApplications();
-
-        List<Application> standaloneAdapters =
-            applications.getApplicationsWithSnifferType(ServerTags.CONNECTOR, true);
 
         // load standalone resource adapters first
         for (Application standaloneAdapter : standaloneAdapters) {
@@ -197,7 +216,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             // referenced by non-DAS target so the application
             // information is available on DAS
             if (deployment.isAppEnabled(standaloneAdapter) || loadAppOnDAS(standaloneAdapter.getName())) {
-                  DeploymentOrder.addApplicationDeployment(standaloneAdapter);
+              DeploymentOrder.addApplicationDeployment(new ApplicationOrderInfo(standaloneAdapter, appOrderInfoMap.get(standaloneAdapter).intValue()));
             }
         }
 
@@ -212,7 +231,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             // referenced by non-DAS target so the application
             // information is available on DAS
             if (deployment.isAppEnabled(app) || loadAppOnDAS(app.getName())) {
-                  DeploymentOrder.addApplicationDeployment(app);
+              DeploymentOrder.addApplicationDeployment(new ApplicationOrderInfo(app, appOrderInfoMap.get(app).intValue()));
             }
         }
 
