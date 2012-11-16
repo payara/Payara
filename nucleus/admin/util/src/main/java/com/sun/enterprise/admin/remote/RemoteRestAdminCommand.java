@@ -1536,11 +1536,15 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             if (paramName.equals("DEFAULT"))    // operands handled below
                 continue;
             ParamModel opt = commandModel.getModelFor(paramName);
-            if (opt != null && opt.getType() == File.class) {
+            if (opt != null && 
+                    (opt.getType() == File.class ||
+                     opt.getType() == File[].class)) {
                 sawFile = true;
-                final File optionFile = new File(options.getOne(opt.getName()));
-                sawDirectory |= optionFile.isDirectory();
-                sawUploadableFile |= optionFile.isFile();
+                for (String fname : options.get(opt.getName())) {
+                    final File optionFile = new File(fname);
+                    sawDirectory |= optionFile.isDirectory();
+                    sawUploadableFile |= optionFile.isFile();
+                }              
             }
         }
 
