@@ -42,6 +42,8 @@ package org.glassfish.admin.rest.provider;
 
 import org.glassfish.api.ActionReport.ExitCode;
 import com.sun.enterprise.v3.common.ActionReporter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
@@ -51,10 +53,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.glassfish.admin.rest.provider.ProviderUtil.getHtmlForComponent;
 import static org.glassfish.admin.rest.provider.ProviderUtil.getHtmlRespresentationsForCommand;
 import static org.glassfish.admin.rest.provider.ProviderUtil.getHint;
+import org.glassfish.admin.rest.utils.ResourceUtil;
 
 /**
  * @author Ludovic Champenois
@@ -70,8 +75,9 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
     public String getContent(ActionReportResult proxy) {
         RestActionReporter ar = (RestActionReporter) proxy.getActionReport();
         StringBuilder result = new StringBuilder(ProviderUtil.getHtmlHeader(getBaseUri()));
-        String message = ar.getCombinedMessage();
-        if (message != null) {
+        final String message = ResourceUtil.encodeString(ar.getCombinedMessage());
+
+        if (!message.isEmpty()) {
             result.append("<h3>").append(message).append("</h3>");
         }
 
@@ -251,16 +257,18 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
         if (des==null){
             des="";
         }
-        final String message = (ar instanceof RestActionReporter) ? ((RestActionReporter)ar).getCombinedMessage() : ar.getMessage();
+        final String message = ResourceUtil.encodeString((ar instanceof RestActionReporter) ? ((RestActionReporter)ar).getCombinedMessage() : ar.getMessage());
         if (message!=null){
             result.append("<h2>")
                 .append(des)
                 .append(" output:</h2><h3>")
-                .append("<pre>"+message+"</pre>")
+                .append("<pre>")
+                .append(message)
+                .append("</pre>")
                 .append("</h3>");
         }
         if (ar.getActionExitCode() != ExitCode.SUCCESS) {
-            result.append("<h3>Exit Code: " + ar.getActionExitCode().toString() + "</h3>");
+            result.append("<h3>Exit Code: ").append(ar.getActionExitCode().toString()).append("</h3>");
 
         }
 

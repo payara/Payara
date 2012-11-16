@@ -44,7 +44,9 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -286,8 +288,20 @@ public class ResourceUtil {
             logs = new ArrayList<String>();
             ar.getExtraProperties().put("commandLog", logs);
         }
+        final String parameterList = encodeString(getParameterList(parameters));
 
-        logs.add(commandName + getParameterList(parameters));
+        logs.add(commandName + parameterList);
+    }
+
+    public static String encodeString(String text) {
+        if (text == null) {
+            return "";
+        }
+        String result = text.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+        result = result.replaceAll("eval\\((.*)\\)", "");
+        result = result.replaceAll("[\\\"\\\'][\\s]*((?i)javascript):(.*)[\\\"\\\']", "\"\"");
+        result = result.replaceAll("((?i)script)", "");
+        return result;
     }
 
     public static String getParameterList(ParameterMap parameters) {
