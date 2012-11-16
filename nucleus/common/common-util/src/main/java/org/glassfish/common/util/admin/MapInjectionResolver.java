@@ -401,7 +401,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
      * @return Object
      */
     // package-private, for testing
-    static Object convertListToObject(AnnotatedElement target,
+    public static Object convertListToObject(AnnotatedElement target,
                                     Class type, List<String> paramValList) {
         Param param = target.getAnnotation(Param.class);
         // does this parameter type allow multiple values?
