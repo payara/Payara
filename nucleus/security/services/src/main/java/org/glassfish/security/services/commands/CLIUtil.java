@@ -51,7 +51,7 @@ import org.glassfish.security.services.config.SecurityProvider;
  */
 public class CLIUtil {
     
-    static SecurityConfiguration findSecurityConfiguration(
+    public static SecurityConfiguration findSecurityConfiguration(
             final Domain domain,
             final String serviceName,
             final ActionReport report) {
@@ -73,7 +73,7 @@ public class CLIUtil {
         return ssc;
     }
     
-    static SecurityProvider findSecurityProvider(
+    public static SecurityProvider findSecurityProvider(
             final Domain domain,
             final String serviceName,
             final String providerName,
