@@ -313,23 +313,8 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         // message-destination*
         writeMessageDestinations(appNode, application.getMessageDestinations().iterator());
 
-        // datasource-definition*
-        writeDataSourceDefinitionDescriptors(appNode, application.getResourceDescriptors(JavaEEResourceType.DSD).iterator());
-
-        // mail-session*
-        writeMailSessionDescriptors(appNode, application.getResourceDescriptors(JavaEEResourceType.MSD).iterator());
-
-        // connector-resource-definition*
-        writeConnectorResourceDefinitionDescriptors(appNode, application.getResourceDescriptors(JavaEEResourceType.CRD).iterator());
-        
-        // administered-object-definition
-        writeAdministeredObjectDefinitionDescriptors(appNode, application.getResourceDescriptors(JavaEEResourceType.AODD).iterator());
-
-        // jms-connection-factory-definition*
-        writeJMSConnectionFactoryDefinitionDescriptors(appNode, application.getResourceDescriptors(JavaEEResourceType.JMSCFDD).iterator());
-
-        // jms-destination-definition*
-        writeJMSDestinationDefinitionDescriptors(appNode, application.getResourceDescriptors(JavaEEResourceType.JMSDD).iterator());
+        // all descriptors (includes DSD, MSD, JMSCFD, JMSDD,AOD, CRD)*
+        writeResourceDescriptors(appNode, application.getResourceDescriptors(JavaEEResourceType.ALL).iterator());
 
         return appNode;
     }

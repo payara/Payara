@@ -190,23 +190,8 @@ public class MessageDrivenBeanNode extends EjbNode<EjbMessageBeanDescriptor> {
         // pre-destroy
         writeLifeCycleCallbackDescriptors(ejbNode, TagNames.PRE_DESTROY, ejbDesc.getPreDestroyDescriptors());
 
-        // datasource-definition*
-        writeDataSourceDefinitionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.DSD).iterator());
-        
-        //mail-seesion*
-        writeMailSessionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.MSD).iterator());
-        
-        // connector-resource-definition*
-        writeConnectorResourceDefinitionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.CRD).iterator());
-
-        // administered-object-definition
-        writeAdministeredObjectDefinitionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.AODD).iterator());
-
-        // jms-connection-factory-definition*
-        writeJMSConnectionFactoryDefinitionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.JMSCFDD).iterator());
-
-        // jms-destination-definition*
-        writeJMSDestinationDefinitionDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.JMSDD).iterator());
+        // all descriptors (includes DSD, MSD, JMSCFD, JMSDD,AOD, CRD)*
+        writeResourceDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.ALL).iterator());
 
         // security-role-ref*
         writeRoleReferenceDescriptors(ejbNode, ejbDesc.getRoleReferences().iterator());

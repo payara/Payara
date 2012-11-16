@@ -404,22 +404,12 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
         
         // post-construct
         writeLifeCycleCallbackDescriptors(jarNode, TagNames.POST_CONSTRUCT, webBundleDesc.getPostConstructDescriptors());
+
         // pre-destroy
         writeLifeCycleCallbackDescriptors(jarNode, TagNames.PRE_DESTROY, webBundleDesc.getPreDestroyDescriptors());
-        // datasource-definition*
-        writeDataSourceDefinitionDescriptors(jarNode, webBundleDesc.getResourceDescriptors(JavaEEResourceType.DSD).iterator());
-        // connector-resource-definition*
-        writeConnectorResourceDefinitionDescriptors(jarNode, webBundleDesc.getResourceDescriptors(JavaEEResourceType.CRD).iterator());
-        // jms-connection-factory-session*
-        writeJMSConnectionFactoryDefinitionDescriptors(jarNode, webBundleDesc.getResourceDescriptors(JavaEEResourceType.JMSCFDD).iterator());
-        // jms-destination-session*
-        writeJMSDestinationDefinitionDescriptors(jarNode, webBundleDesc.getResourceDescriptors(JavaEEResourceType.JMSDD).iterator());
 
-        // mail-session*
-        writeMailSessionDescriptors(jarNode, webBundleDesc.getResourceDescriptors(JavaEEResourceType.MSD).iterator());
-
-        // administered-object-definition
-        writeAdministeredObjectDefinitionDescriptors(jarNode, webBundleDesc.getResourceDescriptors(JavaEEResourceType.AODD).iterator());
+        // all descriptors (includes DSD, MSD, JMSCFD, JMSDD,AOD, CRD)*
+        writeResourceDescriptors(jarNode, webBundleDesc.getResourceDescriptors(JavaEEResourceType.ALL).iterator());
 
         // message-destination*
        writeMessageDestinations

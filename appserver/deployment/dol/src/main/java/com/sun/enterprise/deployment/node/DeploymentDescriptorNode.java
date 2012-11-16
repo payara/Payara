@@ -48,6 +48,7 @@ import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.w3c.dom.Document;
@@ -951,122 +952,47 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
     }
 
     /**
-     * write a list of datasource-definition descriptors to a DOM Tree
+     * write a list of all descriptors to a DOM Tree
      *
      * @param parentNode parent node for the DOM tree
-     * @param dsDefinitionDescIterator the iterator over the descriptors to write
+     * @param descriptorIterator the iterator over the descriptors to write
      */
-    protected void writeDataSourceDefinitionDescriptors(Node parentNode,
-                                                        Iterator<Descriptor>
-                                                                dsDefinitionDescIterator) {
-        if(dsDefinitionDescIterator == null || !dsDefinitionDescIterator.hasNext()){
+    protected void writeResourceDescriptors(Node parentNode, Iterator<Descriptor> descriptorIterator) {
+        if(descriptorIterator == null || !descriptorIterator.hasNext()){
             return;
         }
 
-        DataSourceDefinitionNode subNode = new DataSourceDefinitionNode();
-        for(;dsDefinitionDescIterator.hasNext();){
-            DataSourceDefinitionDescriptor next = (DataSourceDefinitionDescriptor)dsDefinitionDescIterator.next();
-            subNode.writeDescriptor(parentNode, TagNames.DATA_SOURCE, next);
+        DataSourceDefinitionNode dataSourceDefinitionNode = new DataSourceDefinitionNode();
+        MailSessionNode mailSessionNode = new MailSessionNode();
+        ConnectorResourceDefinitionNode connectorResourceDefinitionNode = new ConnectorResourceDefinitionNode();
+        AdministeredObjectDefinitionNode administeredObjectDefinitionNode = new AdministeredObjectDefinitionNode();
+        JMSConnectionFactoryDefinitionNode jmsConnectionFactoryDefinitionNode = new JMSConnectionFactoryDefinitionNode();
+        JMSDestinationDefinitionNode jmsDestinationDefinitionNode = new JMSDestinationDefinitionNode();
+
+        for(;descriptorIterator.hasNext();){
+            Descriptor descriptor = descriptorIterator.next();
+
+            if(descriptor.getResourceType().equals(JavaEEResourceType.DSD)) {
+                DataSourceDefinitionDescriptor next = (DataSourceDefinitionDescriptor)descriptor;
+                dataSourceDefinitionNode.writeDescriptor(parentNode, TagNames.DATA_SOURCE, next);
+            } else if(descriptor.getResourceType().equals(JavaEEResourceType.MSD)) {
+                MailSessionDescriptor next = (MailSessionDescriptor)descriptor;
+                mailSessionNode.writeDescriptor(parentNode, TagNames.MAIL_SESSION, next);
+            } else if(descriptor.getResourceType().equals(JavaEEResourceType.CRD)) {
+                ConnectorResourceDefinitionDescriptor next = (ConnectorResourceDefinitionDescriptor)descriptor;
+                connectorResourceDefinitionNode.writeDescriptor(parentNode, TagNames.CONNECTOR_RESOURCE, next);
+            } else if(descriptor.getResourceType().equals(JavaEEResourceType.AODD)) {
+                AdministeredObjectDefinitionDescriptor next = (AdministeredObjectDefinitionDescriptor)descriptor;
+                administeredObjectDefinitionNode.writeDescriptor(parentNode, TagNames.ADMINISTERED_OBJECT, next);
+            } else if(descriptor.getResourceType().equals(JavaEEResourceType.JMSCFDD)) {
+                JMSConnectionFactoryDefinitionDescriptor next = (JMSConnectionFactoryDefinitionDescriptor)descriptor;
+                jmsConnectionFactoryDefinitionNode.writeDescriptor(parentNode, TagNames.JMS_CONNECTION_FACTORY, next);
+            } else if(descriptor.getResourceType().equals(JavaEEResourceType.JMSDD)) {
+                JMSDestinationDefinitionDescriptor next = (JMSDestinationDefinitionDescriptor)descriptor;
+                jmsDestinationDefinitionNode.writeDescriptor(parentNode, TagNames.JMS_DESTINATION, next);
+            }
         }
     }
-
-    /**
-     * write a list of mail-session definition descriptors to a DOM Tree
-     *
-     * @param parentNode                    parent node for the DOM tree
-     * @param mailSessionDescriptorIterator the iterator over the descriptors to write
-     */
-    protected void writeMailSessionDescriptors(Node parentNode,
-                                               Iterator<Descriptor>
-                                                       mailSessionDescriptorIterator) {
-        if (mailSessionDescriptorIterator == null || !mailSessionDescriptorIterator.hasNext()) {
-            return;
-        }
-
-        MailSessionNode subNode = new MailSessionNode();
-        for (; mailSessionDescriptorIterator.hasNext(); ) {
-            MailSessionDescriptor next = (MailSessionDescriptor)mailSessionDescriptorIterator.next();
-            subNode.writeDescriptor(parentNode, TagNames.MAIL_SESSION, next);
-        }
-    }
-
-
-    /**
-     * write a list of connector-resource-definition descriptors to a DOM Tree
-     *
-     * @param parentNode parent node for the DOM tree
-     * @param descIterator the iterator over the descriptors to write
-     */
-    protected void writeConnectorResourceDefinitionDescriptors(Node parentNode,
-                              Iterator<Descriptor>  descIterator) {
-        if(descIterator == null || !descIterator.hasNext()){
-            return;
-        }
-
-        ConnectorResourceDefinitionNode subNode = new ConnectorResourceDefinitionNode();
-        for(;descIterator.hasNext();){
-            ConnectorResourceDefinitionDescriptor next = (ConnectorResourceDefinitionDescriptor)descIterator.next();
-            subNode.writeDescriptor(parentNode, TagNames.CONNECTOR_RESOURCE, next);
-        }
-    }
-
-    /**
-     * write a list of administered-object-definition descriptors to a DOM Tree
-     *
-     * @param parentNode parent node for the DOM tree
-     * @param descIterator the iterator over the descriptors to write
-     */
-    protected void writeAdministeredObjectDefinitionDescriptors(Node parentNode,
-                              Iterator<Descriptor>  descIterator) {
-        if(descIterator == null || !descIterator.hasNext()){
-            return;
-        }
-
-        AdministeredObjectDefinitionNode subNode = new AdministeredObjectDefinitionNode();
-        for(;descIterator.hasNext();){
-            AdministeredObjectDefinitionDescriptor next = (AdministeredObjectDefinitionDescriptor)descIterator.next();
-            subNode.writeDescriptor(parentNode, TagNames.ADMINISTERED_OBJECT, next);
-        }
-    }
-
-    /**
-     * write a list of jms-connection-factory-definition descriptors to a DOM Tree
-     *
-     * @param parentNode parent node for the DOM tree
-     * @param descIterator the iterator over the descriptors to write
-     */
-    protected void writeJMSConnectionFactoryDefinitionDescriptors(Node parentNode,
-                              Iterator<Descriptor>  descIterator) {
-        if (descIterator == null || !descIterator.hasNext()) {
-            return;
-        }
-
-        JMSConnectionFactoryDefinitionNode subNode = new JMSConnectionFactoryDefinitionNode();
-        for (;descIterator.hasNext();) {
-            JMSConnectionFactoryDefinitionDescriptor next = (JMSConnectionFactoryDefinitionDescriptor)descIterator.next();
-            subNode.writeDescriptor(parentNode, TagNames.JMS_CONNECTION_FACTORY, next);
-        }
-    }
-
-    /**
-     * write a list of jms-destination-definition descriptors to a DOM Tree
-     *
-     * @param parentNode parent node for the DOM tree
-     * @param descIterator the iterator over the descriptors to write
-     */
-    protected void writeJMSDestinationDefinitionDescriptors(Node parentNode,
-                              Iterator<Descriptor>  descIterator) {
-        if (descIterator == null || !descIterator.hasNext()) {
-            return;
-        }
-
-        JMSDestinationDefinitionNode subNode = new JMSDestinationDefinitionNode();
-        for (;descIterator.hasNext();) {
-            JMSDestinationDefinitionDescriptor next = (JMSDestinationDefinitionDescriptor)descIterator.next();
-            subNode.writeDescriptor(parentNode, TagNames.JMS_DESTINATION, next);
-        }
-    }
-
 
     /**
      * writes iocalized descriptions (if any) to the DOM node

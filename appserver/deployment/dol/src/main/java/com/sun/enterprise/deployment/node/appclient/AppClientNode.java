@@ -230,16 +230,16 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
         writeLifeCycleCallbackDescriptors(appclientNode, TagNames.PRE_DESTROY, appclientDesc.getPreDestroyDescriptors());
 
         // datasource-definition*
-        writeDataSourceDefinitionDescriptors(appclientNode, appclientDesc.getResourceDescriptors(JavaEEResourceType.DSD).iterator());
+        writeResourceDescriptors(appclientNode, appclientDesc.getResourceDescriptors(JavaEEResourceType.DSD).iterator());
         
         // mail-session*
-        writeMailSessionDescriptors(appclientNode, appclientDesc.getResourceDescriptors(JavaEEResourceType.MSD).iterator());
+        writeResourceDescriptors(appclientNode, appclientDesc.getResourceDescriptors(JavaEEResourceType.MSD).iterator());
 
         // jms-connection-factory-definition*
-        writeJMSConnectionFactoryDefinitionDescriptors(appclientNode, appclientDesc.getResourceDescriptors(JavaEEResourceType.JMSCFDD).iterator());
+        writeResourceDescriptors(appclientNode, appclientDesc.getResourceDescriptors(JavaEEResourceType.JMSCFDD).iterator());
 
         // jms-destination-definition*
-        writeJMSDestinationDefinitionDescriptors(appclientNode, appclientDesc.getResourceDescriptors(JavaEEResourceType.JMSDD).iterator());
+        writeResourceDescriptors(appclientNode, appclientDesc.getResourceDescriptors(JavaEEResourceType.JMSDD).iterator());
 
         appendTextChild(appclientNode, ApplicationClientTagNames.CALLBACK_HANDLER, appclientDesc.getCallbackHandler());
 

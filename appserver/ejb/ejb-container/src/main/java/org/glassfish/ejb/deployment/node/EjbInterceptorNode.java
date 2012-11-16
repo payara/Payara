@@ -186,24 +186,8 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
                 descriptor.getCallbackDescriptors(CallbackType.PRE_PASSIVATE));
         }
 
-        //TODO V3 should we check for the availability of datasource-definition similar to above ? (hasCallbackDescriptor)
-        // datasource-definition*
-        writeDataSourceDefinitionDescriptors(interceptorNode, descriptor.getResourceDescriptors(JavaEEResourceType.DSD).iterator());
-
-        // mail-session*
-        writeMailSessionDescriptors(interceptorNode, descriptor.getResourceDescriptors(JavaEEResourceType.MSD).iterator());
-
-        // connector-resource-definition*
-        writeConnectorResourceDefinitionDescriptors(interceptorNode, descriptor.getResourceDescriptors(JavaEEResourceType.CRD).iterator());
-
-        // administered-object-definition
-        writeAdministeredObjectDefinitionDescriptors(interceptorNode, descriptor.getResourceDescriptors(JavaEEResourceType.AODD).iterator());
-
-       // jms-connection-factory-definition*
-       writeJMSConnectionFactoryDefinitionDescriptors(interceptorNode, descriptor.getResourceDescriptors(JavaEEResourceType.JMSCFDD).iterator());
-
-       // jms-destination-definition*
-       writeJMSDestinationDefinitionDescriptors(interceptorNode, descriptor.getResourceDescriptors(JavaEEResourceType.JMSDD).iterator());
+        // all descriptors (includes DSD, MSD, JMSCFD, JMSDD,AOD, CRD)*
+        writeResourceDescriptors(interceptorNode, descriptor.getResourceDescriptors(JavaEEResourceType.ALL).iterator());
 
         return interceptorNode;
     }
