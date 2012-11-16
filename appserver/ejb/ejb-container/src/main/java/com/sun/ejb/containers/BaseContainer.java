@@ -506,6 +506,8 @@ public abstract class BaseContainer
 
     protected EJBContainerStateManager containerStateManager;
     protected EJBContainerTransactionManager containerTransactionManager;
+    
+    private final JCDIService jcdiService;
 
     /**
      * This constructor is called from ContainerFactoryImpl when an
@@ -776,6 +778,10 @@ public abstract class BaseContainer
             initializeInvocationInfo();
 
             setupEnvironment();
+            
+            ServiceLocator services = ejbContainerUtilImpl.getServices();
+
+            jcdiService = services.getService(JCDIService.class);
 
         } catch (Exception ex) {
             _logger.log(Level.FINE,"ejb.basecontainer_exception",logParams);
@@ -1604,11 +1610,6 @@ public abstract class BaseContainer
     }
 
     protected EJBContextImpl createEjbInstanceAndContext() throws Exception {
-
-        ServiceLocator services = ejbContainerUtilImpl.getServices();
-
-        JCDIService jcdiService = services.getService(JCDIService.class);
-
         EjbBundleDescriptorImpl ejbBundle = ejbDescriptor.getEjbBundleDescriptor();
 
 	Object instance = null;
@@ -1656,10 +1657,6 @@ public abstract class BaseContainer
     }
 
     protected void injectEjbInstance(EJBContextImpl context) throws Exception {
-        
-        ServiceLocator services = ejbContainerUtilImpl.getServices();
-
-        JCDIService jcdiService = services.getService(JCDIService.class);
 
         EjbBundleDescriptorImpl ejbBundle = ejbDescriptor.getEjbBundleDescriptor();
 
