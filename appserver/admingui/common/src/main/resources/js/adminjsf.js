@@ -1087,10 +1087,11 @@ admingui.help = {
         if (typeof contextRef == 'undefined' || contextRef === "") {
             contextRef = "docinfo.html";
         }
+	dd = decodeURIComponent(contextRef);
         // Derive the prefix somehow
         //contextRef = prefix + contextRef;
-        admingui.help.showHelpPage(contextRef, targetNode);
-        admingui.help.nav.selectTreeNodeWithURL(contextRef);
+        admingui.help.showHelpPage(dd, targetNode);
+        admingui.help.nav.selectTreeNodeWithURL(dd);
     },
 
     nav: {
