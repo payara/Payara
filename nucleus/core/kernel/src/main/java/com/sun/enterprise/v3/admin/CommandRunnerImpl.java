@@ -1809,20 +1809,22 @@ public class CommandRunnerImpl implements CommandRunner {
                         }
                     });
                     Object paramValue = sourceField.get(parameters);
+                    
                     /*
                      * If this field is a File, then replace the param value
                      * (which is whatever the client supplied on the command) with
-                     * the actual absolute path of the uploaded and extracted
-                     * file if, in fact, the file was uploaded.
+                     * the actual absolute path(s) of the uploaded and extracted
+                     * file(s) if, in fact, the file(s) was (were) uploaded.
                      */
-                    // XXX - doesn't handle multiple File operands
-                    final String paramFileValue =
-                            MapInjectionResolver.getUploadedFileParamValue(
+                    
+                    final List<String> paramFileValues =
+                            MapInjectionResolver.getUploadedFileParamValues(
                             targetField.getName(),
                             targetField.getType(),
                             optionNameToUploadedFileMap);
-                    if (paramFileValue != null) {
-                        paramValue = new File(paramFileValue);
+                    if (!paramFileValues.isEmpty()) {
+                        V fileValue = (V) MapInjectionResolver.convertListToObject(target, type, paramFileValues);
+                        return fileValue;
                     }
                     /*
                     if (paramValue==null) {
