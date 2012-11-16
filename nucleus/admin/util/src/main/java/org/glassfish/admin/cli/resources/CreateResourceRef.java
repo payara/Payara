@@ -50,7 +50,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
+//import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.ActiveDescriptor;
@@ -101,9 +101,6 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
 
     @Inject
     private Domain domain;
-
-    @Inject
-    private ServerEnvironment environment;
 
     @Inject
     private ServiceLocator locator;
@@ -173,9 +170,8 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
         }
         try {
             createResourceRef();
-        
             // create new ResourceRef for all instances of Cluster, if it's a cluster
-            if (refContainer instanceof Cluster && isBindableResource(refName)) {
+            if (refContainer instanceof Cluster && isElegibleResource(refName)) {
                 Target tgt = locator.getService(Target.class);
                 List<Server> instances = tgt.getInstances(target);
                 for (Server svr : instances) {
@@ -194,6 +190,10 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
         }
     }
     
+    private boolean isElegibleResource(String refName) {
+        return isBindableResource(refName) || isServerResource(refName);
+    }
+
     private boolean isResourceRefAlreadyPresent() {
         for (ResourceRef rr : refContainer.getResourceRef()) {
             if (rr.getRef().equals(refName)) {
@@ -281,16 +281,16 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
         return domain.getResources().getResourceByName(ServerResource.class, name) != null;
     }
     
-    private Resource getResourceByJndiName(String jndiName) {
-        for (Resource resource : domain.getResources().getResources()) {
-            if (resource instanceof BindableResource) {
-                if (((BindableResource) resource).getJndiName().equals(jndiName)) {
-                    return resource;
-                }
-            }
-        }
-        return null;
-    }
+//    private Resource getResourceByJndiName(String jndiName) {
+//        for (Resource resource : domain.getResources().getResources()) {
+//            if (resource instanceof BindableResource) {
+//                if (((BindableResource) resource).getJndiName().equals(jndiName)) {
+//                    return resource;
+//                }
+//            }
+//        }
+//        return null;
+//    }
 
     private Resource getResourceByIdentity(String id) {
         for (Resource resource : domain.getResources().getResources()) {
@@ -302,7 +302,7 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
     }
 
     private boolean validateTarget(String target, CommandTarget targets[]) {
-        List validTarget = new ArrayList();
+        List<String> validTarget = new ArrayList<String>();
 
         for (CommandTarget commandTarget : targets) {
             validTarget.add(commandTarget.name());

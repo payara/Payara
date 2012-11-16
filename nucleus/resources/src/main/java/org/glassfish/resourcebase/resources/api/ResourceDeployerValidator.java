@@ -47,4 +47,6 @@ import org.jvnet.hk2.annotations.Service;
 public interface ResourceDeployerValidator {
 
     boolean isEnabledLocally(Resource res);
+
+    boolean isDeployedLocally(Resource resource);
 }

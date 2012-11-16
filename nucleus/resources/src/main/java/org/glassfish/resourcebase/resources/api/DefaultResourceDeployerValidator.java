@@ -55,4 +55,8 @@ public class DefaultResourceDeployerValidator implements
         return false;
     }
 
+    @Override
+    public boolean isDeployedLocally(Resource resource) {
+        return false;
+    }
 }
