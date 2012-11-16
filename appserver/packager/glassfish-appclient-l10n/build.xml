@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="iso-8859-1"?>
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -41,23 +41,23 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>appclient</artifactId>
-        <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-    <groupId>org.glassfish.main.appclient</groupId>
-    <artifactId>server</artifactId>
-    <packaging>pom</packaging>
-    <name>GlassFish App Client Server-side Modules</name>  
-    <modules>
-       <module>connector</module>
-       <module>core</module>
-       <module>core-l10n</module>
-<!--       <module>jws</module> -->
-    </modules>
+<project name="verifier package creation" default="create.package" basedir=".">
+       <import file="${basedir}/../common-targets.xml"/>
+
+	<target name="create.package">
+            <property name="package.name" value="glassfish-appclient-l10n"/> 
+        
+        
+       <stage-module-jars/>
+       <stage-distribution-fragments/>
+       
+
+        <if test="${compression}">
+	       <antcall target="pack.compression" />
+	</if>
+
+      <antcall target="create-zip-artifact"/> 
+      <antcall target="create-list-artifact"/>  	
+   </target>
 </project>
+
