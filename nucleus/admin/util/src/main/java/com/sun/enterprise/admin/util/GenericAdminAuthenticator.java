@@ -368,8 +368,11 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     private String getDefaultAdminUser() {
         AuthRealm realm = as.getAssociatedAuthRealm();
         if (realm == null) {
-            //this is really an assertion -- admin service's auth-realm-name points to a non-existent realm
-            throw new RuntimeException("Warning: Configuration is bad, realm: " + as.getAuthRealmName() + " does not exist!");
+            /*
+             * If for some reason there is no admin realm available return null
+             * (instead of throwing an exception).
+             */
+            return null;
         }
         if (! FileRealm.class.getName().equals(realm.getClassname())) {
             ADMSEC_LOGGER.fine("CAN'T FIND DEFAULT ADMIN USER: IT'S NOT A FILE REALM");
