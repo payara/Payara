@@ -168,10 +168,12 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
     }
     
     public synchronized void deleteLastMessage() {
+        if (lastMsgLength <= 0) {
+            return;
+        }
         if (disableAnimation) {
             System.out.println();
-        }
-        if (lastMsgLength > 0) {
+        } else {
             System.out.print('\r');
             for (int i = 0; i < lastMsgLength; i++) {
                 System.out.print(' ');
