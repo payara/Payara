@@ -328,12 +328,12 @@ public final class ConfigModularityUtils {
 
         if (childElement.contains("CURRENT_INSTANCE_CONFIG_NAME")) {
             Domain d = serviceLocator.<Domain>getService(Domain.class);
-            LOG.info("Configs size before CM apply changes: "+d.getConfigs().getConfig().size());
+            LOG.info("Configs size before CM apply changes: " + d.getConfigs().getConfig().size());
             return serviceLocator.<Config>getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         }
         if (childElement.contains("CURRENT_INSTANCE_SERVER_NAME")) {
             Domain d = serviceLocator.<Domain>getService(Domain.class);
-            LOG.info("Servers size before CM apply changes: "+d.getServers().getServer().size());
+            LOG.info("Servers size before CM apply changes: " + d.getServers().getServer().size());
             return serviceLocator.<Server>getService(Server.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         }
         if (childElement.endsWith("]")) {
@@ -689,7 +689,8 @@ public final class ConfigModularityUtils {
             indentingXMLStreamWriter.flush();
             s = bos.toString();
         } catch (XMLStreamException e) {
-            return s;
+            LOG.log(Level.FINE, "Cannot serialize the configbean: " + configBean.toString(), e);
+            return null;
         } finally {
             try {
                 if (bos != null)
@@ -699,9 +700,9 @@ public final class ConfigModularityUtils {
                 if (indentingXMLStreamWriter != null)
                     indentingXMLStreamWriter.close();
             } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                LOG.log(Level.FINE, "Cannot serialize the configbean: " + configBean.toString(), e);
             } catch (XMLStreamException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                LOG.log(Level.FINE, "Cannot serialize the configbean: " + configBean.toString(), e);
             }
 
         }
