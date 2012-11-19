@@ -1223,6 +1223,19 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>staging</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+    	    <repositories>
+        	<repository>
+            	    <id>jvnet-nexus-staging</id>
+            	    <name>java.net staging repository</name>
+            	    <url>https://maven.java.net/content/repositories/staging/</url>
+        	</repository>
+    	    </repositories>
+	</profile>
     </profiles>
     
     <dependencies>
