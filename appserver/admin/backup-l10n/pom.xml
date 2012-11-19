@@ -51,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>backup-l10n</artifactId>
     
-    <name>Backup Restore classes Localization</name>
+    <name>Backup Restore classes l10n</name>
     <description>Backup Restore Localization</description>
     <build>
         <plugins>

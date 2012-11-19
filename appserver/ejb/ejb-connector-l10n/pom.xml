@@ -52,7 +52,7 @@
 
     <artifactId>gf-ejb-connector-l10n</artifactId>
     
-    <name>EJB Container connector for Glassfish Localization</name>
+    <name>EJB Container connector for Glassfish l10n</name>
 
     <build>
         <plugins>

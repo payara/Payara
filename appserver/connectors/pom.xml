@@ -51,7 +51,7 @@
     <groupId>org.glassfish.main.connectors</groupId>
     <artifactId>connectors</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Java EE Connector Architecture related modules</name>
+    <name>Connectors Parent</name>
     <modules>
         <module>javax.resource</module>
         <module>descriptors</module>

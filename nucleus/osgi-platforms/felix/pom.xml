@@ -69,7 +69,7 @@
     </parent>
 
     <artifactId>felix</artifactId>
-    <name>Apache Felix and associated bundles and configuration files</name>
+    <name>Apache Felix, associated bundles and conf files</name>
     <!-- This is a distribution fragement.
          It is distributed as part of nucleus-base. 
     -->

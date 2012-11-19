@@ -53,7 +53,7 @@
 
     <artifactId>load-balancer-admin-l10n</artifactId>
     
-    <name>Load-Balancer admin Localization</name>
+    <name>Load-Balancer admin l10n</name>
 
     <build>
         <plugins>

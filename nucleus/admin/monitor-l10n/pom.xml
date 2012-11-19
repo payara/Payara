@@ -51,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>monitoring-core-l10n</artifactId>
     
-    <name>admin-monitoring Localization</name>
+    <name>admin-monitoring l10n</name>
     <build>
         <plugins>
             <plugin>

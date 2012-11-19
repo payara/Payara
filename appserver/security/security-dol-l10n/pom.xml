@@ -53,7 +53,7 @@
 
     <artifactId>security-dol-l10n</artifactId>
     
-    <name>Security DOL Integration Localization</name>
+    <name>Security DOL Integration l10n</name>
 
     <build>
         <plugins>

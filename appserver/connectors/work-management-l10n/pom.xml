@@ -46,12 +46,12 @@
         <groupId>org.glassfish.main.connectors</groupId>
         <artifactId>connectors</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>work-management-l10n</artifactId>
-    
-    <name>Java EE Connector Architecture Work Management module Localization</name>
+
+    <name>Work Management l10n</name>    
+    <description>Java EE Connector Architecture Work Management module l10n</description>
 
     <developers>
         <developer>

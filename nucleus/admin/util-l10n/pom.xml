@@ -51,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>admin-util-l10n</artifactId>
     
-    <name>admin-util Localization</name>
+    <name>admin-util l10n</name>
     <build>
         <plugins>
             <plugin>

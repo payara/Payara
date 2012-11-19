@@ -53,7 +53,7 @@
 
     <artifactId>web-core-l10n</artifactId>
     
-    <name>Core Servlet Container Localization</name>
+    <name>Core Servlet Container l10n</name>
 
     <build>
         <plugins>

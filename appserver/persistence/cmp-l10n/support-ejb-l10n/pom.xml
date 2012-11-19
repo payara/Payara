@@ -53,7 +53,7 @@
 
     <artifactId>cmp-support-ejb-l10n</artifactId>
     
-    <name>support ejb module for cmp Localization</name>
+    <name>support ejb module for cmp l10n</name>
 
     <build>
         <plugins>

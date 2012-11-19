@@ -51,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>cluster-common-l10n</artifactId>
     
-    <name>cluster-common Localization</name>
+    <name>cluster-common l10n</name>
     <build>
         <plugins>
             <plugin>

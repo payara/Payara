@@ -53,7 +53,7 @@
 
     <artifactId>cmp-generator-database-l10n</artifactId>
     
-    <name>Database Generator module for cmp Localization</name>
+    <name>Database Generator module for cmp l10n</name>
 
     <build>
         <plugins>

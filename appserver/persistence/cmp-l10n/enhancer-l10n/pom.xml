@@ -53,7 +53,7 @@
 
     <artifactId>cmp-enhancer-l10n</artifactId>
     
-    <name>enhancer module for cmp Localization</name>
+    <name>enhancer module for cmp l10n</name>
 
     <build>
         <plugins>

@@ -53,7 +53,7 @@
 
     <artifactId>transaction-internal-api-l10n</artifactId>
     
-    <name>Transaction Service Internal API Localization</name>
+    <name>Transaction Service Internal API l10n</name>
 
     <build>
         <plugins>

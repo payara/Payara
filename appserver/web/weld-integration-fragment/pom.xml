@@ -51,7 +51,7 @@
     </parent>
     <artifactId>weld-integration-fragment</artifactId>
     <packaging>jar</packaging>
-    <name>Fragment bundle for exporting additional Weld packages for Weld generated proxies</name>
+    <name>Weld Integration Fragment</name>
     <description>This fragment bundle extends the weld osgi bundle to export additional packages from the weld-osgi-bundle as they are used in Weld generated proxies</description>
     
     <developers>

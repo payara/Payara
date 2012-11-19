@@ -53,7 +53,7 @@
 
     <artifactId>jdbc-core-l10n</artifactId>
     
-    <name>Core JDBC Resource Adapter classes Localization</name>
+    <name>Core JDBC Resource Adapter classes l10n</name>
 
     <build>
         <plugins>

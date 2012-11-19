@@ -50,8 +50,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>connectors-internal-api-l10n</artifactId>
-    
-    <name>Connectors Private APIs for GlassFish Containers Localization</name>
+
+    <name>Connectors Internal APi l10n</name>    
+    <description>Connectors Private APIs for GlassFish Containers l10n</description>
 
     <developers>
         <developer>

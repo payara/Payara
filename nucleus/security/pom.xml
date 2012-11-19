@@ -51,7 +51,8 @@
     <groupId>org.glassfish.main.security</groupId>
     <artifactId>nucleus-security</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Security Infrastructure and Technology Integration Modules</name>  
+    <name>Nucleus Security Parent</name>
+    <description>Security Infrastructure and Technology Integration Modules</description>  
     <modules>
         <module>core</module>
         <module>ssl-impl</module>

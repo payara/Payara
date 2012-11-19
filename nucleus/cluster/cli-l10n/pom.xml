@@ -51,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>cluster-cli-l10n</artifactId>
     
-    <name>cluster-cli Localization</name>
+    <name>cluster-cli l10n</name>
     <build>
         <plugins>
             <plugin>

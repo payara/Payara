@@ -53,7 +53,7 @@
 
     <artifactId>gf-load-balancer-connector-l10n</artifactId>
     
-    <name>Load Balancer Internal API Localization</name>
+    <name>Load Balancer Internal API l10n</name>
 
     <build>
         <plugins>

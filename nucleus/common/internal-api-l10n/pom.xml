@@ -51,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>internal-api-l10n</artifactId>
     
-    <name>Private APIs of Glassfish Localization</name>
+    <name>Private APIs of Glassfish l10n</name>
     <build>
         <plugins>
             <plugin>

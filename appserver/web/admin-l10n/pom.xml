@@ -53,7 +53,7 @@
 
     <artifactId>web-cli-l10n</artifactId>
     
-    <name>Web module command line interface Localization</name>
+    <name>Web module command line interface l10n</name>
 
     <build>
         <plugins>

@@ -53,7 +53,7 @@
 
     <artifactId>web-gui-plugin-common-l10n</artifactId>
     
-    <name>Web container and GUI plug-in common classes Localization</name>
+    <name>Web container and GUI plug-in common classes l10n</name>
 
     <build>
         <plugins>

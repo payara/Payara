@@ -53,7 +53,7 @@
 
     <artifactId>registration-impl-l10n</artifactId>
     
-    <name>Registration Impl Localization</name>
+    <name>Registration Impl l10n</name>
 
     <build>
         <plugins>

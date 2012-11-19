@@ -48,16 +48,11 @@
         <groupId>org.glassfish.main.admingui</groupId>
         <artifactId>admingui</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-community-branding-plugin-l10n</artifactId>
     
-    <name>Admin Console Community Edition Theme Plugin Localization</name>
-    <description>Custom Theme Plugin for GlassFish V3 Admin Console Localization</description>
-
-    <developers>
-        <!-- See parent POM -->
-    </developers>
+    <name>Admin Console Community Edition Theme Plugin l10n</name>
+    <description>Custom Theme Plugin for GlassFish V3 Admin Console l10n</description>
 
     <build>
         <plugins>

@@ -52,8 +52,8 @@
     </parent>
 
     <artifactId>javamail-connector-l10n</artifactId>
-    
-    <name>Connector (glue) for GlassFish JavaMail Support Localization</name>
+    <name>JavaMail Connector l10n</name>
+    <description>Connector (glue) for GlassFish JavaMail Support l10n</description>
 
     <build>
         <plugins>

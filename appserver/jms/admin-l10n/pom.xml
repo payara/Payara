@@ -53,7 +53,7 @@
 
     <artifactId>jms-admin-l10n</artifactId>
     
-    <name>JMS admin Localization</name>
+    <name>JMS admin l10n</name>
 
     <build>
         <plugins>

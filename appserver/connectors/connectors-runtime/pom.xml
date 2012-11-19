@@ -51,7 +51,8 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>connectors-runtime</artifactId>
     
-    <name>Java EE Connector Architecture Runtime for GlassFish</name>
+    <name>Connectors Runtime</name>
+    <description>Java EE Connector Architecture Runtime for GlassFish</description>
 
     <developers>
         <developer>

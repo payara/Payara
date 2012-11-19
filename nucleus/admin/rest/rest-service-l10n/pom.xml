@@ -51,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>rest-service-l10n</artifactId>
     
-    <name>GlassFish Admin REST Service Localization</name>
+    <name>GlassFish Admin REST Service l10n</name>
     <build>
         <plugins>
             <plugin>

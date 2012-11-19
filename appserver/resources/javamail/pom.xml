@@ -47,11 +47,10 @@
         <groupId>org.glassfish.main.resources</groupId>
         <artifactId>resources</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>javamail</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish JavaMail Resources Support related modules</name>
+    <name>JavaMail Resources Support related modules</name>
     <modules>
         <module>javamail-connector</module>
         <module>javamail-runtime</module>

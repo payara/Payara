@@ -53,7 +53,7 @@
 
     <artifactId>jta-l10n</artifactId>
     
-    <name>JTA Implementation for Glassfish Localization</name>
+    <name>JTA Implementation for Glassfish l10n</name>
 
     <build>
         <plugins>

@@ -53,7 +53,7 @@
 
     <artifactId>verifier-l10n</artifactId>
     
-    <name>Verifier implementation module Localization</name>
+    <name>Verifier implementation module l10n</name>
 
     <build>
         <plugins>

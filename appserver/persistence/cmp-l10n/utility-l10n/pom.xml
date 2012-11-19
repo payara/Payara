@@ -53,7 +53,7 @@
 
     <artifactId>cmp-utility-l10n</artifactId>
     
-    <name>utility module for cmp Localization</name>
+    <name>utility module for cmp l10n</name>
 
     <build>
         <plugins>

@@ -53,7 +53,7 @@
 
     <artifactId>jms-core-l10n</artifactId>
     
-    <name>JMS module Localization</name>
+    <name>JMS module l10n</name>
 
     <build>
         <plugins>

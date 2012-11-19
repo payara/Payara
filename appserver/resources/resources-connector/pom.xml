@@ -51,7 +51,8 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>resources-connector</artifactId>
     
-    <name>Connector (glue) module for resources infrastructure</name>
+    <name>Resources Connector</name>
+    <description>Connector (glue) module for resources infrastructure</description>
 
     <developers>
         <developer>

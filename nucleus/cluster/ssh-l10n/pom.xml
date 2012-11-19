@@ -51,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>cluster-ssh-l10n</artifactId>
     
-    <name>Cluster SSH Provisioning Localization</name>
+    <name>Cluster SSH Provisioning l10n</name>
     <build>
         <plugins>
             <plugin>

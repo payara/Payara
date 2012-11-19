@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-grizzly-full</artifactId>
-    <name>Glassfish Grizzly Package for Web/Full distribution</name>
+    <name>Glassfish Grizzly Package</name>
     <packaging>distribution-base-zip</packaging>
     <description>This pom describes how to assemble the Glassfish Grizzly package for web/full distribution</description>
 

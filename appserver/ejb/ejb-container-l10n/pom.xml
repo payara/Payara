@@ -53,7 +53,7 @@
 
     <artifactId>ejb-container-l10n</artifactId>
     
-    <name>GlassFish Core EJB container implementation Localization</name>
+    <name>GlassFish Core EJB container implementation l10n</name>
 
     <build>
         <plugins>

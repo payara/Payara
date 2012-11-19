@@ -52,8 +52,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>deployment-javaee-full-l10n</artifactId>
-    
-    <name>Deployment Related JavaEE Full Profile Classes Localization</name>
+
+    <name>Deployment JavaEE Full l10n</name>
+    <description>Deployment Related JavaEE Full Profile Classes l10n</description>
 
     <build>
         <plugins>

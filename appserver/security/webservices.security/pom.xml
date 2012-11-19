@@ -51,8 +51,7 @@
         <relativePath>../pom.xml</relativePath>        
     </parent>    
     <artifactId>webservices.security</artifactId>
-    
-    <name>WebServices Security and JSR 196 SOAP Profile Implementation</name>
+    <name>WebServices Security and JSR 196 implementation</name>
     
     <developers>
         <developer>

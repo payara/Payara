@@ -50,7 +50,8 @@
     </parent>
     <artifactId>descriptors</artifactId>
     <packaging>distribution-fragment</packaging>
-    <name>Descriptors of Java EE Connector Architecture module</name>
+    <name>JavaEE Connector Architecture Descriptors</name>
+    <description>Descriptors of Java EE Connector Architecture module</description>
 
     <build>
         <plugins>

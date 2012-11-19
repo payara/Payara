@@ -51,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>flashlight-framework-l10n</artifactId>
     
-    <name>flashlight-framework Localization</name>
+    <name>flashlight-framework l10n</name>
     <build>
         <plugins>
             <plugin>

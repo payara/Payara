@@ -53,7 +53,7 @@
 
     <artifactId>jdbc-admin-l10n</artifactId>
     
-    <name>JDBC admin Localization</name>
+    <name>JDBC admin l10n</name>
 
     <build>
         <plugins>

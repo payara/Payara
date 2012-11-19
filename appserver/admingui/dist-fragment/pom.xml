@@ -50,12 +50,8 @@
     </parent>
 
     <artifactId>dist-fragment</artifactId>
-    <name>Admin Console Install Fragment for distributions/web</name>
+    <name>Admin Console Install Fragment for Web distro</name>
     <packaging>distribution-fragment</packaging>
-
-    <developers>
-        <!-- See parent POM -->
-    </developers>
 
     <build>
         <!--

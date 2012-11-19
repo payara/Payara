@@ -51,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>launcher-l10n</artifactId>
     
-    <name>admin-launcher Localization</name>
+    <name>admin-launcher l10n</name>
     <build>
         <plugins>
             <plugin>

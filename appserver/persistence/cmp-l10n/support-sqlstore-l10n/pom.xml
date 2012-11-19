@@ -53,7 +53,7 @@
 
     <artifactId>cmp-support-sqlstore-l10n</artifactId>
     
-    <name>support-sqlstore module for cmp Localization</name>
+    <name>support-sqlstore module for cmp l10n</name>
 
     <build>
         <plugins>

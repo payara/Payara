@@ -51,7 +51,8 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>connectors-runtime-l10n</artifactId>
     
-    <name>Java EE Connector Architecture Runtime for GlassFish Localization</name>
+    <name>Connectors Runtime l10n</name>
+    <description>Java EE Connector Architecture Runtime for GlassFish l10n</description>
 
     <developers>
         <developer>

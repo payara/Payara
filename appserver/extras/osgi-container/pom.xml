@@ -51,8 +51,8 @@
     </parent>
 
     <artifactId>osgi-container</artifactId>
-    
-    <name>GlassFish OSGi adapter to use OSGi modules as application code</name>
+    <name>OSGi Container</name>
+    <description>OSGi adapter to use OSGi modules as application code</description>
 
     <developers>
         <developer>

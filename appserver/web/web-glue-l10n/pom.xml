@@ -53,7 +53,7 @@
 
     <artifactId>web-glue-l10n</artifactId>
     
-    <name>Web Container glue code Localization</name>
+    <name>Web Container glue code l10n</name>
 
     <build>
         <plugins>

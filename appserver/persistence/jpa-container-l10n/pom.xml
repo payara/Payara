@@ -53,7 +53,7 @@
 
     <artifactId>jpa-container-l10n</artifactId>
     
-    <name>JPA container for glassfish Localization</name>
+    <name>JPA container for glassfish l10n</name>
 
     <build>
         <plugins>

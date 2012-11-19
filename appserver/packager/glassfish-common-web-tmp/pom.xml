@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-common-web-tmp</artifactId>
-    <name>Glassfish Commons intermediate package artifact for Web Profile Distribution </name>
+    <name>Glassfish Commons Web intermediate Package</name>
     <packaging>distribution-base-zip</packaging>
     <description>This pom describes how to assemble the GlassFish Commons intermediate package artifact for Web Profile Distribution package</description>
 

@@ -52,8 +52,7 @@
     </parent>
 
     <artifactId>orb-connector-l10n</artifactId>
-    
-    <name>GlassFish ORB connector implementation Localization</name>
+    <name>GlassFish ORB connector implementation l10n</name>
 
     <build>
         <plugins>

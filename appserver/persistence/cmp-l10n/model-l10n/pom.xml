@@ -53,7 +53,7 @@
 
     <artifactId>cmp-model-l10n</artifactId>
     
-    <name>model module for cmp Localization</name>
+    <name>model module for cmp l10n</name>
 
     <build>
         <plugins>

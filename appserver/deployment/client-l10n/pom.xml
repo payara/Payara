@@ -51,7 +51,7 @@
     </parent>    
     <artifactId>deployment-client-l10n</artifactId>
     
-    <name>Deployment Client Classes and Interfaces Localization</name>
+    <name>Deployment Client Classes and Interfaces l10n</name>
 
     <developers>
         <developer>

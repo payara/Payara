@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-jta-l10n</artifactId>
-    <name>Glassfish Transaction Package Localization</name>
+    <name>Glassfish Transaction Package l10n</name>
     <packaging>distribution-base-zip</packaging>
  
     <build>

@@ -51,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>jmx-remote-server-l10n</artifactId>
     
-    <name>JMX Remote Service Server Localization</name>
+    <name>JMX Remote Service Server l10n</name>
     <description>HTTP JMX connector server infrastructure in GF V3 Localization</description>
 
     <build>

@@ -52,7 +52,7 @@
     <groupId>org.glassfish.main.persistence.cmp</groupId>
     <artifactId>cmp-l10n</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish cmp related modules Localization</name>
+    <name>GlassFish cmp related modules l10n</name>
 
     <developers>
         <developer>

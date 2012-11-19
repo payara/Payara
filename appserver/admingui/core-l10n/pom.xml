@@ -52,7 +52,7 @@
     </parent>
     <artifactId>console-core-l10n</artifactId>
     
-    <name>Admin Console Core Jar Localization</name>
+    <name>Admin Console Core Jar l10n</name>
 
     <build>
         <plugins>

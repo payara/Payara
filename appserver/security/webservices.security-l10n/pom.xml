@@ -52,8 +52,7 @@
     </parent>
 
     <artifactId>webservices.security-l10n</artifactId>
-    
-    <name>WebServices Security and JSR 196 SOAP Profile Implementation Localization</name>
+    <name>WebServices Security and JSR 196 l10n</name>
 
     <build>
         <plugins>

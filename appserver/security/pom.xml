@@ -52,7 +52,8 @@
     <groupId>org.glassfish.main.security</groupId>
     <artifactId>securitymodule</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Security Infrastructure and Technology Integration Modules</name>  
+    <name>GlassFish Security Parent</name>
+    <description>Security Infrastructure and Technology Integration Modules</description>
     <modules>
         <module>webintegration</module>
         <module>core-ee</module>

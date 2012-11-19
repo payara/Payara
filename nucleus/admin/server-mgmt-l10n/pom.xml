@@ -51,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>server-mgmt-l10n</artifactId>
     
-    <name>admin-server-management Localization</name>
+    <name>admin-server-management l10n</name>
     <build>
         <plugins>
             <plugin>

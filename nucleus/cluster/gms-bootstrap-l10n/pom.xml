@@ -51,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>gms-bootstrap-l10n</artifactId>
     
-    <name>GMS Bootstrap Module Localization</name>
+    <name>GMS Bootstrap Module l10n</name>
     <build>
         <plugins>
             <plugin>

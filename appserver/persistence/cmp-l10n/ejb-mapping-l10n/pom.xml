@@ -53,7 +53,7 @@
 
     <artifactId>cmp-ejb-mapping-l10n</artifactId>
     
-    <name>ejb-mapping module for cmp Localization</name>
+    <name>ejb-mapping module for cmp l10n</name>
 
     <build>
         <plugins>

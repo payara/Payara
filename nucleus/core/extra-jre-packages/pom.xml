@@ -51,7 +51,7 @@
     </parent>
     <artifactId>glassfish-extra-jre-packages</artifactId>
     <packaging>jar</packaging>
-    <name>GlassFish Module Extending system bundle to provide access to additional JRE packages</name>
+    <name>GlassFish Extra JRE Packages</name>
     <description>This bundle extends System Bundle to provide access to additional classes available in JRE</description>
     
     <developers>

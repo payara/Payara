@@ -51,7 +51,7 @@
     </parent>    
     <artifactId>connectors-admin-l10n</artifactId>
     
-    <name>Connectors admin Localization</name>
+    <name>Connectors admin l10n</name>
 
     <developers>
         <developer>

@@ -46,12 +46,12 @@
         <groupId>org.glassfish.main.connectors</groupId>
         <artifactId>connectors</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>gf-connectors-connector</artifactId>
     
-    <name>Connector (gluecode) for GlassFish Java EE Connector Architecture Runtime</name>
+    <name>GlassFish Connectors Connector</name>
+    <description>Connector (gluecode) for GlassFish Java EE Connector Architecture Runtime</description>
 
     <developers>
         <developer>

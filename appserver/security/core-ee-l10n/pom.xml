@@ -53,7 +53,7 @@
 
     <artifactId>security-ee-l10n</artifactId>
     
-    <name>Java EE Security Core Classes Localization</name>
+    <name>Java EE Security Core Classes l10n</name>
 
     <build>
         <plugins>

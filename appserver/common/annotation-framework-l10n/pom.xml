@@ -53,7 +53,7 @@
 
     <artifactId>annotation-framework-l10n</artifactId>
     
-    <name>GlassFish Java EE Annotation Framework Localization</name>
+    <name>GlassFish Java EE Annotation Framework l10n</name>
 
     <developers>
         <developer>
