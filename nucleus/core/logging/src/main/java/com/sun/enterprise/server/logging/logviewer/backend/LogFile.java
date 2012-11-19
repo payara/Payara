@@ -364,7 +364,13 @@ public class LogFile implements java.io.Serializable {
     /**
      * Class to manage LogEntry information
      */
-    public class LogEntry implements java.io.Serializable {
+    public static class LogEntry implements java.io.Serializable {
+        
+        /**
+         * SVUID for backwards compatibility
+         */
+        private static final long serialVersionUID = -8597022493595023899L;
+        
         public LogEntry(String line, long recordNumber) {
             if (!line.startsWith(RECORD_BEGIN_MARKER)) {
                 throw new IllegalArgumentException(
