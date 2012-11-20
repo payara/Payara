@@ -65,6 +65,7 @@ import javax.security.auth.Subject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import org.glassfish.admin.rest.utils.SseCommandHelper;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
 import org.glassfish.api.admin.*;
@@ -100,21 +101,6 @@ public class CommandResource {
 
     @Inject
     protected Ref<Subject> subjectRef;
-
-//    @GET
-//    @Produces({MediaType.TEXT_PLAIN})
-//    public String emptyCallTxt() {
-//        logger.finest("emptyCallTxt()");
-//        return "command resource - Loaded";
-//    }
-//
-//    @GET
-//    @Produces({MediaType.TEXT_HTML})
-//    public String emptyCallHtml() {
-//        logger.finest("emptyCallHtml()");
-//        return "<html><body><h1>command resource</h1>Loaded</body></html>";
-//    }
-
 
     // -------- GET+OPTION: Get CommandModel
 
@@ -384,113 +370,13 @@ public class CommandResource {
                 .subject(getSubject())
                 .managedJob()
                 .parameters(params);
-        final EventChannel ec = new EventChannel();
-        AdminCommandListener listener = new AdminCommandListener() {
-            
-                    private AdminCommandEventBroker broker;
-                    
-                    private void unregister() {
-                        if (broker != null) {
-                            broker.unregisterListener(this);
-                        }
-                    }
-                    
-                    @Override
-                    public void onAdminCommandEvent(String name, Object event) {
-                        if (name == null || event == null) {
-                            return;
-                        }
-                        if (BrokerListenerRegEvent.EVENT_NAME_LISTENER_REG.equals(name)) {
-                            BrokerListenerRegEvent blre = (BrokerListenerRegEvent) event;
-                            broker = blre.getBroker();
-                            return;
-                        }
-                        if (name.startsWith(AdminCommandEventBroker.LOCAL_EVENT_PREFIX)) {
-                            return; //Prevent events from client to be send back to client
-                        }
-                        if (ec.isClosed()) {
-                            unregister();
-                            return;
-                        }
-                        if ((event instanceof Number) || 
-                            (event instanceof CharSequence) ||
-                            (event instanceof Boolean)) {
-                            event = String.valueOf(event);
-                        }
-                        OutboundEvent outEvent = new OutboundEvent.Builder()
-                                                    .name(name)
-                                                    .mediaType(event instanceof String ? 
-                                                            MediaType.TEXT_PLAIN_TYPE : 
-                                                            MediaType.APPLICATION_JSON_TYPE)
-                                                    .data(event.getClass(), event)
-                                                    .build();
-                        try {
-                            ec.write(outEvent);
-                        } catch (Exception ex) {
-                            if (logger.isLoggable(Level.FINE)) {
-                                logger.log(Level.FINE, strings.getLocalString("sse.writeevent.exception",
-                                        "Can not write object as SSE (type = {0})",
-                                        event.getClass().getName()), ex);
-                            }
-                            if (ec.isClosed()) {
-                                unregister();
-                            }
-                        }
-                    }
-                };
-        commandInvocation.listener(".*", listener);
         ResponseBuilder rb = Response.status(HttpURLConnection.HTTP_OK);
         if ( isSingleInstanceCommand(model)) {
             rb.cookie(getJSessionCookie(jSessionId));
         }
-        rb.entity(ec);
-        executeCommandInvocationAsync(commandInvocation, ec, listener);
+        rb.entity(SseCommandHelper.invokeAsync(commandInvocation, null));
         return rb.build();
     }
-
-    private void executeCommandInvocationAsync(final CommandRunner.CommandInvocation ci,
-            final EventChannel ec,
-            final AdminCommandListener listener) {
-
-        JobManagerService jobManagerService = Globals.getDefaultHabitat().getService(JobManagerService.class);
-        ExecutorService pool = jobManagerService.getThreadPool();
-        pool.execute(new AsyncInvocationHandler(ci,ec,listener));
-    }
-
-    class AsyncInvocationHandler implements Runnable {
-        private CommandRunner.CommandInvocation commandInvocation;
-        private EventChannel eventChannel;
-        private AdminCommandListener listener;
-
-        AsyncInvocationHandler(CommandRunner.CommandInvocation inv, EventChannel channel, AdminCommandListener list) {
-            this.commandInvocation = inv;
-            this.eventChannel = channel;
-            this.listener = list;
-
-        }
-        @Override
-        public void run() {
-            try {
-                commandInvocation.execute();
-            } catch (Throwable thr) {
-                logger.log(Level.WARNING, strings.getLocalString("sse.commandexecution.unexpectedexception",
-                        "Unexpected exception during command execution. {0}",
-                        thr.toString()));
-                ActionReport actionReport = new PropsFileActionReporter(); //new RestActionReporter();
-                actionReport.setFailureCause(thr);
-                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                AdminCommandState acs = new AdminCommandStateImpl(AdminCommandState.State.COMPLETED, actionReport, true, "unknown");
-                listener.onAdminCommandEvent(AdminCommandStateImpl.EVENT_STATE_CHANGED, acs);
-            } finally {
-                try {
-                    eventChannel.close();
-                } catch (IOException ex) {
-                    logger.log(Level.WARNING, null, ex);
-                }
-            }
-        }
-    }
-
 
     private Response executeCommand(CommandName commandName, Payload.Inbound inbound,
             ParameterMap params, boolean supportsMultiparResult, String xIndentHeader,

@@ -58,6 +58,7 @@ import org.glassfish.admin.rest.results.ActionReportResult;
 
 
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.jersey.media.sse.EventChannel;
 
 /**
  *
@@ -87,12 +88,25 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
                     "Unable to parse the input entity. Please check the syntax.");
             throw new WebApplicationException(ResourceUtil.getResponse(400, /*parsing error*/ errorMessage, requestHeaders, uriInfo));
         }
-
-        processCommandParams(data);
-        addQueryString(uriInfo.getQueryParameters(), data);
-        adjustParameters(data);
-        purgeEmptyEntries(data);
-        return executeCommand(data);
+        return executeCommand(preprocessData(data));
+    }
+    
+    @DELETE
+    @Consumes({
+        MediaType.APPLICATION_JSON,
+        MediaType.APPLICATION_XML,
+        MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces(EventChannel.SERVER_SENT_EVENTS)
+    public Response processDeleteSse(ParameterMap data) {
+        if (data == null) {
+            data = new ParameterMap();
+        }
+        if (data.containsKey("error")) {
+            String errorMessage = localStrings.getLocalString("rest.request.parsing.error",
+                    "Unable to parse the input entity. Please check the syntax.");
+            throw new WebApplicationException(ResourceUtil.getResponse(400, /*parsing error*/ errorMessage, requestHeaders, uriInfo));
+        }
+        return executeCommandAsSse(preprocessData(data));
     }
 
 //    //Handle POST request without any entity(input).
@@ -137,5 +151,13 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
     @GET
     public Object get() {
         return options();
+    }
+    
+    private ParameterMap preprocessData(final ParameterMap data) {
+        processCommandParams(data);
+        addQueryString(uriInfo.getQueryParameters(), data);
+        adjustParameters(data);
+        purgeEmptyEntries(data);
+        return data;
     }
 }

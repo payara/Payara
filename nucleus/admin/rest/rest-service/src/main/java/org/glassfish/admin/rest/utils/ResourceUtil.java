@@ -96,6 +96,7 @@ import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.jersey.media.sse.EventChannel;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
@@ -249,6 +250,28 @@ public class ResourceUtil {
                                                 String resultType,
                                                 Subject subject) {
         return runCommand(commandName, parameters, subject);
+    }
+    
+    public static EventChannel runCommandWithSse(final String commandName,
+                                                final ParameterMap parameters,
+                                                final Subject subject,
+                                                final SseCommandHelper.ActionReportProcessor processor) {
+        CommandRunner cr = Globals.getDefaultHabitat().getService(CommandRunner.class);
+        final RestActionReporter ar = new RestActionReporter();
+        final CommandInvocation commandInvocation = cr.getCommandInvocation(commandName, ar)
+                                                        .subject(subject)
+                                                        .parameters(parameters);
+        return SseCommandHelper.invokeAsync(commandInvocation, 
+                    new SseCommandHelper.ActionReportProcessor() {
+                            @Override
+                            public ActionReport process(ActionReport report, EventChannel ec) {
+                                addCommandLog(ar, commandName, parameters);
+                                if (processor != null) {
+                                    return processor.process(report, ec);
+                                }
+                                return ar;
+                            }
+                        });
     }
 
     public static RestActionReporter runCommand(String commandName,

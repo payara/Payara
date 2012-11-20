@@ -47,6 +47,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.glassfish.jersey.media.sse.EventChannel;
 
 /**
  *
@@ -68,12 +69,21 @@ public class TemplateCommandGetResource extends TemplateExecCommand {
         MediaType.APPLICATION_XML,
         MediaType.APPLICATION_FORM_URLENCODED})
     public Response processGet() {
-            ParameterMap data = new ParameterMap();
-            processCommandParams(data);
-            addQueryString(uriInfo.getQueryParameters(), data);
-            purgeEmptyEntries(data);
-            adjustParameters(data);
-
-            return executeCommand(data);
+        return executeCommand(prepareParameters());
+    }
+    
+    @GET
+    @Produces(EventChannel.SERVER_SENT_EVENTS)
+    public Response processSseGet() {
+        return executeCommandAsSse(prepareParameters());
+    }
+    
+    private ParameterMap prepareParameters() {
+        ParameterMap data = new ParameterMap();
+        processCommandParams(data);
+        addQueryString(uriInfo.getQueryParameters(), data);
+        purgeEmptyEntries(data);
+        adjustParameters(data);
+        return data;
     }
 }

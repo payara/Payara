@@ -44,7 +44,6 @@ import java.lang.reflect.Type;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
-import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.api.admin.AdminCommandState;
@@ -57,7 +56,6 @@ import org.glassfish.api.admin.AdminCommandState;
 @Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
 public class AdminCommandStateJsonProvider extends BaseProvider<AdminCommandState> {
     
-    private static final JsonFactory factory = new JsonFactory();
     private static final ActionReportJson2Provider actionReportJsonProvider = new ActionReportJson2Provider();
 
     public AdminCommandStateJsonProvider() {
@@ -78,44 +76,20 @@ public class AdminCommandStateJsonProvider extends BaseProvider<AdminCommandStat
         }
     }
     
-//    @Override
-//    public void writeTo(AdminCommandState proxy, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
-//            MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
-//        JsonGenerator out = factory.createJsonGenerator(entityStream, JsonEncoding.UTF8);
-//        out.writeStartObject();
-//        writeJson("admin-command-state", proxy, out);
-//        out.writeEndObject();
-//        out.flush();
-//    }
-    
     public JSONObject processState(AdminCommandState state) throws JSONException {
         JSONObject result = new JSONObject();
         result.put("state", state.getState().name());
         result.put("id", state.getId());
         result.put("empty-payload", state.isOutboundPayloadEmpty());
         ActionReporter ar = (ActionReporter) state.getActionReport();
-        if (ar != null) {
-            result.put("action-report", actionReportJsonProvider.processReport((ActionReporter) state.getActionReport()));
-        }
+        addActionReporter(ar, result);
         return result;
     }
     
-//    public void writeJson(String name, AdminCommandState state, JsonGenerator out) throws IOException {
-//        if (state == null) {
-//            return;
-//        }
-//        if (name != null) {
-//            out.writeObjectFieldStart(name);
-//        } else {
-//            out.writeStartObject();
-//        }
-//        out.writeStringField("state", state.getState().name());
-//        out.writeStringField("id", state.getId());
-//        out.writeBooleanField("empty-payload", state.isOutboundPayloadEmpty());
-//        actionReportJsonProvider.writeJson("action-report", (ActionReporter) state.getActionReport(), out);
-//        out.writeEndObject();
-//    }
-
-    
+    protected void addActionReporter(ActionReporter ar, JSONObject json) throws JSONException {
+        if (ar != null) {
+            json.put("action-report", actionReportJsonProvider.processReport(ar));
+        }
+    }
     
 }

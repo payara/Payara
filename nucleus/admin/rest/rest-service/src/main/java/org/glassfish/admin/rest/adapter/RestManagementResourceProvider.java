@@ -62,6 +62,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.admin.rest.provider.ProgressStatusEventJsonProvider;
+import org.glassfish.admin.rest.provider.ProgressStatusJsonProvider;
 
 /**
  * Responsible for providing ReST resources for management operations.
@@ -142,6 +144,11 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
 
         r.add(org.glassfish.admin.rest.provider.OptionsResultJsonProvider.class);
         r.add(org.glassfish.admin.rest.provider.OptionsResultXmlProvider.class);
+        
+        r.add(org.glassfish.jersey.media.sse.OutboundEventWriter.class);
+        r.add(org.glassfish.admin.rest.provider.AdminCommandStateCmdResultJsonProvider.class);
+        r.add(org.glassfish.admin.rest.provider.ProgressStatusJsonProvider.class);
+        r.add(org.glassfish.admin.rest.provider.ProgressStatusEventJsonProvider.class);
 
         return r;
     }

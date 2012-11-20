@@ -42,20 +42,17 @@
 package org.glassfish.admin.rest.adapter;
 
 import com.sun.enterprise.admin.remote.writer.PayloadPartProvider;
-import java.io.Serializable;
-import org.glassfish.admin.rest.provider.*;
-import org.glassfish.admin.rest.readers.JsonParameterMapProvider;
-import org.glassfish.admin.rest.readers.ParameterMapFormReader;
-import org.glassfish.admin.rest.resources.admin.CommandResource;
-import org.glassfish.common.util.Constants;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.media.sse.OutboundEventWriter;
-
-import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.ws.rs.core.MediaType;
+import org.glassfish.admin.rest.provider.*;
+import org.glassfish.admin.rest.readers.JsonParameterMapProvider;
+import org.glassfish.admin.rest.readers.ParameterMapFormReader;
+import org.glassfish.admin.rest.resources.admin.CommandResource;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.media.sse.OutboundEventWriter;
 
 /**
  * Responsible for providing ReST resources for {@code asadmin} and {@code cadmin} communication.

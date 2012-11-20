@@ -62,9 +62,11 @@ import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.model.ResponseBody;
+import org.glassfish.admin.rest.utils.SseCommandHelper;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.jersey.internal.util.collection.Ref;
+import org.glassfish.jersey.media.sse.EventChannel;
 import org.glassfish.security.services.common.SubjectUtil;
 
 /**
@@ -245,6 +247,23 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
      */
     protected ActionReporter executeCommand(String command, ParameterMap parameters, boolean throwBadRequest, boolean throwOnWarning) {
         return getCompositeUtil().executeCommand(getSubject(), command, parameters, throwBadRequest, throwOnWarning);
+    }
+    
+    /** Execute an <code>AdminCommand</code> with the specified parameters and
+     * return EventChannel suitable for SSE.
+     */
+    protected EventChannel executeSseCommand(final Subject subject, final String command, 
+                                        final ParameterMap parameters, 
+                                        final SseCommandHelper.ActionReportProcessor processor) {
+        return getCompositeUtil().executeSseCommand(subject, command, parameters, processor);
+    }
+    
+    /** Execute an <code>AdminCommand</code> with the specified parameters and
+     * return EventChannel suitable for SSE.
+     */
+    protected EventChannel executeSseCommand(final Subject subject, final String command, 
+                                        final ParameterMap parameters) {
+        return getCompositeUtil().executeSseCommand(subject, command, parameters);
     }
 
     /**

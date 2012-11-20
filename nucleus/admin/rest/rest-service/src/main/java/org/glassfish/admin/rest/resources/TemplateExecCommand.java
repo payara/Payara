@@ -68,6 +68,7 @@ import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.utils.Util;
+import org.glassfish.jersey.media.sse.EventChannel;
 
 /**
  * @author ludo
@@ -144,6 +145,11 @@ public class TemplateExecCommand implements OptionsCapable {
                 throw new RuntimeException(ex);
             }
         }
+    }
+    
+    protected Response executeCommandAsSse(ParameterMap data) {
+        EventChannel ec = ResourceUtil.runCommandWithSse(commandName, data, null, null);
+        return Response.status(HttpURLConnection.HTTP_OK).entity(ec).build();
     }
 
     protected Response executeCommand(ParameterMap data) {
