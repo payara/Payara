@@ -443,7 +443,8 @@ public class RemoteAdminCommand {
                 String paramName = opt.getName();
                 
                 List<String> paramValues = new ArrayList<String>(options.get(paramName.toLowerCase(Locale.ENGLISH)));
-                if (!opt.getParam().alias().isEmpty()){
+                if (!opt.getParam().alias().isEmpty() && 
+                        !paramName.equalsIgnoreCase(opt.getParam().alias())){
                     paramValues.addAll(options.get(opt.getParam().alias().toLowerCase(Locale.ENGLISH)));
                 }
                 if (!opt.getParam().multiple() && paramValues.size() > 1) {
