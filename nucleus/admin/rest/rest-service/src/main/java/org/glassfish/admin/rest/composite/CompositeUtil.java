@@ -463,7 +463,7 @@ public class CompositeUtil {
      * return EventChannel suitable for SSE.
      */
     public EventChannel executeSseCommand(Subject subject, String command, ParameterMap parameters) {
-        return executeSseCommand(subject, command, parameters);
+        return executeSseCommand(subject, command, parameters, null);
     }
     
     /** Execute an <code>AdminCommand</code> with the specified parameters and
