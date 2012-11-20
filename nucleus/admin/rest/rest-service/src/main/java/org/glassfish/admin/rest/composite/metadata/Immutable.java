@@ -56,5 +56,3 @@ import javax.inject.Qualifier;
 @Target(ElementType.METHOD)
 public @interface Immutable {
 }
-
-
