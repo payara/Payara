@@ -43,9 +43,11 @@ import java.util.List;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.composite.metadata.AttributeReference;
+import org.glassfish.admin.rest.composite.metadata.CreateOnly;
 
-public interface BaseModel {
+public interface BaseModel extends RestModel {
     @NotNull
     String getName();
     void setName(String name);
@@ -67,4 +69,8 @@ public interface BaseModel {
 
     String[] getStringArray();
     void setStringArray(String[] array);
+
+    @CreateOnly
+    String getCreateOnly();
+    void setCreateOnly(String value);
 }

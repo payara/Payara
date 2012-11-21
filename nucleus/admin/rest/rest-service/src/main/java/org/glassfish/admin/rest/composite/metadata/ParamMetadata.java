@@ -60,6 +60,7 @@ public class ParamMetadata {
     private boolean readOnly = false;
     private boolean confidential = false;
     private boolean immutable = false;
+    private boolean createOnly = false;
     private OptionsCapable context;
     private Class<?> paramType;
 
@@ -84,6 +85,9 @@ public class ParamMetadata {
             }
             if (a.annotationType().equals(Immutable.class)) {
                 immutable = true;
+            }
+            if (a.annotationType().equals(CreateOnly.class)) {
+                createOnly = true;
             }
         }
     }
@@ -135,6 +139,7 @@ public class ParamMetadata {
         o.put("readOnly", readOnly);
         o.put("confidential", confidential);
         o.put("immutable", immutable);
+        o.put("createOnly", createOnly);
         return o;
     }
 
