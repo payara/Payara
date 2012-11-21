@@ -202,10 +202,12 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
         // description, display-name, icons...
         writeDisplayableComponentInfo(bundleNode, descriptor);
 
-        WLWebServiceNode wsNode = new WLWebServiceNode();
+        if (descriptor instanceof WebServicesDescriptor) {
+            WLWebServiceNode wsNode = new WLWebServiceNode();
             for(WebService next : ((WebServicesDescriptor)descriptor).getWebServices()) {
                 wsNode.writeDescriptor(bundleNode, WebServicesTagNames.WEB_SERVICE,next);
             }
+        }
         return bundleNode;
     }
 
