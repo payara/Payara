@@ -160,6 +160,11 @@ public class AdminCommandContextImpl implements  AdminCommandContext {
         public void progress(String message) {
             throw new IllegalStateException(EXC_MESSAGE);
         }
+        
+        @Override
+        public void progress(int steps, String message, boolean spinner) {
+            throw new IllegalStateException(EXC_MESSAGE);
+        }
 
         @Override
         public void setCurrentStepCount(int stepCount) {
@@ -196,7 +201,7 @@ public class AdminCommandContextImpl implements  AdminCommandContext {
             }
             return id;
         }
-        
+
     }
 
 }

@@ -125,19 +125,9 @@ public class ProgressStatusMirroringImpl extends ProgressStatusBase {
             changed.add(ProgressStatusEvent.Changed.TOTAL_STEPS);
         }
         if (!changed.isEmpty()) {
-            super.fireEvent(null, changed.toArray(new ProgressStatusEvent.Changed[changed.size()]));
+            super.fireEvent(null, false, changed.toArray(new ProgressStatusEvent.Changed[changed.size()]));
         }
     }
-    
-//    @Override
-//    public synchronized Collection<ProgressStatusBase> getChildren() {
-//        return new ArrayList<ProgressStatusBase>(mirroreds);
-//    }
-//    
-//    @Override
-//    public Set<ChildProgressStatus> getChildProgressStatuses() {
-//        return children;
-//    }
     
     @Override
     protected synchronized float computeCompleteSteps() {

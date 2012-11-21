@@ -58,8 +58,39 @@ import org.glassfish.api.admin.progress.ProgressStatusEvent;
  */
 public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundEvent> {
     
+    private class Ticker extends Thread {
+        
+        private final long pause;
+        private volatile boolean stop = false;
+
+        public Ticker(long pause) {
+            this.pause = pause;
+            this.setDaemon(true);
+        }
+        
+        public void stopit() {
+            this.stop = true;
+        }
+        
+        @Override
+        public void run() {
+            do {
+                try {
+                    Thread.sleep(pause);
+                } catch (InterruptedException ex) {
+                }
+                if (stop) {
+                    return;
+                }
+            } while (spin());
+        }
+        
+    }
+    
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(ProgressStatusPrinter.class);
+    
+    private static final char[] spinner = new char[] {'|', '/', '-', '\\'};
     
     private int lastPercentage = -1;
     private String lastMessage = "";
@@ -67,20 +98,54 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
     private int lastSumSteps = -1;
     private int lastMsgLength = 0;
     private boolean firstPrint = true;
-    
+    private int spinnerIndex = -1;
+    private Ticker ticker = null;
     
     private ProgressStatusClient client = new ProgressStatusClient(null);
     private CommandProgress commandProgress;
     private final boolean disableAnimation;
+    private final boolean debugOutput; 
     private final Logger logger;
 
-    public ProgressStatusPrinter(boolean disableAnimation, Logger logger) {
+    /** Construct new printer
+     * @param disableAnimation will print each message on new line and spinner as dots
+     * @param debugOutput expect printing of other data together with progress. 
+     *                    New line must be printed ASAP.
+     */
+    public ProgressStatusPrinter(boolean disableAnimation, boolean debugOutput, Logger logger) {
         this.disableAnimation = disableAnimation;
+        this.debugOutput = debugOutput;
         if (logger == null) {
             this.logger = Logger.getLogger(ProgressStatusPrinter.class.getName());
         } else {
             this.logger = logger;
         }
+    }
+    
+    private synchronized boolean spin() {
+        if (commandProgress == null || 
+                !commandProgress.isSpinnerActive() || 
+                debugOutput ||
+                lastMsgLength <= 1) {
+            return false;
+        }
+        if (spinnerIndex >= 0 && !disableAnimation) {
+            System.out.print("\b\b");
+            lastMsgLength -= 2;
+        }
+        spinnerIndex++;
+        if (spinnerIndex >= spinner.length) {
+            spinnerIndex = 0;
+        }
+        if (disableAnimation) {
+            System.out.print('.');
+            lastMsgLength++;
+        } else {
+            System.out.print(spinner[spinnerIndex]);
+            System.out.print(' ');
+            lastMsgLength += 2;
+        }
+        return true;
     }
     
     @Override
@@ -147,8 +212,16 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
             }
             //Print
             if (printIt) {
-                if (disableAnimation) {
-                    System.out.println(outMsg);
+                if (disableAnimation || debugOutput) {
+                    if (!firstPrint && !debugOutput) {
+                        System.out.println();
+                    }
+                    firstPrint = false;
+                    System.out.print(outMsg);
+                    this.lastMsgLength = outMsg.length();
+                    if (debugOutput) {
+                        System.out.println();
+                    }
                 } else {
                     if (!firstPrint) {
                         System.out.print('\r');
@@ -161,7 +234,25 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
                     for (int i = 0; i < spaceCount; i++) {
                         System.out.print(' ');
                     }
+                    for (int i = 0; i < spaceCount; i++) {
+                        System.out.print('\b');
+                    }
                     lastMsgLength = outMsg.length();
+                    spinnerIndex = -1;
+                }
+            }
+            //Change ticker
+            if (!debugOutput && commandProgress != null) {
+                if (commandProgress.isSpinnerActive()) {
+                    if (this.ticker == null) {
+                        this.ticker = new Ticker(disableAnimation ? 1500L : 500L);
+                        this.ticker.start();
+                    }
+                } else {
+                    if (this.ticker != null) {
+                        this.ticker.stopit();
+                        this.ticker = null;
+                    }
                 }
             }
         }
@@ -171,7 +262,7 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
         if (lastMsgLength <= 0) {
             return;
         }
-        if (disableAnimation) {
+        if (disableAnimation || debugOutput) {
             System.out.println();
         } else {
             System.out.print('\r');
@@ -180,6 +271,11 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
             }
             System.out.print('\r');
         }
+        if (this.ticker != null) {
+            this.ticker.stopit();
+            this.ticker = null;
+        }
+        lastMsgLength = 0;
     }
 
     public synchronized void reset() {
@@ -191,6 +287,10 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
         lastSumSteps = -1;
         lastMsgLength = 0;
         firstPrint = true;
+        if (this.ticker != null) {
+            this.ticker.stopit();
+            this.ticker = null;
+        }
     }
     
 }

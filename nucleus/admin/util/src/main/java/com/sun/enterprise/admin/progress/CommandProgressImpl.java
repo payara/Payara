@@ -53,7 +53,7 @@ import org.glassfish.api.admin.progress.ProgressStatusMirroringImpl;
  * @author mmares
  */
 public class CommandProgressImpl extends ProgressStatusImpl implements CommandProgress {
-    
+
     public class LastChangedMessage {
         
         private String sourceId;
@@ -105,6 +105,7 @@ public class CommandProgressImpl extends ProgressStatusImpl implements CommandPr
     private Date startTime;
     private Date endTime;
     private AdminCommandEventBroker eventBroker;
+    private boolean spinner = false;
     
     public CommandProgressImpl(String name, String id) {
         super(name, -1, null, id);
@@ -116,8 +117,18 @@ public class CommandProgressImpl extends ProgressStatusImpl implements CommandPr
         if (event == null) {
             return;
         }
+        boolean messageChanged = false;
         if (event.getMessage() != null && !event.getMessage().isEmpty()) {
             lastMessage = new LastChangedMessage(event.getSource().getId(), event.getMessage());
+            messageChanged = true;
+        }
+        if (event.getChanged() != null && event.getChanged().contains(ProgressStatusEvent.Changed.SPINNER)) {
+            if (!messageChanged && event.isSpinner() == spinner && event.getChanged().size() == 1) {
+                //Just spinner change but no change at all
+                return;
+            } else {
+                this.spinner = event.isSpinner();
+            }
         }
         eTag++;
         if (eventBroker != null) {
@@ -187,6 +198,11 @@ public class CommandProgressImpl extends ProgressStatusImpl implements CommandPr
     public void complete(String message) {
         this.endTime = new Date();
         super.complete(message);
+    }
+    
+    @Override
+    public boolean isSpinnerActive() {
+        return this.spinner;
     }
     
 }

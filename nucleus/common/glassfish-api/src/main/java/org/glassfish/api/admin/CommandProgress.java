@@ -78,4 +78,6 @@ public interface CommandProgress extends ProgressStatus {
     
     public int computeSumSteps();
     
+    public boolean isSpinnerActive();
+    
 }

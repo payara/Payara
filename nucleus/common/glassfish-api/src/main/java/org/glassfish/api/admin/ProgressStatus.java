@@ -203,6 +203,22 @@ public interface ProgressStatus {
      * 
      * @param steps the number of steps taken. Negative steps will reduce 
      *        the completion percentage. Never to non-negative value.
+     * @param message to be displayed by the client. 
+     * @param spinner {@code true} starts showing the spinner. It will be 
+     *                active until next progress.
+     */
+    public void progress(int steps, String message, boolean spinner);
+    
+    /** Indicates progress occurred.  
+     * The steps taken will be used to reduce the remaining step count.
+     * If the number of steps taken exceeds the total step count the
+     * current step count will be normalized to the total step count. This 
+     * avoids the completion percentage ever exceeding 100%.   The message
+     * will be sent to the client along with the completion percentage if
+     * it can be computed.
+     * 
+     * @param steps the number of steps taken. Negative steps will reduce 
+     *        the completion percentage. Never to non-negative value.
      * @param message to be displayed by the client.  
      */
     public void progress(int steps, String message);

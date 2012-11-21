@@ -92,5 +92,5 @@ public class ProgressStatusImpl extends ProgressStatusBase {
         String childId = (id == null ? "" : id) + "." + (children.size() + 1);
         return new ProgressStatusImpl(name, totalStepCount, this, childId);
     }  
-    
+
 }

@@ -50,16 +50,17 @@ import java.util.List;
 public class ProgressStatusEvent {
     
     public enum Changed {
-        NEW_CHILD, STEPS, TOTAL_STEPS, COMPLETED;
+        NEW_CHILD, STEPS, TOTAL_STEPS, COMPLETED, SPINNER;
     }
     
     private final ProgressStatusDTO source;
     private final String parentSourceId;
     private final List<Changed> changed;
     private final String message;
+    private final boolean spinner;
     private final int allocatedSteps; //For new child only
 
-    private ProgressStatusEvent(ProgressStatusBase source, String message, int allocatedSteps, Changed... changed) {
+    private ProgressStatusEvent(ProgressStatusBase source, String message, boolean spinner, int allocatedSteps, Changed... changed) {
         this.source = base2DTO(source);
         this.changed = new ArrayList<Changed>();
         if (changed != null) {
@@ -70,6 +71,7 @@ public class ProgressStatusEvent {
             }
         }
         this.message = message;
+        this.spinner = spinner;
         this.allocatedSteps = allocatedSteps;
         ProgressStatusBase parrent = source.getParrent();
         if (parrent != null) {
@@ -79,17 +81,17 @@ public class ProgressStatusEvent {
         }
     }
     
-    public ProgressStatusEvent(ProgressStatusBase source, String message, Changed... changed) {
-        this(source, message, 0, changed);
+    public ProgressStatusEvent(ProgressStatusBase source, String message, boolean spinner, Changed... changed) {
+        this(source, message, spinner, 0, changed);
     }
 
     /** Constructor only for {@code Changed.NEW_CHILD}
      */
     public ProgressStatusEvent(ProgressStatusBase source, int allocatedSteps) {
-        this(source, null, allocatedSteps, new Changed[] {Changed.NEW_CHILD});
+        this(source, null, false, allocatedSteps, new Changed[] {Changed.NEW_CHILD});
     }
 
-    public ProgressStatusEvent(ProgressStatusDTO source, String parentSourceId, String message, int allocatedSteps, Changed... changed) {
+    public ProgressStatusEvent(ProgressStatusDTO source, String parentSourceId, String message, boolean spinner, int allocatedSteps, Changed... changed) {
         this.source = source;
         this.parentSourceId = parentSourceId;
         this.changed = new ArrayList<Changed>();
@@ -101,6 +103,7 @@ public class ProgressStatusEvent {
             }
         }
         this.message = message;
+        this.spinner = spinner;
         this.allocatedSteps = allocatedSteps;
     }
     
@@ -136,5 +139,11 @@ public class ProgressStatusEvent {
     public String getParentSourceId() {
         return parentSourceId;
     }
+
+    public boolean isSpinner() {
+        return spinner;
+    }
+    
+    
     
 }

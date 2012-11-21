@@ -146,7 +146,9 @@ public class RemoteCLICommand extends CLICommand {
 
             sessionCache = new File(AsadminSecurityUtil.getDefaultClientDir(),
                     sessionFilePath.toString());
-            statusPrinter = new ProgressStatusPrinter(env.debug() || env.trace() || System.console() == null, logger);
+            statusPrinter = new ProgressStatusPrinter(env.debug() || env.trace() || System.console() == null, 
+                    env.debug() || env.trace(),
+                    logger);
             if (!programOpts.isTerse()) {
                 super.registerListener(CommandProgress.EVENT_PROGRESSSTATUS_CHANGE, statusPrinter);
                 super.registerListener(CommandProgress.EVENT_PROGRESSSTATUS_STATE, statusPrinter);

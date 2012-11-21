@@ -104,6 +104,9 @@ public class ProgressStatusEventJsonProvider extends BaseProvider<ProgressStatus
         if (event.getMessage() != null && !event.getMessage().isEmpty()) {
             out.writeStringField("message", event.getMessage());
         }
+        if (event.isSpinner()) {
+            out.writeBooleanField("spinner", event.isSpinner());
+        }
         if (event.getAllocatedSteps() > 0) {
             out.writeNumberField("allocated-steps", event.getAllocatedSteps());
         }

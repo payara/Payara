@@ -97,6 +97,7 @@ public class ProgressStatusEventJsonReader implements MessageBodyReader<Progress
         ProgressStatusDTO source = null;
         List<Changed> changed = new ArrayList<Changed>();
         String message = null;
+        boolean spinner = false;
         int allocatedSteps = 0;
         String parentId = null;
         while (jp.nextToken() != JsonToken.END_OBJECT) {
@@ -104,6 +105,8 @@ public class ProgressStatusEventJsonReader implements MessageBodyReader<Progress
             jp.nextToken(); // move to value
             if ("message".equals(fieldname)) {
                 message = jp.getText();
+            } else if ("spinner".equals(fieldname)) {
+                spinner = jp.getBooleanValue();
             } else if ("allocated-steps".equals(fieldname)) {
                 allocatedSteps = jp.getIntValue();
             } else if ("parent-id".equals(fieldname)) {
@@ -116,7 +119,7 @@ public class ProgressStatusEventJsonReader implements MessageBodyReader<Progress
                 source = ProgressStatusDTOJsonReader.readProgressStatus(jp);
             }
         }
-        return new ProgressStatusEvent(source, parentId, message, allocatedSteps, changed.toArray(new Changed[changed.size()]));
+        return new ProgressStatusEvent(source, parentId, message, spinner, allocatedSteps, changed.toArray(new Changed[changed.size()]));
     }
     
 }

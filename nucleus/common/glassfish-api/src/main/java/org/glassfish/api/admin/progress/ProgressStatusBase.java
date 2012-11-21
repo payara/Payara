@@ -153,8 +153,8 @@ public abstract class ProgressStatusBase implements ProgressStatus {
         }
     }
     
-    protected final void fireEvent(String message, ProgressStatusEvent.Changed... changed) {
-        fireEvent(new ProgressStatusEvent(this, message, changed));
+    protected final void fireEvent(String message, boolean spinner, ProgressStatusEvent.Changed... changed) {
+        fireEvent(new ProgressStatusEvent(this, message, spinner, changed));
     }
     
     @Override
@@ -166,7 +166,7 @@ public abstract class ProgressStatusBase implements ProgressStatus {
         if (totalStepCount >= 0 && this.currentStepCount > totalStepCount) {
             this.currentStepCount = totalStepCount;
         }
-        fireEvent(null, ProgressStatusEvent.Changed.TOTAL_STEPS);
+        fireEvent(null, false, ProgressStatusEvent.Changed.TOTAL_STEPS);
     }
 
     @Override
@@ -184,7 +184,7 @@ public abstract class ProgressStatusBase implements ProgressStatus {
     }
 
     @Override
-    public synchronized void progress(int steps, String message) {
+    public synchronized void progress(int steps, String message, boolean spinner) {
         if (completed) {
             return;
         }
@@ -201,19 +201,26 @@ public abstract class ProgressStatusBase implements ProgressStatus {
                 stepsChanged = true;
             }
         }
-        if (stepsChanged || (message != null && !message.isEmpty())) {
-            fireEvent(message, stepsChanged ? ProgressStatusEvent.Changed.STEPS : null);
+        if (stepsChanged) {
+            fireEvent(message, spinner, ProgressStatusEvent.Changed.SPINNER, ProgressStatusEvent.Changed.STEPS);
+        } else if (message != null && !message.isEmpty()) {
+            fireEvent(message, spinner, ProgressStatusEvent.Changed.SPINNER);
         }
+    }
+    
+    @Override
+    public synchronized void progress(int steps, String message) {
+        progress(steps, message, false);
     }
 
     @Override
     public void progress(int steps) {
-        progress(steps, null);
+        progress(steps, null, false);
     }
 
     @Override
     public void progress(String message) {
-        progress(0, message);
+        progress(0, message, false);
     }
 
     @Override
@@ -232,14 +239,14 @@ public abstract class ProgressStatusBase implements ProgressStatus {
             }
         }
         if (stepsChanged) {
-            fireEvent(null, ProgressStatusEvent.Changed.STEPS);
+            fireEvent(null, false, ProgressStatusEvent.Changed.STEPS);
         }
     }
 
     @Override
     public void complete(String message) {
         if (completeSilently()) {
-            fireEvent(message, ProgressStatusEvent.Changed.COMPLETED);
+            fireEvent(message, false, ProgressStatusEvent.Changed.COMPLETED);
         }
     }
     
@@ -285,9 +292,9 @@ public abstract class ProgressStatusBase implements ProgressStatus {
                 if (currentStepCount < 0) {
                     currentStepCount = 0;
                     totalStepCount = allocatedSteps;
-                    fireEvent(null, ProgressStatusEvent.Changed.STEPS, ProgressStatusEvent.Changed.TOTAL_STEPS);
+                    fireEvent(null, false, ProgressStatusEvent.Changed.STEPS, ProgressStatusEvent.Changed.TOTAL_STEPS);
                 } else {
-                    fireEvent(null, ProgressStatusEvent.Changed.STEPS);
+                    fireEvent(null, false, ProgressStatusEvent.Changed.STEPS);
                 }
             }
         }

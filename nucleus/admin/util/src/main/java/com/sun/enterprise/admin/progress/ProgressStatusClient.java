@@ -150,14 +150,16 @@ public class ProgressStatusClient {
                     case STEPS:
                         effected.setCurrentStepCount(event.getSource().getCurrentStepCount());
                         if (StringUtils.ok(event.getMessage())) {
-                            effected.progress(event.getMessage());
+                            effected.progress(0, event.getMessage(), event.isSpinner());
                         }
                         break;
                     case TOTAL_STEPS:
                         effected.setTotalStepCount(event.getSource().getTotalStepCount());
                         if (StringUtils.ok(event.getMessage())) {
-                            effected.progress(event.getMessage());
+                            effected.progress(0, event.getMessage(), event.isSpinner());
                         }
+                        break;
+                    case SPINNER:
                         break;
                     default:
                         throw new AssertionError();
@@ -165,7 +167,7 @@ public class ProgressStatusClient {
             }
         } else {
             if (StringUtils.ok(event.getMessage())) {
-                effected.progress(event.getMessage());
+                effected.progress(0, event.getMessage(), event.isSpinner());
             }
         }
     }
