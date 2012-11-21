@@ -37,21 +37,59 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.admin.rest.model;
+package org.glassfish.admin.rest.provider;
 
 import java.util.List;
-import org.glassfish.admin.rest.composite.RestModel;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.ext.Provider;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.model.Message;
+import org.glassfish.admin.rest.model.ResponseBody;
+import org.glassfish.admin.rest.utils.JsonUtil;
 
-public interface ResponseBody {
-    public static final String EVENT_NAME="response/body";
-    List<Message> getMessages();
-    void setMessages(List<Message> messages);
-    RestModel getEntity();
-    ResponseBody setEntity(RestModel entity);
+/**
+ *
+ * @author jdlee
+ */
+@Provider
+@Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
+public class ResponseBodyWriter extends BaseProvider<ResponseBody> {
+    public ResponseBodyWriter() {
+        super(ResponseBody.class, MediaType.APPLICATION_JSON_TYPE);
+    }
+    
+    @Override
+    public String getContent(ResponseBody body) {
+        StringBuilder sb = new StringBuilder();
+        try {
+            JSONObject object = new JSONObject();
+            final List<Message> messages = body.getMessages();
+            // {"messages":[{"message":"The SDP 'JavaEE' has been loaded.","severity":"SUCCESS"}]}
+            if (!messages.isEmpty()) {
+                JSONArray array = new JSONArray();
+                for (Message message : messages) {
+                    JSONObject o = new JSONObject();
+                    o.put("message", message.getMessage());
+                    o.put("severity", message.getSeverity().toString());
+                    array.put(o);
+                }
+                object.put("messages", array);
+            }
+            if (body.getEntity() != null) {
+                object.put("item", JsonUtil.getJsonObject(body.getEntity()));
+            }
+            
+            sb.append(object.toString(getFormattingIndentLevel()));
+        } catch (JSONException ex) {
+            Logger.getLogger(RestModelWriter.class.getName()).
+                    log(Level.SEVERE, null, ex);
+        }
 
-    ResponseBody add(Message.Severity severity, String message);
-    ResponseBody add(Message message);
-    ResponseBody addSuccess(String message);
-    ResponseBody addWarning(String message);
-    ResponseBody addFailure(String message);
+        return sb.toString();
+    }
 }

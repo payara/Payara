@@ -41,6 +41,7 @@ package org.glassfish.admin.rest.utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.model.Message;
 import org.glassfish.admin.rest.model.Message.Severity;
 import org.glassfish.admin.rest.model.ResponseBody;
@@ -50,37 +51,54 @@ import org.glassfish.admin.rest.model.ResponseBody;
  * @author tmoreau
  */
 public class ResponseBodyImpl implements ResponseBody {
-
-    private List<Message> _Messages = new ArrayList<Message>();
+    private List<Message> messages = new ArrayList<Message>();
+    private RestModel entity;
 
     @Override
     public List<Message> getMessages() {
-        return this._Messages;
+        return this.messages;
     }
 
     @Override
     public void setMessages(List<Message> val) {
-        this._Messages = val;
+        this.messages = val;
     }
 
+    @Override
+    public RestModel getEntity() {
+        return entity;
+    }
+
+    @Override
+    public ResponseBody setEntity(RestModel entity) {
+        this.entity = entity;
+        return this;
+    }
+
+    @Override
     public ResponseBodyImpl addSuccess(String message) {
         return add(Severity.SUCCESS, message);
     }
 
+    @Override
     public ResponseBodyImpl addWarning(String message) {
         return add(Severity.WARNING, message);
     }
 
+    @Override
     public ResponseBodyImpl addFailure(String message) {
         return add(Severity.FAILURE, message);
     }
 
+    @Override
     public ResponseBodyImpl add(Severity severity, String message) {
         return add(new MessageImpl(severity, message));
     }
 
+    @Override
     public ResponseBodyImpl add(Message message) {
         getMessages().add(message);
         return this;
     }
+    
 }

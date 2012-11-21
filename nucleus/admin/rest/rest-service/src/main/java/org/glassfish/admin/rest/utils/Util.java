@@ -61,6 +61,7 @@ import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.client.ClientFactory;
 import javax.ws.rs.core.HttpHeaders;
 import org.glassfish.admin.rest.Constants;
+import org.glassfish.admin.rest.model.ResponseBody;
 
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.admin.restconnector.RestConfig;
@@ -589,7 +590,7 @@ public class Util {
      * Convenience wrapper around ResponseBodyImpl constructor to make it easier to use its fluent API
      * @return ResponseBodyImpl
      */
-    public static ResponseBodyImpl responseBody() {
+    public static ResponseBody responseBody() {
         return new ResponseBodyImpl();
     }
 }

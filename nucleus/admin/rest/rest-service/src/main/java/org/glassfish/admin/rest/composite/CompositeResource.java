@@ -298,13 +298,6 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
         return "";
     }
     
-    protected Response created(URI location, RestModel model) {
-        return Response
-                .status(Status.CREATED)
-                .header("Location", location)
-                .entity(model).build();
-    }
-
     protected Response created(URI location, ResponseBody responseBody) {
         return Response
                 .status(Status.CREATED)
