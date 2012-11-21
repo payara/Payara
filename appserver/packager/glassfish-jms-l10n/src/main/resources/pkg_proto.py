@@ -53,7 +53,7 @@ pkg = {
                         "info.classification" : conf.glassfish_info_classification,
                       },
     "depends"       : { 
-                        "pkg:/glassfish-jms@3.1" : {"type" : "require" },
+                        "pkg:/glassfish-jms" : {"type" : "require" },
                       },
     "dirtrees"      : [ "glassfish" ],
     "licenses"      : {

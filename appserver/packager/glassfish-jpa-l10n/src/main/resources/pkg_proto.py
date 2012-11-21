@@ -53,7 +53,7 @@ pkg = {
                         "info.classification" : conf.glassfish_info_classification,
                       },
     "depends"       : { 
-                        "pkg:/glassfish-jpa@3.1" : {"type" : "require" },
+                        "pkg:/glassfish-jpa" : {"type" : "require" },
                       },
     "dirtrees"      : [ "glassfish" ],
     "licenses"      : {

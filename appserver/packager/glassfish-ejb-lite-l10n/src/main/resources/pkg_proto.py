@@ -53,7 +53,7 @@ pkg = {
                         "info.classification" : conf.glassfish_info_classification,
                       },
     "depends"       : { 
-                        "pkg:/glassfish-ejb-lite@3.1" : {"type" : "require" },
+                        "pkg:/glassfish-ejb-lite" : {"type" : "require" },
                       },
     "dirtrees"      : [ "glassfish" ],
     "licenses"      : {

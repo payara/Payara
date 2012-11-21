@@ -53,7 +53,7 @@ pkg = {
                         "info.classification" : conf.glassfish_info_classification,
                       },
     "depends"       : { 
-			"pkg:/glassfish-nucleus@3.1" : {"type" : "require" },
+			"pkg:/glassfish-nucleus" : {"type" : "require" },
                       },
     "dirtrees"      : [ "glassfish", "bin" ],
     "licenses"      : {
