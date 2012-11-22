@@ -1434,34 +1434,31 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         setAddressList();
     }
 
-    protected JmsHost getJmsHost()
-    {
+    protected JmsHost getJmsHost() {
         String defaultJmsHost = getJmsService().getDefaultJmsHost();
-        JmsHost jmsHost = null;
         if (defaultJmsHost == null || defaultJmsHost.equals("")) {
-            jmsHost = (JmsHost) Globals.get(JmsHost.class); //ServerBeansFactory.getJmsHostBean(ctx);
-        } else {
-                List jmsHostsList = getJmsService().getJmsHost();
+            return (JmsHost) Globals.get(JmsHost.class);
+        }
 
-                for (int i=0; i < jmsHostsList.size(); i ++)
-                {
-                    JmsHost tmpJmsHost = (JmsHost) jmsHostsList.get(i);
-                    if (tmpJmsHost != null && tmpJmsHost.getName().equals(defaultJmsHost))
-                        jmsHost = tmpJmsHost;
-                }
-            if(jmsHost == null){
-                if (jmsHostsList != null && jmsHostsList.size() > 0){
-                    jmsHost = (JmsHost) jmsHostsList.get(0);
-                }else
-                    jmsHost = (JmsHost) Globals.get(JmsHost.class);
+        List jmsHostsList = getJmsService().getJmsHost();
+        if (jmsHostsList == null || jmsHostsList.size() == 0) {
+            return (JmsHost) Globals.get(JmsHost.class);
+        }
 
+        JmsHost jmsHost = null;
+        for (int i=0; i < jmsHostsList.size(); i ++) {
+            JmsHost tmpJmsHost = (JmsHost) jmsHostsList.get(i);
+            if (tmpJmsHost != null && tmpJmsHost.getName().equals(defaultJmsHost)) {
+                jmsHost = tmpJmsHost;
+                break;
             }
-
-
-            //jmsHost = jmsService.getJmsHostByName(defaultJmsHost);
+        }
+        if (jmsHost == null) {
+            jmsHost = (JmsHost) jmsHostsList.get(0);
         }
         return jmsHost;
     }
+
     /**
      * Updates the JmsHost information in the MQAddressList of the resource adapter.
      *
@@ -1576,7 +1573,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         setProperty(cd, envProp6);
 
         boolean useExternal = shouldUseExternalRmiRegistry(jmsraUtil);
-        val = (new Boolean(useExternal)).toString();
+        val = Boolean.valueOf(useExternal).toString();
         ConnectorConfigProperty  envProp7 = new ConnectorConfigProperty  (
             USEEXTERNALRMIREGISTRY, val, val, "java.lang.Boolean");
         setProperty(cd, envProp7);
@@ -2168,8 +2165,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         }
 
         if (ep == null) {
-       String msg = sm.getString("ajra.cannot_find_phy_dest", ep);
-           throw new ConnectorRuntimeException(msg);
+            String msg = sm.getString("ajra.cannot_find_phy_dest", null);
+            throw new ConnectorRuntimeException(msg);
         }
 
         return ep.getValue();
