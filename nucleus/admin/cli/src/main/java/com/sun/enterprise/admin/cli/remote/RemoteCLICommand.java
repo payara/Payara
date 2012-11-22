@@ -281,6 +281,9 @@ public class RemoteCLICommand extends CLICommand {
         
         @Override
         protected boolean useSse() throws CommandException {
+            if (env.getBooleanOption("NOSSE")) {
+                return false;
+            }
             return programOpts.isDetachedCommand() || listeners.size() > 0 || super.useSse();
         }
         
