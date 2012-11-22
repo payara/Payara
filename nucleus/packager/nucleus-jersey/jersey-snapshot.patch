@@ -1,6 +1,6 @@
 Index: nucleus/admin/rest/rest-client/src/main/java/org/glassfish/admin/rest/client/ClientWrapper.java
 ===================================================================
---- nucleus/admin/rest/rest-client/src/main/java/org/glassfish/admin/rest/client/ClientWrapper.java	(revision 57017)
+--- nucleus/admin/rest/rest-client/src/main/java/org/glassfish/admin/rest/client/ClientWrapper.java	(revision 57065)
 +++ nucleus/admin/rest/rest-client/src/main/java/org/glassfish/admin/rest/client/ClientWrapper.java	(working copy)
 @@ -53,12 +53,11 @@
  import javax.ws.rs.core.Link;
@@ -29,27 +29,9 @@ Index: nucleus/admin/rest/rest-client/src/main/java/org/glassfish/admin/rest/cli
          realClient.configuration().register(new CsrfProtectionFilter());
          if ((userName != null) && (password != null)) {
              realClient.configuration().register(new HttpBasicAuthFilter(userName, password));
-Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/adapter/RestCommandResourceProvider.java
-===================================================================
---- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/adapter/RestCommandResourceProvider.java	(revision 57017)
-+++ nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/adapter/RestCommandResourceProvider.java	(working copy)
-@@ -76,13 +76,6 @@
-     }
- 
-     @Override
--    public Map<String, Boolean> getFeatures() {
--        final Map<String, Boolean> features = super.getFeatures();
--        //features.put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
--        return features;
--    }
--
--    @Override
-     public Map<String, MediaType> getMimeMappings() {
-         if (mappings == null) {
-             mappings = new HashMap<String, MediaType>();
 Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/adapter/AbstractRestResourceProvider.java
 ===================================================================
---- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/adapter/AbstractRestResourceProvider.java	(revision 57017)
+--- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/adapter/AbstractRestResourceProvider.java	(revision 57065)
 +++ nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/adapter/AbstractRestResourceProvider.java	(working copy)
 @@ -56,8 +56,7 @@
  import org.glassfish.jersey.internal.inject.AbstractBinder;
@@ -112,9 +94,27 @@ Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/ad
              @Override
              protected void configure() {
                  AbstractActiveDescriptor<Reloader> descriptor = BuilderHelper.createConstantDescriptor(r);
+Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/adapter/RestCommandResourceProvider.java
+===================================================================
+--- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/adapter/RestCommandResourceProvider.java	(revision 57065)
++++ nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/adapter/RestCommandResourceProvider.java	(working copy)
+@@ -73,13 +73,6 @@
+     }
+ 
+     @Override
+-    public Map<String, Boolean> getFeatures() {
+-        final Map<String, Boolean> features = super.getFeatures();
+-        //features.put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+-        return features;
+-    }
+-
+-    @Override
+     public Map<String, MediaType> getMimeMappings() {
+         if (mappings == null) {
+             mappings = new HashMap<String, MediaType>();
 Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/adapter/RestManagementResourceProvider.java
 ===================================================================
---- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/adapter/RestManagementResourceProvider.java	(revision 57017)
+--- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/adapter/RestManagementResourceProvider.java	(revision 57065)
 +++ nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/adapter/RestManagementResourceProvider.java	(working copy)
 @@ -38,10 +38,19 @@
   * holder.
@@ -138,26 +138,26 @@ Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/ad
  import org.glassfish.admin.rest.RestResource;
  import org.glassfish.admin.rest.generator.ASMResourcesGenerator;
  import org.glassfish.admin.rest.generator.ResourcesGenerator;
-@@ -52,16 +61,9 @@
- import org.glassfish.hk2.api.ActiveDescriptor;
+@@ -53,7 +62,8 @@
  import org.glassfish.hk2.api.ServiceHandle;
  import org.glassfish.hk2.api.ServiceLocator;
--import org.glassfish.jersey.internal.inject.AbstractBinder;
+ import org.glassfish.jersey.internal.inject.AbstractBinder;
 -import org.glassfish.jersey.jackson.JacksonBinder;
--import org.jvnet.hk2.config.Dom;
 +import org.glassfish.jersey.jackson.JacksonFeature;
++
+ import org.jvnet.hk2.config.Dom;
  
--import java.util.HashSet;
--import java.util.List;
--import java.util.Map;
--import java.util.Set;
--import java.util.logging.Level;
--import java.util.logging.Logger;
+ import java.util.HashSet;
+@@ -65,6 +75,8 @@
+ import org.glassfish.admin.rest.provider.ProgressStatusEventJsonProvider;
+ import org.glassfish.admin.rest.provider.ProgressStatusJsonProvider;
+ 
 +import com.sun.enterprise.config.serverbeans.Domain;
- 
++
  /**
   * Responsible for providing ReST resources for management operations.
-@@ -73,8 +75,8 @@
+  */
+@@ -75,8 +87,8 @@
      }
  
      @Override
@@ -168,7 +168,16 @@ Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/ad
      }
  
      @Override
-@@ -146,13 +148,6 @@
+@@ -144,7 +156,7 @@
+ 
+         r.add(org.glassfish.admin.rest.provider.OptionsResultJsonProvider.class);
+         r.add(org.glassfish.admin.rest.provider.OptionsResultXmlProvider.class);
+-        
++
+         r.add(org.glassfish.jersey.media.sse.OutboundEventWriter.class);
+         r.add(org.glassfish.admin.rest.provider.AdminCommandStateCmdResultJsonProvider.class);
+         r.add(org.glassfish.admin.rest.provider.ProgressStatusJsonProvider.class);
+@@ -153,13 +165,6 @@
          return r;
      }
  
@@ -182,11 +191,122 @@ Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/ad
      private void generateASM(ServiceLocator habitat) {
          try {
              Domain entity = habitat.getService(Domain.class);
+Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/composite/CompositeResource.java
+===================================================================
+--- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/composite/CompositeResource.java	(revision 57065)
++++ nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/composite/CompositeResource.java	(working copy)
+@@ -66,7 +66,8 @@
+ import org.glassfish.admin.rest.utils.Util;
+ import org.glassfish.api.admin.ParameterMap;
+ import org.glassfish.jersey.internal.util.collection.Ref;
+-import org.glassfish.jersey.media.sse.EventChannel;
++import org.glassfish.jersey.media.sse.EventOutput;
++
+ import org.glassfish.security.services.common.SubjectUtil;
+ 
+ /**
+@@ -144,9 +145,9 @@
+     }
+ 
+     /**
+-     * This method will handle any OPTIONS requests for composite resources. 
++     * This method will handle any OPTIONS requests for composite resources.
+      * @return
+-     * @throws JSONException 
++     * @throws JSONException
+      */
+     @OPTIONS
+     public String options() throws JSONException {
+@@ -160,7 +161,7 @@
+      * "injection" of the various system objects the resource might need. If the requested Class can not be instantiated
+      * (e.g., it does not have a no-arg public constructor), the system will throw a <code>WebApplicationException</code>
+      * with an HTTP status code of 500 (internal server error).
+-     * 
++     *
+      * @param clazz The Class of the desired sub-resource
+      * @return
+      */
+@@ -172,7 +173,7 @@
+             cr.subjectRef = subjectRef;
+             cr.uriInfo = uriInfo;
+             cr.sc = sc;
+-            
++
+             return resource;
+         } catch (Exception ex) {
+             throw new WebApplicationException(ex, Status.INTERNAL_SERVER_ERROR);
+@@ -248,20 +249,20 @@
+     protected ActionReporter executeCommand(String command, ParameterMap parameters, boolean throwBadRequest, boolean throwOnWarning) {
+         return getCompositeUtil().executeCommand(getSubject(), command, parameters, throwBadRequest, throwOnWarning);
+     }
+-    
++
+     /** Execute an <code>AdminCommand</code> with the specified parameters and
+-     * return EventChannel suitable for SSE.
++     * return EventOutput suitable for SSE.
+      */
+-    protected EventChannel executeSseCommand(final Subject subject, final String command, 
+-                                        final ParameterMap parameters, 
++    protected EventOutput executeSseCommand(final Subject subject, final String command,
++                                        final ParameterMap parameters,
+                                         final SseCommandHelper.ActionReportProcessor processor) {
+         return getCompositeUtil().executeSseCommand(subject, command, parameters, processor);
+     }
+-    
++
+     /** Execute an <code>AdminCommand</code> with the specified parameters and
+-     * return EventChannel suitable for SSE.
++     * return EventOutput suitable for SSE.
+      */
+-    protected EventChannel executeSseCommand(final Subject subject, final String command, 
++    protected EventOutput executeSseCommand(final Subject subject, final String command,
+                                         final ParameterMap parameters) {
+         return getCompositeUtil().executeSseCommand(subject, command, parameters);
+     }
+Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/composite/CompositeUtil.java
+===================================================================
+--- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/composite/CompositeUtil.java	(revision 57065)
++++ nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/composite/CompositeUtil.java	(working copy)
+@@ -88,7 +88,8 @@
+ import org.glassfish.api.ActionReport.ExitCode;
+ import org.glassfish.api.admin.ParameterMap;
+ import org.glassfish.internal.api.Globals;
+-import org.glassfish.jersey.media.sse.EventChannel;
++import org.glassfish.jersey.media.sse.EventOutput;
++
+ import static org.glassfish.pfl.objectweb.asm.Opcodes.*;
+ import org.jvnet.hk2.config.Attribute;
+ import org.jvnet.hk2.config.MessageInterpolatorImpl;
+@@ -458,18 +459,18 @@
+         }
+         return ar;
+     }
+-    
++
+     /** Execute an <code>AdminCommand</code> with the specified parameters and
+-     * return EventChannel suitable for SSE.
++     * return EventOutput suitable for SSE.
+      */
+-    public EventChannel executeSseCommand(Subject subject, String command, ParameterMap parameters) {
++    public EventOutput executeSseCommand(Subject subject, String command, ParameterMap parameters) {
+         return executeSseCommand(subject, command, parameters, null);
+     }
+-    
++
+     /** Execute an <code>AdminCommand</code> with the specified parameters and
+-     * return EventChannel suitable for SSE.
++     * return EventOutput suitable for SSE.
+      */
+-    public EventChannel executeSseCommand(Subject subject, String command, ParameterMap parameters, SseCommandHelper.ActionReportProcessor processor) {
++    public EventOutput executeSseCommand(Subject subject, String command, ParameterMap parameters, SseCommandHelper.ActionReportProcessor processor) {
+         return ResourceUtil.runCommandWithSse(command, parameters, subject, processor);
+     }
+ 
 Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/TemplateCommandDeleteResource.java
 ===================================================================
---- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/TemplateCommandDeleteResource.java	(revision 57017)
+--- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/TemplateCommandDeleteResource.java	(revision 57065)
 +++ nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/TemplateCommandDeleteResource.java	(working copy)
-@@ -40,23 +40,18 @@
+@@ -40,25 +40,21 @@
  
  package org.glassfish.admin.rest.resources;
  
@@ -206,15 +326,19 @@ Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/re
 -import java.util.List;
 -import javax.ws.rs.DELETE;
 -import org.glassfish.admin.rest.Constants;
++import org.glassfish.jersey.media.sse.SseFeature;
++
  import org.glassfish.admin.rest.utils.ResourceUtil;
 -import org.glassfish.admin.rest.results.ActionReportResult;
 -
 -
 -
  import org.glassfish.api.admin.ParameterMap;
+-import org.glassfish.jersey.media.sse.EventChannel;
  
  /**
-@@ -77,7 +72,8 @@
+  *
+@@ -78,7 +74,8 @@
      @Consumes({
          MediaType.APPLICATION_JSON,
          MediaType.APPLICATION_XML,
@@ -224,85 +348,68 @@ Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/re
      public Response processDelete(ParameterMap data) {
          if (data == null) {
              data = new ParameterMap();
-Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/admin/CommandResource.java
-===================================================================
---- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/admin/CommandResource.java	(revision 57017)
-+++ nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/admin/CommandResource.java	(working copy)
-@@ -74,9 +74,9 @@
- import org.glassfish.jersey.internal.util.collection.Ref;
- import org.glassfish.jersey.media.multipart.FormDataMultiPart;
- import org.glassfish.jersey.media.multipart.MultiPart;
--import org.glassfish.jersey.media.sse.EventChannel;
-+import org.glassfish.jersey.media.sse.EventOutput;
- import org.glassfish.jersey.media.sse.OutboundEvent;
--import org.glassfish.jersey.media.sse.EventChannel;
-+import org.glassfish.jersey.media.sse.SseFeature;
- 
- 
- /**
-@@ -294,7 +294,7 @@
-     @POST
-     @Path("/{command:.*}/")
-     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
--    @Produces(EventChannel.SERVER_SENT_EVENTS)
-+    @Produces(SseFeature.SERVER_SENT_EVENTS)
-     public Response execCommandSimpInSseOut(@PathParam("command") String command,
-                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
-                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
-@@ -309,7 +309,7 @@
-     @POST
-     @Path("/{command:.*}/")
-     @Consumes(MediaType.MULTIPART_FORM_DATA)
--    @Produces(EventChannel.SERVER_SENT_EVENTS)
-+    @Produces(SseFeature.SERVER_SENT_EVENTS)
-     public Response execCommandMultInSseOut(@PathParam("command") String command,
-                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
-                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
-@@ -325,7 +325,7 @@
- 
-     @POST
-     @Path("/{command:.*}/")
--    @Produces(EventChannel.SERVER_SENT_EVENTS)
-+    @Produces(SseFeature.SERVER_SENT_EVENTS)
-     public Response execCommandEmptyInSseOut(@PathParam("command") String command,
-                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
-                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId) {
-@@ -384,7 +384,7 @@
-                 .subject(getSubject())
-                 .managedJob()
-                 .parameters(params);
--        final EventChannel ec = new EventChannel();
-+        final EventOutput ec = new EventOutput();
-         AdminCommandListener listener = new AdminCommandListener() {
-             
-                     private AdminCommandEventBroker broker;
-@@ -449,7 +449,7 @@
+@@ -90,13 +87,13 @@
+         }
+         return executeCommand(preprocessData(data));
      }
+-    
++
+     @DELETE
+     @Consumes({
+         MediaType.APPLICATION_JSON,
+         MediaType.APPLICATION_XML,
+         MediaType.APPLICATION_FORM_URLENCODED})
+-    @Produces(EventChannel.SERVER_SENT_EVENTS)
++    @Produces(SseFeature.SERVER_SENT_EVENTS)
+     public Response processDeleteSse(ParameterMap data) {
+         if (data == null) {
+             data = new ParameterMap();
+@@ -152,7 +149,7 @@
+     public Object get() {
+         return options();
+     }
+-    
++
+     private ParameterMap preprocessData(final ParameterMap data) {
+         processCommandParams(data);
+         addQueryString(uriInfo.getQueryParameters(), data);
+Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/TemplateCommandGetResource.java
+===================================================================
+--- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/TemplateCommandGetResource.java	(revision 57065)
++++ nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/TemplateCommandGetResource.java	(working copy)
+@@ -47,8 +47,9 @@
+ import javax.ws.rs.Produces;
+ import javax.ws.rs.core.MediaType;
+ import javax.ws.rs.core.Response;
+-import org.glassfish.jersey.media.sse.EventChannel;
  
-     private void executeCommandInvocationAsync(final CommandRunner.CommandInvocation ci,
--            final EventChannel ec,
-+            final EventOutput ec,
-             final AdminCommandListener listener) {
- 
-         JobManagerService jobManagerService = Globals.getDefaultHabitat().getService(JobManagerService.class);
-@@ -459,10 +459,10 @@
- 
-     class AsyncInvocationHandler implements Runnable {
-         private CommandRunner.CommandInvocation commandInvocation;
--        private EventChannel eventChannel;
-+        private EventOutput eventChannel;
-         private AdminCommandListener listener;
- 
--        AsyncInvocationHandler(CommandRunner.CommandInvocation inv, EventChannel channel, AdminCommandListener list) {
-+        AsyncInvocationHandler(CommandRunner.CommandInvocation inv, EventOutput channel, AdminCommandListener list) {
-             this.commandInvocation = inv;
-             this.eventChannel = channel;
-             this.listener = list;
++import org.glassfish.jersey.media.sse.SseFeature;
++
+ /**
+  *
+  * @author ludovic champenois ludo@dev.java.net
+@@ -71,13 +72,13 @@
+     public Response processGet() {
+         return executeCommand(prepareParameters());
+     }
+-    
++
+     @GET
+-    @Produces(EventChannel.SERVER_SENT_EVENTS)
++    @Produces(SseFeature.SERVER_SENT_EVENTS)
+     public Response processSseGet() {
+         return executeCommandAsSse(prepareParameters());
+     }
+-    
++
+     private ParameterMap prepareParameters() {
+         ParameterMap data = new ParameterMap();
+         processCommandParams(data);
 Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/TemplateCommandPostResource.java
 ===================================================================
---- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/TemplateCommandPostResource.java	(revision 57017)
+--- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/TemplateCommandPostResource.java	(revision 57065)
 +++ nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/TemplateCommandPostResource.java	(working copy)
-@@ -41,23 +41,22 @@
+@@ -41,27 +41,26 @@
  
  import java.io.File;
  import java.io.InputStream;
@@ -320,19 +427,348 @@ Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/re
  import javax.ws.rs.POST;
  import javax.ws.rs.Produces;
  import javax.ws.rs.WebApplicationException;
--import org.glassfish.admin.rest.utils.ResourceUtil;
 +import javax.ws.rs.core.MediaType;
 +import javax.ws.rs.core.Response;
- 
-+import org.glassfish.admin.rest.utils.ResourceUtil;
++
+ import org.glassfish.admin.rest.utils.ResourceUtil;
+-
  import org.glassfish.admin.rest.utils.Util;
 -import org.glassfish.admin.rest.results.ActionReportResult;
  import org.glassfish.api.admin.ParameterMap;
  import org.glassfish.jersey.media.multipart.FormDataBodyPart;
  import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+-import org.glassfish.jersey.media.sse.EventChannel;
++import org.glassfish.jersey.media.sse.SseFeature;
+ 
+ /**
+  *
+@@ -76,7 +75,7 @@
+     public TemplateCommandPostResource(String resourceName, String commandName, String commandMethod, String commandAction, String commandDisplayName, boolean isLinkedToParent) {
+         super(resourceName, commandName, commandMethod, commandAction, commandDisplayName, isLinkedToParent);
+     }
+-    
++
+     // ---------------- POST
+ 
+     @POST
+@@ -112,12 +111,12 @@
+             throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
+         }
+     }
+-    
++
+     // ---------------- SSE POST
+-    
++
+     @POST
+     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
+-    @Produces(EventChannel.SERVER_SENT_EVENTS)
++    @Produces(SseFeature.SERVER_SENT_EVENTS)
+     public Response processSsePost(ParameterMap data) {
+         if (data == null) {
+             data = new ParameterMap();
+@@ -131,13 +130,13 @@
+ 
+     @POST
+     @Consumes(MediaType.MULTIPART_FORM_DATA)
+-    @Produces(EventChannel.SERVER_SENT_EVENTS)
++    @Produces(SseFeature.SERVER_SENT_EVENTS)
+     public Response ssePost(FormDataMultiPart formData) {
+         return processSsePost(createDataBasedOnForm(formData));
+     }
+ 
+     @POST
+-    @Produces(EventChannel.SERVER_SENT_EVENTS)
++    @Produces(SseFeature.SERVER_SENT_EVENTS)
+     public Response processSsePost() {
+         try {
+             return processSsePost(new ParameterMap());
+@@ -145,14 +144,14 @@
+             throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
+         }
+     }
+-    
++
+     // ---------------- GET
+ 
+     @GET
+     public Object get() {
+         return options();
+     }
+-    
++
+     private ParameterMap preprocessData(final ParameterMap data) {
+         processCommandParams(data);
+         adjustParameters(data);
+Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/TemplateExecCommand.java
+===================================================================
+--- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/TemplateExecCommand.java	(revision 57065)
++++ nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/TemplateExecCommand.java	(working copy)
+@@ -62,13 +62,15 @@
+ import java.util.Properties;
+ import java.util.Set;
+ import java.util.logging.Logger;
++
++import org.glassfish.jersey.media.sse.EventOutput;
++
+ import org.codehaus.jettison.json.JSONException;
+ import org.glassfish.admin.rest.OptionsCapable;
+ import org.glassfish.admin.rest.adapter.LocatorBridge;
+ import org.glassfish.admin.rest.composite.CompositeUtil;
+ import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
+ import org.glassfish.admin.rest.utils.Util;
+-import org.glassfish.jersey.media.sse.EventChannel;
+ 
+ /**
+  * @author ludo
+@@ -146,9 +148,9 @@
+             }
+         }
+     }
+-    
++
+     protected Response executeCommandAsSse(ParameterMap data) {
+-        EventChannel ec = ResourceUtil.runCommandWithSse(commandName, data, null, null);
++        EventOutput ec = ResourceUtil.runCommandWithSse(commandName, data, null, null);
+         return Response.status(HttpURLConnection.HTTP_OK).entity(ec).build();
+     }
+ 
+@@ -181,11 +183,11 @@
+     private Map<String, Object> getExtraProperties(RestActionReporter actionReport) {
+         Properties props = actionReport.getExtraProperties();
+         Map<String, Object> map = new HashMap<String, Object>();
+-        
++
+         for (Map.Entry<Object, Object> entry : props.entrySet()) {
+             map.put(entry.getKey().toString(), entry.getValue());
+         }
+-        
++
+         return map;
+     }
+ 
+Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/admin/CommandResource.java
+===================================================================
+--- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/admin/CommandResource.java	(revision 57065)
++++ nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/resources/admin/CommandResource.java	(working copy)
+@@ -75,9 +75,8 @@
+ import org.glassfish.jersey.internal.util.collection.Ref;
+ import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+ import org.glassfish.jersey.media.multipart.MultiPart;
+-import org.glassfish.jersey.media.sse.EventChannel;
+ import org.glassfish.jersey.media.sse.OutboundEvent;
+-import org.glassfish.jersey.media.sse.EventChannel;
++import org.glassfish.jersey.media.sse.SseFeature;
+ 
+ 
+ /**
+@@ -280,7 +279,7 @@
+     @POST
+     @Path("/{command:.*}/")
+     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
+-    @Produces(EventChannel.SERVER_SENT_EVENTS)
++    @Produces(SseFeature.SERVER_SENT_EVENTS)
+     public Response execCommandSimpInSseOut(@PathParam("command") String command,
+                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
+                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
+@@ -295,7 +294,7 @@
+     @POST
+     @Path("/{command:.*}/")
+     @Consumes(MediaType.MULTIPART_FORM_DATA)
+-    @Produces(EventChannel.SERVER_SENT_EVENTS)
++    @Produces(SseFeature.SERVER_SENT_EVENTS)
+     public Response execCommandMultInSseOut(@PathParam("command") String command,
+                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
+                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
+@@ -311,7 +310,7 @@
+ 
+     @POST
+     @Path("/{command:.*}/")
+-    @Produces(EventChannel.SERVER_SENT_EVENTS)
++    @Produces(SseFeature.SERVER_SENT_EVENTS)
+     public Response execCommandEmptyInSseOut(@PathParam("command") String command,
+                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
+                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId) {
+Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/utils/ResourceUtil.java
+===================================================================
+--- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/utils/ResourceUtil.java	(revision 57065)
++++ nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/utils/ResourceUtil.java	(working copy)
+@@ -96,7 +96,8 @@
+ import org.glassfish.hk2.api.ServiceLocator;
+ import org.glassfish.internal.api.AdminAccessController;
+ import org.glassfish.internal.api.Globals;
+-import org.glassfish.jersey.media.sse.EventChannel;
++import org.glassfish.jersey.media.sse.EventOutput;
++
+ import org.jvnet.hk2.config.Attribute;
+ import org.jvnet.hk2.config.ConfigBeanProxy;
+ import org.jvnet.hk2.config.ConfigModel;
+@@ -114,7 +115,7 @@
+     private static final String DAS_LOOK_FOR_CERT_PROPERTY_NAME = "org.glassfish.admin.DASCheckAdminCert";
+     private static final String MESSAGE_PARAMETERS = "messageParameters";
+     private static RestConfig restConfig = null;
+-    // TODO: this is copied from org.jvnet.hk2.config.Dom. If we are not able to encapsulate the conversion in Dom, 
++    // TODO: this is copied from org.jvnet.hk2.config.Dom. If we are not able to encapsulate the conversion in Dom,
+     // need to make sure that the method convertName is refactored into smaller methods such that trimming of prefixes
+     // stops. We will need a promotion of HK2 for this.
+     static final Pattern TOKENIZER;
+@@ -251,8 +252,8 @@
+                                                 Subject subject) {
+         return runCommand(commandName, parameters, subject);
+     }
+-    
+-    public static EventChannel runCommandWithSse(final String commandName,
++
++    public static EventOutput runCommandWithSse(final String commandName,
+                                                 final ParameterMap parameters,
+                                                 final Subject subject,
+                                                 final SseCommandHelper.ActionReportProcessor processor) {
+@@ -261,10 +262,10 @@
+         final CommandInvocation commandInvocation = cr.getCommandInvocation(commandName, ar)
+                                                         .subject(subject)
+                                                         .parameters(parameters);
+-        return SseCommandHelper.invokeAsync(commandInvocation, 
++        return SseCommandHelper.invokeAsync(commandInvocation,
+                     new SseCommandHelper.ActionReportProcessor() {
+                             @Override
+-                            public ActionReport process(ActionReport report, EventChannel ec) {
++                            public ActionReport process(ActionReport report, EventOutput ec) {
+                                 addCommandLog(ar, commandName, parameters);
+                                 if (processor != null) {
+                                     return processor.process(report, ec);
+Index: nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/utils/SseCommandHelper.java
+===================================================================
+--- nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/utils/SseCommandHelper.java	(revision 57065)
++++ nucleus/admin/rest/rest-service/src/main/java/org/glassfish/admin/rest/utils/SseCommandHelper.java	(working copy)
+@@ -45,7 +45,6 @@
+ import com.sun.enterprise.v3.common.PropsFileActionReporter;
+ import com.sun.logging.LogDomains;
+ import java.io.IOException;
+-import java.util.concurrent.ExecutorService;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ import javax.ws.rs.core.MediaType;
+@@ -56,7 +55,7 @@
+ import org.glassfish.api.admin.CommandRunner;
+ import org.glassfish.api.admin.CommandRunner.CommandInvocation;
+ import org.glassfish.internal.api.Globals;
+-import org.glassfish.jersey.media.sse.EventChannel;
++import org.glassfish.jersey.media.sse.EventOutput;
+ import org.glassfish.jersey.media.sse.OutboundEvent;
+ 
+ /**
+@@ -66,36 +65,36 @@
+  * @author martinmares
+  */
+ public class SseCommandHelper implements Runnable, AdminCommandEventBroker.AdminCommandListener {
+-    
++
+     /** If implementation of this interface is registered then it's process()
+      * method is used to convert ActionReport before it is transfered to the
+-     * client. 
++     * client.
+      */
+     public static interface ActionReportProcessor {
+-        
++
+         /** Framework calls this method to process report before it is send
+          * to the client. Implementation also can send custom events using
+-         * provided event channel. 
++         * provided event channel.
+          */
+-        public ActionReport process(ActionReport report, EventChannel ec);
+-        
++        public ActionReport process(ActionReport report, EventOutput ec);
++
+     }
+-    
++
+     private final static Logger logger =
+             LogDomains.getLogger(CommandResource.class, LogDomains.ADMIN_LOGGER);
+     private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(CommandResource.class);
+ 
+     private final CommandRunner.CommandInvocation commandInvocation;
+     private final ActionReportProcessor processor;
+-    private final EventChannel eventChannel = new EventChannel();
++    private final EventOutput eventOuptut = new EventOutput();
+     private AdminCommandEventBroker broker;
+ 
+-    private SseCommandHelper(final CommandInvocation commandInvocation, 
++    private SseCommandHelper(final CommandInvocation commandInvocation,
+                              final ActionReportProcessor processor) {
+         this.commandInvocation = commandInvocation;
+         this.processor = processor;
+     }
+-    
++
+     @Override
+     public void run() {
+         try {
+@@ -111,7 +110,7 @@
+             onAdminCommandEvent(AdminCommandStateImpl.EVENT_STATE_CHANGED, acs);
+         } finally {
+             try {
+-                eventChannel.close();
++                eventOuptut.close();
+             } catch (IOException ex) {
+                 logger.log(Level.WARNING, null, ex);
+             }
+@@ -123,11 +122,11 @@
+             broker.unregisterListener(this);
+         }
+     }
+-    
++
+     private Object process(final String name, Object event) {
+         if (processor != null && AdminCommandStateImpl.EVENT_STATE_CHANGED.equals(name)) {
+             AdminCommandState acs = (AdminCommandState) event;
+-            ActionReport report = processor.process(acs.getActionReport(), eventChannel);
++            ActionReport report = processor.process(acs.getActionReport(), eventOuptut);
+             event = new AdminCommandStateImpl(acs.getState(), report, acs.isOutboundPayloadEmpty(), acs.getId());
+         }
+         return event;
+@@ -146,7 +145,7 @@
+         if (name.startsWith(AdminCommandEventBroker.LOCAL_EVENT_PREFIX)) {
+             return; //Prevent events from client to be send back to client
+         }
+-        if (eventChannel.isClosed()) {
++        if (eventOuptut.isClosed()) {
+             unregister();
+             return;
+         }
+@@ -164,18 +163,18 @@
+                 .data(event.getClass(), event)
+                 .build();
+         try {
+-            eventChannel.write(outEvent);
++            eventOuptut.write(outEvent);
+         } catch (Exception ex) {
+             if (logger.isLoggable(Level.FINE)) {
+                 logger.log(Level.FINE, null, ex);
+             }
+-            if (eventChannel.isClosed()) {
++            if (eventOuptut.isClosed()) {
+                 unregister();
+             }
+         }
+     }
+ 
+-    public static EventChannel invokeAsync(CommandInvocation commandInvocation, ActionReportProcessor processor) {
++    public static EventOutput invokeAsync(CommandInvocation commandInvocation, ActionReportProcessor processor) {
+         if (commandInvocation == null) {
+             throw new IllegalArgumentException("commandInvocation");
+         }
+@@ -183,6 +182,6 @@
+         commandInvocation.listener(".*", helper);
+         JobManagerService jobManagerService = Globals.getDefaultHabitat().getService(JobManagerService.class);
+         jobManagerService.getThreadPool().execute(helper);
+-        return helper.eventChannel;
++        return helper.eventOuptut;
+     }
+ }
 Index: nucleus/admin/util/src/main/java/com/sun/enterprise/admin/remote/RemoteRestAdminCommand.java
 ===================================================================
---- nucleus/admin/util/src/main/java/com/sun/enterprise/admin/remote/RemoteRestAdminCommand.java	(revision 57017)
+--- nucleus/admin/util/src/main/java/com/sun/enterprise/admin/remote/RemoteRestAdminCommand.java	(revision 57065)
 +++ nucleus/admin/util/src/main/java/com/sun/enterprise/admin/remote/RemoteRestAdminCommand.java	(working copy)
 @@ -97,8 +97,8 @@
  import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
@@ -372,31 +808,7 @@ Index: nucleus/admin/util/src/main/java/com/sun/enterprise/admin/remote/RemoteRe
                      try {
                          logger.log(Level.FINEST, "Response is SSE - about to read events");
                          closeSse = false;
-@@ -695,20 +695,20 @@
-                     continue;
-                 }
-                 String paramName = opt.getName();
--                
-+
-                 List<String> paramValues = new ArrayList<String>(options.get(paramName.toLowerCase(Locale.ENGLISH)));
-                 if (!opt.getParam().alias().isEmpty()){
-                     paramValues.addAll(options.get(opt.getParam().alias().toLowerCase(Locale.ENGLISH)));
-                 }
-                 if (!opt.getParam().multiple() && paramValues.size() > 1) {
--                    throw new CommandException(strings.get("tooManyOptions", 
-+                    throw new CommandException(strings.get("tooManyOptions",
-                             paramName));
-                 }
-                 if (paramValues.isEmpty()) {
-                     // perhaps it's set in the environment?
-                     String envValue = getFromEnvironment(paramName);
-                     if (envValue != null) {
--                        paramValues.add(envValue); 
-+                        paramValues.add(envValue);
-                     }
-                 }
-                 if (paramValues.isEmpty()) {
-@@ -823,10 +823,11 @@
+@@ -824,10 +824,11 @@
                      strings.get("internal", e.getMessage()), e);
          }
      }
@@ -410,7 +822,7 @@ Index: nucleus/admin/util/src/main/java/com/sun/enterprise/admin/remote/RemoteRe
              .register(new CsrfProtectionFilter("CLI"))
              .register(new ActionReportJsonReader())
              .register(new ParameterMapFormWriter())
-@@ -837,7 +838,7 @@
+@@ -838,7 +839,7 @@
              .register(GfSseEventReceiverReader.class); //Must be managed (it uses injection)
          return c;
      }
@@ -419,7 +831,7 @@ Index: nucleus/admin/util/src/main/java/com/sun/enterprise/admin/remote/RemoteRe
      private WebTarget createTarget(URI uri) {
          if (client == null) {
              client = createClient();
-@@ -1144,7 +1145,7 @@
+@@ -1145,7 +1146,7 @@
          outboundPayload = null; // no longer needed
          return null;
      }
@@ -428,7 +840,7 @@ Index: nucleus/admin/util/src/main/java/com/sun/enterprise/admin/remote/RemoteRe
      protected SSLContext getSslContext() {
          return createStandardSslContext(interactive);
      }
-@@ -1646,7 +1647,7 @@
+@@ -1651,7 +1652,7 @@
      private static boolean ok(String s) {
          return s != null && s.length() > 0;
      }
@@ -439,7 +851,7 @@ Index: nucleus/admin/util/src/main/java/com/sun/enterprise/admin/remote/RemoteRe
       */
 Index: nucleus/pom.xml
 ===================================================================
---- nucleus/pom.xml	(revision 57017)
+--- nucleus/pom.xml	(revision 57065)
 +++ nucleus/pom.xml	(working copy)
 @@ -116,7 +116,7 @@
          <woodstox.version>4.1.2</woodstox.version>
@@ -450,9 +862,30 @@ Index: nucleus/pom.xml
          <jax-rs-api.version>2.0-m12</jax-rs-api.version>
          <mimepull.version>1.8</mimepull.version>
          <jbi.version>1.0</jbi.version>
+Index: nucleus/tests/admin/pom.xml
+===================================================================
+--- nucleus/tests/admin/pom.xml	(revision 57065)
++++ nucleus/tests/admin/pom.xml	(working copy)
+@@ -95,7 +95,6 @@
+         <dependency>
+             <groupId>org.testng</groupId>
+             <artifactId>testng</artifactId>
+-            <version>6.3.1</version>
+             <scope>test</scope>
+         </dependency>
+         <dependency>
+@@ -106,7 +105,7 @@
+         <dependency>
+             <groupId>org.glassfish.main.admin</groupId>
+             <artifactId>rest-client</artifactId>
+-            <version>4.0-SNAPSHOT</version>
++            <version>${project.version}</version>
+             <scope>test</scope>
+         </dependency>
+         <dependency>
 Index: nucleus/tests/admin/src/test/java/org/glassfish/nucleus/admin/rest/RestTestBase.java
 ===================================================================
---- nucleus/tests/admin/src/test/java/org/glassfish/nucleus/admin/rest/RestTestBase.java	(revision 57017)
+--- nucleus/tests/admin/src/test/java/org/glassfish/nucleus/admin/rest/RestTestBase.java	(revision 57065)
 +++ nucleus/tests/admin/src/test/java/org/glassfish/nucleus/admin/rest/RestTestBase.java	(working copy)
 @@ -65,12 +65,10 @@
  import org.glassfish.admin.rest.client.ClientWrapper;
@@ -476,24 +909,3 @@ Index: nucleus/tests/admin/src/test/java/org/glassfish/nucleus/admin/rest/RestTe
          return client;
      }
  
-Index: nucleus/tests/admin/pom.xml
-===================================================================
---- nucleus/tests/admin/pom.xml	(revision 57017)
-+++ nucleus/tests/admin/pom.xml	(working copy)
-@@ -95,7 +95,6 @@
-         <dependency>
-             <groupId>org.testng</groupId>
-             <artifactId>testng</artifactId>
--            <version>6.3.1</version>
-             <scope>test</scope>
-         </dependency>
-         <dependency>
-@@ -106,7 +105,7 @@
-         <dependency>
-             <groupId>org.glassfish.main.admin</groupId>
-             <artifactId>rest-client</artifactId>
--            <version>4.0-SNAPSHOT</version>
-+            <version>${project.version}</version>
-             <scope>test</scope>
-         </dependency>
-         <dependency>
