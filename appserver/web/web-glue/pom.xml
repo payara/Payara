@@ -256,8 +256,36 @@
             <artifactId>websocket-osgi</artifactId>
         </dependency>
         <dependency>
+            <groupId>javax.websocket</groupId>
+            <artifactId>javax.websocket-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-servlet</artifactId>
+            <artifactId>tyrus-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-container-grizzly</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-container-oldservlet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-gf-ejb</artifactId>
         </dependency>
         <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>

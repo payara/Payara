@@ -109,7 +109,8 @@
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <weld.version>1.1.10.Final</weld.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
-        <tyrus.version>1.0-b07</tyrus.version>
+        <websocket-api.version>1.0-b08</websocket-api.version>
+        <tyrus.version>1.0-b08</tyrus.version>
         <json.version>1.0-b01</json.version>
     </properties>
 
@@ -470,8 +471,43 @@
                 <version>${websocket.version}</version>
             </dependency>
             <dependency>
+                <groupId>javax.websocket</groupId>
+                <artifactId>javax.websocket-api</artifactId>
+                <version>${websocket-api.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.glassfish.tyrus</groupId>
-                <artifactId>tyrus-servlet</artifactId>
+                <artifactId>tyrus-core</artifactId>
+                <version>${tyrus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.tyrus</groupId>
+                <artifactId>tyrus-server</artifactId>
+                <version>${tyrus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.tyrus</groupId>
+                <artifactId>tyrus-spi</artifactId>
+                <version>${tyrus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.tyrus</groupId>
+                <artifactId>tyrus-client</artifactId>
+                <version>${tyrus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.tyrus</groupId>
+                <artifactId>tyrus-container-grizzly</artifactId>
+                <version>${tyrus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.tyrus</groupId>
+                <artifactId>tyrus-container-oldservlet</artifactId>
+                <version>${tyrus.version}</version> 
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.tyrus</groupId>
+                <artifactId>tyrus-gf-ejb</artifactId>
                 <version>${tyrus.version}</version>
             </dependency>
             <dependency>
