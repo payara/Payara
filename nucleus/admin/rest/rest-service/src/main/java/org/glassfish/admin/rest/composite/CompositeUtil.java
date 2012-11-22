@@ -88,8 +88,7 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.jersey.media.sse.EventOutput;
-
+import org.glassfish.jersey.media.sse.EventChannel;
 import static org.glassfish.pfl.objectweb.asm.Opcodes.*;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.MessageInterpolatorImpl;
@@ -459,18 +458,18 @@ public class CompositeUtil {
         }
         return ar;
     }
-
+    
     /** Execute an <code>AdminCommand</code> with the specified parameters and
-     * return EventOutput suitable for SSE.
+     * return EventChannel suitable for SSE.
      */
-    public EventOutput executeSseCommand(Subject subject, String command, ParameterMap parameters) {
+    public EventChannel executeSseCommand(Subject subject, String command, ParameterMap parameters) {
         return executeSseCommand(subject, command, parameters, null);
     }
-
+    
     /** Execute an <code>AdminCommand</code> with the specified parameters and
-     * return EventOutput suitable for SSE.
+     * return EventChannel suitable for SSE.
      */
-    public EventOutput executeSseCommand(Subject subject, String command, ParameterMap parameters, SseCommandHelper.ActionReportProcessor processor) {
+    public EventChannel executeSseCommand(Subject subject, String command, ParameterMap parameters, SseCommandHelper.ActionReportProcessor processor) {
         return ResourceUtil.runCommandWithSse(command, parameters, subject, processor);
     }
 

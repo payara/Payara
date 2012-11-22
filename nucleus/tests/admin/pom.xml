@@ -95,6 +95,7 @@ utilities are in the NucleusTestUtils class.
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
+            <version>6.3.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -105,7 +106,7 @@ utilities are in the NucleusTestUtils class.
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>rest-client</artifactId>
-            <version>${project.version}</version>
+            <version>4.0-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>

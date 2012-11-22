@@ -96,8 +96,7 @@ import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.jersey.media.sse.EventOutput;
-
+import org.glassfish.jersey.media.sse.EventChannel;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
@@ -115,7 +114,7 @@ public class ResourceUtil {
     private static final String DAS_LOOK_FOR_CERT_PROPERTY_NAME = "org.glassfish.admin.DASCheckAdminCert";
     private static final String MESSAGE_PARAMETERS = "messageParameters";
     private static RestConfig restConfig = null;
-    // TODO: this is copied from org.jvnet.hk2.config.Dom. If we are not able to encapsulate the conversion in Dom,
+    // TODO: this is copied from org.jvnet.hk2.config.Dom. If we are not able to encapsulate the conversion in Dom, 
     // need to make sure that the method convertName is refactored into smaller methods such that trimming of prefixes
     // stops. We will need a promotion of HK2 for this.
     static final Pattern TOKENIZER;
@@ -252,8 +251,8 @@ public class ResourceUtil {
                                                 Subject subject) {
         return runCommand(commandName, parameters, subject);
     }
-
-    public static EventOutput runCommandWithSse(final String commandName,
+    
+    public static EventChannel runCommandWithSse(final String commandName,
                                                 final ParameterMap parameters,
                                                 final Subject subject,
                                                 final SseCommandHelper.ActionReportProcessor processor) {
@@ -262,10 +261,10 @@ public class ResourceUtil {
         final CommandInvocation commandInvocation = cr.getCommandInvocation(commandName, ar)
                                                         .subject(subject)
                                                         .parameters(parameters);
-        return SseCommandHelper.invokeAsync(commandInvocation,
+        return SseCommandHelper.invokeAsync(commandInvocation, 
                     new SseCommandHelper.ActionReportProcessor() {
                             @Override
-                            public ActionReport process(ActionReport report, EventOutput ec) {
+                            public ActionReport process(ActionReport report, EventChannel ec) {
                                 addCommandLog(ar, commandName, parameters);
                                 if (processor != null) {
                                     return processor.process(report, ec);
