@@ -101,8 +101,8 @@ public class GlassFishMain {
         /*
          * Only this class has compile time dependency on glassfishapi.
          */
-        private static volatile GlassFish gf;
-        private static volatile GlassFishRuntime gfr;
+        private volatile GlassFish gf;
+        private volatile GlassFishRuntime gfr;
 
         public Launcher() {
         }
@@ -196,7 +196,7 @@ public class GlassFishMain {
             System.out.flush();
         }
 
-        private static void addShutdownHook() {
+        private void addShutdownHook() {
             Runtime.getRuntime().addShutdownHook(new Thread("GlassFish Shutdown Hook") {
                 public void run() {
                     try {

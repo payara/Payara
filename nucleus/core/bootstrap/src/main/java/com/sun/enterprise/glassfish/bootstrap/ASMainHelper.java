@@ -367,7 +367,7 @@ public class ASMainHelper {
 
     static Properties buildStartupContext(String platform, File installRoot, File instanceRoot, String[] args) {
         Properties ctx = com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap(args);
-        ctx.setProperty(StartupContext.TIME_ZERO_NAME, (new Long(System.currentTimeMillis())).toString());
+        ctx.setProperty(StartupContext.TIME_ZERO_NAME, Long.toString(System.currentTimeMillis()));
 
         ctx.setProperty(Constants.PLATFORM_PROPERTY_KEY, platform);
 
@@ -420,7 +420,7 @@ public class ASMainHelper {
 
     public static void buildStartupContext(Properties ctx) {
         if (ctx.getProperty(StartupContext.TIME_ZERO_NAME) == null) {
-            ctx.setProperty(StartupContext.TIME_ZERO_NAME, (new Long(System.currentTimeMillis())).toString());
+            ctx.setProperty(StartupContext.TIME_ZERO_NAME, Long.toString(System.currentTimeMillis()));
         } else {
             // Optimisation
             // Skip the rest of the code. We assume that we are called from GlassFishMain

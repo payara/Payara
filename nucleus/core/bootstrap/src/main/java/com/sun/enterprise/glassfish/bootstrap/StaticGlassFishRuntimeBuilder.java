@@ -174,9 +174,9 @@ public class StaticGlassFishRuntimeBuilder implements RuntimeBuilder {
         return true;
     }
     
-    private class StaticClassLoader extends URLClassLoader {
+    private static class StaticClassLoader extends URLClassLoader {
         public StaticClassLoader(ClassLoader parent, List<URL> moduleJarURLs) {
-            super(moduleJarURLs.toArray(new URL[0]), parent);
+            super(moduleJarURLs.toArray(new URL[moduleJarURLs.size()]), parent);
         }
     }
 

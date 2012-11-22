@@ -86,7 +86,7 @@ public final class StartupContextUtil {
         while (st.hasMoreTokens()) {
             result.add(st.nextToken());
         }
-        return result.toArray(new String[0]);
+        return result.toArray(new String[result.size()]);
 
     }
 
