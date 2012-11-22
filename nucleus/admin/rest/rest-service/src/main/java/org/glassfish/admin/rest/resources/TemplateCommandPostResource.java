@@ -41,27 +41,26 @@ package org.glassfish.admin.rest.resources;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
-import org.glassfish.admin.rest.utils.ResourceUtil;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
+import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
-import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-import org.glassfish.jersey.media.sse.EventChannel;
+import org.glassfish.jersey.media.sse.SseFeature;
 
 /**
  *
@@ -76,7 +75,7 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
     public TemplateCommandPostResource(String resourceName, String commandName, String commandMethod, String commandAction, String commandDisplayName, boolean isLinkedToParent) {
         super(resourceName, commandName, commandMethod, commandAction, commandDisplayName, isLinkedToParent);
     }
-    
+
     // ---------------- POST
 
     @POST
@@ -112,12 +111,12 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
             throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     // ---------------- SSE POST
-    
+
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces(EventChannel.SERVER_SENT_EVENTS)
+    @Produces(SseFeature.SERVER_SENT_EVENTS)
     public Response processSsePost(ParameterMap data) {
         if (data == null) {
             data = new ParameterMap();
@@ -131,13 +130,13 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(EventChannel.SERVER_SENT_EVENTS)
+    @Produces(SseFeature.SERVER_SENT_EVENTS)
     public Response ssePost(FormDataMultiPart formData) {
         return processSsePost(createDataBasedOnForm(formData));
     }
 
     @POST
-    @Produces(EventChannel.SERVER_SENT_EVENTS)
+    @Produces(SseFeature.SERVER_SENT_EVENTS)
     public Response processSsePost() {
         try {
             return processSsePost(new ParameterMap());
@@ -145,14 +144,14 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
             throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     // ---------------- GET
 
     @GET
     public Object get() {
         return options();
     }
-    
+
     private ParameterMap preprocessData(final ParameterMap data) {
         processCommandParams(data);
         adjustParameters(data);

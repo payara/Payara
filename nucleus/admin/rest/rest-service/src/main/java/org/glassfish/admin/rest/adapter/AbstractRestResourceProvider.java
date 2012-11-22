@@ -56,8 +56,7 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.internal.inject.ReferencingFactory;
 import org.glassfish.jersey.internal.util.collection.Ref;
-import org.glassfish.jersey.jettison.JettisonBinder;
-import org.glassfish.jersey.media.multipart.MultiPartBinder;
+import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.message.MessageProperties;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -69,6 +68,8 @@ import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import javax.ws.rs.core.Feature;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 /**
  * Base class for various ReST resource providers
@@ -77,7 +78,6 @@ import java.util.Set;
 public abstract class AbstractRestResourceProvider implements RestResourceProvider, Serializable {
     // content of this class has been copied from RestAdapter.java
     protected Map<String, MediaType> mappings;
-    protected Map<String, Boolean> features;
 
     protected AbstractRestResourceProvider() {
     }
@@ -98,16 +98,8 @@ public abstract class AbstractRestResourceProvider implements RestResourceProvid
         return mappings;
     }
 
-    protected Map<String, Boolean> getFeatures() {
-        if (features == null) {
-            features = new HashMap<String, Boolean>();
-            //    put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.TRUE);
-        }
-        return features;
-    }
-
-    protected AbstractBinder getJsonBinder() {
-        return new JettisonBinder();
+    protected Feature getJsonFeature() {
+        return new JettisonFeature();
     }
 
     @Override
@@ -146,8 +138,9 @@ public abstract class AbstractRestResourceProvider implements RestResourceProvid
 //
         rc.addSingletons(r);
         rc.addClasses(ReloadResource.class);
-
-        rc.addBinders(getJsonBinder(), new MultiPartBinder(), new AbstractBinder() {
+        rc.register(new MultiPartFeature());
+        rc.register(getJsonFeature());
+        rc.addBinders(new AbstractBinder() {
 
             @Override
             protected void configure() {
