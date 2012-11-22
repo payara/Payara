@@ -40,36 +40,34 @@
 
 package com.sun.enterprise.v3.admin;
 
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.ActionReport;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
-import org.jvnet.hk2.annotations.Service;
-
-import javax.inject.Inject;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
-import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-
+import com.sun.enterprise.util.SystemPropertyConstants;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
+import javax.inject.Inject;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.AdminCommandSecurity;
-import org.jvnet.hk2.config.types.Property;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.Transaction;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * Create System Properties Command
@@ -154,13 +152,13 @@ public class CreateSystemProperties implements AdminCommand, AdminCommandSecurit
                     @Override
                     public Object run(SystemPropertyBag param) throws PropertyVetoException, TransactionFailure {
                        
-                        // update existing system properties
-                        // sysProperty.setValue(propValue) doesn't work ? so
-                        // remove the property and have it recreated with the new value
+                        // update existing system property                        
                         for (SystemProperty sysProperty : param.getSystemProperty()) {
                             if (sysProperty.getName().equals(propName)) {
-                                param.getSystemProperty().remove(sysProperty);
-                                break;
+                                Transaction t = Transaction.getTransaction(param);
+                                sysProperty = t.enroll(sysProperty);
+                                sysProperty.setValue(properties.getProperty(propName));
+                                return sysProperty;
                             }
                         }
                         
@@ -179,13 +177,11 @@ public class CreateSystemProperties implements AdminCommand, AdminCommandSecurit
                     "System property {0} creation failed", sysPropName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(tfe);
-            return;
         } catch(Exception e) {
             report.setMessage(localStrings.getLocalString("create.system.properties.failed",
                     "System property {0} creation failed", sysPropName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
-            return;
         }
     }
 }

@@ -249,32 +249,21 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
                     if (type == TYPE.ADD || type == TYPE.CHANGE) {  //create-system-properties
                         if (proxy instanceof Domain) {
                             return addToDomain(sp);
-                        } else if (proxy instanceof Config) {
+                        } else if (proxy instanceof Config && p == ConfigSupport.getImpl(config)) {
                             return addToConfig(sp);
-                        } else if (proxy instanceof Cluster) {
+                        } else if (proxy instanceof Cluster && p == ConfigSupport.getImpl(cluster)) {
                             return addToCluster(sp);
-                        } else {
-                            //this has to be instance of Server
-                            //GLASSFISH-15665 Check if this is the current running server.
-                            //Don't call addToServer if this is for a different server.
-                            if (proxy instanceof Server) {
-                                Server changedServer = (Server) proxy;
-                                String changedServerName = changedServer.getName();
-                                String thisServerName = server.getName();
-                                if (changedServerName.equals(thisServerName)) {
-                                    return addToServer(sp);
-                                }
-                            }
-                        }
+                        } else if (proxy instanceof Server && p == ConfigSupport.getImpl(server)) {
+                            return addToServer(sp);                           
+                        }  
                     } else if (type == TYPE.REMOVE) {
                         if (proxy instanceof Domain) {
                             return removeFromDomain(sp);
-                        } else if (proxy instanceof Config) {
+                        } else if (proxy instanceof Config && p == ConfigSupport.getImpl(config)) {
                             return removeFromConfig(sp);
-                        } else if (proxy instanceof Cluster) {
+                        } else if (proxy instanceof Cluster && p == ConfigSupport.getImpl(cluster)) {
                             return removeFromCluster(sp);
-                        } else {
-                            //this has to be instance of Server
+                        } else if (proxy instanceof Server && p == ConfigSupport.getImpl(server)) {
                             return removeFromServer(sp);
                         }
                     }
