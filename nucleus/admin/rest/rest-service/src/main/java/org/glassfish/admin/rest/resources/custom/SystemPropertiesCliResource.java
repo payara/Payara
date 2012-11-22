@@ -138,8 +138,8 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
 
     @POST
     public Response create(HashMap<String, String> data) {
-        deleteExistingProperties();
-        return saveProperties(data);
+	Response resp = deleteRemovedProperties(data);
+        return (resp == null) ? saveProperties(data) : resp;
     }
 
     @PUT
@@ -282,14 +282,27 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
         return Response.status(status).entity(results).build();
     }
 
-    protected void deleteExistingProperties() {
+    //returns null if successful or the Response which contains the error msg.
+    protected Response deleteRemovedProperties(Map<String,String> newProps) {
+        List<String> existingList = new ArrayList();
         Dom parent = getEntity();
         for (Dom existingProp : parent.nodeElements(TAG_SYSTEM_PROPERTY)) {
-            try {
-                ConfigSupport.deleteChild((ConfigBean) parent, (ConfigBean) existingProp);
-            } catch (TransactionFailure ex) {
-                Logger.getLogger(SystemPropertiesCliResource.class.getName()).log(Level.SEVERE, null, ex);
+            existingList.add(existingProp.attribute("name"));
+        }
+        //no existing properites,return null
+        if (existingList.isEmpty()){
+            return null;
+        }
+
+        //delete the props thats no longer in the new list.
+        for(String onePropName : existingList){
+            if (!newProps.containsKey(onePropName)){
+                Response resp = deleteProperty(null, onePropName);
+                if (resp.getStatus() != HttpURLConnection.HTTP_OK){
+                    return resp;
+                }
             }
         }
+        return null;
     }
 }
