@@ -74,8 +74,7 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
     @Consumes({
         MediaType.APPLICATION_JSON,
         MediaType.APPLICATION_XML,
-        MediaType.APPLICATION_FORM_URLENCODED,
-        "*/*;q=0.1"})
+        MediaType.APPLICATION_FORM_URLENCODED})
     public Response processDelete(ParameterMap data) {
         if (data == null) {
             data = new ParameterMap();
