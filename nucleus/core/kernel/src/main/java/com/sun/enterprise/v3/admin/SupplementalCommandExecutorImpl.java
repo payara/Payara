@@ -121,7 +121,7 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
                 (time.equals(Supplemental.Timing.After) && aCmd.toBeExecutedAfter())   ||
                 (time.equals(Supplemental.Timing.AfterReplication) && aCmd.toBeExecutedAfterReplication())) {
                 ActionReport.ExitCode result = FailurePolicy.applyFailurePolicy(aCmd.onFailure(),
-                        inject(aCmd, getInjector(aCmd.getCommand(), parameters, optionFileMap),
+                        inject(aCmd, getInjector(aCmd.getCommand(), parameters, optionFileMap, context),
                                 context.getActionReport()));
                 if(!result.equals(ActionReport.ExitCode.SUCCESS)) {
                     if(finalResult.equals(ActionReport.ExitCode.SUCCESS))
@@ -181,11 +181,13 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
         return supplementalCommandsMap; 
     }
 
-    private InjectionResolver<Param> getInjector(AdminCommand command, ParameterMap parameters, MultiMap<String, File> map) {
+    private InjectionResolver<Param> getInjector(AdminCommand command, ParameterMap parameters, MultiMap<String, File> map, AdminCommandContext context) {
         CommandModel model = command instanceof CommandModelProvider ? 
 	    ((CommandModelProvider)command).getModel() :
 	    new CommandModelImpl(command.getClass());
-        return new MapInjectionResolver(model, parameters, map);
+        MapInjectionResolver injector = new MapInjectionResolver(model, parameters, map);
+        injector.setContext(context);
+        return injector;
     }
 
     private ActionReport.ExitCode inject(SupplementalCommand cmd, 
