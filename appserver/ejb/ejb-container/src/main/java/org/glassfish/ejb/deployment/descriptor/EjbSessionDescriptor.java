@@ -97,6 +97,9 @@ public class EjbSessionDescriptor extends EjbDescriptor
     private boolean isStateless = false;
     private boolean isStateful  = false;
     private boolean isSingleton = false;
+    // ejb3.2 spec 4.6.5 Disabling Passivation of Stateful Session Beans
+    private boolean isPassivationCapable = true;
+    private boolean passivationCapableIsSet = false;
 
     private List<MethodDescriptor> readLockMethods = new ArrayList<MethodDescriptor>();
     private List<MethodDescriptor> writeLockMethods = new ArrayList<MethodDescriptor>();
@@ -134,7 +137,20 @@ public class EjbSessionDescriptor extends EjbDescriptor
         }
     }
 
-	/**
+    public boolean isPassivationCapable() {
+        return isPassivationCapable;
+    }
+
+    public void setPassivationCapable(boolean passivationCapable) {
+        isPassivationCapable = passivationCapable;
+        passivationCapableIsSet = true;
+    }
+
+    public boolean isPassivationCapableSet() {
+        return passivationCapableIsSet;
+    }
+
+    /**
 	* Returns the type of this bean - always "Session".
 	*/
     public String getType() {

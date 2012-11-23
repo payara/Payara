@@ -178,6 +178,7 @@ public interface EjbTagNames extends TagNames {
     String AFTER_BEGIN_METHOD = "after-begin-method";
     String BEFORE_COMPLETION_METHOD = "before-completion-method";
     String AFTER_COMPLETION_METHOD = "after-completion-method";
+    String PASSIVATION_CAPABLE = "passivation-capable";
 
     // singleton
     String INIT_ON_STARTUP = "init-on-startup";

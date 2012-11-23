@@ -139,6 +139,10 @@ public class StatefulHandler extends AbstractEjbHandler {
         Stateful sful = (Stateful) ainfo.getAnnotation();
         doDescriptionProcessing(sful.description(), ejbDesc);
         doMappedNameProcessing(sful.mappedName(), ejbDesc);
+        // set passivation capable property in case it wasn't set in ejb-jar.xml
+        if( !ejbSessionDesc.isPassivationCapableSet()) {
+            ejbSessionDesc.setPassivationCapable(sful.passivationCapable());
+        }
 
         return setBusinessAndHomeInterfaces(ejbDesc, ainfo);
     }

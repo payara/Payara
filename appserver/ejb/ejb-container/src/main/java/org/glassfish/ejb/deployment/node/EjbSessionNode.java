@@ -133,6 +133,7 @@ public class EjbSessionNode extends InterfaceBasedEjbNode<EjbSessionDescriptor> 
         table.put(EjbTagNames.SESSION_TYPE, "setSessionType");
         table.put(EjbTagNames.TRANSACTION_TYPE, "setTransactionType");
         table.put(EjbTagNames.INIT_ON_STARTUP, "setInitOnStartup");
+        table.put(EjbTagNames.PASSIVATION_CAPABLE, "setPassivationCapable");        
         return table;
     }
 
@@ -213,6 +214,11 @@ public class EjbSessionNode extends InterfaceBasedEjbNode<EjbSessionDescriptor> 
                     ejbDesc.getConcurrencyManagementType().toString());
         }
 
+        if (ejbDesc.isStateful()) {
+            appendTextChild(ejbNode, EjbTagNames.PASSIVATION_CAPABLE,
+                    Boolean.toString(ejbDesc.isPassivationCapable()));
+        }
+        
         for (EjbSessionDescriptor.AccessTimeoutHolder next : ejbDesc.getAccessTimeoutInfo()) {
             ConcurrentMethodDescriptor cDesc = new ConcurrentMethodDescriptor();
             cDesc.setConcurrentMethod(next.method);
