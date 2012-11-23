@@ -952,16 +952,21 @@ public class EJBTimerService {
     // Logic used by TimerWrapper for javax.ejb.Timer methods.
     //
 
-    protected void cancelTimer(TimerPrimaryKey timerId) 
+    // Note, throws an IllegalStateException if non owner tries to cancel
+    protected void cancelTimer(TimerPrimaryKey timerId, long callerContainerId)
             throws FinderException, Exception {
-        cancelNonPersistentTimer(timerId);
+        cancelNonPersistentTimer(timerId, callerContainerId);
     }
 
-    protected boolean cancelNonPersistentTimer(TimerPrimaryKey timerId) 
+    protected boolean cancelNonPersistentTimer(TimerPrimaryKey timerId, long callerContainerId)
             throws FinderException, Exception {
 
         RuntimeTimerState rt = getNonPersistentTimerState(timerId);
         if (rt != null) {
+            if (callerContainerId != rt.getContainerId()) {
+                throw new IllegalStateException
+                        ("Operation is allowed only for the owner EJB who created this timer");
+            }
             if( rt.isCancelled()) {
                 // already cancelled or removed
                 return true;
@@ -1233,7 +1238,7 @@ public class EJBTimerService {
                     // nothing more to do.
                 } else if (timerState.isExpired()) {
                     // schedule-based timer without valid expiration
-                    cancelTimer(timerId);
+                    cancelTimer(timerId, timerState.getContainerId());
                 } else if( redeliver ) {
                     int numDeliv = timerState.getNumFailedDeliveries() + 1;
                     if( redeliverTimeout(timerState) ) {
@@ -1269,7 +1274,7 @@ public class EJBTimerService {
                         scheduleTask(timerId, expiration);
                     } else {
                         // schedule-based timer ended.
-                        cancelTimer(timerId);
+                        cancelTimer(timerId, timerState.getContainerId());
                     }
                 } else {
                    
@@ -1364,7 +1369,7 @@ public class EJBTimerService {
                             // Timer has expired sucessfully, so remove it.
 // XXX the original logic relied on the tx being executed on CMP if needed
 // XXX the original logic didn't need a FinderException as it assumed that it's in the same tx XXX
-                            cancelTimer(timerId);
+                            cancelTimer(timerId, timerState.getContainerId());
                         }
                     } catch(Exception e) {
                         

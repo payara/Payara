@@ -966,11 +966,11 @@ public class PersistentEJBTimerService extends EJBTimerService {
     //
 
     @Override
-    protected void cancelTimer(TimerPrimaryKey timerId) 
+    protected void cancelTimer(TimerPrimaryKey timerId, long callerContainer)
             throws FinderException, Exception {
 
         // Check non-persistent timers first
-        if (!cancelNonPersistentTimer(timerId)) {
+        if (!cancelNonPersistentTimer(timerId, callerContainer)) {
             // @@@ We can't assume this server instance owns the timer
             // so always ask the database.  Investigate possible use of
             // timer cache for optimization.
@@ -978,6 +978,14 @@ public class PersistentEJBTimerService extends EJBTimerService {
             // Look up timer bean from database.  Throws FinderException if
             // timer no longer exists, which is converted by the caller into a
             // NoSuchObjectLocalException.
+            TimerState timerState = timerLocal_.findTimer(timerId);
+            if (timerState == null) {
+                throw new FinderException("timer " + timerId + " does not exist");
+            }
+            if (timerState.getContainerId() != callerContainer) {
+                throw new IllegalStateException
+                        ("Operation is allowed only for the owner EJB who created this timer");
+            }
             timerLocal_.cancel(timerId);            
         }
         

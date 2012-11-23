@@ -85,12 +85,17 @@ public class TimerWrapper
     public void cancel() 
         throws IllegalStateException, NoSuchObjectLocalException, EJBException {
 
-        checkCallPermission();
+        EjbInvocation inv = getCurrentEjbInvocation();
+        checkCallPermission(inv);
 
+        assert inv.getContainer() instanceof BaseContainer;
+        BaseContainer callerContainer = (BaseContainer) inv.getContainer();
         try {
-            timerService_.cancelTimer(timerId_);
+            timerService_.cancelTimer(timerId_, callerContainer.getContainerId());
         } catch(FinderException fe) {
             throw new NoSuchObjectLocalException("timer no longer exists", fe);
+        } catch(IllegalStateException e) {
+            throw e;
         } catch(Exception e) {
             throw new EJBException(e);
         }
@@ -111,7 +116,7 @@ public class TimerWrapper
     public Date getNextTimeout() 
         throws IllegalStateException, NoMoreTimeoutsException, NoSuchObjectLocalException {
 
-        checkCallPermission();
+        checkCallPermission(getCurrentEjbInvocation());
 
         Date nextTimeout;
 
@@ -131,7 +136,7 @@ public class TimerWrapper
     public Serializable getInfo() 
         throws IllegalStateException, NoSuchObjectLocalException {
 
-        checkCallPermission();
+        checkCallPermission(getCurrentEjbInvocation());
 
         Serializable info;
 
@@ -147,7 +152,7 @@ public class TimerWrapper
     public TimerHandle getHandle() 
         throws IllegalStateException, NoSuchObjectLocalException {
 
-        checkCallPermission();
+        checkCallPermission(getCurrentEjbInvocation());
 
         if( !isPersistent() ) {
             throw new IllegalStateException("Only allowed for persistent timers");
@@ -163,7 +168,7 @@ public class TimerWrapper
     public ScheduleExpression getSchedule() throws java.lang.IllegalStateException, 
             javax.ejb.NoSuchObjectLocalException, javax.ejb.EJBException {
 
-        checkCallPermission();
+        checkCallPermission(getCurrentEjbInvocation());
         ScheduleExpression schedule;
 
         if( !isCalendarTimer() ) {
@@ -182,7 +187,7 @@ public class TimerWrapper
     public boolean isCalendarTimer() throws java.lang.IllegalStateException,
             javax.ejb.NoSuchObjectLocalException, javax.ejb.EJBException {
 
-        checkCallPermission();
+        checkCallPermission(getCurrentEjbInvocation());
 
         try {
             return timerService_.isCalendarTimer(timerId_);
@@ -195,7 +200,7 @@ public class TimerWrapper
     public boolean isPersistent() throws java.lang.IllegalStateException, 
             javax.ejb.NoSuchObjectLocalException, javax.ejb.EJBException {
 
-        checkCallPermission();
+        checkCallPermission(getCurrentEjbInvocation());
         try {
             return timerService_.isPersistent(timerId_);
         } catch(FinderException fe) {
@@ -220,16 +225,8 @@ public class TimerWrapper
         return "Timer " + timerId_;
     }
 
-    /**
-     * Verify that Timer method access is allowed from this context.
-     * This method is static so that TimerHandle can call it even
-     * before it has created a TimerWrapper instance.
-     */
-    private static void checkCallPermission() throws IllegalStateException {
-
-        boolean allowed = false;
-
-        // Can't store a static ref because in embedded container it can be 
+    private static EjbInvocation getCurrentEjbInvocation() {
+        // Can't store a static ref because in embedded container it can be
         // changed by server restart
         EjbContainerUtil ejbContainerUtil = EjbContainerUtilImpl.getInstance();
         EJBTimerService timerService = EJBTimerService.getEJBTimerService();
@@ -238,33 +235,43 @@ public class TimerWrapper
                 ("EJBTimerService is not available");
         }
 
-        try {
-            ComponentInvocation inv = ejbContainerUtil.getCurrentInvocation();
-            if (inv == null)
-                throw new IllegalStateException
+        ComponentInvocation inv = ejbContainerUtil.getCurrentInvocation();
+        if (inv == null)
+            throw new IllegalStateException
                     ("Invocation cannot be null");
 
-            ComponentInvocation.ComponentInvocationType invType = inv.getInvocationType();
-            if( invType == ComponentInvocation.ComponentInvocationType.EJB_INVOCATION ) { 
-                if ( inv instanceof EjbInvocation ) {
-                    ComponentContext context = ((EjbInvocation) inv).context;
-                    // Delegate check to EJB context.  Let any 
-                    // IllegalStateException bubble up.
-                    context.checkTimerServiceMethodAccess();
-                    allowed = true;
-                } else {
-                    // NOTE : There shouldn't be any cases where an EJB
-                    // container uses com.sun.enterprise.ComponentInvocation
-                    // instead of com.sun.ejb.Invocation and timer method
-                    // access is allowed. No EJBContextImpl is available
-                    // to perform checks.
-                    allowed = false;
-                }
-            } else if( invType == ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION ) {
-                throw new IllegalStateException
-                    ("Web tier access to EJB timers through local " +
-                     "interfaces is not portable");
+        ComponentInvocation.ComponentInvocationType invType = inv.getInvocationType();
+        if (invType == ComponentInvocation.ComponentInvocationType.EJB_INVOCATION) {
+            if (inv instanceof EjbInvocation) {
+                return (EjbInvocation) inv;
+            } else {
+                // NOTE : There shouldn't be any cases where an EJB
+                // container uses com.sun.enterprise.ComponentInvocation
+                // instead of com.sun.ejb.Invocation and timer method
+                // access is allowed. No EJBContextImpl is available
+                // to perform checks.
+                throw new IllegalStateException("Operation not allowed");
             }
+        } else if (invType == ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION) {
+            throw new IllegalStateException
+                    ("Web tier access to EJB timers through local " +
+                            "interfaces is not portable");
+        }
+        // won't reach here
+        throw new IllegalStateException("Operation not allowed");
+    }
+
+    /**
+     * Verify that Timer method access is allowed from this context.
+     * This method is static so that TimerHandle can call it even
+     * before it has created a TimerWrapper instance.
+     */
+    private static void checkCallPermission(EjbInvocation ejbInvocation)
+            throws IllegalStateException {
+        try {
+            // Delegate check to EJB context.  Let any
+            // IllegalStateException bubble up.
+            ejbInvocation.context.checkTimerServiceMethodAccess();
         } catch(InvocationException ie) {
             IllegalStateException ise = new IllegalStateException
                 ("Operation not allowed");
@@ -272,10 +279,6 @@ public class TimerWrapper
             throw ise;
         }
 
-        if( !allowed ) {
-            throw new IllegalStateException("Operation not allowed");
-        }
-        
     }
 
     public SerializableObjectFactory getSerializableObjectFactory() {
@@ -335,7 +338,7 @@ public class TimerWrapper
             if( ejbContainerUtil != null ) {
                 
                 // Make sure use of timer service methods are allowed
-                checkCallPermission();
+                checkCallPermission(getCurrentEjbInvocation());
 
                 timer = getTimerInternal(timerId_);
 
