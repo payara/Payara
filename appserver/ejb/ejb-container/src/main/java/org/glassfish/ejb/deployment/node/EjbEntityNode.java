@@ -196,7 +196,7 @@ public class EjbEntityNode  extends InterfaceBasedEjbNode<EjbEntityDescriptor> {
         writeLifeCycleCallbackDescriptors(ejbNode, TagNames.PRE_DESTROY, ejbDesc.getPreDestroyDescriptors());
 
         // all descriptors (includes DSD, MSD, JMSCFD, JMSDD,AOD, CRD)*
-        writeResourceDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.ALL).iterator());
+        writeResourceDescriptors(ejbNode, ejbDesc.getAllResourcesDescriptors().iterator());
 
         // security-role-ref*
         writeRoleReferenceDescriptors(ejbNode, ejbDesc.getRoleReferences().iterator());

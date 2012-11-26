@@ -46,7 +46,6 @@ import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.jvnet.hk2.annotations.Service;
@@ -92,7 +91,7 @@ public class AdministeredObjectDefinitionHandler extends AbstractResourceHandler
             if (!canProcessAnnotation(annotatedClass, ejbClass, warClass, context)){
                 return getDefaultProcessedResult();
             }
-            Set<Descriptor> aodDescs = context.getResourceDescriptors(JavaEEResourceType.AODD);
+            Set<ResourceDescriptor> aodDescs = context.getResourceDescriptors(JavaEEResourceType.AODD);
             AdministeredObjectDefinitionDescriptor desc = createDescriptor(adminObjectDefnAn);
             if(isDefinitionAlreadyPresent(aodDescs, desc)){
                 merge(aodDescs, adminObjectDefnAn);
@@ -198,10 +197,10 @@ public class AdministeredObjectDefinitionHandler extends AbstractResourceHandler
     }
 
     
-    private boolean isDefinitionAlreadyPresent(Set<Descriptor> descriptors,
+    private boolean isDefinitionAlreadyPresent(Set<ResourceDescriptor> descriptors,
             AdministeredObjectDefinitionDescriptor desc) {
         boolean result = false ;
-        for(Descriptor descriptor : descriptors){
+        for(ResourceDescriptor descriptor : descriptors){
             if(descriptor.equals(desc)){
                 result = true;
                 break;
@@ -210,9 +209,9 @@ public class AdministeredObjectDefinitionHandler extends AbstractResourceHandler
         return result;
     }
 
-    private void merge(Set<Descriptor> aodDescs, AdministeredObjectDefinition defn) {
+    private void merge(Set<ResourceDescriptor> aodDescs, AdministeredObjectDefinition defn) {
 
-        for (Descriptor descriptor : aodDescs) {
+        for (ResourceDescriptor descriptor : aodDescs) {
             AdministeredObjectDefinitionDescriptor desc = (AdministeredObjectDefinitionDescriptor)descriptor;
             if (desc.getName().equals(defn.name())) {
 

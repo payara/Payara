@@ -41,13 +41,11 @@
 package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.util.DOLUtils;
-import org.glassfish.deployment.common.Descriptor;
-
 import java.util.Properties;
 
 import static org.glassfish.deployment.common.JavaEEResourceType.*;
 
-public class JMSDestinationDefinitionDescriptor extends Descriptor {
+public class JMSDestinationDefinitionDescriptor extends ResourceDescriptor {
 
     private static final long serialVersionUID = 6874534064049457633L;
 
@@ -59,8 +57,6 @@ public class JMSDestinationDefinitionDescriptor extends Descriptor {
     private Properties properties = new Properties();
 
     private String resourceId;
-    private MetadataSource metadataSource = MetadataSource.XML;
-
     private static final String JAVA_URL = "java:";
     private static final String JAVA_COMP_URL = "java:comp/";
 
@@ -119,14 +115,6 @@ public class JMSDestinationDefinitionDescriptor extends Descriptor {
 
     public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
-    }
-
-    public MetadataSource getMetadataSource() {
-        return metadataSource;
-    }
-
-    public void setMetadataSource(MetadataSource metadataSource) {
-        this.metadataSource = metadataSource;
     }
 
     public boolean equals(Object object) {

@@ -47,7 +47,6 @@ import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.jvnet.hk2.annotations.Service;
@@ -90,7 +89,7 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
                 return getDefaultProcessedResult();
             }
 
-            Set<Descriptor> jmscfdDescs = context.getResourceDescriptors(JavaEEResourceType.JMSCFDD);
+            Set<ResourceDescriptor> jmscfdDescs = context.getResourceDescriptors(JavaEEResourceType.JMSCFDD);
             JMSConnectionFactoryDefinitionDescriptor desc = createDescriptor(jmsConnectionFactoryDefnAn);
             if (isDefinitionAlreadyPresent(jmscfdDescs, desc)) {
                 merge(jmscfdDescs, jmsConnectionFactoryDefnAn);
@@ -196,9 +195,9 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
         return true;
     }
 
-    private boolean isDefinitionAlreadyPresent(Set<Descriptor> jmscfdDescs,
+    private boolean isDefinitionAlreadyPresent(Set<ResourceDescriptor> jmscfdDescs,
                                                JMSConnectionFactoryDefinitionDescriptor desc) {
-        for (Descriptor descriptor : jmscfdDescs) {
+        for (ResourceDescriptor descriptor : jmscfdDescs) {
             if (descriptor.equals(desc)) {
                 return true;
             }
@@ -206,9 +205,9 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
         return false;
     }
 
-    private void merge(Set<Descriptor> jmscfdDescs, JMSConnectionFactoryDefinition defn) {
+    private void merge(Set<ResourceDescriptor> jmscfdDescs, JMSConnectionFactoryDefinition defn) {
 
-        for (Descriptor descriptor : jmscfdDescs) {
+        for (ResourceDescriptor descriptor : jmscfdDescs) {
             JMSConnectionFactoryDefinitionDescriptor desc = (JMSConnectionFactoryDefinitionDescriptor)descriptor;
             if (desc.getName().equals(defn.name())) {
 

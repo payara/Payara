@@ -46,7 +46,6 @@ import com.sun.enterprise.deployment.web.EnvironmentEntry;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.deployment.web.SecurityConstraint;
 import com.sun.enterprise.deployment.web.ServletFilter;
-import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.JavaEEResourceType;
 
 import java.util.Set;
@@ -302,90 +301,6 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
         getPreDestroyDescriptors().addAll(webBundleDescriptor.getPreDestroyDescriptors());
     }
 
-    @Override
-    protected void combineDataSourceDefinitionDescriptors(JndiNameEnvironment env) {
-        for (Descriptor ddd: env.getResourceDescriptors(JavaEEResourceType.DSD)) {
-            DataSourceDefinitionDescriptor ddDesc = (DataSourceDefinitionDescriptor)getResourceDescriptor(JavaEEResourceType.DSD, ddd.getName());
-            if (ddDesc != null) {
-                if (ddDesc.isConflict((DataSourceDefinitionDescriptor)ddd)) {
-                    conflictDataSourceDefinition = true;
-                }
-            } else {
-                getResourceDescriptors(JavaEEResourceType.DSD).add(ddd);
-            }
-        }
-    }
-
-    @Override
-    public void combineMailSessionDescriptors(JndiNameEnvironment env) {
-        for (Descriptor ddd: env.getResourceDescriptors(JavaEEResourceType.MSD)) {
-            MailSessionDescriptor msDesc = (MailSessionDescriptor)getResourceDescriptor(JavaEEResourceType.MSD, ddd.getName());
-            if (msDesc != null) {
-                if (msDesc.isConflict((MailSessionDescriptor)ddd)) {
-                    conflictDataSourceDefinition = true;
-                }
-            } else {
-                getResourceDescriptors(JavaEEResourceType.MSD).add(ddd);
-            }
-        }
-    }
-
-    @Override
-    public void combineConnectorResourceDefinitionDescriptors(JndiNameEnvironment env) {
-        for (Descriptor crdd: env.getResourceDescriptors(JavaEEResourceType.CRD)) {
-            ConnectorResourceDefinitionDescriptor desc = (ConnectorResourceDefinitionDescriptor)getResourceDescriptor(JavaEEResourceType.CRD,crdd.getName());
-            if (desc != null) {
-                if (desc.isConflict((ConnectorResourceDefinitionDescriptor)crdd)) {
-                    conflictConnectorResourceDefinition = true;
-                }
-            } else {
-                getResourceDescriptors(JavaEEResourceType.CRD).add(crdd);
-            }
-        }
-    }
-
-    @Override   
-    public void combineAdministeredObjectDefinitionDescriptors(JndiNameEnvironment env) {
-        for (Descriptor aodd: env.getResourceDescriptors(JavaEEResourceType.AODD)) {
-            AdministeredObjectDefinitionDescriptor desc = (AdministeredObjectDefinitionDescriptor)getResourceDescriptor(JavaEEResourceType.AODD,aodd.getName());
-            if (desc != null) {
-                if (desc.isConflict((AdministeredObjectDefinitionDescriptor)aodd)) {
-                    conflictAdminObjectDefinition = true;
-                }
-            } else {
-                getResourceDescriptors(JavaEEResourceType.AODD).add(aodd);
-            }
-        }
-    }
-
-    @Override
-    public void combineJMSConnectionFactoryDefinitionDescriptors(JndiNameEnvironment env) {
-        for (Descriptor jmscfdd: env.getResourceDescriptors(JavaEEResourceType.JMSCFDD)) {
-            JMSConnectionFactoryDefinitionDescriptor desc = (JMSConnectionFactoryDefinitionDescriptor)getResourceDescriptor(JavaEEResourceType.JMSCFDD,jmscfdd.getName());
-            if (desc != null) {
-                if (desc.isConflict((JMSConnectionFactoryDefinitionDescriptor)jmscfdd)) {
-                    conflictJMSConnectionFactoryDefinition = true;
-                }
-            } else {
-                getResourceDescriptors(JavaEEResourceType.JMSCFDD).add(jmscfdd);
-            }
-        }
-    }
-
-    @Override
-    public void combineJMSDestinationDefinitionDescriptors(JndiNameEnvironment env) {
-        for (Descriptor jmsddd: env.getResourceDescriptors(JavaEEResourceType.JMSDD)) {
-            JMSDestinationDefinitionDescriptor desc = (JMSDestinationDefinitionDescriptor)getResourceDescriptor(JavaEEResourceType.JMSDD,jmsddd.getName());
-            if (desc != null) {
-                if (desc.isConflict((JMSDestinationDefinitionDescriptor)jmsddd)) {
-                    conflictJMSDestinationDefinition = true;
-                }
-            } else {
-                getResourceDescriptors(JavaEEResourceType.JMSDD).add(jmsddd);
-            }
-        }
-    }
-
     /**
      * Return a formatted version as a String.
      */
@@ -398,6 +313,36 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
         }
         if (ordering != null) {
             toStringBuffer.append("\nordering " + ordering);
+        }
+    }
+
+    @Override
+    protected void combineResourceDescriptors(JndiNameEnvironment env,JavaEEResourceType javaEEResourceType) {
+        for (ResourceDescriptor ddd: env.getResourceDescriptors(javaEEResourceType)) {
+            ResourceDescriptor descriptor = getResourceDescriptor(javaEEResourceType, ddd.getName());
+            if (descriptor != null) {
+                if (descriptor.getResourceType().equals(JavaEEResourceType.DSD) &&
+                        ((DataSourceDefinitionDescriptor)descriptor).isConflict((DataSourceDefinitionDescriptor)ddd)) {
+                    conflictDataSourceDefinition = true;
+                } else if (descriptor.getResourceType().equals(JavaEEResourceType.MSD) &&
+                        ((MailSessionDescriptor)descriptor).isConflict((MailSessionDescriptor)ddd)) {
+                    conflictMailSessionDefinition = true;
+                } else if (descriptor.getResourceType().equals(JavaEEResourceType.AODD) &&
+                        ((AdministeredObjectDefinitionDescriptor)descriptor).isConflict((AdministeredObjectDefinitionDescriptor)ddd)) {
+                    conflictAdminObjectDefinition = true;
+                } else if (descriptor.getResourceType().equals(JavaEEResourceType.CRD) &&
+                        ((ConnectorResourceDefinitionDescriptor)descriptor).isConflict((ConnectorResourceDefinitionDescriptor)ddd)) {
+                    conflictConnectorResourceDefinition = true;
+                } else if (descriptor.getResourceType().equals(JavaEEResourceType.JMSCFDD) &&
+                        ((JMSConnectionFactoryDefinitionDescriptor)descriptor).isConflict((JMSConnectionFactoryDefinitionDescriptor)ddd)) {
+                    conflictJMSConnectionFactoryDefinition = true;
+                } else if (descriptor.getResourceType().equals(JavaEEResourceType.JMSDD) &&
+                        ((JMSDestinationDefinitionDescriptor)descriptor).isConflict((JMSDestinationDefinitionDescriptor)ddd)) {
+                    conflictJMSDestinationDefinition = true;
+                }
+            } else {
+                getResourceDescriptors(javaEEResourceType).add(ddd);
+            }
         }
     }
 }

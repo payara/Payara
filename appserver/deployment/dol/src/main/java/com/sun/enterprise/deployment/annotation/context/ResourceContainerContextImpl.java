@@ -421,7 +421,7 @@ public class ResourceContainerContextImpl extends AnnotationContext
      * Adds the descriptor to the receiver.
      * @param desc Descriptor to add.
      */
-    public void addResourceDescriptor(Descriptor desc) {
+    public void addResourceDescriptor(ResourceDescriptor desc) {
         getDataSourceDefinitionContainer().addResourceDescriptor(desc);
     }
 
@@ -429,7 +429,7 @@ public class ResourceContainerContextImpl extends AnnotationContext
      * get all Descriptor descriptors based on the type
      * @return Descriptor descriptors
      */
-    public Set<Descriptor> getResourceDescriptors(JavaEEResourceType type) {
+    public Set<ResourceDescriptor> getResourceDescriptors(JavaEEResourceType type) {
         return getDataSourceDefinitionContainer().getResourceDescriptors(type);
     }
 

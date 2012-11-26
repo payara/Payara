@@ -187,7 +187,7 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
         }
 
         // all descriptors (includes DSD, MSD, JMSCFD, JMSDD,AOD, CRD)*
-        writeResourceDescriptors(interceptorNode, descriptor.getResourceDescriptors(JavaEEResourceType.ALL).iterator());
+        writeResourceDescriptors(interceptorNode, descriptor.getAllResourcesDescriptors().iterator());
 
         return interceptorNode;
     }

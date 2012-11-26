@@ -48,7 +48,6 @@ import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.resources.javamail.annotation.MailSessionDefinition;
@@ -103,7 +102,7 @@ public class MailSessionDefinitionHandler extends AbstractResourceHandler {
                 return getDefaultProcessedResult();
             }
 
-            Set<Descriptor> mailSessionDescs = context.getResourceDescriptors(JavaEEResourceType.MSD);
+            Set<ResourceDescriptor> mailSessionDescs = context.getResourceDescriptors(JavaEEResourceType.MSD);
             MailSessionDescriptor desc = createDescriptor(mailSessionDefnAn);
             if (isDefinitionAlreadyPresent(mailSessionDescs, desc)) {
                 merge(mailSessionDescs, mailSessionDefnAn);
@@ -259,10 +258,10 @@ public class MailSessionDefinitionHandler extends AbstractResourceHandler {
         return desc;
     }
 
-    private boolean isDefinitionAlreadyPresent(Set<Descriptor> mailSessionDescs,
+    private boolean isDefinitionAlreadyPresent(Set<ResourceDescriptor> mailSessionDescs,
                                                MailSessionDescriptor mailSessionDesc) {
         boolean result = false;
-        for (Descriptor msDesc : mailSessionDescs) {
+        for (ResourceDescriptor msDesc : mailSessionDescs) {
             if (msDesc.equals(mailSessionDesc)) {
                 result = true;
                 break;
@@ -271,9 +270,9 @@ public class MailSessionDefinitionHandler extends AbstractResourceHandler {
         return result;
     }
 
-    private void merge(Set<Descriptor> mailSessionDescs, MailSessionDefinition mailSessionDefn) {
+    private void merge(Set<ResourceDescriptor> mailSessionDescs, MailSessionDefinition mailSessionDefn) {
 
-        for (Descriptor orgDesc : mailSessionDescs) {
+        for (ResourceDescriptor orgDesc : mailSessionDescs) {
             MailSessionDescriptor desc = (MailSessionDescriptor)orgDesc;
             if (desc.getName().equals(mailSessionDefn.name())) {
 

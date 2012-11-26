@@ -41,7 +41,6 @@
 package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.types.EjbReference;
-import org.glassfish.deployment.common.Descriptor;
 
 /**
  * Objects implementing this interface allow their
@@ -193,7 +192,7 @@ public interface WritableJndiNameEnvironment extends JndiNameEnvironment {
      *
      */
     public void addResourceDescriptor(
-            Descriptor reference);
+            ResourceDescriptor reference);
 
     /**  
      * Removes the specified descriptor from the receiver.
@@ -202,6 +201,6 @@ public interface WritableJndiNameEnvironment extends JndiNameEnvironment {
      *
      */
     public void removeResourceDescriptor(
-				Descriptor reference);
+            ResourceDescriptor reference);
 }
 

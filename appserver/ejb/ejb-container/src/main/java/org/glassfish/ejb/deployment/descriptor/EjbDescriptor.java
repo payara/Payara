@@ -57,11 +57,8 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.enterprise.deployment.AdministeredObjectDefinitionDescriptor;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.CommonResourceDescriptor;
-import com.sun.enterprise.deployment.ConnectorResourceDefinitionDescriptor;
-import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
 import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.EjbReferenceDescriptor;
@@ -72,15 +69,13 @@ import com.sun.enterprise.deployment.InjectionCapable;
 import com.sun.enterprise.deployment.InjectionInfo;
 import com.sun.enterprise.deployment.InjectionTarget;
 import com.sun.enterprise.deployment.InterceptorDescriptor;
-import com.sun.enterprise.deployment.JMSConnectionFactoryDefinitionDescriptor;
-import com.sun.enterprise.deployment.JMSDestinationDefinitionDescriptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
-import com.sun.enterprise.deployment.MailSessionDescriptor;
 import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.MethodPermission;
 import com.sun.enterprise.deployment.OrderedSet;
+import com.sun.enterprise.deployment.ResourceDescriptor;
 import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
 import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
 import com.sun.enterprise.deployment.RoleReference;
@@ -298,9 +293,9 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
             this.getResourceReferenceDescriptors().addAll(other.getResourceReferenceDescriptors());
             this.getServiceReferenceDescriptors().addAll(other.getServiceReferenceDescriptors());
             // XXX - why not addAll?
-            Set<Descriptor> allDescriptors = other.getResourceDescriptors(JavaEEResourceType.ALL);
+            Set<ResourceDescriptor> allDescriptors = other.getAllResourcesDescriptors();
             if(allDescriptors.size() > 0){
-                for(Descriptor desc : allDescriptors){
+                for(ResourceDescriptor desc : allDescriptors){
                     this.addResourceDescriptor(desc);
                 }
             }

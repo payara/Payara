@@ -314,7 +314,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         writeMessageDestinations(appNode, application.getMessageDestinations().iterator());
 
         // all descriptors (includes DSD, MSD, JMSCFD, JMSDD,AOD, CRD)*
-        writeResourceDescriptors(appNode, application.getResourceDescriptors(JavaEEResourceType.ALL).iterator());
+        writeResourceDescriptors(appNode, application.getAllResourcesDescriptors().iterator());
 
         return appNode;
     }

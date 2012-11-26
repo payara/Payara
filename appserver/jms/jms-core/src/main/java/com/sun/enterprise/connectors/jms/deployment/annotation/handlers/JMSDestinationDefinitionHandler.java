@@ -47,7 +47,6 @@ import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.jvnet.hk2.annotations.Service;
@@ -90,7 +89,7 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
                 return getDefaultProcessedResult();
             }
 
-            Set<Descriptor> jmsddDescs = context.getResourceDescriptors(JavaEEResourceType.JMSDD);
+            Set<ResourceDescriptor> jmsddDescs = context.getResourceDescriptors(JavaEEResourceType.JMSDD);
             JMSDestinationDefinitionDescriptor desc = createDescriptor(jmsDestinationDefnAn);
             if (isDefinitionAlreadyPresent(jmsddDescs, desc)) {
                 merge(jmsddDescs, jmsDestinationDefnAn);
@@ -196,9 +195,9 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
         return true;
     }
 
-    private boolean isDefinitionAlreadyPresent(Set<Descriptor> jmsddDescs,
+    private boolean isDefinitionAlreadyPresent(Set<ResourceDescriptor> jmsddDescs,
                                                JMSDestinationDefinitionDescriptor desc) {
-        for (Descriptor descriptor : jmsddDescs) {
+        for (ResourceDescriptor descriptor : jmsddDescs) {
             if (descriptor.equals(desc)) {
                 return true;
             }
@@ -206,9 +205,9 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
         return false;
     }
 
-    private void merge(Set<Descriptor> jmsddDescs, JMSDestinationDefinition defn) {
+    private void merge(Set<ResourceDescriptor> jmsddDescs, JMSDestinationDefinition defn) {
 
-        for (Descriptor descriptor : jmsddDescs) {
+        for (ResourceDescriptor descriptor : jmsddDescs) {
             JMSDestinationDefinitionDescriptor desc = (JMSDestinationDefinitionDescriptor)descriptor;
             if (desc.getName().equals(defn.name())) {
 

@@ -40,49 +40,54 @@
 
 package com.sun.enterprise.deployment;
 
+import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.JavaEEResourceType;
-import java.util.Set;
 
 /**
- * This class is used to defined common descriptor elements which is shared by classes which implements BundleDescriptor.
- * User: naman mehta
- * Date: 22/5/12
- * Time: 3:58 PM
+ * Created with IntelliJ IDEA.
+ * User: naman
+ * Date: 19/11/12
+ * Time: 2:42 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class CommonResourceDescriptor extends ResourceDescriptor {
+public class ResourceDescriptor extends Descriptor {
 
-    ResourceDescriptorRegistry resourceDescriptorRegistry = new ResourceDescriptorRegistry();
+    private MetadataSource metadataSource = MetadataSource.XML;
 
-    protected CommonResourceDescriptor() {
+    private String resourceId;
+
+    private JavaEEResourceType resourceType;
+
+    public ResourceDescriptor() {
+
     }
 
-    protected CommonResourceDescriptor(ResourceDescriptor other) {
-        super(other);
+    public ResourceDescriptor(ResourceDescriptor resourceDescriptor) {
+        super(resourceDescriptor);
     }
 
-    public void addResourceDescriptor(ResourceDescriptor descriptor) {
-        resourceDescriptorRegistry.addResourceDescriptor(descriptor);
+    public String getResourceId() {
+        return resourceId;
     }
 
-    public void removeResourceDescriptor(ResourceDescriptor descriptor) {
-        resourceDescriptorRegistry.removeResourceDescriptor(descriptor.getResourceType(),descriptor);
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
     }
 
-    public Set<ResourceDescriptor> getResourceDescriptors(JavaEEResourceType type) {
-        return resourceDescriptorRegistry.getResourceDescriptors(type);
+    public JavaEEResourceType getResourceType() {
+        return resourceType;
     }
 
-    protected ResourceDescriptor getResourceDescriptor(JavaEEResourceType type, String name) {
-        return resourceDescriptorRegistry.getResourceDescriptor(type,name);
+    public void setResourceType(JavaEEResourceType resourceType) {
+        this.resourceType = resourceType;
     }
 
-    public Set<ResourceDescriptor> getAllResourcesDescriptors() {
-        return resourceDescriptorRegistry.getAllResourcesDescriptors();
+    public MetadataSource getMetadataSource() {
+        return metadataSource;
     }
 
-    public Set<ResourceDescriptor> getAllResourcesDescriptors(Class givenClazz) {
-        return resourceDescriptorRegistry.getAllResourcesDescriptors(givenClazz);
+    public void setMetadataSource(MetadataSource metadataSource) {
+        this.metadataSource = metadataSource;
     }
 
 }

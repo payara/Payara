@@ -63,6 +63,7 @@ import org.glassfish.javaee.services.CommonResourceProxy;
 import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
+import com.sun.enterprise.deployment.ResourceDescriptor;
 
 import javax.inject.Inject;
 import javax.naming.Context;
@@ -307,19 +308,19 @@ public class ComponentEnvManagerImpl
 
     private void addAllDescriptorBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
 
-        Set<Descriptor> allDescriptors = new HashSet<Descriptor>();
-        Set<Descriptor> dsds = env.getResourceDescriptors(JavaEEResourceType.DSD);
-        Set<Descriptor> jmscfdds = env.getResourceDescriptors(JavaEEResourceType.JMSCFDD);
-        Set<Descriptor> msds =env.getResourceDescriptors(JavaEEResourceType.MSD);
-        Set<Descriptor> jmsddds = env.getResourceDescriptors(JavaEEResourceType.JMSDD);
+        Set<ResourceDescriptor> allDescriptors = new HashSet<ResourceDescriptor>();
+        Set<ResourceDescriptor> dsds = env.getResourceDescriptors(JavaEEResourceType.DSD);
+        Set<ResourceDescriptor> jmscfdds = env.getResourceDescriptors(JavaEEResourceType.JMSCFDD);
+        Set<ResourceDescriptor> msds =env.getResourceDescriptors(JavaEEResourceType.MSD);
+        Set<ResourceDescriptor> jmsddds = env.getResourceDescriptors(JavaEEResourceType.JMSDD);
         if(!(env instanceof ApplicationClientDescriptor)) {
-            Set<Descriptor> ccrdds = env.getResourceDescriptors(JavaEEResourceType.CRD);
+            Set<ResourceDescriptor> ccrdds = env.getResourceDescriptors(JavaEEResourceType.CRD);
             allDescriptors.addAll(ccrdds);
         } else {
             _logger.fine("Do not support connector-resource in client module.");
         }
         if(!(env instanceof ApplicationClientDescriptor)) {
-           Set<Descriptor> aodd = env.getResourceDescriptors(JavaEEResourceType.AODD);
+           Set<ResourceDescriptor> aodd = env.getResourceDescriptors(JavaEEResourceType.AODD);
            allDescriptors.addAll(aodd);
         } else {
            _logger.fine("Do not support administered-object in client module.");
@@ -329,7 +330,7 @@ public class ComponentEnvManagerImpl
         allDescriptors.addAll(msds);
         allDescriptors.addAll(jmsddds);
 
-        for (Descriptor descriptor : allDescriptors) {
+        for (ResourceDescriptor descriptor : allDescriptors) {
 
             if (!dependencyAppliesToScope(descriptor, scope)) {
                 continue;
@@ -407,29 +408,9 @@ public class ComponentEnvManagerImpl
 
     private void undeployAllDescriptors(JndiNameEnvironment env) {
 
-        Set<Descriptor> allDescriptors = new HashSet<Descriptor>();
-        Set<Descriptor> dsds = env.getResourceDescriptors(JavaEEResourceType.DSD);
-        Set<Descriptor> jmscfdds = env.getResourceDescriptors(JavaEEResourceType.JMSCFDD);
-        Set<Descriptor> msds =env.getResourceDescriptors(JavaEEResourceType.MSD);
-        Set<Descriptor> jmsddds = env.getResourceDescriptors(JavaEEResourceType.JMSDD);
-        if(!(env instanceof ApplicationClientDescriptor)) {
-            Set<Descriptor> ccrdds = env.getResourceDescriptors(JavaEEResourceType.CRD);
-            allDescriptors.addAll(ccrdds);
-        } else {
-            _logger.fine("Do not support connector-resource in client module.");
-        }
-        if(!(env instanceof ApplicationClientDescriptor)) {
-            Set<Descriptor> aodd = env.getResourceDescriptors(JavaEEResourceType.AODD);
-            allDescriptors.addAll(aodd);
-        } else {
-            _logger.fine("Do not support administered-object in client module.");
-        }
-        allDescriptors.addAll(dsds);
-        allDescriptors.addAll(jmscfdds);
-        allDescriptors.addAll(msds);
-        allDescriptors.addAll(jmsddds);
+        Set<ResourceDescriptor> allDescriptors = env.getAllResourcesDescriptors(env.getClass());
 
-        for (Descriptor descriptor : allDescriptors) {
+        for (ResourceDescriptor descriptor : allDescriptors) {
             switch (descriptor.getResourceType()) {
                 case DSD:
                     DataSourceDefinitionDescriptor dataSourceDefinitionDescriptor = (DataSourceDefinitionDescriptor)descriptor;

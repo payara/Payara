@@ -40,9 +40,7 @@
 
 package com.sun.enterprise.deployment;
 
-import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.JavaEEResourceType;
-
 import java.util.List;
 import java.util.Set;
 
@@ -165,7 +163,21 @@ public interface JndiNameEnvironment {
      *
      * @return java.util.Set of descriptor objects
      */
-    public Set<Descriptor> getResourceDescriptors(JavaEEResourceType type);
+    public Set<ResourceDescriptor> getResourceDescriptors(JavaEEResourceType type);
+
+    /**
+     * Return a set of descriptors based on the class value.
+     *
+     * @return java.util.Set of descriptor objects
+     */
+    public Set<ResourceDescriptor> getAllResourcesDescriptors(Class givenClass);
+
+    /**
+     * Return a set of descriptors.
+     *
+     * @return java.util.Set of descriptor objects
+     */
+    public Set<ResourceDescriptor> getAllResourcesDescriptors();
 
     /**
      * Return the pre-destroy descriptor corresponding to

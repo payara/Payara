@@ -41,8 +41,6 @@
 package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.util.DOLUtils;
-import org.glassfish.deployment.common.Descriptor;
-
 import java.util.Properties;
 import java.util.logging.Level;
 import java.sql.Connection;
@@ -52,7 +50,7 @@ import static org.glassfish.deployment.common.JavaEEResourceType.*;
 /**
  * @author Jagadish Ramu
  */
-public class DataSourceDefinitionDescriptor extends Descriptor {
+public class DataSourceDefinitionDescriptor extends ResourceDescriptor {
 
     private String name ;
     private String description;
@@ -77,7 +75,7 @@ public class DataSourceDefinitionDescriptor extends Descriptor {
     private boolean loginTimeoutSet = false; 
     private boolean serverNameSet = false;
 
-    private MetadataSource metadataSource = MetadataSource.XML;
+
 
     private boolean deployed = false;
 
@@ -344,14 +342,6 @@ public class DataSourceDefinitionDescriptor extends Descriptor {
 
     public Properties getProperties(){
         return properties;
-    }
-
-    public MetadataSource getMetadataSource() {
-        return metadataSource;
-    }
-
-    public void setMetadataSource(MetadataSource metadataSource) {
-        this.metadataSource = metadataSource;
     }
 
     public boolean equals(Object object) {

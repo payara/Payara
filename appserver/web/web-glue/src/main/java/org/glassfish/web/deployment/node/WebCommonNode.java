@@ -409,7 +409,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
         writeLifeCycleCallbackDescriptors(jarNode, TagNames.PRE_DESTROY, webBundleDesc.getPreDestroyDescriptors());
 
         // all descriptors (includes DSD, MSD, JMSCFD, JMSDD,AOD, CRD)*
-        writeResourceDescriptors(jarNode, webBundleDesc.getResourceDescriptors(JavaEEResourceType.ALL).iterator());
+        writeResourceDescriptors(jarNode, webBundleDesc.getAllResourcesDescriptors().iterator());
 
         // message-destination*
        writeMessageDestinations

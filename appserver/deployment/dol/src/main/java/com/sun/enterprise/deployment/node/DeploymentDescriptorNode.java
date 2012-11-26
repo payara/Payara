@@ -148,7 +148,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      * @param descriptor the new descriptor
      */
     public void addDescriptor(Object descriptor) {
-        if (getParentNode()==null) {
+            if (getParentNode()==null) {
             DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.addDescriptorFailure",
                 new Object[] {descriptor , toString()});
             throw new RuntimeException("Cannot add " + descriptor + " to " + toString());
@@ -176,9 +176,9 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
             try {
 
                 Method toInvoke = null;
-                    if((node.getDescriptor() instanceof Descriptor) && ((Descriptor)node.getDescriptor()).getResourceType()!=null) {
+                    if((node.getDescriptor() instanceof ResourceDescriptor) && ((ResourceDescriptor)node.getDescriptor()).getResourceType()!=null) {
                    toInvoke = getDescriptor().getClass().getMethod(
-                            (String) addMethods.get(xmlRootTag),new Class[] { Descriptor.class });
+                            (String) addMethods.get(xmlRootTag),new Class[] { ResourceDescriptor.class });
 
                 } else {
                     toInvoke = getDescriptor().getClass().getMethod(
@@ -957,7 +957,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      * @param parentNode parent node for the DOM tree
      * @param descriptorIterator the iterator over the descriptors to write
      */
-    protected void writeResourceDescriptors(Node parentNode, Iterator<Descriptor> descriptorIterator) {
+    protected void writeResourceDescriptors(Node parentNode, Iterator<ResourceDescriptor> descriptorIterator) {
         if(descriptorIterator == null || !descriptorIterator.hasNext()){
             return;
         }
@@ -970,7 +970,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
         JMSDestinationDefinitionNode jmsDestinationDefinitionNode = new JMSDestinationDefinitionNode();
 
         for(;descriptorIterator.hasNext();){
-            Descriptor descriptor = descriptorIterator.next();
+            ResourceDescriptor descriptor = descriptorIterator.next();
 
             if(descriptor.getResourceType().equals(JavaEEResourceType.DSD)) {
                 DataSourceDefinitionDescriptor next = (DataSourceDefinitionDescriptor)descriptor;

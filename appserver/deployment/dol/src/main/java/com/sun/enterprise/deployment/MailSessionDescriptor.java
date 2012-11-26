@@ -41,8 +41,6 @@
 package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.util.DOLUtils;
-import org.glassfish.deployment.common.Descriptor;
-
 import java.util.Properties;
 
 import static org.glassfish.deployment.common.JavaEEResourceType.*;
@@ -54,7 +52,7 @@ import static org.glassfish.deployment.common.JavaEEResourceType.*;
  * Time: 3:38 PM
  * To change this template use File | Settings | File Templates.
  */
-public class MailSessionDescriptor extends Descriptor {
+public class MailSessionDescriptor extends ResourceDescriptor {
 
     private String name;
     private String storeProtocol;
@@ -66,8 +64,6 @@ public class MailSessionDescriptor extends Descriptor {
     private String host;
     private String from;
     private Properties properties = new Properties();
-
-    private MetadataSource metadataSource = MetadataSource.XML;
 
     private static final String JAVA_URL = "java:";
     private static final String JAVA_COMP_URL = "java:comp/";
@@ -168,14 +164,6 @@ public class MailSessionDescriptor extends Descriptor {
 
     public void setFrom(String from) {
         this.from = from;
-    }
-
-    public MetadataSource getMetadataSource() {
-        return metadataSource;
-    }
-
-    public void setMetadataSource(MetadataSource metadataSource) {
-        this.metadataSource = metadataSource;
     }
 
     public void addMailSessionPropertyDescriptor(ResourcePropertyDescriptor propertyDescriptor) {

@@ -88,11 +88,6 @@ public class Descriptor extends DynamicAttributesDescriptor {
 
     private Map<Class<? extends Descriptor>, List<? extends Descriptor>> descriptorExtensions = new HashMap<Class<? extends Descriptor>, List<? extends Descriptor>>();
 
-    private String resourceId;
-
-    private JavaEEResourceType resourceType;
-
-
     /**
      * The default constructor. Constructs a descriptor with
      * name, description and icons as empty Strings.
@@ -683,22 +678,5 @@ public class Descriptor extends DynamicAttributesDescriptor {
         } catch (Exception e) {
             // ignore
         }
-    }
-
-    public String getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
-    }
-    //end IASRI 4713550    
-
-    public JavaEEResourceType getResourceType() {
-        return resourceType;
-    }
-
-    public void setResourceType(JavaEEResourceType resourceType) {
-        this.resourceType = resourceType;
     }
 }

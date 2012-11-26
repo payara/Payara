@@ -47,7 +47,6 @@ import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.jvnet.hk2.annotations.Service;
@@ -92,7 +91,7 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
                     return getDefaultProcessedResult();
                 }
 
-            Set<Descriptor> dsdDescs = context.getResourceDescriptors(JavaEEResourceType.DSD);
+            Set<ResourceDescriptor> dsdDescs = context.getResourceDescriptors(JavaEEResourceType.DSD);
             DataSourceDefinitionDescriptor desc = createDescriptor(dataSourceDefnAn);
             if(isDefinitionAlreadyPresent(dsdDescs, desc)){
                 merge(dsdDescs, dataSourceDefnAn);
@@ -198,10 +197,10 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
         return true;
     }
 
-    private boolean isDefinitionAlreadyPresent(Set<Descriptor> dsdDescs,
+    private boolean isDefinitionAlreadyPresent(Set<ResourceDescriptor> dsdDescs,
                                                DataSourceDefinitionDescriptor desc) {
         boolean result = false ;
-        for(Descriptor descriptor : dsdDescs){
+        for(ResourceDescriptor descriptor : dsdDescs){
             if(descriptor.equals(desc)){
                 result = true;
                 break;
@@ -227,9 +226,9 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
     }
 
 
-    private void merge(Set<Descriptor> dsdDescs, DataSourceDefinition defn) {
+    private void merge(Set<ResourceDescriptor> dsdDescs, DataSourceDefinition defn) {
 
-        for (Descriptor orgdesc : dsdDescs) {
+        for (ResourceDescriptor orgdesc : dsdDescs) {
             DataSourceDefinitionDescriptor desc = (DataSourceDefinitionDescriptor)orgdesc;
             if (desc.getName().equals(defn.name())) {
 

@@ -42,7 +42,6 @@ package com.sun.enterprise.deployment.annotation.context;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.types.EjbReference;
-import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.JavaEEResourceType;
 
 import java.util.Set;
@@ -190,15 +189,15 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
 
     /**
      * Adds the specified descriptor to the receiver.
-     * @param desc Descriptor to add.
+     * @param desc ResourceDescriptor to add.
      */
-    public void addResourceDescriptor(Descriptor desc);
+    public void addResourceDescriptor(ResourceDescriptor desc);
 
     /**
      * get all descriptors based on the type
-     * @return Set of Descriptor
+     * @return Set of ResourceDescriptor
      */
-    public Set<Descriptor> getResourceDescriptors(JavaEEResourceType type);
+    public Set<ResourceDescriptor> getResourceDescriptors(JavaEEResourceType type);
 
     public void addManagedBean(ManagedBeanDescriptor managedBeanDesc);
 }

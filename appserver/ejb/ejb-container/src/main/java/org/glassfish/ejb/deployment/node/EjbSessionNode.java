@@ -327,7 +327,7 @@ public class EjbSessionNode extends InterfaceBasedEjbNode<EjbSessionDescriptor> 
         writeLifeCycleCallbackDescriptors(ejbNode, TagNames.PRE_DESTROY, ejbDesc.getPreDestroyDescriptors());
 
         // all descriptors (includes DSD, MSD, JMSCFD, JMSDD,AOD, CRD)*
-        writeResourceDescriptors(ejbNode, ejbDesc.getResourceDescriptors(JavaEEResourceType.ALL).iterator());
+        writeResourceDescriptors(ejbNode, ejbDesc.getAllResourcesDescriptors().iterator());
 
         // post-activate-method
         writeLifeCycleCallbackDescriptors(ejbNode, EjbTagNames.POST_ACTIVATE_METHOD, ejbDesc.getPostActivateDescriptors());

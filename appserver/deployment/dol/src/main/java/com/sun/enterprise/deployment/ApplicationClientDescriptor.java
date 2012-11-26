@@ -675,7 +675,7 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     }
 
     @Override
-    public Set<Descriptor> getResourceDescriptors(JavaEEResourceType type) {
+    public Set<ResourceDescriptor> getResourceDescriptors(JavaEEResourceType type) {
         switch(type) {
             case CRD:
                 throw new UnsupportedOperationException(localStrings.getLocalString(
@@ -693,7 +693,7 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     }
 
     @Override
-    public void addResourceDescriptor(Descriptor descriptor) {
+    public void addResourceDescriptor(ResourceDescriptor descriptor) {
 
         if(descriptor.getResourceType().equals(JavaEEResourceType.CRD)){
             throw new UnsupportedOperationException(localStrings.getLocalString(
@@ -713,7 +713,7 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     }
 
     @Override
-    public void removeResourceDescriptor(Descriptor descriptor) {
+    public void removeResourceDescriptor(ResourceDescriptor descriptor) {
         if(descriptor.getResourceType().equals(JavaEEResourceType.CRD)){
             throw new UnsupportedOperationException(localStrings.getLocalString(
             			    "enterprise.deployment.exceptionappclientnotsupportconnectorresourcedefinition",

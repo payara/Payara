@@ -41,8 +41,6 @@
 package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.util.DOLUtils;
-import org.glassfish.deployment.common.Descriptor;
-
 import java.util.Properties;
 
 import static org.glassfish.deployment.common.JavaEEResourceType.*;
@@ -51,7 +49,7 @@ import static org.glassfish.deployment.common.JavaEEResourceType.*;
  * @author Dapeng Hu
  */
 
-public class AdministeredObjectDefinitionDescriptor extends Descriptor {
+public class AdministeredObjectDefinitionDescriptor extends ResourceDescriptor {
 
     private static final long serialVersionUID = -892751088457716458L;
     // the <description> element will be processed by base class
@@ -61,7 +59,6 @@ public class AdministeredObjectDefinitionDescriptor extends Descriptor {
     private Properties properties = new Properties();
     
     private String resourceId;
-    private MetadataSource metadataSource = MetadataSource.XML;
     private static final String JAVA_URL = "java:";
     private static final String JAVA_COMP_URL = "java:comp/";
     
@@ -100,14 +97,6 @@ public class AdministeredObjectDefinitionDescriptor extends Descriptor {
 
     public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
-    }
-
-    public MetadataSource getMetadataSource() {
-        return metadataSource;
-    }
-
-    public void setMetadataSource(MetadataSource metadataSource) {
-        this.metadataSource = metadataSource;
     }
 
     public void addProperty(String key, String value){

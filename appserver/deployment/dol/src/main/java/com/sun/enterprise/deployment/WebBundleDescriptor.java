@@ -48,6 +48,7 @@ import com.sun.enterprise.deployment.web.*;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.deployment.common.DescriptorVisitor;
+import org.glassfish.deployment.common.JavaEEResourceType;
 
 import java.util.*;
 
@@ -145,7 +146,7 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     protected abstract void combineResourceEnvReferenceDescriptors(JndiNameEnvironment env);
 
-    protected abstract void combineDataSourceDefinitionDescriptors(JndiNameEnvironment env);
+    protected abstract void combineResourceDescriptors(JndiNameEnvironment env, JavaEEResourceType javaEEResourceType);
 
     public abstract Set<MimeMapping> getMimeMappingsSet();
 
@@ -412,16 +413,5 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     public abstract void setExtensionProperty(String key, String value);
 
     public abstract boolean hasExtensionProperty(String key);
-
-    public abstract void combineMailSessionDescriptors(JndiNameEnvironment env);
-
-    public abstract void combineConnectorResourceDefinitionDescriptors(JndiNameEnvironment env);
-
-    public abstract void combineAdministeredObjectDefinitionDescriptors(JndiNameEnvironment env);
-
-    public abstract void combineJMSConnectionFactoryDefinitionDescriptors(JndiNameEnvironment env);
-
-    public abstract void combineJMSDestinationDefinitionDescriptors(JndiNameEnvironment env);
-
 }
     

@@ -42,7 +42,7 @@ package org.glassfish.javaee.services;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import org.glassfish.api.naming.NamingObjectProxy;
-import org.glassfish.deployment.common.Descriptor;
+import com.sun.enterprise.deployment.ResourceDescriptor;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
@@ -68,7 +68,7 @@ public class CommonResourceProxy implements NamingObjectProxy.InitializationNami
 
     @Inject
     protected transient ServiceLocator serviceLocator;
-    private Descriptor desc;
+    private ResourceDescriptor desc;
     protected String actualResourceName;
 
     public synchronized Object create(Context ic) throws NamingException {
@@ -99,7 +99,7 @@ public class CommonResourceProxy implements NamingObjectProxy.InitializationNami
         return serviceLocator.<ResourceManagerFactory>getService(ResourceManagerFactory.class).getResourceDeployer(resource);
     }
 
-    public void setDescriptor(Descriptor desc) {
+    public void setDescriptor(ResourceDescriptor desc) {
         this.desc = desc;
     }
 }

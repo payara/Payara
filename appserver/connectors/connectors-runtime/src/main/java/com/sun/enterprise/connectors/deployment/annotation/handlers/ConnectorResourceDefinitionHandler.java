@@ -46,7 +46,6 @@ import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.jvnet.hk2.annotations.Service;
@@ -94,7 +93,7 @@ public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler 
             if (!canProcessAnnotation(annotatedClass, ejbClass, warClass, context)){
                 return getDefaultProcessedResult();
             }
-            Set<Descriptor> crdDescs = context.getResourceDescriptors(JavaEEResourceType.CRD);
+            Set<ResourceDescriptor> crdDescs = context.getResourceDescriptors(JavaEEResourceType.CRD);
             ConnectorResourceDefinitionDescriptor desc = createDescriptor(connectorResourceDefnAn);
             if(isDefinitionAlreadyPresent(crdDescs, desc)){
                 merge(crdDescs, connectorResourceDefnAn);
@@ -200,9 +199,9 @@ public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler 
     }
 
     
-    private boolean isDefinitionAlreadyPresent(Set<Descriptor> crdDescs,  ConnectorResourceDefinitionDescriptor desc) {
+    private boolean isDefinitionAlreadyPresent(Set<ResourceDescriptor> crdDescs,  ConnectorResourceDefinitionDescriptor desc) {
         boolean result = false ;
-        for(Descriptor descriptor : crdDescs){
+        for(ResourceDescriptor descriptor : crdDescs){
             if(descriptor.equals(desc)){
                 result = true;
                 break;
@@ -211,9 +210,9 @@ public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler 
         return result;
     }
 
-    private void merge(Set<Descriptor> crdDescs, ConnectorResourceDefinition defn) {
+    private void merge(Set<ResourceDescriptor> crdDescs, ConnectorResourceDefinition defn) {
 
-        for (Descriptor orgDesc : crdDescs) {
+        for (ResourceDescriptor orgDesc : crdDescs) {
             ConnectorResourceDefinitionDescriptor desc = (ConnectorResourceDefinitionDescriptor)orgDesc;
             if (desc.getName().equals(defn.name())) {
 
