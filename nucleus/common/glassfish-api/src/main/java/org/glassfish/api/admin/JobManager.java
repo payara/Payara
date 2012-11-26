@@ -75,8 +75,6 @@ public interface JobManager {
 
     public JobInfos getCompletedJobs();
 
-    public JAXBContext getJAXBContext();
-
-    public JobInfo getCompletedJobForId(String id);
+    public Object getCompletedJobForId(String id);
     
 }

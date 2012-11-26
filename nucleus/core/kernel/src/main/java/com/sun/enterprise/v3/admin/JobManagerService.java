@@ -79,7 +79,7 @@ import javax.xml.bind.Unmarshaller;
 
 @Service
 @Singleton
-public class JobManagerService implements JobManager,PostConstruct {
+public class JobManagerService implements JobManager {
 
 
     @Inject
@@ -290,7 +290,8 @@ public class JobManagerService implements JobManager,PostConstruct {
         try {
             File file =
                     new File(serverEnvironment.getConfigDirPath(),JOBS_FILE);
-
+            if (jaxbContext == null)
+                jaxbContext = JAXBContext.newInstance(JobInfos.class);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             if (file != null && file.exists())  {
                 JobInfos jobInfos = (JobInfos)unmarshaller.unmarshal(file);
@@ -303,22 +304,7 @@ public class JobManagerService implements JobManager,PostConstruct {
         return null;
     }
 
-    private static JAXBContext initContext() throws JAXBException {
 
-        return JAXBContext.newInstance(JobInfos.class);
 
-    }
 
-    @Override
-    public void postConstruct() {
-        try {
-            jaxbContext = initContext();
-        } catch (JAXBException e) {
-            throw new RuntimeException(adminStrings.getLocalString("error.initializing.job.manager.service","Error initializing Job Manager service {0} ",  e.getLocalizedMessage()));
-        }
-    }
-
-    public JAXBContext getJAXBContext() {
-        return jaxbContext;
-    }
 }

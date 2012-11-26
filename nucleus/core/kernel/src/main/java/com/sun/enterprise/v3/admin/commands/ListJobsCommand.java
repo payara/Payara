@@ -125,11 +125,11 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
             if (oneJob != null) {
                 List<String> userList =  SubjectUtil.getUsernamesFromSubject(oneJob.getSubject());
                 String message = oneJob.getActionReport() == null ? "" : oneJob.getActionReport().getMessage();
-                info = new JobInfo(oneJob.getId(),oneJob.getName(),oneJob.getCommandExecutionDate(),oneJob.getState().name(),userList.get(0),message);
+                info = new JobInfo(oneJob.getId(),oneJob.getName(),oneJob.getCommandExecutionDate(),oneJob.getState().name(),"admin",message);
 
             }  else {
                 if (jobManagerService.getCompletedJobs() != null) {
-                    info = jobManagerService.getCompletedJobForId(jobID);
+                    info = (JobInfo) jobManagerService.getCompletedJobForId(jobID);
                 }
             }
 
@@ -223,15 +223,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
     }
 
 
-    private JobInfo getCompletedJobForId(String id) {
-        for (JobInfo jobInfo: jobManagerService.getCompletedJobs().getJobInfoList()) {
-            if (jobInfo.jobId.equals(id)) {
-                return jobInfo;
-            }
 
-        }
-        return null;
-    }
 }
 
 

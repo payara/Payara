@@ -63,7 +63,7 @@ import java.util.logging.Logger;
  * @author Bhakti Mehta
  */
 @Service(name="job-persistence")
-public class JobPersistenceService implements JobPersistence,PostConstruct {
+public class JobPersistenceService implements JobPersistence {
 
     @Inject
     private ServerEnvironment  serverEnvironment;
@@ -87,10 +87,15 @@ public class JobPersistenceService implements JobPersistence,PostConstruct {
     private static final LocalStringManagerImpl adminStrings =
             new LocalStringManagerImpl(JobPersistenceService.class);
     @Override
-    public synchronized void persist(JobInfo jobInfo) {
+    public synchronized void persist(Object obj) {
+        JobInfo jobInfo = (JobInfo)obj;
         File file = new File(
               serverEnvironment.getConfigDirPath(),JOBS_FILE);
+        jobInfos = jobManager.getCompletedJobs();
+                if (jobInfos == null)
+                    jobInfos = new JobInfos();
         try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(JobInfos.class);
             jaxbMarshaller = jaxbContext.createMarshaller();
             jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             jobInfos.getJobInfoList().add(jobInfo);
@@ -104,17 +109,7 @@ public class JobPersistenceService implements JobPersistence,PostConstruct {
 
     }
 
-    /**
-     * This method will initialize and load the completed jobs on server restart
-     */
-    @Override
-    public void postConstruct() {
 
-        jaxbContext = jobManager.getJAXBContext();
-        jobInfos = jobManager.getCompletedJobs();
-        if (jobInfos == null)
-            jobInfos = new JobInfos();
-    }
 
 
 }

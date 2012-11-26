@@ -50,6 +50,6 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface JobPersistence {
 
-    public void persist(JobInfo jobInfo);
+    public void persist(Object jobInfo);
 
 }
