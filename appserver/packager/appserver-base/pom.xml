@@ -60,18 +60,18 @@
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
                 <excludes>
+		    <exclude>lib/templates/domain.xml</exclude>
 		    <exclude>**/*.jar</exclude>
                 </excludes>
             </resource>
             <resource>
                 <directory>src/main/resources</directory>
+		<filtering>false</filtering>
                 <includes>
+		    <include>lib/templates/domain.xml</include>
                     <include>**/*.jar</include>
                 </includes>
             </resource>
         </resources>
     </build>
-
-    <!-- Do not place any dependencies in this distribution, dependencies
-    should go into other packager modules -->
 </project>
