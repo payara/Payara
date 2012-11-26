@@ -134,7 +134,7 @@ public class SystemPropertiesTest extends RestTestBase {
         createAndTestInstanceOverride(prop1, PROP_VALUE, PROP_VALUE+"-instace", "server");
     }
 
-    @Test
+    @Test(enabled = false)
     public void testNotResolvingDasInstanceProperties() {
         final String instanceName = "in" + generateRandomNumber();
         final String propertyName = "property" + generateRandomString();
@@ -150,7 +150,7 @@ public class SystemPropertiesTest extends RestTestBase {
         createAndTestInstanceOverride(propertyName, PROP_VALUE, PROP_VALUE + "-instance", instanceName);
     }
     
-    @Test
+    @Test(enabled = false)
     public void testNotResolvingClusterProperties() {
         final String propertyName = "property" + generateRandomString();
         final String clusterName = "c" + generateRandomNumber();
