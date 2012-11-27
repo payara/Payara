@@ -92,9 +92,11 @@ public class SetLogFileFormat implements AdminCommand {
     private static final String ULF_FORMATTER_NAME = "ULF";
 
     @Param(optional = true)
+    @I18n("set.log.file.format.target")
     String target = SystemPropertyConstants.DAS_SERVER_NAME;
     
     @Param(optional = true, defaultValue=ODL_FORMATTER_NAME, primary=true)
+    @I18n("set.log.file.format.formatter")
     String formatter = ODL_FORMATTER_NAME;
 
     @Inject
