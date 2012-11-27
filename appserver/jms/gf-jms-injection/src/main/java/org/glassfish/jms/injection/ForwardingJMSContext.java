@@ -53,7 +53,7 @@ public abstract class ForwardingJMSContext implements JMSContext {
 
     @Override
     public JMSContext createContext(int sessionMode) {
-        throw getUnsupportedException();
+        return delegate().createContext(sessionMode);
     }
 
     @Override
@@ -253,11 +253,11 @@ public abstract class ForwardingJMSContext implements JMSContext {
 
     @Override
     public void acknowledge() {
-        delegate().acknowledge();
+        throw getUnsupportedException();
     }
 
-    private JMSRuntimeException getUnsupportedException() {
-        return new JMSRuntimeException(localStrings.getLocalString("JMSContext.injection.not.supported", 
+    private IllegalStateRuntimeException getUnsupportedException() {
+        return new IllegalStateRuntimeException(localStrings.getLocalString("JMSContext.injection.not.supported", 
                                       "This method is not permitted on a container-managed (injected) JMSContext."));
     }
 }
