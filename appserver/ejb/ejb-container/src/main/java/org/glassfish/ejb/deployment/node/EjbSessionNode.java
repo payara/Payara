@@ -214,11 +214,6 @@ public class EjbSessionNode extends InterfaceBasedEjbNode<EjbSessionDescriptor> 
                     ejbDesc.getConcurrencyManagementType().toString());
         }
 
-        if (ejbDesc.isStateful()) {
-            appendTextChild(ejbNode, EjbTagNames.PASSIVATION_CAPABLE,
-                    Boolean.toString(ejbDesc.isPassivationCapable()));
-        }
-        
         for (EjbSessionDescriptor.AccessTimeoutHolder next : ejbDesc.getAccessTimeoutInfo()) {
             ConcurrentMethodDescriptor cDesc = new ConcurrentMethodDescriptor();
             cDesc.setConcurrentMethod(next.method);
@@ -341,6 +336,12 @@ public class EjbSessionNode extends InterfaceBasedEjbNode<EjbSessionDescriptor> 
         // security-identity
         writeSecurityIdentityDescriptor(ejbNode, ejbDesc);
 
+        // passivation-capable
+        if (ejbDesc.isStateful()) {
+            appendTextChild(ejbNode, EjbTagNames.PASSIVATION_CAPABLE,
+                    Boolean.toString(ejbDesc.isPassivationCapable()));
+        }
+        
         return ejbNode;
     }
 }
