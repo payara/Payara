@@ -71,6 +71,7 @@ public class LogEventImpl implements LogEvent {
         message = rec.getMessage();
         threadId = rec.getThreadID();
         timeMillis = rec.getMillis();
+        levelValue = rec.getLevel().intValue();
     }
     
     @Override
