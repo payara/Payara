@@ -62,6 +62,7 @@ import org.apache.catalina.*;
 import org.apache.catalina.authenticator.AuthenticatorBase;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityCollection;
 import org.apache.catalina.deploy.SecurityConstraint;
@@ -81,12 +82,14 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.enterprise.util.Utility;
+import org.glassfish.logging.annotation.LogMessageInfo;
 // END SJSWS 6324431
 
 /**
@@ -101,8 +104,77 @@ import com.sun.enterprise.util.Utility;
 public abstract class RealmBase
     implements Lifecycle, Realm {
 
-    private static Logger log = Logger.getLogger(RealmBase.class.getName());
-    
+    protected static final Logger log = StandardServer.log;
+    protected static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Illegal digestEncoding: {0}",
+            level = "SEVERE",
+            cause = "Could not convert the char array to byte array with respect to given charset",
+            action = "Verify the current charset"
+    )
+    public static final String ILLEGAL_DIGEST_ENCODING_EXCEPTION = "AS-WEB-CORE-00520";
+
+    @LogMessageInfo(
+            message = "Access to the requested resource has been denied",
+            level = "WARNING"
+    )
+    public static final String ACCESS_RESOURCE_DENIED = "AS-WEB-CORE-00521";
+
+    @LogMessageInfo(
+            message = "Configuration error: Cannot perform access control without an authenticated principal",
+            level = "WARNING"
+    )
+    public static final String CONFIG_ERROR_NOT_AUTHENTICATED = "AS-WEB-CORE-00522";
+
+    @LogMessageInfo(
+            message = "Username {0} has role {1}",
+            level = "FINE"
+    )
+    public static final String USERNAME_HAS_ROLE = "AS-WEB-CORE-00523";
+
+    @LogMessageInfo(
+            message = "Username {0} does NOT have role {1}",
+            level = "FINE"
+    )
+    public static final String USERNAME_NOT_HAVE_ROLE = "AS-WEB-CORE-00524";
+
+    @LogMessageInfo(
+            message = "This Realm has already been started",
+            level = "INFO"
+    )
+    public static final String REALM_BEEN_STARTED = "AS-WEB-CORE-00525";
+
+    @LogMessageInfo(
+            message = "Invalid message digest algorithm {0} specified",
+            level = "WARNING"
+    )
+    public static final String INVALID_ALGORITHM_EXCEPTION = "AS-WEB-CORE-00526";
+
+    @LogMessageInfo(
+            message = "This Realm has not yet been started",
+            level = "INFO"
+    )
+    public static final String REALM_NOT_BEEN_STARTED = "AS-WEB-CORE-00527";
+
+    @LogMessageInfo(
+            message = "Error digesting user credentials",
+            level = "SEVERE",
+            cause = "Could not digest user credentials",
+            action = "Verify the current credential"
+    )
+    public static final String ERROR_DIGESTING_USER_CREDENTIAL_EXCEPTION = "AS-WEB-CORE-00528";
+
+    @LogMessageInfo(
+            message = "Couldn't get MD5 digest",
+            level = "SEVERE",
+            cause = "Could not get instance of MessageDigest based on MD5",
+            action = "Verify if it supports a MessageDigestSpi implementation " +
+                     "for the specified algorithm"
+    )
+    public static final String CANNOT_GET_MD5_DIGEST_EXCEPTION = "AS-WEB-CORE-00529";
+
+
     //START SJSAS 6202703
     /**
      * "Expires" header always set to Date(1), so generate once only
@@ -176,13 +248,6 @@ public abstract class RealmBase
      * MD5 message digest provider.
      */
     protected static volatile MessageDigest md5Helper;
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -432,9 +497,9 @@ public abstract class RealmBase
             valueBytes = Utility.convertCharArrayToByteArray(
                     serverDigestValue, getDigestEncoding());
         } catch (CharacterCodingException cce) {
-            log.log(Level.SEVERE,
-                    "Illegal digestEncoding: " + getDigestEncoding(),
-                    cce);
+            String msg = MessageFormat.format(rb.getString(ILLEGAL_DIGEST_ENCODING_EXCEPTION),
+                                              getDigestEncoding());
+            log.log(Level.SEVERE, msg, cce);
             throw new IllegalArgumentException(cce.getMessage());
         }
 
@@ -445,11 +510,12 @@ public abstract class RealmBase
         }
 
         if (log.isLoggable(Level.FINE)) {
-            log.fine("Username:" + username 
-                     + " ClientSigest:" + Arrays.toString(clientDigest) + " nOnce:" + nOnce 
-                     + " nc:" + nc + " cnonce:" + cnonce + " qop:" + qop 
-                     + " realm:" + realm + "md5a2:" + Arrays.toString(md5a2)
-                     + " Server digest:" + String.valueOf(serverDigest));
+            String msg = "Username:" + username
+                         + " ClientSigest:" + Arrays.toString(clientDigest) + " nOnce:" + nOnce
+                         + " nc:" + nc + " cnonce:" + cnonce + " qop:" + qop
+                         + " realm:" + realm + "md5a2:" + Arrays.toString(md5a2)
+                         + " Server digest:" + String.valueOf(serverDigest);
+            log.log(Level.FINE, msg);
         }
         
         if (Arrays.equals(serverDigest, clientDigest)) {
@@ -475,12 +541,12 @@ public abstract class RealmBase
 
         // Check the validity of each certificate in the chain
         if (log.isLoggable(Level.FINE))
-            log.fine("Authenticating client certificate chain");
+            log.log(Level.FINE, "Authenticating client certificate chain");
         if (validate) {
             for (int i = 0; i < certs.length; i++) {
                 if (log.isLoggable(Level.FINE))
-                    log.fine("Checking validity for '" +
-                             certs[i].getSubjectDN().getName() + "'");
+                    log.log(Level.FINE, "Checking validity for '" +
+                            certs[i].getSubjectDN().getName() + "'");
                 try {
                     certs[i].checkValidity();
                 } catch (Exception e) {
@@ -540,7 +606,7 @@ public abstract class RealmBase
         // Are there any defined security constraints?
         if (!context.hasConstraints()) {
             if (log.isLoggable(Level.FINE))
-                log.fine("  No applicable constraints defined");
+                log.log(Level.FINE, "  No applicable constraints defined");
             return (null);
         }
         
@@ -574,11 +640,12 @@ public abstract class RealmBase
                     constraints[i].included(uri, method));
                 */
                 // START SJSWS 6324431
-                log.finest("Checking constraint '" + constraint +
-                           "' against " + method + " " + origUri +
-                           " --> " +
-                           constraint.included(uri, method, 
-                                               caseSensitiveMapping));
+                String msg = "Checking constraint '" + constraint +
+                             "' against " + method + " " + origUri +
+                             " --> " +
+                             constraint.included(uri, method,
+                                                 caseSensitiveMapping);
+                log.log(Level.FINEST, msg);
                 // END SJSWS 6324431
             }
             /* SJSWS 6324431
@@ -592,8 +659,10 @@ public abstract class RealmBase
             if (log.isLoggable(Level.FINE)
                     && constraint.included(uri, method,
                                            caseSensitiveMapping)) {
-                log.fine("  Matched constraint '" + constraint +
-                         "' against " + method + " " + origUri);
+
+                log.log(Level.FINE, "  Matched constraint '" + constraint +
+                        "' against " + method + " " + origUri);
+
             }
             // END SJSWS 6324431
 
@@ -651,11 +720,12 @@ public abstract class RealmBase
                     constraints[i].included(uri, method));
                 */
                 // START SJSWS 6324431
-                log.finest("  Checking constraint '" + constraint +
-                           "' against " + method + " " + origUri +
-                           " --> " +
-                           constraint.included(uri, method,
-                                               caseSensitiveMapping));
+                String msg = "  Checking constraint '" + constraint +
+                             "' against " + method + " " + origUri +
+                             " --> " +
+                             constraint.included(uri, method,
+                                                 caseSensitiveMapping);
+                log.log(Level.FINE, msg);
                 // END SJSWS 6324431
             }
             /* SJSWS 6324431
@@ -669,8 +739,8 @@ public abstract class RealmBase
             if (log.isLoggable(Level.FINE) &&
                     constraint.included(uri, method,
                                         caseSensitiveMapping)) {
-                log.fine("  Matched constraint '" + constraint +
-                         "' against " + method + " " + origUri);
+                log.log(Level.FINE, "  Matched constraint '" + constraint +
+                        "' against " + method + " " + origUri);
             }
             // END SJSWS 6324431
 
@@ -750,11 +820,12 @@ public abstract class RealmBase
                     constraints[i].included(uri, method));
                 */
                 // START SJSWS 6324431
-                log.finest("  Checking constraint '" + constraint +
-                           "' against " + method + " " + origUri +
-                           " --> " +
-                           constraint.included(uri, method, 
-                                               caseSensitiveMapping));
+                String msg = "  Checking constraint '" + constraint +
+                        "' against " + method + " " + origUri +
+                        " --> " +
+                        constraint.included(uri, method,
+                                caseSensitiveMapping);
+                log.log(Level.FINEST, msg);
                 // END SJSWS 6324431
             }
             /* SJSWS 6324431
@@ -768,8 +839,9 @@ public abstract class RealmBase
             if (log.isLoggable(Level.FINE) &&
                     constraint.included(uri, method,
                                         caseSensitiveMapping)) {
-                log.fine("  Matched constraint '" + constraint +
-                         "' against " + method + " " + origUri);
+
+                log.log(Level.FINE, "  Matched constraint '" + constraint +
+                        "' against " + method + " " + origUri);
             }
             // END SJSWS 6324431
 
@@ -840,11 +912,12 @@ public abstract class RealmBase
                     constraints[i].included(uri, method));
                 */
                 // START SJSWS 6324431
-                log.finest("  Checking constraint '" + constraint +
-                           "' against " + method + " " + origUri +
-                           " --> " +
-                           constraint.included(uri, method,
-                                               caseSensitiveMapping));
+                String msg = "  Checking constraint '" + constraint +
+                        "' against " + method + " " + origUri +
+                        " --> " +
+                        constraint.included(uri, method,
+                                caseSensitiveMapping);
+                log.log(Level.FINEST, msg);
                 // END SJSWS 6324431
             }
             /* SJSWS 6324431
@@ -858,8 +931,8 @@ public abstract class RealmBase
             if (log.isLoggable(Level.FINE) &&
                     constraint.included(uri, method,
                                         caseSensitiveMapping)) {
-                log.fine("  Matched constraint '" + constraint +
-                         "' against " + method + " " + origUri);
+                log.log(Level.FINE, "  Matched constraint '" + constraint +
+                        "' against " + method + " " + origUri);
             }
             // END SJSWS 6324431
 
@@ -897,7 +970,7 @@ public abstract class RealmBase
         if (results == null) {
             // No applicable security constraint was found
             if (log.isLoggable(Level.FINE))
-                log.fine("  No applicable constraint located");
+                log.log(Level.FINE, "  No applicable constraint located");
         }
 
         return resultsToArray(results);
@@ -950,7 +1023,7 @@ public abstract class RealmBase
                 return (true);
 
             if (log.isLoggable(Level.FINE))
-                log.fine("  Checking roles " + principal);
+                log.log(Level.FINE, "  Checking roles " + principal);
 
             if (roles.length == 0) {
                 if(constraint.getAuthConstraint()) {
@@ -963,20 +1036,20 @@ public abstract class RealmBase
                     // BEGIN S1AS 4878272
                     ((HttpServletResponse) response.getResponse()).sendError
                         (HttpServletResponse.SC_FORBIDDEN);
-                    response.setDetailMessage(sm.getString("realmBase.forbidden"));
+                    response.setDetailMessage(rb.getString(ACCESS_RESOURCE_DENIED));
                     // END S1AS 4878272
 
                     if (log.isLoggable(Level.FINE)) log.fine("No roles ");
                     return (false); // No listed roles means no access at all
                 } else {
                     if (log.isLoggable(Level.FINE)) {
-                        log.fine("Passing all access");
+                        log.log(Level.FINE, "Passing all access");
                     }
                     return (true);
                 }
             } else if (principal == null) {
                 if (log.isLoggable(Level.FINE))
-                    log.fine("  No user authenticated, cannot grant access");
+                    log.log(Level.FINE, "  No user authenticated, cannot grant access");
 
                 /* S1AS 4878272
                 ((HttpServletResponse) response.getResponse()).sendError
@@ -986,7 +1059,7 @@ public abstract class RealmBase
                 // BEGIN S1AS 4878272
                 ((HttpServletResponse) response.getResponse()).sendError
                     (HttpServletResponse.SC_FORBIDDEN);
-                response.setDetailMessage(sm.getString("realmBase.notAuthenticated"));
+                response.setDetailMessage(rb.getString(CONFIG_ERROR_NOT_AUTHENTICATED));
                 // END S1AS 4878272
                 return (false);
             }
@@ -995,11 +1068,11 @@ public abstract class RealmBase
             for (int j = 0; j < roles.length; j++) {
                 if (hasRole(principal, roles[j])) {
                     if (log.isLoggable(Level.FINE))
-                        log.fine("Role found:  " + roles[j]);
+                        log.log(Level.FINE, "Role found:  " + roles[j]);
                     return (true);
                 } else {
                     if (log.isLoggable(Level.FINE))
-                        log.fine("No role found:  " + roles[j]);
+                        log.log(Level.FINE, "No role found:  " + roles[j]);
                 }
             }
         }
@@ -1010,7 +1083,7 @@ public abstract class RealmBase
         // BEGIN S1AS 4878272
         ((HttpServletResponse) response.getResponse()).sendError
             (HttpServletResponse.SC_FORBIDDEN);
-        response.setDetailMessage(sm.getString("realmBase.forbidden"));
+        response.setDetailMessage(rb.getString(ACCESS_RESOURCE_DENIED));
         // END S1AS 4878272
         return (false);
 
@@ -1080,7 +1153,7 @@ public abstract class RealmBase
      * @param request Request we are processing
      * @param response Response we are creating
      * @param context The Context to which client of this class is attached.
-     * @param authentication the current authenticator.
+     * @param authenticator the current authenticator.
      * @exception IOException if an input/output error occurs
      */
     public boolean invokeAuthenticateDelegate(HttpRequest request,
@@ -1132,16 +1205,22 @@ public abstract class RealmBase
         GenericPrincipal gp = (GenericPrincipal) principal;
         if (!(gp.getRealm() == this)) {
             if (log.isLoggable(Level.FINE)) {
-                log.fine("Different realm " + this + " " + gp.getRealm());//    return (false);
+                log.log(Level.FINE, "Different realm " + this + " " + gp.getRealm());
             }
         }
         boolean result = gp.hasRole(role);
         if (log.isLoggable(Level.FINE)) {
             String name = principal.getName();
-            if (result)
-                log.fine(sm.getString("realmBase.hasRoleSuccess", name, role));
-            else
-                log.fine(sm.getString("realmBase.hasRoleFailure", name, role));
+            if (result) {
+                String msg = MessageFormat.format(rb.getString(USERNAME_HAS_ROLE),
+                                                  new Object[] {name, role});
+                log.log(Level.FINE, msg);
+            }
+            else {
+                String msg = MessageFormat.format(rb.getString(USERNAME_NOT_HAVE_ROLE),
+                                                  new Object[] {name, role});
+                log.log(Level.FINE, msg);
+            }
         }
         return (result);
 
@@ -1200,7 +1279,7 @@ public abstract class RealmBase
         // Is there a relevant user data constraint?
         if (constraints == null || constraints.length == 0) {
             if (log.isLoggable(Level.FINE))
-                log.fine("  No applicable security constraint defined");
+                log.log(Level.FINE, "  No applicable security constraint defined");
             return (true);
         }
 
@@ -1209,12 +1288,12 @@ public abstract class RealmBase
             String userConstraint = constraint.getUserConstraint();
             if (userConstraint == null) {
                 if (log.isLoggable(Level.FINE))
-                    log.fine("  No applicable user data constraint defined");
+                    log.log(Level.FINE, "  No applicable user data constraint defined");
                 return (true);
             }
             if (userConstraint.equals(Constants.NONE_TRANSPORT)) {
                 if (log.isLoggable(Level.FINE))
-                    log.fine("  User data constraint has no restrictions");
+                    log.log(Level.FINE, "  User data constraint has no restrictions");
                 return (true);
             }
 
@@ -1223,7 +1302,7 @@ public abstract class RealmBase
         // Validate the request against the user data constraint
         if (request.getRequest().isSecure()) {
             if (log.isLoggable(Level.FINE))
-                log.fine("  User data constraint already satisfied");
+                log.log(Level.FINE, "  User data constraint already satisfied");
             return (true);
         }
 
@@ -1237,7 +1316,7 @@ public abstract class RealmBase
         // Is redirecting disabled?
         if (redirectPort <= 0) {
             if (log.isLoggable(Level.FINE))
-                log.fine("  SSL redirect is disabled");
+                log.log(Level.FINE, "  SSL redirect is disabled");
             /* S1AS 4878272
             hresponse.sendError
             response.sendError
@@ -1278,7 +1357,7 @@ public abstract class RealmBase
             file.append(queryString);
         }
         if (log.isLoggable(Level.FINE))
-            log.fine("Redirecting to " + file.toString());
+            log.log(Level.FINE, "Redirecting to " + file.toString());
         hresponse.sendRedirect(file.toString());
 
         return (false);
@@ -1344,7 +1423,7 @@ public abstract class RealmBase
         // Validate and update our current component state
         if (started) {
             if (log.isLoggable(Level.INFO)) {
-                log.info(sm.getString("realmBase.alreadyStarted"));
+                log.log(Level.FINE, REALM_BEEN_STARTED);
             }
             return;
         }
@@ -1356,8 +1435,9 @@ public abstract class RealmBase
             try {
                 md = MessageDigest.getInstance(digest);
             } catch (NoSuchAlgorithmException e) {
-                throw new LifecycleException
-                    (sm.getString("realmBase.algorithm", digest), e);
+                String msg = MessageFormat.format(rb.getString(INVALID_ALGORITHM_EXCEPTION),
+                                                  digest);
+                throw new LifecycleException(msg, e);
             }
         }
 
@@ -1379,7 +1459,7 @@ public abstract class RealmBase
         // Validate and update our current component state
         if (!started) {
             if (log.isLoggable(Level.INFO)) {
-                log.info(sm.getString("realmBase.notStarted"));
+                log.log(Level.INFO, REALM_NOT_BEEN_STARTED);
             }
             return;
         }
@@ -1424,16 +1504,16 @@ public abstract class RealmBase
                     bytes = Utility.convertCharArrayToByteArray(
                             credentials, getDigestEncoding());
                 } catch(CharacterCodingException cce) {
-                    log.log(Level.SEVERE,
-                            "Illegal digestEncoding: " + getDigestEncoding(),
-                            cce);
+                    String msg = MessageFormat.format(rb.getString(ILLEGAL_DIGEST_ENCODING_EXCEPTION),
+                                                      getDigestEncoding());
+                    log.log(Level.SEVERE, msg, cce);
                         throw new IllegalArgumentException(cce.getMessage());
                 }
                 md.update(bytes);
 
                 return (HexUtils.convert(md.digest()));
             } catch (Exception e) {
-                log.log(Level.SEVERE, sm.getString("realmBase.digest"), e);
+                log.log(Level.SEVERE, ERROR_DIGESTING_USER_CREDENTIAL_EXCEPTION, e);
                 return (credentials);
             }
         }
@@ -1452,7 +1532,7 @@ public abstract class RealmBase
             try {
                 md5Helper = MessageDigest.getInstance("MD5");
             } catch (NoSuchAlgorithmException e) {
-                log.log(Level.SEVERE, "Couldn't get MD5 digest: ", e);
+                log.log(Level.SEVERE, CANNOT_GET_MD5_DIGEST_EXCEPTION, e);
                 throw new IllegalStateException(e.getMessage());
             }
         }
@@ -1489,9 +1569,9 @@ public abstract class RealmBase
             valueBytes = Utility.convertCharArrayToByteArray(
                 digestValue, getDigestEncoding());
         } catch(CharacterCodingException cce) {
-            log.log(Level.SEVERE,
-                    "Illegal digestEncoding: " + getDigestEncoding(),
-                    cce);
+            String msg = MessageFormat.format(rb.getString(ILLEGAL_DIGEST_ENCODING_EXCEPTION),
+                                             getDigestEncoding());
+            log.log(Level.SEVERE, msg, cce);
             throw new IllegalArgumentException(cce.getMessage());
         }
 
@@ -1540,7 +1620,7 @@ public abstract class RealmBase
             logger.log(getName()+"[" + name + "]: " + message);
         } else {
             if (log.isLoggable(Level.INFO)) {
-                log.info(getName()+"[" + name + "]: " + message);
+                log.log(Level.INFO, getName()+"[" + name + "]: " + message);
             }
         }
     }

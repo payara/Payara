@@ -61,17 +61,17 @@ package org.apache.catalina.realm;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
-import org.apache.catalina.util.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.security.auth.Subject;
 import javax.security.auth.login.*;
 import java.security.Principal;
 import java.security.acl.Group;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * <p>Implementation of <b>Realm</b> that authenticates users via the <em>Java
@@ -131,7 +131,44 @@ import java.util.logging.Logger;
 public class JAASRealm
     extends RealmBase
  {
-    private static Logger log = Logger.getLogger(JAASRealm.class.getName());
+     @LogMessageInfo(
+             message = "Setting JAAS app name {0}",
+             level = "INFO"
+     )
+     public static final String SETTING_JAAS_INFO = "AS-WEB-CORE-00510";
+
+     @LogMessageInfo(
+             message = "Login exception authenticating username {0}",
+             level = "FINE"
+     )
+     public static final String LOGIN_EXCEPTION_AUTHENTICATING_USERNAME = "AS-WEB-CORE-00511";
+
+     @LogMessageInfo(
+             message = "Username {0} NOT authenticated due to failed login",
+             level = "FINE"
+     )
+     public static final String USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN = "AS-WEB-CORE-00512";
+
+     @LogMessageInfo(
+             message = "Username {0} NOT authenticated due to expired account",
+             level = "FINE"
+     )
+     public static final String USERNAME_NOT_AUTHENTICATED_EXPIRED_ACCOUNT = "AS-WEB-CORE-00513";
+
+     @LogMessageInfo(
+             message = "Username {0} NOT authenticated due to expired credential",
+             level = "FINE"
+     )
+     public static final String USERNAME_NOT_AUTHENTICATED_EXPIRED_CREDENTIAL = "AS-WEB-CORE-00514";
+
+     @LogMessageInfo(
+             message = "error ",
+             level = "SEVERE",
+             cause = "Could not authenticate by using the current username",
+             action = "Verify the username and credential"
+     )
+     public static final String AUTHENTICATION_ERROR = "AS-WEB-CORE-00515";
+
 
     // ----------------------------------------------------- Instance Variables
 
@@ -160,13 +197,6 @@ public class JAASRealm
      * The list of role class names, split out for easy processing.
      */
     protected ArrayList<String> roleClasses = new ArrayList<String>();
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -199,7 +229,8 @@ public class JAASRealm
         if( appName==null  ) {
             appName=name;
             if (log.isLoggable(Level.INFO)) {
-                log.info("Setting JAAS app name " + appName);
+                String msg = MessageFormat.format(rb.getString(SETTING_JAAS_INFO), appName);
+                log.log(Level.INFO, msg);
             }
         }
     }
@@ -292,7 +323,7 @@ public class JAASRealm
         if( appName==null ) appName="Tomcat";
 
         if (log.isLoggable(Level.FINE))
-            log.fine("Authenticating " + appName + " " +  username);
+            log.log(Level.FINE, "Authenticating " + appName + " " +  username);
 
         // What if the LoginModule is in the container class loader ?
         //
@@ -304,10 +335,10 @@ public class JAASRealm
                                                   credentials));
         } catch (Throwable e) {
             if (log.isLoggable(Level.FINE)) {
-                log.fine("Error initializing JAAS: " +  e.toString());
+                log.log(Level.FINE, "Error initializing JAAS: " +  e.toString());
 
-                log.log(Level.FINE,
-                        sm.getString("jaasRealm.loginException", username), e);
+                String msg = MessageFormat.format(rb.getString(LOGIN_EXCEPTION_AUTHENTICATING_USERNAME), username);
+                log.log(Level.FINE, msg, e);
             }
             return (null);
         } finally {
@@ -315,7 +346,7 @@ public class JAASRealm
         }
 
         if (log.isLoggable(Level.FINE))
-            log.fine("Login context created " + username);
+            log.log(Level.FINE, "Login context created " + username);
 
         // Negotiate a login via this LoginContext
         Subject subject = null;
@@ -323,25 +354,38 @@ public class JAASRealm
             loginContext.login();
             subject = loginContext.getSubject();
             if (subject == null) {
-                if (log.isLoggable(Level.FINE))
-                    log.fine(sm.getString("jaasRealm.failedLogin", username));
+                if (log.isLoggable(Level.FINE)) {
+                    String msg = MessageFormat.format(rb.getString(USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN),
+                                                      username);
+                    log.log(Level.FINE, msg);
+                }
                 return (null);
             }
         } catch (AccountExpiredException e) {
-            if (log.isLoggable(Level.FINE))
-                log.fine(sm.getString("jaasRealm.accountExpired", username));
+            if (log.isLoggable(Level.FINE)) {
+                String msg = MessageFormat.format(rb.getString(USERNAME_NOT_AUTHENTICATED_EXPIRED_ACCOUNT),
+                                                  username);
+                log.log(Level.FINE, msg);
+            }
             return (null);
         } catch (CredentialExpiredException e) {
-            if (log.isLoggable(Level.FINE))
-                log.fine(sm.getString("jaasRealm.credentialExpired", username));
+            if (log.isLoggable(Level.FINE)) {
+                String msg = MessageFormat.format(rb.getString(USERNAME_NOT_AUTHENTICATED_EXPIRED_CREDENTIAL),
+                                                  username);
+                log.log(Level.FINE, msg);
+            }
             return (null);
         } catch (FailedLoginException e) {
-            if (log.isLoggable(Level.FINE))
-                log.fine(sm.getString("jaasRealm.failedLogin", username));
+            if (log.isLoggable(Level.FINE)) {
+                String msg = MessageFormat.format(rb.getString(USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN),
+                                                  username);
+                log.log(Level.FINE, msg);
+            }
             return (null);
         } catch (LoginException e) {
-            log.log(Level.FINE,
-                    sm.getString("jaasRealm.loginException", username), e);
+            String msg = MessageFormat.format(rb.getString(LOGIN_EXCEPTION_AUTHENTICATING_USERNAME),
+                                              username);
+            log.log(Level.FINE, msg, e);
             return (null);
         } catch (Throwable e) {
             log.log(Level.FINE, "Unexpected error", e);
@@ -349,23 +393,23 @@ public class JAASRealm
         }
 
         if( log.isLoggable(Level.FINE))
-            log.fine("Getting principal " + subject);
+            log.log(Level.FINE, "Getting principal " + subject);
 
         // Return the appropriate Principal for this authenticated Subject
         Principal principal = createPrincipal(username, subject);
         if (principal == null) {
             if (log.isLoggable(Level.FINE)) {
-                log.fine(sm.getString("jaasRealm.authenticateFailure", username));
+                log.log(Level.FINE, "Failed to authenticate username " + username);
             }
             return (null);
         }
         if (log.isLoggable(Level.FINE)) {
-            log.fine(sm.getString("jaasRealm.authenticateSuccess", username));
+            log.log(Level.FINE, "Successful to authenticate username " + username);
         }
 
         return (principal);
         } catch( Throwable t) {
-            log.log(Level.SEVERE, "error ", t);
+            log.log(Level.SEVERE, AUTHENTICATION_ERROR, t);
             return null;
         }
     }
@@ -425,12 +469,12 @@ public class JAASRealm
             // No need to look further - that's our own stuff
             if( principal instanceof GenericPrincipal ) {
                 if (log.isLoggable(Level.FINE))
-                    log.fine("Found old GenericPrincipal " + principal );
+                    log.log(Level.FINE, "Found old GenericPrincipal " + principal);
                 return principal;
             }
             String principalClass = principal.getClass().getName();
             if (log.isLoggable(Level.FINE))
-                log.fine("Principal: " + principalClass + " " + principal);
+                log.log(Level.FINE, "Principal: " + principalClass + " " + principal);
 
             if (userClasses.contains(principalClass)) {
                 // Override the default - which is the original user, accepted by
