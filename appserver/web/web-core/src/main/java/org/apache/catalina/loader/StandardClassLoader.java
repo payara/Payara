@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,6 +58,7 @@
 
 package org.apache.catalina.loader;
 
+import org.apache.catalina.core.StandardServer;
 import org.apache.naming.JndiPermission;
 import org.glassfish.web.loader.Reloader;
 
@@ -67,13 +68,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
 import java.security.*;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -105,9 +102,8 @@ public class StandardClassLoader
     extends URLClassLoader
     implements Reloader {
 
+    private static final Logger log = StandardServer.log;
 
-    private static Logger log = Logger.getLogger(
-        StandardClassLoader.class.getName());
 
     // ----------------------------------------------------------- Constructors
 
@@ -1058,7 +1054,7 @@ public class StandardClassLoader
     private void log(String message) {
 
         if (log.isLoggable(Level.FINE))
-            log.fine("StandardClassLoader: " + message);
+            log.log(Level.FINE, "StandardClassLoader: " + message);
 
     }
 

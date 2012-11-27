@@ -61,11 +61,13 @@ package org.apache.catalina.loader;
 
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.naming.resources.DirContextURLStreamHandler;
 import org.apache.naming.resources.DirContextURLStreamHandlerFactory;
 import org.apache.naming.resources.Resource;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.loader.WebappClassLoader;
 
 import javax.management.ObjectName;
@@ -87,8 +89,10 @@ import java.net.URLClassLoader;
 import java.net.URLStreamHandlerFactory;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -118,8 +122,94 @@ public class WebappLoader
      */
     private static boolean first = true;
 
-    private static Logger log = Logger.getLogger(
-        WebappLoader.class.getName());
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Error registering loader",
+            level = "SEVERE",
+            cause = "Could not register loader",
+            action = "Verify Object name"
+    )
+    public static final String REGISTERING_LOADER_EXCEPTION = "AS-WEB-CORE-00475";
+
+    @LogMessageInfo(
+            message = "Error registering jndi stream handler",
+            level = "SEVERE",
+            cause = "Could not register jndi stream handler",
+            action = "Verify if the application has already set a factory, " +
+                     "if a security manager exists and its" +
+                     "checkSetFactory method doesn't allow" +
+                     "the operation"
+    )
+    public static final String REGISTERING_JNDI_STREAM_HANDLER_EXCEPTION = "AS-WEB-CORE-00476";
+
+    @LogMessageInfo(
+            message = "Loader has already been started",
+            level = "WARNING"
+    )
+    public static final String LOADER_ALREADY_STARTED_EXCEPTION = "AS-WEB-CORE-00477";
+
+    @LogMessageInfo(
+            message = "No resources for {0}",
+            level = "INFO"
+    )
+    public static final String NO_RESOURCE_INFO = "AS-WEB-CORE-00478";
+
+    @LogMessageInfo(
+            message = "LifecycleException",
+            level = "SEVERE",
+            cause = "Could not construct a class loader",
+            action = "Verify if there is any lifecycle exception"
+    )
+    public static final String LIFECYCLE_EXCEPTION = "AS-WEB-CORE-00479";
+
+    @LogMessageInfo(
+            message = "Loader has not yet been started",
+            level = "WARNING"
+    )
+    public static final String LOADER_NOT_STARTED_EXCEPTION = "AS-WEB-CORE-00480";
+
+    @LogMessageInfo(
+            message = "Cannot set reloadable property to {0}",
+            level = "SEVERE",
+            cause = "Could not set reloadable property",
+            action = "Verify the value for the property"
+    )
+    public static final String SET_RELOADABLE_PROPERTY_EXCEPTION = "AS-WEB-CORE-00481";
+
+    @LogMessageInfo(
+            message = "WebappLoader[{0}]: {1}",
+            level = "WARNING"
+    )
+    public static final String WEB_APP_LOADER_EXCEPTION = "AS-WEB-CORE-00482";
+
+    @LogMessageInfo(
+            message = "No work dir for {0}",
+            level = "INFO"
+    )
+    public static final String NO_WORK_DIR_INFO = "AS-WEB-CORE-00483";
+
+    @LogMessageInfo(
+            message = "Failed to create destination directory to copy resources",
+            level = "WARNING"
+    )
+    public static final String FAILED_CREATE_DEST_DIR = "AS-WEB-CORE-00484";
+
+    @LogMessageInfo(
+            message = "Failed to copy resources",
+            level = "WARNING"
+    )
+    public static final String FAILED_COPY_RESOURCE = "AS-WEB-CORE-00485";
+
+    @LogMessageInfo(
+            message = "Failed to create work directory to {0}",
+            level = "SEVERE",
+            cause = "Coud not create work directory",
+            action = "Verify the PATH "
+    )
+    public static final String FAILED_CREATE_WORK_DIR_EXCEPTION = "AS-WEB-CORE-00486";
+
 
     // --------------------------------------------------------- Constructors
 
@@ -422,8 +512,7 @@ public class WebappLoader
     public void addRepository(String repository) {
 
         if (log.isLoggable(Level.FINEST))
-            log.finest(sm.getString("webappLoader.addRepository",
-                                    repository));
+            log.log(Level.FINEST, "Adding repository " + repository);
 
         for (int i = 0; i < repositories.length; i++) {
             if (repository.equals(repositories[i]))
@@ -562,7 +651,7 @@ public class WebappLoader
                                            ctx.getParent().getName());
                     controller = oname;
                 } catch (Exception e) {
-                    log.log(Level.SEVERE, "Error registering loader", e);
+                    log.log(Level.SEVERE, REGISTERING_LOADER_EXCEPTION, e);
                 }
             }
         }
@@ -595,13 +684,12 @@ public class WebappLoader
                     URL.setURLStreamHandlerFactory(streamHandlerFactory);
                 } catch (Exception e) {
                     // Log and continue anyway, this is not critical
-                    log.log(Level.SEVERE,
-                            "Error registering jndi stream handler", e);
+                    log.log(Level.SEVERE, REGISTERING_JNDI_STREAM_HANDLER_EXCEPTION, e);
                 } catch (Throwable t) {
                     // This is likely a dual registration
                     if (log.isLoggable(Level.FINE)) {
-                        log.fine("Dual registration of jndi stream handler: " +
-                            t.getMessage());
+                        log.log(Level.FINE, "Dual registration of jndi stream handler: " +
+                                t.getMessage());
                     }
                 }
             }
@@ -618,15 +706,16 @@ public class WebappLoader
         if( ! initialized ) init();
         if (started)
             throw new LifecycleException
-                (sm.getString("webappLoader.alreadyStarted"));
+                (rb.getString(LOADER_ALREADY_STARTED_EXCEPTION));
         if (log.isLoggable(Level.FINEST))
-            log.finest(sm.getString("webappLoader.starting"));
+            log.log(Level.FINEST, "Starting this Loader");
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
         if (container.getResources() == null) {
             if (log.isLoggable(Level.INFO)) {
-                log.info("No resources for " + container);
+                String msg = MessageFormat.format(rb.getString(NO_RESOURCE_INFO), container);
+                log.log(Level.INFO, msg);
             }
             return;
         }
@@ -676,7 +765,7 @@ public class WebappLoader
                     this.container.getResources());
 
         } catch (Throwable t) {
-            log.log(Level.SEVERE, "LifecycleException ", t);
+            log.log(Level.SEVERE, LIFECYCLE_EXCEPTION, t);
             throw new LifecycleException("start: ", t);
         }
 
@@ -693,9 +782,10 @@ public class WebappLoader
         // Validate and update our current component state
         if (!started)
             throw new LifecycleException
-                (sm.getString("webappLoader.notStarted"));
+                (rb.getString(LOADER_NOT_STARTED_EXCEPTION));
         if (log.isLoggable(Level.FINEST))
-            log.finest(sm.getString("webappLoader.stopping"));
+            log.log(Level.FINEST, "Stopping this Loader");
+
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
 
@@ -748,9 +838,9 @@ public class WebappLoader
                 setReloadable
                     ( ((Boolean) event.getNewValue()).booleanValue() );
             } catch (NumberFormatException e) {
-                log.log(Level.SEVERE,
-                        sm.getString("webappLoader.reloadable",
-                                     event.getNewValue().toString()));
+                String msg = MessageFormat.format(rb.getString(SET_RELOADABLE_PROPERTY_EXCEPTION),
+                                                  event.getNewValue().toString());
+                log.log(Level.SEVERE, msg);
             }
         }
     }
@@ -830,15 +920,17 @@ public class WebappLoader
     private void log(String message, Throwable t) {
         org.apache.catalina.Logger logger = null;
         String containerName = null;
+        String msg = MessageFormat.format(rb.getString(WEB_APP_LOADER_EXCEPTION),
+                                          new Object[] {containerName, message});
+
         if (container != null) {
             logger = container.getLogger();
             containerName = container.getName();
         }
         if (logger != null) {
-            logger.log("WebappLoader[" + containerName + "] " + message, t);
+            logger.log(msg, t);
         } else {
-            log.log(Level.WARNING,
-                "WebappLoader[" + containerName + "]: " + message, t);
+            log.log(Level.WARNING, msg, t);
         }
     }
 
@@ -952,13 +1044,14 @@ public class WebappLoader
             (File) servletContext.getAttribute(ServletContext.TEMPDIR);
         if (workDir == null) {
             if (log.isLoggable(Level.INFO)) {
-                log.info("No work dir for " + servletContext);
+                String msg = MessageFormat.format(rb.getString(NO_WORK_DIR_INFO), servletContext);
+                log.log(Level.INFO, msg);
             }
         }
 
-        if (log.isLoggable(Level.FINEST) && workDir != null) 
-            log.finest(sm.getString("webappLoader.deploy",
-                                    workDir.getAbsolutePath()));
+        if (log.isLoggable(Level.FINEST) && workDir != null)
+            log.log(Level.FINEST, "Deploying class repositories to work directory"
+                    + workDir.getAbsolutePath());
 
         DirContext resources = container.getResources();
 
@@ -993,20 +1086,18 @@ public class WebappLoader
                 classRepository = new File(workDir, classesPath);
                 if (!classRepository.mkdirs() &&
                         !classRepository.isDirectory()) {
-                    throw new IOException(
-                            sm.getString("webappLoader.mkdirFailure"));
+                    throw new IOException(rb.getString(FAILED_CREATE_DEST_DIR));
                 }
                 if (!copyDir(classes, classRepository)) {
-                    throw new IOException(
-                            sm.getString("webappLoader.copyFailure"));
+                    throw new IOException(rb.getString(FAILED_COPY_RESOURCE));
                 }
 
             }
 
             if (log.isLoggable(Level.FINEST))
-                log.finest(sm.getString("webappLoader.classDeploy",
-                                        classesPath,
-                                        classRepository.getAbsolutePath()));
+                log.log(Level.FINEST, "Deploy class files "
+                        +classesPath+" to "
+                        + classRepository.getAbsolutePath());
         }
 
         // Setting up the JAR repository (/WEB-INF/lib), if it exists
@@ -1039,9 +1130,9 @@ public class WebappLoader
                 copyJars = true;
                 destDir = new File(workDir, libPath);
                 if (!destDir.mkdirs() && !destDir.isDirectory()) {
-                    log.log(Level.SEVERE,
-                            sm.getString("webappLoader.createWorkDirFailed",
-                                    destDir.getAbsolutePath()));
+                    String msg = MessageFormat.format(rb.getString(FAILED_CREATE_WORK_DIR_EXCEPTION),
+                                                      destDir.getAbsolutePath());
+                    log.log(Level.SEVERE, msg);
                 }
             }
 
@@ -1074,9 +1165,7 @@ public class WebappLoader
                     File destFile = new File(destDir, binding.getName());
 
                     if (log.isLoggable(Level.FINEST)) {
-                        log.finest(sm.getString("webappLoader.jarDeploy",
-                                                filename,
-                                                destFile.getAbsolutePath()));
+                        log.log(Level.FINEST, "Deploy JAR "+filename+" to " + destFile.getAbsolutePath());
                     }
 
                     Object obj = binding.getObject();
@@ -1185,10 +1274,10 @@ public class WebappLoader
         try {
             Method m=loader.getClass().getMethod("getClasspath", new Class[] {});
             if (log.isLoggable(Level.FINEST))
-                log.finest("getClasspath " + m );
+                log.log(Level.FINEST, "getClasspath " + m);
             Object o=m.invoke( loader, new Object[] {} );
             if (log.isLoggable(Level.FINEST))
-                log.finest("gotClasspath " + o);
+                log.log(Level.FINEST, "gotClasspath " + o);
             if (o instanceof String )
                 return (String)o;
             return null;
