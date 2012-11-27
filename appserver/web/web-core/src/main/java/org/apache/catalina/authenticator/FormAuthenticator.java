@@ -448,6 +448,11 @@ public class FormAuthenticator
     protected void forwardToLoginPage(HttpRequest request,
                                       HttpResponse response,
                                       LoginConfig config) {
+
+        if (isChangeSessionIdOnAuthentication()) {
+            request.changeSessionId();
+        }
+
         ServletContext sc = context.getServletContext();
         try {
             String loginPage = config.getLoginPage();
