@@ -60,7 +60,7 @@ package org.apache.catalina.logger;
 
 
 import org.apache.catalina.LifecycleException;
-import org.apache.catalina.util.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -81,7 +81,17 @@ import java.sql.Timestamp;
 public class FileLogger
     extends LoggerBase {
 
+    @LogMessageInfo(
+            message = "File Logger has already been started",
+            level = "WARNING"
+    )
+    public static final String FILE_LOGGER_STARTED = "AS-WEB-CORE-00490";
 
+    @LogMessageInfo(
+            message = "File Logger has not yet been started",
+            level = "WARNING"
+    )
+    public static final String FILE_LOGGER_NOT_STARTED = "AS-WEB-CORE-00491";
     // ----------------------------------------------------- Instance Variables
 
 
@@ -109,13 +119,6 @@ public class FileLogger
      * The prefix that is added to log file filenames.
      */
     private String prefix = "catalina.";
-
-
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -343,7 +346,7 @@ public class FileLogger
         // Validate and update our current component state
         if (started)
             throw new LifecycleException
-                (sm.getString("fileLogger.alreadyStarted"));
+                (rb.getString(FILE_LOGGER_STARTED));
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
         
@@ -365,7 +368,7 @@ public class FileLogger
         // Validate and update our current component state
         if (!started)
             throw new LifecycleException
-                (sm.getString("fileLogger.notStarted"));
+                (rb.getString(FILE_LOGGER_NOT_STARTED));
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
 

@@ -66,7 +66,9 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.core.StandardHost;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.LifecycleSupport;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.management.ObjectName;
 import javax.servlet.ServletException;
@@ -74,7 +76,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.CharArrayWriter;
 import java.io.PrintWriter;
+import java.text.MessageFormat;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -92,8 +96,39 @@ import java.util.logging.Logger;
 public class LoggerBase
     implements Lifecycle, org.apache.catalina.Logger
  {
-    private static Logger log = Logger.getLogger(LoggerBase.class.getName());
-    
+     protected static final Logger log = StandardServer.log;
+     protected static final ResourceBundle rb = log.getResourceBundle();
+
+     @LogMessageInfo(
+             message = "Unknown container {0}",
+             level = "SEVERE",
+             cause = "Unknown container for implementation of StandardEngine interface",
+             action = "Verify the current container"
+     )
+     public static final String UNKNOWN_CONTAINER_EXCEPTION = "AS-WEB-CORE-00495";
+
+     @LogMessageInfo(
+             message = "Null engine !! {0}",
+             level = "SEVERE",
+             cause = "Could not get engine",
+             action = "Verify current container"
+     )
+     public static final String NULL_ENGINE_EXCEPTION = "AS-WEB-CORE-00496";
+
+     @LogMessageInfo(
+             message = "Unable to create javax.management.ObjectName for Logger",
+             level = "WARNING"
+     )
+     public static final String UNABLE_CREATE_OBJECT_NAME_FOR_LOGGER_EXCEPTION = "AS-WEB-CORE-00497";
+
+     @LogMessageInfo(
+             message = "Can't register logger {0}",
+             level = "SEVERE",
+             cause = "Could not register logger",
+             action = "Verify registration is called after configure()"
+     )
+     public static final String CANNOT_REGISTER_LOGGER_EXCEPTION = "AS-WEB-CORE-00498";
+
     // ----------------------------------------------------- Instance Variables
 
 
@@ -301,7 +336,7 @@ public class LoggerBase
      *  written to the log file
      */
     public void log(String msg) {
-        log.fine(msg);
+        log.log(Level.FINE, msg);
     }
 
 
@@ -431,7 +466,7 @@ public class LoggerBase
     
     public ObjectName createObjectName() {
         if(log.isLoggable(Level.FINE)) {
-            log.fine("createObjectName with "+container);
+            log.log(Level.FINE, "createObjectName with " + container);
         }
         // register
         try {
@@ -452,16 +487,17 @@ public class LoggerBase
                 suffix= ",path=" + path + ",host=" + 
                         container.getParent().getName();
             } else {
-                log.severe("Unknown container " + container );
+                log.log(Level.SEVERE, UNKNOWN_CONTAINER_EXCEPTION);
             }
             if( engine != null ) {
                 oname=new ObjectName(engine.getDomain()+ ":type=Logger" + suffix);
             } else {
-                log.severe("Null engine !! " + container);
+                String msg = MessageFormat.format(rb.getString(NULL_ENGINE_EXCEPTION),
+                                                  container);
+                log.log(Level.SEVERE, msg);
             }
         } catch (Throwable e) {
-            log.log(Level.WARNING,
-                "Unable to create javax.management.ObjectName for Logger", e);
+            log.log(Level.WARNING,UNABLE_CREATE_OBJECT_NAME_FOR_LOGGER_EXCEPTION, e);
         }
         return oname;
     }
@@ -513,10 +549,12 @@ public class LoggerBase
             ObjectName oname = createObjectName();   
             try {
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine("Registering logger " + oname);
+                    log.log(Level.FINE, "Registering logger " + oname);
                 }
-            } catch( Exception ex ) {   
-                log.log(Level.SEVERE, "Can't register logger " + oname, ex);
+            } catch( Exception ex ) {
+                String msg = MessageFormat.format(rb.getString(CANNOT_REGISTER_LOGGER_EXCEPTION),
+                                                  oname);
+                log.log(Level.SEVERE, msg, ex);
             }      
         }     
 
@@ -538,11 +576,12 @@ public class LoggerBase
             ObjectName oname = createObjectName();   
             try {
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine("Unregistering logger " + oname);
+                    log.log(Level.FINE, "Unregistering logger " + oname);
                 }
-            } catch( Exception ex ) {   
-                log.log(Level.SEVERE, "Can't unregister logger " + oname,
-                        ex);   
+            } catch( Exception ex ) {
+                String msg = MessageFormat.format(rb.getString(CANNOT_REGISTER_LOGGER_EXCEPTION),
+                        oname);
+                log.log(Level.SEVERE, msg, ex);
             }      
         }  
     }
