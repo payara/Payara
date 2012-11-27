@@ -831,7 +831,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         
         Formatter formatter = this.getFormatter();
         if (!(formatter instanceof LogEventBroadcaster)) {
-            LogEvent logEvent = new LogEventImpl();
+            LogEvent logEvent = new LogEventImpl(record);
             informLogEventListeners(logEvent);
         }
         
