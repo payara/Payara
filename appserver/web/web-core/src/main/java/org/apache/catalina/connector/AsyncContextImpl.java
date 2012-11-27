@@ -198,7 +198,7 @@ class AsyncContextImpl implements AsyncContext {
         isDispatchInScope.set(true);
         if (dispatcher != null) {
             if (isDispatchInProgress.compareAndSet(false, true)) {
-                pool.execute(new Handler(this, dispatcher, origRequest));
+                pool.execute(new Handler(this, dispatcher));
             } else {
                 throw new IllegalStateException(
                     STRING_MANAGER.getString("async.dispatchInProgress"));
@@ -220,7 +220,7 @@ class AsyncContextImpl implements AsyncContext {
         isDispatchInScope.set(true);
         if (dispatcher != null) {
             if (isDispatchInProgress.compareAndSet(false, true)) {
-                pool.execute(new Handler(this, dispatcher, origRequest));
+                pool.execute(new Handler(this, dispatcher));
             } else {
                 throw new IllegalStateException(
                     STRING_MANAGER.getString("async.dispatchInProgress"));
@@ -243,7 +243,7 @@ class AsyncContextImpl implements AsyncContext {
         isDispatchInScope.set(true);
         if (dispatcher != null) {
             if (isDispatchInProgress.compareAndSet(false, true)) {
-                pool.execute(new Handler(this, dispatcher, origRequest));
+                pool.execute(new Handler(this, dispatcher));
             } else {
                 throw new IllegalStateException(
                     STRING_MANAGER.getString("async.dispatchInProgress"));
@@ -456,19 +456,17 @@ class AsyncContextImpl implements AsyncContext {
 
         private final AsyncContextImpl asyncContext;
         private final ApplicationDispatcher dispatcher;
-        private final Request origRequest;
 
         Handler(AsyncContextImpl asyncContext,
-                ApplicationDispatcher dispatcher,
-                Request origRequest) {
+                ApplicationDispatcher dispatcher) {
             this.asyncContext = asyncContext;
             this.dispatcher = dispatcher;
-            this.origRequest = origRequest;
         }
        
         @Override
         public void run() {
             asyncContext.isStartAsyncInScope.set(Boolean.TRUE);
+            Request origRequest = asyncContext.getOriginalRequest();
             origRequest.setAttribute(Globals.DISPATCHER_TYPE_ATTR,
                                      DispatcherType.ASYNC);
             origRequest.setAsyncStarted(false);
@@ -492,7 +490,7 @@ class AsyncContextImpl implements AsyncContext {
                 }
             } catch (Throwable t) {
                 asyncContext.notifyAsyncListeners(AsyncEventType.ERROR, t);
-                asyncContext.getOriginalRequest().errorDispatchAndComplete(t);
+                origRequest.errorDispatchAndComplete(t);
             } finally {
                 asyncContext.isStartAsyncInScope.set(Boolean.FALSE);
             }
