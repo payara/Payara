@@ -41,6 +41,7 @@ package com.sun.enterprise.v3.admin;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
@@ -63,6 +64,7 @@ import javax.inject.Singleton;
 import javax.security.auth.Subject;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 /**
@@ -79,7 +81,7 @@ import javax.xml.bind.Unmarshaller;
 
 @Service
 @Singleton
-public class JobManagerService implements JobManager {
+public class JobManagerService implements JobManager,PostConstruct {
 
 
     @Inject
@@ -107,6 +109,8 @@ public class JobManagerService implements JobManager {
     private final String JOBS_FILE = "jobs.xml";
 
     private JAXBContext jaxbContext;
+
+    private File jobsFile;
 
 
     /**
@@ -288,13 +292,11 @@ public class JobManagerService implements JobManager {
      */
     public synchronized JobInfos getCompletedJobs() {
         try {
-            File file =
-                    new File(serverEnvironment.getConfigDirPath(),JOBS_FILE);
             if (jaxbContext == null)
                 jaxbContext = JAXBContext.newInstance(JobInfos.class);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            if (file != null && file.exists())  {
-                JobInfos jobInfos = (JobInfos)unmarshaller.unmarshal(file);
+            if (jobsFile != null && jobsFile.exists())  {
+                JobInfos jobInfos = (JobInfos)unmarshaller.unmarshal(jobsFile);
                 return jobInfos;
             }
         } catch (JAXBException e) {
@@ -304,7 +306,41 @@ public class JobManagerService implements JobManager {
         return null;
     }
 
+    /**
+     * This method looks for the completed jobs
+     * and purges a job which is marked with the jobId
+     * @param jobId the job to purge
+     * @return  the new list of completed jobs
+     */
+    public synchronized JobInfos purgeCompletedJobForId(String jobId) {
+        CopyOnWriteArrayList<JobInfo> jobList = new CopyOnWriteArrayList<JobInfo>();
+        if (getCompletedJobs()!= null)
+            jobList.addAll(getCompletedJobs().getJobInfoList());
+        for (JobInfo jobInfo: jobList ) {
+            if (jobInfo.jobId.equals(jobId)) {
+                jobList.remove(jobInfo);
+            }
+
+        }
+        JobInfos jobInfos = new JobInfos();
+        try {
+            if (jaxbContext == null)
+                jaxbContext = JAXBContext.newInstance(JobInfos.class);
+
+            jobInfos.setJobInfoList(jobList);
+            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+            jaxbMarshaller.marshal(jobInfos, jobsFile);
+        } catch (JAXBException e) {
+            throw new RuntimeException(adminStrings.getLocalString("error.purging.completed.job","Error purging completed job ", jobId,e.getLocalizedMessage()));
+        }
+        return jobInfos;
+
+    }
 
 
-
+    @Override
+    public void postConstruct() {
+        jobsFile =
+                new File(serverEnvironment.getConfigDirPath(),JOBS_FILE);
+    }
 }

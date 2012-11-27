@@ -76,5 +76,7 @@ public interface JobManager {
     public JobInfos getCompletedJobs();
 
     public Object getCompletedJobForId(String id);
+
+    public Object purgeCompletedJobForId(String id);
     
 }

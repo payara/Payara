@@ -14,6 +14,7 @@ import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.progress.JobInfo;
 import org.glassfish.hk2.api.PerLookup;
 
+import org.glassfish.security.services.common.SubjectUtil;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCo
         attached = registry.get(jobID);
         JobInfo jobInfo = null;
         String jobName = null;
+        String attachedUser = SubjectUtil.getUsernamesFromSubject(context.getSubject()).get(0);
         if (attached == null) {
             //try for completed jobs
             if (registry.getCompletedJobs() != null)
@@ -73,7 +75,7 @@ public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCo
         if ((attached == null && jobInfo == null) || (attached != null && attached.getName().startsWith("_"))
                 || (attached != null && AttachCommand.COMMAND_NAME.equals(attached.getName()))) {
             ar.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            ar.setMessage(strings.getLocalString("attach.wrong.commandinstance.id", "Command instance {0} does not exist.", jobID));
+            ar.setMessage(strings.getLocalString("attach.wrong.commandinstance.id", "Job with id {0} does not exist.", jobID));
             return;
         }
         if (attached != null) {
@@ -93,6 +95,13 @@ public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCo
                     } catch (InterruptedException ex) {}
                 }
                 if (attached.getState().equals(COMPLETED)) {
+                    String commandUser = SubjectUtil.getUsernamesFromSubject(attached.getSubject()).get(0);
+                    //In most cases if the user who attaches to the command is the same
+                    //as one who started it then purge the job once it is completed
+                    if (commandUser != null && commandUser.equals(attachedUser))  {
+                        purgeJob(attached.getId());
+
+                    }
                     ar.setActionExitCode(attached.getActionReport().getActionExitCode());
                     ar.appendMessage(strings.getLocalString("attach.finished", "Command {0} executed {1}",attached.getName(),attached.getActionReport().getActionExitCode()));
                 }
@@ -100,11 +109,16 @@ public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCo
         } else {
 
             if (jobInfo != null && jobInfo.exitCode.equals(COMPLETED.toString())) {
-                //TODO fix this
+
+                //In most cases if the user who attaches to the command is the same
+                //as one who started it then purge the job once it is completed
+                if (attachedUser!= null && attachedUser.equals( jobInfo.user)) {
+                    purgeJob(jobInfo.jobId);
+
+                }
                 ar.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                 ar.appendMessage(strings.getLocalString("attach.finished", "Command {0} executed{1}",jobName,ActionReport.ExitCode.SUCCESS));
             }
-
         }
 
     }
@@ -131,5 +145,10 @@ public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCo
         return accessChecks;
     }
 
+    private void purgeJob(String jobid) {
+        registry.purgeJob(jobid);
+        registry.purgeCompletedJobForId(jobid);
+
+    }
 
 }
