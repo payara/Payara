@@ -145,12 +145,12 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
             commandProgress.complete();
         }
         this.payload = outbound;
-        complete(report);
         if (isManagedJob) {
             JobPersistence jobPersistenceService = Globals.getDefaultHabitat().getService(JobPersistenceService.class);
             List<String> userList =  SubjectUtil.getUsernamesFromSubject(subject);
             jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,state.name(),"admin",report.getMessage()));
         }
+        complete(report);
     }
 
     @Override
