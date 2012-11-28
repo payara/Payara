@@ -154,20 +154,9 @@
     </dependencies>
     <modules>
         <module>api-pom</module>
-<!--
-comment out since we don't want dev to generate javaee-api.jar
-
-        <module>javax.javaee</module>
--->
         <module>javax.annotation</module>
-<!-- Comment out since javax.jms-api.jar 2.0 already has OSGi metadata.
-        <module>javax.jms</module>
--->
         <module>javax.jws</module>
         <module>javax.xml.rpc</module>
         <module>javax.xml.soap</module>
-<!-- StAX is part of Java SE 6, so need for it to be built anymore.
-        <module>javax.xml.stream</module>
--->
     </modules>
 </project>
