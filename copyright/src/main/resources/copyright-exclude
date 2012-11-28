@@ -31,6 +31,7 @@ appserver/tests/quicklook/web/jruby/helloapp/public/javascripts/effects.js
 appserver/tests/quicklook/web/jruby/helloapp/public/javascripts/prototype.js
 appserver/tests/quicklook/web/jruby/helloapp/public/javascripts/dragdrop.js
 appserver/jbi/serviceengine/sun-javaee-engine/src/main/resources/com.sun.xml.ws.api.pipe.TransportPipeFactory
+nucleus/core/logging/src/test/resources/com/sun/enterprise/server/logging/logviewer/backend/logentry.bin
 .gif
 .jpg
 .png
