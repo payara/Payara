@@ -48,6 +48,9 @@
         <property name="package.name" value="nucleus-osgi"/> 
 
         <stage-module-autostart-jars/>
+        <!-- BEGIN: move osgi-container to modules/ -->
+        <move file="target/stage/${install.dir.name}/modules/autostart/osgi-container.jar" todir="target/stage/${install.dir.name}/modules" failonerror="false"/>
+        <!-- END: move osgi-container to modules/ -->
        
         <if test="${compression}">
 	       <antcall target="pack.compression" />

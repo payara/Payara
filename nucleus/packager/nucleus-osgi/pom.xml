@@ -138,6 +138,11 @@
             <version>${project.version}</version>
         </dependency>
         -->
+        <dependency>
+            <groupId>org.glassfish.main.osgi-platforms</groupId>
+            <artifactId>osgi-container</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
     </dependencies>
 

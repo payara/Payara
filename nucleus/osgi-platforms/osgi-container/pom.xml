@@ -44,10 +44,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.extras</groupId>
-        <artifactId>extras</artifactId>
+        <groupId>org.glassfish.main.osgi-platforms</groupId>
+        <artifactId>osgi-platforms</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>osgi-container</artifactId>
@@ -64,6 +63,11 @@
                 <role>lead</role>
                 <role>developer</role>
             </roles>
+        </developer>
+        <developer>
+            <id>ss141213</id>
+            <name>Sahoo</name>
+            <organization>Oracle, Inc.</organization>
         </developer>
     </developers>
     <dependencies>
