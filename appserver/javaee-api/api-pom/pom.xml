@@ -56,20 +56,63 @@
     <name>Super POM for Java EE API modules</name>  
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>META-INF/README</exclude>
-                </excludes>
-            </resource>
-        </resources>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>glassfishbuild-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!-- Configure maven-bundle-plugin which takes care of
+                     OSGi packaging -->
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <!-- We don't use extensions as this interfers with
+                     HK2 and that results in hk2 artifacts
+                     being copied as .hk2-jar. Instead, we configure the
+                     plugin to run as part of package phase. By Sahoo.
+                <extensions>true</extensions>
+                -->
+                <configuration>
+                    <supportedProjectTypes>
+                        <supportedProjectType>jar</supportedProjectType>
+                    </supportedProjectTypes>
+                    <instructions>
+                        <!-- embed all compile and runtime scope dependencies -->
+                        <!--<Embed-Dependency>*;scope=compile;inline=true</Embed-Dependency>-->
+                        <Export-Package>${extension.name}.*; version=${spec.version}</Export-Package>
+                        <_include>-osgi.bundle</_include>
+                    </instructions>
+                    <!--<unpackBundle>true</unpackBundle>-->
+                </configuration>
+                <!-- We don't use extensions as this interfers with
+                     HK2 and that results in hk2 artifacts
+                     being copied as .hk2-jar. Instead, we configure the
+                     plugin to run as part of package phase -->
+                <executions>
+                    <execution>
+                        <id>osgi-bundle</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>bundle</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>            
+<!--            <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <configuration>
-                    <!-- Enable it for jar type -->
+                     Enable it for jar type 
                     <supportedProjectTypes>
                         <supportedProjectType>jar</supportedProjectType>
                     </supportedProjectTypes>
@@ -77,7 +120,7 @@
                         <Export-Package>${extension.name}.*; version=${spec.version}</Export-Package>
                     </instructions>
                 </configuration>
-            </plugin>
+            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>

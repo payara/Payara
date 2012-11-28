@@ -49,10 +49,10 @@
         <artifactId>glassfish-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
     </parent>
-
-    <artifactId>javaee-api</artifactId>
+    <artifactId>javaee-api-parent</artifactId>
     <packaging>pom</packaging>
     <version>4.0-SNAPSHOT</version>
+    
     <name>JavaEE APi</name>
     <description>Java EE API modules repackaged as OSGi bundles in GlassFish</description>
 
@@ -60,22 +60,23 @@
         <findbugs.skip>true</findbugs.skip>
     </properties>
 
+    <modules>
+        <module>api-pom</module>
+        <module>javax.annotation</module>
+        <module>javax.jws</module>
+        <module>javax.xml.rpc</module>
+        <module>javax.xml.soap</module>
+    </modules>
+    
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
+                <artifactId>maven-install-plugin</artifactId>
                 <configuration>
-                    <skip>true</skip>
+                    <skip>false</skip>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
+            </plugin>            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -104,59 +105,101 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <!-- Configure maven-bundle-plugin which takes care of
-                     OSGi packaging -->
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <!-- We don't use extensions as this interfers with
-                     HK2 and that results in hk2 artifacts
-                     being copied as .hk2-jar. Instead, we configure the
-                     plugin to run as part of package phase. By Sahoo.
-                <extensions>true</extensions>
-                -->
-                <configuration>
-                    <supportedProjectTypes>
-                        <supportedProjectType>jar</supportedProjectType>
-                        <supportedProjectType>bundle</supportedProjectType>
-                    </supportedProjectTypes>
-                    <instructions>
-                        <!-- embed all compile and runtime scope dependencies -->
-                        <Embed-Dependency>*;scope=compile;inline=true</Embed-Dependency>
-                        <Export-Package>${extension.name}.*; version=${spec.version}</Export-Package>
-                        <_include>-osgi.bundle</_include>
-                    </instructions>
-                    <unpackBundle>true</unpackBundle>
-                </configuration>
-                <!-- We don't use extensions as this interfers with
-                     HK2 and that results in hk2 artifacts
-                     being copied as .hk2-jar. Instead, we configure the
-                     plugin to run as part of package phase -->
-                <executions>
-                    <execution>
-                        <id>osgi-bundle</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>bundle</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
-    </build>
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-            <optional>true</optional>
-        </dependency>
-    </dependencies>
-    <modules>
-        <module>api-pom</module>
-        <module>javax.annotation</module>
-        <module>javax.jws</module>
-        <module>javax.xml.rpc</module>
-        <module>javax.xml.soap</module>
-    </modules>
+    </build>    
+    
+    <profiles>
+        <profile>
+            <id>release-phase2</id>
+            <activation>
+                <property>
+                    <name>release-phase-all</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            
+            <properties>
+                <javaee.version>7.0-${build.id}</javaee.version>
+            </properties>
+            
+            <modules>
+                <module>javax.javaee-web-api</module>
+                <module>javax.javaee-api</module>
+                <!--<module>javax.javaee-endorsed-api</module>-->
+            </modules>
+            
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>true</filtering>
+                    </resource>
+                </resources>
+                <finalName>${project.artifactId}-${javaee.version}</finalName>
+                <plugins>
+                    <!-- skip default-deploy -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <!-- skip default-install -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-install-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.glassfish.build</groupId>
+                        <artifactId>glassfishbuild-maven-plugin</artifactId>
+                        <configuration>
+                            <pomFile>${project.build.outputDirectory}/pom.xml</pomFile>
+                        </configuration>                        
+                        <executions>
+                            <execution>
+                                <id>unpack-sources</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>unpack-sources</goal>
+                                </goals>
+                                <configuration>
+                                    <attachSources>true</attachSources>
+                                    <excludeArtifactIds>tools-jar</excludeArtifactIds>
+                                    <excludes>javax/help/**</excludes>
+                                    <includes>javax/**</includes>
+                                    <excludeTransitive>true</excludeTransitive>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>lazy-deploy</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>lazy-deploy</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>lazy-install</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>lazy-install</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <doctitle>${project.name}</doctitle>
+                            <windowtitle>${project.name}</windowtitle>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

@@ -40,29 +40,48 @@
     holder.
 
 -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>api-pom</artifactId>
-        <version>4.0-SNAPSHOT</version>
-        <relativePath>../api-pom/pom.xml</relativePath>
-    </parent>
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>javax.xml.rpc</artifactId>
-    <properties>
-        <extension.name>javax.xml.rpc</extension.name>
-        <spec.version>1.1</spec.version>
-    </properties>
-    <name>javax.xml.rpc API v.${spec.version}</name>
+    <groupId>javax</groupId>
+    <artifactId>javaee-web-api</artifactId>
+    <version>${javaee.version}</version>
 
-    <description>JAX-RPC API Repackaged as OSGi bundle in GlassFish</description>
+    <name>Java(TM) EE 7 Web Specification APIs</name>
+    <description>Java(TM) EE 7 Web Specification APIs</description>
+    <url>http://docs.oracle.com/javaee/6/api/index.html</url>
+
+    <scm>
+        <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main/appserver/javaee-api/javax.javaee</connection>
+        <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main/appserver/javaee-api/javax.javaee</developerConnection>
+        <url>https://svn.java.net/svn/glassfish~svn/trunk/main/appserver/javaee-api/javax.javaee</url>
+    </scm>
+    
+    <licenses>
+        <license>
+            <name>CDDL + GPLv2 with classpath exception</name>
+            <url>https://glassfish.java.net/nonav/public/CDDL+GPL.html</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <organization>
+        <name>GlassFish Community</name>
+        <url>https://glassfish.java.net</url>
+    </organization>
+
+    <issueManagement>
+        <system>IssueTracker</system>
+        <url>http://java.net/jira/browse/GLASSFISH</url>
+    </issueManagement>
+    
     <dependencies>
         <dependency>
-            <groupId>javax.xml</groupId>
-            <artifactId>jaxrpc-api</artifactId>
-            <optional>true</optional>
+            <groupId>javax.json</groupId>
+            <artifactId>javax.json-api</artifactId>
+            <version>${json.version}</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>
