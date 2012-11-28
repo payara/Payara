@@ -822,6 +822,11 @@ public class Response
 
         coyoteResponse.reset();
         outputBuffer.reset();
+        // reset Grizzly duplicated internal attributes
+        coyoteResponse.resetBuffer(true);
+        usingOutputStream = false;
+        usingWriter = false;
+        isCharacterEncodingSet = false;
     }
 
 
