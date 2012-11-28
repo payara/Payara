@@ -237,8 +237,9 @@ public class GuiUtil {
 
     private static File getTimeStampFile() {
         Map result = RestUtil.restRequest(GuiUtil.getSessionValue("REST_URL") +
-                "/location", null, "GET", null, false);
+                "/locations", null, "GET", null, false);
         String configDir = (String) ((Map)((Map)result.get("data")).get("properties")).get("Config-Dir");
+
         if (configDir != null)
             return new File(configDir, ".consolestate");
         return null;

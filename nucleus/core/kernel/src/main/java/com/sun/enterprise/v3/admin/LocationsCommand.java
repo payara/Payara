@@ -92,6 +92,7 @@ public class LocationsCommand implements AdminCommand {
         mp.addProperty("Base-Root", StartupContextUtil.getInstallRoot(env.getStartupContext()).getAbsolutePath());
         mp.addProperty("Domain-Root", env.getDomainRoot().getAbsolutePath());
         mp.addProperty("Instance-Root", env.getInstanceRoot().getAbsolutePath());
+        mp.addProperty("Config-Dir", env.getConfigDirPath().getAbsolutePath());
         mp.addProperty("Uptime", ""+getUptime());
         mp.addProperty("Pid", ""+ProcessUtils.getPid());
         mp.addProperty("Restart-Required", ""+ucl.serverRequiresRestart());
