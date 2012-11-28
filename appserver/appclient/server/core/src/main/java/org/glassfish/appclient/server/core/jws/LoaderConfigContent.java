@@ -74,7 +74,8 @@ class LoaderConfigContent {
         final char[] buffer = new char[1024];
         try {
             while ( (charsRead = fr.read(buffer)) != -1) {
-                sb.append(buffer, 0, charsRead);
+                final String input = new String(buffer, 0, charsRead);
+                sb.append(Util.toXMLEscapedInclAmp(input));
             }
             return sb.toString();
         } finally {
