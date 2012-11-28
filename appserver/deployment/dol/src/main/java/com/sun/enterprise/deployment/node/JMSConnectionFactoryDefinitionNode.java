@@ -68,7 +68,6 @@ public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode
         table.put(TagNames.JMS_CONNECTION_FACTORY_PASSWORD, "setPassword");
         table.put(TagNames.JMS_CONNECTION_FACTORY_CLIENT_ID, "setClientId");
 
-        table.put(TagNames.JMS_CONNECTION_FACTORY_CONNECTION_TIMEOUT, "setConnectionTimeout");
         table.put(TagNames.JMS_CONNECTION_FACTORY_TRANSACTIONAL, "setTransactional");
         table.put(TagNames.JMS_CONNECTION_FACTORY_INITIAL_POOL_SIZE, "setInitialPoolSize");
         table.put(TagNames.JMS_CONNECTION_FACTORY_MAX_POOL_SIZE, "setMaxPoolSize");
@@ -91,7 +90,6 @@ public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode
         ResourcePropertyNode propertyNode = new ResourcePropertyNode();
         propertyNode.writeDescriptor(node, desc);
 
-        appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_CONNECTION_TIMEOUT, desc.getConnectionTimeout());
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_TRANSACTIONAL, String.valueOf(desc.isTransactional()));
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_INITIAL_POOL_SIZE, desc.getInitialPoolSize());
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_MAX_POOL_SIZE, desc.getMaxPoolSize());

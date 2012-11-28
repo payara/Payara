@@ -57,7 +57,6 @@ public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor
     private String password;
     private String clientId;
     private Properties properties = new Properties();
-    private int connectionTimeout = 0;
     private boolean transactional = true;
     private int initialPoolSize = -1;
     private int maxPoolSize = -1;
@@ -65,7 +64,6 @@ public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor
     private int maxIdleTime = -1;
 
     private boolean transactionSet = false;
-    private boolean connectionTimeoutSet = false;
 
     private String resourceId;
     private static final String JAVA_URL = "java:";
@@ -134,23 +132,6 @@ public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor
 
     public Properties getProperties(){
         return properties;
-    }
-
-    public int getConnectionTimeout() {
-        return connectionTimeout;
-    }
-
-    public void setConnectionTimeout(int connectionTimeout) {
-        this.connectionTimeout = connectionTimeout;
-        setConnectionTimeoutSet(true);
-    }
-
-    public boolean isConnectionTimeoutSet() {
-        return connectionTimeoutSet;
-    }
-
-    private void setConnectionTimeoutSet(boolean value) {
-        connectionTimeoutSet = value;
     }
 
     public boolean isTransactional() {
@@ -244,7 +225,6 @@ public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor
                 DOLUtils.equals(getPassword(), other.getPassword()) &&
                 DOLUtils.equals(getClientId(), other.getClientId()) &&
                 properties.equals(other.properties) &&
-                getConnectionTimeout() == other.getConnectionTimeout() &&
                 isTransactional() == other.isTransactional() &&
                 getInitialPoolSize() == other.getInitialPoolSize() &&
                 getMinPoolSize() == other.getMinPoolSize() &&

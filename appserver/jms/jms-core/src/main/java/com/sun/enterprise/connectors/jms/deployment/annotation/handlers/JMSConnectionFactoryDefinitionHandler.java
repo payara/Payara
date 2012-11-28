@@ -245,12 +245,6 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
                     }
                 }
 
-                if (!desc.isConnectionTimeoutSet()) {
-                    if (defn.connectionTimeout() >= 0) {
-                        desc.setConnectionTimeout(defn.connectionTimeout());
-                    }
-                }
-
                 if (!desc.isTransactionSet()) {
                     desc.setTransactional(defn.transactional());
                 }
@@ -328,10 +322,6 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
 
         if (defn.clientId() != null && !defn.clientId().equals("")) {
             desc.setClientId(defn.clientId());
-        }
-
-        if (defn.connectionTimeout() >= 0) {
-            desc.setConnectionTimeout(defn.connectionTimeout());
         }
 
         desc.setTransactional(defn.transactional());

@@ -376,9 +376,9 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
         }
 
         public String getMaxWaitTimeInMillis() {
-            int maxWaitTimeInSeconds = desc.getConnectionTimeout();
-            if (maxWaitTimeInSeconds >= 0) {
-                return String.valueOf(maxWaitTimeInSeconds * 1000);
+            String maxWaitTimeInMillis = desc.getProperty(PROPERTY_PREFIX + "max-wait-time-in-millis");
+            if (maxWaitTimeInMillis != null && !maxWaitTimeInMillis.equals("")) {
+                return maxWaitTimeInMillis;
             } else {
                 return "60000";
             }
