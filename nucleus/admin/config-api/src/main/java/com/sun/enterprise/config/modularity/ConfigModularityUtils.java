@@ -455,7 +455,6 @@ public final class ConfigModularityUtils {
                         }
                     } catch (Exception ex) {
                         LOG.log(Level.INFO, "could not remove a config bean named " + finalConfigBean.getClass().getName() + "  as it does not exist", ex);
-
                     }
                 }
                 if (configBeanClass.getAnnotation(HasCustomizationTokens.class) != null) {
