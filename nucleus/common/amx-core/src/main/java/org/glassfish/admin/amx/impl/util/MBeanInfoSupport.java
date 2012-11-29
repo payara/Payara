@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import javax.management.Descriptor;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanConstructorInfo;
@@ -72,6 +73,7 @@ import org.glassfish.admin.amx.core.AMXProxy;
 import org.glassfish.admin.amx.core.AMX_SPI;
 import org.glassfish.admin.amx.util.jmx.JMXUtil;
 import org.glassfish.admin.amx.core.AMXMBeanMetadata;
+import org.glassfish.admin.amx.util.AMXLoggerInfo;
 import static org.glassfish.external.amx.AMX.*;
 
 /**
@@ -169,7 +171,8 @@ public final class MBeanInfoSupport {
                 String attrName = null;
                 final int numArgs = method.getParameterTypes().length;
                 if (managedOp != null) {
-                    ImplUtil.getLogger().warning("MBeanInfoSupport:  @ManagedAttribute cannot also be @ManagedOperation: " + intf.getName() + "." + method.getName() + "()");
+                    AMXLoggerInfo.getLogger().log(Level.WARNING, AMXLoggerInfo.attributeCantBeOperation, 
+                            new Object[]{intf.getName(), method.getName()});
                 } else if (numArgs == 0 && JMXUtil.isIsOrGetter(method)) {
                     attrName = JMXUtil.getAttributeName(method);
                     getters.put(attrName, method);
@@ -179,7 +182,8 @@ public final class MBeanInfoSupport {
                     setters.put(attrName, method);
                     //debug( "findInterfaceMethods: setter: " + attrName );
                 } else {
-                    ImplUtil.getLogger().warning("MBeanInfoSupport:  @ManagedAttribute not a getter or setter: " + intf.getName() + "." + method.getName() + "()");
+                    AMXLoggerInfo.getLogger().log(Level.WARNING, AMXLoggerInfo.attributeNotGetterSetter, 
+                            new Object[]{intf.getName(), method.getName()});
                     // ignore
                 }
 

@@ -38,10 +38,10 @@
  * holder.
  */
 package com.sun.enterprise.v3.admin.commands;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.enterprise.v3.admin.JobManagerService;
-import com.sun.logging.LogDomains;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -49,17 +49,8 @@ import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.progress.JobInfo;
 import org.glassfish.api.admin.progress.JobInfos;
 import org.glassfish.hk2.api.PerLookup;
-
 import org.glassfish.security.services.common.SubjectUtil;
 import org.jvnet.hk2.annotations.Service;
-
-
-import javax.inject.Inject;
-
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.logging.Logger;
-import org.glassfish.api.ActionReport.MessagePart;
 
 
 /**
@@ -99,9 +90,6 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
 
     final private static StringManager localStrings =
             StringManager.getManager(ListJobsCommand.class);
-
-    final private static Logger logger = LogDomains.getLogger(ListJobsCommand.class, LogDomains.ADMIN_LOGGER);
-
 
     @Override
     public void execute(AdminCommandContext context) {

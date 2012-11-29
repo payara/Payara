@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,26 +40,20 @@
 
 package com.sun.enterprise.v3.server;
 
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.Enumeration;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.classmodel.reflect.ArchiveAdapter;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.util.AbstractAdapter;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.util.Enumeration;
-import java.util.Stack;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.jar.Manifest;
-import java.net.URI;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.glassfish.kernel.KernelLoggerInfo;
 
 /**
  * ArchiveAdapter for DOL readable archive instances
@@ -95,7 +89,7 @@ public class ReadableArchiveScannerAdapter extends AbstractAdapter {
     private final int DEFAULT_TIMEOUT = Integer.getInteger(Parser.DEFAULT_WAIT_SYSPROP, 600);
     
     private final static Level level = Level.FINE;
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ReadableArchiveScannerAdapter.class);
+    final private static Logger alogger = KernelLoggerInfo.getLogger();
     
 
     public ReadableArchiveScannerAdapter(Parser parser, ReadableArchive archive) {
@@ -157,7 +151,7 @@ public class ReadableArchiveScannerAdapter extends AbstractAdapter {
         }
     }
 
-    protected void handleEntry(String name, Entry entry, Logger logger, EntryTask entryTask)
+    protected void handleEntry(String name, Entry entry, Logger logger /*ignored*/, EntryTask entryTask)
         throws IOException {
         
         InputStream is = null;
@@ -165,15 +159,13 @@ public class ReadableArchiveScannerAdapter extends AbstractAdapter {
             try {
                 is = archive.getEntry(name);
                 if (is==null) {
-                    logger.log(Level.SEVERE, "Invalid InputStream returned for " + name);
+                    alogger.log(Level.SEVERE, KernelLoggerInfo.invalidInputStream, name);
                     return;
                 }
                  entryTask.on(entry, is);
             } catch (Exception e) {
-                logger.log(Level.SEVERE,
-                    localStrings.getLocalString("exception_while_parsing",
-                            "Exception while processing {0} inside {1} of size {2}",
-                            entry.name, archive.getURI(), entry.size), e);
+                alogger.log(Level.SEVERE, KernelLoggerInfo.exceptionWhileParsing,
+                        new Object[] { entry.name, archive.getURI(), entry.size, e});
             }
         } finally {
             if (is!=null)
@@ -190,10 +182,8 @@ public class ReadableArchiveScannerAdapter extends AbstractAdapter {
 
             final ReadableArchive subArchive = archive.getSubArchive(name);
             if (subArchive==null) {
-                logger.log(Level.SEVERE,
-                        localStrings.getLocalString("cannot_open_sub_archive",
-                                    "Cannot open sub-archive {0} from {1}",
-                                    name, archive.getURI()));
+                logger.log(Level.SEVERE, KernelLoggerInfo.cantOpenSubArchive,
+                        new Object[] {name, archive.getURI()});
                 return null;
             }
 
@@ -212,10 +202,8 @@ public class ReadableArchiveScannerAdapter extends AbstractAdapter {
                             logger.log(level, "Closing sub archive " + subArchive.getURI());
                         adapter.close();
                     } catch (IOException e) {
-                        logger.log(Level.SEVERE,
-                            localStrings.getLocalString("exception_while_closing",
-                                "Cannot close sub archive {0}",
-                                name), e);
+                        logger.log(Level.SEVERE, KernelLoggerInfo.exceptionWhileClosing,
+                                new Object[] { name, e });
                     }
                 }
             });

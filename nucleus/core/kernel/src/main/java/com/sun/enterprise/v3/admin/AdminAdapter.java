@@ -42,57 +42,48 @@ package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.config.serverbeans.*;
-import java.util.Set;
-
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.common_impl.LogHelper;
+import com.sun.enterprise.universal.GFBase64Decoder;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.uuid.UuidGenerator;
 import com.sun.enterprise.util.uuid.UuidGeneratorImpl;
-import com.sun.logging.LogDomains;
+import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.URLDecoder;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.security.auth.Subject;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
-import org.glassfish.api.event.EventListener;
 import org.glassfish.api.container.Adapter;
-import org.glassfish.grizzly.http.Cookie;
-import org.glassfish.grizzly.http.util.CookieSerializerUtils;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-
-import java.net.InetAddress;
-import java.net.URLDecoder;
-import java.util.StringTokenizer;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import com.sun.enterprise.util.SystemPropertyConstants;
-
-import java.net.HttpURLConnection;
-import com.sun.enterprise.universal.GFBase64Decoder;
-import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
-
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-
+import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.event.RestrictTo;
+import org.glassfish.grizzly.http.Cookie;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.server.StaticHttpHandler;
+import org.glassfish.grizzly.http.util.CookieSerializerUtils;
+import org.glassfish.grizzly.http.util.HttpStatus;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.Privacy;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.server.ServerEnvironmentImpl;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.security.auth.Subject;
-import org.glassfish.grizzly.http.util.HttpStatus;
 
 /**
  * Listen to admin commands...
@@ -103,7 +94,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     public final static String VS_NAME="__asadmin";
     public final static String PREFIX_URI = "/" + VS_NAME;
     private final static LocalStringManagerImpl adminStrings = new LocalStringManagerImpl(AdminAdapter.class);
-    private final static Logger aalogger = LogDomains.getLogger(AdminAdapter.class, LogDomains.ADMIN_LOGGER);
+    private final static Logger aalogger = KernelLoggerInfo.getLogger();
     private static final GFBase64Decoder decoder = new GFBase64Decoder();
     private static final String BASIC = "Basic ";
 
@@ -590,16 +581,16 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             try {
                 value = URLDecoder.decode(value, "UTF-8");
             } catch (UnsupportedEncodingException e) {
-                aalogger.log(Level.WARNING, adminStrings.getLocalString("adapter.param.decode",
-                        "Cannot decode parameter {0} = {1}"));
+                aalogger.log(Level.WARNING, KernelLoggerInfo.cantDecodeParameter,
+                        new Object[] { paramName, value });
                 continue;
             }
 
             try {               
                 value = new String(decoder.decodeBuffer(value));
             } catch (IOException e) {
-                aalogger.log(Level.WARNING, adminStrings.getLocalString("adapter.param.decode",
-                        "Cannot decode parameter {0} = {1}"));
+                aalogger.log(Level.WARNING, KernelLoggerInfo.cantDecodeParameter,
+                        new Object[] { paramName, value });
                 continue;
             }
             pmap.add(paramName, value);
@@ -627,8 +618,8 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             try {
                 value = URLDecoder.decode(value, "UTF-8");
             } catch (UnsupportedEncodingException e) {
-                aalogger.log(Level.WARNING, adminStrings.getLocalString("adapter.param.decode",
-                        "Cannot decode parameter {0} = {1}"));
+                aalogger.log(Level.WARNING, KernelLoggerInfo.cantDecodeParameter,
+                        new Object[] {paramName, value});
             }
 
             parameters.add(paramName, value);

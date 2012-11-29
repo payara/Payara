@@ -40,7 +40,6 @@
 package org.glassfish.admin.amx.impl.config;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.logging.LogDomains;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,13 +56,13 @@ import org.glassfish.admin.amx.impl.util.ImplUtil;
 import org.glassfish.admin.amx.impl.util.InjectedValues;
 import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
 import org.glassfish.admin.amx.impl.util.SingletonEnforcer;
+import org.glassfish.admin.amx.util.AMXLoggerInfo;
 import org.glassfish.admin.amx.util.ExceptionUtil;
 import org.glassfish.admin.amx.util.FeatureAvailability;
 import org.glassfish.admin.amx.util.MapUtil;
 import org.glassfish.admin.amx.util.TypeCast;
 import org.glassfish.admin.mbeanserver.PendingConfigBeanJob;
 import org.glassfish.admin.mbeanserver.PendingConfigBeans;
-import org.glassfish.external.amx.AMX;
 import org.glassfish.external.amx.AMXGlassfish;
 import org.glassfish.external.arc.Stability;
 import org.glassfish.external.arc.Taxonomy;
@@ -82,7 +81,7 @@ public final class AMXConfigLoader
     }
     private volatile AMXConfigLoaderThread mLoaderThread;
     private final Transactions mTransactions;
-    private final Logger mLogger = LogDomains.getLogger(AMXConfigLoader.class, LogDomains.AMX_LOGGER);
+    private final Logger mLogger = AMXLoggerInfo.getLogger();
     private final PendingConfigBeans mPendingConfigBeans;
     private final ConfigBeanRegistry mRegistry = ConfigBeanRegistry.getInstance();
     private final MBeanServer mServer;
@@ -268,7 +267,7 @@ public final class AMXConfigLoader
 
             // a job could come back null for a bogus ConfigBean
             if (job == null) {
-                mLogger.log(Level.INFO, "amx.ConfigBean.not.processed",cb.getProxyType().getName());
+                mLogger.log(Level.INFO, AMXLoggerInfo.configBeanNotProcessed, cb.getProxyType().getName());
                 processed = false;
             } else if (waitDone) {
                 try {
@@ -327,7 +326,7 @@ public final class AMXConfigLoader
     Enable registration of MBeans, queued until now.
      */
     public synchronized ObjectName start() {
-        mLogger.log(Level.INFO,"amx.In.AMXConfigLoader",mLoaderThread );
+        mLogger.log(Level.INFO,AMXLoggerInfo.inAMXConfigLoader, mLoaderThread );
         if (mLoaderThread == null) {
             FeatureAvailability.getInstance().waitForFeature(FeatureAvailability.AMX_CORE_READY_FEATURE, "AMXConfigLoader.start");
 
@@ -382,7 +381,7 @@ public final class AMXConfigLoader
                     //debug( "AMXConfigLoaderThread.registerOne(): " + objectName);
                 }
             } catch (final Throwable t) {
-                mLogger.log(Level.WARNING, "Can't register config MBean: type=" + getType(cb) + ", name=" + getKey(cb), t);
+                mLogger.log(Level.WARNING, AMXLoggerInfo.cantRegister, new Object[]{getType(cb), getKey(cb), t});
             } finally {
                 job.releaseLatch();
             }
@@ -394,7 +393,7 @@ public final class AMXConfigLoader
             try {
                 doRun();
             } catch (final Throwable t) {
-                mLogger.log(Level.SEVERE, "Unexpected thread death of AMXConfigLoaderThread", t);
+                mLogger.log(Level.SEVERE, AMXLoggerInfo.unexpectedDeath, t);
             }
         }
 
@@ -571,7 +570,7 @@ public final class AMXConfigLoader
         final ConfigBeanJMXSupport spt = ConfigBeanJMXSupportRegistry.getInstance(cb);
         if ((!spt.isSingleton()) && (name == null || name.length() == 0)) {
             name = "MISSING_NAME-" + sCounter.getAndIncrement();
-            mLogger.log(Level.WARNING, "amx.nonsingleton.configbean",new Object[] {cb.getProxyType().getName() ,name});
+            mLogger.log(Level.WARNING, AMXLoggerInfo.nonsingletonConfigbean, new Object[] {cb.getProxyType().getName() ,name});
         }
 
         //debug( "Type/name for " + cb.getProxyType().getName() + " = " + type + " = " + name );

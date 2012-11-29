@@ -40,14 +40,8 @@
 
 package com.sun.enterprise.v3.server;
 
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.api.admin.ServerEnvironment;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -63,6 +57,11 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.kernel.KernelLoggerInfo;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * This class is responsible for setting up Common Class Loader. As the
@@ -99,7 +98,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
     @Inject
     ServerEnvironment env;
 
-    final static Logger logger = LogDomains.getLogger(CommonClassLoaderServiceImpl.class, LogDomains.LOADER_LOGGER);
+    final static Logger logger = KernelLoggerInfo.getLogger();
     private ClassLoader APIClassLoader;
     private String commonClassPath = "";
 
@@ -131,8 +130,8 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
         } else {
             logger.logp(Level.WARNING, "CommonClassLoaderServiceImpl",
                     "createCommonClassLoader",
-                    "System property called {0} is null, is this intended?",
-                    new Object[]{SystemPropertyConstants.INSTALL_ROOT_PROPERTY});
+                    KernelLoggerInfo.systemPropertyNull,
+                    SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
         }
         File domainClassesDir = new File(domainDir, "lib/classes/"); // NOI18N
         if (domainClassesDir.exists()) {
@@ -156,8 +155,8 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
                 }
                 cp.append(f.getAbsolutePath());
             } catch (MalformedURLException e) {
-                logger.logp(Level.WARNING, "ClassLoaderManager",
-                        "postConstruct", "e = {0}", new Object[]{e});
+                logger.log(Level.WARNING, KernelLoggerInfo.invalidClassPathEntry, 
+                        new Object[] {f, e});
             }
         }
         commonClassPath = cp.toString();
@@ -210,7 +209,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
             }
         }
         if (!derbyLib.exists()) {
-            logger.info("Cannot find javadb client jar file, derby jdbc driver will not be available by default.");
+            logger.info(KernelLoggerInfo.cantFindDerby);
             return Collections.EMPTY_LIST;
         }
 
@@ -255,9 +254,8 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
                 }
                 catch (IOException e)
                 {
-                    logger.log(Level.WARNING, "CommonClassLoaderServiceImpl " +
-                            "is unable to process " + file.getAbsolutePath() +
-                            " because of exception.", e);
+                    logger.log(Level.WARNING, KernelLoggerInfo.exceptionProcessingJAR,
+                            new Object[] {file.getAbsolutePath(), e});
                 } finally {
                     try
                     {

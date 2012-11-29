@@ -40,38 +40,36 @@
 
 package org.glassfish.kernel.embedded;
 
-import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
-import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.embedded.*;
-import org.glassfish.internal.embedded.Server;
-import org.glassfish.api.deployment.DeployCommandParameters;
-import org.glassfish.api.deployment.UndeployCommandParameters;
-import org.glassfish.api.deployment.archive.*;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.glassfish.internal.deployment.SnifferManager;
-import org.glassfish.internal.data.*;
-import org.glassfish.deployment.common.*;
-
+import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import com.sun.enterprise.util.io.FileUtils;
+import com.sun.enterprise.v3.common.PlainTextActionReporter;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.beans.PropertyVetoException;
-
-import com.sun.enterprise.v3.common.PlainTextActionReporter;
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.deploy.shared.ArchiveFactory;
-import com.sun.logging.LogDomains;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.UndeployCommandParameters;
+import org.glassfish.api.deployment.archive.*;
+import org.glassfish.deployment.common.*;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.data.*;
+import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.deployment.SnifferManager;
+import org.glassfish.internal.embedded.*;
+import org.glassfish.internal.embedded.Server;
+import org.glassfish.kernel.KernelLoggerInfo;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * @author Jerome Dochez
@@ -103,20 +101,21 @@ public class EmbeddedDeployerImpl implements EmbeddedDeployer {
     @Inject
     DasConfig config;
 
-    private static final Logger l = LogDomains.getLogger(EmbeddedDeployerImpl.class, LogDomains.DPL_LOGGER);
-
     Map<String, EmbeddedDeployedInfo> deployedApps = new HashMap<String, EmbeddedDeployedInfo>();
 
-    final static Logger logger = LogDomains.getLogger(EmbeddedDeployerImpl.class, LogDomains.CORE_LOGGER);
+    final static Logger logger = KernelLoggerInfo.getLogger();
 
+    @Override
     public File getApplicationsDir() {
         return env.getApplicationRepositoryPath();
     }
 
+    @Override
     public File getAutoDeployDir() {
         return new File(env.getDomainRoot(), config.getAutodeployDir());
     }
 
+    @Override
     public void setAutoDeploy(final boolean flag) {
 
         String value = config.getAutodeployEnabled();
@@ -125,28 +124,31 @@ public class EmbeddedDeployerImpl implements EmbeddedDeployer {
         if (active!=flag) {
             try {
                 ConfigSupport.apply(new SingleConfigCode<DasConfig>() {
+                    @Override
                     public Object run(DasConfig dasConfig) throws PropertyVetoException, TransactionFailure {
                         dasConfig.setAutodeployEnabled(Boolean.valueOf(flag).toString());
                         return null;
                     }
                 }, config);
             } catch(TransactionFailure e) {
-                logger.log(Level.SEVERE, "Exception while enabling or disabling the autodeployment of applications", e);
+                logger.log(Level.SEVERE, KernelLoggerInfo.exceptionAutodeployment, e);
             }
         }
     }
 
+    @Override
     public String deploy(File archive, DeployCommandParameters params) {
         try {
             ReadableArchive r = factory.openArchive(archive);
             return deploy(r, params);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, e.getMessage());
+            logger.log(Level.SEVERE, KernelLoggerInfo.deployException, e);
         }
 
         return null;
     }
 
+    @Override
     public String deploy(ReadableArchive archive, DeployCommandParameters params) {
 
         // ensure server is started. start it if not started.
@@ -192,7 +194,7 @@ public class EmbeddedDeployerImpl implements EmbeddedDeployer {
         try {
             appInfo = deployment.deploy(context);
         } catch(Exception e) {
-            logger.log(Level.SEVERE, e.getMessage(), e);
+            logger.log(Level.SEVERE, KernelLoggerInfo.deployException, e);
         }
         if (appInfo!=null) {
             boolean isDirectory = new File(archive.getURI().getPath()).isDirectory();
@@ -204,6 +206,7 @@ public class EmbeddedDeployerImpl implements EmbeddedDeployer {
         return null;
     }
 
+    @Override
     public void undeploy(String name, UndeployCommandParameters params) {
 
         ActionReport report = habitat.getService(ActionReport.class, "plain");
@@ -232,7 +235,7 @@ public class EmbeddedDeployerImpl implements EmbeddedDeployer {
         }
         params.origin = UndeployCommandParameters.Origin.undeploy;
         
-        ExtendedDeploymentContext deploymentContext = null;
+        ExtendedDeploymentContext deploymentContext;
         try {
             deploymentContext = deployment.getBuilder(logger, params, report).source(source).build();
 
@@ -255,8 +258,9 @@ public class EmbeddedDeployerImpl implements EmbeddedDeployer {
 
 
         if (report.getActionExitCode().equals(ActionReport.ExitCode.SUCCESS)) {
-            if (params.keepreposdir == null)
+            if (params.keepreposdir == null) {
                 params.keepreposdir = false;
+            }
             if ( !params.keepreposdir && info != null && !info.isDirectory && source.exists()) {
                 FileUtils.whack(new File(source.getURI()));
             }
@@ -267,6 +271,7 @@ public class EmbeddedDeployerImpl implements EmbeddedDeployer {
         
     }
 
+    @Override
     public void undeployAll() {
         for (String appName : deployedApps.keySet()) {
             undeploy(appName, null);

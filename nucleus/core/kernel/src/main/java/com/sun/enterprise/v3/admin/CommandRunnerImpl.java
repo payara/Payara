@@ -40,37 +40,46 @@
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.util.*;
-import java.lang.reflect.Method;
-import java.util.EnumSet;
-import java.util.Map;
-import javax.security.auth.Subject;
-import org.glassfish.api.admin.CommandWrapperImpl;
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.module.common_impl.LogHelper;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.universal.collections.ManifestUtils;
 
+import com.sun.enterprise.universal.glassfish.AdminCommandResponse;
+import com.sun.enterprise.util.AnnotationUtil;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.v3.common.XMLContentActionReporter;
 import java.io.*;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.concurrent.locks.Lock;
+import javax.inject.Inject;
+import javax.inject.Named;
 
+import javax.inject.Scope;
+import javax.inject.Singleton;
+import javax.security.auth.Subject;
+import javax.validation.*;
 import org.glassfish.admin.payload.PayloadFilesManager;
-
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.CommandWrapper;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
+import org.glassfish.api.admin.Payload;
+import org.glassfish.api.admin.ProcessEnvironment;
+import org.glassfish.api.admin.SupplementalCommandExecutor.SupplementalCommand;
 import org.glassfish.common.util.admin.CommandModelImpl;
+import org.glassfish.common.util.admin.ManPageFinder;
 import org.glassfish.common.util.admin.MapInjectionResolver;
 import org.glassfish.common.util.admin.UnacceptableValueException;
-import org.glassfish.common.util.admin.ManPageFinder;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.GenericCrudCommand;
 import org.glassfish.config.support.TargetType;
@@ -78,29 +87,9 @@ import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.*;
 import org.glassfish.internal.deployment.DeploymentTargetResolver;
-
+import org.glassfish.kernel.KernelLoggerInfo;
 import org.jvnet.hk2.annotations.Service;
-
 import org.jvnet.hk2.component.*;
-
-import com.sun.enterprise.universal.collections.ManifestUtils;
-import com.sun.enterprise.universal.glassfish.AdminCommandResponse;
-import com.sun.enterprise.util.AnnotationUtil;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.v3.common.XMLContentActionReporter;
-import com.sun.logging.LogDomains;
-import java.lang.annotation.Annotation;
-import java.text.MessageFormat;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Scope;
-import javax.inject.Singleton;
-import javax.validation.*;
-import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
-import org.glassfish.api.admin.Payload;
-import org.glassfish.api.admin.SupplementalCommandExecutor.SupplementalCommand;
 import org.jvnet.hk2.config.InjectionManager;
 import org.jvnet.hk2.config.InjectionResolver;
 import org.jvnet.hk2.config.MessageInterpolatorImpl;
@@ -118,8 +107,7 @@ import org.jvnet.hk2.config.UnsatisfiedDependencyException;
 @Service
 public class CommandRunnerImpl implements CommandRunner {
 
-    private static final Logger logger =
-            LogDomains.getLogger(CommandRunnerImpl.class, LogDomains.ADMIN_LOGGER);
+    private static final Logger logger = KernelLoggerInfo.getLogger();
     // This is used only for backword compatibility with old behavior
     private static final String OLD_PASSWORD_PARAM_PREFIX = "AS_ADMIN_";
 
@@ -193,7 +181,8 @@ public class CommandRunnerImpl implements CommandRunner {
             String commandServiceName = (scope != null) ? scope + commandName : commandName;
             command = habitat.getService(AdminCommand.class, commandServiceName);
         } catch (MultiException e) {
-            logger.log(Level.SEVERE, "Cannot instantiate " + commandName, e);
+            logger.log(Level.SEVERE, KernelLoggerInfo.cantInstantiateCommand, 
+                    new Object[] {commandName, e});
             return null;
         }
         return command == null ? null : getModel(command);
@@ -268,7 +257,6 @@ public class CommandRunnerImpl implements CommandRunner {
         try {
             command = habitat.getService(AdminCommand.class, commandServiceName);
         } catch (MultiException e) {
-            e.printStackTrace();
             report.setFailureCause(e);
         }
         if (command == null) {
@@ -293,7 +281,7 @@ public class CommandRunnerImpl implements CommandRunner {
             }
             report.setMessage(msg);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            LogHelper.getDefaultLogger().info(msg);
+            KernelLoggerInfo.getLogger().fine(msg);
             return null;
         }
 
@@ -304,7 +292,7 @@ public class CommandRunnerImpl implements CommandRunner {
                     + "system,\nbut it has no @Scoped annotation", commandName);
             report.setMessage(msg);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            LogHelper.getDefaultLogger().info(msg);
+            KernelLoggerInfo.getLogger().fine(msg);
             command = null;
         } else if (Singleton.class.equals(myScope)) {
             // check that there are no parameters for this command
@@ -317,7 +305,7 @@ public class CommandRunnerImpl implements CommandRunner {
                         + "parameters", commandName);
                 report.setMessage(msg);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                LogHelper.getDefaultLogger().info(msg);
+                KernelLoggerInfo.getLogger().fine(msg);
                 command = null;
             }
         }
@@ -409,7 +397,6 @@ public class CommandRunnerImpl implements CommandRunner {
                         "Cannot find {1} in {0} command model, file a bug",
                         model.getCommandName(), e.getUnsatisfiedName());
             }
-            logger.severe(errorMsg);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(errorMsg);
             report.setFailureCause(e);
@@ -441,7 +428,7 @@ public class CommandRunnerImpl implements CommandRunner {
                 exception = e;
             }
 
-            logger.log(Level.SEVERE, "invocation.exception", exception);
+            logger.log(Level.SEVERE, KernelLoggerInfo.invocationException, exception);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(exception.getMessage());
             report.setFailureCause(exception);
@@ -564,9 +551,7 @@ public class CommandRunnerImpl implements CommandRunner {
         try {
             wrappedCommand.execute(progressHelper.wrapContext4MainCommand(context));
         } catch (Throwable e) {
-            logger.log(Level.SEVERE,
-                    adminStrings.getLocalString("adapter.exception",
-                    "Exception in command execution : ", e), e);
+            logger.log(Level.SEVERE, KernelLoggerInfo.invocationException, e);
             report.setMessage(e.toString());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
@@ -1115,8 +1100,8 @@ public class CommandRunnerImpl implements CommandRunner {
         ActionReport report = inv.report();
         ParameterMap parameters;
         final AdminCommandContext context = new AdminCommandContextImpl(
-                LogDomains.getLogger(command.getClass(), LogDomains.ADMIN_LOGGER),
-                report, inv.inboundPayload(), inv.outboundPayload(), commandInstance.getEventBroker());
+                logger, report, inv.inboundPayload(), inv.outboundPayload(), 
+                commandInstance.getEventBroker());
         context.setSubject(subject);
         List<RuntimeType> runtimeTypes = new ArrayList<RuntimeType>();
         FailurePolicy fp = null;
@@ -1199,7 +1184,7 @@ public class CommandRunnerImpl implements CommandRunner {
                  
                     }
                     
-                    logger.severe(exception.getMessage());
+                    logger.log(Level.SEVERE, KernelLoggerInfo.invocationException, exception);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     report.setMessage(exception.getMessage());
                     report.setFailureCause(exception);
@@ -1471,7 +1456,6 @@ public class CommandRunnerImpl implements CommandRunner {
                     String logMsg = "Command: " + model.getCommandName()
                             + " failed to acquire a command lock.  REASON: time out "
                             + "(current lock acquired on " + lockTime + ")";
-                    logger.warning(logMsg);
                     String msg = adminStrings.getLocalString("lock.timeout",
                             "Command timed out.  Unable to acquire a lock to access "
                             + "the domain.  Another command acquired exclusive access "
@@ -1493,7 +1477,6 @@ public class CommandRunnerImpl implements CommandRunner {
                         logMsg += " Reason: " + lockMsg;
                     }
 
-                    logger.warning(logMsg);
                     String msg = adminStrings.getLocalString("lock.notacquired",
                             "The command was blocked.  The domain was suspended by "
                             + "a user on {0}.", lockTime);
@@ -1514,7 +1497,7 @@ public class CommandRunnerImpl implements CommandRunner {
                 }
 
             } catch (Exception ex) {
-                logger.log(Level.SEVERE, "", ex);
+                logger.log(Level.SEVERE, KernelLoggerInfo.invocationException, ex);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(ex.getMessage());
                 report.setFailureCause(ex);
@@ -1554,9 +1537,7 @@ public class CommandRunnerImpl implements CommandRunner {
                         executor = habitat.getService(ClusterExecutor.class, "GlassFishClusterExecutor");
                     }
                 } catch (UnsatisfiedDependencyException usdepex) {
-                    String err = adminStrings.getLocalString("commandrunner.clusterexecutor.notinitialized",
-                            "Unable to get an instance of ClusterExecutor; Cannot dynamically reconfigure instances");
-                    logger.warning(err);
+                    logger.log(Level.WARNING, KernelLoggerInfo.cantGetClusterExecutor, usdepex);
                 }
                 if (executor != null) {
                     report.setActionExitCode(executor.execute(model.getCommandName(), command, context, parameters));
@@ -1743,7 +1724,7 @@ public class CommandRunnerImpl implements CommandRunner {
         
         @Override
         public void execute(AdminCommand command) {
-            AdminCommand command1 = getCommand(scope(),name(),report(),logger);
+            AdminCommand command1 = getCommand(scope(), name(), report(), logger);
             if(command1 != null && !isManagedJob) {
                 isManagedJob = AnnotationUtil.presentTransitive(ManagedJob.class, command1.getClass());
             }

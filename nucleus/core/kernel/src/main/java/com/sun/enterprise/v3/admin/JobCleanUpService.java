@@ -39,24 +39,22 @@
  */
 package com.sun.enterprise.v3.admin;
 
-import com.sun.enterprise.config.serverbeans.Domain ;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ManagedJobConfig;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.admin.Job;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.glassfish.internal.api.PostStartupRunLevel;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.*;
-
-import javax.inject.Inject;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.Job;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.kernel.KernelLoggerInfo;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.*;
 
 /**
  *
@@ -75,7 +73,7 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
 
     private ManagedJobConfig managedJobConfig;
 
-    private final static Logger logger = LogDomains.getLogger(JobCleanUpService.class, LogDomains.ADMIN_LOGGER);
+    private final static Logger logger = KernelLoggerInfo.getLogger();
 
     boolean enableJobManager = false;
 

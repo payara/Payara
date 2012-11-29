@@ -40,6 +40,13 @@
 
 package com.sun.enterprise.v3.services.impl;
 
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.serverbeans.SystemProperty;
+import com.sun.enterprise.config.serverbeans.VirtualServer;
+import com.sun.enterprise.util.Result;
+import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.v3.services.impl.monitor.GrizzlyMonitoring;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -56,10 +63,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import org.glassfish.api.FutureProvider;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -79,20 +84,12 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.kernel.KernelLoggerInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
 import org.jvnet.hk2.config.Transactions;
-
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.HttpService;
-import com.sun.enterprise.config.serverbeans.SystemProperty;
-import com.sun.enterprise.config.serverbeans.VirtualServer;
-import com.sun.enterprise.util.Result;
-import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.v3.services.impl.monitor.GrizzlyMonitoring;
-import com.sun.logging.LogDomains;
 
 /**
  * The Network Service is responsible for starting grizzly and register the
@@ -115,7 +112,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
     @Inject
     Transactions transactions;
 
-    final Logger logger = LogDomains.getLogger(GrizzlyService.class, LogDomains.CORE_LOGGER);
+    final Logger logger = KernelLoggerInfo.getLogger();
 
     private final Collection<NetworkProxy> proxies = new LinkedBlockingQueue<NetworkProxy>();
 
@@ -189,8 +186,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
             try {
                 proxy.stop();
             } catch (IOException e) {
-                logger.log(Level.WARNING,
-                        "GrizzlyService stop-proxy problem", e);
+                logger.log(Level.WARNING, KernelLoggerInfo.grizzlyStopProxy, e);
             }
             
             proxy.destroy();
@@ -213,17 +209,13 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
         try {
             listenerPort = Integer.parseInt(listener.getPort());
         } catch (NumberFormatException e) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, e.toString());
-            }
+            logger.log(Level.FINE, e.toString());
         }
 
         try {
             address = InetAddress.getByName(listener.getAddress());
         } catch (UnknownHostException uhe) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, uhe.toString());
-            }
+            logger.log(Level.FINE, uhe.toString());
         }
 
         if (listenerPort != -1) {
@@ -402,13 +394,13 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
                 registerContainerAdapters();
             }
         } catch(RuntimeException e) { // So far postConstruct can not throw any other exception type
-            logger.log(Level.SEVERE, "Unable to start v3. Closing all ports",e);
+            logger.log(Level.SEVERE, KernelLoggerInfo.grizzlyCantStart, e);
             for(NetworkProxy proxy : proxies) {
                 try {
                     proxy.stop();
                 } catch(Exception proxyStopException) {
-                    logger.log(Level.SEVERE, "Exception closing port: " 
-                            + proxy.getPort() , proxyStopException);
+                    logger.log(Level.SEVERE, KernelLoggerInfo.grizzlyCloseException,
+                            new Object[] {proxy.getPort(), proxyStopException});
                 }
             }
             
@@ -433,7 +425,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
         if (!Boolean.valueOf(listener.getEnabled())) {
             addChangeListener(listener); // in case the listener will be enabled
 
-            logger.log(Level.INFO, "Network listener {0} on port {1} disabled per domain.xml",
+            logger.log(Level.INFO, KernelLoggerInfo.grizzlyPortDisabled,
                     new Object[]{listener.getName(), listener.getPort()});
             return null;
         }
@@ -516,7 +508,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
                 }
             } catch(EndpointRegistrationException e) {
                 logger.log(Level.WARNING, 
-                        "GrizzlyService endpoint registration problem", e);
+                        KernelLoggerInfo.grizzlyEndpointRegistration, e);
             }
         }
     }
@@ -531,8 +523,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
             try {
                 proxy.stop();
             } catch (IOException e) {
-                logger.log(Level.WARNING,
-                        "GrizzlyService stop-proxy problem", e);
+                logger.log(Level.WARNING, KernelLoggerInfo.grizzlyStopProxy, e);
             }
         }
         unregisterMonitoringStatsProviders();
@@ -686,7 +677,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
                 config.getHttpService().getVirtualServerByName(vs);
             if (virtualServer == null) {
                 // non-existent virtual server
-                logger.log(Level.WARNING, "Skip registering endpoint with non existent virtual server: {0}", vs);
+                logger.log(Level.WARNING, KernelLoggerInfo.grizzlyNonExistentVS, vs);
                 continue;
             }
             String vsNetworkListeners = virtualServer.getNetworkListeners();

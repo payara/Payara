@@ -40,19 +40,18 @@
 
 package com.sun.enterprise.v3.server;
 
-import javax.naming.InitialContext;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import com.sun.logging.LogDomains;
-import org.glassfish.internal.api.ServerContext;
 import com.sun.appserv.server.LifecycleEventContext;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.naming.InitialContext;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.kernel.KernelLoggerInfo;
 
 public class LifecycleEventContextImpl implements LifecycleEventContext {
     
     private ServerContext ctx;
 
-    private static final Logger logger = LogDomains.getLogger(
-        LifecycleEventContextImpl.class, LogDomains.CORE_LOGGER);
+    private static final Logger logger = KernelLoggerInfo.getLogger();
     
     /**
      * public constructor

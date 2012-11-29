@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,14 +39,6 @@
  */
 package org.glassfish.admin.amx.impl.mbean;
 
-import com.sun.logging.LogDomains;
-import org.glassfish.admin.amx.base.DomainRoot;
-import org.glassfish.admin.amx.core.AMXValidator;
-import org.glassfish.admin.amx.impl.util.ImplUtil;
-import org.glassfish.admin.amx.impl.util.InjectedValues;
-import org.glassfish.admin.amx.util.jmx.JMXUtil;
-
-import javax.management.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +48,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.management.*;
+import org.glassfish.admin.amx.base.DomainRoot;
+import org.glassfish.admin.amx.core.AMXValidator;
+import org.glassfish.admin.amx.impl.util.ImplUtil;
+import org.glassfish.admin.amx.util.AMXLoggerInfo;
+import org.glassfish.admin.amx.util.jmx.JMXUtil;
 
 /**
 Validates AMX MBeans as they are registered.  Problems are emitted as WARNING to the server log.
@@ -72,7 +70,7 @@ public final class ComplianceMonitor implements NotificationListener {
     /** offloads the validation so as not to block during Notifications */
     private final ValidatorThread mValidatorThread;
 
-    private final Logger mLogger = LogDomains.getLogger(ComplianceMonitor.class, LogDomains.AMX_LOGGER);
+    private final Logger mLogger = AMXLoggerInfo.getLogger();
 
     private ComplianceMonitor(final DomainRoot domainRoot) {
         mDomainRoot = domainRoot;
@@ -86,7 +84,7 @@ public final class ComplianceMonitor implements NotificationListener {
 
         mValidatorThread = new ValidatorThread(mServer, mValidationLevel, mUnregisterNonCompliant, mLogInaccessibleAttributes);
 
-        mLogger.log(Level.INFO,"amx.AMXComplianceMonitor.level",new Object[] {mValidationLevel, mUnregisterNonCompliant,
+        mLogger.log(Level.INFO, AMXLoggerInfo.aMXComplianceMonitorLevel, new Object[] {mValidationLevel, mUnregisterNonCompliant,
                 mLogInaccessibleAttributes});
     }
 
@@ -169,7 +167,7 @@ public final class ComplianceMonitor implements NotificationListener {
         private volatile String mValidationLevel;
         private volatile boolean mLogInaccessibleAttributes;
 
-        private final Logger mLogger = LogDomains.getLogger(ValidatorThread.class, LogDomains.AMX_LOGGER);
+        private final Logger mLogger = AMXLoggerInfo.getLogger();
 
         ValidatorThread(
                 final MBeanServer server,
@@ -204,7 +202,7 @@ public final class ComplianceMonitor implements NotificationListener {
             try {
                 doRun();
             } catch (final Throwable t) {
-                mLogger.log(Level.SEVERE, "amx.AMXComplianceMonitor.threadquit", t);
+                mLogger.log(Level.SEVERE, AMXLoggerInfo.aMXComplianceMonitorThreadquit, t);
             }
         }
 
@@ -230,11 +228,11 @@ public final class ComplianceMonitor implements NotificationListener {
                         mFailures.putAll(result.failures());
 
                         mComplianceFailures.addAndGet(result.numFailures());
-                        mLogger.log(Level.INFO,"amx.validatingMbean",result.toString());
+                        mLogger.log(Level.INFO, AMXLoggerInfo.validatingMbean, result.toString());
                     }
                 } catch (final Throwable t) {
-                    ImplUtil.getLogger().log(Level.WARNING, "amx.exception.validatingMbean", next);
-                    ImplUtil.getLogger().log(Level.WARNING, null, t);
+                    AMXLoggerInfo.getLogger().log(Level.WARNING, AMXLoggerInfo.exceptionValidatingMbean, next);
+                    AMXLoggerInfo.getLogger().log(Level.WARNING, null, t);
                 }
             }
         }

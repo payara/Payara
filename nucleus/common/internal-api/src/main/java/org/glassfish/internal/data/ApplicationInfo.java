@@ -40,27 +40,24 @@
 
 package org.glassfish.internal.data;
 
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.api.deployment.*;
-import org.glassfish.api.container.Sniffer;
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Engine;
+import com.sun.enterprise.config.serverbeans.Module;
+import java.beans.PropertyVetoException;
+import java.util.*;
+import java.util.logging.Logger;
 import org.glassfish.api.container.Container;
+import org.glassfish.api.container.Sniffer;
+import org.glassfish.api.deployment.*;
+import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.event.*;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventListener.Event;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.config.TransactionFailure;
-import org.glassfish.hk2.api.PreDestroy;
-
-import java.util.*;
-import java.util.logging.Logger;
-import java.beans.PropertyVetoException;
-
-import com.sun.logging.LogDomains;
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.Module;
-import com.sun.enterprise.config.serverbeans.Engine;
 
 /**
  * Information about a running application. Applications are composed of modules.

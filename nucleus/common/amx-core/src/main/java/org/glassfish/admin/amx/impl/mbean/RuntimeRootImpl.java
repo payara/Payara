@@ -80,6 +80,7 @@ import com.sun.enterprise.v3.admin.commands.JVMInformation;
 import java.util.Locale;
 import javax.management.MBeanServer;
 import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
+import org.glassfish.admin.amx.util.AMXLoggerInfo;
 import org.glassfish.admin.amx.util.StringUtil;
 
 
@@ -135,10 +136,10 @@ public final class RuntimeRootImpl extends AMXImplBase
         }
         else
         {
-            ImplUtil.getLogger().warning("Cannot find primordial com.sun.enterprise.osgi-adapter");
+            AMXLoggerInfo.getLogger().warning(AMXLoggerInfo.cantFindOSGIAdapter);
         }
 
-        ImplUtil.getLogger().warning("Stopping server forcibly");
+        AMXLoggerInfo.getLogger().warning(AMXLoggerInfo.stoppingServerForcibly);
         System.exit(0);
     }
 
@@ -146,7 +147,7 @@ public final class RuntimeRootImpl extends AMXImplBase
     {
         final ModulesRegistry registry = InjectedValues.getInstance().getModulesRegistry();
 
-        final AdminCommandContext ctx = new AdminCommandContextImpl(ImplUtil.getLogger(), new PlainTextActionReporter());
+        final AdminCommandContext ctx = new AdminCommandContextImpl(AMXLoggerInfo.getLogger(), new PlainTextActionReporter());
         final AdminCommand cmd = new RestartDomainCommand(registry);
         cmd.execute(ctx);
     }
@@ -229,7 +230,7 @@ public final class RuntimeRootImpl extends AMXImplBase
         }
         catch (final Exception ex)
         {
-            ImplUtil.getLogger().log( Level.INFO, "Can't get cipher suites", ex);
+            AMXLoggerInfo.getLogger().log( Level.INFO, AMXLoggerInfo.cantGetCipherSuites, ex);
             return new String[0];
         }
     }

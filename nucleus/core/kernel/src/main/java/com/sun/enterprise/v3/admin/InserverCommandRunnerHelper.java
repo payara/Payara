@@ -41,18 +41,16 @@
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.server.ServerEnvironmentImpl;
-import javax.inject.Inject;
-
+import org.glassfish.kernel.KernelLoggerInfo;
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
 
 /**
  *
@@ -70,7 +68,7 @@ import javax.inject.Singleton;
 @Singleton
 public class InserverCommandRunnerHelper {
 
-    public final static Logger logger = LogDomains.getLogger(ServerEnvironmentImpl.class, LogDomains.ADMIN_LOGGER);
+    public final static Logger logger = KernelLoggerInfo.getLogger();
     public final static LocalStringManagerImpl adminStrings = new LocalStringManagerImpl(InserverCommandRunnerHelper.class);
 
     @Inject

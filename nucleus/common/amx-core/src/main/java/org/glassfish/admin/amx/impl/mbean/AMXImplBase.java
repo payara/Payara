@@ -39,7 +39,15 @@
  */
 package org.glassfish.admin.amx.impl.mbean;
 
-import com.sun.logging.LogDomains;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.management.*;
 import org.glassfish.admin.amx.base.DomainRoot;
 import org.glassfish.admin.amx.base.MBeanTrackerMBean;
 import org.glassfish.admin.amx.base.Utility;
@@ -57,16 +65,6 @@ import org.glassfish.admin.amx.util.jmx.JMXUtil;
 import org.glassfish.admin.amx.util.jmx.stringifier.AttributeChangeNotificationStringifier;
 import org.glassfish.admin.amx.util.stringifier.SmartStringifier;
 import org.glassfish.external.amx.AMX;
-
-import javax.management.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
 Base class from which all AMX MBeans should derive (but not "must").
@@ -106,9 +104,7 @@ public class AMXImplBase extends MBeanImplBase
     /** Whether AttributeChangeNotifications aree mitted. */
     private final boolean mEmitAttributeChangeNotifications = true;
 
-    private static final Logger logger =
-            LogDomains.getLogger(AMXImplBase.class, LogDomains.AMX_LOGGER);
-
+    private static final Logger logger = AMXLoggerInfo.getLogger();
 
     public AMXImplBase(
             final ObjectName parentObjectName,
@@ -329,7 +325,7 @@ public class AMXImplBase extends MBeanImplBase
 
 
     public Logger getLogger() {
-        return ImplUtil.getLogger();
+        return AMXLoggerInfo.getLogger();
     }
 
 
@@ -652,7 +648,7 @@ public class AMXImplBase extends MBeanImplBase
                     builder.buildAttributeChange(msg, name, attrType, when, oldValue, newValue);
 
             //System.out.println("AttributeChangeNotification: " + AttributeChangeNotificationStringifier.DEFAULT.stringify(n));
-            logger.log(Level.INFO,"amx.AttributeChangeNotification", AttributeChangeNotificationStringifier.DEFAULT.stringify(n));
+            logger.log(Level.INFO, AMXLoggerInfo.attributeChangeNotification, AttributeChangeNotificationStringifier.DEFAULT.stringify(n));
             sendNotification(n);
         }
     }
@@ -947,7 +943,7 @@ public class AMXImplBase extends MBeanImplBase
                 getMBeanServer().unregisterMBean(child);
             } catch (final Throwable t) {
                 // note it, and move on, we must unregister remaining ones
-                logger.log(Level.INFO, "amx.unregisterMbean", new Object[] { child, t});
+                logger.log(Level.INFO, AMXLoggerInfo.unregisterMbean, new Object[] { child, t});
             }
         }
     }

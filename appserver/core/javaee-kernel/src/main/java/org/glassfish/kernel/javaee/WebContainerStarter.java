@@ -40,6 +40,13 @@
 
 package org.glassfish.kernel.javaee;
 
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.serverbeans.VirtualServer;
+import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.v3.server.ContainerStarter;
 import java.beans.PropertyChangeEvent;
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -47,11 +54,9 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
-
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.Sniffer;
@@ -62,6 +67,9 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.data.ContainerRegistry;
 import org.glassfish.internal.data.EngineInfo;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.Changed;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -71,15 +79,6 @@ import org.jvnet.hk2.config.NotProcessed;
 import org.jvnet.hk2.config.ObservableBean;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import org.jvnet.hk2.config.types.Property;
-
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.HttpService;
-import com.sun.enterprise.config.serverbeans.VirtualServer;
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.v3.server.ContainerStarter;
-import com.sun.logging.LogDomains;
 
 /**
  * Startup service for the web container.
@@ -95,10 +94,43 @@ import com.sun.logging.LogDomains;
 @RunLevel(StartupRunLevel.VAL)
 public class WebContainerStarter
         implements PostConstruct, ConfigListener {
-
-    private static final Logger logger = LogDomains.getLogger(
-        WebContainerStarter.class, LogDomains.CORE_LOGGER);
+   
+    private static final String LOGMSG_PREFIX = "AS-CORE-JAVAEE";
+    
+    @LogMessagesResourceBundle
+    private static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.kernel.javaee.LogMessages";
+    
+    @LoggerInfo(subsystem = "AS-CORE", description = "Java EE Core Kernel", publish = true)
+    private static final String ASCORE_LOGGER = "javax.enterprise.system.core.ee";
+    private static final Logger logger = Logger.getLogger(
+                ASCORE_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
     private static final ResourceBundle rb = logger.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Web Container not installed",
+            cause = "The web container does not install properly.",
+            action = "Please check the web container libraries are installed properly.",
+            level = "INFO")
+    public static final String mWebContainerNotInstalled = LOGMSG_PREFIX + "-0001";
+
+    @LogMessageInfo(
+            message = "Done with starting {0} container.",
+            level = "INFO")
+    public static final String mStartContainerDone = LOGMSG_PREFIX + "-0002";
+    
+    @LogMessageInfo(
+            message = "Unable to start container (no exception provided)",
+            cause = "The web container does not start properly.",
+            action = "Please check the web container libraries are installed properly.",
+            level = "SEVERE")
+    public static final String mUnableStartContainerNoException = LOGMSG_PREFIX + "-0003";
+
+    @LogMessageInfo(
+            message = "Unable to start container {0}",
+            cause = "The web container does not start properly. Most probably, there is a class loading issue.",
+            action = "Please resolve issues mentioned in the stack trace.",
+            level = "SEVERE")
+    public static final String mUnableStartContainer = LOGMSG_PREFIX + "-0004";
 
     private static final String AUTH_PASSTHROUGH_ENABLED_PROP =
         "authPassthroughEnabled";
@@ -190,7 +222,7 @@ public class WebContainerStarter
         Sniffer webSniffer = webSnifferProvider.get();
         if (webSniffer==null) {
             if (logger.isLoggable(Level.INFO)) {
-                logger.info("core.web_container_not_installed");
+                logger.info(mWebContainerNotInstalled);
             }
             return;
         }
@@ -208,17 +240,17 @@ public class WebContainerStarter
                     for (EngineInfo info : containersInfo) {
                         info.getContainer();
                         if (logger.isLoggable(Level.INFO)) {
-                            logger.log(Level.INFO, "core.start_container_done", 
+                            logger.log(Level.INFO, mStartContainerDone, 
                                 webSniffer.getModuleType());
                         }
                     }
                 } else {
-                    logger.severe("core.unable_start_container_no_exception");
+                    logger.severe(mUnableStartContainerNoException);
                 }
             } catch (Exception e) {
                 String msg;
                 if ( rb != null ) {
-                    msg = MessageFormat.format( rb.getString("core.unable_start_container"), webSniffer.getContainersNames()[0]);
+                    msg = MessageFormat.format( rb.getString(mUnableStartContainer), webSniffer.getContainersNames()[0]);
                 } else {
                     msg = "Unable to start Web Container: " + webSniffer.getContainersNames()[0];
                 }

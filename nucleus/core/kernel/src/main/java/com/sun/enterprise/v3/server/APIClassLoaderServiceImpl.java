@@ -40,6 +40,11 @@
 
 package com.sun.enterprise.v3.server;
 
+import com.sun.enterprise.module.Module;
+import com.sun.enterprise.module.ModuleLifecycleListener;
+import com.sun.enterprise.module.ModuleState;
+import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.module.common_impl.CompositeEnumeration;
 import java.io.IOException;
 import java.net.URL;
 import java.security.AccessController;
@@ -53,18 +58,10 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.inject.Inject;
-
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.kernel.KernelLoggerInfo;
 import org.jvnet.hk2.annotations.Service;
-
-import com.sun.enterprise.module.Module;
-import com.sun.enterprise.module.ModuleLifecycleListener;
-import com.sun.enterprise.module.ModuleState;
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.common_impl.CompositeEnumeration;
-import com.sun.logging.LogDomains;
 
 /**
  * This class is responsible for creating a ClassLoader that can
@@ -124,7 +121,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
             throw new NoSuchElementException();
         }
     };
-    final static Logger logger = LogDomains.getLogger(APIClassLoaderServiceImpl.class, LogDomains.LOADER_LOGGER);
+    final static Logger logger = KernelLoggerInfo.getLogger();
     private Module APIModule;
 
     public void postConstruct() {

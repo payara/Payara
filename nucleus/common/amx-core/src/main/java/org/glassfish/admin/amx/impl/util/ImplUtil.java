@@ -39,23 +39,16 @@
  */
 package org.glassfish.admin.amx.impl.util;
 
-import com.sun.logging.LogDomains;
-import org.glassfish.admin.amx.core.AMXProxy;
-import org.glassfish.admin.amx.core.proxy.ProxyFactory;
-
+import java.util.Set;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-import java.util.Set;
-import java.util.logging.Logger;
+import org.glassfish.admin.amx.core.AMXProxy;
+import org.glassfish.admin.amx.core.proxy.ProxyFactory;
 
 public final class ImplUtil {
 
     private static void debug(final String s) {
         System.out.println(s);
-    }
-
-    public static Logger getLogger() {
-        return LogDomains.getLogger(ImplUtil.class, LogDomains.AMX_LOGGER);
     }
 
     /**

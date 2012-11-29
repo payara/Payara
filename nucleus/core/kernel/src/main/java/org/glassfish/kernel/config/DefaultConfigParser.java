@@ -41,14 +41,20 @@
 package org.glassfish.kernel.config;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.logging.LogDomains;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.xml.stream.XMLStreamReader;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigParser;
 import org.glassfish.api.admin.config.Container;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.hk2.api.ServiceLocator;
-
-import javax.inject.Inject;
+import org.glassfish.kernel.KernelLoggerInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -56,14 +62,6 @@ import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-
-import javax.inject.Named;
-import javax.xml.stream.XMLStreamReader;
-import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Jerome Dochez
@@ -75,8 +73,9 @@ public class DefaultConfigParser implements ConfigParser {
     @Inject @Named( ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
 
-    Logger logger = Logger.getLogger(LogDomains.CORE_LOGGER);
+    Logger logger = KernelLoggerInfo.getLogger();
 
+    @Override
     public <T extends Container> T parseContainerConfig(ServiceLocator habitat, final URL configuration, Class<T> configType) throws IOException {
 
 
@@ -90,32 +89,19 @@ public class DefaultConfigParser implements ConfigParser {
             }
         };
 
-		long now = System.currentTimeMillis();
-		if (configuration != null) {
-			try {
-				DomDocument newElement = configParser.parse(configuration, doc,
-						Dom.unwrap(config));
-				logger.info(newElement.getRoot().getProxyType().toString());
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			Logger.getAnonymousLogger().fine(
-					"time to parse domain.xml : "
-							+ String.valueOf(System.currentTimeMillis() - now));
-		}
-
         // add the new container configuration to the server config
         final T container = doc.getRoot().createProxy(configType);
 
         try {
             ConfigSupport.apply(new SingleConfigCode<Config>() {
+                @Override
                 public Object run(Config config) throws PropertyVetoException, TransactionFailure {
                     config.getContainers().add(container);
                     return null;
                 }
             }, config);
         } catch(TransactionFailure e) {
-            logger.log(Level.SEVERE, "Cannot add new configuration to the Config element", e);
+            logger.log(Level.SEVERE, KernelLoggerInfo.exceptionAddContainer, e);
         }
 
         return  container;

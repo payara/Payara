@@ -42,25 +42,20 @@ package com.sun.enterprise.v3.admin.adapter;
 
 
 
-import javax.inject.Inject;
-
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import org.jvnet.hk2.config.types.Property;
-import org.glassfish.internal.api.PostStartup;
-import org.glassfish.server.ServerEnvironmentImpl;
-
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.logging.LogDomains;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.io.File;
 import java.io.IOException;
-import com.sun.enterprise.util.SystemPropertyConstants;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.PostStartupRunLevel;
+import org.glassfish.kernel.KernelLoggerInfo;
+import org.glassfish.server.ServerEnvironmentImpl;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.types.Property;
 
 
 @Service(name = "AdminConsoleStartupService")
@@ -79,7 +74,7 @@ public class AdminConsoleStartupService implements  PostConstruct {
     @Inject
     private Domain domain;
 
-    private static final Logger logger = LogDomains.getLogger(AdminConsoleStartupService.class, LogDomains.CORE_LOGGER);
+    private static final Logger logger = KernelLoggerInfo.getLogger();
     private final long ONE_DAY = 24 * 60 * 60 * 1000;
 
     @Override

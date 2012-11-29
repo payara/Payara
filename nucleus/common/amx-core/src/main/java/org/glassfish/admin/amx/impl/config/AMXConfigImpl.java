@@ -40,21 +40,6 @@
 
 package org.glassfish.admin.amx.impl.config;
 
-import com.sun.logging.LogDomains;
-import org.glassfish.admin.amx.config.AMXConfigProxy;
-import org.glassfish.admin.amx.config.AttributeResolver;
-import org.glassfish.admin.amx.core.AMXProxy;
-import org.glassfish.admin.amx.core.Util;
-import org.glassfish.admin.amx.impl.mbean.AMXImplBase;
-import org.glassfish.admin.amx.impl.util.*;
-import org.glassfish.admin.amx.util.*;
-import org.glassfish.admin.amx.util.jmx.JMXUtil;
-import org.glassfish.external.arc.Stability;
-import org.glassfish.external.arc.Taxonomy;
-import org.jvnet.hk2.config.*;
-
-import javax.management.Attribute;
-import javax.management.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Proxy;
@@ -66,9 +51,21 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import javax.management.*;
+import javax.management.Attribute;
 import static org.glassfish.admin.amx.config.AMXConfigConstants.*;
+import org.glassfish.admin.amx.config.AMXConfigProxy;
+import org.glassfish.admin.amx.config.AttributeResolver;
+import org.glassfish.admin.amx.core.AMXProxy;
+import org.glassfish.admin.amx.core.Util;
+import org.glassfish.admin.amx.impl.mbean.AMXImplBase;
+import org.glassfish.admin.amx.impl.util.*;
+import org.glassfish.admin.amx.util.*;
+import org.glassfish.admin.amx.util.jmx.JMXUtil;
 import static org.glassfish.external.amx.AMX.*;
+import org.glassfish.external.arc.Stability;
+import org.glassfish.external.arc.Taxonomy;
+import org.jvnet.hk2.config.*;
 
 /**
 Base class from which all AMX Config MBeans should derive (but not "must").
@@ -79,8 +76,7 @@ public class AMXConfigImpl extends AMXImplBase
 {
     private final ConfigBean mConfigBean;
 
-    private static final Logger logger =
-            LogDomains.getLogger(AMXConfigImpl.class, LogDomains.AMX_LOGGER);
+    private static final Logger logger = AMXLoggerInfo.getLogger();
 
     /** MBeanInfo derived from the AMXConfigProxy interface, always the same */
     private static MBeanInfo configMBeanInfo;
@@ -298,8 +294,7 @@ public class AMXConfigImpl extends AMXImplBase
         }
         catch (final AttributeNotFoundException e)
         {
-            //System.out.println("resolveAttribute: Attribute not found: " + attrName + " on " + getObjectName());
-            logger.log(Level.SEVERE,"amx.attribute.notfound",new Object[]{attrName,getObjectName()});
+            logger.log(Level.SEVERE, AMXLoggerInfo.attributeNotfound, new Object[]{attrName,getObjectName()});
             return null;
         }
     }
@@ -515,7 +510,7 @@ public class AMXConfigImpl extends AMXImplBase
         }
         catch (Exception e)
         {
-            ImplUtil.getLogger().log( Level.INFO, "Can't create children", e );
+            AMXLoggerInfo.getLogger().log(Level.INFO, AMXLoggerInfo.cantCreateChildren, e );
             throw new RuntimeException(e);
         }
 
@@ -832,8 +827,7 @@ public class AMXConfigImpl extends AMXImplBase
         final ObjectName child = child(type);
         if (child == null)
         {
-            //System.out.println( "Can't find child of type: " + type );
-            logger.log(Level.SEVERE,"amx.child.notfound",type);
+            logger.log(Level.SEVERE, AMXLoggerInfo.childNotfound, type);
             return null;
         }
 
@@ -1529,7 +1523,7 @@ public class AMXConfigImpl extends AMXImplBase
         if ( attributeName.equals(xmlAttrName) )    // will *always* be different due to camel case
         {
             //cdebug( "issueAttributeChangeForXmlAttrName(): MBean attribute name not found for xml name, using xml name: " + xmlAttrName );
-            logger.log(Level.SEVERE,"amx.mbeanAttribute.notfound",xmlAttrName);
+            logger.log(Level.SEVERE, AMXLoggerInfo.attributeNotfound, xmlAttrName);
         }
         
         final String attributeType = String.class.getName();

@@ -75,6 +75,7 @@ import org.glassfish.admin.amx.impl.util.InjectedValues;
 import org.glassfish.api.admin.ServerEnvironment;
 
 import com.sun.enterprise.security.auth.login.LoginContextDriver;
+import org.glassfish.admin.amx.util.AMXLoggerInfo;
 
 
 /**
@@ -160,7 +161,8 @@ public final class RealmsImpl extends AMXImplBase
             }
             catch( final Exception e )
             {
-                ImplUtil.getLogger().log( Level.WARNING, "Can't instantiate realm: " + StringUtil.quote(authRealm), e );
+                AMXLoggerInfo.getLogger().log( Level.WARNING, AMXLoggerInfo.cantInstantiateRealm,
+                        new Object[] {StringUtil.quote(authRealm), e.getLocalizedMessage()} );
             }
         }
         
@@ -175,7 +177,8 @@ public final class RealmsImpl extends AMXImplBase
             }
             catch (final Exception e)
             {
-                ImplUtil.getLogger().log( Level.WARNING, "Can't get realm " + StringUtil.quote(goodRealm), e );
+                AMXLoggerInfo.getLogger().log( Level.WARNING, AMXLoggerInfo.cantInstantiateRealm,
+                        new Object[] {StringUtil.quote(goodRealm), e.getLocalizedMessage()} );
                 Realm.setDefaultRealm(goodRealms.iterator().next());
             }
         }
@@ -202,7 +205,8 @@ public final class RealmsImpl extends AMXImplBase
         }
         catch( final Exception e )
         {
-            ImplUtil.getLogger().log( Level.WARNING, "getRealmNames(): Can't get realm names ", e );
+            AMXLoggerInfo.getLogger().log( Level.WARNING, AMXLoggerInfo.cantGetRealmNames, 
+                    e.getLocalizedMessage() );
             return new String[] {};
         }
     }

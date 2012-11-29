@@ -57,6 +57,7 @@ import org.glassfish.admin.amx.core.PathnameParser;
 import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.core.proxy.AMXProxyHandler;
 import org.glassfish.admin.amx.impl.util.ImplUtil;
+import org.glassfish.admin.amx.util.AMXLoggerInfo;
 import org.glassfish.admin.amx.util.CollectionUtil;
 import org.glassfish.admin.amx.util.ExceptionUtil;
 import org.glassfish.admin.amx.util.ListUtil;
@@ -221,9 +222,9 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
             }
         } catch (final Exception e) {
             if (!isInstanceNotFound(e)) {
-                ImplUtil.getLogger().log(Level.WARNING,
-                        "Can't get childrenSet() from MBean: " + top.objectName(),
-                        ExceptionUtil.getRootCause(e));
+                AMXLoggerInfo.getLogger().log(Level.WARNING,
+                        AMXLoggerInfo.cantGetChildren, 
+                        new Object[] {top.objectName(), ExceptionUtil.getRootCause(e).getLocalizedMessage()});
                 // just return, nothing we can do.  Typically it could be InstanceNotFoundException
             }
             return;
@@ -237,9 +238,8 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
                 }
             } catch (final Exception e) {
                 if (!isInstanceNotFound(e)) {
-                    ImplUtil.getLogger().log(Level.WARNING,
-                            "Problem with MBean: " + child.objectName(),
-                            ExceptionUtil.getRootCause(e));
+                    AMXLoggerInfo.getLogger().log(Level.WARNING, AMXLoggerInfo.problemWithMbean,
+                            new Object[] { child.objectName(), ExceptionUtil.getRootCause(e).getLocalizedMessage()});
                     // nothing we can do.
                 }
             }
@@ -268,10 +268,8 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
 
             return all;
         } catch (final Throwable t) {
-            ImplUtil.getLogger().log(Level.WARNING,
-                    "PathnamesImpl.getAllPathnames(): unexpected Throwable",
-                    ExceptionUtil.getRootCause(t));
-            t.printStackTrace();    
+            AMXLoggerInfo.getLogger().log(Level.WARNING, AMXLoggerInfo.unexpectedThrowable,
+                    ExceptionUtil.getRootCause(t).getLocalizedMessage());
         }
         return new String[]{DomainRoot.PATH};
     }
@@ -290,7 +288,8 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
             try {
                 paths.add(amx.path());
             } catch (final Exception e) {
-                ImplUtil.getLogger().log(Level.WARNING, "Can't get path() for MBean: " + amx.objectName(), e);
+                AMXLoggerInfo.getLogger().log(Level.WARNING, AMXLoggerInfo.cantGetPath,
+                        new Object[]{amx.objectName(), e.getLocalizedMessage()});
             }
         }
 

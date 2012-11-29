@@ -45,7 +45,6 @@
 	version=${project.osgi.version}
 		
 Import-Package: \
-    com.sun.logging.enterprise.system.amx, \
     *
 		
 		

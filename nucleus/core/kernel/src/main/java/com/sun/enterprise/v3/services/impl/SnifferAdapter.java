@@ -39,26 +39,23 @@
  */
 package com.sun.enterprise.v3.services.impl;
 
+import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.v3.server.ContainerStarter;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.sun.enterprise.module.Module;
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.v3.server.ContainerStarter;
-import com.sun.logging.LogDomains;
+import javax.inject.Inject;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.grizzly.http.util.DataChunk;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.data.ContainerRegistry;
 import org.glassfish.internal.data.EngineInfo;
-import javax.inject.Inject;
-
+import org.glassfish.kernel.KernelLoggerInfo;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
 
 /**
  * These adapters are temporarily registered to the mapper to handle static
@@ -82,7 +79,7 @@ public class SnifferAdapter extends HttpHandler {
     @Inject
     ModulesRegistry modulesRegistry;
 
-    private static final Logger LOGGER = LogDomains.getLogger(SnifferAdapter.class, LogDomains.CORE_LOGGER);
+    private static final Logger LOGGER = KernelLoggerInfo.getLogger();
     
     private Sniffer sniffer;
     private ContainerMapper mapper;
@@ -120,13 +117,11 @@ public class SnifferAdapter extends HttpHandler {
             }
 
             if (containerRegistry.getContainer(sniffer.getContainersNames()[0]) != null) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("Container is claimed to be started...");
-                }
+                LOGGER.fine("Container is claimed to be started...");
                 containerRegistry.getContainer(sniffer.getContainersNames()[0]).getContainer();
             } else {
                 final long startTime = System.currentTimeMillis();
-                LOGGER.log(Level.INFO, "core.snifferadapter.starting.container", sniffer.getModuleType());
+                LOGGER.log(Level.INFO, KernelLoggerInfo.snifferAdapterStartingContainer, sniffer.getModuleType());
                 try {
                     Collection<EngineInfo> containersInfo = containerStarter.startContainer(sniffer);
                     if (containersInfo != null && !containersInfo.isEmpty()) {
@@ -136,17 +131,16 @@ public class SnifferAdapter extends HttpHandler {
                                 LOGGER.log(Level.FINE, "Got container, deployer is {0}", info.getDeployer());
                             }
                             info.getContainer();
-                            LOGGER.log(Level.INFO, "core.snifferadapter.container.started",
+                            LOGGER.log(Level.INFO, KernelLoggerInfo.snifferAdapterContainerStarted,
                                     new Object[]{sniffer.getModuleType(), System.currentTimeMillis() - startTime});
                         }
                     } else {
-                        LOGGER.severe("core.snifferadapter.no.container.available");
+                        LOGGER.severe(KernelLoggerInfo.snifferAdapterNoContainer);
                     }
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE,
-                               "core.snifferadapter.exception.starting.container",
-                               new Object[] { sniffer.getContainersNames()[0] });
-                    LOGGER.log(Level.SEVERE, e.toString(), e);
+                               KernelLoggerInfo.snifferAdapterExceptionStarting,
+                               new Object[] { sniffer.getContainersNames()[0], e });
                 }
             }
 
@@ -167,7 +161,7 @@ public class SnifferAdapter extends HttpHandler {
                     throw new RuntimeException("SnifferAdapter cannot map themself.");
                 }
             } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "core.snifferadapter.exception.mapping.request", e);
+                LOGGER.log(Level.SEVERE, KernelLoggerInfo.snifferAdapterExceptionMapping, e);
                 throw e;
             }
 

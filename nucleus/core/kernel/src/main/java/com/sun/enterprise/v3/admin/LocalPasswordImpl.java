@@ -41,19 +41,16 @@
 package com.sun.enterprise.v3.admin;
 
 import java.io.*;
-import java.util.logging.*;
 import java.security.SecureRandom;
-
+import java.util.logging.*;
 import javax.inject.Inject;
-
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.admin.ServerEnvironment;
 
 import org.glassfish.hk2.api.PostConstruct;
-import javax.inject.Singleton;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.*;
-import org.glassfish.api.admin.ServerEnvironment;
-import com.sun.logging.LogDomains;
+import org.glassfish.kernel.KernelLoggerInfo;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * Manage a local password, which is a cryptographically secure random number
@@ -80,8 +77,7 @@ public class LocalPasswordImpl implements PostConstruct, LocalPassword {
         '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
     };
 
-    private static final Logger logger =
-        LogDomains.getLogger(LocalPasswordImpl.class, LogDomains.ADMIN_LOGGER);
+    private static final Logger logger = KernelLoggerInfo.getLogger();
 
     /**
      * Generate a local password and save it in the local-password file.
@@ -98,14 +94,14 @@ public class LocalPasswordImpl implements PostConstruct, LocalPassword {
         try {
             if (localPasswordFile.exists()) {
                 if (!localPasswordFile.delete()) {
-                    logger.log(Level.WARNING, "localpassword.cantdelete",
+                    logger.log(Level.WARNING, KernelLoggerInfo.cantDeletePasswordFile,
                                     localPasswordFile.toString());
                     // if we can't make sure it's our file, don't write it
                     return;
                 }
             }
             if (!localPasswordFile.createNewFile()) {
-                logger.log(Level.WARNING, "localpassword.cantcreate",
+                logger.log(Level.WARNING, KernelLoggerInfo.cantCreatePasswordFile,
                                 localPasswordFile.toString());
                 // if we can't make sure it's our file, don't write it
                 return;

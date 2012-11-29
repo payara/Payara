@@ -39,34 +39,9 @@
  */
 package com.sun.enterprise.v3.admin.adapter;
 
+import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.v3.admin.AdminConsoleConfigUpgrade;
-import com.sun.appserv.server.util.Version;
-import org.glassfish.grizzly.config.dom.NetworkListener;
-import com.sun.logging.LogDomains;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.container.Adapter;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
-import org.glassfish.api.event.Events;
-import org.glassfish.api.event.RestrictTo;
-import org.glassfish.grizzly.http.server.HttpHandler;
-import org.glassfish.grizzly.http.server.Request;
-import org.glassfish.grizzly.http.server.Response;
-import org.glassfish.grizzly.http.server.io.OutputBuffer;
-import org.glassfish.internal.data.ApplicationRegistry;
-import org.glassfish.server.ServerEnvironmentImpl;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.config.types.Property;
-
 import java.beans.PropertyVetoException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -85,8 +60,30 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.grizzly.config.dom.NetworkConfig;
+import javax.inject.Inject;
+import javax.inject.Named;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.container.Adapter;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.api.event.Events;
+import org.glassfish.api.event.RestrictTo;
+import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.http.Method;
+import org.glassfish.grizzly.http.server.HttpHandler;
+import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.grizzly.http.server.Response;
+import org.glassfish.grizzly.http.server.io.OutputBuffer;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.kernel.KernelLoggerInfo;
+import org.glassfish.server.ServerEnvironmentImpl;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.types.Property;
 
 /**
  * An HK-2 Service that provides the functionality so that admin console access
@@ -139,7 +136,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
     Config serverConfig;
     
     AdminEndpointDecider epd;
-    private static final Logger logger = LogDomains.getLogger(AdminConsoleAdapter.class, LogDomains.CORE_LOGGER);
+    private static final Logger logger = KernelLoggerInfo.getLogger();
     private String statusHtml;
     private String initHtml;
     private boolean isRegistered = false;
@@ -203,11 +200,11 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
         try {
             if (!latch.await(100L, TimeUnit.SECONDS)) {
                 // todo : better error reporting.
-                logger.log(Level.SEVERE, "console.adapter.timeout");
+                logger.log(Level.SEVERE, KernelLoggerInfo.consoleRequestTimeout);
                 return;
             }
         } catch (InterruptedException ex) {
-            logger.log(Level.SEVERE, "console.adapter.cannotProcess");
+            logger.log(Level.SEVERE, KernelLoggerInfo.consoleCannotProcess);
             return;
         }
         logRequest(req);
@@ -216,7 +213,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
                 handleResourceRequest(req, res);
             } catch (IOException ioe) {
                 if (logger.isLoggable(Level.SEVERE)) {
-                    logger.log(Level.SEVERE, "console.adapter.resourceError",
+                    logger.log(Level.SEVERE, KernelLoggerInfo.consoleResourceError,
                             new Object[]{req.getRequestURI(), ioe.toString()});
                 }
                 if (logger.isLoggable(Level.FINE)) {
@@ -265,7 +262,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
                 ob.flush();
 
             } catch (IOException ex) {
-                Logger.getLogger(AdminConsoleAdapter.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, KernelLoggerInfo.consoleResourceError, ex);
             }
 
 
@@ -379,9 +376,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
         try {
             in = loader.getResourceAsStream(resourcePath);
             if (in == null) {
-                if (logger.isLoggable(Level.WARNING)) {
-                    logger.log(Level.WARNING, "console.adapter.resourceNotFound", resourcePath);
-                }
+                logger.log(Level.WARNING, KernelLoggerInfo.consoleResourceNotFound, resourcePath);
                 return;
             }
             byte[] buf = new byte[512];
@@ -446,7 +441,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
      */
     void setStateMsg(AdapterState msg) {
         stateMsg = msg;
-        logger.log(Level.INFO, msg.toString());
+        logger.log(Level.FINE, msg.toString());
     }
 
     /**
@@ -474,9 +469,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
     public void event(@RestrictTo(EventTypes.SERVER_READY_NAME) Event event) {
         latch.countDown();
         if (logger != null) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "AdminConsoleAdapter is ready.");
-            }
+            logger.log(Level.FINE, "AdminConsoleAdapter is ready.");
         }
     }
 
@@ -510,7 +503,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
             epd = new AdminEndpointDecider(serverConfig, logger);
             contextRoot = epd.getGuiContextRoot();
         } catch (Exception ex) {
-            logger.log(Level.INFO, "Console cannot be initialized. " + ex.getMessage());
+            logger.log(Level.INFO, KernelLoggerInfo.consoleCannotInitialize, ex);
             return;
         }
     }
@@ -531,13 +524,13 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
             is = conn.getInputStream();
             isRestStarted = true;
         } catch (Exception ex) {
-           Logger.getLogger(AdminConsoleAdapter.class.getName()).log(Level.FINE, null, ex);
+           logger.log(Level.FINE, null, ex);
         } finally {
             if (is != null) {
                 try {
                     is.close();
                 } catch (IOException ex1) {
-                    Logger.getLogger(AdminConsoleAdapter.class.getName()).log(Level.SEVERE, null, ex1);
+                    logger.log(Level.FINE, null, ex1);
                 }
             }
         }
@@ -803,8 +796,8 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
                 }
             }, adminService);
         } catch (Exception ex) {
-            logger.log(Level.WARNING, "console.adapter.propertyError", propName + ":" + propValue);
-            //ex.printStackTrace();
+            logger.log(Level.WARNING, KernelLoggerInfo.consoleCannotWriteProperty, 
+                    new Object[] {propName, propValue, ex});
         }
     }
 

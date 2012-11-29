@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,8 @@ package org.glassfish.admin.amx.impl.util;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import org.glassfish.admin.amx.util.AMXLoggerInfo;
 
 /**
  */
@@ -61,7 +63,7 @@ public final class Issues {
     public void notDone(final String description) {
         final boolean wasMissing = mIssues.add(description);
         if (wasMissing) {
-            ImplUtil.getLogger().fine("NOT DONE: " + description);
+            AMXLoggerInfo.getLogger().log(Level.FINE, "NOT DONE: {0}", description);
         }
     }
 }

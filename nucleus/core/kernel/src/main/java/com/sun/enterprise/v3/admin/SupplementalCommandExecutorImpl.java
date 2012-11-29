@@ -41,28 +41,26 @@
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
-import java.util.Collection;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.common.util.admin.MapInjectionResolver;
-import org.jvnet.hk2.component.*;
-import org.jvnet.hk2.config.InjectionManager;
-import org.jvnet.hk2.config.InjectionResolver;
-import org.glassfish.common.util.admin.CommandModelImpl;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
-
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
+import org.glassfish.common.util.admin.CommandModelImpl;
+import org.glassfish.common.util.admin.MapInjectionResolver;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.kernel.KernelLoggerInfo;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.*;
+import org.jvnet.hk2.config.InjectionManager;
+import org.jvnet.hk2.config.InjectionResolver;
 
 /**
  * An executor that executes Supplemental commands means for current command
@@ -81,8 +79,7 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
     @Inject
     private ServerContext sc;
     
-    private static final Logger logger = LogDomains.getLogger(SupplementalCommandExecutorImpl.class,
-                                        LogDomains.ADMIN_LOGGER);
+    private static final Logger logger = KernelLoggerInfo.getLogger();
 
     private static final LocalStringManagerImpl strings =
                         new LocalStringManagerImpl(SupplementalCommandExecutor.class);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,19 +39,18 @@
  */
 package org.glassfish.admin.amx.impl.mbean;
 
-import com.sun.logging.LogDomains;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
 import org.glassfish.admin.amx.monitoring.MonitoringRoot;
 import org.glassfish.admin.amx.monitoring.ServerMon;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.glassfish.admin.amx.util.AMXLoggerInfo;
 
 public class MonitoringRootImpl extends AMXImplBase // implements MonitoringRoot
 {
-    private final Logger mLogger = LogDomains.getLogger(MonitoringRootImpl.class, LogDomains.AMX_LOGGER);
+    private final Logger mLogger = AMXLoggerInfo.getLogger();
 
     public MonitoringRootImpl(final ObjectName parent) {
         super(parent, MonitoringRoot.class);
@@ -67,7 +66,7 @@ public class MonitoringRootImpl extends AMXImplBase // implements MonitoringRoot
 
         ObjectName childObjectName = null;
         Object mbean = null;
-        mLogger.log(Level.INFO,"amx.registerChild",System.getProperty("com.sun.aas.instanceName"));
+        mLogger.log(Level.INFO, AMXLoggerInfo.registerChild, System.getProperty("com.sun.aas.instanceName"));
         // when clustering comes along, some other party will need to register MBeans
         // for each non-DAS instance
         // childObjectName = objectNames.buildChildObjectName(ServerMon.class, AMXGlassfish.DEFAULT.dasName());

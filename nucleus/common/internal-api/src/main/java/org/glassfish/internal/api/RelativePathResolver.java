@@ -40,22 +40,18 @@
 
 package org.glassfish.internal.api;
 
+import com.sun.enterprise.security.store.PasswordAdapter; 
 import com.sun.enterprise.util.i18n.StringManager;
-import java.io.File;
-
 import com.sun.enterprise.util.i18n.StringManagerBase;
-import com.sun.logging.LogDomains;
-import org.glassfish.security.common.MasterPassword;
-
-import com.sun.enterprise.security.store.PasswordAdapter;
+import java.io.File;
 import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.Level; 
+import org.glassfish.security.common.MasterPassword; 
 
 /**
  * The purpose of this class is to expand paths that contain embedded 
@@ -88,13 +84,6 @@ public class RelativePathResolver {
         masterPasswordHelper = Globals.getDefaultHabitat().getService(MasterPassword.class);
     }
     
-    protected synchronized static Logger getLogger() {
-        if (_logger == null) {
-            _logger = LogDomains.getLogger(RelativePathResolver.class, LogDomains.UTIL_LOGGER);
-        }
-        return _logger;
-    }
-   
     private synchronized static RelativePathResolver getInstance()
     {
         if (_instance == null) {
@@ -143,8 +132,8 @@ public class RelativePathResolver {
                             path.substring(startIdx + propVal.length());
                     }
                 } else {
-                    getLogger().log(Level.SEVERE, 
-                        "enterprise_util.path_unresolver_missing_property",
+                    InternalLoggerInfo.getLogger().log(Level.SEVERE, 
+                        InternalLoggerInfo.unknownProperty,
                         new Object[] {propNames[i], path});
                 }
             }            
@@ -159,8 +148,8 @@ public class RelativePathResolver {
      * will be considered a fatal error.
      */
     protected void fatalError(String message, String path) {
-        getLogger().log(Level.SEVERE, message, new Object[] {path});
-        StringManagerBase sm = StringManagerBase.getStringManager(getLogger().getResourceBundleName(),
+        InternalLoggerInfo.getLogger().log(Level.SEVERE, message, new Object[] {path});
+        StringManagerBase sm = StringManagerBase.getStringManager(InternalLoggerInfo.getLogger().getResourceBundleName(),
                 getClass().getClassLoader());        
         throw new RuntimeException(sm.getString(message, path));
     }
@@ -229,12 +218,9 @@ public class RelativePathResolver {
                             pwdAdapter = masterPasswordHelper.getMasterPasswordAdapter();
                         }
                         result = pwdAdapter.getPasswordForAlias(aliasName);
-                        //System.err.println("alias password " + result);
                     } catch (Exception ex) {                        
-                        getLogger().log(Level.WARNING, "enterprise_util.path_resolver_alias_exception", 
+                        InternalLoggerInfo.getLogger().log(Level.WARNING, InternalLoggerInfo.exceptionResolvingAlias, 
                             new Object[] {ex, aliasName, propName});
-                        getLogger().log(Level.FINE, "enterprise_util.path_resolver_alias_exception",
-                            ex);
                     }
                 }
             }
@@ -279,8 +265,7 @@ public class RelativePathResolver {
                             propName = new StringBuffer();
                             break;
                         } else { // previous property not terminated missing }
-                            fatalError(
-                                "enterprise_util.path_resolver_missing_closing_delim",
+                            fatalError(InternalLoggerInfo.referenceMissingTrailingDelim,
                                 path);
                             return path; //can't happen since fatalError throws RuntimeException
                         }                        
@@ -307,8 +292,7 @@ public class RelativePathResolver {
                             }
                             propName = null;
                         } else { //no matching starting delimiter found ${
-                            fatalError(
-                                "enterprise_util.path_resolver_missing_starting_delim",
+                            fatalError(InternalLoggerInfo.referenceMissingStartingDelim,
                                 path);
                             return path; //can't happen since fatalError throws RuntimeException
                         }
@@ -324,8 +308,7 @@ public class RelativePathResolver {
         }
         
         if (propName != null) { // missing final } 
-            fatalError(
-                "enterprise_util.path_resolver_missing_closing_delim",
+            fatalError(InternalLoggerInfo.referenceMissingTrailingDelim,
                 path);
             return path; //can't happen
         }

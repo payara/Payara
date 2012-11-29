@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,23 +40,21 @@
 
 package com.sun.enterprise.v3.server;
 
-import java.net.URLClassLoader;
-import java.net.URL;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.Properties;
-import java.util.List;
-import java.io.File;
-
-import com.sun.appserv.server.ServerLifecycleException;
-import com.sun.appserv.server.LifecycleEventContext;
 import com.sun.appserv.server.LifecycleEvent;
+import com.sun.appserv.server.LifecycleEventContext;
 import com.sun.appserv.server.LifecycleListener;
-import com.sun.logging.LogDomains;
-
-import org.glassfish.loader.util.ASClassLoaderUtil;
-import org.glassfish.internal.api.ServerContext;
+import com.sun.appserv.server.ServerLifecycleException;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.kernel.KernelLoggerInfo;
+import org.glassfish.loader.util.ASClassLoaderUtil;
 
 /**
  * @author Sridatta Viswanath
@@ -77,7 +75,7 @@ public final class ServerLifecycleModule {
     private ClassLoader urlClassLoader;
     private Properties props = new Properties();
 
-    private static Logger _logger = LogDomains.getLogger(ServerLifecycleModule.class, LogDomains.CORE_LOGGER);
+    private static final Logger _logger = KernelLoggerInfo.getLogger();
     private static boolean _isTraceEnabled = false;
 
     private final static String LIFECYCLE_PREFIX = "lifecycle_"; 
@@ -157,7 +155,8 @@ public final class ServerLifecycleModule {
             Class cl = Class.forName(className, true, classLoader);
             slcl = (LifecycleListener) cl.newInstance();
         } catch (Exception ee) {
-            _logger.log(Level.SEVERE, localStrings.getLocalString("lifecyclemodule.load_exception", "Exception loading lifecycle module", this.name, ee.toString()), ee) ;
+            _logger.log(Level.SEVERE, KernelLoggerInfo.exceptionLoadingLifecycleModule,
+                    new Object[] {this.name, ee}) ;
             if (isFatal) {
                 throw new ServerLifecycleException(localStrings.getLocalString("lifecyclemodule.loadExceptionIsFatal", "Treating failure loading the lifecycle module as fatal", this.name));
             }
@@ -189,12 +188,14 @@ public final class ServerLifecycleModule {
         try {
             slcl.handleEvent(slcEvent);
         } catch (ServerLifecycleException sle) {
-            _logger.log(Level.WARNING, localStrings.getLocalString("lifecyclemodule.event_ServerLifecycleException", "Lifecycle module threw ServerLifecycleException", this.name), sle);
+            _logger.log(Level.WARNING, KernelLoggerInfo.serverLifecycleException, 
+                    new Object[] {this.name, sle});
 
             if (isFatal)
                 throw sle;
         } catch (Exception ee) {
-            _logger.log(Level.WARNING, localStrings.getLocalString("lifecyclemodule.event_Exception", "Lifecycle module threw an Exception", this.name), ee);
+            _logger.log(Level.WARNING, KernelLoggerInfo.lifecycleModuleException,
+                    new Object[] {this.name, ee});
 
             if (isFatal) {
                 throw new ServerLifecycleException(localStrings.getLocalString("lifecyclemodule.event_exceptionIsFatal", "Treating the exception from lifecycle module event handler as fatal"), ee);

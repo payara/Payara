@@ -43,7 +43,6 @@ package org.glassfish.admin.amx.impl.j2ee.loader;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
-import com.sun.logging.LogDomains;
 import org.glassfish.admin.amx.base.DomainRoot;
 import org.glassfish.admin.amx.config.AMXConfigConstants;
 import org.glassfish.admin.amx.core.Util;
@@ -74,6 +73,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.admin.amx.j2ee.AMXEELoggerInfo;
 
 
 /**
@@ -99,8 +99,7 @@ public final class AMXJ2EEStartupService
     @Inject
     private Domain domain;
 
-    private static final Logger logger =
-            LogDomains.getLogger(AMXJ2EEStartupService.class, LogDomains.AMX_LOGGER);
+    private static final Logger logger = AMXEELoggerInfo.getLogger();
 
     public InjectedValues getCore() {
         return mCore;
@@ -199,7 +198,6 @@ public final class AMXJ2EEStartupService
     }
 
     public void preDestroy() {
-        //ImplUtil.getLogger().info( "AMXConfigStartupService.preDestroy(): stopping AMX" );
         unloadAMXMBeans();
     }
 
@@ -242,7 +240,7 @@ public final class AMXJ2EEStartupService
             throw new Error(e);
         }
 
-        logger.log(Level.INFO,"amx.J2EEDomain.registered",objectName);
+        logger.log(Level.INFO, AMXEELoggerInfo.domainRegistered, objectName);
         return objectName;
     }
 

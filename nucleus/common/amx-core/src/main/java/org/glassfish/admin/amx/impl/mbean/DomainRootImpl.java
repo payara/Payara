@@ -42,28 +42,27 @@ package org.glassfish.admin.amx.impl.mbean;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.universal.Duration;
 import com.sun.enterprise.universal.io.SmartFile;
-import com.sun.logging.LogDomains;
-import org.glassfish.admin.amx.base.*;
-import org.glassfish.admin.amx.logging.Logging;
-import org.glassfish.admin.amx.core.AMXValidator;
-import org.glassfish.admin.amx.impl.util.InjectedValues;
-import org.glassfish.admin.amx.impl.util.Issues;
-import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
-import org.glassfish.admin.amx.monitoring.MonitoringRoot;
-import org.glassfish.admin.amx.util.CollectionUtil;
-import org.glassfish.admin.amx.util.FeatureAvailability;
-import org.glassfish.admin.amx.util.MapUtil;
-import org.glassfish.admin.amx.util.jmx.JMXUtil;
-import org.glassfish.server.ServerEnvironmentImpl;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import org.glassfish.admin.amx.base.*;
+import org.glassfish.admin.amx.core.AMXValidator;
+import org.glassfish.admin.amx.impl.util.InjectedValues;
+import org.glassfish.admin.amx.impl.util.Issues;
+import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
+import org.glassfish.admin.amx.logging.Logging;
+import org.glassfish.admin.amx.monitoring.MonitoringRoot;
+import org.glassfish.admin.amx.util.AMXLoggerInfo;
+import org.glassfish.admin.amx.util.CollectionUtil;
+import org.glassfish.admin.amx.util.FeatureAvailability;
+import org.glassfish.admin.amx.util.MapUtil;
+import org.glassfish.admin.amx.util.jmx.JMXUtil;
+import org.glassfish.server.ServerEnvironmentImpl;
 
 /**
  */
@@ -74,8 +73,7 @@ public class DomainRootImpl extends AMXImplBase // implements DomainRoot
     private final File mInstanceRoot;
     private volatile ComplianceMonitor mCompliance;
 
-    private static final Logger logger =
-            LogDomains.getLogger(DomainRootImpl.class, LogDomains.AMX_LOGGER);
+    private static final Logger logger = AMXLoggerInfo.getLogger();
 
     public DomainRootImpl() {
         super(null, DomainRoot.class);
@@ -114,7 +112,7 @@ public class DomainRootImpl extends AMXImplBase // implements DomainRoot
         // because they cannot have a Parent.
         final Set<ObjectName> existing = JMXUtil.queryAllInDomain(server, selfObjectName.getDomain());
         if (existing.size() != 0) {
-            logger.log(Level.INFO,"amx.mbean.exist",CollectionUtil.toString(existing, ", "));
+            logger.log(Level.INFO, AMXLoggerInfo.mbeanExist, CollectionUtil.toString(existing, ", "));
         }
 
         return selfObjectName;

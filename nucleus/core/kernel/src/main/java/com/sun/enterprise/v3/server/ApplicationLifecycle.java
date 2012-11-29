@@ -40,80 +40,70 @@
 
 package com.sun.enterprise.v3.server;
 
-import org.glassfish.api.deployment.archive.*;
-import org.glassfish.deployment.versioning.VersioningUtils;
-import org.glassfish.deployment.versioning.VersioningSyntaxException;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import org.glassfish.deployment.common.*;
-import org.glassfish.deployment.monitor.DeploymentLifecycleProbeProvider;
-import org.glassfish.hk2.classmodel.reflect.Parser;
-import org.glassfish.hk2.classmodel.reflect.ParsingContext;
-import org.glassfish.hk2.classmodel.reflect.Types;
-import org.glassfish.internal.deployment.DeploymentTracing;
-import org.glassfish.server.ServerEnvironmentImpl;
 import com.sun.enterprise.config.serverbeans.*;
-import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.config.types.Property;
-import org.glassfish.api.admin.config.ApplicationName;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
-import com.sun.enterprise.module.Module;
-import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.common.util.admin.ParameterMapExtractor;
-
-import com.sun.logging.LogDomains;
+import java.beans.PropertyVetoException;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import org.glassfish.api.*;
-import org.glassfish.api.event.*;
-import org.glassfish.api.event.EventListener.Event;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.config.ApplicationName;
 import org.glassfish.api.container.Container;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.*;
-import org.glassfish.api.deployment.archive.ArchiveHandler;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.api.deployment.archive.CompositeHandler;
+import org.glassfish.api.deployment.archive.*;
+import org.glassfish.api.event.*;
+import org.glassfish.api.event.EventListener.Event;
 import org.glassfish.api.virtualization.VirtualizationEnv;
-import org.glassfish.internal.data.*;
+import org.glassfish.common.util.admin.ParameterMapExtractor;
+import org.glassfish.deployment.common.*;
+import org.glassfish.deployment.monitor.DeploymentLifecycleProbeProvider;
+import org.glassfish.deployment.versioning.VersioningSyntaxException;
+import org.glassfish.deployment.versioning.VersioningUtils;
+import org.glassfish.hk2.api.MultiException;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.classmodel.reflect.Parser;
+import org.glassfish.hk2.classmodel.reflect.ParsingContext;
+import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.*;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.data.*;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
-import javax.inject.Inject;
-import javax.inject.Named;
+import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.internal.deployment.DeploymentTracing;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.kernel.KernelLoggerInfo;
+import org.glassfish.server.ServerEnvironmentImpl;
+import org.jvnet.hk2.annotations.Optional;
 
 import org.jvnet.hk2.annotations.Service;
-
-import javax.inject.Singleton;
-
-import org.glassfish.hk2.api.MultiException;
-import org.glassfish.hk2.api.PreDestroy;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigBean;
-import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.RetryableException;
+import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.config.RetryableException;
-
-import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.io.File;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.concurrent.*;
-import java.net.URI;
+import org.jvnet.hk2.config.types.Property;
 
 /**
  * Application Loader is providing useful methods to load applications
@@ -162,7 +152,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     @Inject
     ConfigSupport configSupport;
 
-    protected Logger logger = LogDomains.getLogger(AppServerStartup.class, LogDomains.CORE_LOGGER);
+    protected Logger logger = KernelLoggerInfo.getLogger();
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);      
     
     protected <T extends Container, U extends ApplicationContainer> Deployer<T, U> getDeployer(EngineInfo<T, U> engineInfo) {
@@ -418,7 +408,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 } catch(Throwable interceptorException) {
                     report.failure(logger, "Exception while invoking the lifecycle interceptor", null);
                     report.setFailureCause(interceptorException);
-                    logger.log(Level.SEVERE, interceptorException.getMessage(), interceptorException);
+                    logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, interceptorException);
                     tracker.actOn(logger);
                     return null;
                 }
@@ -451,7 +441,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                         prepareException.printStackTrace();
                         report.failure(logger, "Exception while preparing the app", null);
                         report.setFailureCause(prepareException);
-                        logger.log(Level.SEVERE, prepareException.getMessage(), prepareException);
+                        logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, prepareException);
                         tracker.actOn(logger);
                         return null;
                     }
@@ -507,7 +497,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                         appInfo.start(context, tracker);
                         notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.START, context);
                     } catch(Throwable loadException) {
-                        logger.log(Level.SEVERE, loadException.getMessage(), loadException);
+                        logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, loadException);
                         report.failure(logger, "Exception while loading the app", null);
                         report.setFailureCause(loadException);
                         tracker.actOn(logger);
@@ -523,7 +513,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         } catch (Throwable e) {
             report.failure(logger, localStrings.getLocalString("error.deploying.app", "Exception while deploying the app [{0}]", appName), null);
             report.setFailureCause(e);
-            logger.log(Level.SEVERE, e.getMessage(), e);
+            logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, e);
             tracker.actOn(logger);
             return null;
         } finally {
@@ -784,8 +774,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                      if (!typeByProvider.containsKey(dependency)) {
                          // at this point, I only log problems, because it maybe that what I am deploying now
                          // will not require this application metadata.
-                         logger.warning("ApplicationMetaDataProvider " + provider + " requires "
-                                 + dependency + " but no other ApplicationMetaDataProvider provides it");
+                         logger.log(Level.WARNING, KernelLoggerInfo.applicationMetaDataProvider, 
+                                 new Object[] {provider, dependency});
                      }
                  }
             }
@@ -879,7 +869,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 } else {
                     ApplicationMetaDataProvider provider = typeByProvider.get(required);
                     if (provider==null) {
-                        logger.severe("I don't get it, file a bug, no-one is providing " + required + " yet it passed validation");
+                        logger.log(Level.SEVERE, KernelLoggerInfo.inconsistentLifecycleState, required);
                     } else {
                         LinkedList<ApplicationMetaDataProvider> providers = new LinkedList<ApplicationMetaDataProvider>();
 
@@ -1017,7 +1007,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             try {
                 container = engineInfo.getContainer();
             } catch(Exception e) {
-                logger.log(Level.SEVERE, "Cannot start container  " +  engineInfo.getSniffer().getModuleType(),e);
+                logger.log(Level.SEVERE, KernelLoggerInfo.cantStartContainer, 
+                        new Object[] {engineInfo.getSniffer().getModuleType(), e});
                 return false;
             }
                 
@@ -1046,7 +1037,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 ctrInfo.stop(logger);
             } catch(Exception e) {
                 // this is not a failure per se but we need to document it.
-                logger.log(Level.INFO,"Cannot release container " + ctrInfo.getSniffer().getModuleType(), e);
+                logger.log(Level.INFO, KernelLoggerInfo.cantReleaseContainer,
+                        new Object[] {ctrInfo.getSniffer().getModuleType(), e});
             }
         }
     }
@@ -1821,13 +1813,14 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 try {
                     archive.close();
                 } catch(IOException e) {
-                    logger.log(Level.SEVERE, localStrings.getLocalString("deploy.errorclosingarchive","Error while closing deployable artifact {0}", archive.getURI().getSchemeSpecificPart()),e);
+                    logger.log(Level.SEVERE, KernelLoggerInfo.errorClosingArtifact, 
+                            new Object[] { archive.getURI().getSchemeSpecificPart(), e});
                     throw e;
                 }
                 archive = (FileArchive) expandedArchive;
                 initial.setSource(archive);
             } catch(IOException e) {
-                logger.log(Level.SEVERE, localStrings.getLocalString("deploy.errorexpandingjar","Error while expanding archive file"),e);
+                logger.log(Level.SEVERE, KernelLoggerInfo.errorExpandingFile, e);
                 throw e;
             }
         }
@@ -2238,11 +2231,11 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 if (sniffer != null) {
                     sniffers.add(sniffer);
                 } else {
-                    logger.log(Level.SEVERE, "cannot.find.sniffer", new Object[] {snifferType});
+                    logger.log(Level.SEVERE, KernelLoggerInfo.cantFindSniffer, snifferType);
                 }
             }
             if (sniffers.isEmpty()) {
-                logger.log(Level.SEVERE, "cannot.find.sniffer.for.app", new Object[] {app.getName()});
+                logger.log(Level.SEVERE, KernelLoggerInfo.cantFindSnifferForApp, app.getName());
                 return null;
             }
         } else {

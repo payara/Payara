@@ -39,7 +39,6 @@
  */
 package org.glassfish.admin.amx.impl;
 
-import com.sun.logging.LogDomains;
 import org.glassfish.admin.amx.base.DomainRoot;
 import org.glassfish.admin.amx.base.MBeanTracker;
 import org.glassfish.admin.amx.base.MBeanTrackerMBean;
@@ -78,6 +77,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.admin.amx.util.AMXLoggerInfo;
 
 /**
 An {@link AMXLoader} responsible for loading core amx MBeans
@@ -102,9 +102,7 @@ public final class AMXStartupService
     Events mEvents;
     private volatile MBeanTracker mMBeanTracker;
 
-    private static final Logger logger =
-            LogDomains.getLogger(AMXStartupService.class, LogDomains.AMX_LOGGER);
-
+    private static final Logger logger = AMXLoggerInfo.getLogger();
 
     public static MBeanTrackerMBean getMBeanTracker(final MBeanServer server) {
         return MBeanServerInvocationHandler.newProxyInstance(server, MBeanTrackerMBean.MBEAN_TRACKER_OBJECT_NAME, MBeanTrackerMBean.class, false);
@@ -134,7 +132,7 @@ public final class AMXStartupService
         final ObjectName allAMXPattern = AMXUtil.newObjectName(AMXGlassfish.DEFAULT.amxJMXDomain(), "*");
         final Set<ObjectName> remainingAMX = mMBeanServer.queryNames(allAMXPattern, null);
         if (remainingAMX.size() != 0) {
-            logger.log(Level.WARNING,"amx.shutdown.not.unregistered",remainingAMX);
+            logger.log(Level.WARNING, AMXLoggerInfo.shutdownNotUnregistered, remainingAMX);
             try {
                 Thread.sleep(1000);
             } catch (final InterruptedException e) {
@@ -287,9 +285,8 @@ public final class AMXStartupService
             try {
                 logger.fine("AMXStartupServiceNew.AMXLoaderThread: loading: " + mLoader.getClass().getName());
                 mTop = mLoader.loadAMXMBeans();
-                //logger.info( "AMXStartupService.AMXLoaderThread: loaded: "  + mLoader.getClass().getName() );
             } catch (final Exception e) {
-                logger.log(Level.INFO, "amx.fail.toLoad", e);
+                logger.log(Level.INFO, AMXLoggerInfo.failToLoad, e);
             } finally {
                 mLatch.countDown();
             }
@@ -349,10 +346,10 @@ public final class AMXStartupService
                 thread.waitDone();
             }
         } catch (Throwable t) {
-            logger.log(Level.INFO, "amx.fatal.error", t);
+            logger.log(Level.INFO, AMXLoggerInfo.fatalError, t);
         } finally {
             FeatureAvailability.getInstance().registerFeature(FeatureAvailability.AMX_READY_FEATURE, getDomainRoot());
-            logger.log(Level.INFO,"amx.startupService.domainRoot",getDomainRoot());
+            logger.log(Level.INFO, AMXLoggerInfo.startupServiceDomainRoot, getDomainRoot());
         }
 
         // sanity-check (self-test) our listeners
@@ -378,7 +375,7 @@ public final class AMXStartupService
                 try {
                     loader.unloadAMXMBeans();
                 } catch (final Exception e) {
-                    logger.log(Level.INFO,"amx.fail.toUnLoad",e);
+                    logger.log(Level.INFO, AMXLoggerInfo.failToUnLoad, e);
                 }
             }
 

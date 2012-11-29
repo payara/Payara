@@ -40,44 +40,38 @@
 
 package com.sun.enterprise.v3.server;
 
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.config.TransactionListener;
-import org.jvnet.hk2.config.Transactions;
-import org.jvnet.hk2.config.UnprocessedChangeEvents;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-
-import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
-import org.glassfish.hk2.api.PostConstruct;
-import com.sun.enterprise.module.bootstrap.StartupContext;
-
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.deployment.UndeployCommandParameters;
-import org.glassfish.internal.api.PostStartupRunLevel;
-import org.glassfish.internal.data.ApplicationRegistry;
-import org.glassfish.internal.data.ApplicationInfo;
-import org.glassfish.internal.deployment.Deployment;
-
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
+import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.ServerTags;
+import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.v3.common.HTMLActionReporter;
-
 import java.beans.PropertyChangeEvent;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Calendar;
+import javax.inject.Inject;
+import javax.inject.Named;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.UndeployCommandParameters;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.PostStartupRunLevel;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.kernel.KernelLoggerInfo;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.TransactionListener;
+import org.jvnet.hk2.config.Transactions;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 @Service
 @RunLevel(PostStartupRunLevel.VAL)
@@ -85,7 +79,7 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationConfigListener.class);
 
-    final private Logger logger = LogDomains.getLogger(ApplicationConfigListener.class, LogDomains.CORE_LOGGER);
+    final private Logger logger = KernelLoggerInfo.getLogger();
 
     @Inject
     Transactions transactions;
@@ -278,17 +272,17 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
             deployment.enable(server.getName(), app, appRef, report, logger);
 
             if (report.getActionExitCode().equals(ActionReport.ExitCode.SUCCESS)) {
-                logger.log(Level.INFO, "loading.application.time", new Object[] { appName, (Calendar.getInstance().getTimeInMillis() - operationStartTime)});
+                logger.log(Level.INFO, KernelLoggerInfo.loadingApplicationTime, 
+                        new Object[] { appName, (Calendar.getInstance().getTimeInMillis() - operationStartTime)});
             } else if (report.getActionExitCode().equals(ActionReport.ExitCode.WARNING)){
-                logger.warning(report.getMessage());
+                logger.log(Level.WARNING, KernelLoggerInfo.loadingApplicationWarning,
+                        new Object[] { appName, report.getMessage()});
             } else if (report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
                 throw new Exception(report.getMessage());
             }
         } catch(Exception e) {
-            logger.log(Level.SEVERE, "Error during enabling: ", e);
-            RuntimeException re = new RuntimeException(e.getMessage());
-            re.initCause(e); 
-            throw re;
+            logger.log(Level.SEVERE, KernelLoggerInfo.loadingApplicationErrorEnable, e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -320,10 +314,8 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
                 throw new Exception(report.getMessage());
             }
         } catch(Exception e) {
-            logger.log(Level.SEVERE, "Error during disabling: ", e);
-            RuntimeException re = new RuntimeException(e.getMessage());
-            re.initCause(e); 
-            throw re;
+            logger.log(Level.SEVERE, KernelLoggerInfo.loadingApplicationErrorDisable, e);
+            throw new RuntimeException(e);
         }
     }
 }

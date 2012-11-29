@@ -47,21 +47,24 @@ import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
 import com.sun.enterprise.config.serverbeans.ResourceRef;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
-import com.sun.logging.LogDomains;
-import org.glassfish.admin.amx.config.AMXConfigProxy;
+import java.io.ByteArrayOutputStream;
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.management.*;
 import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.impl.config.ConfigBeanRegistry;
 import org.glassfish.admin.amx.impl.j2ee.loader.J2EEInjectedValues;
 import org.glassfish.admin.amx.impl.util.InjectedValues;
 import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
 import org.glassfish.admin.amx.j2ee.*;
-import org.glassfish.admin.amx.j2ee.ResourceAdapter;
-import org.glassfish.admin.amx.j2ee.WebModule;
 import org.glassfish.admin.amx.util.ClassUtil;
 import org.glassfish.admin.amx.util.MapUtil;
 import org.glassfish.admin.amx.util.jmx.JMXUtil;
@@ -69,15 +72,6 @@ import org.glassfish.api.admin.config.Named;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-
-import javax.management.*;
-import java.io.ByteArrayOutputStream;
-import java.lang.reflect.Constructor;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
     Handles registrations of resources and applications associated with a J2EEServer.
@@ -111,7 +105,7 @@ final class RegistrationSupport
     /** type of any application ref */
     private final String mApplicationRefType;
 
-    private final Logger mLogger = LogDomains.getLogger(RegistrationSupport.class, LogDomains.AMX_LOGGER);
+    private final Logger mLogger = AMXEELoggerInfo.getLogger();
     
     public RegistrationSupport(final J2EEServer server)
     {
@@ -447,7 +441,8 @@ final class RegistrationSupport
             catch( final Exception e )
             {
                 // log it: we want to continue with other apps, even if this one had a problem
-                mLogger.log( Level.INFO, "amx.exception.app.register", new Object[] { ref.getRef(), e});
+                mLogger.log( Level.INFO, AMXEELoggerInfo.registeringApplicationException, 
+                        new Object[] { ref.getRef(), e});
             }
         }
     }
@@ -477,7 +472,7 @@ final class RegistrationSupport
         {
             if ( appInfo.isJavaEEApp() )
             {
-                mLogger.log(Level.WARNING,"amx.null.appinfo",appName);
+                mLogger.log(Level.WARNING, AMXEELoggerInfo.nullAppinfo, appName);
             }
             return null;
         }
@@ -485,7 +480,7 @@ final class RegistrationSupport
         final com.sun.enterprise.config.serverbeans.Application appConfig = getDomain().getApplications().getApplication(appName);
         if ( appConfig == null )
         {
-            mLogger.log(Level.WARNING,"amx.error.getappconfig",appName);
+            mLogger.log(Level.WARNING, AMXEELoggerInfo.errorGetappconfig, appName);
             return null;
         }
         
@@ -594,7 +589,7 @@ final class RegistrationSupport
         }
         catch (final Exception e)
         {
-            mLogger.log( Level.INFO, "amx.exception.jsr77app.register", new Object[] { getObjectName(ref), e });
+            mLogger.log( Level.INFO, AMXEELoggerInfo.cantRegisterMbean, new Object[] { getObjectName(ref), e });
         }
     //cdebug( "Registered " + child + " for  config resource " + amx.objectName() );
         return mbean77;
@@ -660,7 +655,7 @@ final class RegistrationSupport
                         }
                         catch (final Exception e)
                         {
-                            mLogger.log( Level.WARNING, "amx.unregister.mbean", objectName);
+                            mLogger.log( Level.WARNING, AMXEELoggerInfo.cantUnregisterMbean, objectName);
                             mLogger.log( Level.WARNING, null, e);
                         }
                     }

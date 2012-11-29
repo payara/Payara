@@ -44,7 +44,16 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.common.HTMLActionReporter;
-import com.sun.logging.LogDomains;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -71,20 +80,10 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ContainerRegistry;
 import org.glassfish.internal.data.EngineInfo;
 import org.glassfish.internal.deployment.*;
+import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.security.services.impl.AuthenticationServiceImpl;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Provider;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This service is responsible for loading all deployed applications...
@@ -97,7 +96,7 @@ import java.util.logging.Logger;
 public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestroy, org.glassfish.hk2.api.PostConstruct {
 //public class ApplicationLoaderService implements Startup, org.glassfish.hk2.api.PreDestroy, org.glassfish.hk2.api.PostConstruct {
 
-    final Logger logger = LogDomains.getLogger(AppServerStartup.class, LogDomains.CORE_LOGGER);
+    final Logger logger = KernelLoggerInfo.getLogger();
 
     // During the authentication service's PostConstruct the javax.security.auth.login.Configuration class is constructed.
     // During the Configuration initialization a static variable is set to the current thread's context class loader.
@@ -160,10 +159,10 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         
         assert env!=null;
         try{
-            logger.fine("satisfy.optionalpkg.dependency");
+            logger.fine("Satisfying Optional Packages dependencies...");
             InstalledLibrariesResolver.initializeInstalledLibRegistry(env.getLibPath().getAbsolutePath());
         }catch(Exception e){
-            logger.log(Level.WARNING, "optionalpkg.error", e);
+            logger.log(Level.WARNING, KernelLoggerInfo.exceptionOptionalDepend, e);
         }
 
         DeploymentLifecycleStatsProvider dlsp = new DeploymentLifecycleStatsProvider();
@@ -275,7 +274,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                         final File tmpFile = File.createTempFile(sourceFile.getName(),"");
                         final String path = tmpFile.getAbsolutePath();
                         if (!tmpFile.delete()) {
-                            logger.log(Level.WARNING, "cannot.delete.temp.file", new Object[] {path});
+                            logger.log(Level.WARNING, KernelLoggerInfo.cantDeleteTempFile, path);
                         }
                         File tmpDir = new File(path);
                         tmpDir.deleteOnExit();
@@ -295,7 +294,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                             handler.expand(sourceArchive, archiveFactoryProvider.get().createArchive(tmpDir), dummyContext);
                             sourceArchive =
                                     archiveFactoryProvider.get().openArchive(tmpDir);
-                            logger.log(Level.INFO, "source.not.directory", new Object[] {tmpDir.getAbsolutePath()});
+                            logger.log(Level.INFO, KernelLoggerInfo.sourceNotDirectory, tmpDir.getAbsolutePath());
                             parameters.name = appName;
                         }
                     }
@@ -304,12 +303,12 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                     ApplicationInfo appInfo = deployment.deploy(depContext);
                     if (appInfo==null) {
 
-                        logger.log(Level.SEVERE, "cannot.find.applicationinfo", new Object[] {sourceFile.getAbsolutePath()});
+                        logger.log(Level.SEVERE, KernelLoggerInfo.cantFindApplicationInfo, sourceFile.getAbsolutePath());
                     }
                 } catch(RuntimeException e) {
-                    logger.log(Level.SEVERE, "exception.while.deploying", e);
+                    logger.log(Level.SEVERE, KernelLoggerInfo.deployException, e);
                 } catch(IOException ioe) {
-                    logger.log(Level.SEVERE, "ioexception.while.deploying", ioe);                    
+                    logger.log(Level.SEVERE, KernelLoggerInfo.deployException, ioe);                    
                 } finally {
                     if (sourceArchive!=null) {
                         try {
@@ -364,7 +363,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         try {
             uri = new URI(source);
         } catch (URISyntaxException e) {
-            logger.log(Level.SEVERE, "cannot.determine.location", new Object[] {e.getMessage()});
+            logger.log(Level.SEVERE, KernelLoggerInfo.cantDetermineLocation, e.getLocalizedMessage());
             return;
         }
         File sourceFile = new File(uri);
@@ -409,27 +408,27 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                         if (tracing!=null) {
                             tracing.print(System.out);
                         }
-                        logger.log(Level.INFO, "loading.application.time", new Object[] {
+                        logger.log(Level.INFO, KernelLoggerInfo.loadingApplicationTime, new Object[] {
                                 appName, (Calendar.getInstance().getTimeInMillis() - operationStartTime)});
                     } else {
-                        logger.severe(report.getMessage());
+                        logger.log(Level.SEVERE, KernelLoggerInfo.deployFail, report.getMessage());
                     }
                 } finally {
                     if (archive!=null) {
                         try {
                             archive.close();
                         } catch(IOException e) {
-                            logger.log(Level.FINE, e.getMessage(), e);
+                            logger.log(Level.FINE, KernelLoggerInfo.deployException, e);
                         }
                     }
                 }
             } catch (IOException e) {
-                logger.log(Level.SEVERE, "exception.open.artifact", e);
+                logger.log(Level.SEVERE, KernelLoggerInfo.exceptionOpenArtifact, e);
 
             }
 
         } else {
-            logger.log(Level.SEVERE, "not.found.in.original.location", new Object[] {source});
+            logger.log(Level.SEVERE, KernelLoggerInfo.notFoundInOriginalLocation, source);
         }
     }
 
@@ -479,7 +478,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             try {
                 deployment.disable(parameters, app, appInfo, dummy, logger);
             } catch (Exception e) {
-                logger.log(Level.SEVERE, e.getMessage(), e);
+                logger.log(Level.SEVERE, KernelLoggerInfo.loadingApplicationErrorDisable, e);
             }
             unloadApplicationForTenants(app, dummy, logger);
             appRegistry.remove(appInfo.getName());
@@ -557,7 +556,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                     deploymentContext.setTenant(tenant.getTenant(), app.getName());
                     deployment.deploy(deployment.getSniffersFromApp(app), deploymentContext);
                 } else {
-                    logger.log(Level.SEVERE, "not.found.in.original.location", new Object[] {app.getLocation()});
+                    logger.log(Level.SEVERE, KernelLoggerInfo.notFoundInOriginalLocation, app.getLocation());
                 }
             } catch(Throwable e) {
                subReport.setActionExitCode(ActionReport.ExitCode.FAILURE);

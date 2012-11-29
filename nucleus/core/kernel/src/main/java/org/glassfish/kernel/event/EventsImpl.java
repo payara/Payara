@@ -40,23 +40,22 @@
 
 package org.glassfish.kernel.event;
 
-import com.sun.logging.LogDomains;
 import java.lang.reflect.Method;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.glassfish.api.event.Events;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventListener.Event;
-import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
-import org.glassfish.deployment.common.DeploymentException;
-
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventListener.Event;
 import org.glassfish.api.event.EventTypes;
+import org.glassfish.api.event.Events;
 import org.glassfish.api.event.RestrictTo;
+import org.glassfish.deployment.common.DeploymentException;
+import org.glassfish.kernel.KernelLoggerInfo;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * Simple implementation of the events dispatching facility.
@@ -69,18 +68,21 @@ public class EventsImpl implements Events {
     @Inject
     ExecutorService executor;
     
-    final static Logger logger = LogDomains.getLogger(EventsImpl.class, LogDomains.CORE_LOGGER);
+    final static Logger logger = KernelLoggerInfo.getLogger();
 
     List<EventListener> listeners = Collections.synchronizedList(new ArrayList<EventListener>());
 
+    @Override
     public synchronized void register(EventListener listener) {
         listeners.add(listener);
     }
 
+    @Override
     public void send(final Event event) {
         send(event, true);
     }
 
+    @Override
     public void send(final Event event, boolean asynchronously) {
         
         List<EventListener> l = new ArrayList<EventListener>();
@@ -101,7 +103,7 @@ public class EventsImpl implements Events {
                 // classloader can't be used further to load any classes.
                 // As a result, an exception like NoClassDefFoundError is thrown
                 // from getMethod.
-                Logger.getLogger(EventsImpl.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, KernelLoggerInfo.exceptionSendEvent, ex);
             }
             if (m!=null) {
                 RestrictTo fooBar = m.getParameterTypes()[0].getAnnotation(RestrictTo.class);
@@ -115,11 +117,12 @@ public class EventsImpl implements Events {
 
             if (asynchronously) {
                 executor.submit(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             listener.event(event);
                         } catch(Throwable e) {
-                            logger.log(Level.WARNING, "Exception while dispatching an event", e);
+                            logger.log(Level.WARNING, KernelLoggerInfo.exceptionDispatchEvent, e);
                         }
                     }
                 });
@@ -131,12 +134,13 @@ public class EventsImpl implements Events {
                     // we re-throw the exception to abort the deployment
                     throw de;
                 } catch (Throwable e) {
-                    logger.log(Level.WARNING, "Exception while dispatching an event", e);
+                    logger.log(Level.WARNING, KernelLoggerInfo.exceptionDispatchEvent, e);
                 }
             }
         }
     }
 
+    @Override
     public synchronized boolean unregister(EventListener listener) {
         return listeners.remove(listener);
     }

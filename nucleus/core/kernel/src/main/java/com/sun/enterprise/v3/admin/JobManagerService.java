@@ -39,33 +39,31 @@
  */
 package com.sun.enterprise.v3.admin;
 
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.ManagedJobConfig;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.ManagedJobConfig;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
-import org.glassfish.api.admin.Job;
-import org.glassfish.api.admin.JobManager;
-import org.glassfish.api.admin.AdminCommandState;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.admin.progress.JobInfo;
-import org.glassfish.api.admin.progress.JobInfos;
-import org.glassfish.hk2.api.PostConstruct;
-import org.jvnet.hk2.annotations.Service;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.security.auth.Subject;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import org.glassfish.api.admin.AdminCommandState;
+import org.glassfish.api.admin.Job;
+import org.glassfish.api.admin.JobManager;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.progress.JobInfo;
+import org.glassfish.api.admin.progress.JobInfos;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.kernel.KernelLoggerInfo;
+import org.jvnet.hk2.annotations.Service;
+import javax.xml.bind.Marshaller;
 
 /**
  *  This is the implementation for the JobManagerService
@@ -98,7 +96,7 @@ public class JobManagerService implements JobManager,PostConstruct {
     private static final LocalStringManagerImpl adminStrings =
             new LocalStringManagerImpl(JobManagerService.class);
 
-    private final static Logger logger = LogDomains.getLogger(JobManagerService.class, LogDomains.ADMIN_LOGGER);
+    private final static Logger logger = KernelLoggerInfo.getLogger();
 
      @Inject
      private ExecutorService pool;

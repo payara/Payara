@@ -39,16 +39,11 @@
  */
 package com.sun.enterprise.v3.admin;
 
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-
 import java.io.IOException;
-import java.util.*;
-import java.util.logging.Logger;
-
 import java.io.ObjectInputStream;
-
-import javax.management.*;  // we'll need just about all of them, so avoid clutter
+import java.util.*;
+import javax.management.*;
 import javax.management.loading.ClassLoaderRepository;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;

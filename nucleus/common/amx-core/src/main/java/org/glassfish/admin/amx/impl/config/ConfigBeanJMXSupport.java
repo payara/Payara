@@ -107,6 +107,7 @@ import org.jvnet.hk2.config.DomDocument;
 import org.glassfish.admin.amx.impl.util.InjectedValues;
 
 import java.util.logging.Level;
+import org.glassfish.admin.amx.util.AMXLoggerInfo;
 
 
 /**
@@ -378,8 +379,9 @@ class ConfigBeanJMXSupport
         {
             if (hasNameAttribute())
             {
-                ImplUtil.getLogger().fine("ConfigBeanJMXSupport (AMX): @Configured interface " + mIntf.getName() +
-                                             " has getName() which is not a key value.  Remove getName() or use @Attribute(key=true)");
+                AMXLoggerInfo.getLogger().log(Level.FINE, 
+                        "ConfigBeanJMXSupport (AMX): @Configured interface {0} has getName() which is not a key value.  Remove getName() or use @Attribute(key=true)",
+                        mIntf.getName());
             }
         }
     }
@@ -532,7 +534,8 @@ class ConfigBeanJMXSupport
                 attrs.add(a);
                 if ( a.returnType() != String.class )
                 {
-                    ImplUtil.getLogger().info("Illegal non-string type for " + intf.getName() + "." + m.getName() + "(): " + a.returnType().getName() );
+                    AMXLoggerInfo.getLogger().log(Level.INFO, AMXLoggerInfo.illegalNonstring, 
+                            new Object[]{intf.getName(), m.getName(), a.returnType().getName()});
                 }
                 continue;
             }
@@ -805,7 +808,8 @@ class ConfigBeanJMXSupport
                     }
                     catch (final Exception e)
                     {
-                        ImplUtil.getLogger().log( Level.INFO, "Can't get field value for " + a, e );
+                        AMXLoggerInfo.getLogger().log( Level.INFO, AMXLoggerInfo.cantGetField, 
+                                new Object[] {a, e.getLocalizedMessage()} );
                     }
                 }
             }
@@ -1000,7 +1004,8 @@ class ConfigBeanJMXSupport
         }
         catch (final Exception e)
         {
-            ImplUtil.getLogger().log( Level.INFO, "Can't getTypesImplementing for " + clazz, e );
+            AMXLoggerInfo.getLogger().log( Level.INFO, AMXLoggerInfo.cantGetTypesImplementing, 
+                    new Object[] {clazz, e.getLocalizedMessage()} );
             throw new RuntimeException(e);
         }
     }

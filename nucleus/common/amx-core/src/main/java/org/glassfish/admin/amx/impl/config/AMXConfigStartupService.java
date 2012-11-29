@@ -40,6 +40,7 @@
 package org.glassfish.admin.amx.impl.config;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import java.util.logging.Level;
 
 import org.glassfish.admin.amx.base.DomainRoot;
 import org.glassfish.admin.amx.core.AMXProxy;
@@ -60,6 +61,7 @@ import org.glassfish.admin.amx.config.AMXConfigConstants;
 import org.glassfish.admin.amx.impl.config.AMXConfigLoader;
 import org.glassfish.admin.amx.impl.util.ImplUtil;
 import org.glassfish.admin.amx.impl.util.InjectedValues;
+import org.glassfish.admin.amx.util.AMXLoggerInfo;
 
 import org.glassfish.admin.amx.util.FeatureAvailability;
 import org.glassfish.admin.mbeanserver.PendingConfigBeans;
@@ -106,11 +108,11 @@ public final class AMXConfigStartupService
         }
 
         mPendingConfigBeansBackup = mPendingConfigBeans;
-        ImplUtil.getLogger().fine("Initialized AMXConfig Startup service in " + delta.elapsedMillis() + " ms");
+        AMXLoggerInfo.getLogger().log(Level.FINE, "Initialized AMXConfig Startup service in {0} ms", delta.elapsedMillis());
     }
 
     public void preDestroy() {
-        ImplUtil.getLogger().info("AMXConfigStartupService.preDestroy(): stopping AMX");
+        AMXLoggerInfo.getLogger().info(AMXLoggerInfo.stoppingAMX);
         unloadAMXMBeans();
     }
 

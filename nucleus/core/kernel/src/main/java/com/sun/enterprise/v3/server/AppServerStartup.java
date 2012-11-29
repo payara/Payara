@@ -50,7 +50,19 @@ import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Result;
 import com.sun.enterprise.v3.common.DoNothingActionReporter;
-import com.sun.logging.LogDomains;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Provider;
 import org.glassfish.api.Async;
 import org.glassfish.api.FutureProvider;
 import org.glassfish.api.StartupRunLevel;
@@ -73,26 +85,13 @@ import org.glassfish.hk2.runlevel.RunLevelListener;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.internal.api.PostStartupRunLevel;
+import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 
 /**
- * Main class for Glassfish v3 startup
+ * Main class for Glassfish startup
  * This class spawns a non-daemon Thread when the start() is called.
  * Having a non-daemon thread allows us to control lifecycle of server JVM.
  * The thead is stopped when stop() is called.
@@ -105,7 +104,7 @@ public class AppServerStartup implements ModuleStartup {
     
     StartupContext context;
 
-    final static Logger logger = LogDomains.getLogger(AppServerStartup.class, LogDomains.CORE_LOGGER);
+    final static Logger logger = KernelLoggerInfo.getLogger();
 
     final static Level level = Level.FINE;
 
@@ -317,7 +316,7 @@ public class AppServerStartup implements ModuleStartup {
         if(env.getStatus() != ServerEnvironment.Status.started) {
             // During shutdown because of shutdown hooks, we can be stopped multiple times.
             // In such a case, ignore any subsequent stop operations.
-            logger.info("Already stopped, so just returning");
+            logger.fine("Already stopped, so just returning");
             return;
         }
         env.setStatus(ServerEnvironment.Status.stopping);
@@ -332,7 +331,7 @@ public class AppServerStartup implements ModuleStartup {
 
         runLevelController.proceedTo(0);
 
-        logger.info(localStrings.getLocalString("shutdownfinished","Shutdown procedure finished"));
+        logger.info(KernelLoggerInfo.shutdownFinished);
 
         // notify the server thread that we are done, so that it can come out.
         if (serverThread!=null) {
@@ -369,7 +368,7 @@ public class AppServerStartup implements ModuleStartup {
         try {
             runLevelController.proceedTo(runLevel);
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Shutdown required", e);
+            logger.log(Level.SEVERE, KernelLoggerInfo.shutdownRequired, e);
             shutdown();
             return false;
         } finally {
@@ -436,13 +435,13 @@ public class AppServerStartup implements ModuleStartup {
 
         @Override
         public void onCancelled(RunLevelController controller, int previousProceedTo, boolean isInterrupt) {
-            logger.log(Level.INFO, "shutdown requested");
+            logger.log(Level.INFO, KernelLoggerInfo.shutdownRequested);
             forceShutdown();
         }
 
         @Override
         public void onError(RunLevelController controller, Throwable error, boolean willContinue) {
-            logger.log(Level.INFO, "shutdown requested", error);
+            logger.log(Level.INFO, KernelLoggerInfo.shutdownRequested, error);
             forceShutdown();
         }
 
@@ -535,8 +534,7 @@ public class AppServerStartup implements ModuleStartup {
                         futures.addAll(((FutureProvider) startup).getFutures());
                     }
                 } catch(RuntimeException e) {
-                    logger.log(Level.SEVERE, localStrings.getLocalString("startupservicefailure",
-                            "Startup service failed to start " + activeDescriptor), e);
+                    logger.log(Level.SEVERE, KernelLoggerInfo.startupFailure, e);
                     events.send(new Event(EventTypes.SERVER_SHUTDOWN), false);
                     forceShutdown();
                     return;
@@ -564,19 +562,18 @@ public class AppServerStartup implements ModuleStartup {
             events.send(new Event(EventTypes.SERVER_STARTUP), false);
 
             // finally let's calculate our starting times
-            logger.info(localStrings.getLocalString("startup_end_message",
-                    "{0} ({1}) startup time : {2} ({3}ms), startup services({4}ms), total({5}ms)",
-                    Version.getVersion(), Version.getBuildVersion(), platform,
+            logger.log(Level.INFO, KernelLoggerInfo.startupEndMessage,
+                    new Object[] { Version.getVersion(), Version.getBuildVersion(), platform,
                     (platformInitTime - context.getCreationTime()),
                     (System.currentTimeMillis() - platformInitTime),
-                    System.currentTimeMillis() - context.getCreationTime()));
+                    System.currentTimeMillis() - context.getCreationTime()});
 
             printModuleStatus(systemRegistry, level);
 
             try {
                 // it will only be set when called from AsadminMain and the env. variable AS_DEBUG is set to true
                 long realstart = Long.parseLong(System.getProperty("WALL_CLOCK_START"));
-                logger.info("TOTAL TIME INCLUDING CLI: "  + (System.currentTimeMillis() - realstart));
+                logger.log(Level.INFO, KernelLoggerInfo.startupTotalTime, (System.currentTimeMillis() - realstart));
             }
             catch(Exception e) {
                 // do nothing.
@@ -594,20 +591,16 @@ public class AppServerStartup implements ModuleStartup {
                         // wait for an eventual status, otherwise ignore
                         if (future.get(timeout, unit).isFailure()) {
                             final Throwable t = future.get().exception();
-                            logger.log(Level.SEVERE,
-                                    localStrings.getLocalString("startupfatalstartup",
-                                            "Shutting down server due to startup exception : "),
-                                    t);
+                            logger.log(Level.SEVERE, KernelLoggerInfo.startupFatalException, t);
                             events.send(new Event(EventTypes.SERVER_SHUTDOWN), false);
                             forceShutdown();
                             return;
                         }
                     } catch(TimeoutException e) {
-                        logger.warning(localStrings.getLocalString("startupwaittimeout",
-                                "Timed out, ignoring some startup service status"));
+                        logger.log(Level.WARNING, KernelLoggerInfo.startupWaitTimeout, e);
                     }
                 } catch(Throwable t) {
-                    logger.log(Level.SEVERE, t.getMessage(), t);
+                    logger.log(Level.SEVERE, KernelLoggerInfo.startupException, t);
                 }
             }
 
