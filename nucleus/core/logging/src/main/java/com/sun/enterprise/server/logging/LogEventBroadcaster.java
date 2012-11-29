@@ -39,10 +39,13 @@
  */
 package com.sun.enterprise.server.logging;
 
+import org.jvnet.hk2.annotations.Contract;
+
 /**
  * @author sanshriv
  *
  */
+@Contract
 public interface LogEventBroadcaster {
 
     /**
