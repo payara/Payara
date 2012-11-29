@@ -71,6 +71,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
+import org.glassfish.api.admin.AccessRequired;
 
 /**
  *
@@ -91,6 +92,7 @@ import javax.inject.Inject;
         path="client",
         description="Generate REST client")
 })
+@AccessRequired(resource="domain/rest-client", action="read")
 public class GenerateClientCommand implements AdminCommand {
     @Inject
     ServiceLocator habitat;
