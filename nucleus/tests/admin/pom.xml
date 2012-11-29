@@ -86,10 +86,6 @@ utilities are in the NucleusTestUtils class.
             <configuration>
               <properties>
                 <property>
-                  <name>usedefaultlisteners</name>
-                  <value>false</value> <!-- disabling default listeners is optional -->
-                </property>
-                <property>
                   <name>listener</name>
                   <value>org.testng.reporters.VerboseReporter</value>
                 </property>
