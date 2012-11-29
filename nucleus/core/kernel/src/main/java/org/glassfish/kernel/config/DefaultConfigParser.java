@@ -77,9 +77,6 @@ public class DefaultConfigParser implements ConfigParser {
 
     @Override
     public <T extends Container> T parseContainerConfig(ServiceLocator habitat, final URL configuration, Class<T> configType) throws IOException {
-
-
-        org.jvnet.hk2.config.ConfigParser configParser = new org.jvnet.hk2.config.ConfigParser(habitat);
         // I don't use the GlassFish document here as I don't need persistence
         final DomDocument doc = new DomDocument<GlassFishConfigBean>(habitat) {
         	@Override
