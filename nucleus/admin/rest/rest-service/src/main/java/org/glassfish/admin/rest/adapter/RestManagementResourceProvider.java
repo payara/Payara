@@ -49,13 +49,19 @@ import org.glassfish.admin.rest.resources.GeneratorResource;
 import org.glassfish.admin.rest.resources.StatusGenerator;
 import org.glassfish.admin.rest.resources.custom.ManagementProxyResource;
 import org.glassfish.admin.restconnector.Constants;
+import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.jackson.JacksonBinder;
+import org.glassfish.jersey.server.ResourceConfig;
 import org.jvnet.hk2.config.Dom;
 
+import javax.security.auth.Subject;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +86,17 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
     @Override
     public String getContextRoot() {
         return Constants.REST_MANAGEMENT_CONTEXT_ROOT;
+    }
+
+    @Override
+    public ResourceConfig getResourceConfig(Set<Class<?>> classes,
+                                            final ServerContext sc,
+                                            final ServiceLocator habitat,
+                                            final Class<? extends Factory<Ref<Subject>>> subjectReferenceFactory)
+            throws EndpointRegistrationException {
+        ResourceConfig rc = super.getResourceConfig(classes, sc, habitat, subjectReferenceFactory);
+        rc.addClasses(ExceptionFilter.class);
+        return rc;
     }
 
     @Override
