@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.deployment;
 
+import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import java.util.Set;
 
@@ -50,14 +51,14 @@ import java.util.Set;
  * Time: 3:58 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class CommonResourceDescriptor extends ResourceDescriptor {
+public abstract class CommonResourceDescriptor extends Descriptor {
 
     ResourceDescriptorRegistry resourceDescriptorRegistry = new ResourceDescriptorRegistry();
 
     protected CommonResourceDescriptor() {
     }
 
-    protected CommonResourceDescriptor(ResourceDescriptor other) {
+    protected CommonResourceDescriptor(Descriptor other) {
         super(other);
     }
 

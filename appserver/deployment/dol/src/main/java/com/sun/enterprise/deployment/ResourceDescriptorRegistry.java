@@ -156,7 +156,7 @@ public class ResourceDescriptorRegistry implements Serializable {
     public Set<ResourceDescriptor> getResourceDescriptors(JavaEEResourceType javaEEResourceType) {
         Set<ResourceDescriptor> resourceDescriptorSet = resourceDescriptors.get(javaEEResourceType);
         if(resourceDescriptorSet==null) {
-            return new HashSet<ResourceDescriptor>();
+            resourceDescriptors.put(javaEEResourceType,new HashSet<ResourceDescriptor>());
         }
         return resourceDescriptors.get(javaEEResourceType);
     }
