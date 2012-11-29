@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
- *
+ * 
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
- *
+ * 
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
  * exception as provided by Oracle in the GPL Version 2 section of the License
  * file that accompanied this code.
- *
+ * 
  * Modifications:
  * If applicable, add the following below the License Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyright [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
  * If you wish your version of this file to be governed by only the CDDL or
  * only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -37,63 +37,56 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.v3.admin.commands;
+package com.sun.enterprise.v3.admin;
 
-import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.inject.Inject;
-import org.glassfish.admin.payload.PayloadImpl;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.Payload.Outbound;
-import org.glassfish.hk2.api.PerLookup;
+import javax.inject.Singleton;
+import javax.security.auth.Subject;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AuthorizationPreprocessor;
+import org.glassfish.api.admin.Job;
+import org.glassfish.api.admin.JobManager;
+import org.glassfish.security.services.common.SubjectUtil;
 import org.jvnet.hk2.annotations.Service;
 
-/** Retrieve outbound payload from finished managed job.
- *
- * @author mmares
+/**
+ * Attaches a user attribute to job resources for authorization.
+ * 
+ * @author Tim Quinn
+ * @author Bhakti Mehta
  */
-@Service(name = "_get-payload")
-@PerLookup
-@CommandLock(CommandLock.LockType.NONE)
-@I18n("getpayload")
-@AccessRequired(resource="jobs/job/$jobID", action="read")
-public class GetPayloadCommand implements AdminCommand {
+@Service
+@Singleton
+public class JobAuthorizationAttributeProcessor implements AuthorizationPreprocessor {
+
+    private final static String USER_ATTRIBUTE_NAME = "user";
     
-    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(GetPayloadCommand.class);
+    private final static Pattern JOB_PATTERN = Pattern.compile("(?:jobs/job(?:/(\\d*))?)");
     
     @Inject
-    JobManager registry;
+    private JobManager jobManager;
     
-    @Param(primary=true, optional=false, multiple=false)
-    String jobID;
-
     @Override
-    public void execute(AdminCommandContext context) {
-        ActionReport ar = context.getActionReport();
-        Job job = registry.get(jobID);
-        if (job == null) {
-            ar.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            ar.setMessage(strings.getLocalString("getPayload.wrong.commandinstance.id", "Command instance {0} does not exist.", jobID));
+    public void describeAuthorization(Subject subject, String resourceName, String action, AdminCommand command, Map<String, Object> context, Map<String, String> subjectAttributes, Map<String, String> resourceAttributes, Map<String, String> actionAttributes) {
+        final Matcher m = JOB_PATTERN.matcher(resourceName);
+        if ( ! m.matches()) {
             return;
         }
-        Outbound jobPayload = job.getPayload();
-        if (jobPayload == null) {
-            ar.setMessage(strings.getLocalString("getPayload.nopayload", "Outbound payload does not exist."));
-            return; //Just return. This is OK.
+        if (m.groupCount() == 0) {
+            /*
+             * The resource name pattern did not match for including a job ID, 
+             * so we will not be able to attach a user attribute to the resource.
+             */
+            return;
         }
-        Outbound paylaod = context.getOutboundPayload();
-        if ((paylaod instanceof PayloadImpl.Outbound) && (jobPayload instanceof PayloadImpl.Outbound)) {
-            PayloadImpl.Outbound destination = (PayloadImpl.Outbound) paylaod;
-            PayloadImpl.Outbound source = (PayloadImpl.Outbound) jobPayload;
-            destination.getParts().addAll(source.getParts());
-        } else {
-            ar.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            ar.setMessage(strings.getLocalString("getPayload.unsupported", "Payload type is not supported. Can not download data."));
-        }
+        final String jobID = m.group(1);
+        final Job job = jobManager.get(jobID);
+
+        final String userID = SubjectUtil.getUsernamesFromSubject(job.getSubject()).get(0);
         
+        resourceAttributes.put(USER_ATTRIBUTE_NAME, userID);
     }
-    
-    
 }

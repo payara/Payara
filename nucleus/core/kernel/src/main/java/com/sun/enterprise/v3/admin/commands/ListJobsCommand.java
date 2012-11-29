@@ -55,8 +55,8 @@ import org.jvnet.hk2.annotations.Service;
 
 /**
  * This command will list the jobs related information
- * Currently it prints the jobId, name, time of execution and the state
- * TODO add more information later related to Subject, user etc to JobManagerService
+ * Currently it prints the jobId, name, time of execution,user and the state
+ *
  * @author Bhakti Mehta
  */
 @Service(name="list-jobs")
@@ -206,7 +206,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
 
     @Override
     public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
-        accessChecks.add(new AccessRequired.AccessCheck("jobs/system/$user","READ"));
+        accessChecks.add(new AccessRequired.AccessCheck("jobs/job/$jobID","READ"));
         return accessChecks;
     }
 

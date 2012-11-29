@@ -178,7 +178,7 @@ public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCo
 
     @Override
     public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
-        accessChecks.add(new AccessRequired.AccessCheck("jobs/system/$user/$attached","READ"));
+        accessChecks.add(new AccessRequired.AccessCheck("jobs/job/$jobID","READ"));
         return accessChecks;
     }
 
