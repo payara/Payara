@@ -73,7 +73,6 @@ import org.jvnet.hk2.annotations.Service;
  * com.sun.enterprise.server.logging.AMXLoggingHook to instantiate and call an
  * instance of LoggingImpl.
  */
-@Service
 public final class LoggingImpl extends AMXImplBase //implements /*Logging,*/ LoggingImplHook
 {
 
