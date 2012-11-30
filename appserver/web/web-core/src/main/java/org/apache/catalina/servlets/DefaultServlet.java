@@ -59,7 +59,6 @@
 package org.apache.catalina.servlets;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -76,14 +75,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.StringTokenizer;
+import java.text.MessageFormat;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
@@ -105,9 +98,9 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.catalina.Globals;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ServerInfo;
-import org.apache.catalina.util.StringManager;
 import org.apache.catalina.util.URLEncoder;
 import org.apache.naming.resources.CacheEntry;
 import org.apache.naming.resources.FileDirContext;
@@ -115,6 +108,7 @@ import org.apache.naming.resources.ProxyDirContext;
 import org.apache.naming.resources.Resource;
 import org.apache.naming.resources.ResourceAttributes;
 import org.glassfish.grizzly.http.server.util.AlternateDocBase;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.loader.ResourceEntry;
 import org.glassfish.web.loader.WebappClassLoader;
 
@@ -164,6 +158,45 @@ import org.glassfish.web.loader.WebappClassLoader;
 
 public class DefaultServlet
     extends HttpServlet {
+
+    protected static final ResourceBundle rb = StandardServer.log.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Only skipped [{0}] bytes when [{1}] were requested",
+            level = "WARNING"
+    )
+    public static final String SKIP_BYTES_EXCEPTION = "AS-WEB-CORE-00550";
+
+    @LogMessageInfo(
+            message = "Directory Listing For {0}",
+            level = "INFO"
+    )
+    public static final String DIR_TITLE_INFO = "AS-WEB-CORE-00551";
+
+    @LogMessageInfo(
+            message = "Up To {0}",
+            level = "INFO"
+    )
+    public static final String DIR_PARENT_INFO = "AS-WEB-CORE-00552";
+
+    @LogMessageInfo(
+            message = "Filename",
+            level = "INFO"
+    )
+    public static final String DIR_FILENAME_INFO = "AS-WEB-CORE-00553";
+
+    @LogMessageInfo(
+            message = "Size",
+            level = "INFO"
+    )
+    public static final String DIR_SIZE_INFO = "AS-WEB-CORE-00554";
+
+    @LogMessageInfo(
+            message = "Last Modified",
+            level = "INFO"
+    )
+    public static final String DIR_LAST_MODIFIED_INFO = "AS-WEB-CORE-00555";
+
 
 
     // ----------------------------------------------------- Instance Variables
@@ -298,13 +331,6 @@ public class DefaultServlet
      * JNDI resources name.
      */
     protected static final String RESOURCES_JNDI_NAME = "java:/comp/Resources";
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -1548,11 +1574,13 @@ public class DefaultServlet
         // rewriteUrl(contextPath) is expensive. cache result for later reuse
         String rewrittenContextPath =  rewriteUrl(contextPath);
 
+        String dirTitle = MessageFormat.format(rb.getString(DIR_TITLE_INFO), name);
+
         // Render the page header
         sb.append("<html>\r\n");
         sb.append("<head>\r\n");
         sb.append("<title>");
-        sb.append(sm.getString("directory.title", name));
+        sb.append(dirTitle);
         sb.append("</title>\r\n");
         sb.append("<STYLE><!--");
         sb.append(org.apache.catalina.util.TomcatCSS.TOMCAT_CSS);
@@ -1560,10 +1588,11 @@ public class DefaultServlet
         sb.append("</head>\r\n");
         sb.append("<body>");
         sb.append("<h1>");
-        sb.append(sm.getString("directory.title", name));
+        sb.append(dirTitle);
 
         // Render the link to our parent (if required)
         String parentDirectory = name;
+
         if (parentDirectory.endsWith("/")) {
             parentDirectory =
                 parentDirectory.substring(0, parentDirectory.length() - 1);
@@ -1571,6 +1600,7 @@ public class DefaultServlet
         int slash = parentDirectory.lastIndexOf('/');
         if (slash >= 0) {
             String parent = name.substring(0, slash);
+            String dirParent = MessageFormat.format(rb.getString(DIR_PARENT_INFO), parent);
             sb.append(" - <a href=\"");
             sb.append(rewrittenContextPath);
             if (parent.equals(""))
@@ -1580,7 +1610,7 @@ public class DefaultServlet
                 sb.append("/");
             sb.append("\">");
             sb.append("<b>");
-            sb.append(sm.getString("directory.parent", parent));
+            sb.append(dirParent);
             sb.append("</b>");
             sb.append("</a>");
         }
@@ -1594,13 +1624,13 @@ public class DefaultServlet
         // Render the column headings
         sb.append("<tr>\r\n");
         sb.append("<td align=\"left\"><font size=\"+1\"><strong>");
-        sb.append(sm.getString("directory.filename"));
+        sb.append(rb.getString(DIR_FILENAME_INFO));
         sb.append("</strong></font></td>\r\n");
         sb.append("<td align=\"center\"><font size=\"+1\"><strong>");
-        sb.append(sm.getString("directory.size"));
+        sb.append(rb.getString(DIR_SIZE_INFO));
         sb.append("</strong></font></td>\r\n");
         sb.append("<td align=\"right\"><font size=\"+1\"><strong>");
-        sb.append(sm.getString("directory.lastModified"));
+        sb.append(rb.getString(DIR_LAST_MODIFIED_INFO));
         sb.append("</strong></font></td>\r\n");
         sb.append("</tr>");
 
@@ -2377,8 +2407,10 @@ public class DefaultServlet
             return e;
         }
         if (skipped < start) {
-            return new IOException(sm.getString("defaultservlet.skipfail",
-                    Long.valueOf(skipped), Long.valueOf(start)));
+            String msg = MessageFormat.format(rb.getString(SKIP_BYTES_EXCEPTION),
+                                              new Object[] {Long.valueOf(skipped),
+                                                            Long.valueOf(start)});
+            return new IOException(msg);
         }
 
         IOException exception = null;
@@ -2430,8 +2462,10 @@ public class DefaultServlet
             return e;
         }
         if (skipped < start) {
-            return new IOException(sm.getString("defaultservlet.skipfail",
-                    Long.valueOf(skipped), Long.valueOf(start)));
+            String msg = MessageFormat.format(rb.getString(SKIP_BYTES_EXCEPTION),
+                                              new Object[] {Long.valueOf(skipped),
+                                                            Long.valueOf(start)});
+            return new IOException(msg);
         } 
 
         IOException exception = null;

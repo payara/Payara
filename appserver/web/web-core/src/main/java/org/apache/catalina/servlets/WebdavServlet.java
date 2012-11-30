@@ -65,6 +65,7 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
@@ -95,6 +96,7 @@ import org.apache.naming.resources.CacheEntry;
 import org.apache.naming.resources.Resource;
 import org.apache.naming.resources.ResourceAttributes;
 import org.glassfish.grizzly.http.util.FastHttpDateFormat;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -159,6 +161,17 @@ public class WebdavServlet
     extends DefaultServlet {
 
 
+    @LogMessageInfo(
+            message = "JAXP initialization failed",
+            level = "WARNING"
+    )
+    public static final String JAXP_INTI_FAILED = "AS-WEB-CORE-00580";
+
+    @LogMessageInfo(
+            message = "Ignored external entity, publicID: {0}, systemID: {1}",
+            level = "INFO"
+    )
+    public static final String IGNORED_EXTERNAL_ENTITY_INFO = "AS-WEB-CORE-00581";
     // -------------------------------------------------------------- Constants
 
 
@@ -340,7 +353,7 @@ public class WebdavServlet
                     new WebdavResolver(this.getServletContext()));
         } catch(ParserConfigurationException e) {
             throw new ServletException
-                (sm.getString("webdavservlet.jaxpfailed"));
+                (rb.getString(JAXP_INTI_FAILED));
         }
         return documentBuilder;
     }
@@ -2840,8 +2853,9 @@ public class WebdavServlet
         }
      
         public InputSource resolveEntity (String publicId, String systemId) {
-            context.log(sm.getString("webdavservlet.enternalEntityIgnored",
-                    publicId, systemId));
+            String msg = MessageFormat.format(rb.getString(IGNORED_EXTERNAL_ENTITY_INFO),
+                                              new Object[] {publicId, systemId});
+            context.log(msg);
             return new InputSource(
                     new StringReader("Ignored external entity"));
         }

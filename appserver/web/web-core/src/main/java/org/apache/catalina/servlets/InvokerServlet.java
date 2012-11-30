@@ -63,7 +63,9 @@ import org.apache.catalina.ContainerServlet;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
@@ -73,6 +75,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 
 
 /**
@@ -86,6 +90,44 @@ import java.io.IOException;
 
 public final class InvokerServlet
     extends HttpServlet implements ContainerServlet {
+
+    public static final ResourceBundle rb = StandardServer.log.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Container has not called setWrapper() for this servlet",
+            level = "WARNING"
+    )
+    public static final String SET_WRAPPER_NOT_CALLED_EXCEPTION = "AS-WEB-CORE-00570";
+
+    @LogMessageInfo(
+            message = "Cannot call invoker servlet with a named dispatcher",
+            level = "WARNING"
+    )
+    public static final String CANNOT_CALL_INVOKER_SERVLET = "AS-WEB-CORE-00571";
+
+    @LogMessageInfo(
+            message = "No servlet name or class was specified in path {0}",
+            level = "WARNING"
+    )
+    public static final String INVALID_PATH_EXCEPTION = "AS-WEB-CORE-00572";
+
+    @LogMessageInfo(
+            message = "Cannot create servlet wrapper for path {0}",
+            level = "WARNING"
+    )
+    public static final String CANNOT_CREATE_SERVLET_WRAPPER_EXCEPTION = "AS-WEB-CORE-00573";
+
+    @LogMessageInfo(
+            message = "Cannot allocate servlet instance for path {0}",
+            level = "WARNING"
+    )
+    public static final String CANNOT_ALLOCATE_SERVLET_INSTANCE_EXCEPTION = "AS-WEB-CORE-00574";
+
+    @LogMessageInfo(
+            message = "Cannot deallocate servlet instance for path {0}",
+            level = "WARNING"
+    )
+    public static final String CANNOT_DEALLOCATE_SERVLET_INSTANCE_EXCEPTION = "AS-WEB-CORE-00575";
 
 
     // ----------------------------------------------------- Instance Variables
@@ -101,13 +143,6 @@ public final class InvokerServlet
      * The debugging detail level for this servlet.
      */
     private int debug = 0;
-
-
-    /**
-     * The string manager for this package.
-     */
-    private static StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     /**
@@ -218,7 +253,7 @@ public final class InvokerServlet
         // Ensure that our ContainerServlet properties have been set
         if ((wrapper == null) || (context == null))
             throw new UnavailableException
-                (sm.getString("invokerServlet.noWrapper"));
+                (rb.getString(SET_WRAPPER_NOT_CALLED_EXCEPTION));
 
         // Set our properties from the initialization parameters
         String value = null;
@@ -260,7 +295,7 @@ public final class InvokerServlet
         // Disallow calling this servlet via a named dispatcher
         if (request.getAttribute(Globals.NAMED_DISPATCHER_ATTR) != null)
             throw new ServletException
-                (sm.getString("invokerServlet.notNamed"));
+                (rb.getString(CANNOT_CALL_INVOKER_SERVLET));
 
         // Identify the input parameters and our "included" state
         String inRequestURI = null;
@@ -292,16 +327,18 @@ public final class InvokerServlet
         if (inPathInfo == null) {
             if (debug >= 1)
                 log("Invalid pathInfo 'null'");
-            if (included)
-                throw new ServletException
-                    (sm.getString("invokerServlet.invalidPath", inRequestURI));
+            String msg = MessageFormat.format(rb.getString(INVALID_PATH_EXCEPTION),
+                    inRequestURI);
+            if (included) {
+                throw new ServletException(msg);
+            }
             else {
                 /* IASRI 4878272
                 response.sendError(HttpServletResponse.SC_NOT_FOUND,
                                    inRequestURI);
                 */
                 // BEGIN IASRI 4878272
-                log(sm.getString("invokerServlet.invalidPath", inRequestURI));
+                log(msg);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 // END IASRI 4878272
                 return;
@@ -378,22 +415,23 @@ public final class InvokerServlet
                 context.addChild(wrapper);
                 context.addServletMapping(pattern, name);
             } catch (Throwable t) {
-                log(sm.getString("invokerServlet.cannotCreate",
-                                 inRequestURI), t);
+                String msg = MessageFormat.format(rb.getString(CANNOT_CREATE_SERVLET_WRAPPER_EXCEPTION),
+                                                  inRequestURI);
+                log(msg, t);
                 context.removeServletMapping(pattern);
                 context.removeChild(wrapper);
                 if (included)
                     throw new ServletException
-                        (sm.getString("invokerServlet.cannotCreate",
-                                      inRequestURI), t);
+                        (msg, t);
                 else {
                     /* IASRI 4878272
                     response.sendError(HttpServletResponse.SC_NOT_FOUND,
                                        inRequestURI);
                     */
                     // BEGIN IASRI 4878272
-                    log(sm.getString("invokerServlet.invalidPath", 
-                                     inRequestURI));
+                    String invalidPathMsg = MessageFormat.format(rb.getString(INVALID_PATH_EXCEPTION),
+                                                                 inRequestURI);
+                    log(invalidPathMsg);
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
                     // END IASRI 4878272
                     return;
@@ -420,12 +458,18 @@ public final class InvokerServlet
 
         // Allocate a servlet instance to perform this request
         Servlet instance = null;
+
+        String cannotAllocateMsg = MessageFormat.format(rb.getString(CANNOT_ALLOCATE_SERVLET_INSTANCE_EXCEPTION),
+                inRequestURI);
+        String invalidPathMsg = MessageFormat.format(rb.getString(INVALID_PATH_EXCEPTION),
+                inRequestURI);
         try {
             //            if (debug >= 2)
             //                log("  Allocating servlet instance");
             instance = wrapper.allocate();
         } catch (ServletException e) {
-            log(sm.getString("invokerServlet.allocate", inRequestURI), e);
+
+            log(cannotAllocateMsg, e);
             context.removeServletMapping(pattern);
             context.removeChild(wrapper);
             Throwable rootCause = e.getRootCause();
@@ -437,7 +481,7 @@ public final class InvokerServlet
                                    inRequestURI);
                 */
                 // BEGIN IASRI 4878272
-                log(sm.getString("invokerServlet.invalidPath", inRequestURI));
+                log(invalidPathMsg);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 // END IASRI 4878272
                 return;
@@ -448,16 +492,14 @@ public final class InvokerServlet
             } else if (rootCause instanceof ServletException) {
                 throw (ServletException) rootCause;
             } else {
-                throw new ServletException
-                    (sm.getString("invokerServlet.allocate", inRequestURI),
-                     rootCause);
+                throw new ServletException(cannotAllocateMsg, rootCause);
             }
         } catch (Throwable e) {
-            log(sm.getString("invokerServlet.allocate", inRequestURI), e);
+            log(cannotAllocateMsg, e);
             context.removeServletMapping(pattern);
             context.removeChild(wrapper);
             throw new ServletException
-                (sm.getString("invokerServlet.allocate", inRequestURI), e);
+                (cannotAllocateMsg, e);
         }
 
         // After loading the wrapper, restore some of the fields when including
@@ -541,17 +583,19 @@ public final class InvokerServlet
         }
 
         // Deallocate the allocated servlet instance
+        String cannotDeallocateMsg = MessageFormat.format(rb.getString(CANNOT_DEALLOCATE_SERVLET_INSTANCE_EXCEPTION),
+                                          inRequestURI);
         try {
             //            if (debug >= 2)
             //                log("  deallocate servlet instance");
             wrapper.deallocate(instance);
         } catch (ServletException e) {
-            log(sm.getString("invokerServlet.deallocate", inRequestURI), e);
+            log(cannotDeallocateMsg, e);
             throw e;
         } catch (Throwable e) {
-            log(sm.getString("invokerServlet.deallocate", inRequestURI), e);
+            log(cannotDeallocateMsg, e);
             throw new ServletException
-                (sm.getString("invokerServlet.deallocate", inRequestURI), e);
+                (cannotDeallocateMsg, e);
         }
 
     }
