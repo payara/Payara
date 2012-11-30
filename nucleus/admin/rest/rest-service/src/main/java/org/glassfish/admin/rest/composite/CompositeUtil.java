@@ -81,6 +81,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.RestExtension;
 import org.glassfish.admin.rest.composite.metadata.AttributeReference;
 import org.glassfish.admin.rest.composite.metadata.HelpText;
+import org.glassfish.admin.rest.utils.JsonUtil;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.SseCommandHelper;
 import org.glassfish.admin.rest.utils.Util;
@@ -250,12 +251,26 @@ public class CompositeUtil {
                     if ("null".equals(o.toString())) {
                         o = null;
                     }
-                    invoke(setter, attribute, model, o);
+                    if (!isUnmodifiedConfidentialProperty(modelClass, name, o)) {
+                        invoke(setter, attribute, model, o);
+                    }
                 }
             }
         }
         return model;
 
+    }
+
+    private boolean isUnmodifiedConfidentialProperty(Class modelClass, String setterMethodName, Object value) {
+        if (!(value instanceof String)) {
+            return false;
+        }
+        String s = (String)value;
+        if (!JsonUtil.CONFIDENTIAL_PROPERTY_SET.equals(s)) {
+            return false;
+        }
+        String getterMethodName = "g" + setterMethodName.substring(1);
+        return JsonUtil.isConfidentialProperty(modelClass, getterMethodName);
     }
 
     private Object processJsonArray(Type param0, JSONArray array) throws JSONException {

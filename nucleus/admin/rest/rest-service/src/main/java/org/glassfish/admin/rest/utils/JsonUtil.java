@@ -59,7 +59,7 @@ import org.glassfish.admin.rest.composite.metadata.Confidential;
  * @author jdlee
  */
 public class JsonUtil {
-    public static final String CONFIDENTIAL_PROPERTY_SET = "********";
+    public static final String CONFIDENTIAL_PROPERTY_SET = "@_Oracle_Confidential_Property_Set_V1.1_#";
     public static final String CONFIDENTIAL_PROPERTY_UNSET = null;
 
     public static Object getJsonObject(Object object) throws JSONException {
@@ -121,18 +121,30 @@ public class JsonUtil {
             return false;
         }
         // TBD - why aren't the annotations available from 'method'?
-        for (Class<?> ifaces : model.getClass().getInterfaces()) {
-            try {
-                Method m = ifaces.getDeclaredMethod(method.getName());
-                Confidential c = m.getAnnotation(Confidential.class);
-                if (c != null) {
-                    return true;
-                }
-            } catch (Exception e) {
-                // try another interface
+        return isConfidentialProperty(model.getClass(), method.getName());
+    }
+
+    public static boolean isConfidentialProperty(Class clazz, String getterMethodName) {
+        // Try this class
+        if (getConfidentialAnnotation(clazz, getterMethodName) != null) {
+            return true;
+        }
+        // Try its interfaces
+        for (Class<?> iface : clazz.getInterfaces()) {
+            if (getConfidentialAnnotation(iface, getterMethodName) != null) {
+                return true;
             }
         }
         return false;
+    }
+
+    private static Confidential getConfidentialAnnotation(Class clazz, String getterMethodName) {
+        try {
+            Method m = clazz.getDeclaredMethod(getterMethodName);
+            return m.getAnnotation(Confidential.class);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static JSONArray processCollection(Collection c) throws JSONException {
