@@ -85,6 +85,7 @@ class Constants {
     static final String DRYRUN_PREPEND = "DRYRUN:  ";
     static final String README = "PlatformServices.log";
     static final String SERVICE_NAME_PREFIX = "application/GlassFish/";
+    static final String ETC = "/etc";
     static final String INITD = "/etc/init.d";
     static final String REGEXP_PATTERN_BEGIN = "[KS][0-9][0-9]?";
 

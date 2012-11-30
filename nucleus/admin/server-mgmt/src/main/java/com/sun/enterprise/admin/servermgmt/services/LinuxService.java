@@ -181,13 +181,13 @@ public class LinuxService extends NonSMFServiceAdapter {
         // Yes -- they differ on different platforms!
         // I Know what Sol10, Ubuntu, Debian, SuSE, RH and OEL look like
         // on SuSE the rc?.d dirs are in /init.d/
-        // On RH, OEL they are linked dirs to the real dirs under /etc/rc.d/ 
+        // On RH, OEL they are linked dirs to the real dirs under /etc/rc.d/
         // On Ubuntu they are real dirs in /etc
 
         // try to make this as forgiving as possible.
         File[] rcDirs = new File[8];    // 0, 1, 2...6, S
-        if (!setRcDirs(new File("/etc"), rcDirs))
-            if (!setRcDirs(new File("/etc/init.d"), rcDirs))
+        if (!setRcDirs(new File(Constants.ETC), rcDirs))
+            if (!setRcDirs(new File(Constants.INITD), rcDirs))
                 throw new RuntimeException(Strings.get("no_rc2"));
 
         // now we have an array of at least some rc directories.
@@ -196,6 +196,10 @@ public class LinuxService extends NonSMFServiceAdapter {
     }
 
     private boolean setRcDirs(File dir, File[] rcDirs) {
+
+        if(LINUX_HACK) {
+            return true;
+        }
         // some have 4 missing, some have S missing etc.  All seem to have 5
         if (!new File(dir, "rc5.d").isDirectory())
             return false;

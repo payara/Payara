@@ -191,7 +191,18 @@ public abstract class ServiceAdapter implements Service {
         // the password file may just have master password or just user or just user password
         //
 
-        info.setAppServerUser(p.getProperty("AS_ADMIN_USER"));
+        String userFromPasswordFile = p.getProperty("AS_ADMIN_USER");
+
+        // Byron Nevins sez:
+        // unfiled bug -- this was the ONLY check for username.  I changed it
+        // in November 2012 -- now the user has been already set to whatever CLICommand's
+        // ProgramOptions.getUser() returned.
+        // the username in the passwordfile takes precedence if it is in there.
+        // In summary - before this change if --user was specified then that username was
+        // completely ignored.  Now it is used.
+        //
+        if(StringUtils.ok(userFromPasswordFile))
+            info.setAppServerUser(p.getProperty("AS_ADMIN_USER"));
     }
 
     private Properties getProperties(File f) {

@@ -139,7 +139,7 @@ public final class CreateServiceCommand extends CLICommand {
             info.setTrace(logger.isLoggable(Level.FINER));
             info.setDryRun(dry_run);
             info.setForce(force);
-
+            info.setAppServerUser(getProgramOptions().getUser());
             if (ok(serviceName))
                 info.setServiceName(serviceName);
 
@@ -156,7 +156,7 @@ public final class CreateServiceCommand extends CLICommand {
             // Why the messiness?  We don't want to talk about the help
             // file inside the help file thus the complications below...
             String help = service.getSuccessMessage();
-            String tellUserAboutHelp = strings.get("create.service.runtimeHelp", help, 
+            String tellUserAboutHelp = strings.get("create.service.runtimeHelp", help,
                     new File(dirs.getServerDir(), "PlatformServices.log"));
             logger.info(tellUserAboutHelp);
             service.writeReadmeFile(help);
