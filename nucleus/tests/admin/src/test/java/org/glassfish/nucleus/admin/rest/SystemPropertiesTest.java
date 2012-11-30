@@ -134,7 +134,7 @@ public class SystemPropertiesTest extends RestTestBase {
         createAndTestInstanceOverride(prop1, PROP_VALUE, PROP_VALUE+"-instace", "server");
     }
 
-    @Test(enabled = false)
+    @Test()
     public void testNotResolvingDasInstanceProperties() {
         final String instanceName = "in" + generateRandomNumber();
         final String propertyName = "property" + generateRandomString();
@@ -150,7 +150,7 @@ public class SystemPropertiesTest extends RestTestBase {
         createAndTestInstanceOverride(propertyName, PROP_VALUE, PROP_VALUE + "-instance", instanceName);
     }
     
-    @Test(enabled = false)
+    @Test()
     public void testNotResolvingClusterProperties() {
         final String propertyName = "property" + generateRandomString();
         final String clusterName = "c" + generateRandomNumber();
@@ -168,11 +168,11 @@ public class SystemPropertiesTest extends RestTestBase {
     }
     
     protected void createAndTestConfigProperty(final String propertyName, final String propertyValue, String configName) {
-        Map<String, String> payload = new HashMap<String, String>() {{
-            put(propertyName, propertyValue);
-        }};
         final String url = URL_CONFIG_SYSTEM_PROPERTIES.replaceAll("%config%", configName);
-        Response response = post(url, payload);
+        Response response = get(url);
+        Map<String, String> payload = getSystemPropertiesMap(getSystemProperties(MarshallingUtils.buildMapFromDocument(response.readEntity(String.class))));
+        payload.put(propertyName, propertyValue);
+        response = post(url, payload);
         checkStatusForSuccess(response);
 
             // Check config props
@@ -243,4 +243,13 @@ public class SystemPropertiesTest extends RestTestBase {
         
         return null;
     }
+    
+    private Map<String, String> getSystemPropertiesMap (List<Map<String, String>> propsList) {
+        Map<String, String> allPropsMap = new HashMap();
+        for (Map<String, String> sysProp : propsList) {
+            allPropsMap.put(sysProp.get("name"),  sysProp.get("value"));
+        }
+        return allPropsMap;
+    }
+    
 }
