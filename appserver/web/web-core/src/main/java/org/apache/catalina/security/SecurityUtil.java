@@ -60,7 +60,9 @@ package org.apache.catalina.security;
 
 
 import org.apache.catalina.Globals;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.security.auth.Subject;
 import javax.servlet.Filter;
@@ -76,6 +78,7 @@ import java.security.Principal;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 /**
@@ -108,26 +111,27 @@ public final class SecurityUtil{
     private static HashMap<Object, Method[]> objectCache =
         new HashMap<Object, Method[]>();
         
-    private static Logger log = Logger.getLogger(SecurityUtil.class.getName());
-    
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
+
     private static String PACKAGE = "org.apache.catalina.security";
-    
+
     private static boolean packageDefinitionEnabled = (
          System.getProperty("package.definition") == null ||
          System.getProperty("package.definition").equals("")) ? false : true;
     
-    /**
-     * The string resources for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(PACKAGE);    
-
     // START SJS WS 7.0 6236329
     /**
      * Do we need to execute all invokation under a Subject.doAs call.
      */
     public static final boolean executeUnderSubjectDoAs = true;
     // END SJS WS 7.0 6236329
+
+    @LogMessageInfo(
+            message = "An exception occurs when running the PrivilegedExceptionAction block.",
+            level = "FINE"
+    )
+    public static final String PRIVILEGE_ACTION_EXCEPTION = "AS-WEB-CORE-00540";
    
     
     /**
@@ -364,7 +368,7 @@ public final class SecurityUtil{
             }
             
             if (log.isLoggable(Level.FINE)){
-                log.log(Level.FINE, sm.getString("SecurityUtil.doAsPrivilege"), e);
+                log.log(Level.FINE, PRIVILEGE_ACTION_EXCEPTION, e);
             }
             
             if (e instanceof UnavailableException)
