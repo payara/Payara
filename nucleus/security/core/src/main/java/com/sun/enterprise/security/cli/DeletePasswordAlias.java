@@ -80,7 +80,7 @@ import org.glassfish.hk2.api.PerLookup;
 @Service(name="delete-password-alias")
 @PerLookup
 @I18n("delete.password.alias")
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn(RuntimeType.ALL)
 @TargetType({CommandTarget.DAS,CommandTarget.DOMAIN})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,

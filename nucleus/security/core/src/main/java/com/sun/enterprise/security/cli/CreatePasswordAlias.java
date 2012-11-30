@@ -84,7 +84,7 @@ import javax.inject.Named;
 @Service(name="create-password-alias")
 @PerLookup
 @I18n("create.password.alias")
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn(RuntimeType.ALL)
 @TargetType({CommandTarget.DAS,CommandTarget.DOMAIN})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
