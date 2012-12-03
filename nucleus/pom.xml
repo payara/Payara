@@ -115,7 +115,7 @@
         <woodstox.version>4.1.2</woodstox.version>
         <jaxb.version>2.2.7-b41</jaxb.version>
         <antlr.version>2.7.6</antlr.version>
-        <jersey.version>2.0-m09</jersey.version>
+        <jersey.version>2.0-m10</jersey.version>
         <jax-rs-api.version>2.0-m12</jax-rs-api.version>
         <mimepull.version>1.8</mimepull.version>
         <jbi.version>1.0</jbi.version>

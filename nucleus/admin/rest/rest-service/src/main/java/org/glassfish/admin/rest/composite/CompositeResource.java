@@ -68,7 +68,8 @@ import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.jersey.internal.util.collection.Ref;
-import org.glassfish.jersey.media.sse.EventChannel;
+import org.glassfish.jersey.media.sse.EventOutput;
+
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.glassfish.security.services.common.SubjectUtil;
 
@@ -147,9 +148,9 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
     }
 
     /**
-     * This method will handle any OPTIONS requests for composite resources. 
+     * This method will handle any OPTIONS requests for composite resources.
      * @return
-     * @throws JSONException 
+     * @throws JSONException
      */
     @OPTIONS
     public String options() throws JSONException {
@@ -163,7 +164,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
      * "injection" of the various system objects the resource might need. If the requested Class can not be instantiated
      * (e.g., it does not have a no-arg public constructor), the system will throw a <code>WebApplicationException</code>
      * with an HTTP status code of 500 (internal server error).
-     * 
+     *
      * @param clazz The Class of the desired sub-resource
      * @return
      */
@@ -175,7 +176,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
             cr.subjectRef = subjectRef;
             cr.uriInfo = uriInfo;
             cr.sc = sc;
-            
+
             return resource;
         } catch (Exception ex) {
             throw new WebApplicationException(ex, Status.INTERNAL_SERVER_ERROR);
@@ -251,18 +252,18 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
     protected ActionReporter executeCommand(String command, ParameterMap parameters, boolean throwBadRequest, boolean throwOnWarning) {
         return getCompositeUtil().executeCommand(getSubject(), command, parameters, throwBadRequest, throwOnWarning);
     }
-    
+
     /**
      * Execute an <code>AdminCommand</code> via SSE, but provide an <code>ActionReportProcessor</code> that allows
      * the calling resource, via an <code>EntityBuilder</code> instance, to return a <code>ResponseBody</code> that
      * includes the newly create entity, as well as any messages returned by the subsystem.
      */
-    protected EventChannel executeSseCreateCommand(final Subject subject, final String command,
+    protected EventOutput executeSseCreateCommand(final Subject subject, final String command,
                                         final ParameterMap parameters,
                                         final EntityBuilder builder) {
         return getCompositeUtil().executeSseCommand(subject, command, parameters, new SseCommandHelper.ActionReportProcessor() {
             @Override
-            public ActionReport process(ActionReport report, EventChannel ec) {
+            public ActionReport process(ActionReport report, EventOutput ec) {
                 if (report != null) {
                     ActionReport.ExitCode exitCode = report.getActionExitCode();
                     ResponseBody rb = Util.responseBody()
@@ -289,18 +290,18 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
     }
 
     /** Execute an <code>AdminCommand</code> with the specified parameters and
-     * return EventChannel suitable for SSE.
+     * return EventOutput suitable for SSE.
      */
-    protected EventChannel executeSseCommand(final Subject subject, final String command, 
-                                        final ParameterMap parameters, 
+    protected EventOutput executeSseCommand(final Subject subject, final String command,
+                                        final ParameterMap parameters,
                                         final SseCommandHelper.ActionReportProcessor processor) {
         return getCompositeUtil().executeSseCommand(subject, command, parameters, processor);
     }
 
     /** Execute an <code>AdminCommand</code> with the specified parameters and
-     * return EventChannel suitable for SSE.
+     * return EventOutput suitable for SSE.
      */
-    protected EventChannel executeSseCommand(final Subject subject, final String command, 
+    protected EventOutput executeSseCommand(final Subject subject, final String command,
                                         final ParameterMap parameters) {
         return getCompositeUtil().executeSseCommand(subject, command, parameters);
     }
@@ -336,7 +337,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
         // All the candidate names are in use.  Return an empty name.
         return "";
     }
-    
+
     protected Response created(URI location, ResponseBody responseBody) {
         return Response
                 .status(Status.CREATED)

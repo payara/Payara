@@ -75,9 +75,8 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
-import org.glassfish.jersey.media.sse.EventChannel;
 import org.glassfish.jersey.media.sse.OutboundEvent;
-import org.glassfish.jersey.media.sse.EventChannel;
+import org.glassfish.jersey.media.sse.SseFeature;
 
 
 /**
@@ -280,7 +279,7 @@ public class CommandResource {
     @POST
     @Path("/{command:.*}/")
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces(EventChannel.SERVER_SENT_EVENTS)
+    @Produces(SseFeature.SERVER_SENT_EVENTS)
     public Response execCommandSimpInSseOut(@PathParam("command") String command,
                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
@@ -295,7 +294,7 @@ public class CommandResource {
     @POST
     @Path("/{command:.*}/")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(EventChannel.SERVER_SENT_EVENTS)
+    @Produces(SseFeature.SERVER_SENT_EVENTS)
     public Response execCommandMultInSseOut(@PathParam("command") String command,
                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
@@ -311,7 +310,7 @@ public class CommandResource {
 
     @POST
     @Path("/{command:.*}/")
-    @Produces(EventChannel.SERVER_SENT_EVENTS)
+    @Produces(SseFeature.SERVER_SENT_EVENTS)
     public Response execCommandEmptyInSseOut(@PathParam("command") String command,
                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId) {
