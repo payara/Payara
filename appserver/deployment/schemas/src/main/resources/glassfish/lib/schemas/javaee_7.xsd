@@ -1389,18 +1389,6 @@
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
-      <xsd:element name="connection-timeout"
-                   type="javaee:xsdIntegerType"
-                   minOccurs="0">
-        <xsd:annotation>
-          <xsd:documentation>
-
-            Sets the maximum time in seconds that to wait while
-            attempting to connect to the resource.
-            
-          </xsd:documentation>
-        </xsd:annotation>
-      </xsd:element>
       <xsd:element name="transactional"
                    type="javaee:xsdBooleanType"
                    minOccurs="0">
