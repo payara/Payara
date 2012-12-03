@@ -591,6 +591,6 @@ public class Util {
      * @return ResponseBodyImpl
      */
     public static ResponseBody responseBody() {
-        return new ResponseBodyImpl();
+        return new ResponseBody();
     }
 }

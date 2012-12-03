@@ -39,19 +39,50 @@
  */
 package org.glassfish.admin.rest.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.glassfish.admin.rest.composite.RestModel;
 
-public interface ResponseBody {
+public class ResponseBody {
     public static final String EVENT_NAME="response/body";
-    List<Message> getMessages();
-    void setMessages(List<Message> messages);
-    RestModel getEntity();
-    ResponseBody setEntity(RestModel entity);
+    private List<Message> messages = new ArrayList<Message>();
+    private RestModel entity;
 
-    ResponseBody add(Message.Severity severity, String message);
-    ResponseBody add(Message message);
-    ResponseBody addSuccess(String message);
-    ResponseBody addWarning(String message);
-    ResponseBody addFailure(String message);
+    public List<Message> getMessages() {
+        return this.messages;
+    }
+
+    public void setMessages(List<Message> val) {
+        this.messages = val;
+    }
+
+    public RestModel getEntity() {
+        return entity;
+    }
+
+    public ResponseBody setEntity(RestModel entity) {
+        this.entity = entity;
+        return this;
+    }
+
+    public ResponseBody addSuccess(String message) {
+        return add(Message.Severity.SUCCESS, message);
+    }
+
+    public ResponseBody addWarning(String message) {
+        return add(Message.Severity.WARNING, message);
+    }
+
+    public ResponseBody addFailure(String message) {
+        return add(Message.Severity.FAILURE, message);
+    }
+
+    public ResponseBody add(Message.Severity severity, String message) {
+        return add(new Message(severity, message));
+    }
+
+    public ResponseBody add(Message message) {
+        getMessages().add(message);
+        return this;
+    }
 }

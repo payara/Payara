@@ -39,20 +39,34 @@
  */
 package org.glassfish.admin.rest.model;
 
-public interface Message {
-
+public class Message {
     public static enum Severity {
-
         SUCCESS,
         WARNING,
         FAILURE
     };
 
-    String getMessage();
+    private Severity severity;
+    private String message;
 
-    void setMessage(String message);
+    public Message(Severity severity, String message) {
+        this.severity = severity;
+        this.message = message;
+    }
 
-    Severity getSeverity();
+    public Severity getSeverity() {
+        return this.severity;
+    }
 
-    void setSeverity(Severity severity);
+    public void setSeverity(Severity val) {
+        this.severity = val;
+    }
+
+    public String getMessage() {
+        return this.message;
+    }
+
+    public void setMessage(String val) {
+        this.message = val;
+    }
 }

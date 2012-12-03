@@ -258,7 +258,6 @@ public class CompositeUtil {
             }
         }
         return model;
-
     }
 
     private boolean isUnmodifiedConfidentialProperty(Class modelClass, String setterMethodName, Object value) {
@@ -468,6 +467,7 @@ public class CompositeUtil {
                         .entity(ar.getCombinedMessage())
                         .build());
             } else {
+                // TODO: Why NOT_FOUND?
                 throw new WebApplicationException(Status.NOT_FOUND);
             }
         }

@@ -61,12 +61,15 @@ import org.glassfish.admin.rest.RestResource;
 import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
+import org.glassfish.admin.rest.model.Message;
 import org.glassfish.admin.rest.model.ResponseBody;
 import org.glassfish.admin.rest.utils.SseCommandHelper;
 import org.glassfish.admin.rest.utils.Util;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.media.sse.EventChannel;
+import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.glassfish.security.services.common.SubjectUtil;
 
 /**
@@ -249,6 +252,42 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
         return getCompositeUtil().executeCommand(getSubject(), command, parameters, throwBadRequest, throwOnWarning);
     }
     
+    /**
+     * Execute an <code>AdminCommand</code> via SSE, but provide an <code>ActionReportProcessor</code> that allows
+     * the calling resource, via an <code>EntityBuilder</code> instance, to return a <code>ResponseBody</code> that
+     * includes the newly create entity, as well as any messages returned by the subsystem.
+     */
+    protected EventChannel executeSseCreateCommand(final Subject subject, final String command,
+                                        final ParameterMap parameters,
+                                        final EntityBuilder builder) {
+        return getCompositeUtil().executeSseCommand(subject, command, parameters, new SseCommandHelper.ActionReportProcessor() {
+            @Override
+            public ActionReport process(ActionReport report, EventChannel ec) {
+                if (report != null) {
+                    ActionReport.ExitCode exitCode = report.getActionExitCode();
+                    ResponseBody rb = Util.responseBody()
+                            .add(Message.Severity.valueOf(exitCode.name()), report.getMessage());
+                    if (exitCode.equals(ActionReport.ExitCode.SUCCESS)) {
+                        rb.setEntity(builder.get(report));
+                    }
+
+                    OutboundEvent outEvent = new OutboundEvent.Builder()
+                            .name(Status.CREATED.name())
+                            .mediaType(MediaType.APPLICATION_JSON_TYPE)
+                            .data(ResponseBody.class, rb)
+                            .build();
+                    try {
+                        ec.write(outEvent);
+                    } catch (Exception ex) {
+                    }
+                }
+
+                return report;
+            }
+
+        });
+    }
+
     /** Execute an <code>AdminCommand</code> with the specified parameters and
      * return EventChannel suitable for SSE.
      */
@@ -257,7 +296,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
                                         final SseCommandHelper.ActionReportProcessor processor) {
         return getCompositeUtil().executeSseCommand(subject, command, parameters, processor);
     }
-    
+
     /** Execute an <code>AdminCommand</code> with the specified parameters and
      * return EventChannel suitable for SSE.
      */
