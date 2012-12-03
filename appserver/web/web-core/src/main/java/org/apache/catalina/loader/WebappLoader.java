@@ -920,16 +920,19 @@ public class WebappLoader
     private void log(String message, Throwable t) {
         org.apache.catalina.Logger logger = null;
         String containerName = null;
-        String msg = MessageFormat.format(rb.getString(WEB_APP_LOADER_EXCEPTION),
-                                          new Object[] {containerName, message});
+
 
         if (container != null) {
             logger = container.getLogger();
             containerName = container.getName();
         }
         if (logger != null) {
+            String msg = MessageFormat.format(rb.getString(WEB_APP_LOADER_EXCEPTION),
+                    new Object[] {containerName, message});
             logger.log(msg, t);
         } else {
+            String msg = MessageFormat.format(rb.getString(WEB_APP_LOADER_EXCEPTION),
+                    new Object[] {containerName, message});
             log.log(Level.WARNING, msg, t);
         }
     }
