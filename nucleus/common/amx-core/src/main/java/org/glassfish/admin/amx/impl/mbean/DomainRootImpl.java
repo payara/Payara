@@ -71,7 +71,7 @@ public class DomainRootImpl extends AMXImplBase // implements DomainRoot
 
     private final String mAppserverDomainName;
     private final File mInstanceRoot;
-    private volatile ComplianceMonitor mCompliance;
+    private volatile ComplianceMonitor mCompliance = null;
 
     private static final Logger logger = AMXLoggerInfo.getLogger();
 
@@ -136,11 +136,14 @@ public class DomainRootImpl extends AMXImplBase // implements DomainRoot
         } 
     }
 
-    public Map<ObjectName, List<String>> getComplianceFailures() {
+    public Map<ObjectName, List<String>> getComplianceFailures() {       
+        final Map<ObjectName, List<String>> result = MapUtil.newMap();
+        if (mCompliance == null) {
+            return result;
+        }
         final Map<ObjectName, AMXValidator.ProblemList> failures =
                 mCompliance.getComplianceFailures();
-        final Map<ObjectName, List<String>> result = MapUtil.newMap();
-
+        
         for (final Map.Entry<ObjectName, AMXValidator.ProblemList> me : failures.entrySet()) {
             result.put(me.getKey(), me.getValue().getProblems());
         }
