@@ -180,6 +180,9 @@
                                 <goals>
                                     <goal>lazy-deploy</goal>
                                 </goals>
+                                <configuration>
+                                    <skip>true</skip>
+                                </configuration>
                             </execution>
                             <execution>
                                 <id>lazy-install</id>
