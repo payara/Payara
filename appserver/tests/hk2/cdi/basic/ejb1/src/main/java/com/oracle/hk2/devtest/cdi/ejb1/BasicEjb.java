@@ -39,12 +39,17 @@
  */
 package com.oracle.hk2.devtest.cdi.ejb1;
 
+import org.jvnet.hk2.annotations.Contract;
+
 /**
  * @author jwells
  *
  */
+@Contract
 public interface BasicEjb {
     
-    public String helloWorld();
+    public boolean cdiManagerInjected();
+    
+    public boolean serviceLocatorInjected();
 
 }

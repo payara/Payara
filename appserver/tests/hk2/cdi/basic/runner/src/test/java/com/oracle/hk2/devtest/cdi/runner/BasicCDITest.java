@@ -39,10 +39,16 @@
  */
 package com.oracle.hk2.devtest.cdi.runner;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.glassfish.tests.utils.NucleusStartStopTest;
 import org.glassfish.tests.utils.NucleusTestUtils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import com.oracle.hk2.devtest.cdi.ejb1.BasicEjb;
 
 /**
  * 
@@ -52,16 +58,24 @@ import org.testng.annotations.Test;
 public class BasicCDITest extends NucleusStartStopTest {
     private final static String EJB1_JAR = "cdi/basic/ejb1/target/ejb1.jar";
     private final static String EJB1_APP_NAME = "ejb1";
+    private final static String BASIC_EJB_JNDI_NAME = "java:global/ejb1/EjbInjectedWithServiceLocator";
     
     /**
      * Ensures that a ServiceLocator can be injected into a CDI bean
+     * @throws NamingException 
      */
     @Test
-    public void testBasicHK2CDIInjection() {
+    public void testBasicHK2CDIInjection() throws NamingException {
         boolean deployed1 = NucleusTestUtils.nadmin("deploy", EJB1_JAR);
         
         try {
-            Assert.assertTrue(deployed1);
+            Context context = new InitialContext();
+            
+            BasicEjb basic = (BasicEjb) context.lookup(BASIC_EJB_JNDI_NAME);
+            Assert.assertNotNull(basic);
+            
+            Assert.assertTrue(basic.cdiManagerInjected());
+            Assert.assertTrue(basic.serviceLocatorInjected());
         }
         finally {
             if (deployed1) {

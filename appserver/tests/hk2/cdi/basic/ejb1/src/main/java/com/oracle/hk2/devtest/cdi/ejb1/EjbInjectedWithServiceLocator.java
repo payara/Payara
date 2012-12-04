@@ -44,6 +44,8 @@ import javax.ejb.Stateless;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 
+import org.glassfish.hk2.api.ServiceLocator;
+
 /**
  * Simple EJB that injects a ServiceHandle!
  * 
@@ -55,7 +57,18 @@ public class EjbInjectedWithServiceLocator implements BasicEjb {
     @Inject
     private BeanManager beanManager;
     
-    public String helloWorld() {
-        return "Hello, world! " + beanManager;
+    @Inject
+    private ServiceLocator locator;
+
+    @Override
+    public boolean cdiManagerInjected() {
+        return (beanManager != null);
     }
+
+    @Override
+    public boolean serviceLocatorInjected() {
+        return (locator != null);
+    }
+    
+    
 }
