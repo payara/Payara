@@ -142,7 +142,6 @@ public class OutputBuffer extends Writer
     private boolean suspended = false;
 
     private int size;
-    private boolean isChunkingDisabled;
     
     private org.glassfish.grizzly.http.server.io.OutputBuffer.LifeCycleListener sessionCookieChecker =
             new SessionCookieChecker();
@@ -157,13 +156,6 @@ public class OutputBuffer extends Writer
         this(DEFAULT_BUFFER_SIZE);
 
     }
-
-
-    // START S1AS8 4861933
-    public OutputBuffer(boolean chunkingDisabled) {
-        this(DEFAULT_BUFFER_SIZE, chunkingDisabled);
-    }
-    // END S1AS8 4861933
 
 
     /**
@@ -181,17 +173,9 @@ public class OutputBuffer extends Writer
         cb.setCharOutputChannel(this);
         cb.setLimit(size);
         */
-        this(size, false);
+        this.size = size;
         // END S1AS8 4861933
     }
-
-
-    // START S1AS8 4861933
-    public OutputBuffer(int size, boolean chunkingDisabled) {
-        this.size = size;
-        this.isChunkingDisabled = chunkingDisabled;
-    }
-    // END S1AS8 4861933
 
 
     // ------------------------------------------------------------- Properties

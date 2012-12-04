@@ -349,15 +349,6 @@ public class PECoyoteConnector extends Connector {
     }
 
 
-    /**
-     * @return true if chunking is disabled on this Connector, and false
-     * otherwise
-     */
-    public boolean isChunkingDisabled() {
-        return chunkingDisabled;
-    }
-
-
     /** 
      * Create (or allocate) and return a Request object suitable for
      * specifying the contents of a Request to the responsible ContractProvider.
@@ -379,7 +370,7 @@ public class PECoyoteConnector extends Connector {
     @Override
     public Response createResponse() {
 
-        PECoyoteResponse response = new PECoyoteResponse(isChunkingDisabled());
+        PECoyoteResponse response = new PECoyoteResponse();
         response.setConnector(this);
         return response;
 

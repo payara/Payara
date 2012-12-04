@@ -50,13 +50,6 @@ import org.apache.catalina.connector.Response;
  */
 public class PECoyoteResponse extends Response {
 
-    /*
-     * Constructor.
-     */
-    public PECoyoteResponse(boolean chunkingDisabled) {
-	super(chunkingDisabled);
-    }
-
     @Override
     protected CoyoteWriter createWriter(OutputBuffer outbuf) {
         return new PECoyoteWriter(outbuf);

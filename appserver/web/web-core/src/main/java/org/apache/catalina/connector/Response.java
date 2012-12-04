@@ -185,7 +185,7 @@ public class Response
     
     // START OF SJSAS 6231069
     public Response(boolean chunkingDisabled) {
-        outputBuffer = new OutputBuffer(chunkingDisabled);
+        outputBuffer = new OutputBuffer();
         outputStream = new CoyoteOutputStream(outputBuffer);
         writer = createWriter(outputBuffer);
         urlEncoder.addSafeCharacter('/');
