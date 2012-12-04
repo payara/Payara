@@ -76,7 +76,14 @@
                 <configuration>
                     <skip>false</skip>
                 </configuration>
-            </plugin>            
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>           
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -137,14 +144,6 @@
                 </resources>
                 <finalName>${project.artifactId}-${javaee.version}</finalName>
                 <plugins>
-                    <!-- skip default-deploy -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </plugin>
                     <!-- skip default-install -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
