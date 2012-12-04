@@ -77,13 +77,13 @@
         <dependency>
             <groupId>org.glassfish.tests.hk2.isolation.web</groupId>
             <artifactId>iso1</artifactId>
-            <version>4.0-SNAPSHOT</version>
+            <version>${project.version}</version>
             <type>war</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.tests.hk2.isolation.web</groupId>
             <artifactId>iso2</artifactId>
-            <version>4.0-SNAPSHOT</version>
+            <version>${project.version}</version>
             <type>war</type>
         </dependency>
         <dependency>
@@ -95,7 +95,7 @@
         <dependency>
             <groupId>org.glassfish.main.tests</groupId>
             <artifactId>utils-ng</artifactId>
-            <version>4.0-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>test</scope>
             <type>jar</type>
         </dependency>

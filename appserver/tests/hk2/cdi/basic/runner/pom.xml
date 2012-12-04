@@ -45,18 +45,50 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.tests</groupId>
-        <artifactId>tests</artifactId>
+        <groupId>org.glassfish.tests.hk2.cdi</groupId>
+        <artifactId>basic</artifactId>
         <version>4.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.glassfish.tests</groupId>
-    <artifactId>hk2</artifactId>
-    <packaging>pom</packaging>
+    <groupId>org.glassfish.tests.hk2.cdi.basic</groupId>
+    <artifactId>runner</artifactId>
 
-    <name>GlassFish HK2 Tests</name>  
-    <modules>
-        <module>isolation</module>
-        <module>cdi</module>
-    </modules>
+    <name>HK2 CDI Basic Test Runner</name>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <nucleus.home>../../distributions/glassfish/target/stage/glassfish3</nucleus.home>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+       <dependency>
+            <groupId>org.glassfish.tests.hk2.cdi.basic</groupId>
+            <artifactId>ejb1</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.5.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.tests</groupId>
+            <artifactId>utils-ng</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
 </project>

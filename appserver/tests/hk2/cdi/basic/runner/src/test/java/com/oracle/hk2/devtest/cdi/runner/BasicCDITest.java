@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.hk2.devtest.isolation.runner;
+package com.oracle.hk2.devtest.cdi.runner;
 
 import org.glassfish.tests.utils.NucleusStartStopTest;
 import org.glassfish.tests.utils.NucleusTestUtils;
@@ -45,59 +45,29 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
- * Ensures that different apps get different service locators
  * 
  * @author jwells
  *
  */
-public class IsolationTest extends NucleusStartStopTest {
-    private final static String ISO1_WAR = "isolation/web/iso1/target/hk2-isolation-web-iso1.war";
-    private final static String ISO1_APP_NAME = "hk2-isolation-web-iso1";
-    private final static String ISO1_URL = "http://localhost:8080/hk2-isolation-web-iso1/iso1";
-    
-    private final static String ISO2_WAR = "isolation/web/iso2/target/hk2-isolation-web-iso2.war";
-    private final static String ISO2_APP_NAME = "hk2-isolation-web-iso2";
-    private final static String ISO2_URL = "http://localhost:8080/hk2-isolation-web-iso2/iso2";
-    
-    private String getName(String rawHTML) {
-        int leftParen = rawHTML.indexOf("(");
-        int rightParen = rawHTML.indexOf(")");
-        
-        Assert.assertTrue(leftParen >= 0);
-        Assert.assertTrue(rightParen > leftParen);
-        
-        return rawHTML.substring(leftParen+1, rightParen);
-    }
+public class BasicCDITest extends NucleusStartStopTest {
+    private final static String EJB1_JAR = "cdi/basic/ejb1/target/ejb1.jar";
+    private final static String EJB1_APP_NAME = "ejb1";
     
     /**
-     * Ensures that the service locators in two web-apps are different
+     * Ensures that a ServiceLocator can be injected into a CDI bean
      */
-    @Test(enabled=false)
-    public void testWebAppsAreIsolated() {
-        boolean deployed1 = NucleusTestUtils.nadmin("deploy", ISO1_WAR);
-        boolean deployed2 = NucleusTestUtils.nadmin("deploy", ISO2_WAR);
+    @Test
+    public void testBasicHK2CDIInjection() {
+        boolean deployed1 = NucleusTestUtils.nadmin("deploy", EJB1_JAR);
         
         try {
             Assert.assertTrue(deployed1);
-            Assert.assertTrue(deployed2);
-            
-            String fromURL1 = NucleusTestUtils.getURL(ISO1_URL);
-            String fromURL2 = NucleusTestUtils.getURL(ISO2_URL);
-            
-            String iso1Name = getName(fromURL1);
-            String iso2Name = getName(fromURL2);
-            
-            Assert.assertNotEquals(iso1Name, iso2Name);
         }
         finally {
             if (deployed1) {
-                NucleusTestUtils.nadmin("undeploy", ISO1_APP_NAME);
-            }
-            if (deployed2) {
-                NucleusTestUtils.nadmin("undeploy", ISO2_APP_NAME);
-            }
+                NucleusTestUtils.nadmin("undeploy", EJB1_APP_NAME);
+            } 
         }
-        
         
     }
 }
