@@ -433,10 +433,7 @@ public class LoggerBase
         support.removePropertyChangeListener(listener);
 
     }
-                                                                               
-    protected String domain;
-    protected String host;
-    protected String path;
+
     protected ObjectName oname;
     protected ObjectName controller;
 
@@ -450,10 +447,6 @@ public class LoggerBase
 
     public ObjectName getObjectName() {
         return oname;
-    }
-          
-    public String getDomain() {
-        return domain;
     }
 
     public void init() {

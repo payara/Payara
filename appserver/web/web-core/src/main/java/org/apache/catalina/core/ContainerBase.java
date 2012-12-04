@@ -1655,9 +1655,7 @@ public abstract class ContainerBase
     }
 
     // -------------------- JMX and Registration  --------------------
-    protected String type;
     protected String domain;
-    protected String suffix;
     protected ObjectName oname;
     protected ObjectName controller;
 
@@ -1688,14 +1686,6 @@ public abstract class ContainerBase
 
     public void setDomain(String domain) {
         this.domain=domain;
-    }
-    
-    public String getType() {
-        return type;
-    }
-
-    protected String getJSR77Suffix() {
-        return suffix;
     }
 
 

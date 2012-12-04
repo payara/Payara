@@ -1677,11 +1677,6 @@ public abstract class RealmBase
 
     // -------------------- JMX and Registration  --------------------
 
-    protected String type;
-    protected String domain;
-    protected String host;
-    protected String path;
-    protected ObjectName oname;
     protected ObjectName controller;
 
     public ObjectName getController() {
@@ -1690,18 +1685,6 @@ public abstract class RealmBase
 
     public void setController(ObjectName controller) {
         this.controller = controller;
-    }
-
-    public ObjectName getObjectName() {
-        return oname;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public String getType() {
-        return type;
     }
 
     // BEGIN IASRI 4808401, 4934562

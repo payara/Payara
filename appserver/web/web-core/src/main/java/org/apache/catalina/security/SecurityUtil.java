@@ -114,8 +114,6 @@ public final class SecurityUtil{
     private static final Logger log = StandardServer.log;
     private static final ResourceBundle rb = log.getResourceBundle();
 
-    private static String PACKAGE = "org.apache.catalina.security";
-
     private static boolean packageDefinitionEnabled = (
          System.getProperty("package.definition") == null ||
          System.getProperty("package.definition").equals("")) ? false : true;

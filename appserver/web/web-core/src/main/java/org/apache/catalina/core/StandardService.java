@@ -701,7 +701,6 @@ public class StandardService
                 Container engine=this.getContainer();
                 domain=engine.getName();
                 oname=new ObjectName(domain + ":type=Service,serviceName="+name);
-                this.controller=oname;
             } catch (Exception e) {
                 String msg = MessageFormat.format(rb.getString(ERROR_REGISTER_SERVICE_EXCEPTION), domain);
                 log.log(Level.SEVERE, msg, e);
@@ -746,7 +745,6 @@ public class StandardService
 
     protected String domain;
     protected ObjectName oname;
-    protected ObjectName controller;
 
     public ObjectName getObjectName() {
         return oname;
