@@ -65,10 +65,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.glassfish.admin.rest.client.ClientWrapper;
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
-import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import static org.testng.AssertJUnit.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.w3c.dom.Document;
 
 public class RestTestBase {
@@ -149,7 +151,6 @@ public class RestTestBase {
                 put("X-GlassFish-3", "dummy"); // from Constants in rest-service
             }}, adminUser, adminPass);
         }
-        client.configuration().register(new LoggingFilter());
         return client;
     }
 

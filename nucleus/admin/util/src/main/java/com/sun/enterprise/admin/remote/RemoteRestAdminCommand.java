@@ -97,8 +97,8 @@ import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
 import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.glassfish.jersey.media.sse.SseFeature;
+import org.glassfish.jersey.media.multipart.MultiPartClientBinder;
+import org.glassfish.jersey.media.sse.EventChannel;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -461,7 +461,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     protected boolean useSse() throws CommandException {
         return getCommandModel().isManagedJob();
     }
-
+    
     public String executeCommand(ParameterMap opts) throws CommandException {
         Metrix.event("executeCommand() - start");
         //Just to be sure. Cover get help
@@ -477,7 +477,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 ParameterMap preparedParams = processParams(opts);
                 MediaType[] acceptMediaTypes = new MediaType[] {MEDIATYPE_MULTIPART, MEDIATYPE_ACTIONREPORT};
                 if (useSse()) {
-                    acceptMediaTypes = new MediaType[] {SseFeature.SERVER_SENT_EVENTS_TYPE};
+                    acceptMediaTypes = new MediaType[] {EventChannel.SERVER_SENT_EVENTS_TYPE};
                 }
                 Response response = doRestCommand(preparedParams, null, "POST", false, acceptMediaTypes);
                 MediaType resultMediaType = response.getMediaType();
@@ -514,7 +514,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     } catch (Exception ex) {
                         throw new CommandException(ex.getMessage(), ex);
                     }
-                } else if (SseFeature.SERVER_SENT_EVENTS_TYPE.isCompatible(resultMediaType)) {
+                } else if (EventChannel.SERVER_SENT_EVENTS_TYPE.isCompatible(resultMediaType)) {
                     try {
                         logger.log(Level.FINEST, "Response is SSE - about to read events");
                         closeSse = false;
@@ -824,11 +824,10 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     strings.get("internal", e.getMessage()), e);
         }
     }
-
+    
     private static Client createClient() {
-        Client c = JerseyClientFactory.newClient();
+        Client c = JerseyClientFactory.newClient(new ClientConfig().binders(new MultiPartClientBinder()));
         c.configuration()
-            .register(new MultiPartFeature())
             .register(new CsrfProtectionFilter("CLI"))
             .register(new ActionReportJsonReader())
             .register(new ParameterMapFormWriter())
@@ -839,7 +838,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             .register(GfSseEventReceiverReader.class); //Must be managed (it uses injection)
         return c;
     }
-
+    
     private WebTarget createTarget(URI uri) {
         if (client == null) {
             client = createClient();
@@ -1146,7 +1145,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         outboundPayload = null; // no longer needed
         return null;
     }
-
+    
     protected SSLContext getSslContext() {
         return createStandardSslContext(interactive);
     }
@@ -1652,7 +1651,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     private static boolean ok(String s) {
         return s != null && s.length() > 0;
     }
-
+    
     /** CLI can use this method to inicialise internal structures of used services
      * like jersey and ssl in parallel with other logic
      */

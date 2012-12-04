@@ -40,21 +40,25 @@
 
 package org.glassfish.admin.rest.resources;
 
-import java.util.List;
 
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
-import org.glassfish.jersey.media.sse.SseFeature;
-
+import java.util.List;
+import javax.ws.rs.DELETE;
+import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.utils.ResourceUtil;
+import org.glassfish.admin.rest.results.ActionReportResult;
+
+
+
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.jersey.media.sse.EventChannel;
 
 /**
  *
@@ -86,13 +90,13 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
         }
         return executeCommand(preprocessData(data));
     }
-
+    
     @DELETE
     @Consumes({
         MediaType.APPLICATION_JSON,
         MediaType.APPLICATION_XML,
         MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces(SseFeature.SERVER_SENT_EVENTS)
+    @Produces(EventChannel.SERVER_SENT_EVENTS)
     public Response processDeleteSse(ParameterMap data) {
         if (data == null) {
             data = new ParameterMap();
@@ -148,7 +152,7 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
     public Object get() {
         return options();
     }
-
+    
     private ParameterMap preprocessData(final ParameterMap data) {
         processCommandParams(data);
         addQueryString(uriInfo.getQueryParameters(), data);

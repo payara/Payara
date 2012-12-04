@@ -53,11 +53,12 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.UriBuilder;
 
+import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.JerseyClientFactory;
 import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
 import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
-import org.glassfish.jersey.jettison.JettisonFeature;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.jettison.JettisonBinder;
+import org.glassfish.jersey.media.multipart.MultiPartClientBinder;
 
 /**
  * This class wraps the Client returned by JerseyClientFactory. Using this class allows us to encapsulate many of the
@@ -81,9 +82,8 @@ public class ClientWrapper implements Client {
     }
 
     public ClientWrapper(final Map<String, String> headers, String userName, String password) {
-        realClient = JerseyClientFactory.newClient();
-        realClient.configuration().register(new MultiPartFeature());
-        realClient.configuration().register(new JettisonFeature());
+        realClient = JerseyClientFactory.newClient(new ClientConfig().
+                binders(new MultiPartClientBinder(), new JettisonBinder()));
         realClient.configuration().register(new CsrfProtectionFilter());
         if ((userName != null) && (password != null)) {
             realClient.configuration().register(new HttpBasicAuthFilter(userName, password));

@@ -38,11 +38,10 @@
  * holder.
  */
 
+
 package org.glassfish.admin.rest.adapter;
 
-
-import javax.ws.rs.core.Feature;
-
+import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.admin.rest.RestResource;
 import org.glassfish.admin.rest.generator.ASMResourcesGenerator;
 import org.glassfish.admin.rest.generator.ResourcesGenerator;
@@ -56,20 +55,19 @@ import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.jersey.jackson.JacksonFeature;
-
+import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.internal.util.collection.Ref;
+import org.glassfish.jersey.jackson.JacksonBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.jvnet.hk2.config.Dom;
 
 import javax.security.auth.Subject;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.sun.enterprise.config.serverbeans.Domain;
-import org.glassfish.jersey.internal.util.collection.Ref;
 
 /**
  * Responsible for providing ReST resources for management operations.
@@ -81,8 +79,8 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
     }
 
     @Override
-    public Feature getJsonFeature() {
-        return new JacksonFeature();
+    public AbstractBinder getJsonBinder() {
+        return new JacksonBinder();
     }
 
     @Override
@@ -162,13 +160,20 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
 
         r.add(org.glassfish.admin.rest.provider.OptionsResultJsonProvider.class);
         r.add(org.glassfish.admin.rest.provider.OptionsResultXmlProvider.class);
-
+        
         r.add(org.glassfish.jersey.media.sse.OutboundEventWriter.class);
         r.add(org.glassfish.admin.rest.provider.AdminCommandStateJsonProvider.class);
         r.add(org.glassfish.admin.rest.provider.ProgressStatusJsonProvider.class);
         r.add(org.glassfish.admin.rest.provider.ProgressStatusEventJsonProvider.class);
 
         return r;
+    }
+
+    @Override
+    public Map<String, Boolean> getFeatures() {
+        final Map<String, Boolean> features = super.getFeatures();
+        //features.put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+        return features;
     }
 
     private void generateASM(ServiceLocator habitat) {

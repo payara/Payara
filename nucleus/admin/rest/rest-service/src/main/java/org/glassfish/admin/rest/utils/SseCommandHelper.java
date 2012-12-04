@@ -45,6 +45,7 @@ import com.sun.enterprise.v3.admin.JobManagerService;
 import com.sun.enterprise.v3.common.PropsFileActionReporter;
 import com.sun.logging.LogDomains;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.core.MediaType;
@@ -55,7 +56,7 @@ import org.glassfish.api.admin.AdminCommandState;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.jersey.media.sse.EventOutput;
+import org.glassfish.jersey.media.sse.EventChannel;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 
 /**
@@ -65,36 +66,36 @@ import org.glassfish.jersey.media.sse.OutboundEvent;
  * @author martinmares
  */
 public class SseCommandHelper implements Runnable, AdminCommandEventBroker.AdminCommandListener {
-
+    
     /** If implementation of this interface is registered then it's process()
      * method is used to convert ActionReport before it is transfered to the
-     * client.
+     * client. 
      */
     public static interface ActionReportProcessor {
-
+        
         /** Framework calls this method to process report before it is send
          * to the client. Implementation also can send custom events using
-         * provided event channel.
+         * provided event channel. 
          */
-        public ActionReport process(ActionReport report, EventOutput ec);
-
+        public ActionReport process(ActionReport report, EventChannel ec);
+        
     }
-
+    
     private final static Logger logger =
             LogDomains.getLogger(CommandResource.class, LogDomains.ADMIN_LOGGER);
     private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(CommandResource.class);
 
     private final CommandRunner.CommandInvocation commandInvocation;
     private final ActionReportProcessor processor;
-    private final EventOutput eventOuptut = new EventOutput();
+    private final EventChannel eventChannel = new EventChannel();
     private AdminCommandEventBroker broker;
 
-    private SseCommandHelper(final CommandInvocation commandInvocation,
+    private SseCommandHelper(final CommandInvocation commandInvocation, 
                              final ActionReportProcessor processor) {
         this.commandInvocation = commandInvocation;
         this.processor = processor;
     }
-
+    
     @Override
     public void run() {
         try {
@@ -110,7 +111,7 @@ public class SseCommandHelper implements Runnable, AdminCommandEventBroker.Admin
             onAdminCommandEvent(AdminCommandStateImpl.EVENT_STATE_CHANGED, acs);
         } finally {
             try {
-                eventOuptut.close();
+                eventChannel.close();
             } catch (IOException ex) {
                 logger.log(Level.WARNING, null, ex);
             }
@@ -122,11 +123,11 @@ public class SseCommandHelper implements Runnable, AdminCommandEventBroker.Admin
             broker.unregisterListener(this);
         }
     }
-
+    
     private Object process(final String name, Object event) {
         if (processor != null && AdminCommandStateImpl.EVENT_STATE_CHANGED.equals(name)) {
             AdminCommandState acs = (AdminCommandState) event;
-            ActionReport report = processor.process(acs.getActionReport(), eventOuptut);
+            ActionReport report = processor.process(acs.getActionReport(), eventChannel);
             event = new AdminCommandStateImpl(acs.getState(), report, acs.isOutboundPayloadEmpty(), acs.getId());
         }
         return event;
@@ -145,7 +146,7 @@ public class SseCommandHelper implements Runnable, AdminCommandEventBroker.Admin
         if (name.startsWith(AdminCommandEventBroker.LOCAL_EVENT_PREFIX)) {
             return; //Prevent events from client to be send back to client
         }
-        if (eventOuptut.isClosed()) {
+        if (eventChannel.isClosed()) {
             unregister();
             return;
         }
@@ -163,18 +164,18 @@ public class SseCommandHelper implements Runnable, AdminCommandEventBroker.Admin
                 .data(event.getClass(), event)
                 .build();
         try {
-            eventOuptut.write(outEvent);
+            eventChannel.write(outEvent);
         } catch (Exception ex) {
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, null, ex);
             }
-            if (eventOuptut.isClosed()) {
+            if (eventChannel.isClosed()) {
                 unregister();
             }
         }
     }
 
-    public static EventOutput invokeAsync(CommandInvocation commandInvocation, ActionReportProcessor processor) {
+    public static EventChannel invokeAsync(CommandInvocation commandInvocation, ActionReportProcessor processor) {
         if (commandInvocation == null) {
             throw new IllegalArgumentException("commandInvocation");
         }
@@ -182,6 +183,6 @@ public class SseCommandHelper implements Runnable, AdminCommandEventBroker.Admin
         commandInvocation.listener(".*", helper);
         JobManagerService jobManagerService = Globals.getDefaultHabitat().getService(JobManagerService.class);
         jobManagerService.getThreadPool().execute(helper);
-        return helper.eventOuptut;
+        return helper.eventChannel;
     }
 }

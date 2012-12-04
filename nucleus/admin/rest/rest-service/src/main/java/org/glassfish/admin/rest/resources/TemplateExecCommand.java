@@ -62,15 +62,13 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import org.glassfish.jersey.media.sse.EventOutput;
-
 import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.OptionsCapable;
 import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.utils.Util;
+import org.glassfish.jersey.media.sse.EventChannel;
 
 /**
  * @author ludo
@@ -148,9 +146,9 @@ public class TemplateExecCommand implements OptionsCapable {
             }
         }
     }
-
+    
     protected Response executeCommandAsSse(ParameterMap data) {
-        EventOutput ec = ResourceUtil.runCommandWithSse(commandName, data, null, null);
+        EventChannel ec = ResourceUtil.runCommandWithSse(commandName, data, null, null);
         return Response.status(HttpURLConnection.HTTP_OK).entity(ec).build();
     }
 
@@ -183,11 +181,11 @@ public class TemplateExecCommand implements OptionsCapable {
     private Map<String, Object> getExtraProperties(RestActionReporter actionReport) {
         Properties props = actionReport.getExtraProperties();
         Map<String, Object> map = new HashMap<String, Object>();
-
+        
         for (Map.Entry<Object, Object> entry : props.entrySet()) {
             map.put(entry.getKey().toString(), entry.getValue());
         }
-
+        
         return map;
     }
 
