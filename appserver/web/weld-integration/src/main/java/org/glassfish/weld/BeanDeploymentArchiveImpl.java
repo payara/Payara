@@ -58,8 +58,10 @@ import static org.glassfish.weld.connector.WeldUtils.WEB_INF_LIB;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -120,7 +122,6 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     /**
      * Produce a <code>BeanDeploymentArchive</code> form information contained
      * in the provided <code>ReadableArchive</code>.
-     * @param context
      */
     public BeanDeploymentArchiveImpl(ReadableArchive archive,
             Collection<com.sun.enterprise.deployment.EjbDescriptor> ejbs, DeploymentContext ctx) {
@@ -511,11 +512,11 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         Enumeration<String> entries = archive.entries();
         while (entries.hasMoreElements()) {
             String entry = entries.nextElement();
-            handleEntry(entry, isBeanArchive);
+            handleEntry(archive, entry, isBeanArchive);
         }
     }
 
-    private void handleEntry(String entry, boolean isBeanArchive) throws ClassNotFoundException {
+    private void handleEntry(ReadableArchive archive, String entry, boolean isBeanArchive) throws ClassNotFoundException {
         if (legalClassName(entry)) {
             String className = filenameToClassname(entry);
             try {
@@ -530,10 +531,16 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                         "Error while trying to load Bean Class "
                         + className + " : " + t.toString());
             }
-        } else if (entry.endsWith("beans.xml")) {
-            URL beansXmlUrl = Thread.currentThread().getContextClassLoader().getResource(entry);
-            if (beansXmlUrl != null && ! beansXmlUrLs.contains( beansXmlUrl )) {  // http://java.net/jira/browse/GLASSFISH-17157
-                beansXmlUrLs.add(beansXmlUrl);
+        } else if (entry.endsWith("/beans.xml")) {
+            try {
+                // use a throwaway classloader to load the application's beans.xml
+                ClassLoader throwAwayClassLoader = new URLClassLoader(new URL[] {archive.getURI().toURL()}, null);
+                URL beansXmlUrl = throwAwayClassLoader.getResource(entry);
+                if (beansXmlUrl != null && ! beansXmlUrLs.contains( beansXmlUrl )) {  // http://java.net/jira/browse/GLASSFISH-17157
+                    beansXmlUrLs.add(beansXmlUrl);
+                }
+            } catch (MalformedURLException e) {
+                logger.log(Level.SEVERE, "Error reading archive :" + e.getMessage());
             }
         }
     }
@@ -554,7 +561,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                 ReadableArchive jarArchive = archive.getSubArchive(entry);
                 collectJarInfo(jarArchive, true);
             } else {
-                handleEntry(entry, true);
+                handleEntry(archive, entry, true);
             }
         }
     }
