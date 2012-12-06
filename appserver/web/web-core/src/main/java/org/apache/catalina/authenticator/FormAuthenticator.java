@@ -296,7 +296,7 @@ public class FormAuthenticator
 
         // Save the authenticated Principal in our session
         if (log.isLoggable(Level.FINE))
-            log.fine("Authentication of '" + username + "' was successful");
+            log.log(Level.FINE, "Authentication of '" + username + "' was successful");
         if (session == null)
             session = getSession(request, true);
         session.setNote(Constants.FORM_PRINCIPAL_NOTE, principal);

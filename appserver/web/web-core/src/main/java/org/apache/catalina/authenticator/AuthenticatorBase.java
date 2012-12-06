@@ -810,9 +810,7 @@ public abstract class AuthenticatorBase
                     message);
         } else {
             if (log.isLoggable(Level.INFO)) {
-                String msg = MessageFormat.format(rb.getString(AUTHENTICATOR_INFO),
-                                                  new Object[] {context.getPath(), message});
-                log.log(Level.INFO, msg);
+                log.log(Level.INFO, AUTHENTICATOR_INFO, new Object[] {context.getPath(), message});
             }
         }
     }

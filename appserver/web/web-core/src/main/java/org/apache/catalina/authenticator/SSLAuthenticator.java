@@ -194,7 +194,7 @@ public class SSLAuthenticator
         principal = context.getRealm().authenticate(certs);
         if (principal == null) {
             if (debug >= 1)
-                log("  Realm.authenticate() returned false");
+                log("Realm.authenticate() returned false");
             /* S1AS 4878272
             hres.sendError(HttpServletResponse.SC_UNAUTHORIZED,
                            sm.getString("authenticator.unauthorized"));
