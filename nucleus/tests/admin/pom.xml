@@ -127,7 +127,7 @@ utilities are in the NucleusTestUtils class.
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>rest-client</artifactId>
-            <version>4.0-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

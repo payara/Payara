@@ -73,13 +73,6 @@ public class RestCommandResourceProvider extends AbstractRestResourceProvider {
     }
 
     @Override
-    public Map<String, Boolean> getFeatures() {
-        final Map<String, Boolean> features = super.getFeatures();
-        //features.put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
-        return features;
-    }
-
-    @Override
     public Map<String, MediaType> getMimeMappings() {
         if (mappings == null) {
             mappings = new HashMap<String, MediaType>();
