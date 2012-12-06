@@ -148,6 +148,7 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
         r.add(org.glassfish.admin.rest.provider.ActionReportResultJsonProvider.class);
         r.add(org.glassfish.admin.rest.provider.ActionReportResultXmlProvider.class);
 
+        r.add(org.glassfish.admin.rest.provider.MapWriter.class);
         r.add(org.glassfish.admin.rest.provider.ResponseBodyWriter.class);
         r.add(org.glassfish.admin.rest.provider.RestCollectionProvider.class);
         r.add(org.glassfish.admin.rest.provider.RestModelWriter.class);

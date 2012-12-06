@@ -181,10 +181,13 @@ public class TemplateRestResource implements OptionsCapable {
                 return handleError(Status.BAD_REQUEST, "Could not apply changes" + ar.getMessage()); // i18n
             }
 
-//            String successMessage = localStrings.getLocalString("rest.resource.update.message",
-//                    "\"{0}\" updated successfully.", uriInfo.getAbsolutePath());
-//            return Response.ok(ResourceUtil.getActionReportResult(ar, successMessage, requestHeaders, uriInfo)).build();
-            return Response.status(Status.CREATED).build();
+            if (Util.useLegacyResponseFormat(requestHeaders)) {
+                String successMessage = localStrings.getLocalString("rest.resource.update.message",
+                        "\"{0}\" updated successfully.", uriInfo.getAbsolutePath());
+                return Response.ok(ResourceUtil.getActionReportResult(ar, successMessage, requestHeaders, uriInfo)).build();
+            } else {
+                return Response.status(Status.CREATED).build();
+            }
         } catch (Exception ex) {
             throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
         }
