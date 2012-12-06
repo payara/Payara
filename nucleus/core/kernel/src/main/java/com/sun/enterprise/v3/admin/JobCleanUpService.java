@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.Job;
+import org.glassfish.api.admin.progress.JobInfo;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.kernel.KernelLoggerInfo;
@@ -75,8 +76,6 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
 
     private final static Logger logger = KernelLoggerInfo.getLogger();
 
-    boolean enableJobManager = false;
-
     private ScheduledExecutorService scheduler;
 
 
@@ -85,13 +84,12 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
     @Override
     public void postConstruct() {
         logger.fine(adminStrings.getLocalString("jobcleanup.service.init", "Initializing Job Cleanup service"));
-        enableJobManager = Boolean.parseBoolean(System.getProperty("enableJobManager","false"));
-        if (enableJobManager)  {
-            managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
-            ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(managedJobConfig);
-            logger.fine(adminStrings.getLocalString("init.managed.config.bean", "Initializing ManagedJobConfig bean"));
-            bean.addListener(this);
-        }
+
+        managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
+        ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(managedJobConfig);
+        logger.fine(adminStrings.getLocalString("init.managed.config.bean", "Initializing ManagedJobConfig bean"));
+        bean.addListener(this);
+
 
         scheduler = Executors.newScheduledThreadPool(10, new ThreadFactory() {
             @Override
@@ -109,15 +107,15 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
      * This will schedule a cleanup of expired jobs based on configurable values
      */
     private void scheduleCleanUp() {
-        enableJobManager = Boolean.parseBoolean(System.getProperty("enableJobManager","false"));
+
         logger.fine(adminStrings.getLocalString("scheduling.cleanup", "Scheduling cleanup"));
         //default values to 20 minutes for delayBetweenRuns and initialDelay
         long delayBetweenRuns = 1200000;
         long initialDelay = 1200000;
-        if (enableJobManager) {
-            delayBetweenRuns = jobManagerService.convert(managedJobConfig.getPollInterval());
-            initialDelay = jobManagerService.convert(managedJobConfig.getInitialDelay());
-        }
+
+        delayBetweenRuns = jobManagerService.convert(managedJobConfig.getPollInterval());
+        initialDelay = jobManagerService.convert(managedJobConfig.getInitialDelay());
+
 
         ScheduledFuture<?> cleanupFuture = scheduler.scheduleAtFixedRate(new JobCleanUpTask(),initialDelay,delayBetweenRuns,TimeUnit.MILLISECONDS);
 
@@ -155,11 +153,11 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
      * This will periodically purge expired jobs
      */
     private void cleanUpExpiredJobs() {
-        ArrayList<Job> expiredJobs = jobManagerService.getExpiredJobs();
+        ArrayList<JobInfo> expiredJobs = jobManagerService.getExpiredJobs();
         if (expiredJobs.size() > 0 ) {
-            for (Job job: expiredJobs) {
-                jobManagerService.purgeJob(job.getId());
-                logger.fine("Cleaning job" + job.getId());
+            for (JobInfo job: expiredJobs) {
+                jobManagerService.purgeJob(job.jobId);
+                logger.fine("Cleaning job" + job.jobId);
             }
         }
 

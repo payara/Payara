@@ -225,22 +225,22 @@ public class JobManagerService implements JobManager,PostConstruct {
      * and need to be purged
      * @return  list of jobs to be purged
      */
-    public ArrayList<Job> getExpiredJobs() {
-        ArrayList expiredJobs = new ArrayList();
-        Iterator<Job> jobs = getJobs();
-        while ( jobs.hasNext()) {
-            Job job = jobs.next();
-            long executedTime = job.getCommandExecutionDate();
+    public ArrayList<JobInfo> getExpiredJobs() {
+        ArrayList<JobInfo> expiredJobs = new ArrayList<JobInfo>();
+        JobInfos jobInfos = getCompletedJobs();
+        for(JobInfo job:jobInfos.getJobInfoList()) {
+
+            long executedTime = job.commandExecutionDate;
             long currentTime = System.currentTimeMillis();
 
             long jobsRetentionPeriod = 86400000;
-            boolean enableJobManager = Boolean.parseBoolean(System.getProperty("enableJobManager"));
-            if (enableJobManager)  {
-                managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
-                jobsRetentionPeriod = convert(managedJobConfig.getJobRetentionPeriod());
-            }
+
+
+            managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
+            jobsRetentionPeriod = convert(managedJobConfig.getJobRetentionPeriod());
+
             if (currentTime - executedTime > jobsRetentionPeriod &&
-                    job.getState().equals(AdminCommandState.State.COMPLETED)) {
+                    job.exitCode.equals(AdminCommandState.State.COMPLETED.name())) {
                  expiredJobs.add(job);
             }
 
@@ -274,6 +274,7 @@ public class JobManagerService implements JobManager,PostConstruct {
     @Override
     public synchronized void purgeJob(String id) {
         Job obj = jobRegistry.remove(id);
+        purgeCompletedJobForId(id);
         logger.fine(adminStrings.getLocalString("removed.expired.job","Removed expired job ",  obj));
 
     }
