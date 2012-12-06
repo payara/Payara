@@ -88,6 +88,12 @@ public class CoyoteInputStream
     )
     public static final String OBJECT_INVALID_SCOPE_EXCEPTION = "AS-WEB-CORE-00340";
 
+    @LogMessageInfo(
+            message = "Cannot set a null ReadListener object",
+            level = "WARNING"
+    )
+    public static final String NULL_READ_LISTENER_EXCEPTION = "AS-WEB-CORE-00341";
+
     // ----------------------------------------------------- Instance Variables
 
 
@@ -297,6 +303,10 @@ public class CoyoteInputStream
     public void setReadListener(ReadListener readListener) {
         if (ib == null) {
             throw new IllegalStateException(rb.getString(OBJECT_INVALID_SCOPE_EXCEPTION));
+        }
+
+        if (readListener == null) {
+            throw new NullPointerException(rb.getString(NULL_READ_LISTENER_EXCEPTION));
         }
 
         ib.setReadListener(readListener);

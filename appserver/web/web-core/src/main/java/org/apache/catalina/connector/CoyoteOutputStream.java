@@ -59,6 +59,7 @@
 package org.apache.catalina.connector;
 
 import org.apache.catalina.core.StandardServer;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
@@ -75,6 +76,13 @@ public class CoyoteOutputStream
     extends ServletOutputStream {
 
     private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Cannot set a null WriteListener object",
+            level = "WARNING"
+    )
+    public static final String NULL_WRITE_LISTENER_EXCEPTION = "AS-WEB-CORE-00342";
+
 
     // ----------------------------------------------------- Instance Variables
 
@@ -194,11 +202,24 @@ public class CoyoteOutputStream
 
 
     public boolean canWrite() {
+        // Disallow operation if the object has gone out of scope
+        if (ob == null) {
+            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+        }
         return ob.canWrite();
     }
 
 
     public void setWriteListener(WriteListener writeListener) {
+        // Disallow operation if the object has gone out of scope
+        if (ob == null) {
+            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+        }
+
+        if (writeListener == null) {
+            throw new NullPointerException(rb.getString(NULL_WRITE_LISTENER_EXCEPTION));
+        }
+
         ob.setWriteListener(writeListener);
     }
 }

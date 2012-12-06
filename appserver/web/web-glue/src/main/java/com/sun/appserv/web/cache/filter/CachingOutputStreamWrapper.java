@@ -127,6 +127,10 @@ public class CachingOutputStreamWrapper extends ServletOutputStream {
 
     @Override
     public void setWriteListener(WriteListener writeListener) {
+        if (writeListener == null) {
+            throw new NullPointerException();
+        }
+
         if (hasSetWriteListener) {
             throw new IllegalStateException();
         }
