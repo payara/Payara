@@ -280,7 +280,7 @@ public class CoyoteAdapter extends HttpHandler {
             String msg = MessageFormat.format(rb.getString(HTTP_LISTENER_DISABLED),
                                               String.valueOf(connector.getPort()));
             if (log.isLoggable(Level.FINE)) {
-                log.fine(msg);            
+                log.log(Level.FINE, msg);
             }
             response.sendError(HttpServletResponse.SC_NOT_FOUND, msg);
             return;

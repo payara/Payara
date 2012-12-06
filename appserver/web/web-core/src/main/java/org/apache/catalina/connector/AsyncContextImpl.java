@@ -49,7 +49,6 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.ResourceBundle;
@@ -228,8 +227,7 @@ class AsyncContextImpl implements AsyncContext {
         } else {
             // Should never happen, because any unmapped paths will be 
             // mapped to the DefaultServlet
-            String msg = MessageFormat.format(rb.getString(UNABLE_ACQUIRE_REQUEST_DISPATCHER), path);
-            log.log(Level.WARNING, msg);
+            log.log(Level.WARNING, UNABLE_ACQUIRE_REQUEST_DISPATCHER, path);
         }
     }
 
@@ -251,9 +249,8 @@ class AsyncContextImpl implements AsyncContext {
         } else {
             // Should never happen, because any unmapped paths will be 
             // mapped to the DefaultServlet
-            String msg = MessageFormat.format(rb.getString(UNABLE_ACQUIRE_REQUEST_DISPATCHER_IN_SERVLET_CONTEXT),
-                                              new Object[] {path, context.getContextPath()});
-            log.log(Level.WARNING, msg);
+            log.log(Level.WARNING, UNABLE_ACQUIRE_REQUEST_DISPATCHER_IN_SERVLET_CONTEXT,
+                    new Object[] {path, context.getContextPath()});
         }
     }
 

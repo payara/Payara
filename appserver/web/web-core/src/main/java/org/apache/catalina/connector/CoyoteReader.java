@@ -64,7 +64,6 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 import java.io.BufferedReader;
 import java.io.IOException;
 
-import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -284,8 +283,7 @@ public class CoyoteReader
             } else {
                 reset();
                 if (skip(skip) != skip && log.isLoggable(Level.WARNING)) {
-                    String msg = MessageFormat.format(rb.getString(FAILED_SKIP_CHARS_IN_BUFFER), skip);
-                    log.log(Level.WARNING, msg);
+                    log.log(Level.WARNING, FAILED_SKIP_CHARS_IN_BUFFER, skip);
                 }
             }
         }

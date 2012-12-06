@@ -2048,9 +2048,7 @@ public class Request
         if (usingReader) {
             String contextName =
                 getContext() != null ? getContext().getName() : "UNKNOWN";
-            String msg = MessageFormat.format(rb.getString(UNABLE_SET_REQUEST_CHARS),
-                                              new Object[] {enc, contextName});
-            log.log(Level.WARNING, msg);
+            log.log(Level.WARNING, UNABLE_SET_REQUEST_CHARS, new Object[] {enc, contextName});
             return;
         }
         // END SJSAS 4936855
@@ -4598,8 +4596,7 @@ public class Request
                 } else {
                     // Tried to wait and lock maxNumberOfRetries times.
                     // Unlock the background so we can take over.
-                    String msg = MessageFormat.format(rb.getString(BREAKING_BACKGROUND_LOCK_EXCEPTION), sess);
-                    log.log(Level.WARNING, msg);
+                    log.log(Level.WARNING, BREAKING_BACKGROUND_LOCK_EXCEPTION, sess);
                     if (sess instanceof StandardSession) {
                         ((StandardSession)sess).unlockBackground();
                     }
