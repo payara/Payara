@@ -94,7 +94,6 @@ import com.sun.ejb.monitoring.stats.StatefulSessionBeanStatsProvider;
 import com.sun.ejb.spi.container.SFSBContainerCallback;
 import com.sun.ejb.spi.container.SFSBContainerInitialization;
 import com.sun.ejb.spi.container.StatefulEJBContext;
-import com.sun.ejb.spi.sfsb.util.CheckpointPolicy;
 import com.sun.ejb.spi.sfsb.util.SFSBUUIDUtil;
 import com.sun.ejb.spi.sfsb.util.SFSBVersionManager;
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
@@ -177,7 +176,7 @@ public final class StatefulSessionContainer
 
     private String ejbName;
 
-    private CheckpointPolicy checkpointPolicy;
+    private boolean isHAEnabled;
     private int removalGracePeriodInSeconds;
 
     private InvocationInfo postConstructInvInfo;
@@ -340,7 +339,7 @@ public final class StatefulSessionContainer
 
     protected void loadCheckpointInfo() {
         try {
-            if (checkpointPolicy.isHAEnabled()) {
+            if (isHAEnabled) {
                 Iterator iter = invocationInfoMap.values().iterator();
                 while (iter.hasNext()) {
                     InvocationInfo info = (InvocationInfo) iter.next();
@@ -395,7 +394,7 @@ public final class StatefulSessionContainer
             }
         }
 
-        if (checkpointPolicy.isHAEnabled()) {
+        if (isHAEnabled) {
             sfsbStoreMonitor = new HAStatefulSessionStoreMonitor();
         } else {
             sfsbStoreMonitor = new StatefulSessionStoreMonitor();
@@ -1566,7 +1565,7 @@ public final class StatefulSessionContainer
                     if (newSC.getState() == BeanState.READY) {
                         decrementMethodReadyStat();
                     }
-                    if (checkpointPolicy.isHAEnabled()) {
+                    if (isHAEnabled) {
                         doVersionCheck(inv, sessionKey, sc);
                     }
                     newSC.setState(BeanState.INVOKING);
@@ -1610,7 +1609,7 @@ public final class StatefulSessionContainer
     }
 
     public boolean isHAEnabled() {
-        return checkpointPolicy.isHAEnabled();
+        return isHAEnabled;
     }
 
     private void doVersionCheck(EjbInvocation inv, Object sessionKey,
@@ -1805,12 +1804,12 @@ public final class StatefulSessionContainer
                     }
                 }
                 if ((sc.getState() != BeanState.DESTROYED)
-                        && (checkpointPolicy.isHAEnabled())) {
+                        && isHAEnabled) {
                     syncClientVersion(inv, sc);
                 }
             } else {
                 if ((sc.getState() != BeanState.DESTROYED)
-                        && (checkpointPolicy.isHAEnabled())) {
+                        && isHAEnabled) {
                     syncClientVersion(inv, sc);
                 }
                 sc.setState(BeanState.INCOMPLETE_TX);
@@ -1862,7 +1861,7 @@ public final class StatefulSessionContainer
 
         //Register CMT Beans for end of Tx Checkpointing
         //Note:- We will never reach here for TX_BEAN_MANAGED
-        if (checkpointPolicy.isHAEnabled()) {
+        if (isHAEnabled) {
             ContainerSynchronization cSync = null;
             try {
                 cSync = ejbContainerUtilImpl.
@@ -1961,7 +1960,7 @@ public final class StatefulSessionContainer
 
         //callEjbAfterCompletion can set state as  DESTROYED
         if (sc.getState() != BeanState.DESTROYED) {
-            if (checkpointPolicy.isHAEnabled()) {
+            if (isHAEnabled) {
                 if (isBeanManagedTran) {
                     sc.setTxCheckpointDelayed(true);
                     if (_logger.isLoggable(TRACE_LEVEL)) {
@@ -3061,8 +3060,8 @@ public final class StatefulSessionContainer
         this.uuidGenerator = util;
     }
 
-    public void setCheckpointPolicy(CheckpointPolicy policy) {
-        this.checkpointPolicy = policy;
+    public void setHAEnabled(boolean isHAEnabled) {
+        this.isHAEnabled = isHAEnabled;
     }
 
     public void setSessionCache(LruSessionCache cache) {
@@ -3142,7 +3141,7 @@ public final class StatefulSessionContainer
             ejbLRO.setSfsbClientVersion(sc.getVersion());
         }
 
-        if ((!inv.isLocal) && (checkpointPolicy.isHAEnabled())) {
+        if ((!inv.isLocal) && isHAEnabled) {
             long version = sc.getVersion();
             //TODO sfsbVersionManager.setResponseClientVersion(version);
             //TODO SFSBClientVersionManager.setClientVersion(getContainerId(),

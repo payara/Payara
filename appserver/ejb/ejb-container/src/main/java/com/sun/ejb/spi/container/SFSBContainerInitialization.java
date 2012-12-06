@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,6 @@
 package com.sun.ejb.spi.container;
 
 import com.sun.ejb.spi.sfsb.util.SFSBUUIDUtil;
-import com.sun.ejb.spi.sfsb.util.CheckpointPolicy;
 import com.sun.ejb.spi.sfsb.util.SFSBVersionManager;
 
 import org.glassfish.ha.store.api.BackingStore;
@@ -60,7 +59,7 @@ public interface SFSBContainerInitialization {
 
     public void setSFSBUUIDUtil(SFSBUUIDUtil util);
 
-    public void setCheckpointPolicy(CheckpointPolicy policy);
+    public void setHAEnabled(boolean isHAEnabled);
 
     public BackingStore<Serializable, SimpleMetadata> getBackingStore();
 

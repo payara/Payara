@@ -54,7 +54,6 @@ import com.sun.appserv.util.cache.CacheListener;
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;
 import com.sun.ejb.base.container.util.CacheProperties;
-import com.sun.ejb.base.sfsb.util.CheckpointPolicyImpl;
 import com.sun.ejb.base.sfsb.util.EJBServerConfigLookup;
 import com.sun.ejb.base.sfsb.util.ScrambledKeyGenerator;
 import com.sun.ejb.base.sfsb.util.SimpleKeyGenerator;
@@ -204,8 +203,7 @@ public class StatefulContainerFactory extends BaseContainerFactory
      */
 
     private final void buildCheckpointPolicy(boolean haEnabled) {
-        containerInitialization.setCheckpointPolicy(
-                new CheckpointPolicyImpl(haEnabled));
+        containerInitialization.setHAEnabled(haEnabled);
     }
 
     private void buildSFSBUUIDUtil(byte[] ipAddress, int port) {
