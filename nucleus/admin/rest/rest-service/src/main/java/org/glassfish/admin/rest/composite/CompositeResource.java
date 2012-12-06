@@ -352,4 +352,13 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
     protected Response deleted(ResponseBody responseBody) {
         return Response.ok().entity(responseBody).build();
     }
+
+    /**
+     * Convenience method for getting a path parameter.  Equivalent to getUriInfo().getPathParameters().getFirst(name)
+     * @param name
+     * @return
+     */
+    public String getPathParam(String name) {
+        return this.getUriInfo().getPathParameters().getFirst(name);
+    }
 }
