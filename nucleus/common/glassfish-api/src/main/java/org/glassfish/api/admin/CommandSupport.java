@@ -72,9 +72,10 @@ public final class CommandSupport {
 
         processAspects(serviceLocator, command, new Function() {
             @Override
-            public AdminCommand apply(CommandAspect ca, CommandAspectImpl aspect,
+            public AdminCommand apply(Annotation a,
+                    CommandAspectImpl<Annotation> aspect,
                     AdminCommand command) {
-                aspect.init(command, context, instance);
+                aspect.init(a, command, context, instance);
                 return command;
             }
         });
@@ -89,9 +90,10 @@ public final class CommandSupport {
 
         processAspects(serviceLocator, command, new Function() {
             @Override
-            public AdminCommand apply(CommandAspect ca, CommandAspectImpl aspect,
-                        AdminCommand command) {
-                aspect.done(command, instance);
+            public AdminCommand apply(Annotation a,
+                    CommandAspectImpl<Annotation> aspect,
+                    AdminCommand command) {
+                aspect.done(a, command, instance);
                 return command;
             }
         });
@@ -107,9 +109,10 @@ public final class CommandSupport {
 
         return processAspects(serviceLocator, command, new Function() {
             @Override
-            public AdminCommand apply(CommandAspect ca, CommandAspectImpl cai,
+            public AdminCommand apply(Annotation a,
+                CommandAspectImpl<Annotation> cai,
                 AdminCommand command) {
-                return cai.createWrapper(ca, model, command, report);
+                return cai.createWrapper(a, model, command, report);
             }
         });
     }
@@ -122,8 +125,9 @@ public final class CommandSupport {
         for (Annotation a : annotations) {
             CommandAspect ca = a.annotationType().getAnnotation(CommandAspect.class);
             if (ca != null) {
-                CommandAspectImpl cai = serviceLocator.getService(ca.value());
-                command = function.apply(ca, cai, command);
+                CommandAspectImpl<Annotation> cai =
+                        serviceLocator.<CommandAspectImpl<Annotation>>getService(ca.value());
+                command = function.apply(a, cai, command);
             }
         }
 
@@ -139,7 +143,7 @@ public final class CommandSupport {
     }
 
     private interface Function {
-        public AdminCommand apply(CommandAspect ca, CommandAspectImpl cai, AdminCommand object);
+        public AdminCommand apply(Annotation ca, CommandAspectImpl<Annotation> cai, AdminCommand object);
     }
 
 }

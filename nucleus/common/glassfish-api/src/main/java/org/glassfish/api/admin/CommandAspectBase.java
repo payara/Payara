@@ -9,13 +9,13 @@ import org.glassfish.api.ActionReport;
  * 
  * @author andriy.zhdanov
  */
-public class CommandAspectBase implements CommandAspectImpl {
+public class CommandAspectBase<T extends Annotation> implements CommandAspectImpl<T> {
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void init(AdminCommand command, AdminCommandContext context,
+    public void init(T ann, AdminCommand command, AdminCommandContext context,
             Job instance) {
     }
 
@@ -23,14 +23,14 @@ public class CommandAspectBase implements CommandAspectImpl {
      * {@inheritDoc}
      */
     @Override
-    public void done(AdminCommand command, Job instance) {
+    public void done(T ann, AdminCommand command, Job instance) {
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public AdminCommand createWrapper(Annotation ann, CommandModel model,
+    public AdminCommand createWrapper(T ann, CommandModel model,
 	    AdminCommand command, ActionReport report) {
 	return command;
     }

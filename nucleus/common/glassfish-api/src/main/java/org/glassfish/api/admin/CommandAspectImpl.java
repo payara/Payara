@@ -58,24 +58,25 @@ import org.jvnet.hk2.annotations.Contract;
  * 
  * @author andriy.zhdanov
  *
+ * @param <T> aspect annotation.
  */
 @Contract
-public interface CommandAspectImpl {
+public interface CommandAspectImpl<T extends Annotation> {
 
     /**
      * Execute when command is just completely initialized, i..e
      * injected with parameters.
      */
-    void init(AdminCommand command, AdminCommandContext context, Job instance);
+    void init(T ann, AdminCommand command, AdminCommandContext context, Job instance);
 
     /**
      * Execute when command is finished successfully or not.
      */
-    void done(AdminCommand command, Job instance);
+    void done(T ann, AdminCommand command, Job instance);
     
     /**
      * This methods can be used to wrap generic functionality around command execute.
      */
-    AdminCommand createWrapper(Annotation ann, CommandModel model,
+    AdminCommand createWrapper(T ann, CommandModel model,
             AdminCommand command, ActionReport report);
 }

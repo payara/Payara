@@ -39,7 +39,6 @@
  */
 package org.glassfish.api;
 
-import java.lang.annotation.Annotation;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -57,14 +56,14 @@ import org.jvnet.hk2.annotations.Service;
  * @author tmueller
  */
 @Service
-public class AsyncImpl extends CommandAspectBase {
+public class AsyncImpl extends CommandAspectBase<Async> {
     
     private static final Logger logger = Logger.getLogger(AsyncImpl.class.getName());
     private static final ResourceBundle strings = 
             ResourceBundle.getBundle("org/glassfish/api/LocalStrings");
     
     @Override
-    public WrappedAdminCommand createWrapper(final Annotation ann, final CommandModel model, 
+    public WrappedAdminCommand createWrapper(final Async async, final CommandModel model, 
             final AdminCommand command, final ActionReport report) {
         return new WrappedAdminCommand(command) {
 
@@ -80,7 +79,6 @@ public class AsyncImpl extends CommandAspectBase {
                         }
                     }
                 };
-                Async async = (Async) ann;
                 t.setPriority(async.priority());
                 t.start();
 
