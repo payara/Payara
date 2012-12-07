@@ -62,6 +62,7 @@ package org.apache.catalina.filters;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.Filter;
@@ -103,7 +104,7 @@ public abstract class FilterBase implements Filter {
                 if (isConfigProblemFatal()) {
                     throw new ServletException(msg);
                 } else {
-                    getLogger().warning(msg);
+                    getLogger().log(Level.WARNING, msg);
                 }
             }
         }

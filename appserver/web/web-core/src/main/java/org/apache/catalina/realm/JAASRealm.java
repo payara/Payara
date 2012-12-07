@@ -229,8 +229,7 @@ public class JAASRealm
         if( appName==null  ) {
             appName=name;
             if (log.isLoggable(Level.INFO)) {
-                String msg = MessageFormat.format(rb.getString(SETTING_JAAS_INFO), appName);
-                log.log(Level.INFO, msg);
+                log.log(Level.INFO, SETTING_JAAS_INFO, appName);
             }
         }
     }
@@ -355,31 +354,23 @@ public class JAASRealm
             subject = loginContext.getSubject();
             if (subject == null) {
                 if (log.isLoggable(Level.FINE)) {
-                    String msg = MessageFormat.format(rb.getString(USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN),
-                                                      username);
-                    log.log(Level.FINE, msg);
+                    log.log(Level.FINE, USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN, username);
                 }
                 return (null);
             }
         } catch (AccountExpiredException e) {
             if (log.isLoggable(Level.FINE)) {
-                String msg = MessageFormat.format(rb.getString(USERNAME_NOT_AUTHENTICATED_EXPIRED_ACCOUNT),
-                                                  username);
-                log.log(Level.FINE, msg);
+                log.log(Level.FINE, USERNAME_NOT_AUTHENTICATED_EXPIRED_ACCOUNT, username);
             }
             return (null);
         } catch (CredentialExpiredException e) {
             if (log.isLoggable(Level.FINE)) {
-                String msg = MessageFormat.format(rb.getString(USERNAME_NOT_AUTHENTICATED_EXPIRED_CREDENTIAL),
-                                                  username);
-                log.log(Level.FINE, msg);
+                log.log(Level.FINE, USERNAME_NOT_AUTHENTICATED_EXPIRED_CREDENTIAL, username);
             }
             return (null);
         } catch (FailedLoginException e) {
             if (log.isLoggable(Level.FINE)) {
-                String msg = MessageFormat.format(rb.getString(USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN),
-                                                  username);
-                log.log(Level.FINE, msg);
+                log.log(Level.FINE, USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN, username);
             }
             return (null);
         } catch (LoginException e) {

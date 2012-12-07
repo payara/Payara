@@ -485,9 +485,7 @@ public class LoggerBase
             if( engine != null ) {
                 oname=new ObjectName(engine.getDomain()+ ":type=Logger" + suffix);
             } else {
-                String msg = MessageFormat.format(rb.getString(NULL_ENGINE_EXCEPTION),
-                                                  container);
-                log.log(Level.SEVERE, msg);
+                log.log(Level.SEVERE, NULL_ENGINE_EXCEPTION, container);
             }
         } catch (Throwable e) {
             log.log(Level.WARNING,UNABLE_CREATE_OBJECT_NAME_FOR_LOGGER_EXCEPTION, e);
