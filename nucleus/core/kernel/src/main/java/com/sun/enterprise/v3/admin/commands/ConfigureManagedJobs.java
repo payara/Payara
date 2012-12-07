@@ -84,7 +84,7 @@ import java.util.logging.Logger;
 @Service(name = "configure-managed-jobs")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@AccessRequired(resource="managed-job-config", action="update")
+@AccessRequired(resource="domain/managed-job-config", action="update")
 public class ConfigureManagedJobs implements AdminCommand {
 
     @Inject
