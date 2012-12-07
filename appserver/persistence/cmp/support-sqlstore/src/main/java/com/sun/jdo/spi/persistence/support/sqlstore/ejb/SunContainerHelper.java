@@ -60,7 +60,6 @@ import javax.naming.NamingException;
 
 import javax.sql.DataSource;
 
-import com.sun.enterprise.*;
 import com.sun.enterprise.deployment.*;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil; //TODO Dependency on connector-internal-api needs to be removed
 
