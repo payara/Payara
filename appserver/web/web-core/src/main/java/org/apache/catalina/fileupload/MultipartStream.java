@@ -62,7 +62,6 @@ package org.apache.catalina.fileupload;
 import java.io.ByteArrayOutputStream;
 import java.io.*;
 
-import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -926,10 +925,7 @@ public class MultipartStream {
                         }
                     }
                     if (skip(av) != av && log.isLoggable(Level.WARNING)) {
-                        String msg = MessageFormat.format(rb.getString(
-                                                          FAILED_SKIP_BYTES_MULTIPART_STREAM_CLOSE_EXCEPTION),
-                                                          av);
-                        log.log(Level.WARNING, msg);
+                        log.log(Level.WARNING, FAILED_SKIP_BYTES_MULTIPART_STREAM_CLOSE_EXCEPTION, av);
                     }
                 }
             }
