@@ -95,6 +95,10 @@ public class NucleusTestUtils {
 
     // All methods are static, do not allow an object to be created.
     protected NucleusTestUtils() { } 
+    
+    public static File getNucleusRoot() {
+        return nucleusRoot;
+    }
             
     public static void putEnv(String name, String value) {
         env.put(name, value);

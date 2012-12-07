@@ -49,7 +49,8 @@ To run all of the tests using the staged nucleus build in distributions/nucleus:
 To run just one test:
     mvn -Dtest=MiscCommandsTest,NucleusStartStopTest test
 
-(if you already have the server running, the NucleusStartStopTest can be omitted)
+Some tests require testing libraries/modules in running distribution. Please do 
+NOT start test against running instance.
 
 To run tests based on your own install:
     mvn -Dnucleus.home=...somedirectory/nucleus test
@@ -63,6 +64,14 @@ Copy one of the existing test files, such as MiscCommandsTest.java.  Then add
 tests.  The file will automatically be picked up as part of the suite. There is
 no need to modify this pom.xml file or any other configuration file. Useful
 utilities are in the NucleusTestUtils class.
+
+Test suit contains place for additional modules/libraries with testing content 
+that are copied into the Nucleus before start and removed after stop:
+- src/addon/module/* -> <Nucleus>/modules
+(If you need to add your testing module to different directory in nucleus than 
+modify org.glassfish.nucleus.admin.NucleusStartStopTest static initializer 
+of COPY_LIB map constant.)
+
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -95,6 +104,32 @@ utilities are in the NucleusTestUtils class.
                 </property>
               </properties>
             </configuration>
+          </plugin>
+          
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-invoker-plugin</artifactId>
+            <version>1.8</version>
+            <configuration>
+                <pomIncludes>
+                    <pomInclude>modules/*/pom.xml</pomInclude>
+                    <pomInclude>asadmin/*/pom.xml</pomInclude>
+                </pomIncludes>
+                <goals>
+                    <goal>clean</goal>
+                    <goal>package</goal>
+                </goals>
+                <projectsDirectory>${basedir}/src/addon/</projectsDirectory>
+            </configuration>
+            <executions>
+              <execution>
+                <id>build-addons</id>
+                <phase>process-test-resources</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
     </build>
