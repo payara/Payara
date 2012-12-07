@@ -64,6 +64,8 @@ import org.apache.catalina.Context;
 import org.apache.catalina.Loader;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.core.StandardServer;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.ServletContext;
 import java.io.BufferedInputStream;
@@ -75,8 +77,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -91,6 +95,38 @@ import java.util.logging.Logger;
 
 public final class FileStore extends StoreBase {
 
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Loading Session {0} from file {1}",
+            level = "FINE"
+    )
+    public static final String LOADING_SESSION = "AS-WEB-CORE-00595";
+
+    @LogMessageInfo(
+            message = "Removing Session {0} at file {1}",
+            level = "FINE"
+    )
+    public static final String REMOVING_SESSION = "AS-WEB-CORE-00596";
+
+    @LogMessageInfo(
+            message = "Saving Session {0} to file {1}",
+            level = "FINE"
+    )
+    public static final String SAVING_SESSION = "AS-WEB-CORE-00597";
+
+    @LogMessageInfo(
+            message = "Unable to delete file [{0}] which is preventing the creation of the session storage location",
+            level = "WARNING"
+    )
+    public static final String UNABLE_DELETE_FILE_EXCEPTION = "AS-WEB-CORE-00598";
+
+    @LogMessageInfo(
+            message = "Unable to create directory [{0}] for the storage of session data",
+            level = "WARNING"
+    )
+    public static final String UNABLE_CREATE_DIR_EXCEPTION = "AS-WEB-CORE-00599";
 
     // ----------------------------------------------------- Constants
 
@@ -99,8 +135,6 @@ public final class FileStore extends StoreBase {
      * The extension to use for serialized session filenames.
      */
     private static final String FILE_EXT = ".session";
-
-    private Logger log = Logger.getLogger(FileStore.class.getName());
 
     // ----------------------------------------------------- Instance Variables
 
@@ -300,8 +334,9 @@ public final class FileStore extends StoreBase {
             return (null);
         }
         if (debug >= 1) {
-            log(sm.getString(getStoreName()+".loading",
-                             id, file.getAbsolutePath()));
+            String msg = MessageFormat.format(rb.getString(LOADING_SESSION),
+                                              new Object[] {id, file.getAbsolutePath()});
+            log(msg);
         }
 
         FileInputStream fis = null;
@@ -379,15 +414,16 @@ public final class FileStore extends StoreBase {
             return;
         }
         if (debug >= 1) {
-            log(sm.getString(getStoreName()+".removing",
-                             id, file.getAbsolutePath()));
+            String msg = MessageFormat.format(rb.getString(REMOVING_SESSION),
+                                              new Object[] {id, file.getAbsolutePath()});
+            log(msg);
         }
         //HERCULES: addition
         // Take it out of the cache 
         sessions.remove(id);        
         //HERCULES: addition
         if (!file.delete() && log.isLoggable(Level.FINE)) {
-            log.fine("Cannot delete file: " + file);
+            log.log(Level.FINE, "Cannot delete file: " + file);
         }
     }
 
@@ -408,8 +444,10 @@ public final class FileStore extends StoreBase {
             return;
         }
         if (debug >= 1) {
-            log(sm.getString(getStoreName()+".saving",
-                             session.getIdInternal(), file.getAbsolutePath()));
+
+            String msg = MessageFormat.format(rb.getString(SAVING_SESSION),
+                                              new Object[] {session.getIdInternal(), file.getAbsolutePath()});
+            log(msg);
         }
         FileOutputStream fos = null;
         ObjectOutputStream oos = null;
@@ -475,12 +513,14 @@ public final class FileStore extends StoreBase {
         }
         if (!file.exists() || !file.isDirectory()) {
             if (!file.delete() && file.exists()) {
-                throw new IOException(
-                        sm.getString("fileStore.deleteFailed", file));
+                String msg = MessageFormat.format(rb.getString(UNABLE_DELETE_FILE_EXCEPTION),
+                                                  file);
+                throw new IOException(msg);
             }
             if (!file.mkdirs() && !file.isDirectory()) {
-                throw new IOException(
-                        sm.getString("fileStore.createFailed", file));
+                String msg = MessageFormat.format(rb.getString(UNABLE_CREATE_DIR_EXCEPTION),
+                                                  file);
+                throw new IOException(msg);
             }
         }
         this.directoryFile = file;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,11 @@ package org.apache.catalina.session;
 
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.core.StandardServer;
+import org.glassfish.logging.annotation.LogMessageInfo;
+
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.*;
 import javax.servlet.http.*;
 
@@ -59,6 +63,15 @@ public class CookiePersistentManager extends StandardManager {
     private static final String IS_VALID = "isValid=";
 
     private final Set<String> sessionIds = new HashSet<String>();
+
+    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "setAttribute: Session attribute with name {0} has value " +
+                      "that is not of type String (required for cookie-based persistence)",
+            level = "WARNING"
+    )
+    public static final String SET_SESSION_ATTRIBUTE_EXCEPTION = "AS-WEB-CORE-00590";
 
     // The name of the cookies that carry session state
     private String cookieName;
@@ -144,8 +157,8 @@ public class CookiePersistentManager extends StandardManager {
     @Override
     public void checkSessionAttribute(String name, Object value) {
         if (!(value instanceof String)) {
-            throw new IllegalArgumentException(
-                    sm.getString("standardSession.setAttribute.nonStringValue", name));
+            String msg = MessageFormat.format(rb.getString(SET_SESSION_ATTRIBUTE_EXCEPTION), name);
+            throw new IllegalArgumentException(msg);
         }
     }
 

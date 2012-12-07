@@ -63,7 +63,8 @@ import com.sun.enterprise.util.uuid.UuidGeneratorImpl;
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
-import org.apache.catalina.util.StringManager;
+import org.apache.catalina.core.StandardServer;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.management.ObjectName;
 import javax.servlet.ServletException;
@@ -78,13 +79,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.text.MessageFormat;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -101,7 +97,48 @@ import java.util.logging.Logger;
  */
 
 public abstract class ManagerBase implements Manager {
-    protected Logger log = Logger.getLogger(ManagerBase.class.getName());
+    protected static final Logger log = StandardServer.log;
+    protected static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Exception initializing random number generator of class {0}",
+            level = "SEVERE",
+            cause = "Could not construct and seed a new random number generator",
+            action = "Verify if the current random number generator class is "
+    )
+    public static final String INIT_RANDOM_NUMBER_GENERATOR_EXCEPTION = "AS-WEB-CORE-00618";
+
+    @LogMessageInfo(
+            message = "Seeding random number generator class {0}",
+            level = "FINE"
+    )
+    public static final String SEEDING_RANDOM_NUMBER_GENERATOR_CLASS = "AS-WEB-CORE-00619";
+
+    @LogMessageInfo(
+            message = "Failed to close randomIS.",
+            level = "WARNING"
+    )
+    public static final String FAILED_CLOSE_RANDOMIS_EXCEPTION = "AS-WEB-CORE-00620";
+
+    @LogMessageInfo(
+            message = "Error registering ",
+            level = "SEVERE",
+            cause = "Could not construct an object name",
+            action = "Verify the format of domain, path, host. And make sure they are no null"
+    )
+    public static final String ERROR_REGISTERING_EXCEPTION = "AS-WEB-CORE-00621";
+
+    @LogMessageInfo(
+            message = "setAttribute: Non-serializable attribute with name {0}",
+            level = "WARNING"
+    )
+    public static final String NON_SERIALIZABLE_ATTRIBUTE_EXCEPTION = "AS-WEB-CORE-00622";
+
+    @LogMessageInfo(
+            message = "Session not found {0}",
+            level = "INFO"
+    )
+    public static final String SESSION_NOT_FOUND = "AS-WEB-CORE-00623";
 
     // ----------------------------------------------------- Instance Variables
 
@@ -224,11 +261,6 @@ public abstract class ManagerBase implements Manager {
 
     protected boolean initialized=false;
 
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
     /**
      * The property change support for this component.
@@ -254,7 +286,7 @@ public abstract class ManagerBase implements Manager {
                 randomIS= new DataInputStream( fileInputStream );
                 randomIS.readLong();
                 if( log.isLoggable(Level.FINE))
-                    log.fine( "Opening " + devRandomSource );
+                    log.log(Level.FINE, "Opening " + devRandomSource);
                 return randomIS;
             } catch (IOException ex){
                 return null;
@@ -523,7 +555,7 @@ public abstract class ManagerBase implements Manager {
                 randomIS= new DataInputStream( fileInputStream);
                 randomIS.readLong();
                 if (log.isLoggable(Level.FINE))
-                    log.fine( "Opening " + devRandomSource );
+                    log.log(Level.FINE,  "Opening " + devRandomSource );
             } catch( IOException ex ) {
                 randomIS=null;
             } finally {
@@ -564,18 +596,18 @@ public abstract class ManagerBase implements Manager {
                  this.random.setSeed(seed);
             } catch (Exception e) {
                  // Fall back to the simple case
-                 log.log(Level.SEVERE,
-                         sm.getString("managerBase.random",
-                                      randomClass),
-                         e);
+                String msg = MessageFormat.format(rb.getString(INIT_RANDOM_NUMBER_GENERATOR_EXCEPTION),
+                                                  randomClass);
+                 log.log(Level.SEVERE, msg, e);
                  this.random = new java.util.Random();
                  this.random.setSeed(seed);
             }
             long t2=System.currentTimeMillis();
             if( (t2-t1) > 100 )
                  if (log.isLoggable(Level.FINE)) {
-                     log.fine(sm.getString("managerBase.seeding",
-                                           randomClass) + " " + (t2-t1));
+                     String msg = MessageFormat.format(rb.getString(SEEDING_RANDOM_NUMBER_GENERATOR_CLASS),
+                                                       randomClass);
+                     log.log(Level.FINE, msg + " " + (t2-t1));
                  }
         }
 
@@ -647,7 +679,7 @@ public abstract class ManagerBase implements Manager {
                 randomIS.close();
             } catch (IOException ioe) {
                 if (log.isLoggable(Level.WARNING)) {
-                    log.log(Level.WARNING, "Failed to close randomIS.");
+                    log.log(Level.WARNING, FAILED_CLOSE_RANDOMIS_EXCEPTION);
                 }
             }
             randomIS=null;
@@ -673,12 +705,12 @@ public abstract class ManagerBase implements Manager {
                 oname=new ObjectName(domain + ":type=Manager,path="
                 + path + ",host=" + hst.getName());
             } catch (Exception e) {
-                log.log(Level.SEVERE, "Error registering ", e);
+                log.log(Level.SEVERE, ERROR_REGISTERING_EXCEPTION, e);
             }
         }
         if (log.isLoggable(Level.FINE)) {
-            log.fine("Registering " + oname );
-        }           
+            log.log(Level.FINE, "Registering " + oname );
+        }
     }
 
 
@@ -798,8 +830,9 @@ public abstract class ManagerBase implements Manager {
     @Override
     public void checkSessionAttribute(String name, Object value) {
         if (getDistributable() && !StandardSession.isSerializable(value)) {
-            throw new IllegalArgumentException(
-                    sm.getString("standardSession.setAttribute.iae", name));
+            String msg = MessageFormat.format(rb.getString(NON_SERIALIZABLE_ATTRIBUTE_EXCEPTION),
+                                              name);
+            throw new IllegalArgumentException(msg);
         }
     }
 
@@ -945,7 +978,7 @@ public abstract class ManagerBase implements Manager {
                     return;
                 }
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine("Got " + len + " " + bytes.length );
+                    log.log(Level.FINE, "Got " + len + " " + bytes.length);
                 }
             } catch( Exception ex ) {
             }
@@ -1012,7 +1045,7 @@ public abstract class ManagerBase implements Manager {
      * @deprecated
      */
     protected void log(String message) {
-        log.info(message);
+        log.log(Level.INFO, message);
     }
 
 
@@ -1207,7 +1240,7 @@ public abstract class ManagerBase implements Manager {
         Session s = sessions.get(sessionId);
         if( s==null ) {
             if (log.isLoggable(Level.INFO)) {
-                log.info("Session not found " + sessionId);
+                log.log(Level.INFO, SESSION_NOT_FOUND, sessionId);
             }
             return null;
         }
@@ -1221,7 +1254,7 @@ public abstract class ManagerBase implements Manager {
         Session s=sessions.get(sessionId);
         if( s==null ) {
             if (log.isLoggable(Level.INFO)) {
-                log.info("Session not found " + sessionId);
+                log.log(Level.INFO, SESSION_NOT_FOUND, sessionId);
             }
             return;
         }
@@ -1233,7 +1266,7 @@ public abstract class ManagerBase implements Manager {
         Session s=sessions.get(sessionId);
         if( s==null ) {
             if (log.isLoggable(Level.INFO)) {
-                log.info("Session not found " + sessionId);
+                log.log(Level.INFO, SESSION_NOT_FOUND, sessionId);
             }
             return "";
         }

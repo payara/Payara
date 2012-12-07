@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,8 +59,9 @@
 package org.apache.catalina.session;
 
 import org.apache.catalina.*;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.LifecycleSupport;
-import org.apache.catalina.util.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -68,6 +69,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
 //HERCULES:end added
 
 /**
@@ -81,15 +84,20 @@ import java.util.List;
 public abstract class StoreBase
     implements Lifecycle, Store {
 
-    private static final java.util.logging.Logger log =
-        java.util.logging.Logger.getLogger(
-            StoreBase.class.getName());
+    private static final java.util.logging.Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
 
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm = StringManager.getManager(
-                                                    Constants.Package);
+    @LogMessageInfo(
+            message = "StoreBase has already been started",
+            level = "WARNING"
+    )
+    public static final String STORE_BASE_STARTED_EXCEPTION = "AS-WEB-CORE-00680";
+
+    @LogMessageInfo(
+            message = "StoreBase has not been started",
+            level = "WARNING"
+    )
+    public static final String STORE_BASE_NOT_STARTED_EXCEPTION = "AS-WEB-CORE-00681";
 
     // ----------------------------------------------------- Instance Variables
 
@@ -378,7 +386,7 @@ public abstract class StoreBase
             logger.log(getStoreName()+"[" + containerName + "]: " +
                        message);
         } else {
-            log.fine(getStoreName()+"[" + containerName + "]: " + message);
+            log.log(Level.FINE, getStoreName() + "[" + containerName + "]: " + message);
         }
     }
 
@@ -401,8 +409,7 @@ public abstract class StoreBase
             logger.log(getStoreName()+"[" + containerName + "]: " +
                 message, t, Logger.WARNING);
         } else {
-            log.log(java.util.logging.Level.WARNING,
-                getStoreName()+"[" + containerName + "]: " + message, t);
+            log.log(Level.WARNING, getStoreName()+"[" + containerName + "]: " + message, t);
         }
     }
 
@@ -437,7 +444,7 @@ public abstract class StoreBase
         // Validate and update our current component state
         if (started)
             throw new LifecycleException
-                (sm.getString(getStoreName()+".alreadyStarted"));
+                (rb.getString(STORE_BASE_STARTED_EXCEPTION));
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
@@ -456,7 +463,7 @@ public abstract class StoreBase
         // Validate and update our current component state
         if (!started)
             throw new LifecycleException
-                (sm.getString(getStoreName()+".notStarted"));
+                (rb.getString(STORE_BASE_NOT_STARTED_EXCEPTION));
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
 

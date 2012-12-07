@@ -61,9 +61,10 @@ package org.apache.catalina.session;
 import com.sun.enterprise.spi.io.BaseIndirectlySerializable;
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
-import org.apache.catalina.util.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.*;
@@ -72,9 +73,12 @@ import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 //end HERCULES:add
 
 
@@ -103,7 +107,51 @@ import java.util.concurrent.atomic.AtomicLong;
 public class StandardSession
     implements HttpSession, Session, Serializable {
 
+    private static final Logger log = StandardServer.log;
 
+    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Session id change event listener threw exception",
+            level = "WARNING"
+    )
+    public static final String SESSION_ID_CHANGE_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00665";
+
+    @LogMessageInfo(
+            message = "Session event listener threw exception",
+            level = "WARNING"
+    )
+    public static final String SESSION_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00666";
+
+    @LogMessageInfo(
+            message = "Session already invalidated",
+            level = "WARNING"
+    )
+    public static final String SESSION_INVALIDATED_EXCEPTION = "AS-WEB-CORE-00667";
+
+    @LogMessageInfo(
+            message = "Session attribute event listener threw exception",
+            level = "WARNING"
+    )
+    public static final String SESSION_ATTRIBUTE_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00668";
+
+    @LogMessageInfo(
+            message = "setAttribute: name parameter cannot be null",
+            level = "WARNING"
+    )
+    public static final String NAME_PARAMETER_CANNOT_BE_NULL_EXCEPTION = "AS-WEB-CORE-00669";
+
+    @LogMessageInfo(
+            message = "Session binding event listener threw exception",
+            level = "WARNING"
+    )
+    public static final String SESSION_BINDING_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00670";
+
+    @LogMessageInfo(
+            message = " Cannot serialize session attribute {0} for session {1}",
+            level = "WARNING"
+    )
+    public static final String CANNOT_SERIALIZE_SESSION_EXCEPTION = "AS-WEB-CORE-00671";
     // ----------------------------------------------------------- Constructors
 
     /**
@@ -123,9 +171,6 @@ public class StandardSession
 
     // ----------------------------------------------------- Class Variables
 
-    private static final java.util.logging.Logger log =
-        java.util.logging.Logger.getLogger(
-            StandardSession.class.getName());
 
     /**
      * Type array.
@@ -164,12 +209,6 @@ public class StandardSession
     private static final String[] excludedAttributes = {
         Globals.SUBJECT_ATTR
     };
-
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
     /**
      * The HTTP session context associated with this session.
@@ -446,7 +485,7 @@ public class StandardSession
                     } catch (Exception e) {
                         // Ignore
                     }
-                    log(sm.getString("standardSession.sessionIdChanged"), t);
+                    log(rb.getString(SESSION_ID_CHANGE_EVENT_LISTENER_EXCEPTION), t);
                 }
             }
         }
@@ -527,7 +566,7 @@ public class StandardSession
                 } catch (Exception e) {
                     // Ignore
                 }
-                log(sm.getString("standardSession.sessionEvent"), t);
+                log(rb.getString(SESSION_EVENT_LISTENER_EXCEPTION), t);
             }
         }
     }
@@ -554,7 +593,7 @@ public class StandardSession
     public long getLastAccessedTime() {
         if ( !isValid() ) {
             throw new IllegalStateException
-                (sm.getString("standardSession.getLastAccessedTime.ise"));
+                ("getLastAccessedTime: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
         }
         return (this.lastAccessedTime);
 
@@ -861,7 +900,7 @@ public class StandardSession
                             // Ignore
                         }
                         // FIXME - should we do anything besides log these?
-                        log(sm.getString("standardSession.sessionEvent"), t);
+                        log(rb.getString(SESSION_EVENT_LISTENER_EXCEPTION), t);
                     }
                 }
             }
@@ -1231,7 +1270,7 @@ public class StandardSession
 
         if (!isValid())
             throw new IllegalStateException
-                (sm.getString("standardSession.getCreationTime.ise"));
+                ("getCreationTime: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
 
         return (this.creationTime);
 
@@ -1276,15 +1315,14 @@ public class StandardSession
      * <code>null</code> if no object is bound with that name.
      *
      * @param name Name of the attribute to be returned
-     *
-     * @exception IllegalStateException if this method is called on an
+     *                                                                                   * @exception IllegalStateException if this method is called on an
      *  invalidated session
      */
     public Object getAttribute(String name) {
 
         if (!isValid())
             throw new IllegalStateException
-                (sm.getString("standardSession.getAttribute.ise"));
+                ("getAttribute: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
 
         if (name == null) return null;
 
@@ -1307,7 +1345,7 @@ public class StandardSession
 
         if (!isValid())
             throw new IllegalStateException
-                (sm.getString("standardSession.getAttributeNames.ise"));
+                ("getAttributeNames: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
 
         synchronized (attributes) {
             return (new Enumerator<String>(attributes.keySet(), true));
@@ -1349,7 +1387,7 @@ public class StandardSession
 
         if (!isValid())
             throw new IllegalStateException
-                (sm.getString("standardSession.getValueNames.ise"));
+                ("getValueNames: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
 
         return (keys());
 
@@ -1525,7 +1563,7 @@ public class StandardSession
 
         if (!isValid)
             throw new IllegalStateException
-                (sm.getString("standardSession.invalidate.ise"));
+                ("invalidate: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
         //make sure foreground locked first
         if(!this.isForegroundLocked()) {
             this.getSessionLockForForeground();
@@ -1554,7 +1592,7 @@ public class StandardSession
 
         if (!isValid())
             throw new IllegalStateException
-                (sm.getString("standardSession.isNew.ise"));
+                ("isNew: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
 
         return (this.isNew);
 
@@ -1633,7 +1671,7 @@ public class StandardSession
         // Validate our current state
         if (!isValid() && checkValid)
             throw new IllegalStateException
-                (sm.getString("standardSession.removeAttribute.ise"));
+                ("removeAttribute: " + rb.getString(SESSION_INVALIDATED_EXCEPTION));
 
         // Remove this attribute from our collection
         Object value = attributes.remove(name);
@@ -1702,7 +1740,7 @@ public class StandardSession
                 } catch (Exception e) {
                     // Ignore
                 }
-                log(sm.getString("standardSession.attributeEvent"), t);
+                log(rb.getString(SESSION_ATTRIBUTE_EVENT_LISTENER_EXCEPTION), t);
             }
         }
 
@@ -1755,7 +1793,7 @@ public class StandardSession
         // Name cannot be null
         if (name == null)
             throw new IllegalArgumentException
-                (sm.getString("standardSession.setAttribute.namenull"));
+                (rb.getString(NAME_PARAMETER_CANNOT_BE_NULL_EXCEPTION));
 
         // Null value is the same as removeAttribute()
         if (value == null) {
@@ -1766,7 +1804,7 @@ public class StandardSession
         // Validate our current state
         if (!isValid()) {
             throw new IllegalStateException
-                (sm.getString("standardSession.setAttribute.ise"));
+                ("setAttribute: "+ rb.getString(SESSION_INVALIDATED_EXCEPTION));
         }
 
         if (manager != null) {
@@ -1782,7 +1820,7 @@ public class StandardSession
             try {
                 ((HttpSessionBindingListener) value).valueBound(event);
             } catch (Throwable t){
-                log(sm.getString("standardSession.bindingEvent"), t); 
+                log(rb.getString(SESSION_BINDING_EVENT_LISTENER_EXCEPTION), t);
             }
         }
 
@@ -1802,7 +1840,7 @@ public class StandardSession
             } catch (Throwable t) {
                 context.fireContainerEvent(
                     ContainerEvent.AFTER_SESSION_VALUE_UNBOUND, null);
-                log(sm.getString("standardSession.bindingEvent"), t);
+                log(rb.getString(SESSION_BINDING_EVENT_LISTENER_EXCEPTION), t);
             }
         }
         
@@ -1867,7 +1905,7 @@ public class StandardSession
                 } catch (Exception e) {
                     // Ignore
                 }
-                log(sm.getString("standardSession.attributeEvent"), t);
+                log(rb.getString(SESSION_ATTRIBUTE_EVENT_LISTENER_EXCEPTION), t);
             }
         }
 
@@ -2129,16 +2167,18 @@ public class StandardSession
                     log("  storing attribute '" + saveNames.get(i) +
                         "' with value '" + saveValues.get(i) + "'");
             } catch (NotSerializableException e) {
-                log(sm.getString("standardSession.notSerializable",
-                                 saveNames.get(i), id), e);
+                String msg = MessageFormat.format(rb.getString(CANNOT_SERIALIZE_SESSION_EXCEPTION),
+                                                  new Object[] {saveNames.get(i), id});
+                log(msg, e);
                 stream.writeObject(NOT_SERIALIZED);
                 if (debug >= 2)
                     log("  storing attribute '" + saveNames.get(i) +
                         "' with value NOT_SERIALIZED");
             } catch (IOException ioe) {
 		if ( ioe.getCause() instanceof NotSerializableException ) {
-                	log(sm.getString("standardSession.notSerializable",
-                       	          saveNames.get(i), id), ioe);
+                String msg = MessageFormat.format(rb.getString(CANNOT_SERIALIZE_SESSION_EXCEPTION),
+                                                  new Object[] {saveNames.get(i), id});
+                	log(msg, ioe);
                 	stream.writeObject(NOT_SERIALIZED);
                 	if (debug >= 2)
                     		log("  storing attribute '" + saveNames.get(i) +
@@ -2286,7 +2326,7 @@ public class StandardSession
         if ((manager != null) && (manager instanceof ManagerBase)) {
             ((ManagerBase) manager).log(message);
         } else {
-            log.info("StandardSession: " + message);
+            log.log(Level.INFO, "StandardSession: " + message);
         }
     }
 
@@ -2301,8 +2341,7 @@ public class StandardSession
         if ((manager != null) && (manager instanceof ManagerBase)) {
             ((ManagerBase) manager).log(message, t);
         } else {
-            log.log(java.util.logging.Level.WARNING,
-                "StandardSession: " + message, t);
+            log.log(Level.WARNING, "StandardSession: " + message, t);
         }
     }
 
