@@ -157,6 +157,7 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
         if (expiredJobs.size() > 0 ) {
             for (JobInfo job: expiredJobs) {
                 jobManagerService.purgeJob(job.jobId);
+                jobManagerService.purgeCompletedJobForId(job.jobId);
                 logger.fine("Cleaning job" + job.jobId);
             }
         }

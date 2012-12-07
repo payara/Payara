@@ -274,7 +274,7 @@ public class JobManagerService implements JobManager,PostConstruct {
     @Override
     public synchronized void purgeJob(String id) {
         Job obj = jobRegistry.remove(id);
-        purgeCompletedJobForId(id);
+
         logger.fine(adminStrings.getLocalString("removed.expired.job","Removed expired job ",  obj));
 
     }

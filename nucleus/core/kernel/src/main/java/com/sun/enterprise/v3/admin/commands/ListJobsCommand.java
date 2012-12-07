@@ -43,6 +43,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -164,7 +165,8 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
         }
 
         if (jobInfoList.size() < 1) {
-            sb.append(NONE);
+            report.setMessage(NONE);
+
         }
         longestName += 2;
         longestJobId += 2;
@@ -184,18 +186,22 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
 
         // no linefeed at the end!!!
         boolean first = true;
+        MessagePart topMsg = report.getTopMessagePart();
         for (JobInfo info : jobInfoList) {
             if (first)    {
-                sb.append(String.format(formattedLine, NAME, JOBID, TIME, STATE,USER ));
-                sb.append('\n');
+                topMsg.setMessage(String.format(formattedLine, NAME, JOBID, TIME, STATE,USER ));
                 first = false;
             }
-            else
-                sb.append('\n');
 
-            sb.append(String.format(formattedLine, info.jobName, info.jobId,  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(info.commandExecutionDate), info.exitCode,info.user));
+            MessagePart msg = topMsg.addChild();
+            msg.setMessage(String.format(formattedLine, info.jobName, info.jobId,  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(info.commandExecutionDate), info.exitCode,info.user));
+            msg.addProperty(NAME, info.jobName);
+            msg.addProperty(JOBID, info.jobId);
+            msg.addProperty(TIME, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(info.commandExecutionDate));
+            msg.addProperty(STATE, info.exitCode);
+            msg.addProperty(USER, info.user);
         }
-        report.setMessage(sb.toString());
+
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
     
