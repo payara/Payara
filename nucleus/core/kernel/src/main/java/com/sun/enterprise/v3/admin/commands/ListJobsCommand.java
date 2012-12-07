@@ -106,7 +106,6 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
 
         List<JobInfo> jobInfoList = new ArrayList<JobInfo>();
 
-        StringBuilder sb = new StringBuilder();
         if (jobID != null) {
             Job oneJob = jobManagerService.get(jobID);
             JobInfo info = null;

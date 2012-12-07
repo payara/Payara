@@ -158,7 +158,7 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
             for (JobInfo job: expiredJobs) {
                 jobManagerService.purgeJob(job.jobId);
                 jobManagerService.purgeCompletedJobForId(job.jobId);
-                logger.fine("Cleaning job" + job.jobId);
+                logger.fine(adminStrings.getLocalString("cleaning.job","Cleaning job {0}", job.jobId));
             }
         }
 
@@ -173,7 +173,7 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
             switch (type) {
                 case CHANGE:
                     if(logger.isLoggable(Level.FINE)) {
-                        logger.fine("ManagedJobConfig " + changedType.getName() + " was changed : " + changedInstance);
+                        logger.fine(adminStrings.getLocalString("managedJobConfig.change","ManagedJobConfig {0} was changed by {1} " , changedType.getName() , changedInstance));
                     }
                     np = handleChangeEvent(changedInstance);
                     break;
