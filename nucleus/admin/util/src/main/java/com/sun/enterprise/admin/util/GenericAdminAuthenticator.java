@@ -236,8 +236,14 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     @Override
     public AdminAccessController.Access chooseAccess(final Subject s, final String originHost) {
         final Collection<String> adminPrincipals = new ArrayList<String>();
-        for (SecureAdminPrincipal saPrincipal : secureAdmin.getSecureAdminPrincipal()) {
-            adminPrincipals.add(saPrincipal.getDn());
+        /*
+         * In some cases there might not be any secureAdmin config bean in 
+         * the domain configuration.
+         */
+        if (secureAdmin != null) {
+            for (SecureAdminPrincipal saPrincipal : secureAdmin.getSecureAdminPrincipal()) {
+                adminPrincipals.add(saPrincipal.getDn());
+            }
         }
         
         if ( ! isAuthenticatedAsAdmin(s, adminPrincipals)) {
@@ -257,7 +263,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
 //        if (serverEnv.isDas()) {
             if ( ifAuthorizedLogWhy("request is local", NetUtils.isThisHostLocal(originHost))
                 ||
-                  ifAuthorizedLogWhy("secure admin is enabled", SecureAdmin.Util.isEnabled(secureAdmin))
+                  (secureAdmin != null && ifAuthorizedLogWhy("secure admin is enabled", SecureAdmin.Util.isEnabled(secureAdmin)))
                 ||
                   ifAuthorizedLogWhy("request contained admin token", ! s.getPrincipals(AdminTokenPrincipal.class).isEmpty())
                 || 
