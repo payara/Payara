@@ -43,7 +43,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.RestServiceLoggingInfo;

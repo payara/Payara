@@ -525,7 +525,7 @@ public class TemplateRestResource implements OptionsCapable {
             Delete del = null;
             for (Method m : cbp.getMethods()) {
                 ConfigModel.Property pp = entity.parent().model.toProperty(m);
-                if ((pp != null) && (pp.xmlName.equals(tagName))) {
+                if ((pp != null) && (pp.xmlName.equals(tagName)) && m.isAnnotationPresent(Delete.class)) {
                     del = m.getAnnotation(Delete.class);
                     break;
                 }

@@ -54,7 +54,7 @@ import org.glassfish.admin.rest.composite.metadata.RestModelMetadata;
  *
  * @author jdlee
  */
-public class RestCollection<T> implements Map<RestModelMetadata, T> {
+public class RestCollection<T> {
     private List<T> models = new ArrayList();
     private List<RestModelMetadata> metadata = new ArrayList<RestModelMetadata>();
 
@@ -75,17 +75,14 @@ public class RestCollection<T> implements Map<RestModelMetadata, T> {
         return containsKey (new RestModelMetadata(id));
     }
 
-    @Override
     public int size() {
         return models.size();
     }
 
-    @Override
     public boolean isEmpty() {
         return models.isEmpty();
     }
 
-    @Override
     public boolean containsKey(Object key) {
         checkClass(RestModelMetadata.class, key.getClass());
         RestModelMetadata desired = (RestModelMetadata) key;
@@ -101,7 +98,6 @@ public class RestCollection<T> implements Map<RestModelMetadata, T> {
         return found;
     }
 
-    @Override
     public boolean containsValue(Object value) {
         checkClass(RestModel.class, value.getClass());
         RestModel desired = (RestModel) value;
@@ -117,7 +113,6 @@ public class RestCollection<T> implements Map<RestModelMetadata, T> {
         return found;
     }
 
-    @Override
     public T get(Object key) {
         checkClass(RestModelMetadata.class, key.getClass());
         RestModelMetadata desired = (RestModelMetadata) key;
@@ -133,7 +128,6 @@ public class RestCollection<T> implements Map<RestModelMetadata, T> {
         return result;
     }
 
-    @Override
     public T put(RestModelMetadata key, T value) {
         models.add(value);
         metadata.add(key);
@@ -141,7 +135,6 @@ public class RestCollection<T> implements Map<RestModelMetadata, T> {
         return value;
     }
 
-    @Override
     public T remove(Object key) {
         checkClass(RestModelMetadata.class, key.getClass());
         RestModelMetadata desired = (RestModelMetadata) key;
@@ -159,7 +152,6 @@ public class RestCollection<T> implements Map<RestModelMetadata, T> {
         return result;
     }
 
-    @Override
     public void putAll(Map<? extends RestModelMetadata, ? extends T> m) {
         for (Map.Entry<? extends RestModelMetadata, ? extends T> entry : m.entrySet()) {
             metadata.add(entry.getKey());
@@ -167,23 +159,19 @@ public class RestCollection<T> implements Map<RestModelMetadata, T> {
         }
     }
 
-    @Override
     public void clear() {
         models.clear();
         metadata.clear();
     }
 
-    @Override
     public Set<RestModelMetadata> keySet() {
         return new TreeSet<RestModelMetadata>(metadata);
     }
 
-    @Override
     public Collection<T> values() {
         return new RestModelSet(models);
     }
 
-    @Override
     public Set<Entry<RestModelMetadata, T>> entrySet() {
         if (metadata.size() != models.size()) {
             throw new IllegalStateException("InternalError: keys and values out of sync");
@@ -259,7 +247,7 @@ public class RestCollection<T> implements Map<RestModelMetadata, T> {
             }
             return true;
         }
-        
+
     }
 
     private static class RestModelSet<T> extends AbstractSet<T> {

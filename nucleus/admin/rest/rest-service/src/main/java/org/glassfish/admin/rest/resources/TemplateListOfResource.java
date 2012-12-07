@@ -228,7 +228,7 @@ public abstract class TemplateListOfResource {
             Create create = null;
             for (Method m : cbp.getMethods()) {
                 ConfigModel.Property pp = parent.model.toProperty(m);
-                if ((pp != null) && (pp.xmlName.equals(tagName))) {
+                if ((pp != null) && (pp.xmlName.equals(tagName)) && (m.isAnnotationPresent(Create.class))) {
                     create = m.getAnnotation(Create.class);
                     break;
                 }
