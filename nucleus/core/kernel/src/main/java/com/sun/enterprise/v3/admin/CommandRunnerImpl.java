@@ -536,6 +536,7 @@ public class CommandRunnerImpl implements CommandRunner {
                 wrappedCommand = cwi.createWrapper(a, model, wrappedCommand, report);
             }
         }
+        wrappedCommand = CommandSupport.createWrappers(habitat, model, command, report);
         
         try {
             wrappedCommand.execute(progressHelper.wrapContext4MainCommand(context));
@@ -1098,8 +1099,7 @@ public class CommandRunnerImpl implements CommandRunner {
         ActionReport.ExitCode preSupplementalReturn = ActionReport.ExitCode.SUCCESS;
         ActionReport.ExitCode postSupplementalReturn = ActionReport.ExitCode.SUCCESS;
         CommandRunnerProgressHelper progressHelper = 
-                new CommandRunnerProgressHelper(command, model.getCommandName(), commandInstance, inv.progressStatusChild); 
-                
+                new CommandRunnerProgressHelper(command, model.getCommandName(), commandInstance, inv.progressStatusChild);               
 
         // If this glassfish installation does not have stand alone instances / clusters at all, then
         // lets not even look Supplemental command and such. A small optimization
@@ -1191,6 +1191,8 @@ public class CommandRunnerImpl implements CommandRunner {
                 if (!injectParameters(model, command, injectionMgr, context).equals(ActionReport.ExitCode.SUCCESS)) {
                     return;
                 }
+
+                CommandSupport.init(habitat, command, context, commandInstance);
 
                 /*
                  * Now that parameters have been injected into the command object,
@@ -1729,6 +1731,9 @@ public class CommandRunnerImpl implements CommandRunner {
             commandInstance.complete(report(), outboundPayload());
             if (progressStatusChild != null) {
                 progressStatusChild.complete();
+            }
+            if (command != null) {
+                CommandSupport.done(habitat, command, commandInstance);
             }
         }
     }

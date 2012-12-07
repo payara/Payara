@@ -46,8 +46,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandAspectBase;
 import org.glassfish.api.admin.CommandModel;
-import org.glassfish.api.admin.CommandWrapperImpl;
 import org.glassfish.api.admin.WrappedAdminCommand;
 import org.jvnet.hk2.annotations.Service;
 
@@ -57,13 +57,11 @@ import org.jvnet.hk2.annotations.Service;
  * @author tmueller
  */
 @Service
-public class AsyncImpl implements CommandWrapperImpl {
+public class AsyncImpl extends CommandAspectBase {
     
     private static final Logger logger = Logger.getLogger(AsyncImpl.class.getName());
     private static final ResourceBundle strings = 
             ResourceBundle.getBundle("org/glassfish/api/LocalStrings");
-    
-    public AsyncImpl() { }
     
     @Override
     public WrappedAdminCommand createWrapper(final Annotation ann, final CommandModel model, 
