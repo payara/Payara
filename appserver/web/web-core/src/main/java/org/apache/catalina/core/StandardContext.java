@@ -367,7 +367,7 @@ public class StandardContext
         message = "Current container has already been started with a DirContext object",
         level = "WARNING"
     )
-    public static final String RESOURCES_STARTED = "AS-WEB-COUR-00102";
+    public static final String RESOURCES_STARTED = "AS-WEB-CORE-00102";
 
     @LogMessageInfo(
         message = "Error starting resources in context {0} with Exception message: {1}",
@@ -375,25 +375,25 @@ public class StandardContext
         cause = "Could not get the proxy directory context",
         action = "Verify the existence of the context"
     )
-    public static final String STARTING_RESOURCE_EXCEPTION_MESSAGE = "AS-WEB-CORE-000103";
+    public static final String STARTING_RESOURCE_EXCEPTION_MESSAGE = "AS-WEB-CORE-00103";
 
     @LogMessageInfo(
         message = "Form login page {0} must start with a ''/'' in Servlet 2.4",
         level = "FINE"
     )
-    public static final String FORM_LOGIN_PAGE_FINE = "AS-WEB-CORE-000104";
+    public static final String FORM_LOGIN_PAGE_FINE = "AS-WEB-CORE-00104";
 
     @LogMessageInfo(
         message = "Form error page {0} must start with a ''/'' in Servlet 2.4",
         level = "FINE"
     )
-    public static final String FORM_ERROR_PAGE_FINE = "AS-WEB-CORE-000105";
+    public static final String FORM_ERROR_PAGE_FINE = "AS-WEB-CORE-00105";
 
     @LogMessageInfo(
         message = "JSP file {0} must start with a ''/'' in Servlet 2.4",
         level = "FINE"
     )
-    public static final String JSP_FILE_FINE = "AS-WEB-CORE-000106";
+    public static final String JSP_FILE_FINE = "AS-WEB-CORE-00106";
 
     @LogMessageInfo(
         message = "Container {0} has already been started",
@@ -1763,8 +1763,7 @@ public class StandardContext
         if ((loginPage != null) && !loginPage.startsWith("/")) {
             if (isServlet22()) {
                 if (log.isLoggable(Level.FINE)) {
-                    String msg = MessageFormat.format(rb.getString(FORM_LOGIN_PAGE_FINE), loginPage);
-                    log.log(Level.FINE, msg);
+                    log.log(Level.FINE, FORM_LOGIN_PAGE_FINE, loginPage);
                 }
                 config.setLoginPage("/" + loginPage);
             } else {
@@ -1776,8 +1775,7 @@ public class StandardContext
         if ((errorPage != null) && !errorPage.startsWith("/")) {
             if (isServlet22()) {
                 if (log.isLoggable(Level.FINE)) {
-                    String msg = MessageFormat.format(rb.getString(FORM_ERROR_PAGE_FINE), errorPage);
-                    log.log(Level.FINE, msg);
+                    log.log(Level.FINE, FORM_ERROR_PAGE_FINE, errorPage);
                 }
                 config.setErrorPage("/" + errorPage);
             } else {
@@ -2574,8 +2572,7 @@ public class StandardContext
         if ((jspFile != null) && !jspFile.startsWith("/")) {
             if (isServlet22()) {
                 if (log.isLoggable(Level.FINE)) {
-                    String msg = MessageFormat.format(rb.getString(JSP_FILE_FINE), jspFile);
-                    log.log(Level.FINE, msg);
+                    log.log(Level.FINE, JSP_FILE_FINE, jspFile);
                 }
                 wrapper.setJspFile("/" + jspFile);
             } else {
@@ -2730,8 +2727,7 @@ public class StandardContext
                 if ((errorCode >= 400) && (errorCode < 600)) {
                     statusPages.put(errorCode, errorPage);
                 } else {
-                    String msg = MessageFormat.format(rb.getString(INVALID_ERROR_PAGE_CODE_EXCEPTION), errorCode);
-                    log.log(Level.SEVERE, msg);
+                    log.log(Level.SEVERE, INVALID_ERROR_PAGE_CODE_EXCEPTION, errorCode);
                 }
             }
         } else {
@@ -5482,9 +5478,8 @@ public class StandardContext
                 String msg = MessageFormat.format(rb.getString(STARTING_RESOURCES_EXCEPTION), getName());
                 log.log(Level.SEVERE, msg, t);
             } else {
-                String msg = MessageFormat.format(rb.getString(STARTING_RESOURCE_EXCEPTION_MESSAGE),
-                                                  new Object[] {getName(), t.getMessage()});
-                log.log(Level.SEVERE, msg);
+                log.log(Level.SEVERE, STARTING_RESOURCE_EXCEPTION_MESSAGE,
+                        new Object[] {getName(), t.getMessage()});
             }
             ok = false;
         }
@@ -5673,8 +5668,7 @@ public class StandardContext
 
         if (started) {
             if (log.isLoggable(Level.INFO)) {
-                String msg = MessageFormat.format(rb.getString(CONTAINER_ALREADY_STARTED_EXCEPTION), logName());
-                log.log(Level.INFO, msg);
+                log.log(Level.INFO, CONTAINER_ALREADY_STARTED_EXCEPTION, logName());
             }
             return;
         }
@@ -5873,8 +5867,7 @@ public class StandardContext
             // Load and initialize all "load on startup" servlets
             loadOnStartup(findChildren());
         } catch (Throwable t) {
-            String msg = MessageFormat.format(rb.getString(STARTUP_CONTEXT_FAILED_EXCEPTION), getName());
-            log.log(Level.SEVERE, msg);
+            log.log(Level.SEVERE, STARTUP_CONTEXT_FAILED_EXCEPTION, getName());
             try {
                 stop();
             } catch (Throwable tt) {
@@ -6022,8 +6015,7 @@ public class StandardContext
         // Validate and update our current component state
         if (!started) {
             if(log.isLoggable(Level.INFO)) {
-                String msg = MessageFormat.format(rb.getString(CONTAINER_NOT_STARTED_EXCEPTION), logName());
-                log.log(Level.INFO, msg);
+                log.log(Level.INFO, CONTAINER_NOT_STARTED_EXCEPTION, logName());
             }
             return;
         }
@@ -6318,8 +6310,7 @@ public class StandardContext
         if (!isServlet22())
             return (urlPattern);
         if (log.isLoggable(Level.FINE)) {
-            String msg = MessageFormat.format(rb.getString(URL_PATTERN_WARNING), urlPattern);
-            log.log(Level.FINE, msg);
+            log.log(Level.FINE, URL_PATTERN_WARNING, urlPattern);
         }
         return ("/" + urlPattern);
 
@@ -6629,8 +6620,7 @@ public class StandardContext
             }
         }
         if (!dir.mkdirs() && !dir.isDirectory()) {
-            String msg = MessageFormat.format(rb.getString(CREATE_WORK_DIR_EXCEPTION), dir.getAbsolutePath());
-            log.log(Level.SEVERE, msg);
+            log.log(Level.SEVERE, CREATE_WORK_DIR_EXCEPTION, dir.getAbsolutePath());
         }
 
         // Set the appropriate servlet context attribute
@@ -6662,8 +6652,7 @@ public class StandardContext
             return true;
         }
         if (urlPattern.indexOf('\n') >= 0 || urlPattern.indexOf('\r') >= 0) {
-            String msg = MessageFormat.format(rb.getString(URL_PATTERN_CANNOT_BE_MATCHED_EXCEPTION), urlPattern);
-            log.log(Level.WARNING, msg);
+            log.log(Level.WARNING, URL_PATTERN_CANNOT_BE_MATCHED_EXCEPTION, urlPattern);
             return false;
         }
         if (urlPattern.startsWith("*.")) {
@@ -6987,13 +6976,11 @@ public class StandardContext
         // "Life" update
         String path=oname.getKeyProperty("name");
         if( path == null ) {
-            String msg = MessageFormat.format(rb.getString(MISSING_ATTRIBUTE), getName());
-            log.log(Level.SEVERE, msg);
+            log.log(Level.SEVERE, MISSING_ATTRIBUTE, getName());
             return null;
         }
         if( ! path.startsWith( "//")) {
-            String msg = MessageFormat.format(rb.getString(MALFORMED_NAME), getName());
-            log.log(Level.SEVERE, msg);
+            log.log(Level.SEVERE, MALFORMED_NAME, getName());
         }
         path=path.substring(2);
         int delim=path.indexOf( "/" );

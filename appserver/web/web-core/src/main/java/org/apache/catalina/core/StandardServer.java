@@ -608,10 +608,8 @@ public final class StandardServer
             if (match) {
                 break;
             } else {
-                String msg = MessageFormat.format(
-                        rb.getString(STANDARD_SERVER_AWAIT_INVALID_COMMAND_RECEIVED_EXCEPTION),
-                                     command.toString());
-                log.log(Level.WARNING, msg);
+                log.log(Level.WARNING, STANDARD_SERVER_AWAIT_INVALID_COMMAND_RECEIVED_EXCEPTION,
+                        command.toString());
             }
         }
 

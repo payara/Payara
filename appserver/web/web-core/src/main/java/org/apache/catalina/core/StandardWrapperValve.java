@@ -476,9 +476,7 @@ final class StandardWrapperValve extends ValveBase {
                        message);
         } else {
             if (log.isLoggable(Level.INFO)) {
-                String msg = MessageFormat.format(rb.getString(STANDARD_WRAPPER_VALVE),
-                                                  new Object[] {containerName, message});
-                log.log(Level.INFO, msg);
+                log.log(Level.INFO, STANDARD_WRAPPER_VALVE, new Object[] {containerName, message});
             }
         }
     }

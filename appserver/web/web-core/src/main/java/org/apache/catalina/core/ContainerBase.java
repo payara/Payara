@@ -1028,7 +1028,7 @@ public abstract class ContainerBase
     private void addChildInternal(Container child) {
         
         if(log.isLoggable(Level.FINEST))
-            log.finest("Add child " + child + " " + this);
+            log.log(Level.FINEST, "Add child " + child + " " + this);
         synchronized(children) {
             if (children.get(child.getName()) != null) {
                 String msg = MessageFormat.format(rb.getString(DUPLICATE_CHILD_NAME_EXCEPTION),
@@ -1264,8 +1264,7 @@ public abstract class ContainerBase
         // Validate and update our current component state
         if (started) {
             if (log.isLoggable(Level.INFO)) {
-                String msg = MessageFormat.format(rb.getString(CONTAINER_STARTED), logName());
-                log.log(Level.INFO, msg);
+                log.log(Level.INFO, CONTAINER_STARTED, logName());
             }
             return;
         }
@@ -1317,8 +1316,7 @@ public abstract class ContainerBase
         // Validate and update our current component state
         if (!started) {
             if (log.isLoggable(Level.INFO)) {
-                String msg = MessageFormat.format(rb.getString(CONTAINER_NOT_STARTED_EXCEPTION), logName());
-                log.log(Level.INFO, msg);
+                log.log(Level.INFO, CONTAINER_NOT_STARTED_EXCEPTION, logName());
             }
             return;
         }

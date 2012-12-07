@@ -830,8 +830,7 @@ public class StandardHost
 
         // Complain if no Context has been selected
         if (context == null) {
-            String msg = MessageFormat.format(rb.getString(MAPPING_CONF_REQUEST_URI_EXCEPTION), uri);
-            log.log(Level.SEVERE, msg);
+            log.log(Level.SEVERE, MAPPING_CONF_REQUEST_URI_EXCEPTION, uri);
             return (null);
         }
 

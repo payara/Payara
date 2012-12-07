@@ -67,7 +67,6 @@ import java.security.PrivilegedExceptionAction;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.text.MessageFormat;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
@@ -1870,10 +1869,8 @@ public class StandardWrapper
             while ((nRetries < 21) && (countAllocated.get() > 0)) {
                 if ((nRetries % 10) == 0) {
                     if (log.isLoggable(Level.FINE)) {
-                        String msg = MessageFormat.format(rb.getString(WAITING_INSTANCE_BE_DEALLOCATED),
-                                                          new Object[] {countAllocated.toString(),
-                                                                        instance.getClass().getName()});
-                        log.log(Level.FINE, msg);
+                        log.log(Level.FINE, WAITING_INSTANCE_BE_DEALLOCATED, new Object[] {countAllocated.toString(),
+                                instance.getClass().getName()});
                     }
                 }
                 try {
