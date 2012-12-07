@@ -120,6 +120,7 @@ of COPY_LIB map constant.)
                     <goal>package</goal>
                 </goals>
                 <projectsDirectory>${basedir}/src/addon/</projectsDirectory>
+                <cloneProjectsTo>${project.build.directory}/addon</cloneProjectsTo>
             </configuration>
             <executions>
               <execution>

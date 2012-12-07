@@ -46,7 +46,8 @@
     <parent>
         <groupId>org.glassfish.main.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>@project.version@</version>
+        <relativePath/>
     </parent>
     <artifactId>test-progress-status-commands</artifactId>
     <name>Progress status - Test Commands</name>

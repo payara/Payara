@@ -74,7 +74,7 @@ public class NucleusStartStopTest {
         context.setAttribute(TEST_LIBS_KEY, testLibs);
         String basedir = System.getProperty("basedir");
         assertNotNull(basedir);
-        File addondir = new File(basedir, "src/addon");
+        File addondir = new File(basedir, "target/addon");
         for (Map.Entry<String, String> entry : COPY_LIB.entrySet()) {
             copyLibraries(new File(addondir, entry.getKey()), 
                     new File(NucleusTestUtils.getNucleusRoot(), 
