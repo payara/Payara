@@ -268,7 +268,7 @@ public class Request
             message = "ServletRequest.startAsync called outside the scope of an async dispatch",
             level = "WARNING"
     )
-    public static final String START_ASYNC_CALLED_OUTSIDE_SCOPE_EXCEPTION = "AS-WEB-C0RE-00376";
+    public static final String START_ASYNC_CALLED_OUTSIDE_SCOPE_EXCEPTION = "AS-WEB-CORE-00376";
 
     @LogMessageInfo(
             message = "The request has not been put into asynchronous mode, must call ServletRequest.startAsync first",
