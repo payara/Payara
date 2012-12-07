@@ -61,20 +61,16 @@ package org.apache.catalina.startup;
 
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardHost;
-import org.apache.catalina.util.StringManager;
+import org.apache.catalina.core.StandardServer;
 import org.apache.naming.resources.ResourceAttributes;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
 import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.text.MessageFormat;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -93,7 +89,146 @@ import java.util.logging.Logger;
 public class HostConfig
     implements LifecycleListener {
     
-    private static Logger log = Logger.getLogger(HostConfig.class.getName());
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Lifecycle event data object {0} is not a Host",
+            level = "SEVERE",
+            cause = "Could not process the START event for an associated Host",
+            action = "Verify Lifecycle event data object"
+    )
+    public static final String LIFECYCLE_OBJECT_NOT_HOST_EXCEPTION = "AS-WEB-CORE-00770";
+
+    @LogMessageInfo(
+            message = "Deploying configuration descriptor {0}",
+            level = "FINE"
+    )
+    public static final String DEPLOYING_CONFIG_DESCRIPTOR = "AS-WEB-CORE-00771";
+
+    @LogMessageInfo(
+            message = "Error deploying configuration descriptor {0}",
+            level = "SEVERE",
+            cause = "Could not deploy configuration descriptor",
+            action = "Verify the URL that points to context configuration file and the context path"
+    )
+    public static final String ERROR_DEPLOYING_CONFIG_DESCRIPTOR_EXCEPTION = "AS-WEB-CORE-00772";
+
+    @LogMessageInfo(
+            message = "The war name [{0}] is invalid. The archive will be ignored.",
+            level = "SEVERE",
+            cause = "Could not deploy war file",
+            action = "Verify the name war file"
+    )
+    public static final String INVALID_WAR_NAME_EXCEPTION = "AS-WEB-CORE-00773";
+
+    @LogMessageInfo(
+            message = "Expanding web application archive {0}",
+            level = "FINE"
+    )
+    public static final String EXPANDING_WEB_APP = "AS-WEB-CORE-00774";
+
+    @LogMessageInfo(
+            message = "Exception while expanding web application archive {0}",
+            level = "WARNING"
+    )
+    public static final String EXPANDING_WEB_APP_EXCEPTION = "AS-WEB-CORE-00775";
+
+    @LogMessageInfo(
+            message = "Exception while expanding web application archive {0}",
+            level = "SEVERE",
+            cause = "Could not expand web application archive",
+            action = "Verify the URL, and if any I/O errors orrur"
+    )
+    public static final String EXPANDING_WEB_APP_ARCHIVE_EXCEPTION = "AS-WEB-CORE-00776";
+
+    @LogMessageInfo(
+            message = "Deploying web application archive {0}",
+            level = "INFO"
+    )
+    public static final String DEPLOYING_WEB_APP_ARCHIVE = "AS-WEB-CORE-00777";
+
+    @LogMessageInfo(
+            message = "Error deploying web application archive {0}",
+            level = "SEVERE",
+            cause = "Could not deploy web application archive",
+            action = "Verify the context path and if specified context path " +
+                     "is already attached to an existing web application"
+    )
+    public static final String ERROR_DEPLOYING_WEB_APP_ARCHIVE_EXCEPTION = "AS-WEB-CORE-00778";
+
+    @LogMessageInfo(
+            message = "Deploying web application directory {0}",
+            level = "FINE"
+    )
+    public static final String DEPLOYING_WEB_APP_DIR = "AS-WEB-CORE-00779";
+
+    @LogMessageInfo(
+            message = "Error deploying web application directory {0}",
+            level = "SEVERE",
+            cause = "Could not deploy web application directory",
+            action = "Verify the context path and if specified context path " +
+                     "is already attached to an existing web application"
+    )
+    public static final String ERROR_DEPLOYING_WEB_APP_DIR = "AS-WEB-CORE-00780";
+
+    @LogMessageInfo(
+            message = "Error undeploying Jar file {0}",
+            level = "SEVERE",
+            cause = "Could not remove an existing web application, attached to the specified context path",
+            action = "Verify the context path of the application"
+    )
+    public static final String ERROR_UNDEPLOYING_JAR_FILE_EXCEPTION = "AS-WEB-CORE-00781";
+
+    @LogMessageInfo(
+            message = "HostConfig: restartContext [{0}]",
+            level = "INFO"
+    )
+    public static final String RESTART_CONTEXT_INFO = "AS-WEB-CORE-00782";
+
+    @LogMessageInfo(
+            message = "Error during context [{0}] stop",
+            level = "WARNING"
+    )
+    public static final String ERROR_DURING_CONTEXT_STOP_EXCEPTION = "AS-WEB-CORE-00783";
+
+    @LogMessageInfo(
+            message = "Error during context [{0}] restart",
+            level = "WARNING"
+    )
+    public static final String ERROR_DURING_CONTEXT_RESTART_EXCEPTION = "AS-WEB-CORE-00784";
+
+    @LogMessageInfo(
+            message = "HostConfig: Processing START",
+            level = "FINE"
+    )
+    public static final String PROCESSING_START = "AS-WEB-CORE-00785";
+
+    @LogMessageInfo(
+            message = "HostConfig: Processing STOP",
+            level = "FINE"
+    )
+    public static final String PROCESSING_STOP = "AS-WEB-CORE-00786";
+
+    @LogMessageInfo(
+            message = "Undeploying deployed web applications",
+            level = "FINE"
+    )
+    public static final String UNDEPLOYING_WEB_APP = "AS-WEB-CORE-00787";
+
+    @LogMessageInfo(
+            message = "Undeploying context [{0}]",
+            level = "FINE"
+    )
+    public static final String UNDEPLOYING_CONTEXT = "AS-WEB-CORE-00788";
+
+    @LogMessageInfo(
+            message = "Error undeploying web application at context path {0}",
+            level = "SEVERE",
+            cause = "Could not remove an existing web application, attached to the specified context path",
+            action = "Verify the context path of the application"
+    )
+    public static final String ERROR_UNDEPLOYING_WEB_APP_EXCEPTION = "AS-WEB-CORE-00789";
 
     // ----------------------------------------------------- Instance Variables
 
@@ -139,14 +274,6 @@ public class HostConfig
      * The Host we are associated with.
      */
     protected Host host = null;
-
-
-    /**
-     * The string resources for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
-
 
     /**
      * Should we deploy XML Context config files?
@@ -378,8 +505,9 @@ public class HostConfig
                 setXmlValidation(((StandardHost) host).getXmlValidation());
             }
         } catch (ClassCastException e) {
-            log.log(Level.SEVERE,
-                    sm.getString("hostConfig.cce", event.getLifecycle()), e);
+            String msg = MessageFormat.format(rb.getString(LIFECYCLE_OBJECT_NOT_HOST_EXCEPTION),
+                                              event.getLifecycle());
+            log.log(Level.SEVERE, msg, e);
             return;
         }
 
@@ -500,7 +628,7 @@ public class HostConfig
 
                 // Assume this is a configuration descriptor and deploy it
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine(sm.getString("hostConfig.deployDescriptor", files[i]));
+                    log.log(Level.FINE, DEPLOYING_CONFIG_DESCRIPTOR, files[i]);
                 }
                 try {
                     if (host.findChild(contextPath) != null) {
@@ -519,10 +647,9 @@ public class HostConfig
                         new URL("file", null, dir.getCanonicalPath());
                     ((Deployer) host).install(config, null);
                 } catch (Throwable t) {
-                    log.log(Level.SEVERE,
-                            sm.getString("hostConfig.deployDescriptor.error",
-                                         files[i]),
-                            t);
+                    String msg = MessageFormat.format(rb.getString(ERROR_DEPLOYING_CONFIG_DESCRIPTOR_EXCEPTION),
+                                                      files[i]);
+                    log.log(Level.SEVERE, msg, t);
                 }
             }
         }
@@ -556,8 +683,7 @@ public class HostConfig
 
                 // Check for WARs with /../ /./ or similar sequences in the name
                 if (!validateContextPath(appBase, contextPath)) {
-                    log.severe(sm.getString(
-                            "hostConfig.illegalWarName", files[i]));
+                    log.log(Level.SEVERE, INVALID_WAR_NAME_EXCEPTION, files[i]);
                     invalidWars.add(files[i]);
                     continue;
                 }
@@ -638,7 +764,7 @@ public class HostConfig
 
                     // Expand and deploy this application as a directory
                     if (log.isLoggable(Level.FINE)) {
-                        log.fine(sm.getString("hostConfig.expand", files[i]));
+                        log.log(Level.FINE, EXPANDING_WEB_APP, files[i]);
                     }
                     URL url = null;
                     String path = null;
@@ -648,14 +774,12 @@ public class HostConfig
                         path = ExpandWar.expand(host, url);
                     } catch (IOException e) {
                         // JAR decompression failure
-                        log.warning(sm.getString("hostConfig.expand.error",
-                                                 files[i]));
+                        log.log(Level.WARNING, EXPANDING_WEB_APP_EXCEPTION, files[i]);
                         continue;
                     } catch (Throwable t) {
-                        log.log(Level.SEVERE,
-                                sm.getString("hostConfig.expand.error",
-                                             files[i]),
-                                t);
+                        String msg = MessageFormat.format(rb.getString(EXPANDING_WEB_APP_ARCHIVE_EXCEPTION),
+                                                          files[i]);
+                        log.log(Level.SEVERE, msg, t);
                         continue;
                     }
                     try {
@@ -664,17 +788,16 @@ public class HostConfig
                             ((Deployer) host).install(contextPath, url);
                         }
                     } catch (Throwable t) {
-                        log.log(Level.SEVERE,
-                                sm.getString("hostConfig.expand.error",
-                                             files[i]),
-                                t);
+                        String msg = MessageFormat.format(rb.getString(EXPANDING_WEB_APP_ARCHIVE_EXCEPTION),
+                                                          files[i]);
+                        log.log(Level.SEVERE, msg, t);
                     }
 
                 } else {
 
                     // Deploy the application in this WAR file
                     if (log.isLoggable(Level.INFO)) {
-                        log.info(sm.getString("hostConfig.deployJar", files[i]));
+                        log.log(Level.INFO, DEPLOYING_WEB_APP_ARCHIVE, files[i]);
                     }
                     try {
                         URL url = new URL("file", null,
@@ -682,10 +805,9 @@ public class HostConfig
                         url = new URL("jar:" + url.toString() + "!/");
                         ((Deployer) host).install(contextPath, url);
                     } catch (Throwable t) {
-                        log.log(Level.SEVERE,
-                                sm.getString("hostConfig.deployJar.error",
-                                             files[i]),
-                                t);
+                        String msg = MessageFormat.format(rb.getString(ERROR_DEPLOYING_WEB_APP_ARCHIVE_EXCEPTION),
+                                                          files[i]);
+                        log.log(Level.SEVERE, msg, t);
                     }
                 }
             }
@@ -728,21 +850,21 @@ public class HostConfig
                     continue;
 
                 // Deploy the application in this directory
-                if (log.isLoggable(Level.FINE)) 
-                    log.fine(sm.getString("hostConfig.deployDir", files[i]));
+                if (log.isLoggable(Level.FINE)) {
+                    log.log(Level.FINE, DEPLOYING_WEB_APP_DIR, files[i]);
+                }
                 long t1=System.currentTimeMillis();
                 try {
                     URL url = new URL("file", null, dir.getCanonicalPath());
                     ((Deployer) host).install(contextPath, url);
                 } catch (Throwable t) {
-                    log.log(Level.SEVERE,
-                            sm.getString("hostConfig.deployDir.error",
-                                         files[i]),
-                            t);
+                    String msg = MessageFormat.format(rb.getString(ERROR_DEPLOYING_WEB_APP_DIR),
+                                                      files[i]);
+                    log.log(Level.SEVERE, msg, t);
                 }
                 long t2=System.currentTimeMillis();
-                if( (t2-t1) > 200 && log.isLoggable(Level.FINE) ) 
-                    log.fine("Deployed " + files[i] + " " + (t2-t1));
+                if( (t2-t1) > 200 && log.isLoggable(Level.FINE) )
+                    log.log(Level.FINE, "Deployed " + files[i] + " " + (t2-t1));
             }
 
         }
@@ -867,10 +989,9 @@ public class HostConfig
                                     ((Deployer) host).remove(contextName);
                                 }
                             } catch (Throwable t) {
-                                log.log(Level.SEVERE,
-                                        sm.getString("hostConfig.undeployJar.error",
-                                                     fileName),
-                                        t);
+                                String msg = MessageFormat.format(rb.getString(ERROR_UNDEPLOYING_JAR_FILE_EXCEPTION),
+                                                                  fileName);
+                                log.log(Level.SEVERE, msg, t);
                             }
                             deployApps();
                         }
@@ -916,10 +1037,9 @@ public class HostConfig
                                     ExpandWar.deleteDir(expanded);
                                 }
                             } catch (Throwable t) {
-                                log.log(Level.SEVERE,
-                                        sm.getString("hostConfig.undeployJar.error",
-                                                     files[i]),
-                                        t);
+                                String msg = MessageFormat.format(rb.getString(ERROR_UNDEPLOYING_JAR_FILE_EXCEPTION),
+                                                                  files[i]);
+                                log.log(Level.SEVERE, msg, t);
                             }
                             deployApps();
                         }
@@ -941,7 +1061,7 @@ public class HostConfig
     protected boolean restartContext(Context context) {
         boolean result = true;
         if (log.isLoggable(Level.INFO)) {
-            log.info(sm.getString("hostConfig.restartContext", context.getName())); 
+            log.log(Level.INFO, RESTART_CONTEXT_INFO, context.getName());
         }
 
         /*
@@ -956,18 +1076,18 @@ public class HostConfig
         try {
             ((Lifecycle) context).stop();
         } catch( Exception ex ) {
-            log.log(Level.WARNING,
-                    sm.getString("hostConfig.context.stop", context.getName()), 
-                    ex);
+            String msg = MessageFormat.format(rb.getString(ERROR_DURING_CONTEXT_STOP_EXCEPTION),
+                                              context.getName());
+            log.log(Level.WARNING, msg, ex);
         }
         // if the context was not started ( for example an error in web.xml)
         // we'll still get to try to start
         try {
             ((Lifecycle) context).start();
         } catch (Exception e) {
-            log.log(Level.WARNING,
-                    sm.getString("hostConfig.context.restart", context.getName()), 
-                    e);
+            String msg = MessageFormat.format(rb.getString(ERROR_DURING_CONTEXT_RESTART_EXCEPTION),
+                                              context.getName());
+            log.log(Level.WARNING, msg, e);
             result = false;
         }
         
@@ -1054,8 +1174,7 @@ public class HostConfig
     public void start() {
 
         if (log.isLoggable(Level.FINE))
-            log.fine(sm.getString("hostConfig.start"));
-
+            log.log(Level.FINE, PROCESSING_START);
         if (host.getDeployOnStartup()) {
             deployApps();
         } else {
@@ -1077,8 +1196,7 @@ public class HostConfig
     public void stop() {
 
         if (log.isLoggable(Level.FINE))
-            log.fine(sm.getString("hostConfig.stop"));
-
+            log.log(Level.FINE, PROCESSING_STOP);
         undeployApps();
 
         appBase = null;
@@ -1095,19 +1213,19 @@ public class HostConfig
         if (!(host instanceof Deployer))
             return;
         if (log.isLoggable(Level.FINE))
-            log.fine(sm.getString("hostConfig.undeploying"));
+            log.log(Level.FINE, UNDEPLOYING_WEB_APP);
 
         String contextPaths[] = ((Deployer) host).findDeployedApps();
         for (int i = 0; i < contextPaths.length; i++) {
-            if (log.isLoggable(Level.FINE))
-                log.fine(sm.getString("hostConfig.undeploy", contextPaths[i]));
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, UNDEPLOYING_CONTEXT, contextPaths[i]);
+            }
             try {
                 ((Deployer) host).remove(contextPaths[i]);
             } catch (Throwable t) {
-                log.log(Level.SEVERE,
-                        sm.getString("hostConfig.undeploy.error",
-                                     contextPaths[i]),
-                        t);
+                String msg = MessageFormat.format(rb.getString(ERROR_UNDEPLOYING_WEB_APP_EXCEPTION),
+                                                  contextPaths[i]);
+                log.log(Level.SEVERE, msg, t);
             }
         }
 

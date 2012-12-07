@@ -59,19 +59,15 @@
 package org.apache.catalina.startup;
 
 
+import org.apache.catalina.core.*;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.util.IntrospectionUtils;
 import org.apache.catalina.*;
-import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.core.StandardEngine;
-import org.apache.catalina.core.StandardHost;
-import org.apache.catalina.core.StandardService;
 import org.apache.catalina.loader.WebappLoader;
-import org.apache.catalina.logger.FileLogger;
 import org.apache.catalina.net.ServerSocketFactory;
 import org.apache.catalina.security.SecurityConfig;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.ServerInfo;
-import org.apache.catalina.util.StringManager;
 import org.glassfish.web.valve.GlassFishValve;
 
 import java.io.File;
@@ -79,6 +75,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -141,8 +138,74 @@ import java.util.logging.Logger;
 
 public class Embedded  extends StandardService {
 
-    private static Logger log = Logger.getLogger(Embedded.class.getName());
+    protected static final Logger log = StandardServer.log;
+    protected static final ResourceBundle rb = log.getResourceBundle();
 
+    @LogMessageInfo(
+            message = "No engines have been defined yet",
+            level = "WARNING"
+    )
+    public static final String NO_ENGINES_DEFINED = "AS-WEB-CORE-00740";
+
+    @LogMessageInfo(
+            message = "Engine.start exception",
+            level = "SEVERE",
+            cause = "Could not prepare for the beginning of active use of " +
+                    "the public methods of this component.",
+            action = "Verify if start() be called before any of the public " +
+                     "methods of this component are utilized"
+    )
+    public static final String ENGINE_START_EXCEPTION = "AS-WEB-CORE-00741";
+
+    @LogMessageInfo(
+            message = "Couldn't load SSL server socket factory.",
+            level = "SEVERE",
+            cause = "Could not instantiate ServerSocketFactory",
+            action = "Verify access permission to this class"
+    )
+    public static final String COULD_NOT_LOAD_SSL_SERVER_SOCKET_FACTORY_EXCEPTION = "AS-WEB-CORE-00742";
+
+    @LogMessageInfo(
+            message = "Couldn't create connector.",
+            level = "SEVERE",
+            cause = "Could not instantiate connector",
+            action = "Verify access permission to this class"
+    )
+    public static final String COULD_NOT_CREATE_CONNECTOR_EXCEPTION = "AS-WEB-CORE-00743";
+
+    @LogMessageInfo(
+            message = "Connector.stop",
+            level = "SEVERE",
+            cause = "Could not remove the specified Connector from the set associated from this Service",
+            action = "Verify if connector has already been stopped or removed"
+    )
+    public static final String CONNECTOR_STOP_EXCEPTION = "AS-WEB-CORE-00744";
+
+    @LogMessageInfo(
+            message = "Engine.stop exception",
+            level = "SEVERE",
+            cause = "Could not terminate the active use of the public methods of this component",
+            action = "Verify if stop() is the last one called on a given instance of this component"
+    )
+    public static final String  ENGINE_STOP_EXCEPTION = "AS-WEB-CORE-00745";
+
+    @LogMessageInfo(
+            message = "Specified Authenticator is not a Valve",
+            level = "WARNING"
+    )
+    public static final String AUTH_IS_NOT_VALVE_EXCEPTION = "AS-WEB-CORE-00746";
+
+    @LogMessageInfo(
+            message = "Embedded service has already been started",
+            level = "WARNING"
+    )
+    public static final String SERVICE_BEEN_STARTED_EXCEPTION = "AS-WEB-CORE-00747";
+
+    @LogMessageInfo(
+            message = "Embedded service has not yet been started",
+            level = "WARNING"
+    )
+    public static final String SERVICE_NOT_BEEN_STARTED_EXCEPTION = "AS-WEB-CORE-00748";
     // ----------------------------------------------------------- Constructors
 
 
@@ -221,14 +284,6 @@ public class Embedded  extends StandardService {
      * this compoennt.
      */
     protected Realm realm = null;
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
-
 
     /**
      * The socket factory that will be used when a <code>secure</code>
@@ -388,13 +443,13 @@ public class Embedded  extends StandardService {
     public synchronized void addConnector(Connector connector) {
 
         if (log.isLoggable(Level.FINE)) {
-            log.fine("Adding connector (" + connector.getInfo() + ")");
+            log.log(Level.FINE, "Adding connector (" + connector.getInfo() + ")");
         }
 
         // Make sure we have a Container to send requests to
         if (engines.length < 1)
             throw new IllegalStateException
-                (sm.getString("embedded.noEngines"));
+                (rb.getString(NO_ENGINES_DEFINED));
 
         /*
          * Add the connector. This will set the connector's container to the
@@ -412,7 +467,7 @@ public class Embedded  extends StandardService {
     public synchronized void addEngine(Engine engine) {
 
         if (log.isLoggable(Level.FINE))
-            log.fine("Adding engine (" + engine.getInfo() + ")");
+            log.log(Level.FINE, "Adding engine (" + engine.getInfo() + ")");
 
         // Add this Engine to our set of defined Engines
         Engine results[] = new Engine[engines.length + 1];
@@ -426,7 +481,7 @@ public class Embedded  extends StandardService {
             try {
                 ((Lifecycle) engine).start();
             } catch (LifecycleException e) {
-                log.log(Level.SEVERE, "Engine.start", e);
+                log.log(Level.SEVERE, ENGINE_START_EXCEPTION, e);
             }
         }
 
@@ -491,9 +546,9 @@ public class Embedded  extends StandardService {
 	}
 
 	if (log.isLoggable(Level.FINE)) {
-            log.fine("Creating connector for address='" +
-		     ((address == null) ? "ALL" : address) +
-		     "' port='" + port + "' protocol='" + protocol + "'");
+            log.log(Level.FINE, "Creating connector for address='" +
+                    ((address == null) ? "ALL" : address) +
+                    "' port='" + port + "' protocol='" + protocol + "'");
 	}
 
         try {
@@ -523,13 +578,13 @@ public class Embedded  extends StandardService {
                         serverSocketFactoryClass.newInstance();
                     connector.setFactory(factory);
                 } catch (Exception e) {
-                    log.severe("Couldn't load SSL server socket factory.");
+                    log.log(Level.SEVERE, COULD_NOT_LOAD_SSL_SERVER_SOCKET_FACTORY_EXCEPTION);
                 }
             }
 
         } catch (Exception e) {
-            log.severe("Couldn't create connector.");
-        } 
+            log.log(Level.SEVERE, COULD_NOT_CREATE_CONNECTOR_EXCEPTION);
+        }
 
         return (connector);
 
@@ -561,8 +616,8 @@ public class Embedded  extends StandardService {
     public Context createContext(String path, String docBase) {
 
         if (log.isLoggable(Level.FINE))
-            log.fine("Creating context '" + path + "' with docBase '" +
-                     docBase + "'");
+            log.log(Level.FINE, "Creating context '" + path + "' with docBase '" +
+                    docBase + "'");
 
         StandardContext context = new StandardContext();
 
@@ -588,7 +643,7 @@ public class Embedded  extends StandardService {
     public Engine createEngine() {
 
         if (log.isLoggable(Level.FINE))
-            log.fine("Creating engine");
+            log.log(Level.FINE, "Creating engine");
 
         StandardEngine engine = new StandardEngine();
 
@@ -631,8 +686,8 @@ public class Embedded  extends StandardService {
     public Host createHost(String name, String appBase) {
 
         if (log.isLoggable(Level.FINE))
-            log.fine("Creating host '" + name + "' with appBase '" +
-                     appBase + "'");
+            log.log(Level.FINE, "Creating host '" + name + "' with appBase '" +
+                    appBase + "'");
 
         StandardHost host = new StandardHost();
 
@@ -655,8 +710,8 @@ public class Embedded  extends StandardService {
     public Loader createLoader(ClassLoader parent) {
 
         if (log.isLoggable(Level.FINEST))
-            log.finest("Creating Loader with parent class loader '" +
-                       parent + "'");
+            log.log(Level.FINEST, "Creating Loader with parent class loader '" +
+                    parent + "'");
 
         WebappLoader loader = new WebappLoader(parent);
         return (loader);
@@ -686,7 +741,7 @@ public class Embedded  extends StandardService {
     public synchronized void removeContext(Context context) {
 
         if (log.isLoggable(Level.FINE))
-            log.fine("Removing context[" + context.getPath() + "]");
+            log.log(Level.FINE, "Removing context[" + context.getPath() + "]");
 
         // Is this Context actually among those that are defined?
         boolean found = false;
@@ -711,7 +766,7 @@ public class Embedded  extends StandardService {
 
         // Remove this Context from the associated Host
         if (log.isLoggable(Level.FINE))
-            log.fine(" Removing this Context");
+            log.log(Level.FINE, " Removing this Context");
         context.getParent().removeChild(context);
 
     }
@@ -727,7 +782,7 @@ public class Embedded  extends StandardService {
     public synchronized void removeEngine(Engine engine) {
 
         if (log.isLoggable(Level.FINE))
-            log.fine("Removing engine (" + engine.getInfo() + ")");
+            log.log(Level.FINE, "Removing engine (" + engine.getInfo() + ")");
 
         // Is the specified Engine actually defined?
         int j = -1;
@@ -742,7 +797,7 @@ public class Embedded  extends StandardService {
 
         // Remove any Connector that is using this Engine
         if (log.isLoggable(Level.FINE))
-            log.fine(" Removing related Containers");
+            log.log(Level.FINE, " Removing related Containers");
         while (true) {
             int n = -1;
             for (int i = 0; i < connectors.length; i++) {
@@ -758,7 +813,7 @@ public class Embedded  extends StandardService {
             try{
                 removeConnector(connectors[n]);
             } catch (Exception ex){
-                log.log(Level.SEVERE, "Connector.stop", ex);
+                log.log(Level.SEVERE, CONNECTOR_STOP_EXCEPTION, ex);
             }
             // END SJSAS 6231069
         }
@@ -766,17 +821,17 @@ public class Embedded  extends StandardService {
         // Stop this Engine if necessary
         if (engine instanceof Lifecycle) {
             if (log.isLoggable(Level.FINE))
-                log.fine(" Stopping this Engine");
+                log.log(Level.FINE, " Stopping this Engine");
             try {
                 ((Lifecycle) engine).stop();
             } catch (LifecycleException e) {
-                log.log(Level.SEVERE, "Engine.stop", e);
+                log.log(Level.SEVERE, ENGINE_STOP_EXCEPTION, e);
             }
         }
 
         // Remove this Engine from our set of defined Engines
         if (log.isLoggable(Level.FINE))
-            log.fine(" Removing this Engine");
+            log.log(Level.FINE, " Removing this Engine");
         int k = 0;
         Engine results[] = new Engine[engines.length - 1];
         for (int i = 0; i < engines.length; i++) {
@@ -798,7 +853,7 @@ public class Embedded  extends StandardService {
     public synchronized void removeHost(Host host) {
 
         if (log.isLoggable(Level.FINE))
-            log.fine("Removing host[" + host.getName() + "]");
+            log.log(Level.FINE, "Removing host[" + host.getName() + "]");
 
         // Is this Host actually among those that are defined?
         boolean found = false;
@@ -819,7 +874,7 @@ public class Embedded  extends StandardService {
 
         // Remove this Host from the associated Engine
         if (log.isLoggable(Level.FINE))
-            log.fine(" Removing this Host");
+            log.log(Level.FINE, " Removing this Host");
         host.getParent().removeChild(host);
 
     }
@@ -845,8 +900,7 @@ public class Embedded  extends StandardService {
     public synchronized void addAuthenticator(Authenticator authenticator,
                                  String loginMethod) {
         if ((authenticator != null) && !(authenticator instanceof GlassFishValve)) {
-            throw new IllegalArgumentException(
-                sm.getString("embedded.authenticatorNotInstanceOfValve"));
+            throw new IllegalArgumentException(rb.getString(AUTH_IS_NOT_VALVE_EXCEPTION));
         }
         if (authenticators == null) {
             authenticators = new HashMap<String, Authenticator>();
@@ -907,8 +961,8 @@ public class Embedded  extends StandardService {
          */
         // START SJSAS 6340446
         if (log.isLoggable(Level.FINE)) {
-            log.fine("Starting Servlet container component of "
-                     + ServerInfo.getServerInfo());
+            log.log(Level.FINE, "Starting Servlet container component of "
+                    + ServerInfo.getServerInfo());
         }
         // END SJSAS 6340446
 
@@ -921,7 +975,7 @@ public class Embedded  extends StandardService {
         // Validate and update our current component state
         if (started)
             throw new LifecycleException
-                (sm.getString("embedded.alreadyStarted"));
+                (rb.getString(SERVICE_BEEN_STARTED_EXCEPTION));
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
         initialized = true;
@@ -953,12 +1007,12 @@ public class Embedded  extends StandardService {
     public void stop() throws LifecycleException {
 
         if (log.isLoggable(Level.FINE))
-            log.fine("Stopping embedded server");
+            log.log(Level.FINE, "Stopping embedded server");
 
         // Validate and update our current component state
         if (!started)
             throw new LifecycleException
-                (sm.getString("embedded.notStarted"));
+                (rb.getString(SERVICE_NOT_BEEN_STARTED_EXCEPTION));
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
 
@@ -1005,7 +1059,7 @@ public class Embedded  extends StandardService {
             // START SJSAS 5031700
             //log.info( "Catalina naming disabled");
             if (log.isLoggable(Level.FINE)) {
-                log.fine("Catalina naming disabled");
+                log.log(Level.FINE, "Catalina naming disabled");
             }
             // END SJSAS 5031700
             System.setProperty("catalina.useNaming", "false");
@@ -1019,7 +1073,7 @@ public class Embedded  extends StandardService {
             }
             System.setProperty(javax.naming.Context.URL_PKG_PREFIXES, value);
             if (log.isLoggable(Level.FINE))
-                log.fine("Setting naming prefix=" + value);
+                log.log(Level.FINE, "Setting naming prefix=" + value);
             value = System.getProperty
                 (javax.naming.Context.INITIAL_CONTEXT_FACTORY);
             if (value == null) {
@@ -1028,7 +1082,7 @@ public class Embedded  extends StandardService {
                      "org.apache.naming.java.javaURLContextFactory");
             } else {
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine( "INITIAL_CONTEXT_FACTORY alread set " + value );
+                    log.log(Level.FINE, "INITIAL_CONTEXT_FACTORY alread set " + value);
                 }
             }
         }

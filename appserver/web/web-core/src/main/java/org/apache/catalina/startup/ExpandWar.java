@@ -59,13 +59,16 @@
 package org.apache.catalina.startup;
 
 import org.apache.catalina.Host;
-import org.apache.catalina.util.StringManager;
+import org.apache.catalina.core.StandardServer;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import java.io.*;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.nio.channels.FileChannel;
+import java.text.MessageFormat;
 import java.util.Enumeration;
+import java.util.ResourceBundle;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -82,14 +85,48 @@ import java.util.logging.Logger;
 
 public class ExpandWar {
 
-    private static Logger log = Logger.getLogger(ExpandWar.class.getName());
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
 
-    /**
-     * The string resources for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
+    @LogMessageInfo(
+            message = "Application base directory {0} does not exist",
+            level = "WARNING"
+    )
+    public static final String APP_NOT_EXIST_EXCEPTION = "AS-WEB-CORE-00760";
 
+    @LogMessageInfo(
+            message = "Unable to create the directory [{0}]",
+            level = "WARNING"
+    )
+    public static final String UNABLE_CREATE_DIRECTORY_EXCEPTION = "AS-WEB-CORE-00761";
+
+    @LogMessageInfo(
+            message = "The archive [{0}] is malformed and will be ignored: an entry contains an illegal path [{1}]",
+            level = "WARNING"
+    )
+    public static final String ARCHIVE_IS_MALFORMED_EXCEPTION = "AS-WEB-CORE-00762";
+
+    @LogMessageInfo(
+            message = "Failed to set last-modified time of the file {0}",
+            level = "WARNING"
+    )
+    public static final String FAILED_SET_LAST_MODIFIED_TIME_EXCEPTION = "AS-WEB-CORE-00763";
+
+    @LogMessageInfo(
+            message = "Error copying {0} to {1}",
+            level = "SEVERE",
+            cause = "Could not copy file",
+            action = "Verify if channel is not available for file transfer"
+    )
+    public static final String ERROR_COPYING_EXCEPTION = "AS-WEB-CORE-00764";
+
+    @LogMessageInfo(
+            message = "[{0}] could not be completely deleted. The presence of the remaining files may cause problems",
+            level = "SEVERE",
+            cause = "Could not completely delete specified directory",
+            action = "Verify the access permission to specified directory"
+    )
+    public static final String DELETE_DIR_EXCEPTION = "AS-WEB-CORE-00765";
 
     /**
      * Expand the WAR file found at the specified URL into an unpacked
@@ -149,9 +186,9 @@ public class ExpandWar {
                                host.getAppBase());
         }
         if (!appBase.exists() || !appBase.isDirectory()) {
-            throw new IOException
-                (sm.getString("hostConfig.appBase",
-                              appBase.getAbsolutePath()));
+            String msg = MessageFormat.format(rb.getString(APP_NOT_EXIST_EXCEPTION),
+                                              appBase.getAbsolutePath());
+            throw new IOException(msg);
         }
         File docBase = new File(appBase, pathname);
         if (docBase.exists()) {
@@ -161,8 +198,9 @@ public class ExpandWar {
 
         // Create the new document base directory
         if (!docBase.mkdir()) {
-            throw new IOException(sm.getString("expandWar.createFailed",
-                    docBase));
+            String msg = MessageFormat.format(rb.getString(UNABLE_CREATE_DIRECTORY_EXCEPTION),
+                                              docBase);
+            throw new IOException(msg);
         }
 
         // Expand the WAR into the new document base directory
@@ -186,16 +224,18 @@ public class ExpandWar {
                         canonicalDocBasePrefix)) {
                     // Trying to expand outside the docBase
                     // Throw an exception to stop the deployment
-                    throw new IllegalArgumentException(
-                            sm.getString("expandWar.illegalPath",war, name));
+                    String msg = MessageFormat.format(rb.getString(ARCHIVE_IS_MALFORMED_EXCEPTION),
+                                                      new Object[] {war, name});
+                    throw new IllegalArgumentException(msg);
                 }
                 int last = name.lastIndexOf('/');
                 if (last >= 0) {
                     File parent = new File(docBase,
                                            name.substring(0, last));
                     if (!parent.mkdirs() && !parent.isDirectory()) {
-                        throw new IOException(
-                                sm.getString("expandWar.createFailed", parent));
+                        String msg = MessageFormat.format(rb.getString(UNABLE_CREATE_DIRECTORY_EXCEPTION),
+                                                          parent);
+                        throw new IOException(msg);
                     }
                 }
                 if (name.endsWith("/")) {
@@ -207,9 +247,8 @@ public class ExpandWar {
                 if ((lastModified != -1) && (lastModified != 0)) {
                     if (!expandedFile.setLastModified(lastModified)) {
                         if (log.isLoggable(Level.WARNING)) {
-                            log.warning(sm.getString(
-                                    "expandWar.setLastModifiedFailed",
-                                    expandedFile.getAbsoluteFile()));
+                            log.log(Level.WARNING, FAILED_SET_LAST_MODIFIED_TIME_EXCEPTION,
+                                    expandedFile.getAbsolutePath());
                         }
                     }
                 }
@@ -293,8 +332,9 @@ public class ExpandWar {
                         canonicalDocBasePrefix)) {
                     // Entry located outside the docBase
                     // Throw an exception to stop the deployment
-                    throw new IllegalArgumentException(
-                            sm.getString("expandWar.illegalPath",war, name));
+                    String msg = MessageFormat.format(rb.getString(ARCHIVE_IS_MALFORMED_EXCEPTION),
+                                                    new Object[] {war, name});
+                    throw new IllegalArgumentException(msg);
                 }
             }
         } catch (IOException e) {
@@ -346,9 +386,9 @@ public class ExpandWar {
                     oc = (new FileOutputStream(fileDest)).getChannel();
                     ic.transferTo(0, ic.size(), oc);
                 } catch (IOException e) {
-                    log.log(Level.SEVERE,
-                            sm.getString("expandWar.copy", fileSrc, fileDest),
-                            e);
+                    String msg = MessageFormat.format(rb.getString(ERROR_COPYING_EXCEPTION),
+                                                      new Object[] {fileSrc, fileDest});
+                    log.log(Level.SEVERE, msg, e);
                     result = false;
                 } finally {
                     if (ic != null) {
@@ -402,8 +442,7 @@ public class ExpandWar {
             }
         }
         if (logFailure && !result) {
-            log.severe(sm.getString(
-                    "expandWar.deleteFailed", dir.getAbsolutePath()));
+            log.log(Level.SEVERE, DELETE_DIR_EXCEPTION, dir.getAbsolutePath());
         }
         return result;
      }
@@ -439,8 +478,7 @@ public class ExpandWar {
                 deleteDir(file, logFailure);
             } else {
                 if (!file.delete() && logFailure) {
-                    log.severe(sm.getString(
-                            "expandWar.deleteFailed", file.getAbsolutePath()));
+                    log.log(Level.SEVERE, DELETE_DIR_EXCEPTION, file.getAbsolutePath());
                 }
             }
         }
@@ -453,8 +491,7 @@ public class ExpandWar {
         }
         
         if (logFailure && !result) {
-            log.severe(sm.getString(
-                    "expandWar.deleteFailed", dir.getAbsolutePath()));
+            log.log(Level.SEVERE, DELETE_DIR_EXCEPTION, dir.getAbsolutePath());
         }
         
         return result;

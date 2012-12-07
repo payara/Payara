@@ -58,6 +58,7 @@
 
 package org.apache.catalina.startup;
 
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.loader.StandardClassLoader;
 
 import java.io.File;
@@ -95,10 +96,7 @@ public final class ClassLoaderFactory {
 
     // ------------------------------------------------------- Static Variables
 
-
-    private static Logger log = Logger.getLogger(
-        ClassLoaderFactory.class.getName());
-
+    private static final Logger log = StandardServer.log;
     /**
      * Debugging detail level for processing the startup.
      */
@@ -181,8 +179,8 @@ public final class ClassLoaderFactory {
                                                 ClassLoader parent)
         throws Exception {
 
-        if (log.isLoggable(Level.FINE)) 
-            log.fine("Creating new class loader");
+        if (log.isLoggable(Level.FINE))
+            log.log(Level.FINE, "Creating new class loader");
 
         // Construct the "class path" for this class loader
         Set<URL> set = new LinkedHashSet<URL>();
@@ -194,8 +192,8 @@ public final class ClassLoaderFactory {
                 if (!file.exists() || !file.canRead())
                     continue;
                 if (log.isLoggable(Level.FINE))
-                    log.fine("Including directory or JAR " 
-                             + file.getAbsolutePath());
+                    log.log(Level.FINE, "Including directory or JAR "
+                            + file.getAbsolutePath());
                 URL url = new URL("file", null,
                                   file.getCanonicalPath() + File.separator);
                 set.add(url);
@@ -216,8 +214,8 @@ public final class ClassLoaderFactory {
                         continue;
                     File file = new File(directory, filenames[j]);
                     if (log.isLoggable(Level.FINE))
-                        log.fine("Including jar file " +
-                                 file.getAbsolutePath());
+                        log.log(Level.FINE, "Including jar file " +
+                                file.getAbsolutePath());
                     URL url = new URL("file", null,
                                       file.getCanonicalPath());
                     set.add(url);

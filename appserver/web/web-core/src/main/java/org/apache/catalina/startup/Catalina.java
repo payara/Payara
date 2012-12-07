@@ -65,11 +65,13 @@ import org.apache.catalina.Server;
 import org.apache.catalina.core.StandardServer;
 import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.digester.Rule;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 
 import java.io.*;
 import java.net.Socket;
+import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -97,10 +99,58 @@ public class Catalina extends Embedded {
     private static final ClassLoader standardServerClassLoader =
         StandardServer.class.getClassLoader();
 
-    private static final Logger log =
-        Logger.getLogger(Catalina.class.getName());
 
+    @LogMessageInfo(
+            message = "Error processing command line arguments",
+            level = "WARNING"
+    )
+    public static final String ERROR_PROCESSING_COMMAND_LINE_EXCEPTION = "AS-WEB-CORE-00695";
 
+    @LogMessageInfo(
+            message = "Catalina.stop: ",
+            level = "SEVERE",
+            cause = "Could not stop server",
+            action = "Verify if the input file exist or if there are any I/O exceptions, parsing exceptions"
+    )
+    public static final String CATALINA_STOP_EXCEPTION = "AS-WEB-CORE-00696";
+
+    @LogMessageInfo(
+            message = "Can't load server.xml from {0}",
+            level = "WARNING"
+    )
+    public static final String CANNOT_LOAD_SERVER_XML_EXCEPTION = "AS-WEB-CORE-00697";
+
+    @LogMessageInfo(
+            message = "Catalina.start: ",
+            level = "WARNING"
+    )
+    public static final String CATALINA_START_WARNING_EXCEPTION = "AS-WEB-CORE-00698";
+
+    @LogMessageInfo(
+            message = "Catalina.start: ",
+            level = "SEVERE",
+            cause = "Could not initialize the server",
+            action = "Verify if the server has already been initialized"
+    )
+    public static final String CATALINA_START_SEVERE_EXCEPTION = "AS-WEB-CORE-00699";
+
+    @LogMessageInfo(
+            message = "Initialization processed in {0} ms",
+            level = "INFO"
+    )
+    public static final String INIT_PROCESSED_EXCEPTION = "AS-WEB-CORE-00700";
+
+    @LogMessageInfo(
+            message = "Error loading configuration",
+            level = "WARNING"
+    )
+    public static final String ERROR_LOADING_CONFIGURATION_EXCEPTION = "AS-WEB-CORE-00701";
+
+    @LogMessageInfo(
+            message = "Server startup in {0} ms",
+            level = "WARNING"
+    )
+    public static final String SERVER_STARTUP_INFO = "AS-WEB-CORE-00702";
     // --------------------------------------------------- Instance Variables
 
 
@@ -208,8 +258,7 @@ public class Catalina extends Embedded {
                 }
             }
         } catch (Exception e) {
-            log.log(Level.WARNING, "Error processing command line arguments",
-                    e);
+            log.log(Level.WARNING, ERROR_PROCESSING_COMMAND_LINE_EXCEPTION, e);
         }
     }
 
@@ -371,7 +420,7 @@ public class Catalina extends Embedded {
 
         long t2=System.currentTimeMillis();
         if (log.isLoggable(Level.FINE))
-            log.fine("Digester for server.xml created " + ( t2-t1 ));
+            log.log(Level.FINE, "Digester for server.xml created " + ( t2-t1 ));
         return (digester);
 
     }
@@ -417,7 +466,7 @@ public class Catalina extends Embedded {
                 digester.push(this);
                 digester.parse(is);
             } catch (Exception e) {
-                log.log(Level.SEVERE, "Catalina.stop: ", e);
+                log.log(Level.SEVERE, CATALINA_STOP_EXCEPTION, e);
                 System.exit(1);
             } finally {
                 try {
@@ -439,7 +488,7 @@ public class Catalina extends Embedded {
                 stream.write(shutdown.charAt(i));
             stream.flush();
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Catalina.stop: ", e);
+            log.log(Level.SEVERE, CATALINA_STOP_EXCEPTION, e);
             System.exit(1);
         } finally {
             if (stream != null) {
@@ -530,8 +579,9 @@ public class Catalina extends Embedded {
         }
 
         if (inputStream == null && file != null) {
-            log.warning("Can't load server.xml from " +
-                        file.getAbsolutePath());
+            String msg = MessageFormat.format(rb.getString(CANNOT_LOAD_SERVER_XML_EXCEPTION),
+                                              file.getAbsolutePath());
+            log.log(Level.WARNING, msg);
             return;
         }
 
@@ -541,7 +591,7 @@ public class Catalina extends Embedded {
                 digester.push(this);
                 digester.parse(inputSource);
             } catch (Exception e) {
-                log.log(Level.WARNING, "Catalina.start: ", e);
+                log.log(Level.WARNING, CATALINA_START_WARNING_EXCEPTION, e);
                 return;
             } finally {
                 try {
@@ -555,13 +605,14 @@ public class Catalina extends Embedded {
             try {
                 server.initialize();
             } catch (LifecycleException e) {
-                log.log(Level.SEVERE, "Catalina.start", e);
+                log.log(Level.SEVERE, CATALINA_START_SEVERE_EXCEPTION, e);
             }
         }
 
         if (log.isLoggable(Level.INFO)) {
             long t2 = System.currentTimeMillis();
-            log.info("Initialization processed in " + (t2 - t1) + " ms");
+            String msg = MessageFormat.format(rb.getString(INIT_PROCESSED_EXCEPTION), (t2-t1));
+            log.log(Level.INFO, msg);
         }
 
     }
@@ -577,7 +628,7 @@ public class Catalina extends Embedded {
             if (arguments(args))
                 load();
         } catch (Exception e) {
-            log.log(Level.WARNING, "Error loading configuration", e);
+            log.log(Level.WARNING, ERROR_LOADING_CONFIGURATION_EXCEPTION, e);
         }
     }
 
@@ -605,13 +656,15 @@ public class Catalina extends Embedded {
             try {
                 ((Lifecycle) server).start();
             } catch (LifecycleException e) {
-                log.log(Level.SEVERE, "Catalina.start: ", e);
+                log.log(Level.SEVERE, CATALINA_START_SEVERE_EXCEPTION, e);
             }
         }
 
         if (log.isLoggable(Level.INFO)) {
             long t2 = System.currentTimeMillis();
-            log.info("Server startup in " + (t2 - t1) + " ms");
+            String msg = MessageFormat.format(rb.getString(SERVER_STARTUP_INFO),
+                                              (t2 - t1));
+            log.log(Level.INFO, msg);
         }
 
         try {
@@ -649,7 +702,7 @@ public class Catalina extends Embedded {
             try {
                 ((Lifecycle) server).stop();
             } catch (LifecycleException e) {
-                log.log(Level.SEVERE, "Catalina.stop", e);
+                log.log(Level.SEVERE, CATALINA_STOP_EXCEPTION, e);
             }
         }
 

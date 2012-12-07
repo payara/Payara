@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,12 +59,18 @@
 package org.apache.catalina.startup;
 
 import org.apache.catalina.*;
+import org.apache.catalina.Logger;
 import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.StringManager;
+import org.apache.tomcat.util.digester.ObjectParamRule;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.Enumeration;
-import java.util.logging.Level;
+import java.util.ResourceBundle;
+import java.util.logging.*;
 
 /**
  * Startup event listener for a <b>Host</b> that configures Contexts (web
@@ -82,14 +88,57 @@ public final class UserConfig
 
     // ----------------------------------------------------- Static Variables
 
-    private static java.util.logging.Logger log =
-        java.util.logging.Logger.getLogger(UserConfig.class.getName());
+    private static final java.util.logging.Logger log = StandardServer.log;
 
-    /**
-     * The string resources for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(Constants.Package);
+    private static final ResourceBundle rb = log.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Deploying user web applications",
+            level = "INFO"
+    )
+    public static final String DEPLOYING_USER_WEB_APP_INFO = "AS-WEB-CORE-00805";
+
+    @LogMessageInfo(
+            message = "Exception loading user database",
+            level = "WARNING"
+    )
+    public static final String LOADING_USER_DATABASE_EXCEPTION = "AS-WEB-CORE-00806";
+
+    @LogMessageInfo(
+            message = "Deploying web application for user {0}",
+            level = "INFO"
+    )
+    public static final String DEPLOYING_WEB_APP_FOR_USER_INFO = "AS-WEB-CORE-00807";
+
+    @LogMessageInfo(
+            message = "Error deploying web application for user {0}",
+            level = "WARNING"
+    )
+    public static final String DEPLOYING_WEB_APP_FOR_USER_EXCEPTION = "AS-WEB-CORE-00808";
+
+    @LogMessageInfo(
+            message = "UserConfig[{0}]: {1}",
+            level = "INFO"
+    )
+    public static final String USER_CONFIG = "AS-WEB-CORE-00809";
+
+    @LogMessageInfo(
+            message = "UserConfig[null]: {0}",
+            level = "INFO"
+    )
+    public static final String USER_CONFIG_NULL = "AS-WEB-CORE-00810";
+
+    @LogMessageInfo(
+            message = "UserConfig: Processing START",
+            level = "INFO"
+    )
+    public static final String PROCESSING_START_INFO = "AS-WEB-CORE-00811";
+
+    @LogMessageInfo(
+            message = "UserConfig: Processing STOP",
+            level = "INFO"
+    )
+    public static final String PROCESSING_STOP_INFO = "AS-WEB-CORE-00812";
 
 
     // ----------------------------------------------------- Instance Variables
@@ -254,7 +303,9 @@ public final class UserConfig
         try {
             host = (Host) event.getLifecycle();
         } catch (ClassCastException e) {
-            log(sm.getString("hostConfig.cce", event.getLifecycle()), e);
+            String msg = MessageFormat.format(rb.getString(HostConfig.LIFECYCLE_OBJECT_NOT_HOST_EXCEPTION),
+                                              event.getLifecycle());
+            log(msg, e);
             return;
         }
 
@@ -277,7 +328,7 @@ public final class UserConfig
     private void deploy() {
 
         if (debug >= 1)
-            log(sm.getString("userConfig.deploying"));
+            log(rb.getString(DEPLOYING_USER_WEB_APP_INFO));
 
         // Load the user database object for this host
         UserDatabase database = null;
@@ -286,7 +337,7 @@ public final class UserConfig
             database = (UserDatabase) clazz.newInstance();
             database.setUserConfig(this);
         } catch (Exception e) {
-            log(sm.getString("userConfig.database"), e);
+            log(rb.getString(LOADING_USER_DATABASE_EXCEPTION), e);
             return;
         }
 
@@ -322,7 +373,9 @@ public final class UserConfig
         if (!dd.exists() || !dd.isFile() || !dd.canRead())
             return;
         */
-        log(sm.getString("userConfig.deploy", user));
+        String msg = MessageFormat.format(rb.getString(DEPLOYING_WEB_APP_FOR_USER_INFO),
+                                          user);
+        log(msg);
 
         // Deploy the web application for this user
         try {
@@ -339,7 +392,9 @@ public final class UserConfig
             }
             host.addChild(context);
         } catch (Exception e) {
-            log(sm.getString("userConfig.error", user), e);
+            String deployWebAppMsg = MessageFormat.format(rb.getString(DEPLOYING_WEB_APP_FOR_USER_EXCEPTION),
+                                              user);
+            log(deployWebAppMsg, e);
         }
 
     }
@@ -358,12 +413,12 @@ public final class UserConfig
                 logger.log("UserConfig[" + host.getName() + "]: " + message);
             } else {
                 if (log.isLoggable(Level.INFO)) {
-                    log.info("UserConfig[" + host.getName() + "]: " + message);
+                    log.log(Level.INFO, USER_CONFIG, new Object[] {host.getName(), message});
                 }
             }
         } else {
             if (log.isLoggable(Level.INFO)) {
-                log.info("UserConfig[null]: " + message);
+                log.log(Level.INFO, USER_CONFIG_NULL, message);
             }
         }
     }
@@ -383,12 +438,14 @@ public final class UserConfig
                 logger.log("UserConfig[" + host.getName() + "] "
                         + message, t, Logger.WARNING);
             } else {
-                log.log(Level.WARNING,
-                        "UserConfig[" + host.getName() + "]: " + message, t);
+                String msg = MessageFormat.format(rb.getString(USER_CONFIG),
+                                                  new Object[] {host.getName(), message});
+                log.log(Level.WARNING, msg, t);
             }
         } else {
-            log.log(Level.WARNING,
-                        "UserConfig[null]: " + message, t);
+            String msg = MessageFormat.format(rb.getString(USER_CONFIG_NULL),
+                                              message);
+            log.log(Level.WARNING, msg, t);
         }
     }
 
@@ -399,7 +456,7 @@ public final class UserConfig
     private void start() {
 
         if (debug > 0)
-            log(sm.getString("userConfig.start"));
+            log(rb.getString(PROCESSING_START_INFO));
 
         deploy();
 
@@ -412,7 +469,7 @@ public final class UserConfig
     private void stop() {
 
         if (debug > 0)
-            log(sm.getString("userConfig.stop"));
+            log(rb.getString(PROCESSING_STOP_INFO));
 
     }
 

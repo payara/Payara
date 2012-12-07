@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,6 +59,7 @@
 package org.apache.catalina.startup;
 
 import com.sun.logging.LogDomains;
+import org.apache.catalina.core.StandardServer;
 import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.digester.RuleSet;
 import javax.inject.Inject;
@@ -195,5 +196,5 @@ public class DigesterFactory {
         }
     }
 
-    protected static final Logger _logger = LogDomains.getLogger(DigesterFactory.class, LogDomains.WEB_LOGGER);
+    protected static final Logger _logger = StandardServer.log;
 }

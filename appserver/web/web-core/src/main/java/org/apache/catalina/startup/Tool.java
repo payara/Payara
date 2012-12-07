@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,9 +59,14 @@
 package org.apache.catalina.startup;
 
 
+import org.apache.catalina.core.StandardServer;
+import org.glassfish.logging.annotation.LogMessageInfo;
+
 import java.io.File;
 import java.lang.reflect.Method;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -112,6 +117,52 @@ import java.util.logging.Logger;
 
 public final class Tool {
 
+    @LogMessageInfo(
+            message = "Must set 'catalina.home' system property",
+            level = "SEVERE",
+            cause = "Did not set 'catalina.home'",
+            action = "Verify that 'catalina.home' was passed"
+    )
+    public static final String MUST_SET_SYS_PROPERTY = "AS-WEB-CORE-00795";
+
+    @LogMessageInfo(
+            message = "Class loader creation threw exception",
+            level = "SEVERE",
+            cause = "Could not create a new class loader",
+            action = "Verify directory paths"
+    )
+    public static final String CLASS_LOADER_CREATION_EXCEPTION = "AS-WEB-CORE-00796";
+
+    @LogMessageInfo(
+            message = "Exception creating instance of {0}",
+            level = "SEVERE",
+            cause = "Could not load application class",
+            action = "Verify the class name"
+    )
+    public static final String CREATING_INSTANCE_EXCEPTION = "AS-WEB-CORE-00797";
+
+    @LogMessageInfo(
+            message = "Exception locating main() method",
+            level = "SEVERE",
+            cause = "Could not locate the static main() method of the application class",
+            action = "Verify the access permission"
+    )
+    public static final String LOCATING_MAIN_METHOD_EXCEPTION = "AS-WEB-CORE-00798";
+
+    @LogMessageInfo(
+            message = "Exception calling main() method",
+            level = "SEVERE",
+            cause = "Could not invoke main() method",
+            action = "Verify the underlying method is inaccessible, and parameter values"
+    )
+    public static final String CALLING_MAIN_METHOD_EXCEPTION = "AS-WEB-CORE-00799";
+
+    @LogMessageInfo(
+            message = "Usage:  java org.apache.catalina.startup.Tool [<options>] <class> [<arguments>]",
+            level = "INFO"
+    )
+    public static final String USAGE_INFO = "AS-WEB-CORE-00800";
+
 
     // ------------------------------------------------------- Static Variables
 
@@ -139,7 +190,9 @@ public final class Tool {
     private static boolean debug = false;
 
 
-    private static Logger log = Logger.getLogger(Tool.class.getName());
+    private static final Logger log = StandardServer.log;
+
+    private static final ResourceBundle rb = log.getResourceBundle();
 
     /**
      * Include server classes in the repositories?
@@ -165,7 +218,7 @@ public final class Tool {
 
         // Verify that "catalina.home" was passed.
         if (catalinaHome == null) {
-            log.severe("Must set 'catalina.home' system property");
+            log.log(Level.SEVERE, MUST_SET_SYS_PROPERTY);
             System.exit(1);
         }
 
@@ -203,7 +256,7 @@ public final class Tool {
         ClassLoader classLoader = null;
         try {
             if (log.isLoggable(Level.FINE)) {
-                log.fine("Constructing class loader");
+                log.log(Level.FINE, "Constructing class loader");
                 ClassLoaderFactory.setDebug(1);
             }
             ArrayList<File> packed = new ArrayList<File>();
@@ -234,7 +287,7 @@ public final class Tool {
                  packed.toArray(new File[packed.size()]),
                  null);
         } catch (Throwable t) {
-            log.log(Level.SEVERE, "Class loader creation threw exception", t);
+            log.log(Level.SEVERE, CLASS_LOADER_CREATION_EXCEPTION, t);
             System.exit(1);
         }
         Thread.currentThread().setContextClassLoader(classLoader);
@@ -244,11 +297,12 @@ public final class Tool {
         String className = args[index++];
         try {
             if (log.isLoggable(Level.FINE))
-                log.fine("Loading application class " + className);
+                log.log(Level.FINE, "Loading application class " + className);
             clazz = classLoader.loadClass(className);
         } catch (Throwable t) {
-            log.log(Level.SEVERE,
-                    "Exception creating instance of " + className, t);
+            String msg = MessageFormat.format(rb.getString(CREATING_INSTANCE_EXCEPTION),
+                                              className);
+            log.log(Level.SEVERE, msg, t);
             System.exit(1);
         }
 
@@ -258,25 +312,25 @@ public final class Tool {
         System.arraycopy(args, index, params, 0, params.length);
         try {
             if (log.isLoggable(Level.FINE))
-                log.fine("Identifying main() method");
+                log.log(Level.FINE, "Identifying main() method");
             String methodName = "main";
             Class paramTypes[] = new Class[1];
             paramTypes[0] = params.getClass();
             method = clazz.getMethod(methodName, paramTypes);
         } catch (Throwable t) {
-            log.log(Level.SEVERE, "Exception locating main() method", t);
+            log.log(Level.SEVERE, LOCATING_MAIN_METHOD_EXCEPTION, t);
             System.exit(1);
         }
 
         // Invoke the main method of the application class
         try {
             if (log.isLoggable(Level.FINE))
-                log.fine("Calling main() method");
+                log.log(Level.FINE, "Calling main() method");
             Object paramValues[] = new Object[1];
             paramValues[0] = params;
             method.invoke(null, paramValues);
         } catch (Throwable t) {
-            log.log(Level.SEVERE, "Exception calling main() method", t);
+            log.log(Level.SEVERE, CALLING_MAIN_METHOD_EXCEPTION, t);
             System.exit(1);
         }
 
@@ -289,7 +343,7 @@ public final class Tool {
     private static void usage() {
 
         if (log.isLoggable(Level.INFO)) {
-            log.info("Usage:  java org.apache.catalina.startup.Tool [<options>] <class> [<arguments>]");
+            log.log(Level.INFO, USAGE_INFO);
         }
 
     }
