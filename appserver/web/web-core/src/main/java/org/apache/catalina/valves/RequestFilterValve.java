@@ -65,7 +65,7 @@ import org.apache.catalina.core.ApplicationDispatcher;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.deploy.ErrorPage;
-import org.apache.catalina.util.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
@@ -74,9 +74,9 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -118,10 +118,19 @@ import java.util.regex.PatternSyntaxException;
 public abstract class RequestFilterValve
     extends ValveBase {
 
+    @LogMessageInfo(
+            message = "Syntax error in request filter pattern {0}",
+            level = "WARNING"
+    )
+    public static final String SYNTAX_ERROR = "AS-WEB-CORE-00900";
 
+    @LogMessageInfo(
+            message = "Cannot process the error page: {0}",
+            level = "INFO"
+    )
+    public static final String CANNOT_PROCESS_ERROR_PAGE_INFO = "AS-WEB-CORE-00901";
     // ----------------------------------------------------- Class Variables
 
-    private static Logger log = Logger.getLogger(RequestFilterValve.class.getName());
 
     /**
      * The descriptive information related to this implementation.
@@ -129,12 +138,6 @@ public abstract class RequestFilterValve
     private static final String info =
         "org.apache.catalina.valves.RequestFilterValve/1.0";
 
-
-    /**
-     * The StringManager for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // ----------------------------------------------------- Instance Variables
@@ -277,8 +280,10 @@ public abstract class RequestFilterValve
             try {
                 reList.add(Pattern.compile(pattern));
             } catch (PatternSyntaxException e) {
+                String msg = MessageFormat.format(rb.getString(SYNTAX_ERROR),
+                                                  pattern);
                 IllegalArgumentException iae = new IllegalArgumentException
-                    (sm.getString("requestFilterValve.syntax", pattern));
+                    (msg);
                 iae.initCause(e);
                 throw iae;
             }
@@ -393,9 +398,9 @@ public abstract class RequestFilterValve
                 sres.flushBuffer();
             } catch(Throwable t) {
                 if (log.isLoggable(Level.INFO)) {
-                    String message = sm.getString("requestFilterValve.errorPage",
-                            errorPage.getLocation());
-                    log.log(Level.INFO, message, t);
+                    String msg = MessageFormat.format(rb.getString(CANNOT_PROCESS_ERROR_PAGE_INFO),
+                                                      errorPage.getLocation());
+                    log.log(Level.INFO, msg, t);
                 }
             }
         } else {

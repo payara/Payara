@@ -60,9 +60,8 @@ package org.apache.catalina.valves;
 
 
 import org.apache.catalina.*;
-import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.session.PersistentManager;
-import org.apache.catalina.util.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -83,7 +82,11 @@ import java.io.IOException;
 public class PersistentValve
     extends ValveBase {
 
-
+    @LogMessageInfo(
+            message = "No Context configured to process this request",
+            level = "WARNING"
+    )
+    public static final String NO_CONTEXT_CONFIGURED = "AS-WEB-CORE-00890";
     // ----------------------------------------------------- Instance Variables
 
 
@@ -92,13 +95,6 @@ public class PersistentValve
      */
     private static final String info =
         "org.apache.catalina.valves.PersistentValve/1.0";
-
-
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(Constants.Package);
 
 
     // ------------------------------------------------------------- Properties
@@ -136,7 +132,7 @@ public class PersistentValve
         if (context == null) {
             ((HttpServletResponse) response.getResponse()).sendError
                 (HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                 sm.getString("standardHost.noContext"));
+                 rb.getString(NO_CONTEXT_CONFIGURED));
             return END_PIPELINE;
         }
 
@@ -188,7 +184,7 @@ public class PersistentValve
         if (context == null) {
             ((HttpServletResponse) response.getResponse()).sendError
                 (HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                 sm.getString("standardHost.noContext"));
+                 rb.getString(NO_CONTEXT_CONFIGURED));
             return;
         }
 

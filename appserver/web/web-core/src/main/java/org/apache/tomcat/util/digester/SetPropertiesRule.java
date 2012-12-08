@@ -59,6 +59,7 @@
 package org.apache.tomcat.util.digester;
 
 
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.util.IntrospectionUtils;
 import org.xml.sax.Attributes;
 
@@ -78,7 +79,11 @@ import java.util.logging.Level;
 
 public class SetPropertiesRule extends Rule {
 
-
+    @LogMessageInfo(
+            message = "[SetPropertiesRule]{0} Setting property {1} to {2} did not find a matching property.",
+            level = "WARNING"
+    )
+    public static final String PROPERTIES_RULE_NOT_FIND_MATCHING_PROPERTY = "AS-WEB-CORE-00930";
     // ----------------------------------------------------------- Constructors
 
 
@@ -199,12 +204,12 @@ public class SetPropertiesRule extends Rule {
         Object top = digester.peek();
         if (digester.log.isLoggable(Level.FINE)) {
             if (top != null) {
-                digester.log.fine("[SetPropertiesRule]{" + digester.match +
-                                   "} Set " + top.getClass().getName() +
-                                   " properties");
+                digester.log.log(Level.FINE, "[SetPropertiesRule]{" + digester.match +
+                        "} Set " + top.getClass().getName() +
+                        " properties");
             } else {
-                digester.log.fine("[SetPropertiesRule]{" + digester.match +
-                                   "} Set NULL properties");
+                digester.log.log(Level.FINE, "[SetPropertiesRule]{" + digester.match +
+                        "} Set NULL properties");
             }
         }
         
@@ -242,16 +247,15 @@ public class SetPropertiesRule extends Rule {
             } 
             
             if (digester.log.isLoggable(Level.FINE)) {
-                digester.log.fine("[SetPropertiesRule]{" + digester.match +
+                digester.log.log(Level.FINE, "[SetPropertiesRule]{" + digester.match +
                         "} Setting property '" + name + "' to '" +
                         value + "'");
             }
             if (!digester.isFakeAttribute(top, name) 
                     && !IntrospectionUtils.setProperty(top, name, value) 
                     && digester.getRulesValidation()) {
-                digester.log.warning("[SetPropertiesRule]{" + digester.match +
-                        "} Setting property '" + name + "' to '" +
-                        value + "' did not find a matching property.");
+                digester.log.log(Level.WARNING, PROPERTIES_RULE_NOT_FIND_MATCHING_PROPERTY,
+                                 new Object[] {digester.match, name, value});
             }
         }
 

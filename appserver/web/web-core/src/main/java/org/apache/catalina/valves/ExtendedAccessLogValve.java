@@ -63,7 +63,7 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Request;
 import org.apache.catalina.Response;
 import org.apache.catalina.util.ServerInfo;
-import org.apache.catalina.util.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -77,13 +77,13 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.TimeZone;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -179,6 +179,89 @@ public final class ExtendedAccessLogValve
     extends ValveBase {
     // END CR 6411114
 
+    @LogMessageInfo(
+            message = "Failed to rename log file to {0} for rotate logs",
+            level = "SEVERE",
+            cause = "Could not rename log file",
+            action = "Verify access permission and new file name"
+    )
+    public static final String FAILED_RENAME_LOG_FILE = "AS-WEB-CORE-00870";
+
+    @LogMessageInfo(
+            message = "at least this wasn't swallowed",
+            level = "INFO"
+    )
+    public static final String NOT_SWALLOWED_INFO = "AS-WEB-CORE-00871";
+
+    @LogMessageInfo(
+            message = "Failed to create directory {0}",
+            level = "SEVERE",
+            cause = "Could not create directory",
+            action = "Verify access permission"
+    )
+    public static final String FAILED_CREATE_DIR = "AS-WEB-CORE-00872";
+
+    @LogMessageInfo(
+            message = "fields was just empty or whitespace",
+            level = "INFO"
+    )
+    public static final String FIELD_EMPTY_INFO = "AS-WEB-CORE-00873";
+
+    @LogMessageInfo(
+            message = "unable to decode with rest of chars being: {0}",
+            level = "SEVERE",
+            cause = "Could not decode rest of chars",
+            action = "Verify the current pattern"
+    )
+    public static final String UNABLE_DECODE_REST_CHARS = "AS-WEB-CORE-00874";
+
+    @LogMessageInfo(
+            message = "No closing ) found for in decode",
+            level = "SEVERE",
+            cause = "could not find closing bracket",
+            action = "Verify if the parameter includes closing bracket"
+    )
+    public static final String NO_CLOSING_BRACKET_FOUND = "AS-WEB-CORE-00875";
+
+    @LogMessageInfo(
+            message = "The next characters couldn't be decoded: {0}",
+            level = "SEVERE",
+            cause = "Could not decode characters",
+            action = "Verify the pattern"
+    )
+    public static final String CHARACTER_CANNOT_DECODED = "AS-WEB-CORE-00876";
+
+    @LogMessageInfo(
+            message = "End of line reached before decoding x- param",
+            level = "SEVERE",
+            cause = "Could not decode, since end of line reached",
+            action = "Verify the String index"
+    )
+    public static final String END_LINE_REACHED = "AS-WEB-CORE-00877";
+
+    @LogMessageInfo(
+            message = "x param in wrong format. Needs to be 'x-#(...)' read the docs!",
+            level = "SEVERE",
+            cause = "Could not decode, since x param in wrong format",
+            action = "Verify the format of parameter"
+    )
+    public static final String WRONG_X_PARAM_FORMAT = "AS-WEB-CORE-00878";
+
+    @LogMessageInfo(
+            message = "x param in wrong format. No closing ')'!",
+            level = "SEVERE",
+            cause = "Could not decode, since x param has no closing bracket",
+            action = "Verify the format of parameter"
+    )
+    public static final String X_PARAM_NO_CLOSING_BRACKET = "AS-WEB-CORE-00879";
+
+    @LogMessageInfo(
+            message = "x param for servlet request, couldn't decode value: {0}",
+            level = "SEVERE",
+            cause = "Could not decode value, since no x param type matched",
+            action = "Verify the current fieldInfo"
+    )
+    public static final String X_PARAM_CANNOT_DECODE_VALUE = "AS-WEB-CORE-00880";
 
     // --------------------------------------------------------- Constructors
 
@@ -188,12 +271,6 @@ public final class ExtendedAccessLogValve
     public ExtendedAccessLogValve() {
         super();
     }
-
-
-    // --------------------------------------------------- Instance Variables
-    private static Logger log = Logger.getLogger(
-        ExtendedAccessLogValve.class.getName());
-
 
     /**
      * The descriptive information about this implementation.
@@ -210,15 +287,6 @@ public final class ExtendedAccessLogValve
     /** CR 6411114 (Lifecycle implementation moved to ValveBase)
     protected LifecycleSupport lifecycle = new LifecycleSupport(this);
     */
-
-
-
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(Constants.Package);
-
 
     /**
      * Has this component been started yet?
@@ -701,10 +769,14 @@ public final class ExtendedAccessLogValve
             close();
             try {
                 if (!holder.renameTo(new File(newFileName))) {
-                    log.log(Level.SEVERE, sm.getString("rotateLogValve.renameFailure", newFileName));
+                    String msg = MessageFormat.format(rb.getString(FAILED_RENAME_LOG_FILE),
+                                                      newFileName);
+                    log.log(Level.SEVERE, msg);
                 }
             } catch(Throwable e){
-                log.log(Level.SEVERE, sm.getString("rotateLogValve.renameFailure", newFileName), e);
+                String msg = MessageFormat.format(rb.getString(FAILED_RENAME_LOG_FILE),
+                                                  newFileName);
+                log.log(Level.SEVERE, msg, e);
             }
 
             /* Make sure date is correct */
@@ -981,8 +1053,7 @@ public final class ExtendedAccessLogValve
                     try {
                         close();
                     } catch (Throwable e){
-                        log.log(Level.INFO, "at least this wasn't swallowed",
-                                e);
+                        log.log(Level.INFO, NOT_SWALLOWED_INFO, e);
                     }
 
                     /* Make sure date is correct */
@@ -1018,7 +1089,9 @@ public final class ExtendedAccessLogValve
         if (!dir.isAbsolute())
             dir = new File(System.getProperty("catalina.base"), directory);
         if (!dir.mkdirs() && !dir.isDirectory()) {
-            log.log(Level.SEVERE, sm.getString("accessLogValve.openDirFail", dir));
+            String msg = MessageFormat.format(rb.getString(FAILED_CREATE_DIR),
+                                              dir);
+            log.log(Level.SEVERE, msg);
         }
 
         // Open the current log file
@@ -1209,7 +1282,7 @@ public final class ExtendedAccessLogValve
     public FieldInfo[] decodePattern(String fields) {
 
         if (log.isLoggable(Level.FINE))
-            log.fine("decodePattern, fields=" + fields);
+            log.log(Level.FINE, "decodePattern, fields=" + fields);
 
         LinkedList<FieldInfo> list = new LinkedList<FieldInfo>();
 
@@ -1218,14 +1291,14 @@ public final class ExtendedAccessLogValve
         for (;i<fields.length() && Character.isWhitespace(fields.charAt(i));i++);
 
         if (i>=fields.length()) {
-            log.info("fields was just empty or whitespace");
+            log.log(Level.INFO, FIELD_EMPTY_INFO);
             return null;
         }
 
         int j;
         while(i<fields.length()) {
             if (log.isLoggable(Level.FINE))
-                log.fine("fields.substring(i)=" + fields.substring(i));
+                log.log(Level.FINE, "fields.substring(i)=" + fields.substring(i));
 
             FieldInfo currentFieldInfo = new FieldInfo();
 
@@ -1290,8 +1363,9 @@ public final class ExtendedAccessLogValve
                 i = decodeAppSpecific(fields, i, currentFieldInfo);
             } else {
                 // Unable to decode ...
-                log.severe("unable to decode with rest of chars being: " +
-                           fields.substring(i));
+                String msg = MessageFormat.format(rb.getString(UNABLE_DECODE_REST_CHARS),
+                                                  fields.substring(i));
+                log.log(Level.SEVERE, msg);
                 return null;
             }
 
@@ -1321,7 +1395,7 @@ public final class ExtendedAccessLogValve
              f[i++] = k.next();
 
         if (log.isLoggable(Level.FINE))
-            log.fine("finished decoding with length of: " + i);
+            log.log(Level.FINE, "finished decoding with length of: " + i);
 
         return f;
     }
@@ -1361,14 +1435,15 @@ public final class ExtendedAccessLogValve
             i++;                                  /* Move past the ( */
             int j = fields.indexOf(')', i);
             if (j==-1) {                          /* Not found */
-                log.severe("No closing ) found for in decode");
+                log.log(Level.SEVERE, NO_CLOSING_BRACKET_FOUND);
                 return -1;
             }
             fieldInfo.value = fields.substring(i,j);
             i=j+1;                                // Move pointer past ) */
         } else {
-            log.severe("The next characters couldn't be decoded: " +
-                       fields.substring(i));
+            String msg = MessageFormat.format(rb.getString(CHARACTER_CANNOT_DECODED),
+                                              fields.substring(i));
+            log.log(Level.SEVERE, msg);
             return -1;
         }
 
@@ -1398,7 +1473,7 @@ public final class ExtendedAccessLogValve
         i+=2;
 
         if (i>=fields.length()) {
-            log.severe("End of line reached before decoding x- param");
+            log.log(Level.SEVERE, END_LINE_REACHED);
             return -1;
         }
 
@@ -1427,7 +1502,7 @@ public final class ExtendedAccessLogValve
 
         /* test that next char is a ( */
         if (i+1!=fields.indexOf('(',i)) {
-            log.severe("x param in wrong format. Needs to be 'x-#(...)' read the docs!");
+            log.log(Level.SEVERE, WRONG_X_PARAM_FORMAT);
             return -1;
         }
         i+=2; /* Move inside of the () */
@@ -1435,7 +1510,7 @@ public final class ExtendedAccessLogValve
         /* Look for ending ) and return error if not found. */
         int j = fields.indexOf(')',i);
         if (j==-1) {
-            log.severe("x param in wrong format. No closing ')'!");
+            log.log(Level.SEVERE, X_PARAM_NO_CLOSING_BRACKET);
             return -1;
         }
 
@@ -1465,9 +1540,9 @@ public final class ExtendedAccessLogValve
             } else if ("secure".equals(fieldInfo.value)){
                 fieldInfo.location = FieldInfo.X_LOC_SECURE;
             } else {
-                log.severe(
-                    "x param for servlet request, couldn't decode value: " +
-                    fieldInfo.location);
+                String msg = MessageFormat.format(rb.getString(X_PARAM_CANNOT_DECODE_VALUE),
+                                                  fieldInfo.location);
+                log.log(Level.SEVERE, msg);
                 return -1;
             }
         }

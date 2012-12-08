@@ -221,11 +221,11 @@ public class SetTopRule extends Rule {
         
         if (digester.log.isLoggable(Level.FINE)) {
             if (child == null) {
-                digester.log.fine("[SetTopRule]{" + digester.match +
+                digester.log.log(Level.FINE, "[SetTopRule]{" + digester.match +
                         "} Call [NULL CHILD]." +
                         methodName + "(" + parent + ")");
             } else {
-                digester.log.fine("[SetTopRule]{" + digester.match +
+                digester.log.log(Level.FINE, "[SetTopRule]{" + digester.match +
                         "} Call " + child.getClass().getName() + "." +
                         methodName + "(" + parent + ")");
             }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -407,7 +407,7 @@ public class FactoryCreateRule extends Rule {
                 Object instance = getFactory(attributes).createObject(attributes);
                 
                 if (digester.log.isLoggable(Level.FINE)) {
-                    digester.log.fine("[FactoryCreateRule]{" + digester.match +
+                    digester.log.log(Level.FINE, "[FactoryCreateRule]{" + digester.match +
                             "} New " + instance.getClass().getName());
                 }
                 digester.push(instance);
@@ -419,7 +419,7 @@ public class FactoryCreateRule extends Rule {
                     digester.log.log(Level.INFO, "[FactoryCreateRule] Create exception ignored: " +
                         ((e.getMessage() == null) ? e.getClass().getName() : e.getMessage()));
                     if (digester.log.isLoggable(Level.FINE)) {
-                        digester.log.fine("[FactoryCreateRule] Ignored exception:" + e.getMessage());
+                        digester.log.log(Level.FINE, "[FactoryCreateRule] Ignored exception:" + e.getMessage());
                     }
                 }
                 exceptionIgnoredStack.push(Boolean.TRUE);
@@ -430,7 +430,7 @@ public class FactoryCreateRule extends Rule {
             Object instance = getFactory(attributes).createObject(attributes);
             
             if (digester.log.isLoggable(Level.FINE)) {
-                digester.log.fine("[FactoryCreateRule]{" + digester.match +
+                digester.log.log(Level.FINE, "[FactoryCreateRule]{" + digester.match +
                         "} New " + instance.getClass().getName());
             }
             digester.push(instance);
@@ -454,7 +454,7 @@ public class FactoryCreateRule extends Rule {
                 // creation exception was ignored
                 // nothing was put onto the stack
                 if (digester.log.isLoggable(Level.FINEST)) {
-                    digester.log.finest("[FactoryCreateRule] No creation so no push so no pop");
+                    digester.log.log(Level.FINEST, "[FactoryCreateRule] No creation so no push so no pop");
                 }
                 return;
             }
@@ -462,7 +462,7 @@ public class FactoryCreateRule extends Rule {
 
         Object top = digester.pop();
         if (digester.log.isLoggable(Level.FINE)) {
-            digester.log.fine("[FactoryCreateRule]{" + digester.match +
+            digester.log.log(Level.FINE, "[FactoryCreateRule]{" + digester.match +
                     "} Pop " + top.getClass().getName());
         }
 
@@ -524,7 +524,7 @@ public class FactoryCreateRule extends Rule {
                 }
             }
             if (digester.log.isLoggable(Level.FINE)) {
-                digester.log.fine("[FactoryCreateRule]{" + digester.match +
+                digester.log.log(Level.FINE, "[FactoryCreateRule]{" + digester.match +
                         "} New factory " + realClassName);
             }
             Class<?> clazz = digester.getClassLoader().loadClass(realClassName);

@@ -220,11 +220,11 @@ public class SetNextRule extends Rule {
         Object parent = digester.peek(1);
         if (digester.log.isLoggable(Level.FINE)) {
             if (parent == null) {
-                digester.log.fine("[SetNextRule]{" + digester.match +
+                digester.log.log(Level.FINE, "[SetNextRule]{" + digester.match +
                         "} Call [NULL PARENT]." +
                         methodName + "(" + child + ")");
             } else {
-                digester.log.fine("[SetNextRule]{" + digester.match +
+                digester.log.log(Level.FINE, "[SetNextRule]{" + digester.match +
                         "} Call " + parent.getClass().getName() + "." +
                         methodName + "(" + child + ")");
             }

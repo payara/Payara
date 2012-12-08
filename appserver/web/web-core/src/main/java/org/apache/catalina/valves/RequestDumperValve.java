@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,7 +60,6 @@ package org.apache.catalina.valves;
 
 
 import org.apache.catalina.*;
-import org.apache.catalina.util.StringManager;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -68,6 +67,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.logging.Level;
 
 /**
  * <p>Implementation of a Valve that logs interesting contents from the
@@ -84,22 +84,11 @@ import java.util.Enumeration;
 
 public class RequestDumperValve extends ValveBase {
 
-    private static final java.util.logging.Logger log =
-        java.util.logging.Logger.getLogger(
-            RequestDumperValve.class.getName());
-
     /**
      * The descriptive information related to this implementation.
      */
     private static final String info =
         "org.apache.catalina.valves.RequestDumperValve/1.0";
-
-    /**
-     * The StringManager for this package.
-     */
-    protected static final StringManager sm =
-        StringManager.getManager(Constants.Package);
-
 
     // ------------------------------------------------------------- Properties
 
@@ -259,7 +248,7 @@ public class RequestDumperValve extends ValveBase {
         if (logger != null) {
             logger.log(this.toString() + ": " + message);
         } else {
-            log.info(this.toString() + ": " + message);
+            log.log(Level.INFO, this.toString() + ": " + message);
         }
     }
 
@@ -276,8 +265,7 @@ public class RequestDumperValve extends ValveBase {
             logger.log(this.toString() + ": " + message, t,
                 Logger.WARNING);
         } else {
-            log.log(java.util.logging.Level.WARNING,
-                this.toString() + ": " + message, t);
+            log.log(Level.WARNING, this.toString() + ": " + message, t);
         }
     }
 

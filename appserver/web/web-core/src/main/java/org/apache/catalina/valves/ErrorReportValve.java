@@ -66,6 +66,7 @@ import org.apache.catalina.Response;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ServerInfo;
 import org.apache.catalina.util.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -74,8 +75,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.logging.Level;
 
 /**
  * <p>Implementation of a Valve that outputs HTML error pages.</p>
@@ -95,9 +98,72 @@ import java.util.Locale;
 public class ErrorReportValve
     extends ValveBase {
 
-    private static final java.util.logging.Logger log =
-        java.util.logging.Logger.getLogger(
-            ErrorReportValve.class.getName());
+    @LogMessageInfo(
+            message = "status.setContentType",
+            level = "WARNING"
+    )
+    public static final String SET_CONTENT_TYPE_EXCEPTION = "AS-WEB-CORE-00855";
+
+    @LogMessageInfo(
+            message = "Error report",
+            level = "INFO"
+    )
+    public static final String ERROR_REPORT_INFO = "AS-WEB-CORE-00856";
+
+    @LogMessageInfo(
+            message = "HTTP Status {0} - {1}",
+            level = "INFO"
+    )
+    public static final String HTTP_STATUS_INFO = "AS-WEB-CORE-00857";
+
+    @LogMessageInfo(
+            message = "Exception report",
+            level = "INFO"
+    )
+    public static final String EXCEPTION_REPORT_INFO = "AS-WEB-CORE-00858";
+
+    @LogMessageInfo(
+            message = "Status report",
+            level = "INFO"
+    )
+    public static final String STATUS_REPORT_INFO = "AS-WEB-CORE-00859";
+
+    @LogMessageInfo(
+            message = "Message",
+            level = "INFO"
+    )
+    public static final String MESSAGE_INFO = "AS-WEB-CORE-00860";
+
+    @LogMessageInfo(
+            message = "Description",
+            level = "INFO"
+    )
+    public static final String DESCRIPTION_INFO = "AS-WEB-CORE-00861";
+
+    @LogMessageInfo(
+            message = "Exception",
+            level = "INFO"
+    )
+    public static final String EXCEPTION_INFO = "AS-WEB-CORE-00862";
+
+    @LogMessageInfo(
+            message = "Root cause",
+            level = "INFO"
+    )
+    public static final String ROOT_CAUSE_INFO = "AS-WEB-CORE-00863";
+
+    @LogMessageInfo(
+            message = "Note",
+            level = "INFO"
+    )
+    public static final String NOTE_INFO = "AS-WEB-CORE-00864";
+
+    @LogMessageInfo(
+            message = "The full stack traces of the exception and its root causes are available in the {0} logs.",
+            level = "INFO"
+    )
+    public static final String EXCEPTION_AND_ROOT_CAUSE_AVAILABLE_INFO = "AS-WEB-CORE-00865";
+
 
     /**
      * The descriptive information related to this implementation.
@@ -344,7 +410,7 @@ public class ErrorReportValve
             */
         } catch (Throwable t) {
             if (debug >= 1)
-                log("status.setContentType", t);
+                log(rb.getString(SET_CONTENT_TYPE_EXCEPTION), t);
         }
 
         try {
@@ -373,7 +439,7 @@ public class ErrorReportValve
         if (logger != null) {
             logger.log(this.toString() + ": " + message);
         } else {
-            log.info(this.toString() + ": " + message);
+            log.log(Level.INFO, this.toString() + ": " + message);
         }
     }
 
@@ -389,8 +455,7 @@ public class ErrorReportValve
         if (logger != null) {
             logger.log(this.toString() + ": " + message, t, Logger.WARNING);
         } else {
-            log.log(java.util.logging.Level.WARNING,
-                this.toString() + ": " + message, t);
+            log.log(Level.WARNING, this.toString() + ": " + message, t);
         }
     }
 
@@ -410,6 +475,9 @@ public class ErrorReportValve
 
         StringBuilder sb = new StringBuilder();
 
+        MessageFormat mf = new MessageFormat("");
+        mf.setLocale(responseLocale);
+
         sb.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"");
         sb.append(" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
         sb.append("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><title>");
@@ -420,8 +488,10 @@ public class ErrorReportValve
         sb.append(sm.getString("errorReportValve.errorReport"));
         */
         // START SJSAS 6412710
-        sb.append(sm.getString("errorReportValve.errorReport",
-                               responseLocale));
+
+        String errorReport = rb.getString(ERROR_REPORT_INFO);
+
+        sb.append(errorReport);
         // END SJSAS 6412710
         sb.append("</title>");
         sb.append("<style type=\"text/css\"><!--");
@@ -434,9 +504,11 @@ public class ErrorReportValve
                                "" + statusCode, message)).append("</h1>");
         */
         // START SJSAS 6412710
-        sb.append(sm.getString("errorReportValve.statusHeader",
-                               "" + statusCode, message,
-                               responseLocale)).append("</h1>");
+
+        mf.applyPattern(rb.getString(HTTP_STATUS_INFO));
+        String statusHeader = mf.format(new Object[] {statusCode, message});
+
+        sb.append(statusHeader).append("</h1>");
         // END SJSAS 6412710
         sb.append("<hr/>");
         sb.append("<p><b>type</b> ");
@@ -445,16 +517,19 @@ public class ErrorReportValve
             sb.append(sm.getString("errorReportValve.exceptionReport"));
             */
             // START SJJAS 6412710
-            sb.append(sm.getString("errorReportValve.exceptionReport",
-                                   responseLocale));
+
+            String exceptionReport = rb.getString(EXCEPTION_REPORT_INFO);
+
+            sb.append(exceptionReport);
             // END SJSAS 6412710
         } else {
             /* SJSAS 6412710
             sb.append(sm.getString("errorReportValve.statusReport"));
             */
             // START SJSAS 6412710
-            sb.append(sm.getString("errorReportValve.statusReport",
-                                   responseLocale));
+            String statusReport = rb.getString(STATUS_REPORT_INFO);
+
+            sb.append(statusReport);
             // END SJSAS 6412710
         }
         sb.append("</p>");
@@ -463,8 +538,8 @@ public class ErrorReportValve
         sb.append(sm.getString("errorReportValve.message"));
         */
         // START SJSAS 6412710
-        sb.append(sm.getString("errorReportValve.message",
-                               responseLocale));
+        String messageInfo = rb.getString(MESSAGE_INFO);
+        sb.append(messageInfo);
         // END SJSAS 6412710
         sb.append("</b>");
         sb.append(message).append("</p>");
@@ -473,8 +548,8 @@ public class ErrorReportValve
         sb.append(sm.getString("errorReportValve.description"));
         */
         // START SJSAS 6412710
-        sb.append(sm.getString("errorReportValve.description",
-                               responseLocale));
+        String description = rb.getString(DESCRIPTION_INFO);
+        sb.append(description);
         // END SJSAS 6412710
         sb.append("</b>");
         sb.append(report);
@@ -492,8 +567,8 @@ public class ErrorReportValve
             sb.append(sm.getString("errorReportValve.exception"));
             */
             // START SJSAS 6412710
-            sb.append(sm.getString("errorReportValve.exception",
-                                   responseLocale));
+            String exception = rb.getString(EXCEPTION_INFO);
+            sb.append(exception);
             // END SJSAS 6412710
             sb.append("</b> <pre>");
             /* SJSAS 6387790
@@ -519,8 +594,8 @@ public class ErrorReportValve
                 sb.append(sm.getString("errorReportValve.rootCause"));
                 */
                 // START SJSAS 6412710
-                sb.append(sm.getString("errorReportValve.rootCause",
-                                       responseLocale));
+                String rootCauseInfo = rb.getString(ROOT_CAUSE_INFO);
+                sb.append(rootCauseInfo);
                 // END SJSAS 6412710
                 sb.append("</b> <pre>");
                 /* SJSAS 6387790
@@ -561,8 +636,8 @@ public class ErrorReportValve
             sb.append(sm.getString("errorReportValve.note"));
             */
             // START SJSAS 6412710
-            sb.append(sm.getString("errorReportValve.note",
-                                   responseLocale));
+            String note = rb.getString(NOTE_INFO);
+            sb.append(note);
             // END SJAS 6412710
             sb.append("</b> <u>");
             /* SJSAS 6412710
@@ -570,8 +645,9 @@ public class ErrorReportValve
                                    ServerInfo.getServerInfo()));
             */
             // START SJSAS 6412710
-            sb.append(sm.getString("errorReportValve.rootCauseInLogs",
-                                   serverInfo, responseLocale));
+            mf.applyPattern(rb.getString(EXCEPTION_AND_ROOT_CAUSE_AVAILABLE_INFO));
+            String rootCauseInLog = mf.format(new Object[] {serverInfo});
+            sb.append(rootCauseInLog);
             // END SJSAS 6412710
             sb.append("</u></p>");
 

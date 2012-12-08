@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,6 +58,8 @@
 
 package org.apache.catalina.util;
 
+import org.apache.catalina.core.StandardServer;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -78,9 +80,7 @@ import java.util.logging.Logger;
  */
 public class ProcessEnvironment {
 
-
-    private static Logger log = Logger.getLogger(
-        ProcessEnvironment.class.getName());
+    private static final Logger log = StandardServer.log;
 
     /** context of the enclosing servlet */
     private ServletContext context = null;
@@ -307,7 +307,7 @@ public class ProcessEnvironment {
 
     protected void log(String s) {
         if (log.isLoggable(Level.FINE))
-            log.fine(s);
+            log.log(Level.FINE, s);
     }
 
 

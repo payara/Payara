@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,7 +59,9 @@
 package org.apache.catalina.util;
 
 import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.core.StandardServer;
 import org.apache.naming.resources.Resource;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.naming.Binding;
 import javax.naming.NamingEnumeration;
@@ -69,6 +71,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -97,18 +100,32 @@ import java.util.logging.Logger;
  */
 public final class ExtensionValidator {
 
-    private static Logger log = Logger.getLogger(ExtensionValidator.class.getName());
+    private static final Logger log = StandardServer.log;
+    private static final ResourceBundle rb = log.getResourceBundle();
 
-    /**
-     * The string resources for this package.
-     */
-    private static StringManager sm =
-        StringManager.getManager("org.apache.catalina.util");
-    
     private static volatile HashMap<String, Extension> containerAvailableExtensions = null;
     private static ArrayList<ManifestResource> containerManifestResources =
         new ArrayList<ManifestResource>();
-    private static ResourceBundle messages = null;
+
+    @LogMessageInfo(
+            message = "Failed to load manifest resources {0}",
+            level = "SEVERE",
+            cause = "Could not find MANIFEST from JAR file",
+            action = "Verify the JAR file"
+    )
+    public static final String FAILED_LOAD_MANIFEST_RESOURCES_EXCEPTION = "AS-WEB-CORE-00820";
+
+    @LogMessageInfo(
+            message = "ExtensionValidator[{0}][{1}]: Required extension \"{2}\" not found.",
+            level = "INFO"
+    )
+    public static final String EXTENSION_NOT_FOUND_INFO = "AS-WEB-CORE-00821";
+
+    @LogMessageInfo(
+            message = "ExtensionValidator[{0}]: Failure to find {1} required extension(s).",
+            level = "INFO"
+    )
+    public static final String FAILED_FIND_EXTENSION_INFO = "AS-WEB-CORE-00822";
 
 
     // ----------------------------------------------------- Static Initializer
@@ -139,10 +156,9 @@ public final class ExtensionValidator {
                     try {
                         addSystemResource(item);
                     } catch (IOException e) {
-                        log.log(Level.SEVERE,
-                                sm.getString("extensionValidator.failload",
-                                             item),
-                                e);
+                        String msg = MessageFormat.format(rb.getString(FAILED_LOAD_MANIFEST_RESOURCES_EXCEPTION),
+                                                          item);
+                        log.log(Level.SEVERE, msg, e);
                     }
                 }
             }
@@ -164,10 +180,9 @@ public final class ExtensionValidator {
                         try {
                             addSystemResource(files[i]);
                         } catch (IOException e) {
-                            log.log(Level.SEVERE,
-                                    sm.getString("extensionValidator.failload",
-                                                 files[i]),
-                                    e);
+                            String msg = MessageFormat.format(rb.getString(FAILED_LOAD_MANIFEST_RESOURCES_EXCEPTION),
+                                                              files[i]);
+                            log.log(Level.SEVERE, msg, e);
                         }
                     }
                 }
@@ -221,8 +236,11 @@ public final class ExtensionValidator {
                 Manifest manifest = new Manifest(inputStream);
                 inputStream.close();
                 inputStream = null;
+
+                String resourceName = "Web Application Manifest";       // Can we do it like this?
+
                 ManifestResource mre = new ManifestResource
-                    (sm.getString("extensionValidator.web-application-manifest"),
+                    (resourceName,
                     manifest, ManifestResource.WAR);
                 appManifestResources.add(mre);
             } 
@@ -346,10 +364,9 @@ public final class ExtensionValidator {
                 } else {
                     // Failure
                     if (log.isLoggable(Level.INFO)) {
-                        log.info(sm.getString(
-                            "extensionValidator.extension-not-found-error",
-                            appName, mre.getResourceName(),
-                            requiredExt.getExtensionName()));
+                        log.log(Level.INFO, EXTENSION_NOT_FOUND_INFO,
+                                new Object[] {appName, mre.getResourceName(),
+                                        requiredExt.getExtensionName()});
                     }
                     passes = false;
                     failureCount++;
@@ -359,9 +376,8 @@ public final class ExtensionValidator {
 
         if (!passes) {
             if (log.isLoggable(Level.INFO)) {
-                log.info(sm.getString(
-                         "extensionValidator.extension-validation-error", appName,
-                         failureCount + ""));
+                log.log(Level.INFO, FAILED_FIND_EXTENSION_INFO,
+                        new Object[] {appName, failureCount});
             }
         }
 

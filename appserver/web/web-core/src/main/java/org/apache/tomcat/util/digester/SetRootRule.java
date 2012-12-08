@@ -221,11 +221,11 @@ public class SetRootRule extends Rule {
         Object parent = digester.root;
         if (digester.log.isLoggable(Level.FINE)) {
             if (parent == null) {
-                digester.log.fine("[SetRootRule]{" + digester.match +
+                digester.log.log(Level.FINE, "[SetRootRule]{" + digester.match +
                         "} Call [NULL ROOT]." +
                         methodName + "(" + child + ")");
             } else {
-                digester.log.fine("[SetRootRule]{" + digester.match +
+                digester.log.log(Level.FINE, "[SetRootRule]{" + digester.match +
                         "} Call " + parent.getClass().getName() + "." +
                         methodName + "(" + child + ")");
             }
