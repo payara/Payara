@@ -143,6 +143,11 @@
             <http-only>true</http-only>
         </cookie-config>
     </session-config>
+    <!-- following mapping aded to avoid JSF warning. refer to GLASSFISH-19403 -->
+    <mime-mapping>
+        <extension>jsp</extension>
+        <mime-type>text/html</mime-type>
+    </mime-mapping>
     <welcome-file-list>
         <welcome-file>/index.jsf</welcome-file>
     </welcome-file-list>
