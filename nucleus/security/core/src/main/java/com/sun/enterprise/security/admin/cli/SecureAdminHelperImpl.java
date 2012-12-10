@@ -90,23 +90,23 @@ public class SecureAdminHelperImpl implements SecureAdminHelper {
     /**
      * Returns the correct DN to use for a given secure admin principal, mapping
      * the alias (if it's an alias specified) to the DN for the corresponding 
-     * cert in the trust store.
+     * cert in the key store.
      * 
      * @param value user-provided value (alias name or the actual DN)
      * @param isAlias whether the value is an alias
      * @return DN to use 
-     * @throws IOException if there is an error accessing the trust store
+     * @throws IOException if there is an error accessing the key store
      * @throws KeyStoreException if the keystore has not been initialized
-     * @throws IllegalArgumentException if the cert for the specified alias as fetched from the trust store is not an X509 certificate
+     * @throws IllegalArgumentException if the cert for the specified alias as fetched from the key store is not an X509 certificate
      */
     @Override
     public String getDN(final String value, final boolean isAlias) throws IOException, KeyStoreException {
         if (isAlias) {
-            final KeyStore trustStore = sslUtils.getTrustStore();
-            if (trustStore == null) {
-                throw new RuntimeException(Strings.get("noTruststore"));
+            final KeyStore keyStore = sslUtils.getKeyStore();
+            if (keyStore == null) {
+                throw new RuntimeException(Strings.get("noKeyStore"));
             }
-            final Certificate cert = trustStore.getCertificate(value);
+            final Certificate cert = keyStore.getCertificate(value);
             if (cert == null) {
                 throw new IllegalArgumentException(Strings.get("noAlias", value));
             }
