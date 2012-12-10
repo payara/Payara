@@ -80,6 +80,10 @@ import org.glassfish.security.services.common.SubjectUtil;
  */
 @Produces(MediaType.APPLICATION_JSON)
 public abstract class CompositeResource implements RestResource, DefaultsGenerator, OptionsCapable {
+    public static final String MEDIA_TYPE_BASE = "application/vnd.oracle.glassfish";
+    public static final String MEDIA_TYPE_JSON = MEDIA_TYPE_BASE+"+json";
+    public static final String MEDIA_TYPE_SSE = MEDIA_TYPE_BASE+"+SSE";
+    public static final String MEDIA_TYPE_ASYNC = MEDIA_TYPE_BASE+"+json+async";
 
     // All methods that expect a request body should include the annotation:
     // @Consumes(CONSUMES_TYPE)
