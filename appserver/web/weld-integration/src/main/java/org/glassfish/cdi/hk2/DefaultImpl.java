@@ -37,23 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.hk2.devtest.cdi.ejb1;
+package org.glassfish.cdi.hk2;
 
-import org.jvnet.hk2.annotations.Contract;
+import javax.enterprise.inject.Default;
+import javax.enterprise.util.AnnotationLiteral;
 
 /**
  * @author jwells
  *
  */
-@Contract
-public interface BasicEjb {
-    
-    public boolean cdiManagerInjected();
-    
-    public boolean serviceLocatorInjected();
-    
-    public void installHK2Service();
-    
-    public boolean hk2ServiceInjectedWithEjb();
-
+@SuppressWarnings("serial")
+public class DefaultImpl extends AnnotationLiteral<Default> implements Default {
 }

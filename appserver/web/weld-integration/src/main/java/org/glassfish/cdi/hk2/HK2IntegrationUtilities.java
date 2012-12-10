@@ -37,23 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.hk2.devtest.cdi.ejb1;
+package org.glassfish.cdi.hk2;
 
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.ServiceLocatorFactory;
+import org.glassfish.internal.api.Globals;
 
 /**
+ * Integration utilities
+ * 
  * @author jwells
  *
  */
-@Contract
-public interface BasicEjb {
+public class HK2IntegrationUtilities {
+    private final static ServiceLocatorFactory FACTORY = ServiceLocatorFactory.getInstance();
     
-    public boolean cdiManagerInjected();
-    
-    public boolean serviceLocatorInjected();
-    
-    public void installHK2Service();
-    
-    public boolean hk2ServiceInjectedWithEjb();
+    /**
+     * TODO: This code will be implemented differently when we
+     * have a real concept of an application service locator
+     * 
+     * @return
+     */
+    public ServiceLocator getApplicationServiceLocator() {
+        ClassLoader loader = getClass().getClassLoader();
+        
+        String loaderName;
+        if (loader == null) {
+            loaderName = "system";
+        }
+        else {
+            loaderName = loader.toString();
+        }
+        
+        ServiceLocator retVal = FACTORY.find(loaderName);
+        if (retVal != null) return retVal;
+        
+        return FACTORY.create(loaderName);
+    }
 
 }

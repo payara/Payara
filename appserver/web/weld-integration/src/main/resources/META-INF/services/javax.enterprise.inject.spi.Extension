@@ -1,1 +1,2 @@
 org.glassfish.cdi.transaction.TransactionScopedContextExtension
+org.glassfish.cdi.hk2.HK2IntegrationExtension

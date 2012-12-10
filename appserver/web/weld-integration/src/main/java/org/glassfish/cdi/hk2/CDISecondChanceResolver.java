@@ -37,23 +37,62 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.hk2.devtest.cdi.ejb1;
+package org.glassfish.cdi.hk2;
 
-import org.jvnet.hk2.annotations.Contract;
+import java.lang.annotation.Annotation;
+import java.util.Set;
+
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.inject.Singleton;
+
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.DynamicConfiguration;
+import org.glassfish.hk2.api.Injectee;
+import org.glassfish.hk2.api.JustInTimeInjectionResolver;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 
 /**
  * @author jwells
  *
  */
-@Contract
-public interface BasicEjb {
+@Singleton
+public class CDISecondChanceResolver implements JustInTimeInjectionResolver {
+    private final ServiceLocator locator;
+    private final BeanManager manager;
     
-    public boolean cdiManagerInjected();
-    
-    public boolean serviceLocatorInjected();
-    
-    public void installHK2Service();
-    
-    public boolean hk2ServiceInjectedWithEjb();
+    /* package */
+    CDISecondChanceResolver(ServiceLocator locator, BeanManager manager) {
+        this.locator = locator;
+        this.manager = manager;
+    }
+
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.JustInTimeInjectionResolver#justInTimeResolution(org.glassfish.hk2.api.Injectee)
+     */
+    @SuppressWarnings({ "unchecked" })
+    @Override
+    public boolean justInTimeResolution(Injectee failedInjectionPoint) {
+        Set<Annotation> setQualifiers = failedInjectionPoint.getRequiredQualifiers();
+        
+        Annotation qualifiers[] = setQualifiers.toArray(new Annotation[setQualifiers.size()]);
+        
+        Set<Bean<?>> beans = manager.getBeans(failedInjectionPoint.getRequiredType(), qualifiers);
+        if (beans == null || beans.isEmpty()) {
+            return false;
+        }
+        
+        DynamicConfiguration config = ServiceLocatorUtilities.createDynamicConfiguration(locator);
+        for (Bean<?> bean : beans) {
+            // Add a bean to the service locator
+            CDIHK2Descriptor<Object> descriptor = new CDIHK2Descriptor<Object>(manager, (Bean<Object>) bean);
+            config.addActiveDescriptor(descriptor);
+        }
+        
+        config.commit();
+        
+        return true;
+    }
 
 }

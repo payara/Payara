@@ -43,8 +43,14 @@ import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
+import javax.naming.InitialContext;
 
+import org.glassfish.hk2.api.DynamicConfiguration;
+import org.glassfish.hk2.api.DynamicConfigurationService;
 import org.glassfish.hk2.api.ServiceLocator;
+
+import com.oracle.hk2.devtest.cdi.ejb1.scoped.CustomScopedEjb;
+import com.oracle.hk2.devtest.cdi.locator.BasicService;
 
 /**
  * Simple EJB that injects a ServiceHandle!
@@ -59,6 +65,9 @@ public class EjbInjectedWithServiceLocator implements BasicEjb {
     
     @Inject
     private ServiceLocator locator;
+    
+    @Inject
+    private CustomScopedEjb customScopedEjb;
 
     @Override
     public boolean cdiManagerInjected() {
@@ -69,6 +78,25 @@ public class EjbInjectedWithServiceLocator implements BasicEjb {
     public boolean serviceLocatorInjected() {
         return (locator != null);
     }
-    
-    
+
+    @Override
+    public void installHK2Service() {
+        DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
+        DynamicConfiguration config = dcs.createDynamicConfiguration();
+        
+        config.addActiveDescriptor(BasicService.class);
+        
+        config.commit(); 
+    }
+
+    @Override
+    public boolean hk2ServiceInjectedWithEjb() {
+        BasicService bs = locator.getService(BasicService.class);
+        if (bs == null) {
+            throw new RuntimeException("Could not find BasicService in locator " + locator);
+        }
+        
+        boolean retVal = bs.gotInjectedWithBeanManager();
+        return retVal;
+    }    
 }

@@ -37,23 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.hk2.devtest.cdi.ejb1;
+package com.oracle.hk2.devtest.cdi.locator;
 
-import org.jvnet.hk2.annotations.Contract;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * @author jwells
  *
  */
-@Contract
-public interface BasicEjb {
+@Singleton
+public class BasicService {
+    @Inject
+    private BeanManager beanManager;
     
-    public boolean cdiManagerInjected();
-    
-    public boolean serviceLocatorInjected();
-    
-    public void installHK2Service();
-    
-    public boolean hk2ServiceInjectedWithEjb();
+    public boolean gotInjectedWithBeanManager() {
+        return (beanManager != null);
+    }
 
 }

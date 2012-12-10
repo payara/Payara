@@ -37,23 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.hk2.devtest.cdi.ejb1;
+package com.oracle.hk2.devtest.cdi.ejb1.scoped;
 
-import org.jvnet.hk2.annotations.Contract;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * @author jwells
  *
  */
-@Contract
-public interface BasicEjb {
-    
-    public boolean cdiManagerInjected();
-    
-    public boolean serviceLocatorInjected();
-    
-    public void installHK2Service();
-    
-    public boolean hk2ServiceInjectedWithEjb();
+@RequestScoped
+public class CustomScopedEjb {
+    @Inject
+    private ServiceLocator locator;
 
 }

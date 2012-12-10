@@ -46,6 +46,8 @@ import javax.naming.NamingException;
 import org.glassfish.tests.utils.NucleusStartStopTest;
 import org.glassfish.tests.utils.NucleusTestUtils;
 import org.testng.Assert;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import com.oracle.hk2.devtest.cdi.ejb1.BasicEjb;
@@ -58,7 +60,31 @@ import com.oracle.hk2.devtest.cdi.ejb1.BasicEjb;
 public class BasicCDITest extends NucleusStartStopTest {
     private final static String EJB1_JAR = "cdi/basic/ejb1/target/ejb1.jar";
     private final static String EJB1_APP_NAME = "ejb1";
-    private final static String BASIC_EJB_JNDI_NAME = "java:global/ejb1/EjbInjectedWithServiceLocator";
+    private final static String BASIC_EJB_JNDI_NAME = "java:global/ejb1/EjbInjectedWithServiceLocator!" +
+      BasicEjb.class.getName();
+    
+    private boolean deployed1;
+    private Context context;
+    
+    @BeforeTest
+    public void beforeTest() throws NamingException {
+        context = new InitialContext();
+        
+        deployed1 = NucleusTestUtils.nadmin("deploy", EJB1_JAR);
+    }
+    
+    @AfterTest
+    public void afterTest() throws NamingException {
+        if (deployed1) {
+            NucleusTestUtils.nadmin("undeploy", EJB1_APP_NAME);
+            deployed1 = false;
+        }
+        
+        if (context != null) {
+            context.close();
+            context = null;
+        }
+    }
     
     /**
      * Ensures that a ServiceLocator can be injected into a CDI bean
@@ -66,22 +92,18 @@ public class BasicCDITest extends NucleusStartStopTest {
      */
     @Test
     public void testBasicHK2CDIInjection() throws NamingException {
-        boolean deployed1 = NucleusTestUtils.nadmin("deploy", EJB1_JAR);
-        
-        try {
-            Context context = new InitialContext();
+        BasicEjb basic = (BasicEjb) context.lookup(BASIC_EJB_JNDI_NAME);
+        Assert.assertNotNull(basic);
             
-            BasicEjb basic = (BasicEjb) context.lookup(BASIC_EJB_JNDI_NAME);
-            Assert.assertNotNull(basic);
+        Assert.assertTrue(basic.cdiManagerInjected());
+        Assert.assertTrue(basic.serviceLocatorInjected());
             
-            Assert.assertTrue(basic.cdiManagerInjected());
-            Assert.assertTrue(basic.serviceLocatorInjected());
-        }
-        finally {
-            if (deployed1) {
-                NucleusTestUtils.nadmin("undeploy", EJB1_APP_NAME);
-            } 
-        }
-        
+        basic.installHK2Service();
+            
+        Assert.assertTrue(basic.hk2ServiceInjectedWithEjb());
+    }
+    
+    @Test
+    public void testCustomScopes() {
     }
 }

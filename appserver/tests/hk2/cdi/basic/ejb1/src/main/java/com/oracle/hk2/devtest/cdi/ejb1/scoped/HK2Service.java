@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.hk2.devtest.cdi.ejb1;
+package com.oracle.hk2.devtest.cdi.ejb1.scoped;
 
 import org.jvnet.hk2.annotations.Contract;
 
@@ -46,14 +46,7 @@ import org.jvnet.hk2.annotations.Contract;
  *
  */
 @Contract
-public interface BasicEjb {
-    
-    public boolean cdiManagerInjected();
-    
-    public boolean serviceLocatorInjected();
-    
-    public void installHK2Service();
-    
-    public boolean hk2ServiceInjectedWithEjb();
+public interface HK2Service {
+    public int doAJob();
 
 }
