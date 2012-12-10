@@ -43,6 +43,7 @@ import com.sun.enterprise.v3.common.ActionReporter;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import javax.inject.Inject;
 import javax.security.auth.Subject;
 import javax.ws.rs.OPTIONS;
@@ -61,7 +62,6 @@ import org.glassfish.admin.rest.RestResource;
 import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
-import org.glassfish.admin.rest.model.Message;
 import org.glassfish.admin.rest.model.ResponseBody;
 import org.glassfish.admin.rest.utils.SseCommandHelper;
 import org.glassfish.admin.rest.utils.Util;
@@ -70,7 +70,6 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.media.sse.EventOutput;
 
-import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.glassfish.security.services.common.SubjectUtil;
 
 /**
@@ -260,27 +259,15 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
      */
     protected EventOutput executeSseCreateCommand(final Subject subject, final String command,
                                         final ParameterMap parameters,
-                                        final EntityBuilder builder) {
+                                        final ResponseBodyBuilder builder) {
         return getCompositeUtil().executeSseCommand(subject, command, parameters, new SseCommandHelper.ActionReportProcessor() {
             @Override
             public ActionReport process(ActionReport report, EventOutput ec) {
                 if (report != null) {
-                    ActionReport.ExitCode exitCode = report.getActionExitCode();
-                    ResponseBody rb = Util.responseBody()
-                            .add(Message.Severity.valueOf(exitCode.name()), report.getMessage());
-                    if (exitCode.equals(ActionReport.ExitCode.SUCCESS)) {
-                        rb.setEntity(builder.get(report));
-                    }
-
-                    OutboundEvent outEvent = new OutboundEvent.Builder()
-                            .name(Status.CREATED.name())
-                            .mediaType(MediaType.APPLICATION_JSON_TYPE)
-                            .data(ResponseBody.class, rb)
-                            .build();
-                    try {
-                        ec.write(outEvent);
-                    } catch (Exception ex) {
-                    }
+                    ResponseBody rb = builder.build(report);
+                    Properties props = new Properties();
+                    props.put("response", rb);
+                    report.setExtraProperties(props);
                 }
 
                 return report;

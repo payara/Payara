@@ -49,7 +49,7 @@ import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.utils.Util;
 
 /**
- * This filter reformats string entities from non-success responses 
+ * This filter reformats string entities from non-success responses
  * into arrays of message entities (when not using the REST legacy mode).
  *
  * @author tmoreau
@@ -60,14 +60,15 @@ public class ExceptionFilter implements ContainerResponseFilter {
     public ExceptionFilter() {
     }
 
+    @Override
     public void filter(ContainerRequestContext reqCtx, ContainerResponseContext resCtx) throws IOException {
         if (reqCtx.getHeaderString(Constants.HEADER_LEGACY_FORMAT) != null) {
-            // TBD - don't wrap if the legacy switch is set
+            // Don't wrap if the legacy switch is set
             return;
         }
 
         int status = resCtx.getStatus();
-        if (200 <= status && status <= 299) {
+        if ((status >= 200) && (status <= 299)) {
             // don't wrap success messages
             return;
         }

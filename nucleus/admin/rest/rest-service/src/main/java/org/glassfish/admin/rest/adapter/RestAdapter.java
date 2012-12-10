@@ -147,7 +147,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     public HttpHandler getHttpService() {
         return this;
     }
-    
+
     @Override
     public void service(Request req, Response res) {
         logger.log(Level.FINER, "Received resource request: {0}", req.getRequestURI());
@@ -181,7 +181,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                 String context = getContextRoot();
                 logger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
                 if ((context != null) && (!"".equals(context)) && (adapter == null)) {
-                    adapter = exposeContext(getRestResourceProvider().
+                        adapter = exposeContext(getRestResourceProvider().
                             getResourceClasses(habitat), sc, habitat);
                     logger.log(Level.INFO, "rest.rest_interface_initialized", context);
                 }

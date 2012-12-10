@@ -62,28 +62,13 @@ public class ResponseBodyWriter extends BaseProvider<ResponseBody> {
     public ResponseBodyWriter() {
         super(ResponseBody.class, MediaType.APPLICATION_JSON_TYPE);
     }
-    
+
     @Override
     public String getContent(ResponseBody body) {
         StringBuilder sb = new StringBuilder();
         try {
-            JSONObject object = new JSONObject();
-            final List<Message> messages = body.getMessages();
-            // {"messages":[{"message":"The SDP 'JavaEE' has been loaded.","severity":"SUCCESS"}]}
-            if (!messages.isEmpty()) {
-                JSONArray array = new JSONArray();
-                for (Message message : messages) {
-                    JSONObject o = new JSONObject();
-                    o.put("message", message.getMessage());
-                    o.put("severity", message.getSeverity().toString());
-                    array.put(o);
-                }
-                object.put("messages", array);
-            }
-            if (body.getEntity() != null) {
-                object.put("item", JsonUtil.getJsonObject(body.getEntity()));
-            }
-            
+            JSONObject object = getJson(body);
+
             sb.append(object.toString(getFormattingIndentLevel()));
         } catch (JSONException ex) {
             Logger.getLogger(RestModelWriter.class.getName()).
@@ -91,5 +76,25 @@ public class ResponseBodyWriter extends BaseProvider<ResponseBody> {
         }
 
         return sb.toString();
+    }
+
+    public JSONObject getJson(ResponseBody body) throws JSONException {
+        JSONObject object = new JSONObject();
+        final List<Message> messages = body.getMessages();
+        // {"messages":[{"message":"The SDP 'JavaEE' has been loaded.","severity":"SUCCESS"}]}
+        if (!messages.isEmpty()) {
+            JSONArray array = new JSONArray();
+            for (Message message : messages) {
+                JSONObject o = new JSONObject();
+                o.put("message", message.getMessage());
+                o.put("severity", message.getSeverity().toString());
+                array.put(o);
+            }
+            object.put("messages", array);
+        }
+        if (body.getEntity() != null) {
+            object.put("item", JsonUtil.getJsonObject(body.getEntity()));
+        }
+        return object;
     }
 }

@@ -41,10 +41,8 @@ package org.glassfish.admin.rest.utils;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -53,6 +51,8 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.composite.metadata.Confidential;
+import org.glassfish.admin.rest.model.ResponseBody;
+import org.glassfish.admin.rest.provider.ResponseBodyWriter;
 
 /**
  *
@@ -72,6 +72,8 @@ public class JsonUtil {
             result = JSONObject.NULL;
         } else if (RestModel.class.isAssignableFrom(object.getClass())) {
             result = getJsonForRestModel((RestModel)object, true);
+        }else if (object instanceof ResponseBody) {
+            result = new ResponseBodyWriter().getJson((ResponseBody)object);
         } else {
             Class<?> clazz = object.getClass();
             if (clazz.isArray()) {

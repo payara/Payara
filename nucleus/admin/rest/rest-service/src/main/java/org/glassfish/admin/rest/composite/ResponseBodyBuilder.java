@@ -39,12 +39,13 @@
  */
 package org.glassfish.admin.rest.composite;
 
+import org.glassfish.admin.rest.model.ResponseBody;
 import org.glassfish.api.ActionReport;
 
 /**
  *
  * @author jdlee
  */
-public interface EntityBuilder {
-    RestModel get(ActionReport report);
+public interface ResponseBodyBuilder {
+    ResponseBody build(ActionReport report);
 }
