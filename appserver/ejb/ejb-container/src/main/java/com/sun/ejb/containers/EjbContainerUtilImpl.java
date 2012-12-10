@@ -53,7 +53,6 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
-import com.sun.ejb.base.sfsb.util.EJBServerConfigLookup;
 import org.glassfish.ejb.spi.CMPDeployer;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 
@@ -158,9 +157,6 @@ public class EjbContainerUtilImpl
     @Inject @Optional
     private Agent callFlowAgent;
 
-    @Inject //Note:- Not specific to any ejb descriptor
-    private EJBServerConfigLookup ejbServerConfigLookup;
-
     @Inject
     private ProcessEnvironment processEnv;
 
@@ -180,10 +176,6 @@ public class EjbContainerUtilImpl
     private Provider<CMPDeployer> cmpDeployerProvider;
 
     private  static EjbContainerUtil _me;
-
-    public String getHAPersistenceType() {
-        return ejbServerConfigLookup.getSfsbHaPersistenceTypeFromConfig();
-    }
 
     public void postConstruct() {
         ejbContainer = serverConfig.getExtensionByType(EjbContainer.class);

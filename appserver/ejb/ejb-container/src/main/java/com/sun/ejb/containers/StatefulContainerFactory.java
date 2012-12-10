@@ -54,7 +54,6 @@ import com.sun.appserv.util.cache.CacheListener;
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;
 import com.sun.ejb.base.container.util.CacheProperties;
-import com.sun.ejb.base.sfsb.util.EJBServerConfigLookup;
 import com.sun.ejb.base.sfsb.util.ScrambledKeyGenerator;
 import com.sun.ejb.base.sfsb.util.SimpleKeyGenerator;
 import com.sun.ejb.containers.util.cache.FIFOSessionCache;
@@ -119,9 +118,6 @@ public class StatefulContainerFactory extends BaseContainerFactory
 
     @Inject
     private CacheProperties cacheProps;
-
-    @Inject
-    private EJBServerConfigLookup ejbConfigLookup;
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME) @Optional
     private AvailabilityService availabilityService;
@@ -410,7 +406,6 @@ public class StatefulContainerFactory extends BaseContainerFactory
     int port = 8080;
 
     cacheProps.init(ejbDescriptor);
-    ejbConfigLookup.initWithEjbDescriptor(ejbDescriptor);
     sfsbContainer = new StatefulSessionContainer(ejbDescriptor, loader);
     containerInitialization = (SFSBContainerInitialization) sfsbContainer;
     buildComponents(ipAddress, port, deployContext);

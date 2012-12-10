@@ -147,8 +147,6 @@ public interface EjbContainerUtil {
 
     public void addWork(Runnable task);
 
-    public String getHAPersistenceType();
-
     public EjbDescriptor ejbIdToDescriptor(long ejbId);
 
     public boolean isEJBLite();

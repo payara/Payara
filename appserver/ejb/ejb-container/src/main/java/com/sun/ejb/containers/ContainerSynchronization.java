@@ -52,9 +52,9 @@ import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
+import org.glassfish.ejb.config.EjbContainerAvailability;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 
-import com.sun.ejb.base.sfsb.util.EJBServerConfigLookup;
 import com.sun.logging.LogDomains;
 
 
@@ -247,12 +247,13 @@ final class ContainerSynchronization implements Synchronization
     void registerForTxCheckpoint(SessionContextImpl sessionCtx) {
         //No need to synchronize
         if (sfsbTxCoordinator == null) {
-            EjbDescriptor desc = sessionCtx.getContainer().getEjbDescriptor();
-            EJBServerConfigLookup ejbLookup = ejbContainerUtilImpl.getServices().
-                    getService(EJBServerConfigLookup.class);
-            ejbLookup.initWithEjbDescriptor(desc);
-            sfsbTxCoordinator = new SFSBTxCheckpointCoordinator(
-                    ejbLookup.getSfsbHaPersistenceTypeFromConfig());
+            String sfsbHaPersistenceTypeFromConfig = "jdbc/hastore";
+            EjbContainerAvailability ejbContainerAvailability = ejbContainerUtilImpl.getServices().
+                    getService(EjbContainerAvailability.class);
+            if (ejbContainerAvailability != null) {
+                sfsbHaPersistenceTypeFromConfig = ejbContainerAvailability.getSfsbStorePoolName();
+            }
+            sfsbTxCoordinator = new SFSBTxCheckpointCoordinator(sfsbHaPersistenceTypeFromConfig);
         }
 
         sfsbTxCoordinator.registerContext(sessionCtx);
