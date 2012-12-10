@@ -528,7 +528,7 @@ public class CommandRunnerImpl implements CommandRunner {
         };
 
         // look for other wrappers using CommandAspect annotation
-        wrappedCommand = CommandSupport.createWrappers(habitat, model, command, report);
+        wrappedCommand = CommandSupport.createWrappers(habitat, model, wrappedCommand, report);
         
         try {
             wrappedCommand.execute(progressHelper.wrapContext4MainCommand(context));
