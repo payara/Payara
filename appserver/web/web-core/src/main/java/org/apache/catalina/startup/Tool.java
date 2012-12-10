@@ -186,9 +186,9 @@ public final class Tool {
 
     /**
      * Enable debugging detail messages?
-     */
+     *
     private static boolean debug = false;
-
+    */
 
     private static final Logger log = StandardServer.log;
 
@@ -233,8 +233,8 @@ public final class Tool {
                 ant = true;
             else if ("-common".equals(args[index]))
                 common = true;
-            else if ("-debug".equals(args[index]))
-                debug = true;
+            //else if ("-debug".equals(args[index]))
+            //    debug = true;
             else if ("-server".equals(args[index]))
                 server = true;
             else if ("-shared".equals(args[index]))

@@ -132,7 +132,6 @@ public class WebRuleSet extends RuleSetBase {
     public WebRuleSet(String prefix) {
 
         super();
-        this.namespaceURI = null;
         this.prefix = prefix;
 
     }

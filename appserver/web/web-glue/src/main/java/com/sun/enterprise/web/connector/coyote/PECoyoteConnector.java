@@ -228,11 +228,6 @@ public class PECoyoteConnector extends Connector {
      */
     private int keepAliveThreadCount;
 
-    /*
-     * Specifies whether response chunking is enabled/disabled
-     */
-    private boolean chunkingDisabled;
-
     /**
      * Maximum pending connection before refusing requests.
      */
@@ -334,18 +329,6 @@ public class PECoyoteConnector extends Connector {
         this.webContainer = webContainer;
         requestProbeProvider = webContainer.getRequestProbeProvider();
         setProtocolHandlerClassName(DUMMY_CONNECTOR_LAUNCHER);
-    }
-    
-
-    /**
-     * Enables or disables chunked encoding for any responses returned by
-     * this connector.
-     *
-     * @param chunkingDisabled true if chunking is to be disabled, false
-     * otherwise
-     */
-    public void setChunkingDisabled(boolean chunkingDisabled) {
-        this.chunkingDisabled = chunkingDisabled;
     }
 
 
@@ -1223,7 +1206,6 @@ public class PECoyoteConnector extends Connector {
         setConnectionUploadTimeout(Integer.parseInt(http.getConnectionUploadTimeoutMillis()));
         setDisableUploadTimeout(!ConfigBeansUtilities.toBoolean(http.getUploadTimeoutEnabled()));
         setURIEncoding(http.getUriEncoding());
-        setChunkingDisabled(!ConfigBeansUtilities.toBoolean(http.getChunkingEnabled()));
         configSslOptions(ssl);
     }
 
