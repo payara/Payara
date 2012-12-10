@@ -181,7 +181,11 @@ public class AssocWithThreadResourcePool extends ConnectionPool {
      * @return boolean representing resource usefullness
      */
     protected boolean isResourceUnused(ResourceHandle h) {
-        return h.getResourceState().isFree() && !((AssocWithThreadResourceHandle) h).isAssociated();
+        if(h instanceof AssocWithThreadResourceHandle){
+            return h.getResourceState().isFree() && !((AssocWithThreadResourceHandle) h).isAssociated();
+        }else{
+            return h.getResourceState().isFree();
+        }
     }
 
 
@@ -299,8 +303,10 @@ public class AssocWithThreadResourcePool extends ConnectionPool {
             //Note that setDirty only happens here - i.e during destroying of a 
             //resource
 
-            synchronized (resourceHandle.lock) {
-                ((AssocWithThreadResourceHandle) resourceHandle).setDirty();
+            if(resourceHandle instanceof AssocWithThreadResourceHandle){
+                synchronized (resourceHandle.lock) {
+                    ((AssocWithThreadResourceHandle) resourceHandle).setDirty();
+                }
             }
         }
     }

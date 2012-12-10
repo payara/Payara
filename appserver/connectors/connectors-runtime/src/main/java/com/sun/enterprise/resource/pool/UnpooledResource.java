@@ -115,7 +115,6 @@ public class UnpooledResource extends ConnectionPool{
             setResourceStateToBusy(handle);
             return handle;
         }
-        _logger.info("Fail as poolSize : " + poolSize);
         String msg = localStrings.getStringWithDefault(
                 "poolmgr.max.pool.size.reached",
                 "In-use connections equal max-pool-size therefore cannot allocate any more connections.");
@@ -134,8 +133,10 @@ public class UnpooledResource extends ConnectionPool{
     }
 
     private synchronized boolean incrementPoolSize(){
-        if(poolSize >= maxPoolSize)
+        if(poolSize >= maxPoolSize){
+            _logger.info("Fail as poolSize : " + poolSize);
             return false;
+        }
         poolSize++;
         return true;
     }

@@ -478,9 +478,7 @@ public class ConfigPropertyHandler extends AbstractHandler {
         }
         //check compatibility between annotation type and property-type
 
-        if (type.equals(Object.class)) {
-            type = propertyType;
-        }else if (!propertyType.isAssignableFrom(type)) {
+        if (!type.equals(Object.class) && !propertyType.isAssignableFrom(type)) {
             if(type.isPrimitive()){
                 type = getWrapperClass(type.getName());
             }else if(propertyType.isPrimitive()){
@@ -510,9 +508,7 @@ public class ConfigPropertyHandler extends AbstractHandler {
         Class c = f.getDeclaringClass();
         Class returnType = f.getType();
         Class type = property.type();
-        if (type.equals(Object.class)) {
-            type = returnType;
-        } else {
+        if (!type.equals(Object.class)) {
             //check compatibility between annotation type and return-type
             if (!returnType.isAssignableFrom(type)) {
                 return "annotation type [" + type + "] " +

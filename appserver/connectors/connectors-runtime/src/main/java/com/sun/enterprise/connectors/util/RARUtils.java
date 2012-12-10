@@ -154,56 +154,6 @@ public class RARUtils {
 */
 
     /**
-     * Extracts RA Bean properties via reflection.
-     *   
-     * @param raClassName The RA Bean class name.
-     * @param classLoader the classloader to use to find the class.
-     */
-    private static Map extractRABeanProps(String raClassName, ClassLoader classLoader) 
-                                    throws ClassNotFoundException {
-        Map hMap = new HashMap();
-        //Only if RA is a 1.5 RAR, we need to get RA JavaBean properties, else
-        //return an empty map.
-        if(raClassName.trim().length() != 0) {
-            Class c = classLoader.loadClass(raClassName);
-            if(_logger.isLoggable(Level.FINER)) printClassDetails(c);
-            hMap = getJavaBeanProperties(c);
-        }
-        return hMap;
-    }
-
-/*
-    public static void main(String[] args) {
-        if(!(args.length >= 1)){
-            System.out.println("<Usage> java RARUtils directory-path ");
-            return;
-        }
-        
-        Map hMap = RARUtils.getRABeanPropertiesForDirectoryBasedDeployment(args[0]);
-        System.out.println("RA JavaBean Properties");
-        System.out.println(hMap);
-    }
-*/
-
-    private static Map getJavaBeanProperties(Class c) {
-        Method[] m = c.getMethods();
-        Map hMap = new HashMap();
-        for (int i = 0; i < m.length; i++) {
-            if(_logger.isLoggable(Level.FINER)) {
-                _logger.finer(m[i].getName());
-            }
-            if(m[i].getName().startsWith("get") 
-                    && isValidRABeanConfigProperty(m[i].getReturnType())) {
-                hMap.put(m[i].getName().substring(3), m[i].getReturnType());
-            }
-        }
-        
-        //remove Object's Class attribute.
-        hMap.remove("Class");
-        return hMap;
-    }
-
-    /**
      * A valid resource adapter java bean property should either be one of the
      * following  
      * 1. A Java primitive or a primitve wrapper
@@ -224,19 +174,6 @@ public class RARUtils {
                  || clz.equals(Float.class) || clz.equals(Double.class));
     }
 
-    
-    private static void printClassDetails(Class c) {
-        Method[] m = c.getMethods();
-        if(_logger.isLoggable(Level.FINER)) {
-            _logger.finer("Methods in " + c.getName());
-        }
-        for (int i = 0; i < m.length; i++) {
-            if(_logger.isLoggable(Level.FINER)) {
-                _logger.finer(m[i].toString());
-            }
-        }
-    }
-    
    /**
      * Prepares the name/value pairs for ActivationSpec. <p>
      * Rule: <p>

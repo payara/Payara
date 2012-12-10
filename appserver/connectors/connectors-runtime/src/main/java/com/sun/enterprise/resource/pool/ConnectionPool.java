@@ -1232,7 +1232,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                 if (_logger.isLoggable(Level.FINE)) {
                     _logger.log(Level.FINE, "Notifying wait monitor : " + waitMonitor.toString());
                 }
-                waitMonitor.notify();
+                waitMonitor.notifyAll();
             }
         } else {
             logFine(" Wait monitor is null");

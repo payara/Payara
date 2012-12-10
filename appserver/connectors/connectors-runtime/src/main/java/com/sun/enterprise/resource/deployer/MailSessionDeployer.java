@@ -236,14 +236,13 @@ public class MailSessionDeployer implements ResourceDeployer {
             org.glassfish.resourcebase.resources.naming.ResourceNamingService resourceNamingService = resourceNamingServiceProvider.get();
             proxy.setDescriptor(msd);
 
-            String moduleName = null;
             if(msd.getName().startsWith(ConnectorConstants.JAVA_APP_SCOPE_PREFIX)){
                 msd.setResourceId(appName);
             }
 
             if (msd.getName().startsWith(ConnectorConstants.JAVA_GLOBAL_SCOPE_PREFIX)
                     || msd.getName().startsWith(ConnectorConstants.JAVA_APP_SCOPE_PREFIX)) {
-                ResourceInfo resourceInfo = new ResourceInfo(msd.getName(), appName, moduleName);
+                ResourceInfo resourceInfo = new ResourceInfo(msd.getName(), appName);
                 try {
                     resourceNamingService.publishObject(resourceInfo, proxy, true);
                     msd.setDeployed(true);

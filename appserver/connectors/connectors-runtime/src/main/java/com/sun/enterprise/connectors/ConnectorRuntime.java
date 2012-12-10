@@ -1457,7 +1457,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
         return getResources();
     }
 
-    private Resources getResources(){
+    public Resources getResources(){
         if(globalResources == null){
             globalResources = domainProvider.get().getResources();
         }

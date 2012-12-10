@@ -102,8 +102,7 @@ public class ResourcesUtil {
     }
 
     public Resources getGlobalResources(){
-        ResourceInfo resourceInfo = null;
-        return getRuntime().getResources(resourceInfo);
+        return getRuntime().getResources();
     }
     public Resources getResources(ResourceInfo resourceInfo) {
         return getRuntime().getResources(resourceInfo);

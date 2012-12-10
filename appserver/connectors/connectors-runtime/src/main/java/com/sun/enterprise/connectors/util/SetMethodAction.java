@@ -91,10 +91,14 @@ public final class SetMethodAction implements PrivilegedExceptionAction {
 
             if (prop.getResolvedValue() != null &&
                     prop.getResolvedValue().trim().length() != 0) {
-                Method meth = null;
-                try {
-                    meth = getMutatorMethod(propName, type);
-                    if (meth != null) {
+                Method meth = getMutatorMethod(propName, type);
+                
+                if (meth == null) {
+                    //log WARNING, deployment can continue.
+                    logger.log(Level.WARNING, "rardeployment.no_setter_method",
+                            new Object[]{prop.getName(), bean.getClass().getName()});
+                } else {
+                    try {
                         if(logger.isLoggable(Level.FINER)) {
                             logger.log(Level.FINER, "Invoking" + meth + " on "
                                 + bean.getClass().getName() + "with " +
@@ -102,37 +106,33 @@ public final class SetMethodAction implements PrivilegedExceptionAction {
                                 + "  , " + getFilteredPropValue(prop) + " ] ");
                         }
                         meth.invoke(bean, new Object[]{prop.getResolvedValueObject()});
-                    } else {
-                        //log WARNING, deployment can continue.
-                        logger.log(Level.WARNING, "rardeployment.no_setter_method",
-                                new Object[]{prop.getName(), bean.getClass().getName()});
-                    }
-                } catch (IllegalArgumentException ia) {
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE, "IllegalException while trying to set "
-                                + prop.getName() + " and value " + getFilteredPropValue(prop),
-                                ia + " on an instance of " + bean.getClass()
-                                + " -- trying again with the type from bean");
-                    }
-                    boolean prevBoundsChecking = EnvironmentProperty.isBoundsChecking();
-                    try {
-                        EnvironmentProperty.setBoundsChecking(false);
-                        prop.setType(type.getName());
+                    } catch (IllegalArgumentException ia) {
                         if (logger.isLoggable(Level.FINE)) {
-                            logger.log(Level.FINE, "2nd try :: Invoking" + meth + " on "
-                                    + bean.getClass().getName() + "with value ["
-                                    + prop.getResolvedValueObject().getClass()
-                                    + "  , " + getFilteredPropValue(prop) + " ] ");
+                            logger.log(Level.FINE, "IllegalException while trying to set "
+                                    + prop.getName() + " and value " + getFilteredPropValue(prop),
+                                    ia + " on an instance of " + bean.getClass()
+                                    + " -- trying again with the type from bean");
                         }
-                        meth.invoke(bean, new Object[]{prop.getResolvedValueObject()});
-                    } catch (Exception e) {
-                        handleException(e, prop, bean);
-                    } finally {
-                        //restore boundsChecking
-                        EnvironmentProperty.setBoundsChecking(prevBoundsChecking);
+                        boolean prevBoundsChecking = EnvironmentProperty.isBoundsChecking();
+                        try {
+                            EnvironmentProperty.setBoundsChecking(false);
+                            prop.setType(type.getName());
+                            if (logger.isLoggable(Level.FINE)) {
+                                logger.log(Level.FINE, "2nd try :: Invoking" + meth + " on "
+                                        + bean.getClass().getName() + "with value ["
+                                        + prop.getResolvedValueObject().getClass()
+                                        + "  , " + getFilteredPropValue(prop) + " ] ");
+                            }
+                            meth.invoke(bean, new Object[]{prop.getResolvedValueObject()});
+                        } catch (Exception e) {
+                            handleException(e, prop, bean);
+                        } finally {
+                            //restore boundsChecking
+                            EnvironmentProperty.setBoundsChecking(prevBoundsChecking);
+                        }
+                    } catch (Exception ex) {
+                        handleException(ex, prop, bean);
                     }
-                } catch (Exception ex) {
-                    handleException(ex, prop, bean);
                 }
             }
         }

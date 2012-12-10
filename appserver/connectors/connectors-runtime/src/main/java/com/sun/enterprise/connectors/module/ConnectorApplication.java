@@ -192,22 +192,6 @@ public class ConnectorApplication implements ApplicationContainer, EventListener
         return status;
     }
 
-    private List<Resource> getAllConnectorResources() {
-        Resources allResources = resourceManager.getAllResources();
-        Collection<ConnectorConnectionPool> connectionPools =
-                ConnectorsUtil.getAllPoolsOfModule(moduleName, allResources);
-        Collection<String> poolNames = ConnectorsUtil.getAllPoolNames(connectionPools);
-        Collection<Resource> connectorResources = ConnectorsUtil.getAllResources(poolNames, allResources);
-        Collection<AdminObjectResource> adminObjectResources =
-                ResourcesUtil.createInstance().getEnabledAdminObjectResources(moduleName);
-        List<Resource> resources = new ArrayList<Resource>();
-        resources.addAll(connectorResources);
-        resources.addAll(connectionPools);
-        resources.addAll(adminObjectResources);
-
-        return resources;
-    }
-
     /**
      * Stop the application container
      *

@@ -140,7 +140,12 @@ public class ConnectorClassLoader extends ASURLClassLoader
 
         try {
             File file = new File(moduleDir);
-            ASURLClassLoader cl = new ASURLClassLoader(parent);
+            ASURLClassLoader cl = AccessController.doPrivileged(new PrivilegedAction<ASURLClassLoader>() {
+                        public ASURLClassLoader run() {
+                            return new ASURLClassLoader(parent);
+                        }
+                    });
+
             cl.appendURL(file.toURI().toURL());
             appendJars(file, cl);
             classLoaderChain.add(cl);

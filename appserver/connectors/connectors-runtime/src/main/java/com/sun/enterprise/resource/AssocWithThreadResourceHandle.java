@@ -81,4 +81,16 @@ public class AssocWithThreadResourceHandle extends ResourceHandle{
     public void setThreadId( long threadId ) {
         threadId_ = threadId;
     }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        // The equals method for the subclass just return the result of invoking super.equals()
+        return super.equals(other);
+    }
+    
 }
