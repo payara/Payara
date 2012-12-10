@@ -483,8 +483,8 @@ public class Digester extends DefaultHandler {
     /**
      * The Log to which most logging calls will be made.
      */
-    protected static Logger log = StandardServer.log;
-    protected static final ResourceBundle rb = log.getResourceBundle();
+    protected Logger log = StandardServer.log;
+    protected final ResourceBundle rb = log.getResourceBundle();
 
     /**
      * The Log to which all SAX event related logging calls will be made.
