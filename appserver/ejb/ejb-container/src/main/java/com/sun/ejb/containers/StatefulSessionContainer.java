@@ -92,7 +92,6 @@ import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbMonitoringUtils;
 import com.sun.ejb.monitoring.stats.StatefulSessionBeanStatsProvider;
 import com.sun.ejb.spi.container.SFSBContainerCallback;
-import com.sun.ejb.spi.container.SFSBContainerInitialization;
 import com.sun.ejb.spi.container.StatefulEJBContext;
 import com.sun.ejb.spi.sfsb.util.SFSBUUIDUtil;
 import com.sun.ejb.spi.sfsb.util.SFSBVersionManager;
@@ -138,9 +137,7 @@ import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.Callback
 
 public final class StatefulSessionContainer
         extends BaseContainer
-        implements CacheListener, SFSBContainerCallback,
-        SFSBContainerInitialization {
-        //StatefulSessionBeanStatsProvider, SFSBContainerInitialization {
+        implements CacheListener, SFSBContainerCallback {
 
     private static final Logger _logger =
             LogDomains.getLogger(StatefulSessionContainer.class, LogDomains.EJB_LOGGER);
@@ -3052,10 +3049,6 @@ public final class StatefulSessionContainer
         }
     }
 
-    //*******************************************************//
-    //**** Implementation of SFSBContainerInitialization ****//
-    //*******************************************************//
-
     public void setSFSBUUIDUtil(SFSBUUIDUtil util) {
         this.uuidGenerator = util;
     }
@@ -3159,12 +3152,10 @@ public final class StatefulSessionContainer
         return sessionBeanCache.getMaxCacheSize();
     }
 
-    @Override
     public BackingStore<Serializable, SimpleMetadata> getBackingStore() {
         return backingStore;
     }
 
-    @Override
     public void setBackingStore(BackingStore<Serializable, SimpleMetadata> store) {
         this.backingStore = store;
     }

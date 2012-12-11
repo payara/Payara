@@ -60,7 +60,6 @@ import com.sun.ejb.containers.util.cache.FIFOSessionCache;
 import com.sun.ejb.containers.util.cache.LruSessionCache;
 import com.sun.ejb.containers.util.cache.NRUSessionCache;
 import com.sun.ejb.containers.util.cache.UnBoundedSessionCache;
-import com.sun.ejb.spi.container.SFSBContainerInitialization;
 import com.sun.enterprise.config.serverbeans.AvailabilityService;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.Utility;
@@ -110,8 +109,6 @@ public class StatefulContainerFactory extends BaseContainerFactory
     private EjbDescriptor		    ejbDescriptor;
 
     private StatefulSessionContainer sfsbContainer;
-
-    private SFSBContainerInitialization containerInitialization;
 
     @Inject
     private ServiceLocator services;
@@ -199,7 +196,7 @@ public class StatefulContainerFactory extends BaseContainerFactory
      */
 
     private final void buildCheckpointPolicy(boolean haEnabled) {
-        containerInitialization.setHAEnabled(haEnabled);
+        sfsbContainer.setHAEnabled(haEnabled);
     }
 
     private void buildSFSBUUIDUtil(byte[] ipAddress, int port) {
@@ -208,7 +205,7 @@ public class StatefulContainerFactory extends BaseContainerFactory
         keyGen = HAEnabled
                 ? new ScrambledKeyGenerator(ipAddress, port)
                 : new SimpleKeyGenerator(ipAddress, port);
-        containerInitialization.setSFSBUUIDUtil(keyGen);
+        sfsbContainer.setSFSBUUIDUtil(keyGen);
     }
 
     private void buildStoreManager()
@@ -407,7 +404,6 @@ public class StatefulContainerFactory extends BaseContainerFactory
 
     cacheProps.init(ejbDescriptor);
     sfsbContainer = new StatefulSessionContainer(ejbDescriptor, loader);
-    containerInitialization = (SFSBContainerInitialization) sfsbContainer;
     buildComponents(ipAddress, port, deployContext);
     initContainer(sfsbContainer, ejbDescriptor);
     return sfsbContainer;
