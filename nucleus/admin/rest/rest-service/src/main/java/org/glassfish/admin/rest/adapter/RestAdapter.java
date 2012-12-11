@@ -46,6 +46,7 @@ import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
 import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -76,13 +77,15 @@ import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
-import org.glassfish.hk2.api.Factory;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.*;
+import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.internal.inject.ReferencingFactory;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.internal.util.collection.Refs;
+import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.jvnet.hk2.annotations.Optional;
@@ -292,8 +295,16 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
         }
     }
 
-    protected Class<? extends Factory<Ref<Subject>>> getSubjectReferenceFactory() {
-        return SubjectReferenceFactory.class;
+    protected Set<? extends Binder> getAdditionalBinders(){
+        return Collections.singleton(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bindFactory(SubjectReferenceFactory.class).to(new TypeLiteral<Ref<Subject>>() {
+                }).in(PerLookup.class);
+                bindFactory(ReferencingFactory.<Subject>referenceFactory()).to(new TypeLiteral<Ref<Subject>>() {
+                }).in(RequestScoped.class);
+            }
+        });
     }
 
     /**
@@ -312,7 +323,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
         try {
             ClassLoader apiClassLoader = sc.getCommonClassLoader();
             Thread.currentThread().setContextClassLoader(apiClassLoader);
-            ResourceConfig rc = getRestResourceProvider().getResourceConfig(classes, sc, habitat, getSubjectReferenceFactory());
+            ResourceConfig rc = getRestResourceProvider().getResourceConfig(classes, sc, habitat, getAdditionalBinders());
             return getJerseyContainer(rc);
         } finally {
             Thread.currentThread().setContextClassLoader(originalContextClassLoader);

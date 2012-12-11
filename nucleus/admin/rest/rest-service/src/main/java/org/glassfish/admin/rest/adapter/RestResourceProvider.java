@@ -42,13 +42,11 @@
 package org.glassfish.admin.rest.adapter;
 
 import org.glassfish.api.container.EndpointRegistrationException;
-import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.server.ResourceConfig;
 
-import javax.security.auth.Subject;
 import java.util.Set;
 
 /**
@@ -68,7 +66,7 @@ public interface RestResourceProvider {
     ResourceConfig getResourceConfig(Set<Class<?>> classes,
                                      final ServerContext sc,
                                      final ServiceLocator habitat,
-                                     final Class<? extends Factory<Ref<Subject>>> subjectReferenceFactory)
+                                     Set<? extends Binder> additionalBinders)
             throws EndpointRegistrationException;
 
     String getContextRoot();

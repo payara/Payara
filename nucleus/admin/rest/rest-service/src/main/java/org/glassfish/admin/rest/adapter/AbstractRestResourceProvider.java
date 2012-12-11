@@ -41,35 +41,29 @@
 
 package org.glassfish.admin.rest.adapter;
 
-import java.io.Serializable;
 import org.glassfish.admin.rest.RestConfigChangeListener;
 import org.glassfish.admin.rest.resources.ReloadResource;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.common.util.admin.RestSessionManager;
-import org.glassfish.hk2.api.Factory;
-import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
+import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
-import org.glassfish.jersey.internal.inject.ReferencingFactory;
-import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.jettison.JettisonFeature;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.MessageProperties;
-import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.CsrfProtectionFilter;
 import org.glassfish.jersey.server.filter.UriConnegFilter;
 
-import javax.security.auth.Subject;
+import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.MediaType;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import javax.ws.rs.core.Feature;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 /**
  * Base class for various ReST resource providers
@@ -106,7 +100,7 @@ public abstract class AbstractRestResourceProvider implements RestResourceProvid
     public ResourceConfig getResourceConfig(Set<Class<?>> classes,
                                             final ServerContext sc,
                                             final ServiceLocator habitat,
-                                            final Class<? extends Factory<Ref<Subject>>> subjectReferenceFactory)
+                                            final Set<? extends Binder> additionalBinders)
             throws EndpointRegistrationException {
         final Reloader r = new Reloader();
 
@@ -160,14 +154,10 @@ public abstract class AbstractRestResourceProvider implements RestResourceProvid
                 AbstractActiveDescriptor<RestSessionManager> rmDescriptor =
                         BuilderHelper.createConstantDescriptor(rsm);
                 bind(rmDescriptor);
-
-                bindFactory(subjectReferenceFactory).to(new TypeLiteral<Ref<Subject>>() {
-                }).in(PerLookup.class);
-                bindFactory(ReferencingFactory.<Subject>referenceFactory()).to(new TypeLiteral<Ref<Subject>>() {
-                }).in(RequestScoped.class);
-
             }
         });
+
+        rc.addBinders(additionalBinders.toArray(new Binder[additionalBinders.size()]));
 
         rc.setProperty(MessageProperties.LEGACY_WORKERS_ORDERING, true);
 
