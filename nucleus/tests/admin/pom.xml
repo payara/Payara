@@ -102,6 +102,7 @@ of COPY_LIB map constant.)
                   <name>reporter</name>
                   <value>listenReport.Reporter</value>
                 </property>
+                <runOrder>alphabetical</runOrder>
               </properties>
             </configuration>
           </plugin>

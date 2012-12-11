@@ -47,7 +47,7 @@ import org.testng.annotations.Test;
  *
  * @author Tom Mueller
  */
-@Test
+@Test(testName ="ClusterTest")
 public class ClusterTest {
     
     final String tn = "QLCluster";

@@ -73,7 +73,7 @@ public class DetachListener implements AdminCommandEventBroker.AdminCommandListe
             AdminCommandState acs = event.getData(AdminCommandState.class, MediaType.APPLICATION_JSON_TYPE);
             String id = acs.getId();
             if (StringUtils.ok(id)) {
-                rac.closeSse("Detach ID message: " + id, ActionReport.ExitCode.SUCCESS);
+                rac.closeSse("Job ID: " + id, ActionReport.ExitCode.SUCCESS);
             } else {
                 logger.log(Level.SEVERE, "event comes but no id - error");
             }

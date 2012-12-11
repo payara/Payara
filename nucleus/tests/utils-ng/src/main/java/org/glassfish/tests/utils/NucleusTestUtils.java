@@ -146,6 +146,14 @@ public class NucleusTestUtils {
         }
         return cmdWithOutput(cmd, timeout, args);
     }
+
+    public static NadminReturn nadminDetachWithOutput( final String... args) {
+            File cmd = new File(nucleusRoot, isWindows() ? "bin/nadmin.bat" : "bin/nadmin");
+            if (!cmd.canExecute()) {
+                cmd = new File(nucleusRoot, isWindows() ? "bin/asadmin.bat" : "bin/asadmin");
+            }
+            return cmdDetachWithOutput(cmd,DEFAULT_TIMEOUT_MSEC, args);
+        }
     
     public static NadminReturn cmdWithOutput(final File cmd, final int timeout, final String... args) {
         List<String> command = new ArrayList<String>();
@@ -178,6 +186,39 @@ public class NucleusTestUtils {
         write(ret.outAndErr);
         return ret;
     }
+
+    public static NadminReturn cmdDetachWithOutput(final File cmd, final int timeout, final String... args) {
+            List<String> command = new ArrayList<String>();
+            command.add(cmd.toString());
+            command.add("--echo");
+            command.add("--detach");
+            command.addAll(Arrays.asList(args));
+
+            ProcessManager pm = new ProcessManager(command);
+
+            // the tests may be running unattended -- don't wait forever!
+            pm.setTimeoutMsec(timeout);
+            pm.setEcho(false);
+            pm.setEnvironment(envp);
+
+            int exit;
+            String myErr = "";
+            try {
+                exit = pm.execute();
+            }
+            catch (ProcessManagerTimeoutException tex) {
+                myErr = "\nProcessManagerTimeoutException: command timed out after " + timeout + " ms.";
+                exit = 1;
+            }
+            catch (ProcessManagerException ex) {
+                exit = 1;
+            }
+
+            NadminReturn ret = new NadminReturn(exit, pm.getStdout(), pm.getStderr() + myErr, args[0]);
+
+            write(ret.outAndErr);
+            return ret;
+        }
 
     private static boolean validResults(String text, String... invalidResults) {
         for (String result : invalidResults) {

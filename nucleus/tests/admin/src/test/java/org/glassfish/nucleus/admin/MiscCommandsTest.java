@@ -47,7 +47,7 @@ import org.testng.annotations.Test;
  *
  * @author Tom Mueller
  */
-@Test
+@Test(testName="MiscCommandsTest")
 public class MiscCommandsTest {
     
     public void uptime() {
