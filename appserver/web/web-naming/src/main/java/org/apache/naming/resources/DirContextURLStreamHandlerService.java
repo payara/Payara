@@ -64,7 +64,7 @@ import java.util.Properties;
  */
 public class DirContextURLStreamHandlerService
         extends AbstractURLStreamHandlerService
-        implements URLStreamHandlerService, BundleActivator {
+        implements BundleActivator {
 
     // We have to extend DirContextURLStreamHandler so that we
     // can make openConnection and toExternalForm available as
