@@ -66,18 +66,35 @@ import org.glassfish.hk2.api.ServiceLocator;
 public final class CommandSupport {
 
     /**
-     * Get parameter value for wrapped command.
+     * Get parameter value for a command.
      * 
+     * @param command
      * @param name parameter name
      * 
      * @return parameter value or null in case of any problem.
      */
     public static String getParamValue(AdminCommand command, String name) {
+        return getParamValue(command, name, String.class);
+    }
+
+    /**
+     * Get parameter value for a command.
+     * 
+     * @param command
+     * @param name parameter name
+     * @param paramType expected return type
+     * 
+     * @return parameter value or null in case of any problem.
+     */
+    public static <T> T getParamValue(AdminCommand command, String name, Class<T> paramType) {
         AdminCommand unwrappedCommand = getUnwrappedCommand(command);
         Class<?> commandClass = unwrappedCommand.getClass(); 
         for (final Field field : commandClass.getDeclaredFields()) {
             Param param = field.getAnnotation(Param.class);
             if (param != null && name.equals(CommandModel.getParamName(param, field))) {
+                if (!paramType.isAssignableFrom(field.getType())) {
+                    break; // return null
+                }
                 try {
                     AccessController.doPrivileged(new PrivilegedAction<Object>() {
 
@@ -87,7 +104,8 @@ public final class CommandSupport {
                             return null;
                         }
                     });
-                    return (String) field.get(unwrappedCommand);
+                    Object value = field.get(unwrappedCommand);
+                    return paramType.cast(value);
                 } catch (IllegalAccessException e) {
                         throw new RuntimeException("Unexpected error", e);
                 }
