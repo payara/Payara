@@ -60,7 +60,6 @@ package com.sun.enterprise.web.connector.grizzly;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -406,10 +405,6 @@ public class CoyoteConnectorLauncher implements ProtocolHandler
     public void setReportedname( String reportedName) {
 	reportedname = reportedName;
     }
-   
-
-    protected static final Logger log  = Logger.getLogger(
-        CoyoteConnectorLauncher.class.getName());
 
     protected String domain;
     protected ObjectName oname;
