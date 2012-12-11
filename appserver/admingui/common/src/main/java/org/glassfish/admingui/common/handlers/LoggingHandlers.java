@@ -197,7 +197,9 @@ public class LoggingHandlers {
         Map<String, Object> props = new HashMap();
         try{
             for(String key : attrNames){
-                if ((key.equals("com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging") || key.equals("com.sun.enterprise.server.logging.GFFileHandler.logtoConsole"))
+                if ((key.equals("com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging")|| 
+                      key.equals("com.sun.enterprise.server.logging.GFFileHandler.logtoConsole") ||
+                     key.equals("com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange" ))
                         && (attrs.get(key) == null)) {
                     attrs.put(key, "false");
                 }

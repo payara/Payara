@@ -54,7 +54,7 @@
         setSessionAttribute(key="loggingTabs" value="loggerGeneral");
         getRequestValue(key="configName" value=>$page{configName} default="server-config");
         setPageSessionAttribute(key="rest-api" value="true");
-        setPageSessionAttribute(key="attrsInUI",value="com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging,com.sun.enterprise.server.logging.GFFileHandler.logtoConsole,com.sun.enterprise.server.logging.GFFileHandler.file,handlers,com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes,com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes,com.sun.enterprise.server.logging.GFFileHandler.flushFrequency");
+        setPageSessionAttribute(key="attrsInUI",value="com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging,com.sun.enterprise.server.logging.GFFileHandler.logtoConsole,com.sun.enterprise.server.logging.GFFileHandler.file,handlers,com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes,com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes,com.sun.enterprise.server.logging.GFFileHandler.flushFrequency,com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles,com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange");
         setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/common/configuration/loggerGeneral.jsf?configName=#{pageSession.configName}");
         //set the following for including buttons.inc
         setPageSessionAttribute(key="edit" value="#{true}" );
@@ -63,15 +63,16 @@
         setPageSessionAttribute(key="hasPropertySheet" value="false" );
         setPageSessionAttribute(key="hasPropertyTable" value="false" );
 
-        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        getRequestValue(key="configName" value=>$page{configName});
         createMap(result="#{requestScope.attrsMap}");
         mapPut(map="#{requestScope.attrsMap}" key="target" value="#{pageSession.configName}");
         gf.restRequest(
-                endpoint="#{sessionScope.REST_URL}/list-log-attributes.json"
+                endpoint="#{sessionScope.REST_URL}/list-log-attributes"
                 attrs="#{requestScope.attrsMap}"
                 method="GET"
                 result="#{pageSession.valueMap}");
         setPageSessionAttribute(key="logAttributes", value="#{pageSession.valueMap.data.extraProperties.logAttributes}");
+        println("===================== logAttributes=#{pageSession.logAttributes}");
 
     />
 </event>
@@ -104,6 +105,10 @@
            <sun:property id="logtoConsole"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogtoConsole}" helpText="$resource{i18nc.log.LogtoConsoleHelp}">
                 <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.logtoConsole']}"  selectedValue="true" />
            </sun:property>
+          
+           <sun:property id="rotationOnDateChange"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.rotationOnDateChange}" helpText="$resource{i18nc.log.rotationOnDateChangeHelp}">
+                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange']}"  selectedValue="true" />
+           </sun:property>
 
            <sun:property id="logFileProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogFile}" helpText="$resource{i18nc.log.LogFileHelp}">
                 <sun:textField id="LogFile" columns="$int{70}" maxLength="#{sessionScope.fieldLengths['maxLength.log.LogFile']}" text="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.file']}"/>
@@ -126,6 +131,11 @@
             <sun:property id="FlushFrequencyProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FlushFrequency}" helpText="$resource{i18nc.log.FlushFrequencyHelp}">
                 <sun:textField id="FlushFrequency" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.FlushFrequency']}" text="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.flushFrequency']}"/>
             </sun:property>
+          
+            <sun:property id="MaxHistoryFiles"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.MaxHistoryFiles}" helpText="$resource{i18nc.log.MaxHistoryFilesHelp}">
+                <sun:textField id="MaxHistoryFiles" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.MaxHistoryFiles']}" text="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles']}"/>
+            </sun:property>
+          
 
     </sun:propertySheetSection>
 </sun:propertySheet>
