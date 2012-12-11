@@ -39,12 +39,6 @@
  */
 package org.glassfish.api.admin;
 
-import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-
-import org.glassfish.api.Param;
-
 /**
  * Represents command wrapped with {@link CommandWrapperImpl}. It should be enough to wrap
  * command without an overhead. E.g.:
@@ -89,36 +83,5 @@ public abstract class WrappedAdminCommand implements AdminCommand {
             unwrappedCommand = ((WrappedAdminCommand)unwrappedCommand).getWrappedCommand();
         }
         return unwrappedCommand;
-    }
-
-    /**
-     * Get parameter value for wrapped command.
-     * 
-     * @param name parameter name
-     * 
-     * @return parameter value or null in case of any problem.
-     */
-    protected String getParamValue(String name) {
-        AdminCommand unwrappedCommand = getUnwrappedCommand();
-        Class<?> commandClass = unwrappedCommand.getClass(); 
-        for (final Field field : commandClass.getDeclaredFields()) {
-            Param param = field.getAnnotation(Param.class);
-            if (param != null && name.equals(CommandModel.getParamName(param, field))) {
-                try {
-                    AccessController.doPrivileged(new PrivilegedAction<Object>() {
-
-                        @Override
-                        public Object run() {
-                            field.setAccessible(true);
-                            return null;
-                        }
-                    });
-                    return (String) field.get(unwrappedCommand);
-                } catch (IllegalAccessException e) {
-                	throw new RuntimeException("Unexpected error", e);
-                }
-            }
-        }
-        return null;
     }
 }

@@ -68,10 +68,10 @@ public class WrappedAdminCommandTest {
                 // nothing todo
             }
         };
-        assertEquals("set param value", "test", wrappedCommand.getParamValue("foo"));
+        assertEquals("set param value", "test", CommandSupport.getParamValue(wrappedCommand, "foo"));
         // note, after resolver it must be not null
-        assertNull("unset param value must be null", wrappedCommand.getParamValue("foobar"));
-        assertNull("non existent param value must be null", wrappedCommand.getParamValue("dummy"));
+        assertNull("unset param value must be null", CommandSupport.getParamValue(wrappedCommand, "foobar"));
+        assertNull("non existent param value must be null", CommandSupport.getParamValue(wrappedCommand, "dummy"));
     }
 
     private class DummyAdminCommand implements AdminCommand {

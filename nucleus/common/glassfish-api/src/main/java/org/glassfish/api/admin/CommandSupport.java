@@ -41,8 +41,12 @@
 package org.glassfish.api.admin;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.Job;
@@ -60,6 +64,37 @@ import org.glassfish.hk2.api.ServiceLocator;
  * 
  */
 public final class CommandSupport {
+
+    /**
+     * Get parameter value for wrapped command.
+     * 
+     * @param name parameter name
+     * 
+     * @return parameter value or null in case of any problem.
+     */
+    public static String getParamValue(AdminCommand command, String name) {
+        AdminCommand unwrappedCommand = getUnwrappedCommand(command);
+        Class<?> commandClass = unwrappedCommand.getClass(); 
+        for (final Field field : commandClass.getDeclaredFields()) {
+            Param param = field.getAnnotation(Param.class);
+            if (param != null && name.equals(CommandModel.getParamName(param, field))) {
+                try {
+                    AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+                        @Override
+                        public Object run() {
+                            field.setAccessible(true);
+                            return null;
+                        }
+                    });
+                    return (String) field.get(unwrappedCommand);
+                } catch (IllegalAccessException e) {
+                        throw new RuntimeException("Unexpected error", e);
+                }
+            }
+        }
+        return null;
+    }
 
     /**
      * Execute aspects when command is just completely initialized, i..e
