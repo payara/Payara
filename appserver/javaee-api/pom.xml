@@ -196,6 +196,7 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <configuration>
+                            <excludePackageNames>javax.xml.rpc:javax.xml.registry</excludePackageNames>
                             <doctitle>${project.name}</doctitle>
                             <windowtitle>${project.name}</windowtitle>
                         </configuration>
