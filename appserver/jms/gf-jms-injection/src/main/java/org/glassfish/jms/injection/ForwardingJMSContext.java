@@ -227,6 +227,16 @@ public abstract class ForwardingJMSContext implements JMSContext {
     }
 
     @Override
+    public JMSConsumer createSharedDurableConsumer(Topic topic, String name) {
+        return delegate().createSharedDurableConsumer(topic, name);
+    }
+
+    @Override
+    public JMSConsumer createSharedDurableConsumer(Topic topic, String name, String messageSelector, boolean noLocal) {
+        return delegate().createSharedDurableConsumer(topic, name, messageSelector, noLocal);
+    }
+
+    @Override
     public QueueBrowser createBrowser(Queue queue) {
         return delegate().createBrowser(queue);
     }
