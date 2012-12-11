@@ -1075,13 +1075,6 @@ public class CommandRunnerImpl implements CommandRunner {
     private void doCommand(ExecutionContext inv, AdminCommand command, 
             final Subject subject, final Job commandInstance) {
 
-        if (command == null) {
-            command = getCommand(inv.scope(), inv.name(), inv.report(), logger);
-            if (command == null) {
-                return;
-            }
-        }
-
         CommandModel model;
         try {
             CommandModelProvider c = CommandModelProvider.class.cast(command);
@@ -1718,9 +1711,14 @@ public class CommandRunnerImpl implements CommandRunner {
         
         @Override
         public void execute(AdminCommand command) {
-            AdminCommand command1 = getCommand(scope(), name(), report(), logger);
-            if(command1 != null && !isManagedJob) {
-                isManagedJob = AnnotationUtil.presentTransitive(ManagedJob.class, command1.getClass());
+            if (command == null) {
+                command = getCommand(scope(), name(), report(), logger);
+                if (command == null) {
+                    return;
+                }
+            }
+            if(!isManagedJob) {
+                isManagedJob = AnnotationUtil.presentTransitive(ManagedJob.class, command.getClass());
             }
             Job commandInstance = jobRegistry.createJob(scope(),name(), subject,isManagedJob);
 
@@ -1735,9 +1733,7 @@ public class CommandRunnerImpl implements CommandRunner {
             if (progressStatusChild != null) {
                 progressStatusChild.complete();
             }
-            if (command != null) {
-                CommandSupport.done(habitat, command, commandInstance);
-            }
+            CommandSupport.done(habitat, command, commandInstance);
         }
     }
 
