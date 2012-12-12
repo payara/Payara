@@ -1960,70 +1960,74 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         String resourceAdapterMid = ConnectorRuntime.DEFAULT_JMS_ADAPTER;
 
         descriptor_.setResourceAdapterMid(resourceAdapterMid);
-        String appName = descriptor_.getApplication().getAppName();
-        String moduleName = ConnectorsUtil.getModuleName(descriptor_);
 
-        String destName = getPhysicalDestinationFromConfiguration(jndiName, appName, moduleName);
-
-        //1.3 jndi-name ==> 1.4 setDestination
-        descriptor_.putRuntimeActivationConfigProperty(
-                new EnvironmentProperty(DESTINATION,
-                        destName, null));
-
-
-        //1.3 (standard) destination-type == 1.4 setDestinationType
-        //XXX Do we really need this???
-        if (descriptor_.getDestinationType() != null &&
-                !"".equals(descriptor_.getDestinationType())) {
+        String destinationLokup = descriptor_.getActivationConfigValue("destinationLookup");
+        if (destinationLokup == null) {
+            String appName = descriptor_.getApplication().getAppName();
+            String moduleName = ConnectorsUtil.getModuleName(descriptor_);
+    
+            String destName = getPhysicalDestinationFromConfiguration(jndiName, appName, moduleName);
+    
+            //1.3 jndi-name ==> 1.4 setDestination
             descriptor_.putRuntimeActivationConfigProperty(
-                    new EnvironmentProperty(DESTINATION_TYPE,
-                            descriptor_.getDestinationType(), null));
-        } else {
-            /*
-             * If destination type is not provided by the MDB component
-             * [typically used by EJB3.0 styled MDBs which create MDBs without
-             * a destination type activation-config property] and the MDB is for
-             * the default JMS RA, attempt to infer the destination type by trying
-             * to find out if there has been any JMS destination resource already
-             * defined for default JMS RA. This is a best attempt guess and if there
-             * are no JMS destination resources/admin-objects defined, AS would pass
-             * the properties as defined by the MDB.
-             */
-            try {
-                    String instanceName = getServerEnvironment().getInstanceName();
-                    List serversList = getServers().getServer();
-                    Server server = null;
-                    for (int j =0; j < serversList.size(); j ++){
-                       if (instanceName.equals(((Server)serversList.get(j)).getName())){
-                           server = (Server) serversList.get(j);
-                       }
+                    new EnvironmentProperty(DESTINATION,
+                            destName, null));
+    
+    
+            //1.3 (standard) destination-type == 1.4 setDestinationType
+            //XXX Do we really need this???
+            if (descriptor_.getDestinationType() != null &&
+                    !"".equals(descriptor_.getDestinationType())) {
+                descriptor_.putRuntimeActivationConfigProperty(
+                        new EnvironmentProperty(DESTINATION_TYPE,
+                                descriptor_.getDestinationType(), null));
+            } else {
+                /*
+                 * If destination type is not provided by the MDB component
+                 * [typically used by EJB3.0 styled MDBs which create MDBs without
+                 * a destination type activation-config property] and the MDB is for
+                 * the default JMS RA, attempt to infer the destination type by trying
+                 * to find out if there has been any JMS destination resource already
+                 * defined for default JMS RA. This is a best attempt guess and if there
+                 * are no JMS destination resources/admin-objects defined, AS would pass
+                 * the properties as defined by the MDB.
+                 */
+                try {
+                        String instanceName = getServerEnvironment().getInstanceName();
+                        List serversList = getServers().getServer();
+                        Server server = null;
+                        for (int j =0; j < serversList.size(); j ++){
+                           if (instanceName.equals(((Server)serversList.get(j)).getName())){
+                               server = (Server) serversList.get(j);
+                           }
+                        }
+     /*  
+                     AdminObjectResource[] adminObjectResources =
+                                ResourcesUtil.createInstance().getEnabledAdminObjectResources(ConnectorConstants.DEFAULT_JMS_ADAPTER);
+                    for (int i = 0; i < adminObjectResources.length; i++) {
+                        AdminObjectResource aor = adminObjectResources[i];
+                        if (aor.getJndiName().equals(jndiName)) {
+                            descriptor_.putRuntimeActivationConfigProperty(
+                                    new EnvironmentProperty(DESTINATION_TYPE,
+                                            aor.getResType(), null));
+                            _logger.log(Level.INFO, "endpoint.determine.destinationtype", new
+                                    Object[]{aor.getResType() , aor.getJndiName() , descriptor_.getName()});
+                        }
                     }
- /*  
-                 AdminObjectResource[] adminObjectResources =
-                            ResourcesUtil.createInstance().getEnabledAdminObjectResources(ConnectorConstants.DEFAULT_JMS_ADAPTER);
-                for (int i = 0; i < adminObjectResources.length; i++) {
-                    AdminObjectResource aor = adminObjectResources[i];
-                    if (aor.getJndiName().equals(jndiName)) {
+     */
+                    AdminObjectResource aor = (AdminObjectResource)
+                            ResourcesUtil.createInstance().getResource(jndiName, appName, moduleName, AdminObjectResource.class);
+                    if(aor != null && ConnectorConstants.DEFAULT_JMS_ADAPTER.equals(aor.getResAdapter())){
                         descriptor_.putRuntimeActivationConfigProperty(
                                 new EnvironmentProperty(DESTINATION_TYPE,
                                         aor.getResType(), null));
                         _logger.log(Level.INFO, "endpoint.determine.destinationtype", new
                                 Object[]{aor.getResType() , aor.getJndiName() , descriptor_.getName()});
                     }
+    
+                } catch (Exception e) {
+    
                 }
- */
-                AdminObjectResource aor = (AdminObjectResource)
-                        ResourcesUtil.createInstance().getResource(jndiName, appName, moduleName, AdminObjectResource.class);
-                if(aor != null && ConnectorConstants.DEFAULT_JMS_ADAPTER.equals(aor.getResAdapter())){
-                    descriptor_.putRuntimeActivationConfigProperty(
-                            new EnvironmentProperty(DESTINATION_TYPE,
-                                    aor.getResType(), null));
-                    _logger.log(Level.INFO, "endpoint.determine.destinationtype", new
-                            Object[]{aor.getResType() , aor.getJndiName() , descriptor_.getName()});
-                }
-
-            } catch (Exception e) {
-
             }
         }
 
@@ -2080,36 +2084,6 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                  (new EnvironmentProperty (REDELIVERYCOUNT,""+
                          MdbContainerProps.getMaxRuntimeExceptions(),"", "java.lang.Integer"));
          }
-        }
-
-        //Set SE/EE specific MQ-RA ActivationSpec properties
-        try {
-            boolean clustered = isClustered();
-            logFine("Are we in a Clustered contained ? " + clustered);
-            if (clustered) {
-                setClusterActivationSpecProperties(descriptor_);
-                logFine("Creating physical destination " + destName);
-                logFine("Destination is Queue? " + descriptor_.hasQueueDest());
-                if (descriptor_.hasQueueDest()) {
-                    autoCreatePhysicalDest(destName, true);
-                } else {
-                    autoCreatePhysicalDest(destName, false);
-                }
-            }
-        } catch (Exception e) {
-            ConnectorRuntimeException crex = new ConnectorRuntimeException(e.getMessage());
-            throw (ConnectorRuntimeException)crex.initCause(e);
-        }
-    }
-
-    void autoCreatePhysicalDest(String destName, boolean isQueue)
-                                throws ConnectorRuntimeException{
-        //auto create physical destination only if the destName does not have wildcards
-        if (destName != null && destName.indexOf("*") == -1 && destName.indexOf(">") == -1)
-        {
-            //todo: for V3 enable this code
-            //MQAdministrator mqAdmin = new MQAdministrator();
-            //mqAdmin.createPhysicalDestination(destName, isQueue);
         }
     }
 
