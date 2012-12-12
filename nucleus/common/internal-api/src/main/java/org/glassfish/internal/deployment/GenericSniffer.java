@@ -331,7 +331,6 @@ public abstract class GenericSniffer implements Sniffer {
                 if (ev.isStartDocument()) {
                     final StartDocument sd = (StartDocument) ev;
                     encoding = sd.getCharacterEncodingScheme();
-                    rdr.close();
                     break;
                 }
             }
