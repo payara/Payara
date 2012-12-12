@@ -59,21 +59,18 @@ import javax.inject.Singleton;
 @Singleton
 public class EjbSecurityComponentInvocationHandler implements  RegisteredComponentInvocationHandler {
 
-    private static Logger _logger = null;
-    
+    private static final Logger _logger =
+            LogDomains.getLogger(EjbSecurityComponentInvocationHandler.class, LogDomains.EJB_LOGGER);
+
     @Inject
     private InvocationManager invManager;
-    
 
-    static {
-        _logger = LogDomains.getLogger(EJBSecurityManager.class, LogDomains.EJB_LOGGER);
-    }
-    
     private ComponentInvocationHandler ejbSecurityCompInvHandler = new ComponentInvocationHandler() {
 
         public void beforePreInvoke(ComponentInvocationType invType,
                 ComponentInvocation prevInv, ComponentInvocation newInv) throws InvocationException {
             if (invType == ComponentInvocationType.EJB_INVOCATION) {
+                assert (newInv instanceof EjbInvocation);
                 try {
                     if (!newInv.isPreInvokeDone()) {
                         ((EjbInvocation) newInv).getEjbSecurityManager().preInvoke(newInv);
@@ -96,19 +93,17 @@ public class EjbSecurityComponentInvocationHandler implements  RegisteredCompone
         public void afterPostInvoke(ComponentInvocationType invType,
                 ComponentInvocation prevInv, ComponentInvocation curInv) throws InvocationException {
             if (invType == ComponentInvocationType.EJB_INVOCATION) {
+                assert (curInv instanceof EjbInvocation);
                 try {
                     ((EjbInvocation) curInv).getEjbSecurityManager().postInvoke(curInv);
                 } catch (Exception ex) {
                     _logger.log(Level.SEVERE, "ejb.security_postinvoke_exception", ex);
-
                     ((EjbInvocation) curInv).exception = ex;
                 }
             }
         }
     };
 
-
-    
     public ComponentInvocationHandler getComponentInvocationHandler() {
         return ejbSecurityCompInvHandler;
     }
