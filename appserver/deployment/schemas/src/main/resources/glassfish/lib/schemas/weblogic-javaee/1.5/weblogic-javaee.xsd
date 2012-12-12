@@ -42,7 +42,7 @@
 -->
 
 <xsd:schema xmlns:j2ee="http://java.sun.com/xml/ns/javaee" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
- elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.4">
+ elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.5">
   <xsd:import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"/>
 
   <xsd:complexType name="true-falseType">
@@ -712,10 +712,4 @@
       <xsd:element name="prefer-application-resources" type="prefer-application-resourcesType" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
   </xsd:group>
-  
-  <xsd:unique name="library-ref-unique-constraint">
-	<xsd:selector xpath="*/library-ref"></xsd:selector>
-	<xsd:field xpath="library-ref-name"></xsd:field>
-	<xsd:field xpath="context-root"></xsd:field>
-</xsd:unique>
 </xsd:schema>

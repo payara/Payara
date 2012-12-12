@@ -47,7 +47,7 @@
   xmlns:javaee="http://java.sun.com/xml/ns/javaee"
   elementFormDefault = "qualified"
   attributeFormDefault = "unqualified"
-  version="1.4">
+  version="1.5">
 
   <xs:include schemaLocation = "http://xmlns.oracle.com/weblogic/weblogic-javaee/1.4/weblogic-javaee.xsd"/>
   <xs:import namespace="http://java.sun.com/xml/ns/javaee"

@@ -47,7 +47,7 @@
   xmlns:javaee="http://java.sun.com/xml/ns/javaee"
   elementFormDefault="qualified" 
   attributeFormDefault="unqualified"
-  version="1.5">
+  version="1.6">
   <include schemaLocation="http://xmlns.oracle.com/weblogic/weblogic-javaee/1.4/weblogic-javaee.xsd" />
 	<import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="http://java.sun.com/xml/ns/javaee/javaee_5.xsd" />
 	<element name="weblogic-application" type="wls:weblogic-applicationType">
