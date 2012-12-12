@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -56,8 +56,8 @@
         urlencode(value="#{pageSession.moduleName}" encoding="UTF-8" result="#{pageSession.encodedModuleName}");
         getRequestValue(key="compName" value="#{pageSession.compName}");
         urlencode(value="#{pageSession.compName}" encoding="UTF-8" result="#{pageSession.encodedCompName}");
-        gf.createAttributeMap(keys={"applicationname", "modulename" ,"endpointname"}, values={"$pageSession{encodedAppName}" , "$pageSession{encodedModuleName}" , "$pageSession{encodedCompName}"}, map="#{requestScope.attrsMap}")
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/applications/application/list-webservices", attrs="#{requestScope.attrsMap}" method="get", result="#{requestScope.result}");
+        gf.createAttributeMap(keys={ "modulename" ,"endpointname"}, values={"$pageSession{encodedModuleName}" , "$pageSession{encodedCompName}"}, map="#{requestScope.attrsMap}")
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/list-webservices", attrs="#{requestScope.attrsMap}" method="get", result="#{requestScope.result}");
         mapGet(Map="#{requestScope.result.data.extraProperties}", Key="#{pageSession.appName}" Value="#{requestScope.aMap}");
         mapGet(Map="#{requestScope.aMap}", Key="#{pageSession.moduleName}" Value="#{requestScope.mMap}");
         mapGet(Map="#{requestScope.mMap}", Key="#{pageSession.compName}" Value="#{pageSession.valueMap}");
