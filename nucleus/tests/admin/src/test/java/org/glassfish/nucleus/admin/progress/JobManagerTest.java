@@ -40,6 +40,9 @@
 package org.glassfish.nucleus.admin.progress;
 
 import java.io.File;
+import java.lang.InterruptedException;
+import java.lang.Thread;
+
 import static org.glassfish.tests.utils.NucleusTestUtils.*;
 import  org.glassfish.tests.utils.NucleusTestUtils;
 import static org.testng.AssertJUnit.assertTrue;
@@ -92,8 +95,8 @@ public class JobManagerTest {
     public void runJobTest() {
         String result = null;
 
-        //run a command
-        assertTrue(COMMAND1, nadmin(COMMAND1));
+        NadminReturn result1 = nadminWithOutput("--terse", "progress-simple");
+        assertTrue(result1.returnValue);
         //check list-jobs
         result = nadminWithOutput("list-jobs").out;
         assertTrue( result.contains(COMMAND1) && result.contains("COMPLETED"));
@@ -111,7 +114,7 @@ public class JobManagerTest {
 
     }
 
-    @Test(dependsOnMethods = { "runJobTest" }, enabled=false)
+    @Test(dependsOnMethods = { "runJobTest" }, enabled=true)
        public void runDetachTest() {
            String result = null;
            //shutdown server
@@ -123,9 +126,64 @@ public class JobManagerTest {
            //restart
            assertTrue( nadmin("start-domain"));
            result = nadminDetachWithOutput( COMMAND1).out;
-           assertTrue( result.contains("Job ID:"));
+           //Detached job id is returned
+           assertTrue( result.contains("Job ID: "));
+
+           //list-jobs
+           result = nadminWithOutput("list-jobs","1").out;
+           assertTrue( result.contains(COMMAND1) );
+           //attach to the job
+           assertTrue(nadmin("attach", "1"));
+
+           //list-jobs   and it should be purged since the user
+           //starting is the same as the user who attached to it
+           result = nadminWithOutput("list-jobs").outAndErr;
+           assertTrue(matchString("Nothing to list", result));
+
+           //delete the jobs file
+           deleteJobsFile();
 
 
+
+       }
+
+       @Test(dependsOnMethods = { "runDetachTest" }, enabled=true)
+       public void runConfigureManagedJobsTest() throws InterruptedException {
+           try {
+               String result = null;
+               //shutdown server
+               assertTrue( nadmin("stop-domain"));
+
+               //delete the jobs file
+               deleteJobsFile();
+
+               //restart
+               assertTrue( nadmin("start-domain"));
+               //configure-managed-jobs
+               assertTrue( nadmin("configure-managed-jobs","--job-retention-period=3s","--cleanup-initial-delay=2s",
+                       "--cleanup-poll-interval=2s"));
+               assertTrue(COMMAND1, nadmin(COMMAND1));
+
+
+               //list-jobs
+               result = nadminWithOutput("list-jobs","1").out;
+               assertTrue( result.contains(COMMAND1) );
+               //shutdown server
+               assertTrue( nadmin("stop-domain"));
+
+               //start server
+               assertTrue( nadmin("start-domain"));
+               Thread.sleep(5000L);
+
+               //list-jobs there should be none since the configure-managed-jobs command will purge it
+               result = nadminWithOutput("list-jobs").outAndErr;
+               assertTrue(matchString("Nothing to list", result));
+
+           } finally {
+                //reset configure-managed-jobs
+                assertTrue( nadmin("configure-managed-jobs","--job-retention-period=24h","--cleanup-initial-delay=20m",
+                   "--cleanup-poll-interval=20m"));
+           }
            //delete the jobs file
            deleteJobsFile();
 
