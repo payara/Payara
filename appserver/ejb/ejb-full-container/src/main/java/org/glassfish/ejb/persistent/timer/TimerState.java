@@ -172,7 +172,7 @@ import com.sun.logging.LogDomains;
 })
 @Table(name="EJB__TIMER__TBL")
 @IdClass(com.sun.ejb.containers.TimerPrimaryKey.class)
-public class TimerState implements Serializable {
+public class TimerState {
 
     //
     // Persistence fields and access methods
@@ -327,15 +327,24 @@ public class TimerState implements Serializable {
     @Transient
     private boolean blobLoaded_;
 
-    private transient Object timedObjectPrimaryKey_;
-    private transient Serializable info_;
+    @Transient
+    private Object timedObjectPrimaryKey_;
+
+    @Transient
+    private Serializable info_;
 
     // Dates
-    private transient Date creationTime_;
-    private transient Date initialExpiration_;
-    private transient Date lastExpiration_;
+    @Transient
+    private Date creationTime_;
 
-    private transient EJBTimerSchedule timerSchedule_;
+    @Transient
+    private Date initialExpiration_;
+
+    @Transient
+    private Date lastExpiration_;
+
+    @Transient
+    private EJBTimerSchedule timerSchedule_;
     
     TimerState () {
     }
