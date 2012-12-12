@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,11 +40,11 @@
 
 package com.sun.enterprise.util.i18n;
 
+import com.sun.enterprise.util.CULoggerInfo;
 import java.util.Hashtable;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import com.sun.logging.LogDomains;
 
 /**
  * Implementation of a local string manager. Provides access to i18n messages
@@ -90,7 +90,7 @@ import com.sun.logging.LogDomains;
 public class StringManager extends StringManagerBase {
 
     /** logger used for this class */
-    private static Logger _logger=LogDomains.getLogger(StringManager.class, LogDomains.UTIL_LOGGER);
+    private static final Logger _logger = CULoggerInfo.getLogger();
 
     /** name of the resource bundle property file name */
     private static final String RES_BUNDLE_NM = ".LocalStrings";
@@ -124,7 +124,7 @@ public class StringManager extends StringManagerBase {
             try {
                 managers.put(packageName, mgr);
             } catch (Exception e) {
-                _logger.log(Level.SEVERE,"iplanet_util.error_while_caching",e);
+                _logger.log(Level.SEVERE, CULoggerInfo.exceptionCachingStringManager, e);
             }
         }
         return mgr;
@@ -151,7 +151,7 @@ public class StringManager extends StringManagerBase {
                 return getManager(pkgName, callerClass.getClassLoader());
             }
         } catch (Exception e) {
-            _logger.log(Level.SEVERE, "iplanet_util.error_in_getMgr", e);
+            _logger.log(Level.SEVERE, CULoggerInfo.exceptionConstructingStringManager, e);
 
             // dummy string manager
             return getManager("", callerClass.getClassLoader());

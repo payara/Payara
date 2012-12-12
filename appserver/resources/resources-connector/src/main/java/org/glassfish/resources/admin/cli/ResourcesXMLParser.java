@@ -1538,7 +1538,7 @@ public class ResourcesXMLParser implements EntityResolver
         {
             String attrName = (String)attrIter.next();
             Logger.getLogger(ResourcesXMLParser.class.getName()).log(
-                        Level.FINE, "general.print_attr_name", attrName);
+                        Level.FINE, "Name of the attribute:[{0}]", attrName);
         }
     }
     

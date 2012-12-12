@@ -40,18 +40,15 @@
 
 package com.sun.appserv.util.cache;
 
-import com.sun.logging.LogDomains;
-
+import com.sun.enterprise.util.CULoggerInfo;
 import java.text.MessageFormat;
-
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Vector;
-import java.util.Map;
 import java.util.HashMap;
-import java.util.Properties;
 import java.util.Iterator;
-import java.util.ResourceBundle;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Vector;
 
 /**
  * BaseCache
@@ -62,8 +59,6 @@ public class BaseCache implements Cache {
     /**
      * The resource bundle containing the localized message strings.
      */
-    protected final static ResourceBundle _rb = LogDomains.getLogger(BaseCache.class,LogDomains.UTIL_LOGGER).getResourceBundle();;
-
     static final int MAX_ENTRIES = 1 << 30;
     static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
@@ -141,7 +136,7 @@ public class BaseCache implements Cache {
     public void init(int maxEntries, float loadFactor, Properties props) {
 
         if (maxEntries <= 0) {
-            String msg = _rb.getString("cache.BaseCache.illegalMaxEntries");
+            String msg = CULoggerInfo.getString(CULoggerInfo.illegalMaxEntries);
 
             Integer obj = Integer.valueOf(maxEntries);
             Object[] params = { obj };

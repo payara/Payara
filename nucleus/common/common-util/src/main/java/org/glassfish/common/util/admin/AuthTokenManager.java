@@ -40,18 +40,17 @@
 
 package org.glassfish.common.util.admin;
 
+import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.security.auth.Subject;
-
-import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
+import javax.security.auth.Subject;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * Coordinates generation and consumption of very-limited-use authentication tokens.
@@ -107,8 +106,7 @@ public class AuthTokenManager {
 
     private final Map<String,TokenInfo> liveTokens = new HashMap<String,TokenInfo>();
 
-    private final static Logger logger = LogDomains.getLogger(AuthTokenManager.class,
-            LogDomains.ADMIN_LOGGER);
+    private final static Logger logger = CULoggerInfo.getLogger();
 
     private final static char REUSE_TOKEN_MARKER = '+';
 
@@ -235,12 +233,8 @@ public class AuthTokenManager {
         
         final TokenInfo ti = liveTokens.get(tokenAsRecorded);
         if (ti == null) {
-            logger.log(Level.WARNING,
-                        localStrings.getLocalString(
-                            "AuthTokenNonexistent",
-                            "Attempt to use non-existent auth token {0}",
-                            logger.isLoggable(Level.FINER) ? tokenAsRecorded : SUPPRESSED_TOKEN_OUTPUT)
-                            );
+            logger.log(Level.WARNING, CULoggerInfo.useNonexistentToken,
+                    logger.isLoggable(Level.FINER) ? tokenAsRecorded : SUPPRESSED_TOKEN_OUTPUT);
             return null;
         }
         return (ti.isOKTouse(now) ? ti : null);

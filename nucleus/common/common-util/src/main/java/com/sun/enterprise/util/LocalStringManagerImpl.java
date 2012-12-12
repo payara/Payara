@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,13 +40,10 @@
 
 package com.sun.enterprise.util;
 
-import java.util.ResourceBundle;
-import java.util.Locale;
 import java.text.MessageFormat;
-
-//START OF IASRI 4660742
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.*;
-import com.sun.logging.*;
 //END OF IASRI 4660742
 
 
@@ -65,16 +62,6 @@ public class LocalStringManagerImpl implements LocalStringManager {
     // END OF IASRI 4660742
 
     private Class defaultClass;
-
-    //No need to worry about synchronization here as getLogger call is
-    //synchronized, worse case logger will get initialized to the same
-    //value 2x.
-    private static Logger getLogger() {
-        if (_logger == null) {
-            _logger=LogDomains.getLogger(LocalStringManagerImpl.class, LogDomains.UTIL_LOGGER);
-        }
-        return _logger;
-    }
 
     /**
      * Create a string manager that looks for LocalStrings.properties in
@@ -140,13 +127,7 @@ public class LocalStringManagerImpl implements LocalStringManager {
 	if ( ! globalDone ) {
 	    return getLocalString(null, key, defaultValue);
 	} else {
-	    /** IASRI 4660742
-      System.err.println("No local string for " + key); 
-      **/
-	    //START OF IASRI 4660742
-      if (getLogger().isLoggable(Level.FINE))
-	        getLogger().log(Level.FINE,"No local string for " + key);
-	    //END OF IASRI 4660742
+            CULoggerInfo.getLogger().log(Level.FINE, "No local string for", key);
 	    return defaultValue;
 	}
     }

@@ -41,8 +41,8 @@
 package com.sun.enterprise.security.store;
 
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.logging.LogDomains;
 import java.io.*;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -69,8 +69,7 @@ public class AsadminSecurityUtil {
 
     private static AsadminSecurityUtil instance = null;
 
-    private static final Logger logger = LogDomains.getLogger(AsadminSecurityUtil.class,
-            LogDomains.ADMIN_LOGGER);
+    private static final Logger logger = CULoggerInfo.getLogger();
 
     /**
      * Returns the usable instance, creating it if needed.
@@ -123,7 +122,7 @@ public class AsadminSecurityUtil {
     public static File getDefaultClientDir() {
         if (!DEFAULT_CLIENT_DIR.isDirectory()) {
             if (DEFAULT_CLIENT_DIR.mkdirs() == false) {
-                logger.log(Level.SEVERE, "Unable to create client data directory: {0}", 
+                logger.log(Level.SEVERE, CULoggerInfo.errorCreatingDirectory, 
                         DEFAULT_CLIENT_DIR);
                 // return the File anyway, the user of the file will report the failure
             }

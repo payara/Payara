@@ -40,9 +40,8 @@
 
 package org.glassfish.common.util.admin;
 
+import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -88,7 +87,7 @@ public class ManagedFile {
     final ManagedFile.RefCounterLock wl = new ManagedFile.RefCounterLock(rwl.writeLock(), false);
     final Queue<Thread> waiters = new ConcurrentLinkedQueue<Thread>();
 
-    final static Logger logger = LogDomains.getLogger(ManagedFile.class, LogDomains.ADMIN_LOGGER);
+    final static Logger logger = CULoggerInfo.getLogger();
     final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ParamTokenizer.class);
 
@@ -220,8 +219,9 @@ public class ManagedFile {
                     public void run() {
                         try {
                             if (fl.isValid()) {
-                                logger.severe(localStrings.getLocalString("FileLockNotReleased",
-                                        "File Lock not released on {0}", file.getPath()));
+                                logger.log(Level.SEVERE, 
+                                        CULoggerInfo.fileLockNotReleased, 
+                                        file.getPath());
                                 release(fl);
                             }
                         } catch (IOException e) {

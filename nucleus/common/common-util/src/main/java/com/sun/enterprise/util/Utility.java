@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,30 +40,27 @@
 
 package com.sun.enterprise.util;
 
-import java.net.*;
 import java.io.*;
-import java.util.Properties;
 import java.lang.reflect.*;
-import javax.naming.*;
-import javax.rmi.*;
-import javax.rmi.CORBA.*;
-
-import java.util.logging.*;
-import com.sun.logging.*;
+import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CharacterCodingException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Properties;
+import java.util.logging.*;
+import javax.naming.*;
+import javax.rmi.*;
 
 /**
  *  Handy class full of static functions.
  */
 public final class Utility {
 
-    static Logger _logger=LogDomains.getLogger(Utility.class, LogDomains.UTIL_LOGGER);
+    static final Logger _logger = CULoggerInfo.getLogger();
 
     private static LocalStringManagerImpl localStrings = 
     new LocalStringManagerImpl(Utility.class);
@@ -225,29 +222,22 @@ public final class Utility {
 	        mainMethod = mainClass.getMethod("main", 
 		    new Class[] { String[].class } );
 	    } catch(NoSuchMethodException msme) {
-		_logger.log(Level.SEVERE,"enterprise_util.excep_in_utility",msme);
+		_logger.log(Level.SEVERE, CULoggerInfo.exceptionInUtility, msme);
 		throw new ClassNotFoundException(err);
 	    }
 
 	    // check modifiers: public static
+            // check return type and exceptions
 	    int modifiers = mainMethod.getModifiers ();
 	    if (!Modifier.isPublic (modifiers) || 
-		!Modifier.isStatic (modifiers))  {
+		!Modifier.isStatic (modifiers) ||
+                !mainMethod.getReturnType().equals (Void.TYPE))  {
 		    err = localStrings.getLocalString(
-			"utility.main.notpublicorstatic", 
-			"The main method is either not public or not static");
-		    _logger.log(Level.SEVERE,"enterprise_util.excep_in_utility_main.notpublicorstatic");
+			"utility.main.invalid", 
+			"The main method signature is invalid");
+		    _logger.log(Level.SEVERE, CULoggerInfo.mainNotValid);
 	    	    throw new ClassNotFoundException(err);
-	    }
-
-	    // check return type and exceptions
-	    if (!mainMethod.getReturnType().equals (Void.TYPE)) {
-		err = localStrings.getLocalString(
-			"utility.main.notvoid",
-			"The main method's return type is not void ");
-		_logger.log(Level.SEVERE,"enterprise_util.excep_in_utility_main.notvoid");
-		throw new ClassNotFoundException(err);
-	    }
+            }
 
 	    // build args to the main and call it
 	    Object params [] = new Object [1];

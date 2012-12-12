@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,14 +40,13 @@
 
 package com.sun.enterprise.util.i18n;
 
-import java.util.ResourceBundle;
-import java.util.Locale;
-import java.util.Hashtable;
+import com.sun.enterprise.util.CULoggerInfo;
 import java.text.MessageFormat;
-
+import java.util.Hashtable;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import com.sun.logging.LogDomains;
 
 /**
  * Implementation of a local string manager. Provides access to i18n messages
@@ -89,7 +88,7 @@ import com.sun.logging.LogDomains;
 public class StringManagerBase {
 
     /** logger used for this class */
-    private static Logger _logger=LogDomains.getLogger(StringManagerBase.class, LogDomains.UTIL_LOGGER);
+    private static final Logger _logger = CULoggerInfo.getLogger();
 
     /** resource bundle to be used by this manager */
     private volatile ResourceBundle _resourceBundle;
@@ -126,7 +125,7 @@ public class StringManagerBase {
             try {
                 _resourceBundle = ResourceBundle.getBundle(_resourceBundleName, Locale.getDefault(), _classLoader);
             } catch (Exception e) {
-                _logger.log(Level.SEVERE, "iplanet_util.no_resource_bundle", e);
+                _logger.log(Level.SEVERE, CULoggerInfo.exceptionResourceBundle, e);
             }
         }
         return _resourceBundle;
@@ -146,7 +145,7 @@ public class StringManagerBase {
             try {
                 managers.put(resourceBundleName, mgr);
             } catch (Exception e) {
-                _logger.log(Level.SEVERE,"iplanet_util.error_while_caching",e);
+                _logger.log(Level.SEVERE, CULoggerInfo.exceptionCachingStringManager, e);
             }
         }
         return mgr;
@@ -179,7 +178,7 @@ public class StringManagerBase {
         try {
             value = getResourceBundle().getString(key);
         } catch (Exception e) {
-            _logger.log(Level.FINE,"No local string for: " + key, e);
+            _logger.log(Level.FINE, "No local string for: " + key, e);
         }
 
         if (value != null) {
@@ -220,11 +219,11 @@ public class StringManagerBase {
             }
         }
 
-        String fmtStr = null; 
+        String fmtStr; 
         try {
             fmtStr =  f.format(arguments);
         } catch (Exception e) {
-            _logger.log(Level.WARNING, "iplanet_util.error_while_formating", e);
+            _logger.log(Level.WARNING, CULoggerInfo.exceptionWhileFormating, e);
 
             // returns default format
             fmtStr = defaultFormat;

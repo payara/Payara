@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.util.net;
 
+import com.sun.enterprise.util.CULoggerInfo;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
@@ -47,14 +48,13 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import com.sun.logging.LogDomains;
 
 public class JarURIPattern {
-    private static final Logger logger = LogDomains.getLogger(JarURIPattern.class, LogDomains.CORE_LOGGER);
+    private static final Logger logger = CULoggerInfo.getLogger();
 
     /**
      * This method is used to extract URI of jar entries that match
@@ -92,7 +92,9 @@ public class JarURIPattern {
                 }
             } catch(Exception ex) {
                 if (logger.isLoggable(Level.WARNING)) {
-                    logger.log(Level.WARNING, "jarURIPattern.failOpenJar", fileName);
+                    logger.log(Level.WARNING, 
+                            CULoggerInfo.getString(CULoggerInfo.exceptionJarOpen, fileName), 
+                            ex);
                 }
                 throw new RuntimeException(ex);
             } finally {

@@ -40,6 +40,9 @@
 
 package com.sun.enterprise.loader;
 
+import com.sun.appserv.server.util.PreprocessorUtil;
+import com.sun.enterprise.util.CULoggerInfo;
+import com.sun.enterprise.util.i18n.StringManager;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -47,11 +50,9 @@ import java.io.FileInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
-import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.ClassFileTransformer;
+import java.lang.instrument.IllegalClassFormatException;
 import java.net.JarURLConnection;
-
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -67,22 +68,15 @@ import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
 import java.security.SecureClassLoader;
 import java.security.cert.Certificate;
-import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.concurrent.ConcurrentHashMap;
-
-import com.sun.appserv.server.util.PreprocessorUtil;
-import com.sun.logging.LogDomains;
-import com.sun.enterprise.util.i18n.StringManager;
-
 import java.util.zip.ZipEntry;
-
 import org.glassfish.api.deployment.InstrumentableClassLoader;
 import org.glassfish.hk2.api.PreDestroy;
 
@@ -110,7 +104,7 @@ public class ASURLClassLoader
     */
     
     /** logger for this class */
-    private static final Logger _logger=LogDomains.getLogger(ASURLClassLoader.class, LogDomains.LOADER_LOGGER);
+    private static final Logger _logger=CULoggerInfo.getLogger();
 
     /*
        list of url entries of this class loader. Using LinkedHashSet instead of original ArrayList
@@ -222,8 +216,9 @@ public class ASURLClassLoader
                     try {
                         u.zip.reallyClose();
                     } catch (IOException ioe) {
-                        _logger.log(Level.INFO, formatMsg("loader.asurlclassloader_exc_closing_URLEntry", u.source),
-                                    ioe);
+                        _logger.log(Level.INFO, 
+                                CULoggerInfo.getString(CULoggerInfo.exceptionClosingURLEntry, u.source),
+                                ioe);
                     }
                 }
                 if (u.table != null) {
@@ -257,11 +252,10 @@ public class ASURLClassLoader
         try {
             appendURL(file.toURI().toURL());
         } catch (MalformedURLException mue) {
-            _logger.log(Level.SEVERE,
-                "loader.asurlclassloader_bad_url_entry", file.toURI());
+            _logger.log(Level.SEVERE, 
+                    CULoggerInfo.getString(CULoggerInfo.badUrlEntry, file.toURI()), 
+                    mue);
 
-            _logger.log(Level.SEVERE,
-                "loader.asurlclassloader_malformed_url", mue);
             IOException ioe = new IOException();
             ioe.initCause(mue);
             throw ioe;
@@ -289,8 +283,7 @@ public class ASURLClassLoader
 
         try {
             if (url == null) {
-                _logger.log(Level.INFO,
-                    "loader.asurlclassloader_bad_url_entry", url);
+                _logger.log(Level.INFO, CULoggerInfo.missingURLEntry);
                 return;
             }
 
@@ -314,7 +307,8 @@ public class ASURLClassLoader
                     try {
                         entry.zip.reallyClose();
                     } catch (IOException ioe) {
-                    _logger.log(Level.INFO, formatMsg("loader.asurlclassloader_exc_closing_dup_URLEntry", url),
+                        _logger.log(Level.INFO, 
+                                CULoggerInfo.getString(CULoggerInfo.exceptionClosingDupUrlEntry, url),
                                 ioe);
                     }
                 }
@@ -326,10 +320,8 @@ public class ASURLClassLoader
         } catch (IOException ioe) {
 
             _logger.log(Level.SEVERE,
-                "loader.asurlclassloader_bad_url_entry", url);
-
-            _logger.log(Level.SEVERE,
-                "loader.asurlclassloader_malformed_url", ioe);
+                    CULoggerInfo.getString(CULoggerInfo.badUrlEntry, url),
+                    ioe);
         }
     }
 
@@ -470,8 +462,7 @@ public class ASURLClassLoader
                         }
 
                     } catch (Throwable thr) {
-                        _logger.log(Level.INFO,
-                                    "loader.excep_in_asurlclassloader",thr);
+                        _logger.log(Level.INFO, CULoggerInfo.exceptionInASURLClassLoader, thr);
                     }
                 } else { // directory
                     try {
@@ -486,8 +477,7 @@ public class ASURLClassLoader
                         }
 
                     } catch (IOException e) {
-                        _logger.log(Level.INFO,
-                                    "loader.excep_in_asurlclassloader",e);
+                        _logger.log(Level.INFO, CULoggerInfo.exceptionInASURLClassLoader, e);
                     }
                 }
 
@@ -504,7 +494,7 @@ public class ASURLClassLoader
         // quick quick that relies on 'doneCalled' being 'volatile'
         if( doneCalled ) {
             _logger.log(Level.WARNING,
-                    formatMsg("loader.asurlclassloader_find_resource_after_done", name, this.toString()),
+                    CULoggerInfo.getString(CULoggerInfo.findResourceAfterDone, name, this.toString()),
                     new Throwable());
             return null;
         }
@@ -556,8 +546,7 @@ public class ASURLClassLoader
     public synchronized Enumeration<URL>
     findResources(String name) throws IOException {
         if( doneCalled ) {
-            _logger.log(Level.WARNING,
-                        "loader.asurlclassloader_done_already_called",
+            _logger.log(Level.WARNING, CULoggerInfo.doneAlreadyCalled,
                         new Object[] { name, doneSnapshot });
             // return an empty enumeration instead of null. See issue #13096
             return Collections.enumeration(Collections.EMPTY_LIST);
@@ -619,8 +608,7 @@ public class ASURLClassLoader
                 try {
                     appendURL(newFile);
                 } catch (MalformedURLException ex) {
-                    _logger.log(Level.SEVERE,
-                        "loader.asurlclassloader_malformed_url",ex);
+                    _logger.log(Level.SEVERE, CULoggerInfo.exceptionInASURLClassLoader, ex);
                 }
             }
         }
@@ -676,8 +664,7 @@ public class ASURLClassLoader
                         }
                     }
                 } catch (IOException ioe) {
-                    _logger.log(Level.INFO,
-                                "loader.excep_in_asurlclassloader", ioe);
+                    _logger.log(Level.INFO, CULoggerInfo.exceptionInASURLClassLoader, ioe);
                 }
                 return null;
             }
@@ -741,9 +728,7 @@ public class ASURLClassLoader
                 final byte[] transformedBytes = transformer.transform(this, internalClassName, null,
                         classData.pd, classData.classBytes);
                 if(transformedBytes!=null){ // null indicates no transformation
-                    _logger.logp(Level.INFO, "ASURLClassLoader",
-                            "findClass", "{0} actually got transformed",
-                            name);
+                    _logger.log(Level.INFO, CULoggerInfo.actuallyTransformed, name);
                     classData.classBytes = transformedBytes;
                 }
             }
@@ -777,7 +762,8 @@ public class ASURLClassLoader
 
         if( doneCalled ) {
             _logger.log(Level.WARNING,
-                        formatMsg("loader.asurlclassloader_find_class_after_done", name, this.toString()), new Throwable());
+                    CULoggerInfo.getString(CULoggerInfo.findClassAfterDone, name, this.toString()), 
+                    new Throwable());
             throw new ClassNotFoundException(name);
         }
 
@@ -829,7 +815,8 @@ public class ASURLClassLoader
                 try {
                     bstream.close();
                 } catch (IOException closeIOE) {
-                    ASURLClassLoader._logger.log(Level.INFO, "loader.excep_in_asurlclassloader", closeIOE);
+                    ASURLClassLoader._logger.log(Level.INFO, 
+                            CULoggerInfo.exceptionInASURLClassLoader, closeIOE);
                 }
             }
         }
@@ -881,18 +868,6 @@ public class ASURLClassLoader
     }
 
     /**
-     *Looks up the key in the logger's resource bundle and substitutes any
-     *arguments provided into the looked-up string.
-     *@param key the key to look up in the resource bundle
-     *@param args optional arguments to plug into the string found in the bundle
-     *@return the formatted string
-     */
-    private static String formatMsg(String key, Object... args) {
-        String fmt = _logger.getResourceBundle().getString(key);
-        return MessageFormat.format(fmt, args);
-    }
-
-    /**
      * The JarFile objects loaded in the classloader may get exposed to the
      * application code (e.g. EJBs) through calls of
      * ((JarURLConnection) getResource().openConnection()).getJarFile().
@@ -919,7 +894,7 @@ public class ASURLClassLoader
          */
         public void close() {
             // nothing
-            _logger.log(Level.WARNING, "Illegal call to close() detected", new Throwable());
+            _logger.log(Level.WARNING, CULoggerInfo.illegalCloseCall, new Throwable());
         }
 
         /**
@@ -1071,7 +1046,9 @@ public class ASURLClassLoader
                         processFile(targetFile, table, "");
                         result = true;
                     } catch (IOException ioe) {
-                        _logger.log(Level.SEVERE, formatMsg("loader.asurlclassloader_error_processing_file", target, file.getAbsolutePath()), ioe);
+                        _logger.log(Level.SEVERE, 
+                                CULoggerInfo.getString(CULoggerInfo.exceptionProcessingFile, target, file.getAbsolutePath()), 
+                                ioe);
                         return false;
                     }
                 }
@@ -1112,7 +1089,9 @@ public class ASURLClassLoader
                 /*
                  *Log any exception and return false.
                  */
-                _logger.log(Level.SEVERE, formatMsg("loader.asurlclassloader_error_checking_existence", targetPath, file.getAbsolutePath()), pae.getCause());
+                _logger.log(Level.SEVERE, 
+                        CULoggerInfo.getString(CULoggerInfo.exceptionCheckingFile, targetPath, file.getAbsolutePath()), 
+                        pae.getCause());
                 return null;
             }
         }
@@ -1199,7 +1178,7 @@ public class ASURLClassLoader
                 try {
                     s.closeWithWarning();
                 } catch (IOException ioe) {
-                    _logger.log(Level.WARNING, "loader.asurlclassloader_error_closing_stream", ioe);
+                    _logger.log(Level.WARNING, CULoggerInfo.exceptionClosingStream, ioe);
                 }
             }
             streams.clear();
@@ -1278,7 +1257,7 @@ public class ASURLClassLoader
          * Report "left-overs"!
          */
         private void report(){
-            _logger.log(Level.WARNING, "Input stream has been finalized or forced closed without being explicitly closed; stream instantiation reported in following stack trace", this.throwable);
+            _logger.log(Level.WARNING, CULoggerInfo.inputStreamFinalized, this.throwable);
         }
     }
     /**

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package com.sun.appserv.util.cache;
 
+import com.sun.enterprise.util.CULoggerInfo;
 import java.text.MessageFormat;
 
 import java.util.Properties;
@@ -96,7 +97,7 @@ public class BoundedMultiLruCache extends MultiLruCache {
             if (size > 0)
                 maxSize = (size * multiplier);
             else  {
-                String msg = _rb.getString("cache.BoundedMultiLruCache.illegalMaxSize");
+                String msg = CULoggerInfo.getString(CULoggerInfo.boundedMultiLruCacheIllegalMaxSize);
 
                 Object[] params = { strMaxSize };
                 msg = MessageFormat.format(msg, params);

@@ -37,32 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * KEDAR/MURALI has made some changes to this class
- * so that it works with installer(LogDomains esp.).
-*/
-
 package com.sun.enterprise.util.io;
 
-import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import java.io.*;
-import java.util.*;
-
+import com.sun.enterprise.universal.io.SmartFile;
+import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.OS;
-
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.nio.channels.*;
+import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.channels.*;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import java.util.Locale;
 
 
 public class FileUtils {
-    final static Logger _logger = Logger.getLogger("javax.enterprise.system.util");
-    final static Logger _utillogger = com.sun.logging.LogDomains.getLogger(FileUtils.class,com.sun.logging.LogDomains.UTIL_LOGGER);
+    final static Logger _utillogger = CULoggerInfo.getLogger();
     private final static LocalStringsImpl messages = new LocalStringsImpl(FileUtils.class);
 
     /**
@@ -461,7 +452,7 @@ public class FileUtils {
             */
             return whackResolvedDirectory(parent.getCanonicalFile(), undeletedFiles);
         } catch (IOException ioe) {
-            _utillogger.log(Level.SEVERE, "iplanet_util.io_exception", ioe);
+            _utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ioe);
             return false;
         }
     }
@@ -536,7 +527,7 @@ public class FileUtils {
         */
         if (!f.exists()) {
             if (log) {
-                _utillogger.log(Level.FINE, "enterprise_util.delete_failed_absent", filePath);
+                _utillogger.log(Level.FINE, CULoggerInfo.deleteFailedAbsent, filePath);
             }
             return true;
         } else {
@@ -545,7 +536,7 @@ public class FileUtils {
             *level is enabled and return false to indicate the failure.
             */
             if (log) {
-                _utillogger.log(FILE_OPERATION_LOG_LEVEL, "enterprise_util.error_deleting_file", filePath);
+                _utillogger.log(FILE_OPERATION_LOG_LEVEL, CULoggerInfo.deleteFailed, filePath);
             }
             return false;
         }
@@ -666,7 +657,7 @@ public class FileUtils {
         *unlock the locked file - then begin the retries.
         */
         if (!work.workComplete() && OS.isWindows()) {
-            _utillogger.log(FILE_OPERATION_LOG_LEVEL, "enterprise_util.perform_gc");
+            _utillogger.log(FILE_OPERATION_LOG_LEVEL, CULoggerInfo.performGC);
             while (!work.workComplete() && retries++ < FILE_OPERATION_MAX_RETRIES) {
                 try {
                     Thread.currentThread().sleep(FILE_OPERATION_SLEEP_DELAY_MS);
@@ -712,10 +703,7 @@ public class FileUtils {
             f = File.createTempFile(TMPFILENAME, "jar", directory);
         }
         catch (IOException ioe) {
-//Bug 4677074			ioe.printStackTrace();
-//Bug 4677074 begin
-            _logger.log(Level.SEVERE, "iplanet_util.io_exception", ioe);
-//Bug 4677074 end
+            _utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ioe);
         }
 
         f.deleteOnExit(); // just in case
@@ -1008,20 +996,20 @@ public class FileUtils {
                      */
                     if (retries == 0) {
                         if (_utillogger.isLoggable(Level.FINE)) {
-                            _utillogger.log(Level.FINE, Strings.get("enterprise_util.rename_initial_success", new Object [] {
-                                fromFilePath, toFilePath } ));
+                            _utillogger.log(Level.FINE, CULoggerInfo.renameInitialSuccess, 
+                                    new Object [] {fromFilePath, toFilePath});
                         }
                     } else {
-                        _utillogger.log(FILE_OPERATION_LOG_LEVEL, Strings.get("enterprise_util.retry_rename_success", new Object []
-                            { fromFilePath, toFilePath, Integer.valueOf(retries) } ));
+                        _utillogger.log(FILE_OPERATION_LOG_LEVEL, CULoggerInfo.retryRenameSuccess, 
+                                new Object [] {fromFilePath, toFilePath, Integer.valueOf(retries)});
                     }
                 }
             } else {
                 /*
                  *The rename has failed.  Write a warning message.
                  */
-                _utillogger.log(Level.WARNING, Strings.get("enterprise_util.retry_rename_failure", new Object []
-                    { fromFilePath, toFilePath, Integer.valueOf(retries) } ));
+                _utillogger.log(Level.WARNING, CULoggerInfo.retryRenameFailure, 
+                        new Object [] {fromFilePath, toFilePath, Integer.valueOf(retries) });
             }
             return result;
         }

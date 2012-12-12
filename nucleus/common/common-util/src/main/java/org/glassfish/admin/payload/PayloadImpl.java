@@ -40,7 +40,6 @@
 
 package org.glassfish.admin.payload;
 
-import com.sun.logging.LogDomains;
 import java.io.*;
 import java.net.URI;
 import java.net.URLConnection;
@@ -48,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.logging.Logger;
 import org.glassfish.api.admin.Payload;
 
 /**
@@ -448,9 +446,6 @@ public class PayloadImpl implements Payload {
      * Partial implementation of Part.
      */
     public static abstract class Part implements Payload.Part {
-
-        private static final Logger logger = LogDomains.getLogger(PayloadImpl.class, LogDomains.CORE_LOGGER);
-
         private String name;
         private String contentType;
         private Properties props;

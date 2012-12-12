@@ -77,10 +77,10 @@ public class ProxyClass implements InvocationHandler {
         try {
             interceptor.preInvoke(callStack);
         } catch (Throwable t) {
-            _logger.log(Level.FINE, "core.interceptor_preinvoke_fail",
+            _logger.log(Level.FINE, "Preinvoke failed for MBeanServer interceptor [{0}].",
                     t.getMessage());
             _logger.log(Level.FINEST,
-                    "core.interceptor_preinvoke_exception", t);
+                    "Preinvoke exception for MBeanServer interceptor.", t);
         }
         Object result = null;
         boolean success = true;
@@ -108,10 +108,10 @@ public class ProxyClass implements InvocationHandler {
             try {
                 interceptor.postInvoke(callStack);
             } catch (Throwable t) {
-                _logger.log(Level.FINE, "core.interceptor_postinvoke_fail",
+                _logger.log(Level.FINE, "Postinvoke failed for MBeanServer interceptor [{0}].",
                         t.getMessage());
                 _logger.log(Level.FINEST,
-                        "core.interceptor_postinvoke_exception", t);
+                        "Postinvoke exception for MBeanServer interceptor.", t);
             }
             callStack.endCall();
         }
