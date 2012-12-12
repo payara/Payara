@@ -56,9 +56,7 @@
 
     <name>GlassFish HK2 Tests</name>  
     <modules>
-<!--
         <module>isolation</module>
-  -->
         <module>cdi</module>
     </modules>
 </project>

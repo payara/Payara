@@ -63,7 +63,7 @@
                 <version>2.12</version>
                 <configuration>
                     <systemPropertyVariables>
-                        <nucleus.home>../../distributions/glassfish/target/stage/glassfish3</nucleus.home>
+                        <nucleus.home>${glassfish.home}</nucleus.home>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
