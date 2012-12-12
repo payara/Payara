@@ -73,7 +73,7 @@ public class JsonUtil {
         } else if (RestModel.class.isAssignableFrom(object.getClass())) {
             result = getJsonForRestModel((RestModel)object, true);
         }else if (object instanceof ResponseBody) {
-            result = new ResponseBodyWriter().getJson((ResponseBody)object);
+            result = ((ResponseBody)object).toJson();
         } else {
             Class<?> clazz = object.getClass();
             if (clazz.isArray()) {

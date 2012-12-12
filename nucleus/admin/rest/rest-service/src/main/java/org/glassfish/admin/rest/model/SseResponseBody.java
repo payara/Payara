@@ -40,71 +40,50 @@
 package org.glassfish.admin.rest.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import org.codehaus.jettison.json.JSONArray;
+import java.util.Map;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.glassfish.admin.rest.composite.RestModel;
-import org.glassfish.admin.rest.utils.JsonUtil;
 
-public class ResponseBody {
-    public static final String EVENT_NAME="response/body";
-    private List<Message> messages = new ArrayList<Message>();
-    private RestModel entity;
+/**
+ *
+ * @author jdlee
+ */
+public class SseResponseBody extends ResponseBody {
 
-    public List<Message> getMessages() {
-        return this.messages;
-    }
+    private Map<String, List<String>> headers = new HashMap<String, List<String>>();
 
-    public void setMessages(List<Message> val) {
-        this.messages = val;
-    }
-
-    public RestModel getEntity() {
-        return entity;
-    }
-
-    public ResponseBody setEntity(RestModel entity) {
-        this.entity = entity;
-        return this;
-    }
-
-    public ResponseBody addSuccess(String message) {
-        return add(Message.Severity.SUCCESS, message);
-    }
-
-    public ResponseBody addWarning(String message) {
-        return add(Message.Severity.WARNING, message);
-    }
-
-    public ResponseBody addFailure(String message) {
-        return add(Message.Severity.FAILURE, message);
-    }
-
-    public ResponseBody add(Message.Severity severity, String message) {
-        return add(new Message(severity, message));
-    }
-
-    public ResponseBody add(Message message) {
-        getMessages().add(message);
-        return this;
-    }
-
-    public JSONObject toJson() throws JSONException {
-        JSONObject object = new JSONObject();
-        if (!messages.isEmpty()) {
-            JSONArray array = new JSONArray();
-            for (Message message : messages) {
-                JSONObject o = new JSONObject();
-                o.put("message", message.getMessage());
-                o.put("severity", message.getSeverity().toString());
-                array.put(o);
+    public SseResponseBody addHeader(String name, Object value) {
+        if (value != null) {
+            List<String> values = headers.get(name);
+            if (values == null) {
+                values = new ArrayList<String>();
+                headers.put(name, values);
             }
-            object.put("messages", array);
+            values.add(value.toString());
         }
-        if (entity != null) {
-            object.put("item", JsonUtil.getJsonObject(getEntity()));
-        }
-        return object;
+
+        return this;
     }
+
+    @Override
+    public JSONObject toJson() throws JSONException {
+        JSONObject json = super.toJson();
+
+        if (!headers.isEmpty()) {
+            JSONObject o = new JSONObject();
+            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+                final String key = entry.getKey();
+                for (String value : entry.getValue()) {
+                    o.accumulate(key, value);
+                }
+            }
+            json.accumulate("headers", o);
+        }
+
+        return json;
+    }
+
+
 }
