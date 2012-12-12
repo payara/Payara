@@ -64,15 +64,15 @@ public class NucleusTestUtils {
     private static boolean verbose = true;
     private static Map<String,String> env;
     private static String[] envp = null;
-    private static String envProps[] = { 
-        "AS_ADMIN_PASSWORDFILE", 
-        "AS_LOGFILE", 
+    private static String envProps[] = {
+        "AS_ADMIN_PASSWORDFILE",
+        "AS_LOGFILE",
         "AS_ADMIN_USER",
     };
     protected static final File nucleusRoot = initNucleusRoot();
-    
+
     private static File initNucleusRoot() {
-        // Initialize the environment with environment variables that can be 
+        // Initialize the environment with environment variables that can be
         // used when running commands
         env = new HashMap<String,String>(System.getenv());
         for (String s : envProps) {
@@ -81,7 +81,7 @@ public class NucleusTestUtils {
                 putEnv(s, v);
             }
         }
-        
+
         String nucleusRootProp = System.getProperty("nucleus.home");
         if (nucleusRootProp == null) {
            String basedir = System.getProperty("basedir");
@@ -90,16 +90,16 @@ public class NucleusTestUtils {
         }
         System.out.println("nucleus.home=" + nucleusRootProp);
         return new File(nucleusRootProp);
-        
+
     }
 
     // All methods are static, do not allow an object to be created.
-    protected NucleusTestUtils() { } 
-    
+    protected NucleusTestUtils() { }
+
     public static File getNucleusRoot() {
         return nucleusRoot;
     }
-            
+
     public static void putEnv(String name, String value) {
         env.put(name, value);
         if (!env.isEmpty()) {
@@ -110,7 +110,7 @@ public class NucleusTestUtils {
             }
         } else {
             envp = null;
-        } 
+        }
     }
     /**
      * Runs the command with the args given
@@ -138,7 +138,7 @@ public class NucleusTestUtils {
     public static NadminReturn nadminWithOutput(final String... args) {
         return nadminWithOutput(DEFAULT_TIMEOUT_MSEC, args);
     }
-    
+
     public static NadminReturn nadminWithOutput(final int timeout, final String... args) {
         File cmd = new File(nucleusRoot, isWindows() ? "bin/nadmin.bat" : "bin/nadmin");
         if (!cmd.canExecute()) {
@@ -154,7 +154,7 @@ public class NucleusTestUtils {
             }
             return cmdDetachWithOutput(cmd,DEFAULT_TIMEOUT_MSEC, args);
         }
-    
+
     public static NadminReturn cmdWithOutput(final File cmd, final int timeout, final String... args) {
         List<String> command = new ArrayList<String>();
         command.add(cmd.toString());
@@ -179,11 +179,12 @@ public class NucleusTestUtils {
         }
         catch (ProcessManagerException ex) {
             ex.printStackTrace();
+            myErr = "\n" + ex.getMessage();
             exit = 1;
         }
 
         NadminReturn ret = new NadminReturn(exit, pm.getStdout(), pm.getStderr() + myErr, args[0]);
-        
+
         write(ret.outAndErr);
         return ret;
     }
@@ -229,7 +230,7 @@ public class NucleusTestUtils {
         }
         return true;
     }
-    
+
     private static void write(final String text) {
         if (verbose && !text.isEmpty())
             System.out.print(text);
@@ -239,12 +240,12 @@ public class NucleusTestUtils {
     protected static boolean isWindows() {
         return System.getProperty("os.name").toLowerCase(Locale.ENGLISH).contains("win");
     }
-    
+
     /**
      * Returns true if String b contains String a.
      * Returns true if both strings are null.
      * Returns false if only one of the strings is null.
-     * 
+     *
      * @param a The possibly null string that must be contained
      * in b
      * @param b The possibly null string that must contain a
@@ -254,7 +255,7 @@ public class NucleusTestUtils {
         if ((a == null) && (b == null)) return true;
         if (a == null) return false;
         if (b == null) return false;
-        
+
         return b.indexOf(a) != -1;
     }
 
@@ -262,7 +263,7 @@ public class NucleusTestUtils {
      * This methods opens a connection to the given URL and
      * returns the string that is returned from that URL.  This
      * is useful for simple servlet retrieval
-     * 
+     *
      * @param urlstr The URL to connect to
      * @return The string returned from that URL, or empty
      * string if there was a problem contacting the URL
@@ -283,7 +284,7 @@ public class NucleusTestUtils {
                     ow.write(line);
                     ow.write("\n");
                 }
-                
+
                 return ow.getBuffer().toString();
             }
             finally {
@@ -307,7 +308,7 @@ public class NucleusTestUtils {
         }
     }
 
-    
+
     // simple C-struct -- DIY
     public static class NadminReturn {
         NadminReturn(int exit, String out, String err, String cmd) {
@@ -317,7 +318,7 @@ public class NucleusTestUtils {
             this.err = err;
             this.outAndErr = this.out + this.err;
         }
-        
+
         public boolean returnValue;
         public String out;
         public String err;
