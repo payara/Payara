@@ -62,6 +62,8 @@ public class BasicCDITest extends NucleusStartStopTest {
     private final static String EJB1_APP_NAME = "ejb1";
     private final static String BASIC_EJB_JNDI_NAME = "java:global/ejb1/EjbInjectedWithServiceLocator!" +
       BasicEjb.class.getName();
+    private final static String SOURCE_HOME = System.getProperty("source.home", "$");
+    private final static String SOURCE_HOME_EJB = "/appserver/tests/hk2/" + EJB1_JAR;
     
     private boolean deployed1;
     private Context context;
@@ -70,7 +72,12 @@ public class BasicCDITest extends NucleusStartStopTest {
     public void beforeTest() throws NamingException {
         context = new InitialContext();
         
-        deployed1 = NucleusTestUtils.nadmin("deploy", EJB1_JAR);
+        String ejb1Jar = EJB1_JAR;
+        if (!SOURCE_HOME.startsWith("$")) {
+            ejb1Jar = SOURCE_HOME + SOURCE_HOME_EJB;
+        }
+        
+        deployed1 = NucleusTestUtils.nadmin("deploy", ejb1Jar);
     }
     
     @AfterTest

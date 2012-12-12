@@ -64,6 +64,7 @@
                 <configuration>
                     <systemPropertyVariables>
                         <nucleus.home>${glassfish.home}</nucleus.home>
+                        <source.home>${source.home}</source.home>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
