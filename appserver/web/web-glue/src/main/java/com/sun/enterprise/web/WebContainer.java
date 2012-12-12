@@ -66,6 +66,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
+import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.jsp.JspFactory;
 import javax.servlet.jsp.tagext.JspTag;
 
@@ -1032,6 +1033,22 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * given WebModule
      */
     <T extends java.util.EventListener> T createListenerInstance(
+            WebModule module, Class<T> clazz) throws Exception {
+        validateJSR299Scope(clazz);
+        WebComponentInvocation inv = new WebComponentInvocation(module);
+        try {
+            invocationMgr.preInvoke(inv);
+            return injectionMgr.createManagedObject(clazz);
+        } finally {
+            invocationMgr.postInvoke(inv);
+        }
+    }
+
+    /**
+     * Instantiates and injects the given HttpUpgradeHandler class for the
+     * given WebModule
+     */
+    <T extends HttpUpgradeHandler> T createHttpUpgradeHandlerInstance(
             WebModule module, Class<T> clazz) throws Exception {
         validateJSR299Scope(clazz);
         WebComponentInvocation inv = new WebComponentInvocation(module);

@@ -50,6 +50,7 @@ import javax.servlet.http.WebConnection;
  * Implementation of WebConnection for Servlet 3.1
  *
  * @author Amy Roh
+ * @author Shing Wai Chan
  * @version $Revision: 1.23 $ $Date: 2007/07/09 20:46:45 $
  */
 public class WebConnectionImpl implements WebConnection {
@@ -72,6 +73,7 @@ public class WebConnectionImpl implements WebConnection {
      *
      * @exception java.io.IOException if an I/O error occurs
      */
+    @Override
     public ServletInputStream getInputStream() throws IOException {
         return inputStream;
     }
@@ -83,7 +85,27 @@ public class WebConnectionImpl implements WebConnection {
      *
      * @exception IOException if an I/O error occurs
      */
+    @Override
     public ServletOutputStream getOutputStream() throws IOException{
         return outputStream;
+    }
+
+    @Override
+    public void close() throws Exception {
+        Exception exception = null;
+        try {
+            inputStream.close();
+        } catch(Exception ex) {
+            exception = ex;
+        }
+        try {
+            outputStream.close();
+        } catch(Exception ex) {
+            exception = ex;
+        }
+
+        if (exception != null) {
+            throw exception;
+        }
     }
 }

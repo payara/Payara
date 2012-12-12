@@ -72,7 +72,7 @@ import org.glassfish.web.valve.TomcatValveAdapter;
 
 import javax.management.ObjectName;
 import javax.servlet.ServletException;
-import javax.servlet.http.ProtocolHandler;
+import javax.servlet.http.HttpUpgradeHandler;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -161,7 +161,7 @@ public class StandardPipeline
     public static final String NO_VALVES_IN_PIPELINE_EXCEPTION = "AS-WEB-CORE-00206";
 
     @LogMessageInfo(
-        message = "Protocol handler cannot be null",
+        message = "HttpUpgradeHandler handler cannot be null",
         level = "WARNING"
     )
     public static final String PROTOCOL_HANDLER_REQUIRED_EXCEPTION = "AS-WEB-CORE-00207";
@@ -758,7 +758,7 @@ public class StandardPipeline
         if (request instanceof org.apache.catalina.connector.Request) {
             org.apache.catalina.connector.Request req = (org.apache.catalina.connector.Request) request;
             if (req.isUpgrade()) {
-                ProtocolHandler handler = req.getProtocolHandler();
+                HttpUpgradeHandler handler = req.getHttpUpgradeHandler();
                 if (handler != null) {
                     handler.init(
                             new WebConnectionImpl(

@@ -94,6 +94,7 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionIdListener;
 import javax.servlet.http.HttpSessionListener;
+import javax.servlet.http.HttpUpgradeHandler;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URLDecoder;
@@ -7961,6 +7962,19 @@ public class StandardContext
      */
     public <T extends EventListener> T createListenerInstance(
                 Class<T> clazz) throws Exception{
+        return clazz.newInstance();
+    }
+
+    /**
+     * Instantiates the given HttpUpgradeHandler class.
+     *
+     * @param clazz
+     * @param <T>
+     * @return a new T instance
+     * @throws Exception
+     */
+    public <T extends HttpUpgradeHandler> T createHttpUpgradeHandlerInstance(Class<T> clazz)
+            throws Exception {
         return clazz.newInstance();
     }
 

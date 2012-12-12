@@ -91,6 +91,7 @@ import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
 import javax.servlet.*;
 import javax.servlet.Servlet;
+import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.ServletSecurity;
 import javax.servlet.http.HttpSession;
@@ -2162,6 +2163,23 @@ public class WebModule extends PwcWebModule implements Context {
             return webContainer.createListenerInstance(this, clazz);
         } else {
             return super.createListenerInstance(clazz);
+        }
+    }
+
+    /**
+     * Create an instance of a given class.
+     *
+     * @param clazz
+     *
+     * @return an instance of the given class
+     * @throws Exception
+     */
+    @Override
+    public <T extends HttpUpgradeHandler> T createHttpUpgradeHandlerInstance(Class<T> clazz) throws Exception {
+        if (webContainer != null) {
+            return webContainer.createHttpUpgradeHandlerInstance(this, clazz);
+        } else {
+            return super.createHttpUpgradeHandlerInstance(clazz);
         }
     }
 

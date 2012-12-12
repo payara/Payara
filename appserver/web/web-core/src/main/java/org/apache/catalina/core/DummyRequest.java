@@ -85,7 +85,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
-import javax.servlet.http.ProtocolHandler;
+import javax.servlet.http.HttpUpgradeHandler;
 
 import org.apache.catalina.Connector;
 import org.apache.catalina.Context;
@@ -336,7 +336,7 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
     public void login(String username, String password)
         throws ServletException {}
     public void logout() throws ServletException {}
-    public void upgrade(ProtocolHandler handler) {}
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) { return null; }
 
     // START CR 6415120
     /**

@@ -66,7 +66,7 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
-import javax.servlet.http.ProtocolHandler;
+import javax.servlet.http.HttpUpgradeHandler;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.security.AccessControlException;
@@ -1124,11 +1124,11 @@ public class RequestFacade
     }
 
 
-    public void upgrade(ProtocolHandler handler) throws IOException {
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException {
         if (request == null) {
             throw new IllegalStateException(rb.getString(CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
         }
-        request.upgrade(handler);
+        return request.upgrade(handlerClass);
     }
 
 

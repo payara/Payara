@@ -57,7 +57,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.ProtocolHandler;
+import javax.servlet.http.HttpUpgradeHandler;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.handler.MessageContext;
@@ -349,7 +349,8 @@ public final class ServletFakeArtifactSet extends DistributedPropertySet {
         public void logout() {
         }
 
-        public void upgrade(ProtocolHandler handler) {
+        public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) {
+            return null;
         }
 
         public boolean authenticate(HttpServletResponse response) {

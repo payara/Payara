@@ -99,7 +99,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
-import javax.servlet.http.ProtocolHandler;
+import javax.servlet.http.HttpUpgradeHandler;
 
 import com.sun.appserv.ProxyHandler;
 import com.sun.enterprise.security.integration.RealmInitializer;
@@ -652,9 +652,9 @@ public class Request
     private boolean upgrade = false;
 
     /*
-     * The ProtocolHandler to be used for upgrade request
+     * The HttpUpgradeHandler to be used for upgrade request
      */
-    private ProtocolHandler protocolHandler;
+    private HttpUpgradeHandler httpUpgradeHandler;
 
     // ----------------------------------------------------------- Constructor
     public Request() {
@@ -821,8 +821,8 @@ public class Request
         return upgrade;
     }
 
-    public ProtocolHandler getProtocolHandler() {
-        return protocolHandler;
+    public HttpUpgradeHandler getHttpUpgradeHandler() {
+        return httpUpgradeHandler;
     }
 
     // -------------------------------------------------------- Request Methods
@@ -3170,18 +3170,36 @@ public class Request
     }
 
     /**
-     * Notifies that the given ProtcolHandler will be used to upgrade the request.
+     * Create an instance of <code>HttpUpgradeHandler</code> for an given
+     * class and uses it for the http protocol upgrade processing.
      *
-     * @param handler The <code>ProtocolHandler</code> used for the upgrade.
+     * @param handlerClass The <code>ProtocolHandler</code> class used for the upgrade.
+     *
+     * @return an instance of the <code>HttpUpgradeHandler</code>
      *
      * @exception IOException if an I/O error occurred during the upgrade
      *
+     * @see javax.servlet.http.HttpUpgradeHandler
+     * @see javax.servlet.http.WebConnection
+     *
+     * @since Servlet 3.1
      */
     @Override
-    public void upgrade(ProtocolHandler handler) throws IOException  {
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException {
         upgrade = true;
-        protocolHandler = handler;
+        T handler = null;
+        try {
+            handler = ((StandardContext) getContext()).createHttpUpgradeHandlerInstance(handlerClass);
+        } catch(Exception ex) {
+            if (ex instanceof IOException) {
+                throw (IOException)ex;
+            } else {
+                throw new IOException(ex);
+            }
+        }
+        httpUpgradeHandler = handler;
         coyoteRequest.getResponse().suspend();
+        return handler;
     }
 
     // ------------------------------------------------------ Protected Methods
