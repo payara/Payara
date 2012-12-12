@@ -38,8 +38,10 @@
  * holder.
  */
 package com.sun.enterprise.admin.cli.remote;
+import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.admin.remote.sse.GfSseInboundEvent;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.StringUtils;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -58,13 +60,18 @@ import org.glassfish.api.admin.AdminCommandState;
  * @author Bhakti Mehta
  */
 public class DetachListener implements AdminCommandEventBroker.AdminCommandListener<GfSseInboundEvent> {
+    
+    private static final LocalStringsImpl strings =
+            new LocalStringsImpl(DetachListener.class);
 
     private final Logger logger;
     private final RemoteRestAdminCommand rac;
+    private final boolean terse;
 
-    public DetachListener(Logger logger, RemoteRestAdminCommand rac) {
+    public DetachListener(Logger logger, RemoteRestAdminCommand rac, boolean terse) {
         this.logger = logger;
         this.rac = rac;
+        this.terse = terse;
     }
 
     @Override
@@ -73,9 +80,13 @@ public class DetachListener implements AdminCommandEventBroker.AdminCommandListe
             AdminCommandState acs = event.getData(AdminCommandState.class, MediaType.APPLICATION_JSON_TYPE);
             String id = acs.getId();
             if (StringUtils.ok(id)) {
-                rac.closeSse("Job ID: " + id, ActionReport.ExitCode.SUCCESS);
+                if (terse) {
+                    rac.closeSse(id, ActionReport.ExitCode.SUCCESS);
+                } else {
+                    rac.closeSse(strings.get("detach.jobid", id), ActionReport.ExitCode.SUCCESS);
+                }
             } else {
-                logger.log(Level.SEVERE, "event comes but no id - error");
+                logger.log(Level.SEVERE, strings.getString("detach.noid", "Command was started but id was not retrieved. Can not detach."));
             }
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);

@@ -64,6 +64,7 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.jvnet.hk2.annotations.Service;
 import javax.xml.bind.Marshaller;
+import org.glassfish.api.logging.LogLevel;
 
 /**
  *  This is the implementation for the JobManagerService
@@ -289,6 +290,7 @@ public class JobManagerService implements JobManager,PostConstruct {
      * and persisted in the jobs.xml
      * @return JobsInfos which contains information about completed jobs
      */
+    @Override
     public synchronized JobInfos getCompletedJobs() {
         try {
             if (jaxbContext == null)
@@ -300,7 +302,6 @@ public class JobManagerService implements JobManager,PostConstruct {
             }
         } catch (JAXBException e) {
             throw new RuntimeException(adminStrings.getLocalString("error.reading.completed.jobs","Error reading completed jobs ",  e.getLocalizedMessage()));
-
         }
         return null;
     }
@@ -311,6 +312,7 @@ public class JobManagerService implements JobManager,PostConstruct {
      * @param jobId the job to purge
      * @return  the new list of completed jobs
      */
+    @Override
     public synchronized JobInfos purgeCompletedJobForId(String jobId) {
         CopyOnWriteArrayList<JobInfo> jobList = new CopyOnWriteArrayList<JobInfo>();
         if (getCompletedJobs()!= null)

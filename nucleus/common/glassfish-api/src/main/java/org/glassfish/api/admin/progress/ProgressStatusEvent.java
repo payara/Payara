@@ -143,6 +143,13 @@ public class ProgressStatusEvent {
     public boolean isSpinner() {
         return spinner;
     }
+
+    @Override
+    public String toString() {
+        return "ProgressStatusEvent{" + "source=" + source + ", parentSourceId=" + parentSourceId + ", changed=" + changed + ", message=" + message + ", spinner=" + spinner + ", allocatedSteps=" + allocatedSteps + '}';
+    }
+    
+    
     
     
     

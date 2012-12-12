@@ -37,38 +37,51 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.tests.progress;
+package org.glassfish.nucleus.admin.progress;
 
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.Progress;
-import org.glassfish.api.admin.ProgressStatus;
-import org.glassfish.api.admin.Supplemental;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
+import java.util.Iterator;
+import java.util.List;
+import static org.glassfish.tests.utils.NucleusTestUtils.*;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.Test;
 
-@Service
-@Supplemental(value = "progress-supplement", on= Supplemental.Timing.After )
-@PerLookup
-@CommandLock(CommandLock.LockType.NONE)
-@Progress(name="after", totalStepCount=6)
-public class SupplementAfter implements AdminCommand {
+/**
+ *
+ * @author martinmares
+ */
+@Test(testName="ProgressStatusSpecialTest")
+public class ProgressStatusSpecialTest {
     
-    @Override
-    public void execute(AdminCommandContext context) {
-        ProgressStatus ps = context.getProgressStatus();
-        ps.progress("3 seconds supplemental");
-        for (int i = 0; i < 6; i++) {
-            try {
-                Thread.sleep(500L);
-            } catch (InterruptedException ex) {
+    public void stepBackCommand() {
+        NadminReturn result = nadminWithOutput("progress-step-back");
+        assertTrue(result.returnValue);
+        List<ProgressMessage> prgs = ProgressMessage.grepProgressMessages(result.out);
+        assertFalse(ProgressMessage.isNonDecreasing(prgs));
+        Iterator<ProgressMessage> itr = prgs.iterator();
+        while (itr.hasNext()) {
+            ProgressMessage prg = itr.next();
+            if (prg.getValue() >= 80) {
+                break;
             }
-            ps.progress(1);
         }
-        context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        ps.complete();
+        assertTrue(itr.hasNext()); //Exist more record
+        while (itr.hasNext()) {
+            ProgressMessage prg = itr.next();
+            assertTrue(prg.getValue() <= 80);
+            if (prg.getValue() < 80) {
+                break;
+            }
+        }
+        assertTrue(itr.hasNext()); //Exist more record
+        ProgressMessage prg = itr.next();
+        assertTrue(prg.getValue() < 80);
+    }
+    
+    public void doubleTotalCommand() {
+        NadminReturn result = nadminWithOutput("progress-double-totals");
+        assertTrue(result.returnValue);
+        List<ProgressMessage> prgs = ProgressMessage.grepProgressMessages(result.out);
+        assertFalse(ProgressMessage.isNonDecreasing(prgs));
     }
     
 }

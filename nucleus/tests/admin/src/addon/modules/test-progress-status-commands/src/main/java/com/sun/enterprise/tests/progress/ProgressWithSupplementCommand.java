@@ -70,22 +70,20 @@ public class ProgressWithSupplementCommand implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         ProgressStatus ps = context.getProgressStatus();
-        ps.setTotalStepCount(10);
-        ps.progress(strings.getString("job.parsing", "Parsing..."));
+        ps.setTotalStepCount(4);
+        ps.progress("Parsing");
         doSomeLogic();
-        ps.progress(1, strings.getString("job.part", "Working on main part..."));
-        for (int i = 0; i < 7; i++) {
+        ps.progress(1, "Working on main part");
+        for (int i = 0; i < 3; i++) {
             doSomeLogic();
             ps.progress(1);
         }
-        ps.progress(1, strings.getString("job.cleaning", "Cleaning..."));
-        doSomeLogic();
-        ps.complete(strings.getString("job.finished", "Finished..."));
+        ps.complete("Finished");
     }
     
     private void doSomeLogic() {
         try {
-            Thread.sleep(1000L);
+            Thread.sleep(300L);
         } catch (Exception ex) {
         }
     }

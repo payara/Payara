@@ -93,6 +93,11 @@ public abstract class ProgressStatusBase implements ProgressStatus {
         public int hashCode() {
             return this.progressStatus != null ? this.progressStatus.hashCode() : 0;
         }
+
+        @Override
+        public String toString() {
+            return "ChildProgressStatus{" + "allocatedSteps=" + allocatedSteps + ", progressStatus=" + progressStatus + '}';
+        }
         
     }
     
@@ -367,7 +372,9 @@ public abstract class ProgressStatusBase implements ProgressStatus {
     public synchronized int computeSumSteps() {
         int result = 0;
         for (ChildProgressStatus child : children) {
-            result += child.progressStatus.computeSumSteps();
+            if (child.allocatedSteps > 0) {
+                result += child.progressStatus.computeSumSteps();
+            }
         }
         return getCurrentStepCount() + result;
     }

@@ -129,6 +129,7 @@ public class ProgressStatusClient {
             return;
         }
         ProgressStatus effected = map.get(event.getSource().getId());
+        boolean msgChanged = false;
         if (event.getChanged() != null && event.getChanged().size() > 0) {
             for (ProgressStatusEvent.Changed chng : event.getChanged()) {
                 switch (chng) {
@@ -146,17 +147,20 @@ public class ProgressStatusClient {
                         break;
                     case COMPLETED:
                         effected.complete(event.getMessage());
+                        msgChanged = true;
                         break;
                     case STEPS:
                         effected.setCurrentStepCount(event.getSource().getCurrentStepCount());
                         if (StringUtils.ok(event.getMessage())) {
                             effected.progress(0, event.getMessage(), event.isSpinner());
+                            msgChanged = true;
                         }
                         break;
                     case TOTAL_STEPS:
                         effected.setTotalStepCount(event.getSource().getTotalStepCount());
                         if (StringUtils.ok(event.getMessage())) {
                             effected.progress(0, event.getMessage(), event.isSpinner());
+                            msgChanged = true;
                         }
                         break;
                     case SPINNER:
@@ -165,10 +169,9 @@ public class ProgressStatusClient {
                         throw new AssertionError();
                 }
             }
-        } else {
-            if (StringUtils.ok(event.getMessage())) {
-                effected.progress(0, event.getMessage(), event.isSpinner());
-            }
+        }
+        if (!msgChanged && StringUtils.ok(event.getMessage())) {
+            effected.progress(0, event.getMessage(), event.isSpinner());
         }
     }
 

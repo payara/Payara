@@ -39,7 +39,6 @@
  */
 package com.sun.enterprise.tests.progress;
 
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.logging.LogDomains;
 import java.io.File;
@@ -67,15 +66,12 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("progress")
-@Progress(totalStepCount=10)
+@Progress(totalStepCount=5)
 @ManagedJob
 public class ProgressPayloadCommand implements AdminCommand {
     
     private final static Logger logger =
-            LogDomains.getLogger(ProgressSimpleCommand.class, LogDomains.ADMIN_LOGGER);
-    
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(ProgressSimpleCommand.class);
+            LogDomains.getLogger(ProgressPayloadCommand.class, LogDomains.ADMIN_LOGGER);
     
     @Param(name = "down", multiple = false, primary = true, optional = true)
     String down;
@@ -84,7 +80,7 @@ public class ProgressPayloadCommand implements AdminCommand {
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         ProgressStatus ps = context.getProgressStatus();
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i < 4; i++) {
             doSomeLogic();
             ps.progress(1);
         }
@@ -121,12 +117,12 @@ public class ProgressPayloadCommand implements AdminCommand {
         }
         //Return
         ps.progress(1);
-        ps.complete(strings.getString("job.finished", "Finished..."));
+        ps.complete("Finished");
     }
     
     private void doSomeLogic() {
         try {
-            Thread.sleep(300L);
+            Thread.sleep(250L);
         } catch (Exception ex) {
         }
     }

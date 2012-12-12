@@ -65,6 +65,11 @@ public class ProgressStatusDTO {
         public ProgressStatusDTO getProgressStatus() {
             return progressStatus;
         }
+
+        @Override
+        public String toString() {
+            return "ChildProgressStatusDTO{" + "allocatedSteps=" + allocatedSteps + ", progressStatus=" + progressStatus + '}';
+        }
         
     }
     
@@ -124,5 +129,12 @@ public class ProgressStatusDTO {
     public Set<ChildProgressStatusDTO> getChildren() {
         return children;
     }
+
+    @Override
+    public String toString() {
+        return "ProgressStatusDTO{" + "name=" + name + ", id=" + id + ", totalStepCount=" + totalStepCount + ", currentStepCount=" + currentStepCount + ", completed=" + completed + ", children=" + children + '}';
+    }
+    
+    
     
 }

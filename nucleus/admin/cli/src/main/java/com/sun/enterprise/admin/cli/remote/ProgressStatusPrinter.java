@@ -188,7 +188,7 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
                         break;
                 }
                 outMsg.append('%');
-                if (percentage > lastPercentage) {
+                if (percentage != lastPercentage) {
                     printIt = true;
                     lastPercentage = percentage;
                 }

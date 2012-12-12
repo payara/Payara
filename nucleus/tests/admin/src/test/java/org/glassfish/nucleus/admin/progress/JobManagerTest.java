@@ -53,7 +53,7 @@ import org.testng.annotations.Test;
  */
 @Test(testName="JobManagerTest", enabled=true)
 public class JobManagerTest {
-    private File nucleusRoot  = NucleusTestUtils.getNucleusRoot();
+    private static File nucleusRoot  = NucleusTestUtils.getNucleusRoot();
     
     private final String COMMAND1 = "progress-simple";
 
@@ -136,7 +136,7 @@ public class JobManagerTest {
     /**
      * This will delete the jobs.xml file
      */
-    private void deleteJobsFile() {
+    public static void deleteJobsFile() {
         File configDir = new File(nucleusRoot,"domains/domain1/config");
         File jobsFile = new File (configDir,"jobs.xml");
         System.out.println("Deleting.. " + jobsFile);

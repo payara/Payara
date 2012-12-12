@@ -190,16 +190,20 @@ public class ProgressCustomCommand implements AdminCommand {
                 int multip = interval.getMultiplicator();
                 if (interval.getMaxSec() == 0) {
                     ps.progress(multip, "Finished block without sleeping: [" +blockId + "] " + interval);
-                }
-                for (int i = 0; i < multip; i++) {
-                    if (i == (multip - 1)) {
-                        ps.progress(1, "Finished block [" +blockId + "] " + interval, interval.isSpin());
-                    } else {
-                        ps.progress(1);
-                    }
-                    try {
-                        Thread.sleep(interval.getMilis());
-                    } catch (Exception ex) {
+                } else {
+                    for (int i = 0; i < multip; i++) {
+                        if (i == 0) {
+                            ps.progress(0, "Starting block[" +blockId + "] " + interval, interval.isSpin());
+                        }
+                        try {
+                            Thread.sleep(interval.getMilis());
+                        } catch (Exception ex) {
+                        }
+                        if (i == (multip - 1)) {
+                            ps.progress(1, "Finished block [" +blockId + "] " + interval);
+                        } else {
+                            ps.progress(1, "Block [" +blockId + "] " + interval + ", step: " + (i + 1));
+                        }
                     }
                 }
             } else {

@@ -39,21 +39,14 @@
  */
 package com.sun.enterprise.tests.progress;
 
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.logging.LogDomains;
-import java.util.logging.Logger;
 import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.AdminCommandEventBroker;
-import org.glassfish.api.admin.AdminCommandEventBroker.BrokerListenerRegEvent;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ManagedJob;
 import org.glassfish.api.admin.Progress;
 import org.glassfish.api.admin.ProgressStatus;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
@@ -66,42 +59,42 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("progress")
-@Progress(totalStepCount=10)
 @ManagedJob
-@RestEndpoints({
-    @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="progress", 
-        description="SimpleProgress",
-        useForAuthorization=true)
-})
+@Progress
+//@RestEndpoints({
+//    @RestEndpoint(configBean=Domain.class,
+//        opType=RestEndpoint.OpType.GET, 
+//        path="progress", 
+//        description="SimpleProgress",
+//        useForAuthorization=true)
+//})
 public class ProgressSimpleCommand implements AdminCommand {
     
-    private final static Logger logger =
-            LogDomains.getLogger(ProgressSimpleCommand.class, LogDomains.ADMIN_LOGGER);
-    
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(ProgressSimpleCommand.class);
+    @Param(name="nototalsteps", primary=false, optional=true, defaultValue="false")
+    boolean noTotalSteps;
     
     @Override
     public void execute(AdminCommandContext context) {
         ProgressStatus ps = context.getProgressStatus();
-        ps.progress(strings.getString("job.parsing", "Parsing..."));
+        if (!noTotalSteps) {
+            ps.setTotalStepCount(10);
+        }
+        ps.progress("Parsing");
         doSomeLogic();
-        ps.progress(1, strings.getString("job.part", "Working on main part..."));
+        ps.progress(1, "Working on main part");
         for (int i = 0; i < 7; i++) {
             doSomeLogic();
             ps.progress(1);
         }
-        ps.progress(1, strings.getString("job.cleaning", "Cleaning..."));
+        ps.progress(1, "Cleaning");
         doSomeLogic();
-        ps.complete(strings.getString("job.finished", "Finished..."));
+        ps.complete("Finished");
         context.getActionReport().appendMessage("All done");
     }
     
     private void doSomeLogic() {
         try {
-            Thread.sleep(1000L);
+            Thread.sleep(500L);
         } catch (Exception ex) {
         }
     }

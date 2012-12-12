@@ -756,7 +756,8 @@ public class RemoteCLICommand extends CLICommand {
             rac.statusPrinter.reset();
             options.set("DEFAULT", operands);
             if (programOpts.isDetachedCommand())  {
-                rac.registerListener(AdminCommandState.EVENT_STATE_CHANGED, new DetachListener(logger, rac));
+                rac.registerListener(AdminCommandState.EVENT_STATE_CHANGED, 
+                        new DetachListener(logger, rac, programOpts.isTerse()));
             }
             try {
                 output = rac.executeCommand(options);

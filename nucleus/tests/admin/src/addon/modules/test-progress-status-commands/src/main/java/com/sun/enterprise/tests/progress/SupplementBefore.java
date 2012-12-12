@@ -53,16 +53,16 @@ import org.jvnet.hk2.annotations.Service;
 @Supplemental(value = "progress-supplement", on= Supplemental.Timing.Before )
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@Progress(name="before", totalStepCount=5)
+@Progress(name="before", totalStepCount=4)
 public class SupplementBefore implements AdminCommand {
     
     @Override
     public void execute(AdminCommandContext context) {
         ProgressStatus ps = context.getProgressStatus();
-        ps.progress("5 seconds supplemental command");
-        for (int i = 0; i < 5; i++) {
+        ps.progress("2 seconds supplemental command");
+        for (int i = 0; i < 4; i++) {
             try {
-                Thread.sleep(1000L);
+                Thread.sleep(500L);
             } catch (InterruptedException ex) {
             }
             ps.progress(1);

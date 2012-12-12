@@ -183,9 +183,11 @@ public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCo
     }
 
     private void purgeJob(String jobid) {
-        registry.purgeJob(jobid);
-        registry.purgeCompletedJobForId(jobid);
-
+        try {
+            registry.purgeJob(jobid);
+            registry.purgeCompletedJobForId(jobid);
+        } catch (Exception ex) {
+        }
     }
 
 }

@@ -39,9 +39,6 @@
  */
 package com.sun.enterprise.tests.progress;
 
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.logging.LogDomains;
-import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.AdminCommand;
@@ -66,19 +63,13 @@ import org.jvnet.hk2.annotations.Service;
 @ManagedJob
 public class ProgressFailInHalfCommand implements AdminCommand {
     
-    private final static Logger logger =
-            LogDomains.getLogger(ProgressFailInHalfCommand.class, LogDomains.ADMIN_LOGGER);
-    
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(ProgressFailInHalfCommand.class);
-    
     @Override
     public void execute(AdminCommandContext context) {
         ProgressStatus ps = context.getProgressStatus();
-        ps.progress(strings.getString("job.parsing", "Parsing..."));
+        ps.progress("Parsing");
         doSomeLogic();
-        ps.progress(1, strings.getString("job.part", "Working on main part..."));
-        for (int i = 0; i < 5; i++) {
+        ps.progress(1, "Working");
+        for (int i = 0; i < 4; i++) {
             doSomeLogic();
             ps.progress(1);
         }
@@ -89,7 +80,7 @@ public class ProgressFailInHalfCommand implements AdminCommand {
     
     private void doSomeLogic() {
         try {
-            Thread.sleep(1000L);
+            Thread.sleep(200L);
         } catch (Exception ex) {
         }
     }

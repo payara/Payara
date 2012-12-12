@@ -37,30 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.tests.progress.somethingelse;
+package org.glassfish.nucleus.admin.progress;
 
-import org.glassfish.api.admin.ProgressStatus;
+import java.util.List;
+import org.testng.annotations.Test;
+import static org.glassfish.tests.utils.NucleusTestUtils.*;
+import static org.testng.AssertJUnit.*;
 
-/** This is not command. But it represents separated utility class which 
- * supports progress status.
+/**
  *
- * @author mmares
+ * @author martinmares
  */
-public class SeparatedLogic {
+@Test(testName="ProgressStatusFailTest")
+public class ProgressStatusFailTest {
     
-    public void doIt(ProgressStatus ps) {
-        ps.setTotalStepCount(10);
-        for (int i = 0; i < 10; i++) {
-            doSomeLogic();
-            ps.progress(1);
-        }
+    public void failDuringExecution() {
+        NadminReturn result = nadminWithOutput("progress-fail-in-half");
+        assertFalse(result.returnValue);
+        List<ProgressMessage> prgs = ProgressMessage.grepProgressMessages(result.out);
+        assertFalse(prgs.isEmpty());
+        assertEquals(50, prgs.get(prgs.size() - 1).getValue());
     }
     
-    private void doSomeLogic() {
-        try {
-            Thread.sleep(1000L);
-        } catch (Exception ex) {
-        }
+    public void timeout() {
+        NadminReturn result = nadminWithOutput(6 * 1000, "progress-custom", "3x1", "1x8", "2x1");
+        assertFalse(result.returnValue);
+        List<ProgressMessage> prgs = ProgressMessage.grepProgressMessages(result.out);
+        assertFalse(prgs.isEmpty());
+        assertEquals(50, prgs.get(prgs.size() - 1).getValue());
     }
     
 }

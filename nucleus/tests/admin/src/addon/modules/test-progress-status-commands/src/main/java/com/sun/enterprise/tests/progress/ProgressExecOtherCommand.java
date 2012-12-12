@@ -39,7 +39,6 @@
  */
 package com.sun.enterprise.tests.progress;
 
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import javax.inject.Inject;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.AdminCommand;
@@ -65,14 +64,11 @@ public class ProgressExecOtherCommand implements AdminCommand {
     @Inject
     CommandRunner commandRunner;
     
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(ProgressExecOtherCommand.class);
-    
     @Override
     public void execute(AdminCommandContext context) {
         ProgressStatus ps = context.getProgressStatus();
         //Do some before logic
-        ps.progress(strings.getString("job.prepare", "Preparing ..."));
+        ps.progress("Preparing");
         for (int i = 0; i < 10; i++) {
             doSomeLogic();
             ps.progress(1);
@@ -88,17 +84,17 @@ public class ProgressExecOtherCommand implements AdminCommand {
                 .execute();
         
         //Do some after logic
-        ps.progress(strings.getString("job.finishing", "Finishing ..."));
+        ps.progress("Finishing outer command");
         for (int i = 0; i < 10; i++) {
             doSomeLogic();
             ps.progress(1);
         }
-        ps.complete(strings.getString("job.finished", "Finished"));
+        ps.complete("Finished outer command");
     }
     
     private void doSomeLogic() {
         try {
-            Thread.sleep(500L);
+            Thread.sleep(250L);
         } catch (Exception ex) {
         }
     }
