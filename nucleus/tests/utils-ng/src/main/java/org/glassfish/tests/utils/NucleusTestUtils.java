@@ -178,6 +178,7 @@ public class NucleusTestUtils {
             exit = 1;
         }
         catch (ProcessManagerException ex) {
+            ex.printStackTrace();
             exit = 1;
         }
 
