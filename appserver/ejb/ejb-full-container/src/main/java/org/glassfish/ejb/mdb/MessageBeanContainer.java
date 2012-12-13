@@ -438,8 +438,6 @@ public final class MessageBeanContainer extends BaseContainer implements
         boolean redeliver = false;
 
         // There is no resource associated with the delivery of the timeout.
-        ResourceHandle nullResourceHandle = null;
-
         try {
 
             Method method = getTimeoutMethod(timerState);
@@ -447,7 +445,7 @@ public final class MessageBeanContainer extends BaseContainer implements
             // Do pre-invoke logic for message bean with tx import = false
             // and a null resource handle.
             beforeMessageDelivery(method, MessageDeliveryType.Timer,
-                    false, nullResourceHandle);
+                    false, null);
 
             prepareEjbTimeoutParams((EjbInvocation) invocationManager.getCurrentInvocation(),
                     timerState, timerService);
@@ -480,7 +478,7 @@ public final class MessageBeanContainer extends BaseContainer implements
             // afterMessageDelivery takes care of postInvoke and postInvokeTx
             // processing. If any portion of that work fails, mark
             // timer for redelivery.
-            boolean successfulAfterMessageDelivery = afterMessageDeliveryInternal(nullResourceHandle);
+            boolean successfulAfterMessageDelivery = afterMessageDeliveryInternal(null);
             if (!redeliver && !successfulAfterMessageDelivery) {
                 redeliver = true;
             }
