@@ -44,6 +44,7 @@ import java.io.IOException;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.WebConnection;
 
 /**
@@ -58,6 +59,8 @@ public class WebConnectionImpl implements WebConnection {
     private ServletInputStream inputStream;
 
     private ServletOutputStream outputStream;
+
+    private Request request;
 
     // ----------------------------------------------------------- Constructor
 
@@ -92,6 +95,10 @@ public class WebConnectionImpl implements WebConnection {
 
     @Override
     public void close() throws Exception {
+        if ((request != null) && (request.isUpgrade())) {
+            request.getHttpUpgradeHandler().destroy();
+            request.getCoyoteRequest().getResponse().resume();
+        }
         Exception exception = null;
         try {
             inputStream.close();
@@ -108,4 +115,9 @@ public class WebConnectionImpl implements WebConnection {
             throw exception;
         }
     }
+
+    public void setRequest(Request req) {
+        request = req;
+    }
+
 }

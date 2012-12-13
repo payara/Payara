@@ -760,10 +760,12 @@ public class StandardPipeline
             if (req.isUpgrade()) {
                 HttpUpgradeHandler handler = req.getHttpUpgradeHandler();
                 if (handler != null) {
-                    handler.init(
+                    WebConnectionImpl wc =
                             new WebConnectionImpl(
-                            req.getInputStream(),
-                            ((org.apache.catalina.connector.Response)req.getResponse()).getOutputStream()));
+                                    req.getInputStream(),
+                                    ((org.apache.catalina.connector.Response)req.getResponse()).getOutputStream());
+                    wc.setRequest(req);
+                    handler.init(wc);
                 } else {
                     log.log(Level.SEVERE, PROTOCOL_HANDLER_REQUIRED_EXCEPTION);
                 }

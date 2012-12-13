@@ -448,10 +448,6 @@ public class InputBuffer extends Reader
             synchronized(lk) {
                 prevIsReady = true;
                 readListener.onAllDataRead();
-                // TODO We should move resume() using upgrade finished API.
-                if (request.isUpgrade()) {
-                    grizzlyRequest.getResponse().resume();
-                }
             }
         }
 
@@ -471,6 +467,10 @@ public class InputBuffer extends Reader
 
         private void processError(final Throwable t) {
             synchronized(lk) {
+                if (request.isUpgrade()) {
+                    request.getHttpUpgradeHandler().destroy();
+                    grizzlyRequest.getResponse().resume();
+                }
                 readListener.onError(t);
             }
         }
