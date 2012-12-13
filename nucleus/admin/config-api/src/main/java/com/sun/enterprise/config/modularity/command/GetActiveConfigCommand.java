@@ -51,8 +51,10 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
+import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -68,6 +70,9 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,7 +88,7 @@ import java.util.logging.Logger;
 @Service(name = "get-active-module-config")
 @PerLookup
 @I18n("get.active.config")
-public final class GetActiveConfigCommand extends AbstractConfigModularityCommand implements AdminCommand {
+public final class GetActiveConfigCommand extends AbstractConfigModularityCommand implements AdminCommand, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
 
     private final Logger LOG = Logger.getLogger(GetActiveConfigCommand.class.getName());
     final private static LocalStringManagerImpl localStrings =
@@ -120,8 +125,8 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
 
     @Override
     public void execute(AdminCommandContext context) {
-         report = context.getActionReport();
-        if (serviceName == null && isAll==false) {
+        report = context.getActionReport();
+        if (serviceName == null && isAll == false) {
             report.setMessage(localStrings.getLocalString("get.active.config.service.name.required",
                     "You need to specify a service name to get it's active configuration."));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -225,7 +230,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
         for (ConfigBeanDefaultValue value : defaults) {
             builder.append(localStrings.getLocalString("at.location",
                     "At Location: "));
-            builder.append(replaceExpressionsWithValues(value.getLocation(), serviceLocator));
+            builder.append(replaceExpressionsWithValues(value.getLocation()));
             builder.append(LINE_SEPARATOR);
             String substituted = configModularityUtils.replacePropertiesWithCurrentValue(
                     getDependentConfigElement(value), value);
@@ -245,5 +250,36 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
         } else {
             return defaultValue.getXmlConfiguration();
         }
+    }
+
+    @Override
+    public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
+        String className = configModularityUtils.convertConfigElementNameToClassName(serviceName);
+        Class configBeanType = configModularityUtils.getClassFor(serviceName);
+        if (configBeanType == null) {
+            //TODO check if this is the correct course of action.
+            return Collections.emptyList();
+        }
+
+        if (configModularityUtils.hasCustomConfig(configBeanType)) {
+            List<ConfigBeanDefaultValue> defaults = configModularityUtils.getDefaultConfigurations(configBeanType,
+                    configModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
+            return getAccessChecksForDefaultValue(defaults, target, Arrays.asList("read"));
+        }
+
+        if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
+            return getAccessChecksForConfigBean(config.getExtensionByType(configBeanType), target, Arrays.asList("read"));
+        }
+        if (configBeanType.isAssignableFrom(DomainExtension.class)) {
+            return getAccessChecksForConfigBean(config.getExtensionByType(configBeanType), target, Arrays.asList("read"));
+        }
+        //TODO check if this is right course of action
+        return Collections.emptyList();
+    }
+
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        //TODO check if it is actually required to use this method to infer the resources etc or only using the
+        return true;
     }
 }

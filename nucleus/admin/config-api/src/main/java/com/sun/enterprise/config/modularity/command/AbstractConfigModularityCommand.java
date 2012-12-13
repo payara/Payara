@@ -41,15 +41,21 @@
 package com.sun.enterprise.config.modularity.command;
 
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
+import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
+import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.StringTokenizer;
 
 /**
@@ -59,9 +65,11 @@ import java.util.StringTokenizer;
 public class AbstractConfigModularityCommand {
     @Inject
     private ConfigModularityUtils configModularityUtils;
-    protected final static String LINE_SEPARATOR=System.getProperty("line.separator");
+    @Inject
+    ServiceLocator locator;
+    protected final static String LINE_SEPARATOR = System.getProperty("line.separator");
 
-    protected String replaceExpressionsWithValues(String location, ServiceLocator serviceLocator) {
+    protected String replaceExpressionsWithValues(String location) {
         StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
         while (tokenizer.hasMoreElements()) {
             String level = tokenizer.nextToken();
@@ -91,5 +99,36 @@ public class AbstractConfigModularityCommand {
 
         }
         return null;
+    }
+
+
+    protected Collection<AccessRequired.AccessCheck> getAccessChecksForDefaultValue(List<ConfigBeanDefaultValue> values, String target, List<String> actions) {
+        Collection<AccessRequired.AccessCheck> checks = new ArrayList<AccessRequired.AccessCheck>();
+        for (ConfigBeanDefaultValue val : values) {
+            String location = val.getLocation();
+            for (String s : actions) {
+                AccessRequired.AccessCheck check = new AccessRequired.AccessCheck(configModularityUtils.getOwningObject(location), s, true);
+                checks.add(check);
+            }
+        }
+        return checks;
+    }
+
+    protected Collection<AccessRequired.AccessCheck> getAccessChecksForConfigBean(ConfigBeanProxy cbProxy, String target, List<String> actions) {
+        Collection<AccessRequired.AccessCheck> checks = new ArrayList<AccessRequired.AccessCheck>();
+        for (String s : actions) {
+            AccessRequired.AccessCheck check = new AccessRequired.AccessCheck(cbProxy, s, true);
+            checks.add(check);
+        }
+        return checks;
+    }
+
+    protected Collection<AccessRequired.AccessCheck> getAccessChecksForLocation(String location, List<String> actions) {
+        Collection<AccessRequired.AccessCheck> checks = new ArrayList<AccessRequired.AccessCheck>();
+        for (String s : actions) {
+            AccessRequired.AccessCheck check = new AccessRequired.AccessCheck(replaceExpressionsWithValues(location), s);
+            checks.add(check);
+        }
+        return checks;
     }
 }

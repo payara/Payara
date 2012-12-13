@@ -52,8 +52,10 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
+import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -73,6 +75,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,7 +94,7 @@ import java.util.logging.Logger;
 @Service(name = "delete-module-config")
 @PerLookup
 @I18n("delete.module.config")
-public final class DeleteModuleConfigCommand extends AbstractConfigModularityCommand implements AdminCommand {
+public final class DeleteModuleConfigCommand extends AbstractConfigModularityCommand implements AdminCommand, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
     private final Logger LOG = Logger.getLogger(DeleteModuleConfigCommand.class.getName());
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteModuleConfigCommand.class);
@@ -321,5 +326,36 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
                 bag.getSystemProperty().remove(bag.getSystemProperty(token.getKey()));
             }
         }
+    }
+
+    @Override
+    public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
+        String className = configModularityUtils.convertConfigElementNameToClassName(serviceName);
+        Class configBeanType = configModularityUtils.getClassFor(serviceName);
+        if (configBeanType == null) {
+            //TODO check if this is the correct course of action.
+            return Collections.emptyList();
+        }
+
+        if (configModularityUtils.hasCustomConfig(configBeanType)) {
+            List<ConfigBeanDefaultValue> defaults = configModularityUtils.getDefaultConfigurations(configBeanType,
+                    configModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
+            return getAccessChecksForDefaultValue(defaults, target, Arrays.asList("read", "delete"));
+        }
+
+        if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
+            return getAccessChecksForConfigBean(config.getExtensionByType(configBeanType), target, Arrays.asList("read", "delete"));
+        }
+        if (configBeanType.isAssignableFrom(DomainExtension.class)) {
+            return getAccessChecksForConfigBean(config.getExtensionByType(configBeanType), target, Arrays.asList("read", "delete"));
+        }
+        //TODO check if this is right course of action
+        return Collections.emptyList();
+    }
+
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        //TODO check if it is actually required to use this method to infer the resources etc or only using the
+        return true;
     }
 }

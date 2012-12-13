@@ -52,8 +52,10 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
+import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -68,6 +70,9 @@ import org.jvnet.hk2.config.Dom;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,7 +89,7 @@ import java.util.logging.Logger;
 @Service(name = "create-module-config")
 @PerLookup
 @I18n("create.module.config")
-public final class CreateModuleConfigCommand extends AbstractConfigModularityCommand implements AdminCommand {
+public final class CreateModuleConfigCommand extends AbstractConfigModularityCommand implements AdminCommand,AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
     private final Logger LOG = Logger.getLogger(CreateModuleConfigCommand.class.getName());
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CreateModuleConfigCommand.class);
@@ -265,7 +270,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
             for (ConfigBeanDefaultValue value : defaults) {
                 builder.append(localStrings.getLocalString("at.location",
                         "At Location: "));
-                builder.append(replaceExpressionsWithValues(value.getLocation(), serviceLocator));
+                builder.append(replaceExpressionsWithValues(value.getLocation()));
 //                builder.append(LINE_SEPARATOR);
                 String substituted = replacePropertiesWithDefaultValues(value.getCustomizationTokens(),
                         value.getXmlConfiguration());
@@ -303,4 +308,34 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
         }
         return sb.toString();
     }
+    @Override
+       public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
+           String className = configModularityUtils.convertConfigElementNameToClassName(serviceName);
+           Class configBeanType = configModularityUtils.getClassFor(serviceName);
+           if (configBeanType == null) {
+               //TODO check if this is the correct course of action.
+               return Collections.emptyList();
+           }
+
+           if (configModularityUtils.hasCustomConfig(configBeanType)) {
+               List<ConfigBeanDefaultValue> defaults = configModularityUtils.getDefaultConfigurations(configBeanType,
+                       configModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
+               return getAccessChecksForDefaultValue(defaults, target, Arrays.asList("read", "create","delete"));
+           }
+
+           if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
+               return getAccessChecksForConfigBean(config.getExtensionByType(configBeanType), target, Arrays.asList("read", "create","delete"));
+           }
+           if (configBeanType.isAssignableFrom(DomainExtension.class)) {
+               return getAccessChecksForConfigBean(config.getExtensionByType(configBeanType), target, Arrays.asList("read", "create","delete"));
+           }
+           //TODO check if this is right course of action
+           return Collections.emptyList();
+       }
+
+       @Override
+       public boolean preAuthorization(AdminCommandContext context) {
+           //TODO check if it is actually required to use this method to infer the resources etc or only using the
+           return true;
+       }
 }
