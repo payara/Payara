@@ -42,6 +42,7 @@ package com.sun.enterprise.v3.admin;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ManagedJobConfig;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.v3.server.ExecutorServiceFactory;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -99,9 +100,11 @@ public class JobManagerService implements JobManager,PostConstruct {
 
     private final static Logger logger = KernelLoggerInfo.getLogger();
 
-     @Inject
      private ExecutorService pool;
 
+     @Inject
+     private ExecutorServiceFactory executorFactory;
+     
     @Inject
     private ServerEnvironment serverEnvironment;
 
@@ -343,5 +346,6 @@ public class JobManagerService implements JobManager,PostConstruct {
     public void postConstruct() {
         jobsFile =
                 new File(serverEnvironment.getConfigDirPath(),JOBS_FILE);
+        pool = executorFactory.provide();
     }
 }
