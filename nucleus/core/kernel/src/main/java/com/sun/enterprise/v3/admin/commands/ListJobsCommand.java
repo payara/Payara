@@ -186,6 +186,12 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
         // no linefeed at the end!!!
         boolean first = true;
         MessagePart topMsg = report.getTopMessagePart();
+        Properties properties = report.getExtraProperties();
+        if (properties == null) {
+            properties = new Properties();
+            report.setExtraProperties(properties);
+        }
+        properties.put("jobs", jobInfoList);
         for (JobInfo info : jobInfoList) {
             if (first)    {
                 topMsg.setMessage(String.format(formattedLine, NAME, JOBID, TIME, STATE,USER ));
@@ -203,7 +209,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
 
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
-    
+
     private static boolean skipJob(String name) {
         return name == null || "attach".equals(name) || name.startsWith("_");
     }
