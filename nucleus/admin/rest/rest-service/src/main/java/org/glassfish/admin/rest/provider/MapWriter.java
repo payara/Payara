@@ -45,7 +45,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.glassfish.admin.rest.RestServiceLoggingInfo;
+import org.glassfish.admin.rest.RestLogging;
 
 /**
  *
@@ -64,7 +64,7 @@ public class MapWriter extends BaseProvider<Map> {
         try {
             json = new JSONObject(proxy).toString(getFormattingIndentLevel());
         } catch (JSONException ex) {
-            RestServiceLoggingInfo.restLogger.log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
         return json;
     }

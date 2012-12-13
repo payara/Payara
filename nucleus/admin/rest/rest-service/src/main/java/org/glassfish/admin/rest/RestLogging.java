@@ -49,7 +49,7 @@ import org.glassfish.logging.annotation.LoggerInfo;
  *
  * @author jdlee
  */
-public class RestServiceLoggingInfo {
+public class RestLogging {
     @LogMessagesResourceBundle
     public static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.admin.rest.LogMessages";
 

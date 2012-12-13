@@ -63,10 +63,14 @@ import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.model.ResponseBody;
+import org.glassfish.admin.rest.utils.DetachedCommandHelper;
 import org.glassfish.admin.rest.utils.SseCommandHelper;
 import org.glassfish.admin.rest.utils.Util;
+import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.media.sse.EventOutput;
 
@@ -342,6 +346,20 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
 
     protected Response deleted(ResponseBody responseBody) {
         return Response.ok().entity(responseBody).build();
+    }
+
+    protected Response accepted(String command, ParameterMap parameters, URI childUri) {
+        CommandRunner cr = Globals.getDefaultHabitat().getService(CommandRunner.class);
+        final RestActionReporter ar = new RestActionReporter();
+        final CommandRunner.CommandInvocation commandInvocation = cr.getCommandInvocation(command, ar)
+                                                        .subject(getSubject())
+                                                        .parameters(parameters);
+        String jobId = DetachedCommandHelper.invokeAsync(commandInvocation);
+        return Response
+                .status(Response.Status.ACCEPTED)
+                .header("Location", uriInfo.getBaseUriBuilder().path("jobs").path("id").path(jobId).build())
+                .header("X-Location", childUri)
+                .build();
     }
 
     /**
