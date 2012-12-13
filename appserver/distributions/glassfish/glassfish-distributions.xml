@@ -76,10 +76,6 @@
 
 <target name="create-common-image" description="Creating IPS Image">
     <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="appclient-server-core"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
         <property name="package.name" value="glassfish-common-full"/>
         <property name="image.dir" value="${image.dir}"/>
     </ant>
