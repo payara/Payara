@@ -54,9 +54,14 @@ import javax.jms.JMSPasswordCredential;
 import javax.jms.JMSSessionMode;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.transaction.Transaction;
+import javax.transaction.SystemException;
+import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 import org.jboss.weld.context.ContextNotActiveException;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 
 /**
  * This bean is the JMSContext wrapper which user gets by injection.
@@ -70,12 +75,13 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
 
     private final static Logger logger = LogDomains.getLogger(InjectableJMSContext.class, LogDomains.JMS_LOGGER);
     private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InjectableJMSContext.class);
-    private final static String DEFAULT_CONNECTION_FACTORY = "java:comp/DefaultJMSConnectionFactory";
 
-    private final String id;
+    private final String ipId;  // id per injection point
+    private final String id;    // id per scope
 
     // CDI proxy so serializable
-    private final JMSContextManager manager;
+    private final RequestedJMSContextManager requestedManager;
+    private final TransactedJMSContextManager transactedManager;
 
     // We need to ensure this is serialiable
     private final JMSContextMetadata metadata;
@@ -87,58 +93,99 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
      * to be Serializable this may not be needed)
      */
     private transient ConnectionFactory connectionFactory;
+    private transient JavaEETransactionManager transactionManager;
 
     @Inject
-    public InjectableJMSContext(InjectionPoint ip, JMSContextManager manager) {
+    public InjectableJMSContext(InjectionPoint ip, RequestedJMSContextManager rm, TransactedJMSContextManager tm) {
+        getTransactionManager();
+
         JMSConnectionFactory jmsConnectionFactoryAnnot = ip.getAnnotated().getAnnotation(JMSConnectionFactory.class);
         JMSSessionMode                sessionModeAnnot = ip.getAnnotated().getAnnotation(JMSSessionMode.class);
         JMSPasswordCredential          credentialAnnot = ip.getAnnotated().getAnnotation(JMSPasswordCredential.class);
 
-        id = UUID.randomUUID().toString();
-        this.manager = manager;
+        ipId = UUID.randomUUID().toString();
+        this.requestedManager = rm;
+        this.transactedManager = tm;
         metadata = new JMSContextMetadata(jmsConnectionFactoryAnnot, sessionModeAnnot, credentialAnnot);
+        id = metadata.getFingerPrint();
         logger.log(Level.FINE, localStrings.getLocalString("JMSContext.injection.initialization", 
-                   "Injecting JMSContext wrapper with id {0} and metadata [{1}].", id, metadata));
+                   "Injecting JMSContext wrapper with id {0} and metadata [{1}].", ipId, metadata));
     }
 
     @Override
     protected JMSContext delegate() {
-        return manager.getContext(id, metadata, getConnectionFactory());
+        AbstractJMSContextManager manager = requestedManager;
+        if (isInTransaction())
+            manager = transactedManager;
+
+        logger.log(Level.FINE, localStrings.getLocalString("JMSContext.delegation.type", 
+                   "JMSContext wrapper with id {0} is delegating to {1} instance.", ipId, manager.getType()));
+        return manager.getContext(ipId, id, metadata, getConnectionFactory());
     }
 
     @Override
     public String toString() {
-        JMSContext context = manager.getContext(id);
+        JMSContext rContext = null;
+        JMSContext tContext = null;
+        if (isInTransaction()) {
+            tContext = transactedManager.getContext(id);
+            if (tContext == null)
+                tContext = transactedManager.getContext(ipId, id, metadata, getConnectionFactory());
+        } else {
+            rContext = requestedManager.getContext(id);
+            if (rContext == null)
+                rContext = requestedManager.getContext(ipId, id, metadata, getConnectionFactory());
+        }
+
         StringBuffer sb = new StringBuffer();
-        sb.append("JMSContext Wrapper ").append(id).append(" with metadata [").append(metadata).append("]");
-        if (context != null)
-            sb.append(", around ").append(context);
+        sb.append("JMSContext Wrapper ").append(ipId).append(" with metadata [").append(metadata).append("]");
+        if (tContext != null)
+            sb.append(", around ").append(transactedManager.getType()).append(" [").append(tContext).append("]");
+        else if (rContext != null)
+            sb.append(", around ").append(requestedManager.getType()).append(" [").append(rContext).append("]");
         return sb.toString();
     }
 
     @PreDestroy
     public void cleanup() {
+        cleanupManager(requestedManager);
+        cleanupManager(transactedManager);
+    }
+
+    private void cleanupManager(AbstractJMSContextManager manager) {
         try {
             manager.cleanup();
             logger.log(Level.FINE, localStrings.getLocalString("JMSContext.injection.cleanup", 
-                       "Cleaning up JMSContext wrapper with id {0} and metadata [{1}].", 
-                       id, metadata.getLookup()));
+                       "Cleaning up {0} JMSContext wrapper with id {1} and metadata [{2}].", 
+                       manager.getType(), ipId, metadata.getLookup()));
         } catch (ContextNotActiveException cnae) {
             // ignore the ContextNotActiveException when the application is undeployed.
         } catch (Exception e) {
             logger.log(Level.SEVERE, localStrings.getLocalString("JMSContext.injection.cleanup.failure", 
-                       "Failed to cleaning up JMSContext wrapper with id {0} and metadata [{1}]. Reason: {2}.", 
-                        id, metadata.getLookup(), e.toString()));
+                       "Failed to cleaning up {0} JMSContext wrapper with id {1} and metadata [{2}]. Reason: {3}.", 
+                        manager.getType(), ipId, metadata.getLookup(), e.toString()));
         }
+    }
+
+    private JavaEETransactionManager getTransactionManager() {
+        if (transactionManager == null) {
+            ServiceLocator serviceLocator = Globals.get(ServiceLocator.class);
+            if (serviceLocator != null)
+                transactionManager = serviceLocator.getService(JavaEETransactionManager.class);
+            if (transactionManager == null) {
+                throw new RuntimeException(localStrings.getLocalString("txn.mgr.failure", "Unable to retrieve transaction manager."));
+            }
+        }
+        return transactionManager;
     }
 
     private ConnectionFactory getConnectionFactory() {
         if (connectionFactory == null) {
             String jndiName;
-            if (metadata.getLookup() == null || "".equals(metadata.getLookup())) {
+            if (metadata.getLookup() == null) {
                 // Use platform default connection factory
                 // Java EE 7: see http://java.net/jira/browse/JAVAEE_SPEC-2
-                jndiName = DEFAULT_CONNECTION_FACTORY;
+                jndiName = JMSContextMetadata.DEFAULT_CONNECTION_FACTORY;
             } else {
                 jndiName = metadata.getLookup();
             }
@@ -157,8 +204,27 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
                 throw new RuntimeException(localStrings.getLocalString("connectionFactory.not.found", 
                                            "ConnectionFactory not found with lookup {0}.", 
                                            jndiName), ne);
+            } finally {
+                if (initialContext != null) {
+                    try {
+                        initialContext.close();
+                    } catch (NamingException ne) {}
+                }
             }
         }
         return connectionFactory;
+    }
+
+    private boolean isInTransaction() {
+        boolean isInTransaction = false;
+        try {
+            Transaction txn = getTransactionManager().getTransaction();
+            if (txn != null)
+                isInTransaction = true;
+        } catch (SystemException e) {
+            throw new RuntimeException(localStrings.getLocalString("txn.detection.failure", 
+                                       "Failed to detect transaction status of current thread."), e);
+        }
+        return isInTransaction;
     }
 }

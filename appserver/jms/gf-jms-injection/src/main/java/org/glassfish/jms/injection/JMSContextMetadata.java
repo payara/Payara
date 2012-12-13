@@ -41,6 +41,7 @@
 package org.glassfish.jms.injection;
 
 import java.io.Serializable;
+import java.security.MessageDigest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.jms.JMSConnectionFactory;
@@ -58,11 +59,13 @@ import com.sun.logging.LogDomains;
 public class JMSContextMetadata implements Serializable {
     private final static Logger logger = LogDomains.getLogger(JMSContextMetadata.class, LogDomains.JMS_LOGGER);
     private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(JMSContextMetadata.class);
+    public final static String DEFAULT_CONNECTION_FACTORY = "java:comp/DefaultJMSConnectionFactory";
 
     private final String lookup;
     private final int sessionMode;
     private final String userName;
     private final String password;
+    private String fingerPrint;
 
     JMSContextMetadata(JMSConnectionFactory jmsConnectionFactoryAnnot, JMSSessionMode sessionModeAnnot, JMSPasswordCredential credentialAnnot) {
         if (jmsConnectionFactoryAnnot == null) {
@@ -114,8 +117,44 @@ public class JMSContextMetadata implements Serializable {
             sb.append("xxxxxx");
         else
             sb.append("null");
-        sb.append("]");
+        sb.append(" [fingerPrint[").append(getFingerPrint());
+        sb.append("]]");
         return sb.toString();
+    }
+
+    public String getFingerPrint() {
+        if (fingerPrint == null) {
+            try {
+                MessageDigest md = MessageDigest.getInstance("MD5");
+                byte delimer = (byte) '|';
+                md.update(delimer);
+                String cf = lookup;
+                if (lookup == null)
+                    cf = DEFAULT_CONNECTION_FACTORY;
+                md.update(cf.getBytes("ISO-8859-1"));
+                md.update(delimer);
+                md.update((byte) sessionMode);
+                md.update(delimer);
+                if (userName != null)
+                    md.update(userName.getBytes("ISO-8859-1"));
+                md.update(delimer);
+                if (password != null)
+                    md.update(password.getBytes("ISO-8859-1"));
+                md.update(delimer);
+                byte[] result = md.digest();
+                StringBuffer buff = new StringBuffer();
+                for(int i=0; i<result.length; i++) {
+                    String byteStr = Integer.toHexString(result[i] & 0xFF);
+                    if(byteStr.length() < 2)
+                        buff.append('0');
+                    buff.append(byteStr);
+                }
+                fingerPrint = buff.toString();
+            } catch (Exception e) {
+                throw new RuntimeException("Couldn't make digest of JMSContextMetadata content", e);
+            }
+        }
+        return fingerPrint;
     }
 
     private boolean isPasswordAlias(String password){

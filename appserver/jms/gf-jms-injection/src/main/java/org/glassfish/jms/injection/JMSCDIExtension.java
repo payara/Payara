@@ -58,7 +58,7 @@ import org.glassfish.weld.WeldGFExtension;
  * This CDI portable extension can register JMSContext beans to be system-level
  * that can be injected into all applications.
  */
-@WeldGFExtension(beans={JMSContextManager.class, InjectableJMSContext.class})
+@WeldGFExtension(beans={RequestedJMSContextManager.class, TransactedJMSContextManager.class, InjectableJMSContext.class})
 public class JMSCDIExtension implements Extension {
     public JMSCDIExtension() {
     }
