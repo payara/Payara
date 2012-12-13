@@ -47,6 +47,9 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.WebConnection;
 
+import org.apache.catalina.ContainerEvent;
+import org.apache.catalina.core.StandardContext;
+
 /**
  * Implementation of WebConnection for Servlet 3.1
  *
@@ -96,7 +99,14 @@ public class WebConnectionImpl implements WebConnection {
     @Override
     public void close() throws Exception {
         if ((request != null) && (request.isUpgrade())) {
-            request.getHttpUpgradeHandler().destroy();
+            HttpUpgradeHandler httpUpgradeHandler =
+                    request.getHttpUpgradeHandler();
+            try {
+                httpUpgradeHandler.destroy();
+            } finally {
+                ((StandardContext)request.getContext()).fireContainerEvent(
+                    ContainerEvent.PRE_DESTROY, httpUpgradeHandler);
+            }
             request.getCoyoteRequest().getResponse().resume();
         }
         Exception exception = null;
