@@ -67,6 +67,7 @@ import java.lang.annotation.Annotation;
  */
 @Contract
 public interface AnnotationHandler {
+    public final static String ANNOTATION_HANDLER_METADATA = "AnnotationHandlerFor";
     
     /**
      * @return the annotation type this annotation handler is handling

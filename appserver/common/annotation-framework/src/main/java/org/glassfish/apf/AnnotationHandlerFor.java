@@ -41,12 +41,15 @@
 
 package org.glassfish.apf;
 
+import org.glassfish.hk2.api.Metadata;
 import org.jvnet.hk2.annotations.Service;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+
+import javax.inject.Qualifier;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -58,6 +61,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  */
 @Retention(RUNTIME)
 @Target(ElementType.TYPE)
+@Qualifier
 public @interface AnnotationHandlerFor {
+    @Metadata(AnnotationHandler.ANNOTATION_HANDLER_METADATA)
     Class<? extends Annotation> value();
 }
