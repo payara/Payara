@@ -792,11 +792,11 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
             final Collection<AccessCheck> result = new ArrayList<AccessCheck>();
             for (BeanAction beanAction : beanActions) {
                 result.addAll(beanAction.getAccessChecks());
+            }
             for (Map.Entry<ConfigBean,Map<String,String>> entry : changes.entrySet()) {
                 result.add(new AccessCheck(AccessRequired.Util.resourceNameFromDom(entry.getKey()), "update"));
             }
 
-            }
             return result;
         }
         
