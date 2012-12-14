@@ -167,7 +167,7 @@ public class DeleteInstanceCommand implements AdminCommand {
         CommandInvocation ci = cr.getCommandInvocation("_unregister-instance", report);
         ParameterMap map = new ParameterMap();
         map.add("DEFAULT", instanceName);
-        ci.parameters(map);
+        ci.parameters(map).subject(ctx.getSubject());
         ci.execute();
 
         if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS &&
