@@ -117,12 +117,14 @@ public class ZipFile {
                  }
                  */
 
-                File fullpath = null;
+                File fullpath;
 
                 if (isDirectory(filename)) {
                     // just a directory -- make it and move on...
                     fullpath = new File(explodeDir, filename.substring(0, filename.length() - 1));
-                    fullpath.mkdirs();
+                    if (!fullpath.mkdirs()) {
+                        throw new IOException("Cannot create directory: " + fullpath);
+                    }
                     continue;
                 }
 
@@ -131,7 +133,7 @@ public class ZipFile {
                 File newDir = fullpath.getParentFile();
 
                 if (!newDir.mkdirs()) {
-                    _utillogger.log(Level.FINE, "Cannot create directory " + newDir);
+                    _utillogger.log(Level.FINE, "Cannot create directory {0}", newDir);
                 }
 
                 if (fullpath.delete()) {	// wipe-out pre-existing files
@@ -139,7 +141,7 @@ public class ZipFile {
                      * Report that a file is being overwritten.
                      */
                     if (_utillogger.isLoggable(Level.FINE)) {
-                        _utillogger.log(Level.FINE, "File " + fullpath.getAbsolutePath() + " is being overwritten during expansion of " + (zipFile != null ? ("file " + zipFile.getAbsolutePath()) : "stream"));
+                        _utillogger.log(Level.FINE, "File {0} is being overwritten during expansion of {1}", new Object[]{fullpath.getAbsolutePath(), zipFile != null ? ("file " + zipFile.getAbsolutePath()) : "stream"});
                     }
                 }
 
@@ -171,7 +173,9 @@ public class ZipFile {
                 }
             }
             try {
-                zin.close();
+                if (zin != null) {
+                    zin.close();
+                }
             } catch (IOException e) {
                 throw new ZipFileException("Got an exception while trying to close Jar input stream: " + e);//NOI18N
             }
@@ -197,11 +201,13 @@ public class ZipFile {
         try {
             File parent = jarFile.getParentFile();
             if (!parent.exists()) {
-                parent.mkdirs();
+                if (!parent.mkdirs()) {
+                    throw new ZipFileException("Cannot create directory: " + parent);
+                }
             }
 
             ZipEntry jarEntry = earFile.getEntry(jarEntryName);
-            if (jarEntryName == null) {
+            if (jarEntry == null) {
                 throw new ZipFileException(jarEntryName
                         + " not found in " + earFile.getName());
             }
@@ -313,16 +319,11 @@ public class ZipFile {
         String explodeDirName = explodeDir.getPath();
 
         // just in case...
-        explodeDir.mkdirs();
+        insist(explodeDir.mkdirs(), "Unable to create target directory: " + explodeDirName);
 
         insist(explodeDir.exists(), "Target Directory doesn't exist: " + explodeDirName);//NOI18N
         insist(explodeDir.isDirectory(), "Target Directory isn't a directory: " + explodeDirName);//NOI18N
         insist(explodeDir.canWrite(), "Can't write to Target Directory: " + explodeDirName);//NOI18N
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////////////
-    private static boolean isSpecial(String filename) {
-        return filename.toUpperCase().startsWith(specialDir.toUpperCase());
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -337,57 +338,20 @@ public class ZipFile {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////
-    private boolean isManifest(String filename) {
-        if (filename.toLowerCase().endsWith("manifest.mf"))//NOI18N
-        {
-            return false;
-        }
-
-        return false;
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////////////
     ////////////                                                   //////////////////////////
     ////////////    Internal Error-Checking Stuff                  //////////////////////////
     ////////////                                                   //////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////
-    private static void pr(String s) {
-        System.out.println(s);
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////////////
-    private static void insist(String s) throws ZipFileException {
-        if (s == null || s.length() < 0) {
-            throw new ZipFileException();
-        } else {
-            return;
-        }
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////////////
-    private static void insist(String s, String mesg) throws ZipFileException {
-        if (s == null || s.length() < 0) {
-            throw new ZipFileException(mesg);
-        } else {
-            return;
-        }
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////////////
     private static void insist(boolean b) throws ZipFileException {
         if (!b) {
             throw new ZipFileException();
-        } else {
-            return;
-        }
+        } 
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////
     private static void insist(boolean b, String mesg) throws ZipFileException {
         if (!b) {
             throw new ZipFileException(mesg);
-        } else {
-            return;
         }
     }
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -397,7 +361,7 @@ public class ZipFile {
     private static final String specialDir = "META-INF/";//NOI18N
     private byte[] buffer = new byte[BUFFER_SIZE];
     private ZipInputStream zipStream = null;
-    private Logger _utillogger = CULoggerInfo.getLogger();
+    private static final Logger _utillogger = CULoggerInfo.getLogger();
     private File zipFile = null;
 }
 
