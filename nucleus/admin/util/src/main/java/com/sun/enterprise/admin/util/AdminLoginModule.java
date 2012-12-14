@@ -385,7 +385,17 @@ public class AdminLoginModule implements LoginModule {
                 * Either there was no special indicator or there was one and
                 * it matched what we expect.
                 */
-            return checker.result() == SpecialAdminIndicatorChecker.Result.MATCHED;
+            if (checker.result() == SpecialAdminIndicatorChecker.Result.MATCHED) {
+                /*
+                 * Add a principal indicating that this subject represents
+                 * another server in the domain and so we
+                 * can trust it completely, even if the request is remote and secure
+                 * admin is disabled.
+                 */
+                subject.getPrincipals().add(new AdminIndicatorPrincipal(providedIndicator));
+                return true;
+            }
+            return false;
         }
     }
 

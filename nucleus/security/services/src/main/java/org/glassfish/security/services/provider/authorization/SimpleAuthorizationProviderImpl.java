@@ -63,6 +63,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.logging.LogDomains;
+import org.glassfish.security.services.api.authorization.AuthorizationAttributeNames;
 
 
 
@@ -96,8 +97,26 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider {
             AzResource resource, AzAction action, AzEnvironment environment) {
 
         //TODO: get user roles from Rolemapper, and do the policy  evaluation
-        //return ok for now
-        AzResult rtn = new AzResultImpl(Decision.PERMIT, Status.OK, new AzObligationsImpl());
+        
+        /*
+         * If this is running on the DAS or if the subject is another server 
+         * in the domain then permit any actions.  Otherwise, we are running on an instance
+         * and the subject should be allowed to perform only "read" actions.
+         * 
+         * We assume that any action other than the literal "read"
+         * makes some change in the system.
+         */
+        final String isDASSetting = environment.getAttributeValue(AuthorizationAttributeNames.ISDAS_ATTRIBUTE);
+        final boolean isDAS = Boolean.parseBoolean(isDASSetting);
+        final String adminIndicator = subject.getAttributeValue(AuthorizationAttributeNames.ADMIN_INDICATOR_ATTRIBUTE);
+        
+        final Decision d = (
+                isDAS 
+                || (adminIndicator != null) 
+                ||(action.getAttributeValue("ACTION").equals("read"))) 
+                ? Decision.PERMIT : Decision.DENY; 
+        
+        AzResult rtn = new AzResultImpl(d, Status.OK, new AzObligationsImpl());
         
         return rtn;
     }

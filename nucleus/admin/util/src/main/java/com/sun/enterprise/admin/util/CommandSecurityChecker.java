@@ -42,6 +42,7 @@ package com.sun.enterprise.admin.util;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.util.*;
 import java.util.logging.Level;
@@ -54,15 +55,18 @@ import javax.security.auth.Subject;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.hk2.api.IterableProvider;
+import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.security.services.api.authorization.AuthorizationAttributeNames;
 import org.glassfish.security.services.api.authorization.AuthorizationService;
 import org.glassfish.security.services.api.authorization.AzAction;
 import org.glassfish.security.services.api.authorization.AzResource;
 import org.glassfish.security.services.api.authorization.AzResult;
 import org.glassfish.security.services.api.authorization.AzSubject;
 import org.glassfish.security.services.api.common.Attributes;
+import org.glassfish.security.services.api.context.SecurityContextService;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -81,7 +85,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
  */
 @Service
 @Singleton
-public class CommandSecurityChecker {
+public class CommandSecurityChecker implements PostConstruct {
     
     @LoggerInfo(subsystem="ADMSECAUTHZ", description="Admin security authorization")
     private static final String ADMSEC_AUTHZ_LOGGER_NAME = "javax.enterprise.system.tools.admin.security.authorization";
@@ -107,7 +111,26 @@ public class CommandSecurityChecker {
     @Inject
     private IterableProvider<AuthorizationPreprocessor> authPreprocessors;
     
+    @Inject
+    private ServerEnvironment serverEnv;
+    
+    @Inject
+    private SecurityContextService securityContextService;
+    
     private static final Map<RestEndpoint.OpType,String> optypeToAction = initOptypeMap();
+
+    @Override
+    public void postConstruct() {
+        /*
+         * Indicate whether this is the DAS or an instance in the security
+         * environment so the provider implementation can see it and use it
+         * in making authorization decisions.
+         */
+        securityContextService.getEnvironmentAttributes().addAttribute(
+                AuthorizationAttributeNames.ISDAS_ATTRIBUTE, 
+                Boolean.toString(serverEnv.isDas()), true);
+    }
+    
     
     /**
      * Maps RestEndpoint HTTP methods to the corresponding security action.
@@ -117,8 +140,8 @@ public class CommandSecurityChecker {
         final EnumMap<RestEndpoint.OpType,String> result = new EnumMap(RestEndpoint.OpType.class);
         result.put(RestEndpoint.OpType.DELETE, "delete");
         result.put(RestEndpoint.OpType.GET, "read");
-        result.put(RestEndpoint.OpType.POST, "write");
-        result.put(RestEndpoint.OpType.PUT, "insert");
+        result.put(RestEndpoint.OpType.POST, "update"); // write
+        result.put(RestEndpoint.OpType.PUT, "create"); // insert
         return result;
     }
     
@@ -134,10 +157,16 @@ public class CommandSecurityChecker {
      * @param command the admin command the Subject wants to execute
      * @return 
      */
-    public boolean authorize(final Subject subject,
+    public boolean authorize(Subject subject,
             final Map<String,Object> env,
             final AdminCommand command,
             final AdminCommandContext adminCommandContext) throws SecurityException {
+        if (subject == null) {
+//            ADMSEC_AUTHZ_LOGGER.log(Level.WARNING, command.getClass().getName(),
+//                    new IllegalArgumentException("subject"));
+            subject = new Subject();
+        }
+        
         boolean result;
         try {
             if (command instanceof AdminCommandSecurity.Preauthorization) {
@@ -158,20 +187,26 @@ public class CommandSecurityChecker {
             }
             final List<AccessCheckWork> accessChecks = assembleAccessCheckWork(command, subject);
             result = checkAccessRequired(subject, env, command, accessChecks);
-            if ( ! result) {
+        
+        } catch (Exception ex) {
+            ADMSEC_AUTHZ_LOGGER.log(Level.SEVERE, AdminLoggerInfo.mUnexpectedException, ex);
+            throw new SecurityException(ex);
+        }
+        /*
+         * Check the result and throw the SecurityException outside the previous
+         * try block. Otherwise the earlier catch will dump the stack which we
+         * do not need for simple authorization errors.
+         */
+        if ( ! result) {
 //                final List<AccessCheck> failedAccessChecks = new ArrayList<AccessCheck>();
 //                for (AccessCheckWork acWork : accessChecks) {
 //                    if ( ! acWork.accessCheck.isSuccessful()) {
 //                        failedAccessChecks.add(acWork.accessCheck);
 //                    }
 //                }
-                throw new SecurityException();
-            }
-            return result;
-        } catch (Exception ex) {
-            ADMSEC_AUTHZ_LOGGER.log(Level.SEVERE, AdminLoggerInfo.mUnexpectedException, ex);
-            throw new SecurityException(ex);
+            throw new SecurityException();
         }
+        return result;
     }
     
     private List<AccessCheckWork> assembleAccessCheckWork(
@@ -199,7 +234,7 @@ public class CommandSecurityChecker {
         return accessChecks;
     }
     
-    private boolean checkAccessRequired(final Subject subject,
+    private boolean checkAccessRequired(Subject subject,
             final Map<String,Object> env,
             final AdminCommand command,
             final List<AccessCheckWork> accessChecks) 
@@ -227,6 +262,7 @@ public class CommandSecurityChecker {
                         resourceAttrs, 
                         actionAttrs);
             }
+            augmentSubjectAttrs(subject, subjectAttrs);
             mapToAzAttrs(subjectAttrs, azSubject);
             mapToAzAttrs(resourceAttrs, azResource);
             mapToAzAttrs(actionAttrs, azAction);
@@ -244,6 +280,25 @@ public class CommandSecurityChecker {
             ADMSEC_AUTHZ_LOGGER.log(PROGRESS_LEVEL, sb.toString());
         }
         return result;
+    }
+    
+    private void augmentSubjectAttrs(final Subject s, final Map<String,String> subjectAttrs) {
+        augmentSubjectAttrs(s, subjectAttrs, AdminIndicatorPrincipal.class, 
+                AuthorizationAttributeNames.ADMIN_INDICATOR_ATTRIBUTE);
+        augmentSubjectAttrs(s, subjectAttrs, AdminTokenPrincipal.class, 
+                AuthorizationAttributeNames.ADMIN_TOKEN_ATTRIBUTE);
+    }
+    
+    private void augmentSubjectAttrs(final Subject s, final Map<String,String> subjectAttrs, 
+            final Class<? extends Principal> principalClass, final String attrName) {
+        if (s == null) {
+            return;
+        }
+        final Set<? extends Principal> principals = s.getPrincipals(principalClass);
+        for (Principal p : principals) {
+            subjectAttrs.put(attrName, p.getName());
+            break;
+        }
     }
     
     private String formattedAccessCheck(final URI resourceURI, final AccessCheck a) {

@@ -41,6 +41,11 @@
 package org.glassfish.security.services.api.authorization;
 
 
+import java.net.URI;
+import javax.security.auth.Subject;
+import org.glassfish.security.services.api.common.Attributes;
+import org.glassfish.security.services.api.context.SecurityContextService;
+import org.glassfish.security.services.impl.authorization.AuthorizationServiceImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,6 +62,7 @@ import org.glassfish.security.services.impl.authorization.AzEnvironmentImpl;
 public class SimpleAtzProviderTest extends HK2Runner {
     
     private AuthorizationProvider simpleAtzPrv = null;
+    private SecurityContextService contextService = null;
     
     @Before
     public void before() {
@@ -64,23 +70,32 @@ public class SimpleAtzProviderTest extends HK2Runner {
         
         simpleAtzPrv = testLocator.getService(AuthorizationProvider.class, "simpleAuthorization");
         Assert.assertNotNull(simpleAtzPrv);
+        contextService = testLocator.getService(SecurityContextService.class);
+        Assert.assertNotNull(contextService);
+        
+        contextService.getEnvironmentAttributes().addAttribute(
+                AuthorizationAttributeNames.ISDAS_ATTRIBUTE, "true", true);
     }
     
     @Test
     public void testService() {
-        
+        final AuthorizationService authorizationService = new AuthorizationServiceImpl();
         Assert.assertNotNull(simpleAtzPrv);
-        
+        final AzEnvironment env = new AzEnvironmentImpl();
+        final Attributes attrs = contextService.getEnvironmentAttributes();
+        for (String attrName : attrs.getAttributeNames()) {
+            env.addAttribute(attrName, attrs.getAttributeValue(attrName), true);
+        }
         AzResult rt = simpleAtzPrv.getAuthorizationDecision(
-                new AzSubjectImpl(),
-                new AzResourceImpl(), 
-                new AzActionImpl(),
-                new AzEnvironmentImpl()
+                authorizationService.makeAzSubject(new Subject()),
+                authorizationService.makeAzResource(URI.create("admin:///some/path")),
+                authorizationService.makeAzAction("read"),
+                env
               );
         
         AzResult.Decision ds = rt.getDecision();
         
-        Assert.assertEquals(ds, AzResult.Decision.PERMIT);
+        Assert.assertEquals(AzResult.Decision.PERMIT, ds);
 
     }
 

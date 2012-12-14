@@ -55,6 +55,7 @@ import org.glassfish.security.services.api.authorization.AzAction;
 import org.glassfish.security.services.api.authorization.AzResource;
 import org.glassfish.security.services.api.authorization.AzResult;
 import org.glassfish.security.services.api.authorization.AzSubject;
+import org.glassfish.security.services.api.context.SecurityContextService;
 import org.glassfish.security.services.config.SecurityConfiguration;
 import org.glassfish.security.services.impl.ServiceFactory;
 
@@ -73,6 +74,7 @@ import java.util.logging.Logger;
 import org.glassfish.security.services.api.authorization.*;
 import org.glassfish.security.services.api.authorization.AzResult.Decision;
 import org.glassfish.security.services.api.authorization.AzResult.Status;
+import org.glassfish.security.services.api.common.Attributes;
 
 import org.glassfish.security.services.config.SecurityProvider;
 import org.glassfish.security.services.spi.AuthorizationProvider;
@@ -94,6 +96,9 @@ public class AuthorizationServiceImpl implements AuthorizationService, PostConst
 
     @Inject
     private ServiceLocator serviceLocator;
+    
+    @Inject
+    private SecurityContextService securityContextService;
     
     private org.glassfish.security.services.config.AuthorizationService atzSvCfg;
     
@@ -164,7 +169,12 @@ public class AuthorizationServiceImpl implements AuthorizationService, PostConst
 	public AzResult getAuthorizationDecision(AzSubject subject,
 			AzResource resource, AzAction action) {
         //TODO: setup current AzEnvironment instance. Should a null or empty instance to represent current environment?
-		return atzProvider.getAuthorizationDecision(subject, resource, action, new AzEnvironmentImpl());
+                final AzEnvironment env = new AzEnvironmentImpl();
+                final Attributes attrs = securityContextService.getEnvironmentAttributes();
+                for (String attrName : attrs.getAttributeNames()) {
+                    env.addAttribute(attrName, attrs.getAttributeValue(attrName), true);
+                }
+		return atzProvider.getAuthorizationDecision(subject, resource, action, env);
 	}
 
     @Override
