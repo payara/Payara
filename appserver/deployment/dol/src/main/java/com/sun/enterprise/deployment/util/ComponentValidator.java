@@ -968,7 +968,11 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
 
         else if (resRef.getJndiName() == null ||
                 resRef.getJndiName().length() == 0) {
-            resRef.setJndiName(getDefaultResourceJndiName(resRef.getName()));
+            if (resRef.getType() != null && resRef.getType().equals("javax.sql.DataSource")) {
+                resRef.setLookupName("java:comp/DefaultDataSource");
+            } else {
+                resRef.setJndiName(getDefaultResourceJndiName(resRef.getName()));
+            }
         }
     }
 
