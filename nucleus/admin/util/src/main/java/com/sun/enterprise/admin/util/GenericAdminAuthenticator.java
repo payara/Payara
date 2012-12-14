@@ -50,11 +50,8 @@ import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.config.serverbeans.AuthRealm;
 import com.sun.enterprise.config.serverbeans.AdminService;
 import com.sun.enterprise.security.SecurityContext;
-import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.util.net.NetUtils;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,7 +61,6 @@ import java.util.logging.Level;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.grizzly.http.server.Request;
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.security.services.api.authentication.AuthenticationService;
 import org.jvnet.hk2.annotations.ContractsProvided;
@@ -80,14 +76,13 @@ import java.util.logging.Logger;
 import java.io.IOException;
 import java.rmi.server.RemoteServer;
 import java.rmi.server.ServerNotActiveException;
-import java.security.KeyStore;
-import java.security.Principal;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.security.common.Group;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.LocalPassword;
+import org.glassfish.internal.api.RemoteAdminAccessException;
 import org.glassfish.internal.api.ServerContext;
 
 /** Implementation of {@link AdminAccessController} that delegates to LoginContextDriver.
@@ -148,11 +143,6 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     
     private static LocalStringManagerImpl lsm = new LocalStringManagerImpl(GenericAdminAuthenticator.class);
     
-    private KeyStore truststore = null;
-
-    /** maps server alias to the Principal for the cert with that alias from the truststore */
-    private Map<String,Principal> serverPrincipals = new HashMap<String,Principal>();
-    
     @Override
     public synchronized void postConstruct() {
         secureAdmin = domain.getSecureAdmin();
@@ -179,38 +169,32 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     }
     
 
-    /** Ensures that authentication and authorization works as specified in class documentation.
+    /** 
+     * Attempts to authenticate the user as an administrator.
      *
      * @param user String representing the user name of the user doing an admin opearation
      * @param password String representing clear-text password of the user doing an admin operation
      * @param realm String representing the name of the admin realm for given server
      * @param originHost the host from which the request was sent
-     * @return AdminAcessController.Access level of access to grant
-     * @throws LoginException
+     * @return Subject representing the authenticated user
+     * @throws LoginException if authentication fails
+     * @throws RemoteAdminAccessException if the connection is remote but secure admin is disabled
      */
     @Override
     public Subject loginAsAdmin(String user, String password,
             String realm, final String originHost) throws LoginException {
-        if (user.isEmpty()) {
-            user = getDefaultAdminUser();
-        }
-        if ( ! isInAdminGroup(user, realm)) {
-            return null;
-        }
-        
-        final Subject s = authenticate(user, password.toCharArray());
+        final Subject s = authenticate(user, password.toCharArray(), realm, originHost);
         return s;
     }
        
     
-    /** Ensures that authentication and authorization works as specified in class documentation.
+    /**
+     * Attempts to authenticate the user as an administrator
      *
-     * @param user String representing the user name of the user doing an admin opearation
-     * @param password String representing clear-text password of the user doing an admin operation
-     * @param realm String representing the name of the admin realm for given server
      * @param request the Grizzly request containing the admin request
-     * @return AdminAcessController.Access level of access to grant
-     * @throws LoginException
+     * @return Subject representing the authenticated user
+     * @throws LoginException if authentication fails
+     * @throws RemoteAdminAccessException if the connection is remote but secure admin is disabled
      */
     @Override
     public Subject loginAsAdmin(
@@ -218,84 +202,27 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
         return loginAsAdmin(request, null);
     }
     
+    /**
+     * Attempts to authenticate the user submitting the request as an administrator.
+     * 
+     * @param request the admin request
+     * @param hostname the host from which the connection originated (if non-null, this hostname overrides the host in the request)
+     * @return Subject representing the authenticated user
+     * @throws LoginException if authentication fails
+     * @throws RemoteAdminAccessException if the connection is remote but secure admin is disabled
+     */
     @Override
     public Subject loginAsAdmin(
             Request request, String hostname) throws LoginException {
         final Subject s;
         try {
             s = authenticate(request, hostname);
+            return s;
         } catch (IOException ex) {
             final LoginException lex = new LoginException();
             lex.initCause(ex);
             throw lex;
         }
-        
-        return s;
-    }
-    
-    @Override
-    public AdminAccessController.Access chooseAccess(final Subject s, final String originHost) {
-        final Collection<String> adminPrincipals = new ArrayList<String>();
-        /*
-         * In some cases there might not be any secureAdmin config bean in 
-         * the domain configuration.
-         */
-        if (secureAdmin != null) {
-            for (SecureAdminPrincipal saPrincipal : secureAdmin.getSecureAdminPrincipal()) {
-                adminPrincipals.add(saPrincipal.getDn());
-            }
-        }
-        
-        if ( ! isAuthenticatedAsAdmin(s, adminPrincipals)) {
-            ADMSEC_LOGGER.log(Level.FINE, "User did not authenticate as an administrator; refusing admin access");
-            return AdminAccessController.Access.NONE;
-        }
-
-        AdminAccessController.Access grantedAccess;
-        
-        
-        /*
-        * I've commented out the next line and the "else" block below as a
-        * temporary workaround to allow cadmin commands to contact instances
-        * directly.  Note that the secure-admin rules still apply: remote 
-        * access is allowed only if secure admin has been enabled.
-        */
-//        if (serverEnv.isDas()) {
-            if ( ifAuthorizedLogWhy("request is local", NetUtils.isThisHostLocal(originHost))
-                ||
-                  (secureAdmin != null && ifAuthorizedLogWhy("secure admin is enabled", SecureAdmin.Util.isEnabled(secureAdmin)))
-                ||
-                  ifAuthorizedLogWhy("request contained admin token", ! s.getPrincipals(AdminTokenPrincipal.class).isEmpty())
-                || 
-                  ifAuthorizedLogWhy("request sent with an admin principal", isAuthenticatedUsingCert(adminPrincipals, s.getPrincipals()))) {
-                grantedAccess = AdminAccessController.Access.FULL;
-            } else {
-                ADMSEC_LOGGER.log(Level.FINE, "Forbidding the admin request to the DAS; the request is remote and secure admin is not enabled");
-                grantedAccess = AdminAccessController.Access.FORBIDDEN;
-            }
-//        } else {
-//            /*
-//             * This is an instance.  Insist that the admin identifier was
-//             * present in the request and matched ours in order to grant full
-//             * access.
-//             */
-//            if (adminIndicatorCheckerMatched) {
-//                grantedAccess = Access.FULL;
-//                logger.log(Level.FINE, "Granting access for the admin request to this instance; the request contained the correct unique ID");
-//            } else {
-//                grantedAccess = Access.READONLY;
-//                logger.log(Level.FINE, "Granting read-only access for the admin request to this instance; full access was refused because the request lacked the unique ID or contained an incorrect one");
-//            }
-//        }
-        ADMSEC_LOGGER.log(Level.FINE, "Admin access chosen: {0}", grantedAccess.toString());
-        return grantedAccess;
-    }
-    
-    private boolean ifAuthorizedLogWhy(final String reason, final boolean isAuthorizedForThisReason) {
-        if (isAuthorizedForThisReason && ADMSEC_LOGGER.isLoggable(Level.FINER)) {
-            ADMSEC_LOGGER.log(Level.FINER, "Authorizing admin request: {0}", reason);
-        }
-        return isAuthorizedForThisReason;
     }
     
     private boolean isInAdminGroup(final String user, final String realm) {
@@ -330,11 +257,35 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                     getDefaultAdminUser(),
                     localPassword
         );
-        Subject s = null;
+        Subject s;
         try {
             s = authService.login(cbh, null);
+            /*
+             * Enforce remote access restrictions, if any.
+             */
+            rejectRemoteAdminIfDisabled(cbh);
             consumeTokenIfPresent(req);
-            
+            if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
+                ADMSEC_LOGGER.log(Level.FINE, "*** Login worked\n  user={0}\n  dn={1}\n  tkn={2}\n  admInd={3}\n  host={4}\n",
+                        new Object[] {cbh.pw().getUserName(),  
+                                        cbh.clientPrincipal() == null ? "null" : cbh.clientPrincipal().getName(), 
+                                        cbh.tkn(), cbh.adminIndicator(), cbh.remoteHost()});
+            }
+
+            return s;
+        } catch (RemoteAdminAccessException ex) {
+            /*
+             * Rethrow RemoteAdminAccessException explicitly to avoid it being
+             * caught and processed by the LoginException catch block.
+             */
+            final String cmd = req.getContextPath();
+            if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
+                ADMSEC_LOGGER.log(Level.FINE, "*** RemoteAdminAccessException during auth for {5}\n  user={0}\n  dn={1}\n  tkn={2}\n  admInd={3}\n  host={4}\n",
+                    new Object[] {cbh.pw().getUserName(), 
+                                    cbh.clientPrincipal() == null ? "null" : cbh.clientPrincipal().getName(), 
+                                    cbh.tkn(), cbh.adminIndicator(), cbh.remoteHost(),  cmd});
+            }
+            throw ex;
         } catch (LoginException lex) {
             final String cmd = req.getContextPath();
             if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
@@ -343,17 +294,46 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                                     cbh.clientPrincipal() == null ? "null" : cbh.clientPrincipal().getName(), 
                                     cbh.tkn(), cbh.adminIndicator(), cbh.remoteHost(),  cmd});
             }
-            return null;
+            throw lex;
         }
-
-        if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
-            ADMSEC_LOGGER.log(Level.FINE, "*** Login worked\n  user={0}\n  dn={1}\n  tkn={2}\n  admInd={3}\n  host={4}\n",
-                    new Object[] {cbh.pw().getUserName(),  
-                                    cbh.clientPrincipal() == null ? "null" : cbh.clientPrincipal().getName(), 
-                                    cbh.tkn(), cbh.adminIndicator(), cbh.remoteHost()});
+    }
+    
+    private void rejectRemoteAdminIfDisabled(final String host) throws RemoteAdminAccessException {
+        /*
+         * Accept the request if secure admin is enabled or if the 
+         * request is local.
+         */
+        if (SecureAdmin.Util.isEnabled(secureAdmin) || NetUtils.isThisHostLocal(host)) {
+            return;
         }
-            
-        return s;
+        throw new RemoteAdminAccessException();
+    }
+    
+    private void rejectRemoteAdminIfDisabled(final AdminCallbackHandler cbh) throws RemoteAdminAccessException {
+        /*
+         * If the secure admin config is not available then do not try to
+         * enforce the remote access restrictions.
+         */
+        if (secureAdmin == null) {
+            return;
+        }
+        /*
+         * If the request contains the special admin indicator, then it's a
+         * message from the DAS to an instance and it's OK for it to be remote
+         * even if secure admin is not enabled.
+         */
+        if (secureAdmin.getSpecialAdminIndicator().equals(cbh.adminIndicator())) {
+            return;
+        }
+        
+        /*
+         * If the request has an admin token then it can be a remote request
+         * from an instance start-up (for example).  Accept it.
+         */
+        if (cbh.tkn() != null) {
+            return;
+        }
+        rejectRemoteAdminIfDisabled(cbh.getRemoteHost());
     }
     
     private Subject consumeTokenIfPresent(final Request req) {
@@ -421,44 +401,40 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
         }
     }
     
-    private Subject authenticate(final String user, final char[] password) throws LoginException {
-        return authService.login(user, password, null);
-    }
-    
-    private static boolean isAuthenticatedAsAdmin(final Subject s, 
-            final Collection<String> adminPrincipalDNs) {
-        if (s == null) {
-            return false;
+    private Subject authenticate(String user, final char[] password, final String realm, final String host) throws LoginException {
+        if (user.isEmpty()) {
+            user = getDefaultAdminUser();
+        }
+        if ( ! isInAdminGroup(user, realm)) {
+            throw new LoginException();
         }
         
-        for (PasswordCredential pc : s.getPrivateCredentials(PasswordCredential.class)) {
-            if (pc.getRealm().equals("admin-realm")) {
-                ADMSEC_LOGGER.log(Level.FINE, "Recognized the user as an admin user");
-                return true;
+        Subject s;
+        try {
+            rejectRemoteAdminIfDisabled(host);
+            s = authService.login(user, password, null);
+            if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
+            ADMSEC_LOGGER.log(Level.FINE, "*** Login worked\n  user={0}\n  host={1}\n",
+                    new Object[] {user, host});
             }
-        }
-        return isAuthenticatedUsingCert(adminPrincipalDNs, s.getPrincipals());
-    }
-    
-    private static boolean isAuthenticatedUsingCert(
-            final Collection<String> adminPrincipalDNs,
-            final Collection<Principal> principals) {
-        for (Principal p : principals) {
-            if (isPrincipalAuthorized(adminPrincipalDNs, p)) {
-                ADMSEC_LOGGER.log(Level.FINE, "Cert {0} recognized as an admin cert", p.toString());
-                return true;
+            return s;
+        } catch (RemoteAdminAccessException ex) {
+            /*
+             * Rethrow RemoteAdminAccessException explicitly to avoid it being
+             * caught and processed by the LoginException catch block.
+             */
+            if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
+                ADMSEC_LOGGER.log(Level.FINE, "*** RemoteAdminAccessException during auth\n  user={0}\n  host={1}\n  realm={2}\n",
+                    new Object[] {user, host, realm});
             }
-            ADMSEC_LOGGER.log(Level.FINE, "Authenticated cert {0} is not separately set up for admin operations", 
-                    p.toString());
-            return false;
+            throw ex;
+        } catch (LoginException lex) {
+            if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
+                ADMSEC_LOGGER.log(Level.FINE, "*** LoginException during auth\n  user={0}\n  host={1}\n  realm={2}",
+                    new Object[] {user, host, realm});
+            }
+            throw lex;
         }
-        return false;
-    }
-
-    private static synchronized boolean isPrincipalAuthorized(
-            final Collection<String> adminPrincipalDNs, 
-            final Principal reqPrincipal) {
-        return adminPrincipalDNs.contains(reqPrincipal.getName());
     }
     
     /**
@@ -499,16 +475,13 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
             realm = as.getAuthRealmName();
 
         try {
-            final Subject s = this.loginAsAdmin(user, password, realm, host);
-            final AdminAccessController.Access result = chooseAccess(s, host);
-            if ( ! result.isOK()) {
-                String msg = lsm.getLocalString("authentication.failed",
-                        "User [{0}] from host {1} does not have administration access", user, host);
-                ADMSEC_LOGGER.log(Level.INFO, msg);
-                throw new SecurityException(msg);
-            }
+            final Subject s = loginAsAdmin(user, password, realm, host);
             return null;
         } catch (LoginException e) {
+            if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
+                ADMSEC_LOGGER.log(Level.FINE, "*** LoginException during JMX auth\n  user={0}\n  host={1}\n  realm={2}",
+                    new Object[] {user, host, realm});
+            }
             throw new SecurityException(e);
         }
     }

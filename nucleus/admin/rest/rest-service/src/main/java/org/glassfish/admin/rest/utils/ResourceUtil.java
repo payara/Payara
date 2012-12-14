@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -97,6 +99,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.media.sse.EventOutput;
+import org.glassfish.security.services.api.authorization.AuthorizationService;
 
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -1167,15 +1170,17 @@ public class ResourceUtil {
     }
 
     /**
-     * Returns the access to be granted to the specified subject.
-     * @param habitat
-     * @param subject
-     * @param remoteHost
-     * @return
+     * Indicates whether the subject can perform the action on the resource.
+     * 
+     * @param habitat ServiceLocator for finding services
+     * @param subject the Subject to be qualified
+     * @param resource the resource affected by the action
+     * @param action the action being attempted by the subject on the resource
+     * @return true if the subject is allowed to perform the action, false otherwise
+     * @throws URISyntaxException 
      */
-    public static AdminAccessController.Access chooseAccess(final ServiceLocator habitat, final Subject subject, final String remoteHost) {
-        final AdminAccessController authenticator = habitat.getService(AdminAccessController.class);
-        final AdminAccessController.Access access = authenticator.chooseAccess(subject, remoteHost);
-        return access;
-        }
+    public static boolean isAuthorized(final ServiceLocator habitat, final Subject subject, final String resource, final String action) throws URISyntaxException {
+        final AuthorizationService authorizationSvc = habitat.getService(AuthorizationService.class);
+        return authorizationSvc.isAuthorized(subject, new URI("admin", resource, null), action);
     }
+}

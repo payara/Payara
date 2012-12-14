@@ -80,6 +80,7 @@ import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.hk2.api.*;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.internal.api.AdminAccessController;
+import org.glassfish.internal.api.RemoteAdminAccessException;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.internal.inject.ReferencingFactory;
@@ -169,16 +170,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
 
                 if (adminAuthenticator != null) {
                     final Subject subject = adminAuthenticator.loginAsAdmin(req);
-                    if (subject == null) {
-                        int status = HttpURLConnection.HTTP_UNAUTHORIZED;
-                        String msg = localStrings.getLocalString("rest.adapter.auth.userpassword",
-                                                                 "Invalid user name or password");
-                        res.setHeader(HEADER_AUTHENTICATE, "BASIC");
-                        reportError(req, res, status, msg);
-                        return;
-                    }
                     req.setAttribute(Constants.REQ_ATTR_SUBJECT, subject);
-                    //access = adminAuthenticator.chooseAccess(subject, req.getRemoteHost());
                 }
 
                 String context = getContextRoot();
@@ -191,23 +183,6 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                 //delegate to adapter managed by Jersey.
                 adapter.service(req, res);
 
-//                  TODO: Check if it is correct from the pont of modern authorisation
-//                else { // Access != FULL
-//                    String msg;
-//                    int status;
-//                    if(access == AdminAccessController.Access.NONE) {
-//                        status = HttpURLConnection.HTTP_UNAUTHORIZED;
-//                        msg = localStrings.getLocalString("rest.adapter.auth.userpassword",
-//                                "Invalid user name or password");
-//                        res.setHeader(HEADER_AUTHENTICATE, "BASIC");
-//                    } else {
-//                        assert access == AdminAccessController.Access.FORBIDDEN;
-//                        status = HttpURLConnection.HTTP_FORBIDDEN;
-//                        msg = localStrings.getLocalString("rest.adapter.auth.forbidden",
-//                                "Remote access not allowed. If you desire remote access, please turn on secure admin");
-//                    }
-//                    reportError(req, res, status, msg);
-//                }
             } else { // !latch.await(...)
                 reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE,
                         localStrings.getLocalString("rest.adapter.server.wait",
@@ -221,9 +196,16 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
             reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE,
                     localStrings.getLocalString("rest.adapter.server.ioexception",
                     "REST: IO Exception " + e.getLocalizedMessage())); //service unavailable
+        } catch (RemoteAdminAccessException e) {
+            reportError(req, res, HttpURLConnection.HTTP_FORBIDDEN,
+                    localStrings.getLocalString("rest.adapter.auth.forbidden",
+                    "Remote access not allowed. If you desire remote access, please turn on secure admin"));
         } catch (LoginException e) {
-            reportError(req, res, HttpURLConnection.HTTP_UNAUTHORIZED,
-                    localStrings.getLocalString("rest.adapter.auth.error", "Error authenticating")); //authentication error
+            int status = HttpURLConnection.HTTP_UNAUTHORIZED;
+            String msg = localStrings.getLocalString("rest.adapter.auth.userpassword",
+                                                     "Invalid user name or password");
+            res.setHeader(HEADER_AUTHENTICATE, "BASIC");
+            reportError(req, res, status, msg);
         } catch (Exception e) {
             String msg = localStrings.getLocalString("rest.adapter.server.exception",
                     "An error occurred while processing the request. Please see the server logs for details.");

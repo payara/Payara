@@ -62,6 +62,7 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.security.auth.Subject;
+import javax.security.auth.login.LoginException;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
@@ -81,6 +82,7 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.Privacy;
+import org.glassfish.internal.api.RemoteAdminAccessException;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.server.ServerEnvironmentImpl;
@@ -369,8 +371,24 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     }
 
     public AdminAccessController.Access authenticate(Request req) throws Exception {
-        final Subject s = authenticator.loginAsAdmin(req);
-        return authenticator.chooseAccess(s, req.getRemoteHost());
+        /*
+         * At this point, this method should be obsolete.  But in case it
+         * comes back to life it now conforms to the new API for loginAsAdmin.
+         * That is, loginAsAdmin throws a RemoteAdminAccessException if the
+         * request is remote but secure admin is disabled and it throws a 
+         * LoginException if the user is not a legitimate administrator.
+         * Further, loginAsAdmin now does nothing regarding full vs. read-only
+         * access; those decisions are made during authorization of particular
+         * commands.
+         */
+        try {
+            final Subject s = authenticator.loginAsAdmin(req);
+            return (env.isDas() ? AdminAccessController.Access.FULL : AdminAccessController.Access.READONLY);
+        } catch (RemoteAdminAccessException ex) {
+            return AdminAccessController.Access.FORBIDDEN;
+        } catch (LoginException ex) {
+            return AdminAccessController.Access.NONE;
+        }
     }
     
     

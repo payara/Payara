@@ -91,8 +91,9 @@ public interface AdminAccessController {
      * @param password String representing clear-text password of the user doing an admin operation
      * @param realm String representing the name of the admin realm for given server
      * @param originHost the host from which the request was sent
-     * @throws LoginException if there is any error in underlying implementation
-     * @return Subject for an admin user; null if the login failed or was not for an admin user
+     * @throws LoginException if the credentials do not authenticate
+     * @throws RemoteAdminAccessException if the request is remote but remote access is disabled
+     * @return Subject for an admin user
      */
     Subject loginAsAdmin(String user, String password,
             String realm, String originHost) throws LoginException;
@@ -110,8 +111,9 @@ public interface AdminAccessController {
      *  reported by the secure transport and the value from the X-GlassFish-admin header
      *  (null if no such header exists).
      * @Param request The Grizzly request containing the admin request
-     * @throws LoginException if there is any error in underlying implementation
-     * @return Subject for an admin user; null if the login failed or was not for an admin user
+     * @throws LoginException if the credentials do not authenticate
+     * @throws RemoteAdminAccessException if the request is remote but remote access is disabled
+     * @return Subject for an admin user
      */
     Subject loginAsAdmin(
             Request request) throws LoginException;
@@ -130,18 +132,10 @@ public interface AdminAccessController {
      *  (null if no such header exists).
      * @Param request The Grizzly request containing the admin request
      * @param hostname the originating host
-     * @throws LoginException if there is any error in underlying implementation
-     * @return Subject for an admin user; null if the login failed or was not for an admin user
+     * @throws LoginException if the credentials do not authenticate
+     * @throws RemoteAdminAccessException if the request is remote but remote access is disabled
+     * @return Subject for an admin user
      */
     Subject loginAsAdmin(
             Request request, String hostname) throws LoginException;
-    
-    /**
-     * Returns the access that should be granted to the given subject, given where
-     * the request originated from.
-     * @param subject Subject, typically previously returned from loginAsAdmin
-     * @param originHost host from which the request originated
-     * @return 
-     */
-    AdminAccessController.Access chooseAccess(Subject subject, String originHost);
 }

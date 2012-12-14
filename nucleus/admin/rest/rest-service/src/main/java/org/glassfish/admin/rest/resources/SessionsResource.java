@@ -65,6 +65,7 @@ import org.glassfish.admin.restconnector.RestConfig;
 import org.glassfish.common.util.admin.RestSessionManager;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.internal.api.AdminAccessController;
+import org.glassfish.internal.api.RemoteAdminAccessException;
 import org.glassfish.jersey.internal.util.collection.Ref;
 
 /**
@@ -87,7 +88,7 @@ public class SessionsResource {
 
     @Context
     protected LocatorBridge habitat;
-
+    
     /**
      * Get a new session with GlassFish Rest service
      * If a request lands here when authentication has been turned on => it has been authenticated.
@@ -113,18 +114,21 @@ public class SessionsResource {
         // authenticate here once again with that supplied remoteHostName to
         // make sure we enforce remote access rules correctly.
         String hostName = data.get("remoteHostName");
-        AdminAccessController.Access access = AdminAccessController.Access.NONE;
+        boolean isAuthorized = false;
+        boolean responseErrorStatusSet = false;
         Subject subject = null;
         try {
 //            subject = ResourceUtil.authenticateViaAdminRealm(Globals.getDefaultHabitat(), grizzlyRequest, hostName);
             subject = ResourceUtil.authenticateViaAdminRealm(habitat.getRemoteLocator(), grizzlyRequest, hostName);
-            access = (hostName == null) ? AdminAccessController.Access.FULL :
-                    ResourceUtil.chooseAccess(habitat.getRemoteLocator(), subject, hostName);
+            isAuthorized = ResourceUtil.isAuthorized(habitat.getRemoteLocator(), subject, "domain/rest-sessions/rest-session", "create");
+        } catch (RemoteAdminAccessException e) {
+            responseBuilder.status(FORBIDDEN);
+            responseErrorStatusSet = true;
         } catch (Exception e) {
             ar.setMessage("Error while authenticating " + e);
         }
 
-        if (access == AdminAccessController.Access.FULL) {
+        if (isAuthorized) {
             responseBuilder.status(OK);
 
             // Check to see if the username has been set (anonymous user case)
@@ -134,8 +138,10 @@ public class SessionsResource {
             }
             ar.getExtraProperties().put("token", sessionManager.createSession(grizzlyRequest.getRemoteAddr(), subject, chooseTimeout(restConfig)));
 
-        } else if (access == AdminAccessController.Access.FORBIDDEN) {
-            responseBuilder.status(FORBIDDEN);
+        } else {
+            if ( ! responseErrorStatusSet) {
+                responseBuilder.status(UNAUTHORIZED);
+            }
         }
 
         return responseBuilder.entity(new ActionReportResult(ar)).build();
