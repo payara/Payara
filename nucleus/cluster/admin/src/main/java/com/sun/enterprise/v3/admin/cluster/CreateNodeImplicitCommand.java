@@ -102,7 +102,7 @@ public class CreateNodeImplicitCommand implements AdminCommand {
             //already created nothing to do here
             return;
         }
-        CommandInvocation ci = cr.getCommandInvocation("_create-node", report);
+        CommandInvocation ci = cr.getCommandInvocation("_create-node", report, context.getSubject());
         ParameterMap map = new ParameterMap();
         map.add("DEFAULT", name);
         map.add(NodeUtils.PARAM_NODEDIR, nodedir);
@@ -110,7 +110,7 @@ public class CreateNodeImplicitCommand implements AdminCommand {
         map.add(NodeUtils.PARAM_NODEHOST, nodehost);
         map.add(NodeUtils.PARAM_TYPE,"CONFIG");
 
-        ci.parameters(map).subject(context.getSubject());
+        ci.parameters(map);
         ci.execute();
 
         

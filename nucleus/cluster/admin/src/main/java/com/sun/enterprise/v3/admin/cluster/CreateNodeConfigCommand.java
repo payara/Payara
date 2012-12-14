@@ -116,7 +116,7 @@ public class CreateNodeConfigCommand implements AdminCommand {
                 }
             }
         }
-        CommandInvocation ci = cr.getCommandInvocation("_create-node", report);
+        CommandInvocation ci = cr.getCommandInvocation("_create-node", report, context.getSubject());
         ParameterMap map = new ParameterMap();
         map.add("DEFAULT", name);
         if (StringUtils.ok(nodedir))
@@ -126,7 +126,7 @@ public class CreateNodeConfigCommand implements AdminCommand {
         if (StringUtils.ok(nodehost))
             map.add(NodeUtils.PARAM_NODEHOST, nodehost);
         map.add(NodeUtils.PARAM_TYPE,"CONFIG");
-        ci.parameters(map).subject(context.getSubject());
+        ci.parameters(map);
         ci.execute();
 
         NodeUtils.sanitizeReport(report);

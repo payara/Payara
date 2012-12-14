@@ -153,7 +153,7 @@ public class ValidateNodeCommand implements AdminCommand {
 
         // What is there in the node is valid. Now go update anything that
         // was not there.
-        CommandInvocation ci = cr.getCommandInvocation("_update-node", report);
+        CommandInvocation ci = cr.getCommandInvocation("_update-node", report, context.getSubject());
         ParameterMap map = new ParameterMap();
         map.add("DEFAULT", name);
         if (! excludeFromUpdate.contains("installdir"))
@@ -171,7 +171,7 @@ public class ValidateNodeCommand implements AdminCommand {
 
         // Only update if there is something to do
         if ( map.size() > 1) {
-            ci.parameters(map).subject(context.getSubject());
+            ci.parameters(map);
             ci.execute();
         }
     }

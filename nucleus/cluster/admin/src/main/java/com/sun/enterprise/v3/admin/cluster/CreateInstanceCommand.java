@@ -162,7 +162,7 @@ public class CreateInstanceCommand implements AdminCommand {
         installDir = theNode.getInstallDir();
 
         // First, update domain.xml by calling _register-instance
-        CommandInvocation ci = cr.getCommandInvocation("_register-instance", report);
+        CommandInvocation ci = cr.getCommandInvocation("_register-instance", report, context.getSubject());
         ParameterMap map = new ParameterMap();
         map.add("node", node);
         map.add("config", configRef);
@@ -178,7 +178,7 @@ public class CreateInstanceCommand implements AdminCommand {
         }
         map.add("systemproperties", systemProperties);
         map.add("DEFAULT", instance);
-        ci.parameters(map).subject(context.getSubject());
+        ci.parameters(map);
         ci.execute();
 
 
@@ -193,12 +193,12 @@ public class CreateInstanceCommand implements AdminCommand {
         // if nodehost is localhost and installdir is null and config node, update config node
         // so installdir is product root. see register-instance above
         if (theNode.isLocal() && installDir == null) {
-            ci = cr.getCommandInvocation("_update-node", report);
+            ci = cr.getCommandInvocation("_update-node", report, context.getSubject());
             map = new ParameterMap();
             map.add("installdir", "${com.sun.aas.productRoot}");
             map.add("type", "CONFIG");
             map.add("DEFAULT", theNode.getName());
-            ci.parameters(map).subject(context.getSubject());
+            ci.parameters(map);
             ci.execute();
 
 

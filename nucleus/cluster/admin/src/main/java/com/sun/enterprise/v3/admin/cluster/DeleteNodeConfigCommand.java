@@ -115,10 +115,10 @@ public class DeleteNodeConfigCommand implements AdminCommand {
             return;
 
         }
-        CommandInvocation ci = cr.getCommandInvocation("_delete-node", report);
+        CommandInvocation ci = cr.getCommandInvocation("_delete-node", report, context.getSubject());
         ParameterMap map = new ParameterMap();
         map.add("DEFAULT", name);
-        ci.parameters(map).subject(context.getSubject());
+        ci.parameters(map);
         ci.execute();
     }
 

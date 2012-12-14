@@ -190,8 +190,8 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
         }
         // Settings are valid. Now use the generic update-node command to
         // update the node.
-        CommandInvocation ci = cr.getCommandInvocation("_update-node", report);
-        ci.parameters(map).subject(context.getSubject());
+        CommandInvocation ci = cr.getCommandInvocation("_update-node", report, context.getSubject());
+        ci.parameters(map);
         ci.execute();
 
         if (StringUtils.ok(report.getMessage())) {

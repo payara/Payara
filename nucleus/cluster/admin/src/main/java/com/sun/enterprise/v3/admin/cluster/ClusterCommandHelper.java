@@ -208,8 +208,8 @@ class ClusterCommandHelper {
             ActionReport instanceReport = runner.getActionReport("plain");
             instanceReport.setActionExitCode(ExitCode.SUCCESS);
             CommandInvocation invocation = runner.getCommandInvocation(
-                        command, instanceReport);
-            invocation.parameters(instanceParameterMap).subject(context.getSubject());           
+                        command, instanceReport, context.getSubject());
+            invocation.parameters(instanceParameterMap);           
 
             msg = command + " " + iname;
             logger.info(msg);
