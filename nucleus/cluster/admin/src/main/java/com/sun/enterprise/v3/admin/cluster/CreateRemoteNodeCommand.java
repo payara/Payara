@@ -158,7 +158,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
 
         map.remove(NodeUtils.PARAM_INSTALL);
         CommandInvocation ci = cr.getCommandInvocation("_create-node", report);
-        ci.parameters(map);
+        ci.parameters(map).subject(context.getSubject());
         ci.execute();
 
         NodeUtils.sanitizeReport(report);

@@ -178,7 +178,7 @@ public class CreateInstanceCommand implements AdminCommand {
         }
         map.add("systemproperties", systemProperties);
         map.add("DEFAULT", instance);
-        ci.parameters(map);
+        ci.parameters(map).subject(context.getSubject());
         ci.execute();
 
 
@@ -198,7 +198,7 @@ public class CreateInstanceCommand implements AdminCommand {
             map.add("installdir", "${com.sun.aas.productRoot}");
             map.add("type", "CONFIG");
             map.add("DEFAULT", theNode.getName());
-            ci.parameters(map);
+            ci.parameters(map).subject(context.getSubject());
             ci.execute();
 
 

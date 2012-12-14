@@ -171,7 +171,7 @@ public class ValidateNodeCommand implements AdminCommand {
 
         // Only update if there is something to do
         if ( map.size() > 1) {
-            ci.parameters(map);
+            ci.parameters(map).subject(context.getSubject());
             ci.execute();
         }
     }

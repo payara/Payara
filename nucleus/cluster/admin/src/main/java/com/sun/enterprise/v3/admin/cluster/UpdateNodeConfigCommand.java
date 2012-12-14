@@ -157,7 +157,7 @@ public class UpdateNodeConfigCommand implements AdminCommand  {
 
         if (map.size() > 1) {
             CommandInvocation ci = cr.getCommandInvocation("_update-node", report);
-            ci.parameters(map);
+            ci.parameters(map).subject(context.getSubject());
             ci.execute();
 
             if (StringUtils.ok(report.getMessage())) {

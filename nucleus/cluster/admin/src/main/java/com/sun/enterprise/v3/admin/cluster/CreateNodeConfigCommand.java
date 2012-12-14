@@ -126,7 +126,7 @@ public class CreateNodeConfigCommand implements AdminCommand {
         if (StringUtils.ok(nodehost))
             map.add(NodeUtils.PARAM_NODEHOST, nodehost);
         map.add(NodeUtils.PARAM_TYPE,"CONFIG");
-        ci.parameters(map);
+        ci.parameters(map).subject(context.getSubject());
         ci.execute();
 
         NodeUtils.sanitizeReport(report);

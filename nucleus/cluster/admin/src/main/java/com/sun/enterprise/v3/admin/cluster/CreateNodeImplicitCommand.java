@@ -110,7 +110,7 @@ public class CreateNodeImplicitCommand implements AdminCommand {
         map.add(NodeUtils.PARAM_NODEHOST, nodehost);
         map.add(NodeUtils.PARAM_TYPE,"CONFIG");
 
-        ci.parameters(map);
+        ci.parameters(map).subject(context.getSubject());
         ci.execute();
 
         

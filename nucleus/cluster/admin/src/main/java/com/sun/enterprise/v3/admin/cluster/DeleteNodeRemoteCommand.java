@@ -140,7 +140,7 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
         CommandInvocation ci = cr.getCommandInvocation("_delete-node", report);
         ParameterMap map = new ParameterMap();
         map.add("DEFAULT", name);
-        ci.parameters(map);
+        ci.parameters(map).subject(context.getSubject());
         ci.execute();
 
         //uninstall GlassFish after deleting the node
