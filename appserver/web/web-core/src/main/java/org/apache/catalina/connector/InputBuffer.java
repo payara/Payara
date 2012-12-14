@@ -103,6 +103,12 @@ public class InputBuffer extends Reader
     )
     public static final String ALREADY_SET_READ_LISTENER = "AS-WEB-CORE-00351";
 
+    @LogMessageInfo(
+            message = "Error in invoking ReadListener.onDataAvailable",
+            level = "WARNING"
+     )
+    public static final String READ_LISTENER_ON_DATA_AVAILABLE_ERROR = "AS-WEB-CORE-00352";
+
     // -------------------------------------------------------------- Constants
 
 
@@ -292,6 +298,14 @@ public class InputBuffer extends Reader
 
         readHandler = new ReadHandlerImpl(readListener);
         hasSetReadListener = true;
+
+        if (isReady()) {
+            try {
+                readHandler.onDataAvailable();
+            } catch(Throwable t) {
+                log.log(Level.WARNING, READ_LISTENER_ON_DATA_AVAILABLE_ERROR, t);
+            }
+        }
     }
 
     // ------------------------------------------------- Chars Handling Methods

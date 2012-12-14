@@ -99,6 +99,11 @@ public class OutputBuffer extends Writer
     )
     public static final String WRITE_LISTENER_BEEN_SET = "AS-WEB-CORE-00355";
 
+    @LogMessageInfo(
+            message = "Error in invoking WriteListener.onWritePossible",
+            level = "WARNING"
+    )
+    public static final String WRITE_LISTENER_ON_WRITE_POSSIBLE_ERROR = "AS-WEB-CORE-00356";
 
     // -------------------------------------------------------------- Constants
 
@@ -520,6 +525,14 @@ public class OutputBuffer extends Writer
 
         writeHandler = new WriteHandlerImpl(writeListener);
         hasSetWriteListener = true;
+
+        if (canWrite()) {
+            try {
+                writeHandler.onWritePossible();
+            } catch(Throwable t) {
+                log.log(Level.WARNING, WRITE_LISTENER_ON_WRITE_POSSIBLE_ERROR, t);
+            }
+        }
     }
 
 
