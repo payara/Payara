@@ -494,13 +494,13 @@ public class OutputBuffer extends Writer
             return false;
         }
         
-        boolean result = grizzlyOutputBuffer.canWrite(1);
+        boolean result = grizzlyOutputBuffer.canWrite();
         if (!result) {
             if (hasSetWriteListener) {
                 prevCanWrite = false; // Not can write
                 CAN_WRITE_SCOPE.set(Boolean.TRUE);
                 try {
-                    grizzlyOutputBuffer.notifyCanWrite(writeHandler, 1);
+                    grizzlyOutputBuffer.notifyCanWrite(writeHandler);
                 } finally {
                     CAN_WRITE_SCOPE.remove();
                 }
