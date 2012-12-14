@@ -323,9 +323,26 @@ public class CommandRunnerImpl implements CommandRunner {
      * @return a new command invocation for that command name
      */
     @Override
+    @Deprecated
     public CommandInvocation getCommandInvocation(String name,
             ActionReport report) {
         return getCommandInvocation(null, name, report);
+    }
+
+    /**
+     * Obtain a new command invocation object for the null scope.
+     * Command invocations can be configured and used
+     * to trigger a command execution.
+     *
+     * @param name name of the requested command to invoke
+     * @param report where to place the status of the command execution
+     * @param subject the Subject under which to execute the command
+     * @return a new command invocation for that command name
+     */
+    @Override
+    public CommandInvocation getCommandInvocation(String name,
+            ActionReport report, Subject subject) {
+        return getCommandInvocation(null, name, report, subject);
     }
 
     /**
@@ -339,9 +356,27 @@ public class CommandRunnerImpl implements CommandRunner {
      * @return a new command invocation for that command name
      */
     @Override
+    @Deprecated
     public CommandInvocation getCommandInvocation(String scope, String name,
             ActionReport report) {
-        return new ExecutionContext(scope, name, report);
+        return new ExecutionContext(scope, name, report, null);
+    }
+
+    /**
+     * Obtain a new command invocation object.
+     * Command invocations can be configured and used
+     * to trigger a command execution.
+     *
+     * @param scope the scope (or name space) for the command
+     * @param name name of the requested command to invoke
+     * @param report where to place the status of the command execution
+     * @param subject the Subject under which to execute the command
+     * @return a new command invocation for that command name
+     */
+    @Override
+    public CommandInvocation getCommandInvocation(String scope, String name,
+            ActionReport report, Subject subject) {
+        return new ExecutionContext(scope, name, report, subject);
     }
 
     private ActionReport.ExitCode injectParameters(final CommandModel model, final AdminCommand command,
@@ -1617,10 +1652,11 @@ public class CommandRunnerImpl implements CommandRunner {
         protected boolean isManagedJob;
         private   List<NameListerPair> nameListerPairs = new ArrayList<NameListerPair>(); 
 
-        private ExecutionContext(String scope, String name, ActionReport report) {
+        private ExecutionContext(String scope, String name, ActionReport report, Subject subject) {
             this.scope = scope;
             this.name = name;
             this.report = report;
+            this.subject = subject;
         }
 
         @Override
@@ -1717,6 +1753,21 @@ public class CommandRunnerImpl implements CommandRunner {
                     return;
                 }
             }
+            /*
+             * The caller should have set the subject explicitly.  In case
+             * it didn't, try setting it from the current access controller context
+             * since the command framework will have set that before invoking
+             * the original command's execute method.
+             */
+            if (subject == null) {
+                subject = AccessController.doPrivileged(new PrivilegedAction<Subject>() {
+                    @Override
+                    public Subject run() {
+                        return Subject.getSubject(AccessController.getContext());
+                    }
+                });
+            }
+            
             if(!isManagedJob) {
                 isManagedJob = AnnotationUtil.presentTransitive(ManagedJob.class, command.getClass());
             }

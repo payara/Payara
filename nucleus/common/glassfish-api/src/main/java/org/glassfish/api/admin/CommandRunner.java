@@ -136,8 +136,19 @@ public interface CommandRunner {
      * @param report where to place the status of the command execution
      * @return a new command invocation for that command name.
      */
+    @Deprecated
     CommandInvocation getCommandInvocation(String name, ActionReport report);
 
+    /**
+     * Obtain a new command invocation object for the null scope. Command invocations can 
+     * be configured and used to trigger a command execution.
+     *
+     * @param name name of the requested command to invoke
+     * @param report where to place the status of the command execution
+     * @param subject the Subject under which to execute the command
+     * @return a new command invocation for that command name.
+     */
+    CommandInvocation getCommandInvocation(String name, ActionReport report, Subject subject);
 
     /**
      * Obtain a new command invocation object. Command invocations can be configured and used
@@ -148,8 +159,20 @@ public interface CommandRunner {
      * @param report where to place the status of the command execution
      * @return a new command invocation for that command name.
      */
+    @Deprecated
     CommandInvocation getCommandInvocation(String scope, String name, ActionReport report);
 
+    /**
+     * Obtain a new command invocation object. Command invocations can be configured and used
+     * to trigger a command execution.
+     *
+     * @param scope the scope (or namespace) for the command
+     * @param name name of the requested command to invoke
+     * @param report where to place the status of the command execution
+     * @param subject the Subject under which to execute the command
+     * @return a new command invocation for that command name.
+     */
+    CommandInvocation getCommandInvocation(String scope, String name, ActionReport report, Subject subject);
 
     /**
      * CommandInvocation defines a command excecution context like the requested
@@ -186,7 +209,7 @@ public interface CommandRunner {
          */
         CommandInvocation outbound(Payload.Outbound outbound);
 
-        /**
+        /** 
          * Sets the Subject associated with the command invocation
          * 
          * @param subject
