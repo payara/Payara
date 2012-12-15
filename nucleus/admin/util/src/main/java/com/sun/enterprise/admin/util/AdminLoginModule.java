@@ -463,6 +463,7 @@ public class AdminLoginModule implements LoginModule {
                 subject.getPrivateCredentials().add(pwCred);
                 final Principal adminGroupPrincipal = new PrincipalImpl(AdminConstants.DOMAIN_ADMIN_GROUP_NAME);
                 subject.getPrincipals().add(adminGroupPrincipal);
+                subject.getPrincipals().add(new AdminLocalPasswordPrincipal());
                 logger.log(PROGRESS_LEVEL, "AdminLoginModule detected local password");
             }
             return result;

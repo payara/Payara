@@ -109,9 +109,10 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider {
         final String isDASSetting = environment.getAttributeValue(AuthorizationAttributeNames.ISDAS_ATTRIBUTE);
         final boolean isDAS = Boolean.parseBoolean(isDASSetting);
         final String adminIndicator = subject.getAttributeValue(AuthorizationAttributeNames.ADMIN_INDICATOR_ATTRIBUTE);
-        
+        final boolean isLocalPassword = (subject.getAttributeValue(AuthorizationAttributeNames.ADMIN_LOCAL_PASSWORD_ATTRIBUTE)) != null;
         final Decision d = (
                 isDAS 
+                || isLocalPassword
                 || (adminIndicator != null) 
                 ||(action.getAttributeValue("ACTION").equals("read"))) 
                 ? Decision.PERMIT : Decision.DENY; 

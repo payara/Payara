@@ -37,17 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.security.services.api.authorization;
+package com.sun.enterprise.admin.util;
+
+import java.security.Principal;
 
 /**
- * Common attribute names, used in authorization and set by code using
- * the authorization service.
- * 
+ *
  * @author tjquinn
  */
-public interface AuthorizationAttributeNames {
-    public final static String ISDAS_ATTRIBUTE = "isDAS";
-    public final static String ADMIN_INDICATOR_ATTRIBUTE = "adminIndicator";
-    public final static String ADMIN_TOKEN_ATTRIBUTE = "adminToken";
-    public final static String ADMIN_LOCAL_PASSWORD_ATTRIBUTE = "localPassword";
+public class AdminLocalPasswordPrincipal implements Principal {
+
+    @Override
+    public String getName() {
+        return "localPassword";
+    }
+    
 }

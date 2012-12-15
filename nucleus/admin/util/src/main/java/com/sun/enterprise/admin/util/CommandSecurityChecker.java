@@ -287,6 +287,9 @@ public class CommandSecurityChecker implements PostConstruct {
                 AuthorizationAttributeNames.ADMIN_INDICATOR_ATTRIBUTE);
         augmentSubjectAttrs(s, subjectAttrs, AdminTokenPrincipal.class, 
                 AuthorizationAttributeNames.ADMIN_TOKEN_ATTRIBUTE);
+        augmentSubjectAttrs(s, subjectAttrs, AdminLocalPasswordPrincipal.class,
+                AuthorizationAttributeNames.ADMIN_LOCAL_PASSWORD_ATTRIBUTE);
+        
     }
     
     private void augmentSubjectAttrs(final Subject s, final Map<String,String> subjectAttrs, 
