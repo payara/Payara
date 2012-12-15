@@ -40,12 +40,18 @@
 
 package org.glassfish.apf.impl;
 
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.*;
-import java.util.ResourceBundle;
 import java.text.MessageFormat;
 
-import org.glassfish.apf.ErrorHandler;
+import org.glassfish.apf.AnnotationHandler;
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.Descriptor;
+import org.glassfish.hk2.api.IndexedFilter;
+import org.glassfish.hk2.api.ServiceLocator;
+
 
 /**
  * Bag for utility methods
@@ -89,5 +95,43 @@ public class AnnotationUtils {
     
     public static String getLocalString(String key, String defaultString, Object... arguments){
         return MessageFormat.format(defaultString, arguments);
+    }
+    
+    /**
+     * Gets the annotation handler for the given class (without causing any of the annotation handlers
+     * to be classloaded)
+     * 
+     * @param locator The locator to find the annotation handler for
+     * @param forThis The class to find the annotation handler for
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public static ActiveDescriptor<AnnotationHandler> getAnnotationHandlerForDescriptor(ServiceLocator locator, final Class<?> forThis) {
+        ActiveDescriptor<?> retVal = locator.getBestDescriptor(new IndexedFilter() {
+
+            @Override
+            public boolean matches(Descriptor d) {
+                Map<String, List<String>> metadata = d.getMetadata();
+                List<String> handlerForList = metadata.get(AnnotationHandler.ANNOTATION_HANDLER_METADATA);
+                if (handlerForList == null || handlerForList.isEmpty()) return false;
+                
+                String descriptorForThis = handlerForList.get(0);
+                
+                return descriptorForThis.equals(forThis.getName());
+            }
+
+            @Override
+            public String getAdvertisedContract() {
+                return AnnotationHandler.class.getName();
+            }
+
+            @Override
+            public String getName() {
+                return null;
+            }
+            
+        });
+        
+        return (ActiveDescriptor<AnnotationHandler>) retVal;
     }
 }
