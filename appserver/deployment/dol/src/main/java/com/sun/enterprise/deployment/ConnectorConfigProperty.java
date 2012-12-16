@@ -41,6 +41,12 @@
 package com.sun.enterprise.deployment;
 
 
+import com.sun.enterprise.deployment.util.DOLUtils;
+import org.glassfish.internal.api.RelativePathResolver;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class ConnectorConfigProperty extends EnvironmentProperty {
 
     private boolean ignore = false;
@@ -49,6 +55,8 @@ public class ConnectorConfigProperty extends EnvironmentProperty {
     private boolean setIgnoreCalled = false;
     private boolean setConfidentialCalled = false;
     private boolean setSupportsDynamicUpdatesCalled = false;
+
+    private final static Logger _logger = DOLUtils.getDefaultLogger();
 
     /**
     ** copy constructor.
@@ -106,6 +114,19 @@ public class ConnectorConfigProperty extends EnvironmentProperty {
     public void setIgnore(boolean ignore) {
         this.ignore = ignore;
         setSetIgnoreCalled(true);
+    }
+
+    public String getValue() {
+        String value = super.getValue();
+        if(confidential){
+            try {
+                return RelativePathResolver.getRealPasswordFromAlias(value);
+            } catch (Exception e) {
+                _logger.log(Level.WARNING,"Unable to resolve alias value [ "+value+" ] " +
+                        "for connector config-property [ "+getName()+" ]", e);
+            }
+        }
+        return value;
     }
 
     public boolean isSupportsDynamicUpdates() {
