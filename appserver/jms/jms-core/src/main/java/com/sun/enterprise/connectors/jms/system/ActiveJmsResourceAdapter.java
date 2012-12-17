@@ -49,6 +49,7 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -71,6 +72,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.config.serverbeans.AdminService;
+import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.AvailabilityService;
 import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Config;
@@ -88,12 +90,17 @@ import com.sun.enterprise.connectors.jms.util.JmsRaUtil;
 import com.sun.enterprise.connectors.service.ConnectorAdminServiceUtils;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.connectors.util.SetMethodAction;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.deployment.ConnectorConfigProperty;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
 import com.sun.enterprise.deployment.EnvironmentProperty;
+import com.sun.enterprise.deployment.JMSDestinationDefinitionDescriptor;
 import com.sun.enterprise.deployment.MessageDestinationDescriptor;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
@@ -106,10 +113,16 @@ import org.glassfish.connectors.config.AdminObjectResource;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.glassfish.connectors.config.ConnectorResource;
 import org.glassfish.connectors.config.ResourceAdapterConfig;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.JavaEEResourceType;
+import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.grizzly.LazyServiceInitializer;
+import org.glassfish.resourcebase.resources.api.ResourceConstants;
 import org.glassfish.server.ServerEnvironmentImpl;
 
 import org.jvnet.hk2.annotations.Service;
@@ -306,6 +319,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     @Inject
      private ServiceLocator habitat;
     
+    @Inject
+    private ApplicationRegistry appRegistry;
+
     /**
      * Constructor for an active Jms Adapter.
      *
@@ -1966,7 +1982,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             String appName = descriptor_.getApplication().getAppName();
             String moduleName = ConnectorsUtil.getModuleName(descriptor_);
     
-            String destName = getPhysicalDestinationFromConfiguration(jndiName, appName, moduleName);
+            String destName = getPhysicalDestinationFromConfiguration(jndiName, appName, moduleName, descriptor_);
     
             //1.3 jndi-name ==> 1.4 setDestination
             descriptor_.putRuntimeActivationConfigProperty(
@@ -2114,9 +2130,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         return getDomainName() + SEPARATOR + getClusterName() + SEPARATOR + descriptor_.getUniqueId() ;
     }
 
-    private String getPhysicalDestinationFromConfiguration(String logicalDest, String appName, String moduleName)
-                                throws ConnectorRuntimeException{
-     Property ep = null;
+    private String getPhysicalDestinationFromConfiguration(String logicalDest, String appName, String moduleName,
+            EjbMessageBeanDescriptor ejbMessageBeanDescriptor) throws ConnectorRuntimeException {
+        Property ep = null;
         try {
             //ServerContext sc = ApplicationServer.getServerContext();
             //ConfigContext ctx = sc.getConfigContext();
@@ -2126,8 +2142,33 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                     ResourcesUtil.createInstance().getResource(logicalDest, appName, moduleName, AdminObjectResource.class);
             //AdminObjectResource res = (AdminObjectResource)   allResources.getAdminObjectResourceByJndiName(logicalDest);
         if (res == null) {
-            String msg = sm.getString("ajra.err_getting_dest", logicalDest );
-        throw new ConnectorRuntimeException(msg);
+            String physicalDest = null;
+            if (logicalDest.startsWith(ResourceConstants.JAVA_COMP_SCOPE_PREFIX)
+                   || !logicalDest.startsWith(ResourceConstants.JAVA_SCOPE_PREFIX)) {
+                if (isEjbInWar(ejbMessageBeanDescriptor)) {
+                    physicalDest = getPhysicalDestination(logicalDest, ejbMessageBeanDescriptor.getEjbBundleDescriptor().getModuleDescriptor());
+                } else {
+                    physicalDest = getPhysicalDestination(logicalDest, ejbMessageBeanDescriptor);
+                }
+            } else if (logicalDest.startsWith(ResourceConstants.JAVA_MODULE_SCOPE_PREFIX)) {
+                if (isEjbInWar(ejbMessageBeanDescriptor)) {
+                    physicalDest = getPhysicalDestination(logicalDest, ejbMessageBeanDescriptor.getEjbBundleDescriptor().getModuleDescriptor());
+                } else {
+                    physicalDest = getPhysicalDestination(logicalDest, ejbMessageBeanDescriptor.getEjbBundleDescriptor());
+                }
+            } else if (logicalDest.startsWith(ResourceConstants.JAVA_APP_SCOPE_PREFIX)) {
+                physicalDest = getPhysicalDestination(logicalDest, ejbMessageBeanDescriptor.getApplication());
+            } else if (logicalDest.startsWith(ResourceConstants.JAVA_GLOBAL_SCOPE_PREFIX)) {
+                physicalDest = getPhysicalDestination(logicalDest, ejbMessageBeanDescriptor.getApplication());
+                if (!isValidName(physicalDest)) {
+                    physicalDest = getPhysicalDestination(logicalDest);
+                }
+            }
+            if (isValidName(physicalDest)) {
+                return physicalDest;
+            }
+            String msg = sm.getString("ajra.err_getting_dest", logicalDest);
+            throw new ConnectorRuntimeException(msg);
         }
 
         ep = res.getProperty(PHYSICAL_DESTINATION); //getElementPropertyByName(PHYSICAL_DESTINATION);
@@ -2146,6 +2187,142 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         return ep.getValue();
     }
 
+    private boolean isValidName(String name) {
+        return (name != null) && !name.equals("");
+    }
+
+    private boolean isEjbInWar(EjbBundleDescriptor ejbBundleDescriptor) {
+        Object rootDeploymentDescriptor = ejbBundleDescriptor.getModuleDescriptor().getDescriptor();
+        if ((rootDeploymentDescriptor != ejbBundleDescriptor) && (rootDeploymentDescriptor instanceof WebBundleDescriptor)) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isEjbInWar(EjbMessageBeanDescriptor ejbMessageBeanDescriptor) {
+        return isEjbInWar(ejbMessageBeanDescriptor.getEjbBundleDescriptor());
+    }
+
+    /*
+     * Get physical destination name from component
+     */
+    private String getPhysicalDestination(String logicalDestination, EjbMessageBeanDescriptor ejbMessageBeanDescriptor) {
+        return getPhysicalDestination(logicalDestination, ejbMessageBeanDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
+    }
+
+    /*
+     * Get physical destination name from ejb module
+     */
+    private String getPhysicalDestination(String logicalDestination, EjbBundleDescriptor ejbBundleDescriptor) {
+        String physicalDestination = getPhysicalDestination(logicalDestination, ejbBundleDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
+        if (isValidName(physicalDestination)) {
+            return physicalDestination;
+        }
+
+        Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ejbBundleDescriptor.getEjbs();
+        for (EjbDescriptor ejbDescriptor : ejbDescriptors) {
+            physicalDestination = getPhysicalDestination(logicalDestination, ejbDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
+            if (isValidName(physicalDestination)) {
+                return physicalDestination;
+            }
+        }
+
+        return null;
+    }
+
+    /*
+     * Get physical destination name from web module
+     */
+    private String getPhysicalDestination(String logicalDestination, ModuleDescriptor moduleDescriptor) {
+        WebBundleDescriptor webBundleDescriptor = (WebBundleDescriptor) moduleDescriptor.getDescriptor();
+        String physicalDestination = getPhysicalDestination(logicalDestination, webBundleDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
+        if (isValidName(physicalDestination)) {
+            return physicalDestination;
+        }
+
+        Collection<EjbBundleDescriptor> ejbBundleDescriptors = moduleDescriptor.getDescriptor().getExtensionsDescriptors(EjbBundleDescriptor.class);
+        for (EjbBundleDescriptor ejbBundleDescriptor : ejbBundleDescriptors) {
+            physicalDestination = getPhysicalDestination(logicalDestination, ejbBundleDescriptor);
+            if (isValidName(physicalDestination)) {
+                return physicalDestination;
+            }
+        }
+
+        return null;
+    }
+
+    /*
+     * Get physical destination name from application
+     */
+    private String getPhysicalDestination(String logicalDestination, Application application) {
+        if (application == null) {
+            return null;
+        }
+
+        String physicalDestination = getPhysicalDestination(logicalDestination, application.getResourceDescriptors(JavaEEResourceType.JMSDD));
+        if (isValidName(physicalDestination)) {
+            return physicalDestination;
+        }
+
+        Set<WebBundleDescriptor> webBundleDescriptors = application.getBundleDescriptors(WebBundleDescriptor.class);
+        for (WebBundleDescriptor webBundleDescriptor : webBundleDescriptors) {
+            physicalDestination = getPhysicalDestination(logicalDestination, webBundleDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
+            if (isValidName(physicalDestination)) {
+                return physicalDestination;
+            }
+        }
+
+        Set<EjbBundleDescriptor> ejbBundleDescriptors = application.getBundleDescriptors(EjbBundleDescriptor.class);
+        for (EjbBundleDescriptor ejbBundleDescriptor : ejbBundleDescriptors) {
+            physicalDestination = getPhysicalDestination(logicalDestination, ejbBundleDescriptor);
+            if (isValidName(physicalDestination)) {
+                return physicalDestination;
+            }
+        }
+
+        Set<ApplicationClientDescriptor> appClientDescriptors = application.getBundleDescriptors(ApplicationClientDescriptor.class);
+        for (ApplicationClientDescriptor appClientDescriptor : appClientDescriptors) {
+            physicalDestination = getPhysicalDestination(logicalDestination, appClientDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
+            if (isValidName(physicalDestination)) {
+                return physicalDestination;
+            }
+        }
+
+        return null;
+    }
+
+    /*
+     * Get physical destination name from deployed applications
+     */
+    private String getPhysicalDestination(String logicalDestination) {
+        Domain domain = Globals.get(Domain.class);
+        Applications applications = domain.getApplications();
+        for (com.sun.enterprise.config.serverbeans.Application app : applications.getApplications()) {
+            ApplicationInfo appInfo = appRegistry.get(app.getName());
+            if (appInfo != null) {
+                Application application = appInfo.getMetaData(Application.class);
+                String physicalDestination = getPhysicalDestination(logicalDestination, application);
+                if (isValidName(physicalDestination)) {
+                    return physicalDestination;
+                }
+            }
+        }
+        return null;
+    }
+
+    /*
+     * Get physical destination name from descriptor set
+     */
+    private String getPhysicalDestination(String jndiName, Set<? extends Descriptor> descriptors) {
+        for (Descriptor descriptor : descriptors) {
+            if (descriptor instanceof JMSDestinationDefinitionDescriptor) {
+                if (jndiName.equals(((JMSDestinationDefinitionDescriptor) descriptor).getName())) {
+                    return ((JMSDestinationDefinitionDescriptor) descriptor).getDestinationName();
+                }
+            }
+        }
+        return null;
+    }
 
     private void setValuesFromConfiguration(String cfName, EjbMessageBeanDescriptor
 
