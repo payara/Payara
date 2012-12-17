@@ -189,8 +189,8 @@ public final class SetMethodAction implements PrivilegedExceptionAction {
                 if (paramTypes.length > 0) {
                     if (paramTypes[0].equals(type) && paramTypes.length == 1) {
                         if(logger.isLoggable(Level.FINER)) {
-                            logger.log(Level.FINER, "Method " + methods[i] +
-                                "matches with the right arg type");
+                            logger.log(Level.FINER, "Method [ " + methods[i] +
+                                " ] matches with the right arg type");
                         }
                         m = setterMethods[i];
                     }
