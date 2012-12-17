@@ -39,28 +39,24 @@
  */
 package org.glassfish.admin.rest.provider;
 
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
-import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-import org.glassfish.admin.rest.model.Message;
+import org.glassfish.admin.rest.composite.CompositeResource;
 import org.glassfish.admin.rest.model.ResponseBody;
-import org.glassfish.admin.rest.utils.JsonUtil;
 
 /**
  *
  * @author jdlee
  */
 @Provider
-@Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
+@Produces({CompositeResource.MEDIA_TYPE_JSON})
 public class ResponseBodyWriter extends BaseProvider<ResponseBody> {
     public ResponseBodyWriter() {
-        super(ResponseBody.class, MediaType.APPLICATION_JSON_TYPE);
+        super(ResponseBody.class, CompositeResource.MEDIA_TYPE_JSON_TYPE);
     }
 
     @Override

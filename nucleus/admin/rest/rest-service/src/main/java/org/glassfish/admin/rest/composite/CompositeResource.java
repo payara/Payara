@@ -82,16 +82,22 @@ import org.glassfish.security.services.common.SubjectUtil;
  * required, though, in order for the resource to be located and configured properly.
  * @author jdlee
  */
-@Produces(MediaType.APPLICATION_JSON)
+@Produces(CompositeResource.MEDIA_TYPE_JSON)
 public abstract class CompositeResource implements RestResource, DefaultsGenerator, OptionsCapable {
-    public static final String MEDIA_TYPE_BASE = "application/vnd.oracle.glassfish";
+    private static final String MEDIA_TYPE = "application";
+    private static final String MEDIA_SUB_TYPE = "vnd.oracle.glassfish";
+
+    public static final String MEDIA_TYPE_BASE = MEDIA_TYPE + "/" + MEDIA_SUB_TYPE;
+
     public static final String MEDIA_TYPE_JSON = MEDIA_TYPE_BASE+"+json";
-    public static final String MEDIA_TYPE_SSE = MEDIA_TYPE_BASE+"+SSE";
-    public static final String MEDIA_TYPE_ASYNC = MEDIA_TYPE_BASE+"+json+async";
+    public static final MediaType MEDIA_TYPE_JSON_TYPE = new MediaType(MEDIA_TYPE, MEDIA_SUB_TYPE+"+json");
+
+    public static final String MEDIA_TYPE_SSE = MEDIA_TYPE_BASE+"+sse";
 
     // All methods that expect a request body should include the annotation:
     // @Consumes(CONSUMES_TYPE)
-    protected static final String CONSUMES_TYPE = MediaType.APPLICATION_JSON;
+    protected static final String CONSUMES_TYPE = MEDIA_TYPE_JSON;
+            //MediaType.APPLICATION_JSON;
 
     @Context
     protected UriInfo uriInfo;

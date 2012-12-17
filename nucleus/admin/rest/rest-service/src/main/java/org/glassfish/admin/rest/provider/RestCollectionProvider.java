@@ -50,6 +50,7 @@ import javax.ws.rs.ext.Provider;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.composite.CompositeResource;
 import org.glassfish.admin.rest.composite.RestCollection;
 import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.composite.metadata.RestModelMetadata;
@@ -59,16 +60,12 @@ import org.glassfish.admin.rest.utils.JsonUtil;
  * @author: jdlee
  */
 @Provider
-@Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
+@Produces({CompositeResource.MEDIA_TYPE_JSON})
 public class RestCollectionProvider extends BaseProvider<RestCollection> {
     public RestCollectionProvider() {
-        super(RestCollection.class, MediaType.APPLICATION_JSON_TYPE);
+        super(RestCollection.class, CompositeResource.MEDIA_TYPE_JSON_TYPE);
     }
 
-    // {
-    //   items: [ { name: "server1", port: 123 }, { name: "server2", port: 456 } ],
-    //   itemIds : [ { name: "server1" id: "...server1..." }, { name: "server2" id: "...server2..." } ]
-    // }
     @Override
     public String getContent(RestCollection proxy) {
         StringBuilder sb = new StringBuilder();

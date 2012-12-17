@@ -67,6 +67,7 @@ import javax.ws.rs.ext.Provider;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.composite.CompositeResource;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.RestModel;
 
@@ -75,21 +76,24 @@ import org.glassfish.admin.rest.composite.RestModel;
  * @author jdlee
  */
 @Provider
-@Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
+@Produces(CompositeResource.MEDIA_TYPE_JSON)
+@Consumes(CompositeResource.MEDIA_TYPE_JSON)
 public class RestModelReader<T extends RestModel> implements MessageBodyReader<T> {
     @Override
-    public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+    public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations,
+        MediaType mediaType) {
         String submittedType = mediaType.toString();
         int index = submittedType.indexOf(";");
         if (index > -1) {
             submittedType = submittedType.substring(0, index);
         }
-        return submittedType.equals(MediaType.APPLICATION_JSON) && RestModel.class.isAssignableFrom(type);
+        return submittedType.equals(CompositeResource.MEDIA_TYPE_JSON) &&
+                RestModel.class.isAssignableFrom(type);
     }
 
     @Override
-    public T readFrom(Class<T> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, String> mm, InputStream entityStream) throws WebApplicationException, IOException {
+    public T readFrom(Class<T> type, Type type1, Annotation[] antns, MediaType mt,
+        MultivaluedMap<String, String> mm, InputStream entityStream) throws WebApplicationException, IOException {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(entityStream));
             StringBuilder sb = new StringBuilder();
@@ -110,7 +114,8 @@ public class RestModelReader<T extends RestModel> implements MessageBodyReader<T
             }
             return (T) model;
         } catch (JSONException ex) {
-            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(ex.getLocalizedMessage()).build());
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR)
+                    .entity(ex.getLocalizedMessage()).build());
         }
     }
 }
