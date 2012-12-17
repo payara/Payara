@@ -6871,33 +6871,16 @@ public class StandardContext
         return new ObjectName(getDomain() + ":" + onameStr);
     }
 
-    public void updateObjectName() {
-        try {
-            StandardHost host = (StandardHost) getParent();
-            synchronized (this) {
-                oname = createObjectName(host.getDomain(), host.getJmxName());
-                controller = oname;
-            }
-            for (Container wrapper : findChildren()) {
-                ((StandardWrapper)wrapper).registerJMX(this);
-            }
-        } catch(Exception ex) {
-            if (log.isLoggable(Level.INFO)) {
-                String msg = MessageFormat.format(rb.getString(ERROR_UPDATING_CTX_INFO),
-                                                  new Object[] {this, oname, ex.toString()});
-                log.log(Level.INFO, msg, ex);
-            }
-        }
-    }
+
 
     private void preRegisterJMX() {
         try {
             StandardHost host = (StandardHost) getParent();
-            if ((oname == null)
-                    || (oname.getKeyProperty("j2eeType") == null)) {
-                oname = createObjectName(host.getDomain(), host.getJmxName());
-                controller = oname;
-            }
+              if ((oname == null)
+                      || (oname.getKeyProperty("j2eeType") == null)) {
+                  oname = createObjectName(host.getDomain(), host.getJmxName());
+                  controller = oname;
+              }
         } catch(Exception ex) {
             if (log.isLoggable(Level.INFO)) {
                 String msg = MessageFormat.format(rb.getString(ERROR_UPDATING_CTX_INFO),
