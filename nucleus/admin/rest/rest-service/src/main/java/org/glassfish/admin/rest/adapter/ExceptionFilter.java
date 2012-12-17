@@ -46,6 +46,7 @@ import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
 import org.glassfish.admin.rest.Constants;
+import org.glassfish.admin.rest.composite.CompositeResource;
 import org.glassfish.admin.rest.utils.Util;
 
 /**
@@ -62,8 +63,8 @@ public class ExceptionFilter implements ContainerResponseFilter {
 
     @Override
     public void filter(ContainerRequestContext reqCtx, ContainerResponseContext resCtx) throws IOException {
-        if (reqCtx.getHeaderString(Constants.HEADER_LEGACY_FORMAT) != null) {
-            // Don't wrap if the legacy switch is set
+        if (!CompositeResource.MEDIA_TYPE_JSON.equals(reqCtx.getHeaderString("Accept"))) {
+            // Don't wrap if using legacy mode
             return;
         }
 
@@ -81,6 +82,6 @@ public class ExceptionFilter implements ContainerResponseFilter {
 
         String errorMsg = (String)entity;
         Object wrappedEntity = Util.responseBody().addFailure(errorMsg);
-        resCtx.setEntity(wrappedEntity, resCtx.getEntityAnnotations(), MediaType.APPLICATION_JSON_TYPE);
+        resCtx.setEntity(wrappedEntity, resCtx.getEntityAnnotations(), CompositeResource.MEDIA_TYPE_JSON_TYPE);
     }
 }
