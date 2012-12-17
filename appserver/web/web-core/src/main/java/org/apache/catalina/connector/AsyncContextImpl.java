@@ -48,7 +48,6 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.ResourceBundle;
@@ -536,9 +535,9 @@ class AsyncContextImpl implements AsyncContext {
                 default: // not possible
                     break;
                 }
-            } catch (IOException ioe) {
+            } catch (Throwable throwable) {
                 log.log(Level.WARNING, ERROR_INVOKE_ASYNCLISTENER,
-                        ioe);
+                        throwable);
             }
         }
     }
