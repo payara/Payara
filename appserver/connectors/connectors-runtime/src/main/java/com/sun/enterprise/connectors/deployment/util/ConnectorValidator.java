@@ -52,6 +52,7 @@ import org.glassfish.apf.AnnotationProcessorException;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
+import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.Connector;
 import java.util.Set;
 import java.util.Iterator;
@@ -73,6 +74,10 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
     }
 
     public void accept(ConnectorDescriptor descriptor) {
+
+        //make sure that the ActivationSpec class implement ActivationSpec interface.
+        validateActivationSpec(descriptor);
+
         //validate & process annotations if a valid connector annotation is not already processed
         if (!descriptor.getValidConnectorAnnotationProcessed()) {
             Set<AnnotationInfo> annotations = descriptor.getConnectorAnnotations();
@@ -136,6 +141,35 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
         descriptor.getConnectorAnnotations().clear();
         descriptor.getAllConfigPropertyAnnotations().clear();
         descriptor.getConfigPropertyProcessedClasses().clear();
+    }
+
+    private void validateActivationSpec(ConnectorDescriptor descriptor) {
+        if (descriptor.getInBoundDefined()) {
+            InboundResourceAdapter ira = descriptor.getInboundResourceAdapter();
+            Set messageListeners = ira.getMessageListeners();
+            Iterator it = messageListeners.iterator();
+            while (it.hasNext()) {
+                MessageListener ml = (MessageListener) it.next();
+                String activationSpecClass = ml.getActivationSpecClass();
+                if (activationSpecClass != null && !activationSpecClass.equals("")) {
+                    Class clazz = getClass(activationSpecClass);
+                    boolean validClass =  false;
+                    if(clazz != null){
+                        if(ActivationSpec.class.isAssignableFrom(clazz)){
+                            validClass = true;
+                        }
+                    }
+                    if(!validClass){
+                        throw new IllegalArgumentException("Class ["+activationSpecClass+"] does not " +
+                                "implement javax.resource.spi.ActivationSpec interface, but " +
+                                "defined in MessageListener ["+ml.getMessageListenerType()+"] of RAR ["+ descriptor.getName() + "]");
+                    }
+                }else{
+                    throw new RuntimeException("ActivationSpec class cannot be null or empty for message-listener" +
+                            "["+ml.getMessageListenerType()+"] of RAR ["+descriptor.getName()+"]");
+                }
+            }
+        }
     }
 
     /**
@@ -205,6 +239,7 @@ public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVi
                 claz = Thread.currentThread().getContextClassLoader().loadClass(className);
             } catch (ClassNotFoundException e) {
                 _logger.log(Level.WARNING, "Unable to load class [ "+className+" ]", e);
+                throw new RuntimeException("Unable to load class [ "+className+" ]");
             }
         return claz;
     }
