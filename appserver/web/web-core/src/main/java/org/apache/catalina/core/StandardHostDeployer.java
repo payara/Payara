@@ -953,7 +953,6 @@ public class StandardHostDeployer implements Deployer {
             throw new IllegalArgumentException(msg);
         }
         if (log.isLoggable(Level.INFO)) {
-            String msg = MessageFormat.format(rb.getString(STOPPING_WEB_APP_INFO), contextPath);
             log.log(Level.INFO, STOPPING_WEB_APP_INFO, contextPath);
 
         }
