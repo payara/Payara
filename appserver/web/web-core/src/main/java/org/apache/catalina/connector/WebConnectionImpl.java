@@ -120,6 +120,13 @@ public class WebConnectionImpl implements WebConnection {
         } catch(Exception ex) {
             exception = ex;
         }
+        try {
+            if ((request != null) && (request.getSocket() != null)) {
+                request.getSocket().close();
+            }
+        } catch(Exception ex) {
+            exception = ex;
+        }
 
         if (exception != null) {
             throw exception;
