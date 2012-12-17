@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.jms.admin.cli;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
@@ -46,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -56,152 +56,139 @@ import org.glassfish.connectors.config.ConnectorResource;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-
-
 /**
  * Delete JMS Resource Command
  *
  */
-@Service(name="delete-jms-resource")
+@Service(name = "delete-jms-resource")
 @PerLookup
 @I18n("delete.jms.resource")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.DOMAIN})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DOMAIN})
 @RestEndpoints({
-    @RestEndpoint(configBean=Resources.class,
-        opType=RestEndpoint.OpType.DELETE, 
-        path="delete-jms-resource", 
-        description="delete-jms-resource")
+    @RestEndpoint(configBean = Resources.class,
+    opType = RestEndpoint.OpType.DELETE,
+    path = "delete-jms-resource",
+    description = "delete-jms-resource")
 })
 public class DeleteJMSResource implements AdminCommand {
+
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteJMSResource.class);
-
-    @Param(optional=true)
+    @Param(optional = true)
     String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
-
-    @Param(name="jndi_name", primary=true)
+    @Param(name = "jndi_name", primary = true)
     String jndiName;
-
     @Inject
     CommandRunner commandRunner;
-
     @Inject
     Domain domain;
-
-    private static final String JNDINAME_APPENDER="-Connection-Pool";
-
-
+    private static final String JNDINAME_APPENDER = "-Connection-Pool";
     /* As per new requirement all resources should have unique name so appending 'JNDINAME_APPENDER' to jndiName
-    for creating  jndiNameForConnectionPool.
-    */
+     for creating  jndiNameForConnectionPool.
+     */
     private String jndiNameForConnectionPool;
 
     /**
-         * Executes the command with the command parameters passed as Properties
-         * where the keys are the paramter names and the values the parameter values
-         *
-         * @param context information
-         */
-        public void execute(AdminCommandContext context) {
-            final ActionReport report = context.getActionReport();
+     * Executes the command with the command parameters passed as Properties
+     * where the keys are the parameter names and the values the parameter values
+     *
+     * @param context information
+     */
+    @Override
+    public void execute(AdminCommandContext context) {
+        final ActionReport report = context.getActionReport();
 
-            if (jndiName == null) {
-                report.setMessage(localStrings.getLocalString("delete.jms.resource.noJndiName",
-                                "No JNDI name defined for JMS Resource."));
+        if (jndiName == null) {
+            report.setMessage(localStrings.getLocalString("delete.jms.resource.noJndiName",
+                    "No JNDI name defined for JMS Resource."));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+        
+        jndiNameForConnectionPool = jndiName + JNDINAME_APPENDER;
+
+        ActionReport subReport = report.addSubActionsReport();
+
+        ConnectorResource cresource = null;
+        Resource res = ConnectorsUtil.getResourceByName(domain.getResources(), ConnectorResource.class, jndiName);
+        if (res instanceof ConnectorResource) {
+            cresource = (ConnectorResource) res;
+        }
+        /* for (ConnectorResource cr : connResources) {
+         if (cr.getJndiName().equals(jndiName))
+         cresource = cr;
+         } */
+        if (cresource == null) {
+            ParameterMap params = new ParameterMap();
+            params.set("jndi_name", jndiName);
+            params.set("DEFAULT", jndiName);
+            params.set("target", target);
+            commandRunner.getCommandInvocation("delete-admin-object", subReport).parameters(params).execute();
+
+            if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())) {
+                report.setMessage(localStrings.getLocalString("delete.jms.resource.cannotDeleteJMSAdminObject",
+                        "Unable to Delete Admin Object."));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
+        } else {
+            // Delete the connector resource and connector connection pool
+            String defPoolName = jndiNameForConnectionPool;
+            String poolName = cresource.getPoolName();
+            if (poolName != null && poolName.equals(defPoolName)) {
+                ParameterMap params = new ParameterMap();
+                params.set("DEFAULT", jndiName);
+                params.set("connector_resource_name", jndiName);
+                params.set("target", target);
+                commandRunner.getCommandInvocation("delete-connector-resource", subReport).parameters(params).execute();
 
-            jndiNameForConnectionPool = jndiName + JNDINAME_APPENDER;
-
-            ActionReport subReport = report.addSubActionsReport();
-
-            ConnectorResource cresource = null;
-            Resource res = ConnectorsUtil.getResourceByName(domain.getResources(), ConnectorResource.class, jndiName);
-            if (res instanceof ConnectorResource)
-                    cresource = (ConnectorResource)res;
-            /* for (ConnectorResource cr : connResources) {
-                 if (cr.getJndiName().equals(jndiName))
-                     cresource = cr;
-            } */
-            if(cresource == null)
-            {
-              ParameterMap params = new ParameterMap();
-              params.set("jndi_name", jndiName);
-              params.set("DEFAULT", jndiName);
-              params.set("target", target);
-	          commandRunner.getCommandInvocation("delete-admin-object", subReport).parameters(params).execute();
-
-              if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())){
-                    report.setMessage(localStrings.getLocalString("delete.jms.resource.cannotDeleteJMSAdminObject",
-                            "Unable to Delete Admin Object."));
+                if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())) {
+                    report.setMessage(localStrings.getLocalString("delete.jms.resource.cannotDeleteJMSResource",
+                            "Unable to Delete Connector Resource."));
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
-              }
-            } else
-            {
-                 // Delete the connector resource and connector connection pool
-                String defPoolName = jndiNameForConnectionPool;
-                String poolName = cresource.getPoolName();
-                if (poolName != null && poolName.equals(defPoolName))
-                {
-                     ParameterMap params = new ParameterMap();
-                     params.set("DEFAULT", jndiName);
-                     params.set("connector_resource_name", jndiName);
-                     params.set("target", target);         
-		             commandRunner.getCommandInvocation("delete-connector-resource", subReport).parameters(params).execute();
-
-                    if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())){
-                        report.setMessage(localStrings.getLocalString("delete.jms.resource.cannotDeleteJMSResource",
-                            "Unable to Delete Connector Resource."));
-                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                        return;
-                    }
+                }
 
 
-                    params = new ParameterMap();
-                    params.set("poolname", jndiName);
-                    params.set("DEFAULT", jndiNameForConnectionPool);
-		            commandRunner.getCommandInvocation("delete-connector-connection-pool", subReport).parameters(params).execute();
+                params = new ParameterMap();
+                params.set("poolname", jndiName);
+                params.set("DEFAULT", jndiNameForConnectionPool);
+                commandRunner.getCommandInvocation("delete-connector-connection-pool", subReport).parameters(params).execute();
 
-                    if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())){
-                        report.setMessage(localStrings.getLocalString("delete.jms.resource.cannotDeleteJMSPool",
+                if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())) {
+                    report.setMessage(localStrings.getLocalString("delete.jms.resource.cannotDeleteJMSPool",
                             "Unable to Delete Connector Connection Pool."));
-                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                        return;
-                    }
-                    //clear the message set by the delete-connector-connection-pool command this is to prevent the 'connection pool deleted' message from displaying
-                    subReport.setMessage("");
-
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    return;
                 }
-                else
-                {
-                    // There is no connector pool with the default poolName.
-                    // However, no need to throw exception as the connector
-                    // resource might still be there. Try to delete the
-                    // connector-resource without touching the ref. as
-                    // ref. might have been deleted while deleting connector-connection-pool
-                    // as the ref. is the same.
+                //clear the message set by the delete-connector-connection-pool command this is to prevent the 'connection pool deleted' message from displaying
+                subReport.setMessage("");
 
-                     ParameterMap params = new ParameterMap();
-                     params.set("DEFAULT", jndiName);
-                     params.set("connector_resource_name", jndiName);
-                     params.set("target", target);
-		             commandRunner.getCommandInvocation("delete-connector-resource", subReport).parameters(params).execute();
+            } else {
+                // There is no connector pool with the default poolName.
+                // However, no need to throw exception as the connector
+                // resource might still be there. Try to delete the
+                // connector-resource without touching the ref. as
+                // ref. might have been deleted while deleting connector-connection-pool
+                // as the ref. is the same.
 
-                    if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())){
-                        report.setMessage(localStrings.getLocalString("delete.jms.resource.cannotDeleteJMSResource",
+                ParameterMap params = new ParameterMap();
+                params.set("DEFAULT", jndiName);
+                params.set("connector_resource_name", jndiName);
+                params.set("target", target);
+                commandRunner.getCommandInvocation("delete-connector-resource", subReport).parameters(params).execute();
+
+                if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())) {
+                    report.setMessage(localStrings.getLocalString("delete.jms.resource.cannotDeleteJMSResource",
                             "Unable to Delete Connector Resource."));
-                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                        return;
-                    }
-
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    return;
                 }
-    }
+
+            }
+        }
 
         ActionReport.ExitCode ec = ActionReport.ExitCode.SUCCESS;
         report.setActionExitCode(ec);
     }
-
 }
