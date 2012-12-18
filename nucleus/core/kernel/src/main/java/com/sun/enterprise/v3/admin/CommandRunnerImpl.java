@@ -1683,6 +1683,7 @@ public class CommandRunnerImpl implements CommandRunner {
             return this;
         }
 
+        @Deprecated
         @Override
         public CommandInvocation subject(Subject subject) {
             this.subject = subject;
