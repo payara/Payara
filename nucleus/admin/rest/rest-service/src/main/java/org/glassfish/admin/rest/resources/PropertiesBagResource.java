@@ -54,10 +54,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.admin.rest.results.ActionReportResult;
@@ -75,14 +73,6 @@ import org.jvnet.hk2.config.TransactionFailure;
  * @author jasonlee
  */
 public class PropertiesBagResource extends AbstractResource {
-
-    @Context
-    protected HttpHeaders requestHeaders;
-    @Context
-    protected UriInfo uriInfo;
-    @Context
-    protected ServiceLocator habitat;
-
     protected List<Dom> entity;
     protected Dom parent;
     protected String tagName;
@@ -96,7 +86,7 @@ public class PropertiesBagResource extends AbstractResource {
     }
     @Path("{Name}/")
     public PropertyResource getProperty(@PathParam("Name") String id) {
-        PropertyResource resource = habitat.createAndInitialize(PropertyResource.class);
+        PropertyResource resource = serviceLocator.createAndInitialize(PropertyResource.class);
         resource.setBeanByKey(getEntity(), id, tagName);
         return resource;
     }

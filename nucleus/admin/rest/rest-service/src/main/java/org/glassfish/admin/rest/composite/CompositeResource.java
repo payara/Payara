@@ -323,9 +323,9 @@ public abstract class CompositeResource extends AbstractResource
     protected Response accepted(String command, ParameterMap parameters, URI childUri) {
         CommandRunner cr = Globals.getDefaultHabitat().getService(CommandRunner.class);
         final RestActionReporter ar = new RestActionReporter();
-        final CommandRunner.CommandInvocation commandInvocation = cr.getCommandInvocation(command, ar)
-                                                        .subject(getSubject())
-                                                        .parameters(parameters);
+        final CommandRunner.CommandInvocation commandInvocation =
+                cr.getCommandInvocation(command, ar, getSubject()).
+                parameters(parameters);
         String jobId = DetachedCommandHelper.invokeAsync(commandInvocation);
         return Response
                 .status(Response.Status.ACCEPTED)

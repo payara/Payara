@@ -34,7 +34,7 @@ public abstract class AbstractResource {
     @Context
     protected SecurityContext sc;
     @Context
-    protected ServiceLocator injector;
+    protected ServiceLocator serviceLocator;
 
     private String authenticatedUser;
     protected static final Logger logger = RestLogging.restLogger;

@@ -262,9 +262,9 @@ public class ResourceUtil {
                                                 final SseCommandHelper.ActionReportProcessor processor) {
         CommandRunner cr = Globals.getDefaultHabitat().getService(CommandRunner.class);
         final RestActionReporter ar = new RestActionReporter();
-        final CommandInvocation commandInvocation = cr.getCommandInvocation(commandName, ar)
-                                                        .subject(subject)
-                                                        .parameters(parameters);
+        final CommandInvocation commandInvocation =
+            cr.getCommandInvocation(commandName, ar, subject).
+            parameters(parameters);
         return SseCommandHelper.invokeAsync(commandInvocation,
                     new SseCommandHelper.ActionReportProcessor() {
                             @Override
@@ -283,28 +283,10 @@ public class ResourceUtil {
                                                 Subject subject) {
         CommandRunner cr = Globals.getDefaultHabitat().getService(CommandRunner.class);
         RestActionReporter ar = new RestActionReporter();
-//        final Payload.Outbound outbound = PayloadImpl.Outbound.newInstance();
-        final CommandInvocation commandInvocation = cr.getCommandInvocation(commandName, ar);
-
-        commandInvocation.subject(subject).parameters(parameters).execute();
+        final CommandInvocation commandInvocation =
+                cr.getCommandInvocation(commandName, ar, subject);
+        commandInvocation.parameters(parameters).execute();
         addCommandLog(ar, commandName, parameters);
-
-        /*
-        Collection<Payload.Part> parts = outbound.getParts();
-        if (!parts.isEmpty()) {
-            Properties props = ar.getExtraProperties();
-            List<Map<String, String>> attachments = new ArrayList<Map<String, String>>();
-            final GFBase64Encoder encoder = new GFBase64Encoder();
-            for (final Payload.Part part : parts) {
-                attachments.add(new HashMap<String, String>() {{
-                    put("name", part.getName());
-                    put("type", part.getContentType());
-                    put ("data", encoder.encode(getBytesFromStream(part.getInputStream())));
-                }});
-            }
-            props.put("restAttachments", attachments);
-        }
-        */
 
         return ar;
     }

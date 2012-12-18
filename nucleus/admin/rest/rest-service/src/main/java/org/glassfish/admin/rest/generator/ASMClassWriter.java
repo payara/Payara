@@ -61,7 +61,7 @@ import org.objectweb.asm.Type;
  * @author Ludovic Champenois
  */
 public class ASMClassWriter implements ClassWriter, Opcodes {
-    private final static String INJECTOR_FIELD = "injector";
+    private final static String INJECTOR_FIELD = "serviceLocator";
     private final static String FORNAME_INJECTOR_TYPE = "Lorg/glassfish/hk2/api/ServiceLocator;";
     private final static String INTERFACE_INJECTOR_TYPE = "org/glassfish/hk2/api/ServiceLocator";
     private final static String CREATE_AND_INITIALIZE = "createAndInitialize";

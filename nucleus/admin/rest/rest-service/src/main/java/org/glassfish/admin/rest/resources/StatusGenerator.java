@@ -58,8 +58,8 @@ import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.RestService;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.admin.rest.generator.ClassWriter;
@@ -87,18 +87,16 @@ import org.jvnet.hk2.config.DomDocument;
  * @author Ludovic Champenois ludo@java.net
  */
 @Path("/status/")
-public class StatusGenerator {
+public class StatusGenerator extends AbstractResource {
 
-    @Context
-    protected ServiceLocator habitat;
     protected StringBuilder status = new StringBuilder();
     private Set<String> commandsUsed = new TreeSet<String>();
     private Set<String> allCommands = new TreeSet<String>();
     private Set<String> restRedirectCommands = new TreeSet<String>();
     private Map<String, String> commandsToResources = new TreeMap<String, String>();
     private Map<String, String> resourcesToDeleteCommands = new TreeMap<String, String>();
+    private Properties propsI18N = new SortedProperties();
 
-    private Properties propsI18N= new SortedProperties();
     static private class SortedProperties extends Properties {
 
         public Enumeration keys() {
@@ -111,18 +109,19 @@ public class StatusGenerator {
             return keyList.elements();
         }
     }
+
     @GET
     @Produces({"text/plain"})
     public String getPlain() {
 //        status.append("\n------------------------");
 //        status.append("Status of Command usage\n");
         try {
-            Domain entity = habitat.getService(Domain.class);
+            Domain entity = serviceLocator.getService(Domain.class);
             Dom dom = Dom.unwrap(entity);
             DomDocument document = dom.document;
             ConfigModel rootModel = dom.document.getRoot().model;
 
-            ResourcesGenerator resourcesGenerator = new NOOPResourcesGenerator(habitat);
+            ResourcesGenerator resourcesGenerator = new NOOPResourcesGenerator(serviceLocator);
             resourcesGenerator.generateSingle(rootModel, document);
             resourcesGenerator.endGeneration();
         } catch (Exception ex) {
@@ -133,7 +132,7 @@ public class StatusGenerator {
         status.append("\n------------------------");
         status.append("All Commands used in REST Admin:\n");
         for (String ss : commandsUsed) {
-            status.append(ss  +"\n");
+            status.append(ss + "\n");
         }
 
         listOfCommands();
@@ -170,21 +169,21 @@ public class StatusGenerator {
             }
 
         }
-         status.append("\n------------------------");
+        status.append("\n------------------------");
         status.append("Resources with Delete Commands in REST Admin (not counting RESTREDIRECT:\n");
         for (String ss : resourcesToDeleteCommands.keySet()) {
             status.append(ss + "      :::      " + resourcesToDeleteCommands.get(ss) + "\n");
         }
 
-        FileOutputStream f=null;
+        FileOutputStream f = null;
         try {
-            f = new FileOutputStream(System.getProperty("user.home")+"/GlassFishI18NData.properties");
+            f = new FileOutputStream(System.getProperty("user.home") + "/GlassFishI18NData.properties");
             propsI18N.store(f, "");
 
         } catch (Exception ex) {
             Logger.getLogger(StatusGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        } finally{
-            if (f!=null){
+        } finally {
+            if (f != null) {
                 try {
                     f.close();
                 } catch (IOException ex) {
@@ -199,12 +198,12 @@ public class StatusGenerator {
     @Produces({MediaType.TEXT_HTML})
     public String getHtml() {
         try {
-            Domain entity = habitat.getService(Domain.class);
+            Domain entity = serviceLocator.getService(Domain.class);
             Dom dom = Dom.unwrap(entity);
             DomDocument document = dom.document;
             ConfigModel rootModel = dom.document.getRoot().model;
 
-            ResourcesGenerator resourcesGenerator = new NOOPResourcesGenerator(habitat);
+            ResourcesGenerator resourcesGenerator = new NOOPResourcesGenerator(serviceLocator);
             resourcesGenerator.generateSingle(rootModel, document);
             resourcesGenerator.endGeneration();
         } catch (Exception ex) {
@@ -261,15 +260,15 @@ public class StatusGenerator {
         }
         status.append("</table>");
 
-        FileOutputStream f=null;
+        FileOutputStream f = null;
         try {
-            f = new FileOutputStream(System.getProperty("user.home")+"/GlassFishI18NData.properties");
+            f = new FileOutputStream(System.getProperty("user.home") + "/GlassFishI18NData.properties");
             propsI18N.store(f, "");
 
         } catch (Exception ex) {
             Logger.getLogger(StatusGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        } finally{
-            if (f!=null){
+        } finally {
+            if (f != null) {
                 try {
                     f.close();
                 } catch (IOException ex) {
@@ -281,10 +280,11 @@ public class StatusGenerator {
     }
 
     public void listOfCommands() {
-        CommandRunner cr = habitat.getService(CommandRunner.class);
+        CommandRunner cr = serviceLocator.getService(CommandRunner.class);
         RestActionReporter ar = new RestActionReporter();
         ParameterMap parameters = new ParameterMap();
-        cr.getCommandInvocation("list-commands", ar).parameters(parameters).execute();
+        cr.getCommandInvocation("list-commands", ar, getSubject())
+                .parameters(parameters).execute();
         List<ActionReport.MessagePart> children = ar.getTopMessagePart().getChildren();
         for (ActionReport.MessagePart part : children) {
             allCommands.add(part.getMessage());
@@ -308,9 +308,9 @@ public class StatusGenerator {
 
         public NOOPClassWriter(String className, String baseClassName, String resourcePath) {
             this.className = className;
-            if (baseClassName.equals("TemplateRestResource"))
-            resourcesToDeleteCommands.put(className, ""); //init the map with empty values
-
+            if (baseClassName.equals("TemplateRestResource")) {
+                resourcesToDeleteCommands.put(className, ""); //init the map with empty values
+            }
         }
 
         @Override
@@ -428,10 +428,11 @@ public class StatusGenerator {
 
     class NOOPResourcesGenerator extends ResourcesGeneratorBase {
 
-        public NOOPResourcesGenerator(ServiceLocator h){
+        public NOOPResourcesGenerator(ServiceLocator h) {
             super(h);
 
         }
+
         @Override
         public ClassWriter getClassWriter(String className, String baseClassName, String resourcePath) {
             return new NOOPClassWriter(className, baseClassName, resourcePath);
@@ -447,8 +448,8 @@ public class StatusGenerator {
             //I18n Calculation
             for (String a : model.getAttributeNames()) {
                 String key = model.targetTypeName + "." + Util.eleminateHypen(a);
-                propsI18N.setProperty(key+".label", a);
-                propsI18N.setProperty(key+".help", a);
+                propsI18N.setProperty(key + ".label", a);
+                propsI18N.setProperty(key + ".help", a);
             }
 
 
@@ -473,35 +474,31 @@ public class StatusGenerator {
     }
 
     public Boolean hasTargetParam(String command) {
-try{
-        if (command != null) {
-            Collection<CommandModel.ParamModel> params;
-            params = getParamMetaData(command);
+        try {
+            if (command != null) {
+                Collection<CommandModel.ParamModel> params;
+                params = getParamMetaData(command);
 
 
-            Iterator<CommandModel.ParamModel> iterator = params.iterator();
-            CommandModel.ParamModel paramModel;
-            while (iterator.hasNext()) {
-                paramModel = iterator.next();
-             //   Param param = paramModel.getParam();
-                if (paramModel.getName().equals("target")) {
-                    return true;
+                Iterator<CommandModel.ParamModel> iterator = params.iterator();
+                CommandModel.ParamModel paramModel;
+                while (iterator.hasNext()) {
+                    paramModel = iterator.next();
+                    //   Param param = paramModel.getParam();
+                    if (paramModel.getName().equals("target")) {
+                        return true;
+                    }
                 }
-
-
-
-
             }
+        } catch (Exception e) {
+            RestLogging.restLogger.log(Level.FINE, e.getMessage());
         }
-}catch (Exception e){
-    e.printStackTrace();
-}
 
         return false;
     }
 
     public Collection<CommandModel.ParamModel> getParamMetaData(String commandName) {
-        CommandRunner cr = habitat.getService(CommandRunner.class);
+        CommandRunner cr = serviceLocator.getService(CommandRunner.class);
         CommandModel cm = cr.getModel(commandName, RestService.logger);
         Collection<CommandModel.ParamModel> params = cm.getParameters();
         return params;
