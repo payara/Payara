@@ -63,6 +63,7 @@ import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.model.ResponseBody;
+import org.glassfish.admin.rest.resources.AbstractResource;
 import org.glassfish.admin.rest.utils.DetachedCommandHelper;
 import org.glassfish.admin.rest.utils.SseCommandHelper;
 import org.glassfish.admin.rest.utils.Util;
@@ -83,7 +84,8 @@ import org.glassfish.security.services.common.SubjectUtil;
  * @author jdlee
  */
 @Produces(CompositeResource.MEDIA_TYPE_JSON)
-public abstract class CompositeResource implements RestResource, DefaultsGenerator, OptionsCapable {
+public abstract class CompositeResource extends AbstractResource
+    implements RestResource, DefaultsGenerator, OptionsCapable {
     private static final String MEDIA_TYPE = "application";
     private static final String MEDIA_SUB_TYPE = "vnd.oracle.glassfish";
 
@@ -99,43 +101,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
     protected static final String CONSUMES_TYPE = MEDIA_TYPE_JSON;
             //MediaType.APPLICATION_JSON;
 
-    @Context
-    protected UriInfo uriInfo;
-    @Inject
-    protected Ref<Subject> subjectRef;
-    @Inject
-    protected LocatorBridge habitat;
-    @Context
-    protected SecurityContext sc;
-
-    private String authenticatedUser;
     protected CompositeUtil compositeUtil = CompositeUtil.instance();
-
-    /**
-     * This method will return the Subject associated with the current request.
-     * @return
-     */
-    protected Subject getSubject() {
-        return subjectRef.get();
-    }
-
-    /**
-     * This method will return the authenticated user associated with the current request.
-     * @return
-     */
-    protected String getAuthenticatedUser() {
-        if (authenticatedUser == null) {
-            Subject s = getSubject();
-            if (s != null) {
-                List<String> list = SubjectUtil.getUsernamesFromSubject(s);
-                if (list != null) {
-                    authenticatedUser = list.get(0);
-                }
-            }
-        }
-
-        return authenticatedUser;
-    }
 
     @Override
     public UriInfo getUriInfo() {

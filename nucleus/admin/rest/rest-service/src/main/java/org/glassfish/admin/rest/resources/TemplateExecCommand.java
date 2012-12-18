@@ -62,6 +62,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.security.auth.Subject;
 
 import org.glassfish.jersey.media.sse.EventOutput;
 
@@ -71,28 +73,21 @@ import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.utils.Util;
+import org.glassfish.jersey.internal.util.collection.Ref;
 
 /**
  * @author ludo
  */
-public class TemplateExecCommand implements OptionsCapable {
+public class TemplateExecCommand extends AbstractResource implements OptionsCapable {
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(TemplateExecCommand.class);
-    @Context
-    protected HttpHeaders requestHeaders;
-    @Context
-    protected UriInfo uriInfo;
-
-    @Context
-    protected LocatorBridge habitat;
 
     protected String resourceName;
     protected String commandName;
     protected String commandDisplayName;
     protected String commandMethod;
     protected String commandAction;
-//    protected HashMap<String, String> commandParams = null;
     protected boolean isLinkedToParent = false;
-    protected Logger logger = Logger.getLogger(TemplateExecCommand.class.getName());
+
 
 
     public TemplateExecCommand(String resourceName, String commandName, String commandMethod, String commandAction,
@@ -155,8 +150,9 @@ public class TemplateExecCommand implements OptionsCapable {
     }
 
     protected Response executeCommand(ParameterMap data) {
-        RestActionReporter actionReport = ResourceUtil.runCommand(commandName, data, habitat.getRemoteLocator(),
-                                                                  ResourceUtil.getResultType(requestHeaders));
+        RestActionReporter actionReport =
+                ResourceUtil.runCommand(commandName, data, habitat.getRemoteLocator(),
+                ResourceUtil.getResultType(requestHeaders), getSubject());
         ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
         int status = (exitCode == ActionReport.ExitCode.FAILURE) ?
                      HttpURLConnection.HTTP_INTERNAL_ERROR : HttpURLConnection.HTTP_OK;

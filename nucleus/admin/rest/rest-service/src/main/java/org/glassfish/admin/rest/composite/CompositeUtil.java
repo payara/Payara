@@ -196,9 +196,11 @@ public class CompositeUtil {
         return void.class;
     }
 
-    public ParameterMap addToParameterMap(ParameterMap parameters, String basePath, Class<?> configBean, Object source) {
+    public ParameterMap addToParameterMap(ParameterMap parameters, String basePath,
+            Class<?> configBean, Object source, Subject subject) {
         String name;
-        Map<String, String> currentValues = Util.getCurrentValues(basePath, Globals.getDefaultHabitat());
+        Map<String, String> currentValues =
+                Util.getCurrentValues(basePath, Globals.getDefaultHabitat(), subject);
         for (Method cbMethod : configBean.getMethods()) {
             name = cbMethod.getName();
             if (name.startsWith("set")/* && (cbMethod.getAnnotation(Attribute.class) !=null)*/) {
@@ -372,8 +374,8 @@ public class CompositeUtil {
      * @param changes
      * @param basePath
      */
-    public void applyChanges(Map<String, String> changes, String basePath) {
-        RestActionReporter ar = Util.applyChanges(changes, basePath);
+    public void applyChanges(Map<String, String> changes, String basePath, Subject subject) {
+        RestActionReporter ar = Util.applyChanges(changes, basePath, subject);
         if (!ar.getActionExitCode().equals(ExitCode.SUCCESS)) {
             throw new WebApplicationException(Response.status(Status.BAD_REQUEST).
                     entity(ar.getCombinedMessage()).build());

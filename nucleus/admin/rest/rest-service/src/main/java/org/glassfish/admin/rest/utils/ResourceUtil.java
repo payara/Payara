@@ -240,7 +240,7 @@ public class ResourceUtil {
     }
 
     @Deprecated
-    public static RestActionReporter runCommand(String commandName,
+    private static RestActionReporter runCommand(String commandName,
                                                 ParameterMap parameters,
                                                 ServiceLocator habitat,
                                                 String resultType) {
@@ -1171,13 +1171,13 @@ public class ResourceUtil {
 
     /**
      * Indicates whether the subject can perform the action on the resource.
-     * 
+     *
      * @param habitat ServiceLocator for finding services
      * @param subject the Subject to be qualified
      * @param resource the resource affected by the action
      * @param action the action being attempted by the subject on the resource
      * @return true if the subject is allowed to perform the action, false otherwise
-     * @throws URISyntaxException 
+     * @throws URISyntaxException
      */
     public static boolean isAuthorized(final ServiceLocator habitat, final Subject subject, final String resource, final String action) throws URISyntaxException {
         final AuthorizationService authorizationSvc = habitat.getService(AuthorizationService.class);

@@ -76,16 +76,10 @@ import static org.glassfish.admin.rest.utils.Util.getName;
  * @author Ludovic Champenois ludo@dev.java.net
  * @author Rajeshwar Patil
  */
-public abstract class TemplateListOfResource {
-
-    @Context
-    protected HttpHeaders requestHeaders;
-    @Context
-    protected UriInfo uriInfo;
+public abstract class TemplateListOfResource extends AbstractResource {
     @Context
     protected ServiceLocator injector;
-    @Context
-    protected LocatorBridge habitat;
+
     protected List<Dom> entity;
     protected Dom parent;
     protected String tagName;

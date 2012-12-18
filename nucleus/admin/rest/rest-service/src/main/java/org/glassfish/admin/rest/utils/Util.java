@@ -57,6 +57,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.security.auth.Subject;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.client.ClientFactory;
 import javax.ws.rs.core.HttpHeaders;
@@ -299,18 +300,13 @@ public class Util {
      * @param data The set of changes to be applied
      * @return ActionReporter containing result of "set" execution
      */
-    public static RestActionReporter applyChanges(Map<String, String> data, UriInfo uriInfo) {
-        return applyChanges(data, getBasePathFromUri(uriInfo));
+    public static RestActionReporter applyChanges(Map<String, String> data, UriInfo uriInfo, Subject subject) {
+        return applyChanges(data, getBasePathFromUri(uriInfo), subject);
     }
 
-    @Deprecated
-    public static RestActionReporter applyChanges(Map<String, String> data, String basePath, ServiceLocator habitat) {
-        return applyChanges(data, basePath);
-    }
-
-    public static RestActionReporter applyChanges(Map<String, String> data, String basePath) {
+    public static RestActionReporter applyChanges(Map<String, String> data, String basePath, Subject subject) {
         ParameterMap parameters = new ParameterMap();
-        Map<String, String> currentValues = getCurrentValues(basePath);
+        Map<String, String> currentValues = getCurrentValues(basePath, subject);
 
         for (Map.Entry<String, String> entry : data.entrySet()) {
             String currentValue = currentValues.get(basePath + entry.getKey());
@@ -351,17 +347,17 @@ public class Util {
         return sb.toString();
     }
 
-    public static Map<String, String> getCurrentValues(String basePath) {
+    public static Map<String, String> getCurrentValues(String basePath, Subject subject) {
         ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
-        return getCurrentValues(basePath, serviceLocator);
+        return getCurrentValues(basePath, serviceLocator, subject);
     }
 
-    public static Map<String, String> getCurrentValues(String basePath, ServiceLocator habitat) {
+    public static Map<String, String> getCurrentValues(String basePath, ServiceLocator habitat, Subject subject) {
         Map<String, String> values = new HashMap<String, String>();
         final String path = (basePath.endsWith(".")) ? basePath.substring(0, basePath.length()-1) : basePath;
         RestActionReporter gr = ResourceUtil.runCommand("get", new ParameterMap() {{
             add ("DEFAULT", path);
-        }}, habitat, "");
+        }}, subject);
 
         MessagePart top = gr.getTopMessagePart();
         for (MessagePart child : top.getChildren()) {

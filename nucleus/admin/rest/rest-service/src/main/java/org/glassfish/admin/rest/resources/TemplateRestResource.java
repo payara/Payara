@@ -89,6 +89,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.security.auth.Subject;
 import javax.ws.rs.core.Response.Status;
 import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.OptionsCapable;
@@ -96,6 +98,7 @@ import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 
 import static org.glassfish.admin.rest.utils.Util.eleminateHypen;
+import org.glassfish.jersey.internal.util.collection.Ref;
 
 /**
  * @author Ludovic Champenois ludo@java.net
@@ -103,14 +106,8 @@ import static org.glassfish.admin.rest.utils.Util.eleminateHypen;
  */
 @Produces({"text/html;qs=2", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-public class TemplateRestResource implements OptionsCapable {
+public class TemplateRestResource extends AbstractResource implements OptionsCapable {
 
-    @Context
-    protected HttpHeaders requestHeaders;
-    @Context
-    protected ServiceLocator injector;
-    @Context
-    protected UriInfo uriInfo;
     @Context
     protected LocatorBridge locatorBridge;
     protected Dom entity;  //may be null when not created yet...
@@ -176,7 +173,7 @@ public class TemplateRestResource implements OptionsCapable {
             }
             //just update it.
             data = ResourceUtil.translateCamelCasedNamesToXMLNames(data);
-            RestActionReporter ar = Util.applyChanges(data, uriInfo);
+            RestActionReporter ar = Util.applyChanges(data, uriInfo, getSubject());
             if (ar.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
                 return handleError(Status.BAD_REQUEST, "Could not apply changes" + ar.getMessage()); // i18n
             }
@@ -313,7 +310,6 @@ public class TemplateRestResource implements OptionsCapable {
     public void setUriInfo(UriInfo uriInfo) {
         this.uriInfo = uriInfo;
     }
-
 
     public void setEntity(Dom p) {
         entity = p;

@@ -74,7 +74,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  *
  * @author jasonlee
  */
-public class PropertiesBagResource {
+public class PropertiesBagResource extends AbstractResource {
 
     @Context
     protected HttpHeaders requestHeaders;
@@ -82,7 +82,7 @@ public class PropertiesBagResource {
     protected UriInfo uriInfo;
     @Context
     protected ServiceLocator habitat;
-    
+
     protected List<Dom> entity;
     protected Dom parent;
     protected String tagName;
@@ -154,7 +154,7 @@ public class PropertiesBagResource {
         try {
             Map<String, Property> existing = getExistingProperties();
             deleteMissingProperties(existing, null);
-            
+
             String successMessage = localStrings.getLocalString("rest.resource.delete.message",
                         "\"{0}\" deleted successfully.", new Object[]{uriInfo.getAbsolutePath()});
             return ResourceUtil.getResponse(200, successMessage, requestHeaders, uriInfo);
@@ -188,11 +188,11 @@ public class PropertiesBagResource {
                 String value = property.get("value");
                 String description = property.get("description");
                 final String unescapedValue = value.replaceAll("\\\\", "");
-                
+
                 // the prop name can not contain .
                 // need to remove the . test when http://java.net/jira/browse/GLASSFISH-15418  is fixed
                 boolean canSaveDesc = property.get("name").indexOf(".") == -1;
-                
+
                 if ((existingProp == null) || !unescapedValue.equals(existingProp.getValue())) {
                     data.put(escapedName, property.get("value"));
                     if (canSaveDesc && (description != null)) {
@@ -209,11 +209,11 @@ public class PropertiesBagResource {
                     }
                 }
             }
-            
+
             if (!data.isEmpty()) {
-                Util.applyChanges(data, uriInfo);
+                Util.applyChanges(data, uriInfo, getSubject());
             }
-            
+
             String successMessage = localStrings.getLocalString("rest.resource.update.message",
                     "\"{0}\" updated successfully.", new Object[]{uriInfo.getAbsolutePath()});
 
@@ -228,10 +228,10 @@ public class PropertiesBagResource {
                 throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
             }
         }
-        
+
         return new ActionReportResult("properties", ar, new OptionsResult(Util.getResourceName(uriInfo)));
     }
-        
+
     protected Map<String, Property> getExistingProperties() {
         Map<String, Property> properties = new HashMap<String, Property>();
         for (Dom child : parent.nodeElements(tagName)) {
@@ -248,7 +248,7 @@ public class PropertiesBagResource {
                 propNames.add(property.get("name"));
             }
         }
-        
+
         HashMap<String, String> data = new HashMap<String, String>();
         for (final Property existingProp : existing.values()) {
             if (!propNames.contains(existingProp.getName())) {
@@ -257,7 +257,7 @@ public class PropertiesBagResource {
             }
         }
         if (!data.isEmpty()) {
-            Util.applyChanges(data, uriInfo);
+            Util.applyChanges(data, uriInfo, getSubject());
         }
     }
 
