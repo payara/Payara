@@ -120,21 +120,32 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
 
         logger.log(Level.FINE, localStrings.getLocalString("JMSContext.delegation.type", 
                    "JMSContext wrapper with id {0} is delegating to {1} instance.", ipId, manager.getType()));
-        return manager.getContext(ipId, id, metadata, getConnectionFactory());
+        try {
+            return manager.getContext(ipId, id, metadata, getConnectionFactory());
+        } catch (ContextNotActiveException e) {
+            String message = localStrings.getLocalString("ContextNotActiveException.msg",
+                             "An injected JMSContext cannot be used when there is neither a transaction or a valid request scope.");
+            throw new RuntimeException(message, e);
+        }
     }
 
     @Override
     public String toString() {
         JMSContext rContext = null;
         JMSContext tContext = null;
-        if (isInTransaction()) {
-            tContext = transactedManager.getContext(id);
-            if (tContext == null)
-                tContext = transactedManager.getContext(ipId, id, metadata, getConnectionFactory());
-        } else {
-            rContext = requestedManager.getContext(id);
-            if (rContext == null)
-                rContext = requestedManager.getContext(ipId, id, metadata, getConnectionFactory());
+        try {
+            if (isInTransaction()) {
+                tContext = transactedManager.getContext(id);
+                if (tContext == null)
+                    tContext = transactedManager.getContext(ipId, id, metadata, getConnectionFactory());
+            } else {
+                rContext = requestedManager.getContext(id);
+                if (rContext == null)
+                    rContext = requestedManager.getContext(ipId, id, metadata, getConnectionFactory());
+            }
+        } catch (ContextNotActiveException cnae) {
+            // if toString() is called in an env which doesn't have valid CDI request/transaction scope,
+            // then we don't call the CDI proxy for creating a new JMSContext bean.
         }
 
         StringBuffer sb = new StringBuffer();
@@ -143,6 +154,8 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
             sb.append(", around ").append(transactedManager.getType()).append(" [").append(tContext).append("]");
         else if (rContext != null)
             sb.append(", around ").append(requestedManager.getType()).append(" [").append(rContext).append("]");
+        else
+            sb.append(", there is neither a transaction or a valid request scope.");
         return sb.toString();
     }
 
