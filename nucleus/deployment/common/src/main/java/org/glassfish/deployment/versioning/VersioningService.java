@@ -51,6 +51,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.CommandRunner;
@@ -246,9 +247,10 @@ public class VersioningService {
      *  @param target an option supply from admin command, it's retained for
      * compatibility with other releases
      *  @param report ActionReport, report object to send back to client.
+     *  @param subject the Subject on whose behalf to run
      */
     public void handleDisable(final String appName, final String target,
-            final ActionReport report) throws VersioningSyntaxException {
+            final ActionReport report, final Subject subject) throws VersioningSyntaxException {
 
         Set<String> versionsToDisable = Collections.EMPTY_SET;
 
@@ -284,7 +286,7 @@ public class VersioningService {
                 ActionReport subReport = report.addSubActionsReport();
 
                 CommandRunner.CommandInvocation inv =
-                        commandRunner.getCommandInvocation("disable", subReport);
+                        commandRunner.getCommandInvocation("disable", subReport, subject);
                 inv.parameters(parameters).execute();
             }
         }
