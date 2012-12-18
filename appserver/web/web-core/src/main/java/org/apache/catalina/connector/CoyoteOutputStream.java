@@ -201,12 +201,12 @@ public class CoyoteOutputStream
     }
 
 
-    public boolean canWrite() {
+    public boolean isReady() {
         // Disallow operation if the object has gone out of scope
         if (ob == null) {
             throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
-        return ob.canWrite();
+        return ob.isReady();
     }
 
 

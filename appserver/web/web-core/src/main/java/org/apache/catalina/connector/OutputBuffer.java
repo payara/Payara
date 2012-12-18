@@ -138,7 +138,7 @@ public class OutputBuffer extends Writer
 
     private WriteHandler writeHandler = null;
     private boolean hasSetWriteListener = false;
-    private boolean prevCanWrite = true;
+    private boolean prevIsReady = true;
     private static final ThreadLocal<Boolean> CAN_WRITE_SCOPE = new ThreadLocal<Boolean>();
 
     /**
@@ -233,7 +233,7 @@ public class OutputBuffer extends Writer
         grizzlyResponse = null;
         grizzlyOutputBuffer = null;
         writeHandler = null;
-        prevCanWrite = true;
+        prevIsReady = true;
         hasSetWriteListener = false;
         response = null;
 
@@ -494,15 +494,15 @@ public class OutputBuffer extends Writer
     }
 
 
-    public boolean canWrite() {
-        if (!prevCanWrite) {
+    public boolean isReady() {
+        if (!prevIsReady) {
             return false;
         }
         
         boolean result = grizzlyOutputBuffer.canWrite();
         if (!result) {
             if (hasSetWriteListener) {
-                prevCanWrite = false; // Not can write
+                prevIsReady = false; // Not can write
                 CAN_WRITE_SCOPE.set(Boolean.TRUE);
                 try {
                     grizzlyOutputBuffer.notifyCanWrite(writeHandler);
@@ -511,7 +511,7 @@ public class OutputBuffer extends Writer
                 }
                 
             } else {
-                prevCanWrite = true;  // Allow next .canWrite() call to check underlying outputStream
+                prevIsReady = true;  // Allow next .isReady() call to check underlying outputStream
             }
         }
         
@@ -526,7 +526,7 @@ public class OutputBuffer extends Writer
         writeHandler = new WriteHandlerImpl(writeListener);
         hasSetWriteListener = true;
 
-        if (canWrite()) {
+        if (isReady()) {
             try {
                 writeHandler.onWritePossible();
             } catch(Throwable t) {
@@ -752,7 +752,7 @@ public class OutputBuffer extends Writer
 
         private void processWritePossible() {
             synchronized(lk) {
-                prevCanWrite = true;
+                prevIsReady = true;
                 writeListener.onWritePossible();
             }
         }

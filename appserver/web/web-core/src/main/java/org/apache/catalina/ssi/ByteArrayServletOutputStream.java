@@ -106,7 +106,7 @@ public class ByteArrayServletOutputStream extends ServletOutputStream {
     }
 
     @Override
-    public boolean canWrite() {
+    public boolean isReady() {
         return true;
     }
 

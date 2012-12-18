@@ -121,7 +121,7 @@ public class CachingOutputStreamWrapper extends ServletOutputStream {
      * @return true if a write to this ServletOutputStream will succeed, otherwise returns false.
      */
     @Override
-    public boolean canWrite() {
+    public boolean isReady() {
         return true;
     }
 
