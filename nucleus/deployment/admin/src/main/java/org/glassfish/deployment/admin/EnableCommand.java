@@ -218,7 +218,7 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
         if (env.isDas()) {
             // try to disable the enabled version, if exist
             try {
-                versioningService.handleDisable(name(),target, report);
+                versioningService.handleDisable(name(),target, report, context.getSubject());
             } catch (VersioningSyntaxException e) {
                 report.failure(logger, e.getMessage());
                 return;

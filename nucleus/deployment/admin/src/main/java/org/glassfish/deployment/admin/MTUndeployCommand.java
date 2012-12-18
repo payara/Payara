@@ -111,7 +111,7 @@ public class MTUndeployCommand implements AdminCommand, AdminCommandSecurity.Acc
         // invoke the undeploy command with domain target to undeploy the
         // application from domain
 
-        CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("undeploy", report);
+        CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("undeploy", report, context.getSubject());
 
         final ParameterMap parameters = new ParameterMap();
 
@@ -129,11 +129,11 @@ public class MTUndeployCommand implements AdminCommand, AdminCommandSecurity.Acc
 
         for (AppTenant tenant : appTenants) {
             ActionReport subReport = report.addSubActionsReport();
-            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("_mt-unprovision", subReport);
+            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("_mt-unprovision", subReport, subject);
             ParameterMap parameters = new ParameterMap();
             parameters.add("DEFAULT", appName);
             parameters.add("tenant", tenant.getTenant());
-            inv.subject(subject).parameters(parameters).execute();
+            inv.parameters(parameters).execute();
         }
     }
 }

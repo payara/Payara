@@ -361,7 +361,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
             ApplicationConfigInfo savedAppConfig = 
                     new ApplicationConfigInfo(apps.getModule(Application.class, name));
-            Properties undeployProps = handleRedeploy(name, report);
+            Properties undeployProps = handleRedeploy(name, report, context);
             if (enabled == null) {
                 enabled = Boolean.TRUE;
             }
@@ -391,7 +391,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             if (!DeploymentUtils.isDomainTarget(target) && enabled) {
                 // try to disable the enabled version, if exist
                 try {
-                    versioningService.handleDisable(name,target, report);
+                    versioningService.handleDisable(name,target, report, context.getSubject());
                 } catch (VersioningSyntaxException e) {
                     report.failure(logger, e.getMessage());
                     return;
@@ -673,7 +673,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
      * while undeploying the application
      *
      */
-    private Properties handleRedeploy(final String name, final ActionReport report)
+    private Properties handleRedeploy(final String name, final ActionReport report, final AdminCommandContext context)
         throws Exception {
         if (isredeploy) 
         {
@@ -713,7 +713,8 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             propertyNames.add(DeploymentProperties.PRESERVE_APP_SCOPED_RESOURCES);
             populatePropertiesToParameterMap(parameters, propertyNames);
 
-            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("undeploy", subReport);
+            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("undeploy", subReport, 
+                    context.getSubject());
 
             inv.parameters(parameters).execute();
             return subReport.getExtraProperties();

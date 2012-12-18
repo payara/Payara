@@ -40,6 +40,7 @@
 
 package org.glassfish.deployment.admin;
 
+import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -234,10 +235,10 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
             ActionReport.MessagePart childPart = part.addChild();
             sb.append(String.format(formattedLine, (Object[])v));
             if(resources){
-                displayAppScopedResources(v[0], report, childPart);
+                displayAppScopedResources(v[0], report, childPart, context.getSubject());
             }
             if (subcomponents) {
-                displaySubComponents(v[0], report, childPart);
+                displaySubComponents(v[0], report, childPart, context.getSubject());
             }
             childPart.setMessage(sb.toString());
         }
@@ -355,7 +356,8 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
         return sniffer.isUserVisible();
     }
 
-    private void displayAppScopedResources(String applicationName, ActionReport report, ActionReport.MessagePart part) {
+    private void displayAppScopedResources(String applicationName, ActionReport report, ActionReport.MessagePart part,
+            final Subject subject) {
 
         Application application = null;
         List<Application> applications = domain.getApplicationsInTarget(target);
@@ -366,7 +368,7 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
         }
         if (application != null) {
             ActionReport subReport = report.addSubActionsReport();
-            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("_list-resources", subReport);
+            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("_list-resources", subReport, subject);
             final ParameterMap parameters = new ParameterMap();
             parameters.add("appname", application.getName());
             inv.parameters(parameters).execute();
@@ -380,9 +382,9 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
     }
 
     private void displaySubComponents(String appName, ActionReport report,
-        ActionReport.MessagePart part) {
+        ActionReport.MessagePart part, final Subject subject) {
         ActionReport subReport = report.addSubActionsReport();
-        CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("list-sub-components", subReport);
+        CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("list-sub-components", subReport, subject);
 
         final ParameterMap parameters = new ParameterMap();
         parameters.add("DEFAULT", appName);

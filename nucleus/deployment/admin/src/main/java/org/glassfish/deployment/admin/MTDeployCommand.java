@@ -78,14 +78,14 @@ public class MTDeployCommand implements AdminCommand {
         // invoke the deploy command with domain target to submit the
         // application to domain
 
-        CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("deploy", report);
+        CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("deploy", report, context.getSubject());
 
         final ParameterMap parameters = new ParameterMap();
 
         parameters.set("DEFAULT", path.getAbsolutePath());
 
         parameters.set(DeploymentProperties.TARGET, DeploymentUtils.DOMAIN_TARGET_NAME);
-        inv.subject(context.getSubject()).parameters(parameters).execute();
+        inv.parameters(parameters).execute();
 
         // do any necessary initialization work here
     }

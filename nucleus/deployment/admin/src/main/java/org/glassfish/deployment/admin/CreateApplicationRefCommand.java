@@ -324,7 +324,7 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
                     }
 
                     if(enabled){
-                        versioningService.handleDisable(appName, target, deploymentContext.getActionReport());
+                        versioningService.handleDisable(appName, target, deploymentContext.getActionReport(), context.getSubject());
                     }
 
                     if (domain.isCurrentInstanceMatchingTarget(target, appName, server.getName(), null)) {

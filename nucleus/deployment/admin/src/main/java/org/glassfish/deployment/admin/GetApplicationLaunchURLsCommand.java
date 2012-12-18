@@ -149,11 +149,11 @@ public class GetApplicationLaunchURLsCommand implements AdminCommand, AdminComma
 
     private void getLBLaunchURLInformation(String appName, ActionReport report, final Subject subject){
         CommandRunner.CommandInvocation invocation =
-                commandRunner.getCommandInvocation("_get-lb-launch-urls", report);
+                commandRunner.getCommandInvocation("_get-lb-launch-urls", report, subject);
         if(invocation != null){
             ParameterMap map = new ParameterMap();
             map.add("appname", appName);
-            invocation.subject(subject).parameters(map).execute();
+            invocation.parameters(map).execute();
         }
     }
 

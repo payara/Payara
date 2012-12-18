@@ -127,7 +127,7 @@ public class ReDeployCommand extends DeployCommandParameters implements AdminCom
 
         paramMap.set("force", String.valueOf(true));
 
-        CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("deploy", report);
+        CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("deploy", report, context.getSubject());
         inv.parameters(paramMap).inbound(context.getInboundPayload()).outbound(context.getOutboundPayload()).execute();
     }
 
