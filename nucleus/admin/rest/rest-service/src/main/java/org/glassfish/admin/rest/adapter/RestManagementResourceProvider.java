@@ -99,7 +99,7 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
 
     @Override
     public Set<Class<?>> getResourceClasses(ServiceLocator habitat) {
-//         return getLazyJersey().getResourcesConfigForManagement(serviceLocator);
+//         return getLazyJersey().getResourcesConfigForManagement(locatorBridge);
         Class domainResourceClass = null;//org.glassfish.admin.rest.resources.generated.DomainResource.class;
 
         generateASM(habitat);

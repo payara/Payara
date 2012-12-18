@@ -126,7 +126,7 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
             OptionsResult optionsResult = new OptionsResult(resourceName);
             Map<String, MethodMetaData> mmd = new HashMap<String, MethodMetaData>();
             MethodMetaData methodMetaData = ResourceUtil.getMethodMetaData(commandName, getCommandParams(),
-                    habitat.getRemoteLocator(), RestService.logger);
+                    locatorBridge.getRemoteLocator(), RestService.logger);
 
             optionsResult.putMethodMetaData(commandMethod, methodMetaData);
             mmd.put(commandMethod, methodMetaData);
@@ -151,7 +151,7 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
 
     protected Response executeCommand(ParameterMap data) {
         RestActionReporter actionReport =
-                ResourceUtil.runCommand(commandName, data, habitat.getRemoteLocator(),
+                ResourceUtil.runCommand(commandName, data, locatorBridge.getRemoteLocator(),
                 ResourceUtil.getResultType(requestHeaders), getSubject());
         ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
         int status = (exitCode == ActionReport.ExitCode.FAILURE) ?

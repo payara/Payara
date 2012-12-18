@@ -30,9 +30,9 @@ public abstract class AbstractResource {
     @Inject
     protected Ref<Subject> subjectRef;
     @Inject
-    protected LocatorBridge habitat;
+    protected LocatorBridge locatorBridge;
     @Context
-    protected SecurityContext sc;
+    protected SecurityContext securityContext;
     @Context
     protected ServiceLocator serviceLocator;
 

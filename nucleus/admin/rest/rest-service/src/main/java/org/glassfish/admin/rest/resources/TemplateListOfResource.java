@@ -124,7 +124,7 @@ public abstract class TemplateListOfResource extends AbstractResource {
                     resourceToCreate += data.get("DEFAULT");
                 }
                 String typeOfResult = ResourceUtil.getResultType(requestHeaders);
-                RestActionReporter actionReport = ResourceUtil.runCommand(commandName, data, habitat.getRemoteLocator(), typeOfResult);
+                RestActionReporter actionReport = ResourceUtil.runCommand(commandName, data, locatorBridge.getRemoteLocator(), typeOfResult);
 
                 ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
                 if (exitCode != ActionReport.ExitCode.FAILURE) {
@@ -320,7 +320,7 @@ public abstract class TemplateListOfResource extends AbstractResource {
 
             if (null != commandName) {
                 String typeOfResult = ResourceUtil.getResultType(requestHeaders);
-                RestActionReporter actionReport = ResourceUtil.runCommand(commandName, data, habitat.getRemoteLocator(), typeOfResult);
+                RestActionReporter actionReport = ResourceUtil.runCommand(commandName, data, locatorBridge.getRemoteLocator(), typeOfResult);
 
                 ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
                 if (exitCode != ActionReport.ExitCode.FAILURE) {
@@ -349,7 +349,7 @@ public abstract class TemplateListOfResource extends AbstractResource {
         //POST meta data
         String command = getPostCommand();
         if (command != null) {
-            MethodMetaData postMethodMetaData = ResourceUtil.getMethodMetaData(command, habitat.getRemoteLocator(), RestService.logger);
+            MethodMetaData postMethodMetaData = ResourceUtil.getMethodMetaData(command, locatorBridge.getRemoteLocator(), RestService.logger);
             if (Util.getResourceName(uriInfo).equals("Application")) {
                 postMethodMetaData.setIsFileUploadOperation(true);
             }

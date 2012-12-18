@@ -73,22 +73,13 @@ import org.glassfish.jersey.internal.util.collection.Ref;
  * @author Mitesh Meswani
  */
 @Path("/sessions")
-public class SessionsResource {
+public class SessionsResource extends AbstractResource {
     @Context
     RestSessionManager sessionManager;
-
-    @Context
-    protected HttpHeaders requestHeaders;
-
-    @Context
-    protected UriInfo uriInfo;
 
     @Inject
     private Ref<Request> request;
 
-    @Context
-    protected LocatorBridge habitat;
-    
     /**
      * Get a new session with GlassFish Rest service
      * If a request lands here when authentication has been turned on => it has been authenticated.
@@ -101,7 +92,7 @@ public class SessionsResource {
         if (data == null) {
             data = new HashMap<String, String>();
         }
-        final RestConfig restConfig = ResourceUtil.getRestConfig(habitat.getRemoteLocator());
+        final RestConfig restConfig = ResourceUtil.getRestConfig(locatorBridge.getRemoteLocator());
 
         Response.ResponseBuilder responseBuilder = Response.status(UNAUTHORIZED);
         RestActionReporter ar = new RestActionReporter();
@@ -119,8 +110,8 @@ public class SessionsResource {
         Subject subject = null;
         try {
 //            subject = ResourceUtil.authenticateViaAdminRealm(Globals.getDefaultHabitat(), grizzlyRequest, hostName);
-            subject = ResourceUtil.authenticateViaAdminRealm(habitat.getRemoteLocator(), grizzlyRequest, hostName);
-            isAuthorized = ResourceUtil.isAuthorized(habitat.getRemoteLocator(), subject, "domain/rest-sessions/rest-session", "create");
+            subject = ResourceUtil.authenticateViaAdminRealm(locatorBridge.getRemoteLocator(), grizzlyRequest, hostName);
+            isAuthorized = ResourceUtil.isAuthorized(locatorBridge.getRemoteLocator(), subject, "domain/rest-sessions/rest-session", "create");
         } catch (RemoteAdminAccessException e) {
             responseBuilder.status(FORBIDDEN);
             responseErrorStatusSet = true;

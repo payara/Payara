@@ -86,16 +86,7 @@ import static org.glassfish.admin.rest.utils.Util.upperCaseFirstLetter;
  * @author Rajeshwar Patil
  */
 @Produces({"text/html;qs=2", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-public abstract class CollectionLeafResource {
-    @Context
-    protected Provider<HttpHeaders> requestHeaders;
-
-    @Context
-    protected Provider<UriInfo> uriInfo;
-
-    @Context
-    protected LocatorBridge habitat;
-
+public abstract class CollectionLeafResource extends AbstractResource {
     protected List<String> entity;
     protected Dom parent;
     protected String tagName;
@@ -191,7 +182,7 @@ public abstract class CollectionLeafResource {
         if (data == null) {
             data = new HashMap<String, String>();
         }
-        ResourceUtil.addQueryString(uriInfo.get().getQueryParameters(), data);
+        ResourceUtil.addQueryString(uriInfo.getQueryParameters(), data);
         String deleteCommand = getDeleteCommand();
 
         if (isJvmOptions(deleteCommand)) {
@@ -221,7 +212,7 @@ public abstract class CollectionLeafResource {
         ar.setActionDescription(typeKey);
         ar.getExtraProperties().put("leafList", getEntity());
 
-        OptionsResult optionsResult = new OptionsResult(Util.getResourceName(uriInfo.get()));
+        OptionsResult optionsResult = new OptionsResult(Util.getResourceName(uriInfo));
         Map<String, MethodMetaData> mmd = getMethodMetaData();
         optionsResult.putMethodMetaData("GET", mmd.get("GET"));
         optionsResult.putMethodMetaData("POST", mmd.get("POST"));
@@ -238,14 +229,14 @@ public abstract class CollectionLeafResource {
         //POST meta data
         String postCommand = getPostCommand();
         if (postCommand != null) {
-            MethodMetaData postMethodMetaData = ResourceUtil.getMethodMetaData(postCommand, habitat.getRemoteLocator(), RestService.logger);
+            MethodMetaData postMethodMetaData = ResourceUtil.getMethodMetaData(postCommand, locatorBridge.getRemoteLocator(), RestService.logger);
             mmd.put("POST", postMethodMetaData);
         }
 
         //DELETE meta data
         String deleteCommand = getDeleteCommand();
         if (deleteCommand != null) {
-            MethodMetaData deleteMethodMetaData = ResourceUtil.getMethodMetaData(deleteCommand, habitat.getRemoteLocator(), RestService.logger);
+            MethodMetaData deleteMethodMetaData = ResourceUtil.getMethodMetaData(deleteCommand, locatorBridge.getRemoteLocator(), RestService.logger);
             mmd.put("DELETE", deleteMethodMetaData);
         }
 
@@ -253,8 +244,8 @@ public abstract class CollectionLeafResource {
     }
 
     protected void addDefaultParameter(Map<String, String> data) {
-        int index = uriInfo.get().getAbsolutePath().getPath().lastIndexOf('/');
-        String defaultParameterValue = uriInfo.get().getAbsolutePath().getPath().substring(index + 1);
+        int index = uriInfo.getAbsolutePath().getPath().lastIndexOf('/');
+        String defaultParameterValue = uriInfo.getAbsolutePath().getPath().substring(index + 1);
         data.put("DEFAULT", defaultParameterValue);
     }
 
@@ -267,7 +258,7 @@ public abstract class CollectionLeafResource {
     }
 
     protected String getName() {
-        return Util.getResourceName(uriInfo.get());
+        return Util.getResourceName(uriInfo);
     }
 
     private Response runCommand(String commandName, Map<String, String> data,
@@ -276,7 +267,9 @@ public abstract class CollectionLeafResource {
             if (data.containsKey("error")) {
                 String errorMessage = localStrings.getLocalString("rest.request.parsing.error",
                         "Unable to parse the input entity. Please check the syntax.");
-                return Response.status(400).entity(ResourceUtil.getActionReportResult(ActionReport.ExitCode.FAILURE, errorMessage, requestHeaders.get(), uriInfo.get())).build();
+                return Response.status(400).
+                        entity(ResourceUtil.getActionReportResult(ActionReport.ExitCode.FAILURE,
+                            errorMessage, requestHeaders, uriInfo)).build();
             }
 
             ResourceUtil.purgeEmptyEntries(data);
@@ -285,25 +278,25 @@ public abstract class CollectionLeafResource {
             String attributeName = data.get("DEFAULT");
 
             if (null != commandName) {
-                String typeOfResult = ResourceUtil.getResultType(requestHeaders.get());
+                String typeOfResult = ResourceUtil.getResultType(requestHeaders);
                 RestActionReporter actionReport = ResourceUtil.runCommand(commandName,
-                    data, habitat.getRemoteLocator(), typeOfResult);
+                    data, locatorBridge.getRemoteLocator(), typeOfResult);
 
                 ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
                 if (exitCode != ActionReport.ExitCode.FAILURE) {
                     String successMessage =
                         localStrings.getLocalString(successMsgKey,
                             successMsg, new Object[] {attributeName});
-                    return Response.ok(ResourceUtil.getActionReportResult(actionReport, successMessage, requestHeaders.get(), uriInfo.get())).build();
+                    return Response.ok(ResourceUtil.getActionReportResult(actionReport, successMessage, requestHeaders, uriInfo)).build();
                 }
 
                 String errorMessage = getErrorMessage(data, actionReport);
-                return Response.status(400).entity(ResourceUtil.getActionReportResult(actionReport, errorMessage, requestHeaders.get(), uriInfo.get())).build();
+                return Response.status(400).entity(ResourceUtil.getActionReportResult(actionReport, errorMessage, requestHeaders, uriInfo)).build();
             }
             String message =
                 localStrings.getLocalString(operationForbiddenMsgKey,
-                    operationForbiddenMsg, new Object[] {uriInfo.get().getAbsolutePath()});
-            return Response.status(403).entity(ResourceUtil.getActionReportResult(ActionReport.ExitCode.FAILURE, message, requestHeaders.get(), uriInfo.get())).build();
+                    operationForbiddenMsg, new Object[] {uriInfo.getAbsolutePath()});
+            return Response.status(403).entity(ResourceUtil.getActionReportResult(ActionReport.ExitCode.FAILURE, message, requestHeaders, uriInfo)).build();
 
         } catch (Exception e) {
             throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);

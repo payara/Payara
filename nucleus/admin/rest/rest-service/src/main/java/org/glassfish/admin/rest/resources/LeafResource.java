@@ -77,15 +77,7 @@ import static org.glassfish.admin.rest.utils.Util.decode;
 /**
  * @author Ludovic Champenois
  */
-public abstract class LeafResource {
-    @Context
-    protected Provider<HttpHeaders> requestHeaders;
-
-    @Context
-    protected Provider<UriInfo> uriInfo;
-
-    @Context
-    protected ServiceLocator habitat;
+public abstract class LeafResource extends AbstractResource {
 
     protected LeafContent entity;
     protected Dom parent;
@@ -152,7 +144,7 @@ public abstract class LeafResource {
     @Produces({"text/html;qs=2",MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
     public ActionReportResult delete(HashMap<String, String> data) {
-        ResourceUtil.addQueryString(uriInfo.get().getQueryParameters(), data);
+        ResourceUtil.addQueryString(uriInfo.getQueryParameters(), data);
 
         return null;//TODOTODO
 
@@ -171,7 +163,7 @@ public abstract class LeafResource {
         ar.setActionDescription(typeKey);
         ar.getExtraProperties().put("entityLeaf", getEntity());
 
-        OptionsResult optionsResult = new OptionsResult(Util.getResourceName(uriInfo.get()));
+        OptionsResult optionsResult = new OptionsResult(Util.getResourceName(uriInfo));
         Map<String, MethodMetaData> mmd = getMethodMetaData();
         optionsResult.putMethodMetaData("GET", mmd.get("GET"));
         optionsResult.putMethodMetaData("POST", mmd.get("POST"));
@@ -193,7 +185,7 @@ public abstract class LeafResource {
 
 
     protected String getName() {
-        return Util.getResourceName(uriInfo.get());
+        return Util.getResourceName(uriInfo);
     }
 
 

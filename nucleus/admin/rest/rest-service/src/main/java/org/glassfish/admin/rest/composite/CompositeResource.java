@@ -151,10 +151,12 @@ public abstract class CompositeResource extends AbstractResource
         try {
             T resource = clazz.newInstance();
             CompositeResource cr = (CompositeResource)resource;
-            cr.habitat = habitat;
+            cr.locatorBridge = locatorBridge;
             cr.subjectRef = subjectRef;
             cr.uriInfo = uriInfo;
-            cr.sc = sc;
+            cr.securityContext = securityContext;
+            cr.requestHeaders = requestHeaders;
+            cr.serviceLocator = serviceLocator;
 
             return resource;
         } catch (Exception ex) {
