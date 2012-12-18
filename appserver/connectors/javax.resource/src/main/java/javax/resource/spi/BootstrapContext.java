@@ -129,24 +129,4 @@ public interface BootstrapContext {
      * @since 1.6
      */
     TransactionSynchronizationRegistry getTransactionSynchronizationRegistry();
-    
-    /** 
-     * If the resource adapter  has been deployed into a clustered application server, 
-     * returns the name of the application server instance, and this name is  
-     * different for every instance within the cluster. Otherwise if this resource 
-     * adapter is deployed into a standalone application server, returns null. 
-     * 
-     * The returned name is human-readable. And it remains unchanged even if the 
-     * application server instance is restarted, reconfigured, or if the application 
-     * is redeployed.
-     * 
-     * The combination of this value and the value returned by the 
-     * <code>MessageEndpointFactory.getActivationName()</code> method should be used 
-     * as a unique JMS subscription name.
-     * 
-     * @return a new <code>String</code> instance.
-     * @see javax.resource.spi.endpoint.MessageEndpointFactory
-     * @since 1.7
-     */
-    String getInstanceName();
 }

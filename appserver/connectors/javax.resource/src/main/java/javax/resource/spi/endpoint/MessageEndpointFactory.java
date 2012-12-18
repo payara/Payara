@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010, 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -114,29 +114,6 @@ public interface MessageEndpointFactory {
      */
     boolean isDeliveryTransacted(java.lang.reflect.Method method)
 	throws NoSuchMethodException;
-    
-    /**
-     * Returns the unique name of durable subscription for this Message Endpoint 
-     * Factory. If the application has been deployed into a clustered application 
-     * server then this method returns the same name for the same endpoint in each 
-     * application server instance. Otherwise, a different name returns for every 
-     * endpoint in every application server instance.
-     *
-     * The resource adapter may use this value as a valid JMS subscription name, 
-     * either on its own or in combination with the value returned by the 
-     * <code>BootstrapContext.getInstanceName</code> method.
-     * 
-     * The returned name is human-readable. And it remains unchanged even if the  
-     * application server instance is restarted, reconfigured, or if the application 
-     * is redeployed.
-     * 
-     * @return a new <code>String</code> instance.
-     * @see javax.resource.spi.BootstrapContext
-     * 
-     * @since 1.7
-     */
-    String getActivationName();
-
 }
 
 
