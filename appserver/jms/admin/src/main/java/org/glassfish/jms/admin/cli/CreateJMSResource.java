@@ -174,7 +174,7 @@ public class CreateJMSResource implements AdminCommand {
                 ParameterMap parameters = new ParameterMap();
                 parameters.set(DEFAULT_OPERAND, jndiName);
                 parameters.set("target", target);
-                commandRunner.getCommandInvocation("delete-jms-resource", deleteReport).parameters(parameters).execute();
+                commandRunner.getCommandInvocation("delete-jms-resource", deleteReport, context.getSubject()).parameters(parameters).execute();
                 if (ActionReport.ExitCode.FAILURE.equals(deleteReport.getActionExitCode())) {
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
@@ -210,7 +210,7 @@ public class CreateJMSResource implements AdminCommand {
           if (cpool == null || ! filterForTarget (jndiNameForConnectionPool)) {
                 // Add connector-connection-pool.
               ParameterMap parameters = populateConnectionPoolParameters();
-	          commandRunner.getCommandInvocation("create-connector-connection-pool", subReport).parameters(parameters).execute();
+	          commandRunner.getCommandInvocation("create-connector-connection-pool", subReport, context.getSubject()).parameters(parameters).execute();
               createdPool= true;
               if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())){
                     report.setMessage(localStrings.getLocalString("create.jms.resource.cannotCreateConnectionPool",
@@ -220,7 +220,7 @@ public class CreateJMSResource implements AdminCommand {
               }
           }
               ParameterMap params = populateConnectionResourceParameters();
-	          commandRunner.getCommandInvocation("create-connector-resource", subReport).parameters(params).execute();
+	          commandRunner.getCommandInvocation("create-connector-resource", subReport, context.getSubject()).parameters(params).execute();
 
               if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())){
                     report.setMessage(localStrings.getLocalString("create.jms.resource.cannotCreateConnectorResource",
@@ -229,7 +229,7 @@ public class CreateJMSResource implements AdminCommand {
 
                 //rollback the connection pool ONLY if we created it...
                   if (createdPool)
-	   	  	         commandRunner.getCommandInvocation("delete-connector-connection-pool", subReport).parameters(populateConnectionPoolParameters()).execute();
+	   	  	         commandRunner.getCommandInvocation("delete-connector-connection-pool", subReport, context.getSubject()).parameters(populateConnectionPoolParameters()).execute();
 
 
                     return;
@@ -267,7 +267,7 @@ public class CreateJMSResource implements AdminCommand {
                 if(enabled!=null)
                     aoAttrList.set("enabled", Boolean.toString(enabled));
 
-	            commandRunner.getCommandInvocation("create-admin-object", subReport).parameters(aoAttrList).execute();
+	            commandRunner.getCommandInvocation("create-admin-object", subReport, context.getSubject()).parameters(aoAttrList).execute();
 
                 if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())){
                     report.setMessage(localStrings.getLocalString("create.jms.resource.cannotCreateAdminObject",

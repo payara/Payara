@@ -164,7 +164,7 @@ public class CreateJMSHost implements AdminCommand {
                         ParameterMap parameters = new ParameterMap();
                          parameters.set("DEFAULT", jmsHostName);
                          parameters.set("target", target);
-                        commandRunner.getCommandInvocation("delete-jms-host", deleteReport).parameters(parameters).execute();
+                        commandRunner.getCommandInvocation("delete-jms-host", deleteReport, context.getSubject()).parameters(parameters).execute();
                         if (ActionReport.ExitCode.FAILURE.equals(deleteReport.getActionExitCode())) {
                             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                             return;

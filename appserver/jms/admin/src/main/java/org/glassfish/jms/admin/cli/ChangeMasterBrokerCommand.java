@@ -231,7 +231,7 @@ public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCo
             parameters.set(setCommandStr, newMB );
 
             ActionReport subReport = report.addSubActionsReport();
-	        commandRunner.getCommandInvocation("set", subReport).parameters(parameters).execute();
+	        commandRunner.getCommandInvocation("set", subReport, context.getSubject()).parameters(parameters).execute();
 
               if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())){
                     report.setMessage(localStrings.getLocalString("create.jms.resource.cannotCreateConnectionPool",

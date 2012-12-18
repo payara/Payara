@@ -39,6 +39,7 @@
  */
 package org.glassfish.jms.admin.cli;
 
+import javax.security.auth.Subject;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
@@ -152,7 +153,7 @@ public class CreateJMSDestination extends JMSDestination implements AdminCommand
             }
         }
         try {
-            createJMSDestination(report);
+            createJMSDestination(report, context.getSubject());
         } catch (Exception e) {
             report.setMessage(localStrings.getLocalString("create.jms.destination.CannotCreateJMSDest",
                     "Unable to create JMS Destination."));
@@ -162,7 +163,7 @@ public class CreateJMSDestination extends JMSDestination implements AdminCommand
     }
 
     // create-jmsdest
-    private void createJMSDestination(ActionReport report) throws Exception {
+    private void createJMSDestination(ActionReport report, final Subject subject) throws Exception {
 
         MQJMXConnectorInfo mqInfo = getMQJMXConnectorInfo(target, config, serverContext, domain, connectorRuntime);
 
@@ -195,7 +196,7 @@ public class CreateJMSDestination extends JMSDestination implements AdminCommand
                     parameters.set("DEFAULT", destName);
                     parameters.set("destType", destType);
                     parameters.set("target", target);
-                    commandRunner.getCommandInvocation("delete-jmsdest", deleteReport).parameters(parameters).execute();
+                    commandRunner.getCommandInvocation("delete-jmsdest", deleteReport, subject).parameters(parameters).execute();
                     if (ActionReport.ExitCode.FAILURE.equals(deleteReport.getActionExitCode())) {
                         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         return;

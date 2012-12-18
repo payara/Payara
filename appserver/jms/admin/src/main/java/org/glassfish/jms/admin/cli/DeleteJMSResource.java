@@ -123,7 +123,7 @@ public class DeleteJMSResource implements AdminCommand {
             params.set("jndi_name", jndiName);
             params.set("DEFAULT", jndiName);
             params.set("target", target);
-            commandRunner.getCommandInvocation("delete-admin-object", subReport).parameters(params).execute();
+            commandRunner.getCommandInvocation("delete-admin-object", subReport, context.getSubject()).parameters(params).execute();
 
             if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())) {
                 report.setMessage(localStrings.getLocalString("delete.jms.resource.cannotDeleteJMSAdminObject",
@@ -140,7 +140,7 @@ public class DeleteJMSResource implements AdminCommand {
                 params.set("DEFAULT", jndiName);
                 params.set("connector_resource_name", jndiName);
                 params.set("target", target);
-                commandRunner.getCommandInvocation("delete-connector-resource", subReport).parameters(params).execute();
+                commandRunner.getCommandInvocation("delete-connector-resource", subReport, context.getSubject()).parameters(params).execute();
 
                 if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())) {
                     report.setMessage(localStrings.getLocalString("delete.jms.resource.cannotDeleteJMSResource",
@@ -153,7 +153,7 @@ public class DeleteJMSResource implements AdminCommand {
                 params = new ParameterMap();
                 params.set("poolname", jndiName);
                 params.set("DEFAULT", jndiNameForConnectionPool);
-                commandRunner.getCommandInvocation("delete-connector-connection-pool", subReport).parameters(params).execute();
+                commandRunner.getCommandInvocation("delete-connector-connection-pool", subReport, context.getSubject()).parameters(params).execute();
 
                 if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())) {
                     report.setMessage(localStrings.getLocalString("delete.jms.resource.cannotDeleteJMSPool",
@@ -176,7 +176,7 @@ public class DeleteJMSResource implements AdminCommand {
                 params.set("DEFAULT", jndiName);
                 params.set("connector_resource_name", jndiName);
                 params.set("target", target);
-                commandRunner.getCommandInvocation("delete-connector-resource", subReport).parameters(params).execute();
+                commandRunner.getCommandInvocation("delete-connector-resource", subReport, context.getSubject()).parameters(params).execute();
 
                 if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())) {
                     report.setMessage(localStrings.getLocalString("delete.jms.resource.cannotDeleteJMSResource",

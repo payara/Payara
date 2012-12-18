@@ -50,6 +50,7 @@ import com.sun.enterprise.connectors.jms.config.JmsService;
 import com.sun.enterprise.connectors.jms.util.JmsRaUtil;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -140,7 +141,7 @@ public class JMSPing implements AdminCommand {
                    }
          String tmpJMSResource = "test_jms_adapter";
          ActionReport subReport = report.addSubActionsReport();
-         createJMSResource(defaultJmsHost, subReport, tmpJMSResource);
+         createJMSResource(defaultJmsHost, subReport, tmpJMSResource, context.getSubject());
          if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())){
                 report.setMessage(localStrings.getLocalString("jms-ping.cannotCreateJMSResource",
                          "Unable to create a temporary Connection Factory to the JMS Host"));
@@ -166,7 +167,7 @@ public class JMSPing implements AdminCommand {
                          "An exception occured while trying to ping the JMS Host.", e.getMessage()));
            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
-        deleteJMSResource(subReport, tmpJMSResource);
+        deleteJMSResource(subReport, tmpJMSResource, context.getSubject());
         if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())){
                 report.setMessage(localStrings.getLocalString("jms-ping.cannotdeleteJMSResource",
                          "Unable to delete the temporary JMS Resource " + tmpJMSResource + ". Please delete this manually.", tmpJMSResource));
@@ -175,7 +176,7 @@ public class JMSPing implements AdminCommand {
          }
     }
 
-   void createJMSResource(JmsHost defaultJmsHost, ActionReport subReport, String tmpJMSResource)
+   void createJMSResource(JmsHost defaultJmsHost, ActionReport subReport, String tmpJMSResource, final Subject subject)
    {
         String port = null;
         String host = null;
@@ -226,7 +227,7 @@ public class JMSPing implements AdminCommand {
         aoAttrList.set("restype",  "javax.jms.QueueConnectionFactory");
         aoAttrList.set("DEFAULT",  tmpJMSResource);
         //aoAttrList.set("target", target);
-        commandRunner.getCommandInvocation("create-jms-resource", subReport).parameters(aoAttrList).execute();
+        commandRunner.getCommandInvocation("create-jms-resource", subReport, subject).parameters(aoAttrList).execute();
 
     }
     private boolean isPasswordAlias(String password){
@@ -242,12 +243,12 @@ public class JMSPing implements AdminCommand {
         return connectorRuntime.pingConnectionPool(poolInfo);
     }
     
-    void deleteJMSResource(ActionReport subReport, String tmpJMSResource)
+    void deleteJMSResource(ActionReport subReport, String tmpJMSResource, final Subject subject)
     {
         ParameterMap aoAttrList = new ParameterMap();
         aoAttrList.set("DEFAULT",  tmpJMSResource);
         //aoAttrList.set("target", target);
 
-        commandRunner.getCommandInvocation("delete-jms-resource", subReport).parameters(aoAttrList).execute();
+        commandRunner.getCommandInvocation("delete-jms-resource", subReport, subject).parameters(aoAttrList).execute();
     }
 }
