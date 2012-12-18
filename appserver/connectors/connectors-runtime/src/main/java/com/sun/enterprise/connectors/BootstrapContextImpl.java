@@ -42,6 +42,8 @@ package com.sun.enterprise.connectors;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.WorkContextHandler;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.logging.LogDomains;
 
 import javax.resource.spi.BootstrapContext;
@@ -50,6 +52,10 @@ import javax.resource.spi.work.WorkManager;
 import javax.resource.spi.work.WorkContext;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.naming.InitialContext;
+
+import org.glassfish.internal.api.Globals;
+import org.glassfish.server.ServerEnvironmentImpl;
+
 import java.io.Serializable;
 import java.util.Timer;
 import java.util.logging.Logger;
@@ -69,6 +75,7 @@ public final class BootstrapContextImpl implements BootstrapContext, Serializabl
     private String moduleName;
     private String threadPoolId;
     private ClassLoader rarCL;
+    private String instanceName;
 
     private static final Logger logger =
             LogDomains.getLogger(BootstrapContextImpl.class, LogDomains.RSR_LOGGER);
@@ -84,6 +91,7 @@ public final class BootstrapContextImpl implements BootstrapContext, Serializabl
     public BootstrapContextImpl (String moduleName) throws ConnectorRuntimeException{
         this.moduleName = moduleName;
         initializeWorkManager();
+        initializeInstanceName();
     }
 
     /**
@@ -101,6 +109,7 @@ public final class BootstrapContextImpl implements BootstrapContext, Serializabl
         this.moduleName = moduleName;
         this.rarCL = rarCL;
         initializeWorkManager();
+        initializeInstanceName();
     }
 
     /**
@@ -182,4 +191,30 @@ public final class BootstrapContextImpl implements BootstrapContext, Serializabl
             xa = ConnectorRuntime.getRuntime().getXATerminatorProxy(moduleName);
         }
     }
+    
+    /**
+     * initialize server instance name
+     */
+    private void initializeInstanceName() {
+        ServerEnvironmentImpl env = Globals.get(ServerEnvironmentImpl.class);
+        String instance = env.getInstanceName();
+        
+        Domain domain = Globals.get(Domain.class);
+        Server server = domain.getServerNamed(instance);
+
+        // if this server instance is standalone, keep the instance name as null.  
+        if(server.isCluster()){
+            instanceName = instance;
+        }else{
+            instanceName = null;
+        }
+    }
+
+    /** 
+     * {@inheritDoc}
+     */
+    public String getInstanceName(){
+        return instanceName;
+    }
+
 }

@@ -58,6 +58,8 @@ import javax.transaction.xa.XAResource;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.connectors.ActiveResourceAdapter;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
@@ -72,6 +74,8 @@ import com.sun.logging.LogDomains;
 import org.glassfish.ejb.api.MessageBeanListener;
 import org.glassfish.ejb.api.MessageBeanProtocolManager;
 import org.glassfish.ejb.spi.MessageBeanClient;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.server.ServerEnvironmentImpl;
 
 /**
  * Main helper implementation for message-beans associated with
@@ -85,7 +89,8 @@ public final class ConnectorMessageBeanClient
 
     private static final String MESSAGE_ENDPOINT =
             "javax.resource.spi.endpoint.MessageEndpoint";
-
+    private String activationName = null;
+    
     private ConnectorRegistry registry_;
 
     private MessageBeanProtocolManager messageBeanPM_;
@@ -117,15 +122,35 @@ public final class ConnectorMessageBeanClient
      * @param descriptor <code>EjbMessageBeanDescriptor</code> object.
      */
     public ConnectorMessageBeanClient(EjbMessageBeanDescriptor descriptor) {
-        descriptor_ = descriptor;
+        this.descriptor_ = descriptor;
         allocator_ = new BasicResourceAllocator();
+
+        Domain domain = Globals.get(Domain.class);
 
         String appName = descriptor.getApplication().getName();
 
-        String moduleID =
-                descriptor.getEjbBundleDescriptor().getModuleID();
+        String moduleID = descriptor.getEjbBundleDescriptor().getModuleID();
 
         String beanName = descriptor.getName();
+
+        StringBuilder sb = new StringBuilder(64);
+        
+        sb.append("<").append(domain.getName()).append(">").append("_")
+          .append("<").append(appName).append(">").append("_")
+          .append("<").append(moduleID).append(">").append("_")
+          .append("<").append(beanName).append(">").append("_");
+
+        ServerEnvironmentImpl env = Globals.get(ServerEnvironmentImpl.class);
+        String instanceName = env.getInstanceName();
+        
+        Server server = domain.getServerNamed(instanceName);
+
+        if(server.isCluster()){
+            sb.append("<").append(server.getCluster().getName()).append(">");
+        }else{
+            sb.append("<").append(instanceName).append(">");
+        }
+        activationName = sb.toString();
 
         beanID_ = appName + ":" + moduleID + ":" + beanName;
 
@@ -460,4 +485,12 @@ public final class ConnectorMessageBeanClient
         }
         return endpoint;
     }
+    
+    /** 
+     * {@inheritDoc}
+     */
+    public String getActivationName(){
+        return activationName;
+    }
+    
 }
