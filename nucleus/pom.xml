@@ -1265,6 +1265,13 @@
             	    <url>https://maven.java.net/content/repositories/staging/</url>
         	</repository>
     	    </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+            	    <id>jvnet-nexus-staging</id>
+            	    <name>java.net staging repository</name>
+            	    <url>https://maven.java.net/content/repositories/staging/</url>
+                </pluginRepository>
+            </pluginRepositories>            
 	</profile>
     </profiles>
     
