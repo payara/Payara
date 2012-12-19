@@ -649,8 +649,8 @@ public class MonitoringHandlers {
         String endpoint = (String) handlerCtx.getInputValue("endpoint");
         List<String> jdbcMonitorList = new ArrayList<String>();
         List<String> connectorMonitorList = new ArrayList<String>();
-        String fisrtJdbc = null;
-        String firstConnector = null;
+        String fisrtJdbc = "";
+        String firstConnector = "";
 
         try {
             List<String> jdbcPools = new ArrayList<String>(RestUtil.getChildMap(endpoint + "/jdbc-connection-pool").keySet());
