@@ -200,13 +200,11 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
 
             MessagePart msg = topMsg.addChild();
             msg.setMessage(String.format(formattedLine, info.jobName, info.jobId,  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(info.commandExecutionDate), info.exitCode,info.user));
-//            Properties p = new Properties();
-//            p.setProperty(NAME, info.jobName);
-//            p.setProperty("ID", info.jobId);
-//            p.setProperty(TIME, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(info.commandExecutionDate));
-//            p.setProperty(STATE, info.exitCode);
-//            p.setProperty(USER, info.user);
-//            jobs.add(p);
+            msg.addProperty(NAME, info.jobName);
+            msg.addProperty(JOBID, info.jobId);
+            msg.addProperty(TIME, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(info.commandExecutionDate));
+            msg.addProperty(STATE, info.exitCode);
+            msg.addProperty(USER, info.user);
         }
 
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
