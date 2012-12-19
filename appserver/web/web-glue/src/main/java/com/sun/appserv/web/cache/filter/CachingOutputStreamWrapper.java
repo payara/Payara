@@ -135,6 +135,7 @@ public class CachingOutputStreamWrapper extends ServletOutputStream {
             throw new IllegalStateException();
         }
         hasSetWriteListener = true;
+        writeListener.onWritePossible();
     }
 
     /**

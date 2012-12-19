@@ -120,5 +120,6 @@ public class ByteArrayServletOutputStream extends ServletOutputStream {
             throw new IllegalStateException();
         }
         hasSetWriteListener = true;
+        writeListener.onWritePossible();
     }
 }
