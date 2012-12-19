@@ -107,9 +107,6 @@ import org.glassfish.jersey.internal.util.collection.Ref;
 @Produces({"text/html;qs=2", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
 public class TemplateRestResource extends AbstractResource implements OptionsCapable {
-
-    @Context
-    protected LocatorBridge locatorBridge;
     protected Dom entity;  //may be null when not created yet...
     protected Dom parent;
     protected String tagName;
