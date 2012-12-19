@@ -50,7 +50,10 @@
         
        <stage-module-jars/>
        <stage-distribution-fragments/>
-       
+
+       <move file="target/stage/${install.dir.name}/glassfish/modules/gf-client-l10n.jar"
+            todir="target/stage/${install.dir.name}/glassfish/lib"
+            failonerror="false" />
 
         <if test="${compression}">
 	       <antcall target="pack.compression" />

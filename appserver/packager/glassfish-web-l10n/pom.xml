@@ -104,6 +104,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>stats77-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>web-cli-l10n</artifactId>
             <version>${project.version}</version>

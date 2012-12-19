@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -43,25 +42,50 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>appclient</artifactId>
+        <groupId>org.glassfish.main.appclient</groupId>
+        <artifactId>client</artifactId>
         <version>4.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.appclient</groupId>
-    <artifactId>client</artifactId>
-    <packaging>pom</packaging>
-    <name>App Client - client-side modules</name>
-    <modules>
-        <module>appclient-scripts</module>
-        <module>acc-config</module>
-        <module>acc</module>
-        <module>acc-l10n</module>
-        <module>acc-standalone</module>
-        <module>acc-standalone-l10n</module>
-        <!--  JWS support is not yet implemented
-        <module>jws</module>
-        -->
-    </modules>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>gf-client-l10n</artifactId>
+    <name>Client library (including ACC) Localization</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Export-Package />
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>**/*.jar</exclude>
+                </excludes>
+            </resource>
+        </resources>
+    </build>
 </project>
+
