@@ -191,8 +191,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
             properties = new Properties();
             report.setExtraProperties(properties);
         }
-        List<Properties> jobs = new ArrayList<Properties>();
-        properties.put("jobs", jobs);
+        properties.put("jobs", jobInfoList);
         for (JobInfo info : jobInfoList) {
             if (first)    {
                 topMsg.setMessage(String.format(formattedLine, NAME, JOBID, TIME, STATE,USER ));
@@ -201,13 +200,13 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
 
             MessagePart msg = topMsg.addChild();
             msg.setMessage(String.format(formattedLine, info.jobName, info.jobId,  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(info.commandExecutionDate), info.exitCode,info.user));
-            Properties p = new Properties();
-            p.setProperty(NAME, info.jobName);
-            p.setProperty("ID", info.jobId);
-            p.setProperty(TIME, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(info.commandExecutionDate));
-            p.setProperty(STATE, info.exitCode);
-            p.setProperty(USER, info.user);
-            jobs.add(p);
+//            Properties p = new Properties();
+//            p.setProperty(NAME, info.jobName);
+//            p.setProperty("ID", info.jobId);
+//            p.setProperty(TIME, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(info.commandExecutionDate));
+//            p.setProperty(STATE, info.exitCode);
+//            p.setProperty(USER, info.user);
+//            jobs.add(p);
         }
 
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
