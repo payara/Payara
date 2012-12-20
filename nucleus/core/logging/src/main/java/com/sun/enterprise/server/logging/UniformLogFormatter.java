@@ -177,7 +177,7 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
      */
     protected String getProductId() {
 
-        String version = Version.getAbbreviatedVersion() + Version.getVersionPrefix() + 
+        String version = Version.getAbbrevProductName() + Version.getVersionPrefix() + 
                 Version.getMajorVersion() + "." + Version.getMinorVersion();
         return (version);
     }
