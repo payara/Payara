@@ -41,6 +41,8 @@ package com.sun.enterprise.v3.admin.commands;
 import com.sun.enterprise.util.i18n.StringManager;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Collection;
+import java.util.Date;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.MessagePart;
@@ -64,8 +66,7 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 @I18n("list-jobs")
 public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.AccessCheckProvider {
-
-
+    
     private ActionReport report;
 
     @Inject
@@ -81,12 +82,18 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
     @Inject
     private ServerEnvironment serverEnvironment;
 
-    private static final String NAME = "NAME";
-    private static final String JOBID = "JOB ID";
-    private static final String TIME = "TIME";
-    private static final String STATE = "STATE";
-    private static final String USER = "USER";
-    private static final String NONE = "Nothing to list.";
+    private static final String TITLE_NAME = "NAME";
+    private static final String TITLE_JOBID = "JOB ID";
+    private static final String TITLE_TIME = "TIME";
+    private static final String TITLE_STATE = "STATE";
+    private static final String TITLE_USER = "USER";
+    private static final String TITLE_NONE = "Nothing to list.";
+    public static final String NAME = "jobName";
+    public static final String ID = "jobId";
+    public static final String DATE = "executionDate";
+    public static final String CODE = "exitCode";
+    public static final String USER = "user";
+    public static final String MESSAGE = "message";
 
 
     final private static StringManager localStrings =
@@ -97,11 +104,11 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
 
         report = context.getActionReport();
 
-        int longestName = NAME.length();
-        int longestJobId = JOBID.length();
-        int longestTime = TIME.length();
-        int longestState = STATE.length();
-        int longestUser = USER.length();
+        int longestName = TITLE_NAME.length();
+        int longestJobId = TITLE_JOBID.length();
+        int longestTime = TITLE_TIME.length();
+        int longestState = TITLE_STATE.length();
+        int longestUser = TITLE_USER.length();
 
 
         List<JobInfo> jobInfoList = new ArrayList<JobInfo>();
@@ -164,7 +171,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
         }
 
         if (jobInfoList.size() < 1) {
-            report.setMessage(NONE);
+            report.setMessage(TITLE_NONE);
 
         }
         longestName += 2;
@@ -191,20 +198,24 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
             properties = new Properties();
             report.setExtraProperties(properties);
         }
-        properties.put("jobs", jobInfoList);
+        Collection<Map<String, Object>> details = new ArrayList<Map<String, Object>>();
+        properties.put("jobs", details);
         for (JobInfo info : jobInfoList) {
             if (first)    {
-                topMsg.setMessage(String.format(formattedLine, NAME, JOBID, TIME, STATE,USER ));
+                topMsg.setMessage(String.format(formattedLine, TITLE_NAME, TITLE_JOBID, TITLE_TIME, TITLE_STATE,TITLE_USER ));
                 first = false;
             }
 
             MessagePart msg = topMsg.addChild();
             msg.setMessage(String.format(formattedLine, info.jobName, info.jobId,  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(info.commandExecutionDate), info.exitCode,info.user));
-            msg.addProperty(NAME, info.jobName);
-            msg.addProperty(JOBID, info.jobId);
-            msg.addProperty(TIME, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(info.commandExecutionDate));
-            msg.addProperty(STATE, info.exitCode);
-            msg.addProperty(USER, info.user);
+            Map<String, Object> detail = new HashMap<String, Object>();
+            details.add(detail);
+            detail.put(NAME, info.jobName);
+            detail.put(ID, info.jobId);
+            detail.put(DATE, new Date(info.commandExecutionDate));
+            detail.put(CODE, info.exitCode);
+            detail.put(MESSAGE, info.message);
+            detail.put(USER, info.user);
         }
 
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
