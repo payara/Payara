@@ -76,10 +76,12 @@ import java.util.logging.Logger;
  */
 @Contract
 public interface Deployment {
-
-
     /**
-     * This asynchronous event is sent when a new deployment or loading of an already deployed application start. It is invoked
+     * This synchronous event is sent right after initial deployment context is created
+     */
+    public final EventTypes<DeploymentContext> INITIAL_CONTEXT_CREATED = EventTypes.create("Initial_Context_Created", DeploymentContext.class);
+    /**
+     * This synchronous event is sent when a new deployment or loading of an already deployed application start. It is invoked
      * once before any sniffer is invoked.
      */
     public final EventTypes<DeploymentContext> DEPLOYMENT_START = EventTypes.create("Deployment_Start", DeploymentContext.class);

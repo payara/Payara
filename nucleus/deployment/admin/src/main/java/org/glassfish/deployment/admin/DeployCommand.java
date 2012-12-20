@@ -260,8 +260,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 initialContext.addModuleMetaData(tracing);
                 tracing.addMark(DeploymentTracing.Mark.INITIAL_CONTEXT_CREATED);
             }
+            events.send(new Event<DeploymentContext>(Deployment.INITIAL_CONTEXT_CREATED, initialContext), false);
             if (name==null) {
-                name = archiveHandler.getDefaultApplicationName(archive, initialContext);
+                name = archiveHandler.getDefaultApplicationName(initialContext.getSource(), initialContext);
             } else {
                 DeploymentUtils.validateApplicationName(name);
             }
@@ -284,7 +285,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             // if no version information embedded as part of application name
             // we try to retrieve the version-identifier element's value from DD
             if ( isUntagged ){
-                String versionIdentifier = archiveHandler.getVersionIdentifier(archive);
+                String versionIdentifier = archiveHandler.getVersionIdentifier(initialContext.getSource());
 
                 if ( versionIdentifier != null && !versionIdentifier.isEmpty() ) {
                   StringBuilder sb = new StringBuilder(name).
@@ -303,9 +304,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             return true;
         } catch (Exception ex) {
             events.unregister(this);
-            if (archive != null) {
+            if (initialContext.getSource() != null) {
                 try {
-                    archive.close();
+                  initialContext.getSource().close();
                 } catch (IOException ioex) {
                     throw new RuntimeException(ioex);
                 }

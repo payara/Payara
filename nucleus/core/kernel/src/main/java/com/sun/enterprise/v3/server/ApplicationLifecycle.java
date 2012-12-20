@@ -223,7 +223,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
         long operationStartTime = Calendar.getInstance().getTimeInMillis();
 
-        events.send(new Event<DeploymentContext>(Deployment.DEPLOYMENT_START, context));
+        events.send(new Event<DeploymentContext>(Deployment.DEPLOYMENT_START, context), false);
         final ActionReport report = context.getActionReport();
 
         final DeployCommandParameters commandParams = context.getCommandParameters(DeployCommandParameters.class);
