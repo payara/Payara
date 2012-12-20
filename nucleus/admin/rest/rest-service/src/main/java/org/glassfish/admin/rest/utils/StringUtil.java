@@ -65,11 +65,19 @@ public class StringUtil {
     }
     
     public static boolean compareStrings(String str1, String str2) {
-        return str1 == str2 || (str1 != null && str1.equals(str2));
+        if (str1 == null) {
+            return str2 == null;
+        } else {
+            return str1.equals(str2);
+        }
     }
     
     public static boolean compareStringsIgnoreCase(String str1, String str2) {
-        return str1 == str2 || (str1 != null && str1.equalsIgnoreCase(str2));
+        if (str1 == null) {
+            return str2 == null;
+        } else {
+            return str1.equalsIgnoreCase(str2);
+        }
     }
 
     /**
