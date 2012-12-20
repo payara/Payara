@@ -92,6 +92,7 @@ import static org.glassfish.external.amx.AMX.*;
 
 import org.glassfish.flashlight.provider.FlashlightProbe;
 import org.glassfish.flashlight.provider.ProbeRegistry;
+import static org.glassfish.admin.monitor.MLogger.*;
 
 /**
  *
@@ -116,8 +117,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
     private String PARENT_PATH;
     private boolean AMXReady = false;
     private StatsProviderRegistry statsProviderRegistry;
-    private static final Logger logger =
-            LogDomains.getLogger(StatsProviderManagerDelegateImpl.class, LogDomains.MONITORING_LOGGER);
+    private static final Logger logger = getLogger();
     private static final ResourceBundle rb = logger.getResourceBundle();
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(StatsProviderManagerDelegateImpl.class);
     boolean ddebug = false;
@@ -161,7 +161,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
             tryToRegister(spInfo);
         }
         catch (RuntimeException rte) {
-            logger.log(Level.WARNING, "ListenerRegistrationFailed",
+            logger.log(Level.WARNING, ListenerRegistrationFailed,
                     new Object[]{spInfo.getStatsProvider().getClass().getName()});
             if (logger.isLoggable(Level.FINE))
                 logger.log(Level.FINE, "Listener registration failed", rte);
@@ -220,7 +220,6 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
     private void createConfigElement(final String configElement) {
         try {
             ConfigSupport.apply(new SingleConfigCode<MonitoringService>() {
-
                 public Object run(MonitoringService param)
                         throws PropertyVetoException, TransactionFailure {
                     ContainerMonitoring newItem = param.createChild(ContainerMonitoring.class);
@@ -229,8 +228,9 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
                     return newItem;
                 }
             }, monitoringService);
-        } catch (TransactionFailure tf) {
-            String msg = localStrings.getLocalString("cannotCreateConfigElement",
+        }
+        catch (TransactionFailure tf) {
+            String msg = localStrings.getLocalString(cannotCreateConfigElement,
                     "Unable to create container-monitoring for", configElement);
             logger.log(Level.SEVERE, msg, tf);
         }
@@ -241,7 +241,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         try {
             StatsProviderRegistryElement spre = statsProviderRegistry.getStatsProviderRegistryElement(statsProvider);
             if (spre == null) {
-                logger.log(Level.INFO, "invalidStatsProvider",
+                logger.log(Level.INFO, invalidStatsProvider,
                         new Object[]{statsProvider.getClass().getName()});
                 return;
             }
@@ -286,8 +286,8 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
             statsProviderRegistry.unregisterStatsProvider(statsProvider);
         }
         catch (Exception ex) {
-            String msg = rb.getString("errorUnregisteringStatsProvider");
-            msg = MessageFormat.format(msg, statsProvider.getClass().getName());
+            String msg = MessageFormat.format(errorUnregisteringStatsProvider,
+                    statsProvider.getClass().getName());
             logger.log(Level.SEVERE, msg, ex);
         }
 
@@ -373,9 +373,9 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
     public void disableStatsProviders(String configElement) {
         // I think we should still disable even when monitoring-enabled is false
         /*
-        //If monitoring-enabled is false, just return
-        if (!getMonitoringEnabled())
-        return;
+         //If monitoring-enabled is false, just return
+         if (!getMonitoringEnabled())
+         return;
          */
         //Disable all the StatsProviders for a given configElement
         if (logger.isLoggable(Level.FINE))
@@ -595,7 +595,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
                 }
             }
             else {
-                logger.log(Level.WARNING, "nodeNotFound",
+                logger.log(Level.WARNING, nodeNotFound,
                         new Object[]{parentNodePath, statsProviderName});
             }
         }
@@ -617,24 +617,25 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
 
     private void invokeStatsProviderResetMethod(Method m, Object statsProvider) {
         if (m != null) {
+            Exception gotOne = null;
             try {
                 m.invoke(statsProvider);
             }
             catch (IllegalAccessException ex) {
-                String msg = rb.getString("errorResettingStatsProvider");
-                msg = MessageFormat.format(msg, statsProvider.getClass().getName());
-                logger.log(Level.SEVERE, msg, ex);
+                gotOne = ex;
             }
             catch (IllegalArgumentException ex) {
-                String msg = rb.getString("errorResettingStatsProvider");
-                msg = MessageFormat.format(msg, statsProvider.getClass().getName());
-                logger.log(Level.SEVERE, msg, ex);
+                gotOne = ex;
             }
             catch (InvocationTargetException ex) {
-                String msg = rb.getString("errorResettingStatsProvider");
-                msg = MessageFormat.format(msg, statsProvider.getClass().getName());
-                logger.log(Level.SEVERE, msg, ex);
+                gotOne = ex;
             }
+            if (gotOne != null) {
+                String msg = MessageFormat.format(errorResettingStatsProvider,
+                        statsProvider.getClass().getName());
+                logger.log(Level.SEVERE, msg, gotOne);
+            }
+
         }
     }
 
@@ -644,7 +645,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
 
         /* retrieve ManagedAttribute attribute id (v2 compatible) and method names */
         /* Check for custom reset method and store for later to be called instead of
-        standard reset methods on Statistic classes*/
+         standard reset methods on Statistic classes*/
         for (Method m : statsProvider.getClass().getMethods()) {
             ManagedAttribute ma = m.getAnnotation(ManagedAttribute.class);
             Reset resetMeth = m.getAnnotation(Reset.class);
@@ -698,7 +699,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         enableTreeNode(parentNode);
 
         while (st.hasMoreTokens()) {
-             TreeNode subTreeNode = createSubTreeNode(parentNode, st.nextToken());
+            TreeNode subTreeNode = createSubTreeNode(parentNode, st.nextToken());
             parentNode = subTreeNode;
         }
         return parentNode;
@@ -773,7 +774,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
                 }
                 else {
                     String spName = statsProvider.getClass().getName();
-                    logger.log(Level.INFO, "notaManagedObject", new Object[]{spName});
+                    logger.log(Level.INFO, notaManagedObject, new Object[]{spName});
                 }
             }
             //To register hierarchy in mom specify parent ManagedObject, and the ManagedObject itself
@@ -782,7 +783,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         catch (Exception e) {
             //createRoot failed - need to return a null mom so we know not to unregister an mbean that does not exist
             mom = null;
-            logger.log(Level.SEVERE, "gmbalRegistrationFailed", e);
+            logger.log(Level.SEVERE, gmbalRegistrationFailed, e);
         }
         return mom;
     }
@@ -796,7 +797,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
                 mom.close();
             }
             catch (IOException ioe) {
-                logger.log(Level.SEVERE, "gmbalUnRegistrationFailed", ioe);
+                logger.log(Level.SEVERE, gmbalUnRegistrationFailed, ioe);
             }
             spre.setManagedObjectManager(null);
         }
@@ -821,7 +822,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         if (srvrNode != null) {
             return srvrNode;
         }
-        
+
         srvrNode = TreeNodeFactory.createTreeNode(instanceName, null, instanceName);
         srvrNode.setEnabled(false);
         mrdr.add(instanceName, srvrNode);
@@ -837,7 +838,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
             }
         }
         else {
-            logger.log(Level.WARNING, "monitorElementDoesnotExist", new Object[]{configElement});
+            logger.log(Level.WARNING, monitorElementDoesnotExist, new Object[]{configElement});
         }
         return enabled;
     }

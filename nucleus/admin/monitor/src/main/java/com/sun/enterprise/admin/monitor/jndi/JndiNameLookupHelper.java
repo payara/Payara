@@ -49,12 +49,12 @@ import java.util.logging.Logger;
 import java.util.ArrayList;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
+import static org.glassfish.admin.monitor.MLogger.*;
 
 
 public class JndiNameLookupHelper {
     private InitialContext context;
-    private static final Logger logger =
-            LogDomains.getLogger(JndiNameLookupHelper.class, LogDomains.ADMIN_LOGGER);
+    private static final Logger logger = getLogger();
     private static final StringManager sm =
         StringManager.getManager(JndiNameLookupHelper.class);
     private final String SYSTEM_SUBCONTEXT = "__SYSTEM";
@@ -73,7 +73,7 @@ public class JndiNameLookupHelper {
         try {
             context = new InitialContext();
         } catch(javax.naming.NamingException e) {
-            logger.log(Level.WARNING, e.getMessage(), e);
+            logger.log(Level.WARNING, UNHANDLED_EXCEPTION, e);
         }
     }
 
