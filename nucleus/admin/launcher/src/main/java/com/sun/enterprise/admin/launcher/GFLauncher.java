@@ -775,7 +775,7 @@ public abstract class GFLauncher {
         if (info.isUpgrade()
                 && jvmOptions.sysProps.containsKey("java.security.manager")) {
 
-            GFLauncherLogger.info(strings.get("copy_server_policy"));
+            GFLauncherLogger.info(GFLauncherLogger.copy_server_policy);
 
             File source = new File(new File(new File(info.installDir, "lib"),
                     "templates"), "server.policy");
@@ -814,7 +814,7 @@ public abstract class GFLauncher {
                     throw new GFLauncherException(strings.get("rename_osgi_cache_failed", osgiCacheDir, backupOsgiCacheDir));
                 }
                 else {
-                    GFLauncherLogger.info("rename_osgi_cache_succeeded", osgiCacheDir, backupOsgiCacheDir);
+                    GFLauncherLogger.fine("rename_osgi_cache_succeeded", osgiCacheDir, backupOsgiCacheDir);
                 }
             }
         }
@@ -858,7 +858,7 @@ public abstract class GFLauncher {
         // No agent jar...
         else {
             String msg = strings.get("no_flashlight_agent", flashlightJarFile);
-            GFLauncherLogger.warning(msg);
+            GFLauncherLogger.warning(GFLauncherLogger.NO_FLASHLIGHT_AGENT, flashlightJarFile);
             throw new GFLauncherException(msg);
         }
     }
@@ -884,7 +884,7 @@ public abstract class GFLauncher {
                 sb.append(NEWLINE);
                 sb.append(s);
             }
-            GFLauncherLogger.info("commandline", sb.toString());
+            GFLauncherLogger.info(GFLauncherLogger.COMMAND_LINE, sb.toString());
         }
     }
 

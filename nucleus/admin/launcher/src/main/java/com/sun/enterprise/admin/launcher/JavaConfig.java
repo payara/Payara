@@ -76,10 +76,10 @@ class JavaConfig {
 
     List<File> getPrefixClasspath() {
         String cp = map.get("classpath-prefix");
-        
+
         if(GFLauncherUtils.ok(cp)) {
             return GFLauncherUtils.stringToFiles(cp);
-        }   
+        }
         else {
             return new ArrayList<File>();
         }
@@ -97,7 +97,7 @@ class JavaConfig {
 
     List<File> getSuffixClasspath() {
         String cp = map.get("classpath-suffix");
-        
+
         if(GFLauncherUtils.ok(cp)) {
             return GFLauncherUtils.stringToFiles(cp);
         }
@@ -117,7 +117,7 @@ class JavaConfig {
 
     List<File> getSystemClasspath() {
         String cp = map.get("system-classpath");
-        
+
         if(GFLauncherUtils.ok(cp)) {
             return GFLauncherUtils.stringToFiles(cp);
         }
@@ -125,7 +125,7 @@ class JavaConfig {
             return new ArrayList<File>();
         }
     }
-    
+
     List<String> getDebugOptions() {
         // we MUST break this up into the total number of -X commands (currently 2),
         // Since our final command line is a List<String>, we can't have 2
@@ -133,12 +133,12 @@ class JavaConfig {
         // sample "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9999"
         List<String> empty = Collections.emptyList();
         String s = map.get("debug-options");
-        
+
         if(!GFLauncherUtils.ok(s)) {
             return empty;
         }
         String[] ss = s.split(" ");
-        
+
         if(ss == null || ss.length <= 0) {
             return empty;
         }
@@ -179,7 +179,7 @@ class JavaConfig {
 
         String s2 = stripChar(s, "'");
         s2 = stripChar(s2, "\"");
-        GFLauncherLogger.severe("no_quotes_allowed", s, s2);
+        GFLauncherLogger.severe(GFLauncherLogger.NO_QUOTES_ALLOWED, s, s2);
 
         return s2;
     }
@@ -190,7 +190,7 @@ class JavaConfig {
 
         if(s.indexOf('\'') >= 0)
             return true;
-        
+
         return s.indexOf('"') >= 0;
     }
 
@@ -209,13 +209,13 @@ class JavaConfig {
 }
 /*
  * Sample java-config from a V2 domain.xml
- *  <java-config 
-        classpath-suffix="" 
-        debug-enabled="false" 
-        debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9009" 
-        env-classpath-ignored="true" 
-        java-home="${com.sun.aas.javaRoot}"  
-        javac-options="-g" 
-        rmic-options="-iiop -poa -alwaysgenerate -keepgenerated -g" 
+ *  <java-config
+        classpath-suffix=""
+        debug-enabled="false"
+        debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9009"
+        env-classpath-ignored="true"
+        java-home="${com.sun.aas.javaRoot}"
+        javac-options="-g"
+        rmic-options="-iiop -poa -alwaysgenerate -keepgenerated -g"
         system-classpath="">
  * */

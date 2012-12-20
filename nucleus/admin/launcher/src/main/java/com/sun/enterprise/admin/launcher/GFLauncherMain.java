@@ -62,7 +62,7 @@ public class GFLauncherMain {
             launcher.launch();
         }
         catch (GFLauncherException ex) {
-            Logger.getLogger(GFLauncherMain.class.getName()).log(Level.SEVERE, null, ex);
+            GFLauncherLogger.severe(GFLauncherLogger.LAUNCH_FAILURE, ex);
         }
     }
 }
