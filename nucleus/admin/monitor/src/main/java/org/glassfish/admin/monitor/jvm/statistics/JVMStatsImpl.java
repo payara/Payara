@@ -64,7 +64,7 @@ import org.glassfish.external.statistics.CountStatistic;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-/** 
+/**
  *
  * For v3 Prelude, following stats will be available
  * server.jvm.committedHeapSize java.lang.management.MemoryUsage
@@ -79,8 +79,6 @@ public class JVMStatsImpl implements MonitorContract {
     @Inject
     private MonitoringRuntimeDataRegistry mrdr;
 
-    @Inject
-    Logger logger;
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -160,7 +158,7 @@ public class JVMStatsImpl implements MonitorContract {
 
     // @author bnevins
     private long getFirstTreeNodeAsLong(TreeNode parent, String name) {
-        
+
         List<TreeNode> nodes = parent.getNodes(name);
 
         if(!nodes.isEmpty()) {
@@ -172,7 +170,7 @@ public class JVMStatsImpl implements MonitorContract {
                     return cs.getCount();
                 } catch (Exception e) {
                     //TODO: handle exception
-                }              
+                }
             }
         }
 
