@@ -42,24 +42,23 @@ package org.glassfish.admin.rest.composite;
 import com.sun.enterprise.v3.common.ActionReporter;
 import java.net.URI;
 import java.util.Collection;
-import java.util.List;
 import java.util.Properties;
-import javax.inject.Inject;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import javax.security.auth.Subject;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilderException;
 import javax.ws.rs.core.UriInfo;
 import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.OptionsCapable;
 import org.glassfish.admin.rest.RestResource;
-import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.model.ResponseBody;
@@ -75,7 +74,6 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.media.sse.EventOutput;
 
-import org.glassfish.security.services.common.SubjectUtil;
 
 /**
  * This is the base class for all composite resources. It provides all of the basic configuration and utilities needed
@@ -84,22 +82,20 @@ import org.glassfish.security.services.common.SubjectUtil;
  * @author jdlee
  */
 @Produces(CompositeResource.MEDIA_TYPE_JSON)
-public abstract class CompositeResource extends AbstractResource
-    implements RestResource, DefaultsGenerator, OptionsCapable {
-    private static final String MEDIA_TYPE = "application";
-    private static final String MEDIA_SUB_TYPE = "vnd.oracle.glassfish";
-
-    public static final String MEDIA_TYPE_BASE = MEDIA_TYPE + "/" + MEDIA_SUB_TYPE;
-
-    public static final String MEDIA_TYPE_JSON = MEDIA_TYPE_BASE+"+json";
+public abstract class CompositeResource extends AbstractResource implements RestResource, DefaultsGenerator, OptionsCapable {
+    private static final String   MEDIA_TYPE = "application";
+    private static final String   MEDIA_SUB_TYPE = "vnd.oracle.glassfish";
+    public static final String    MEDIA_TYPE_BASE = MEDIA_TYPE + "/" + MEDIA_SUB_TYPE;
+    public static final String    MEDIA_TYPE_JSON = MEDIA_TYPE_BASE+"+json";
     public static final MediaType MEDIA_TYPE_JSON_TYPE = new MediaType(MEDIA_TYPE, MEDIA_SUB_TYPE+"+json");
-
-    public static final String MEDIA_TYPE_SSE = MEDIA_TYPE_BASE+"+sse";
+    public static final String   MEDIA_TYPE_SSE = MEDIA_TYPE_BASE+"+sse";
 
     // All methods that expect a request body should include the annotation:
     // @Consumes(CONSUMES_TYPE)
     protected static final String CONSUMES_TYPE = MEDIA_TYPE_JSON;
-            //MediaType.APPLICATION_JSON;
+    // TODO: These should be configurable
+    protected static final int THREAD_POOL_CORE = 5;
+    protected static final int THREAD_POOL_MAX = 10;
 
     protected CompositeUtil compositeUtil = CompositeUtil.instance();
 
@@ -341,7 +337,25 @@ public abstract class CompositeResource extends AbstractResource
      * @param name
      * @return
      */
-    public String getPathParam(String name) {
+    protected String getPathParam(String name) {
         return this.getUriInfo().getPathParameters().getFirst(name);
+    }
+
+    protected boolean detachedRequested() {
+        return Boolean.parseBoolean(getUriInfo().getQueryParameters().getFirst("detached"));
+    }
+
+    protected synchronized ExecutorService getExecutorService() {
+        return ExecutorServiceHolder.INSTANCE;
+    }
+
+    private static class ExecutorServiceHolder {
+        private static ExecutorService INSTANCE = new ThreadPoolExecutor(
+                    THREAD_POOL_CORE, // core thread pool size
+                    THREAD_POOL_MAX, // maximum thread pool size
+                    1, // time to wait before resizing pool
+                    TimeUnit.MINUTES,
+                    new ArrayBlockingQueue<Runnable>(THREAD_POOL_MAX, true),
+                    new ThreadPoolExecutor.CallerRunsPolicy());
     }
 }
