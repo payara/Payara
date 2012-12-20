@@ -667,7 +667,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
             }
 
             for (Resource resource : domain.getResources().getResources()) {
-                if (resource.getObjectType().equals("system-all") || resource.getObjectType().equals("system-instance")) {
+                if (Resource.Duck.copyToInstance(resource)) {
                     String name = null;
                     if (resource instanceof BindableResource) {
                         name = ((BindableResource) resource).getJndiName();

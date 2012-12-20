@@ -66,7 +66,7 @@
     <config-bundle location="domain/resources" replace-if-exist="false">
         <configuration-element config-bean-class-name="org.glassfish.connectors.config.ConnectorResource">
 <![CDATA[
-    <connector-resource pool-name="__DefaultJMSConnectionFactory-Connection-Pool" jndi-name="jms/__defaultConnectionFactory" object-type="system-all"></connector-resource>
+    <connector-resource pool-name="__DefaultJMSConnectionFactory-Connection-Pool" jndi-name="jms/__defaultConnectionFactory" object-type="system-all-req"></connector-resource>
 ]]>
         </configuration-element>
     </config-bundle>

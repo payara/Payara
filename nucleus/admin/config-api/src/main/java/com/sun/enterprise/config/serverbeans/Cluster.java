@@ -759,7 +759,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
 
             Resources resources = domain.getResources();
             for (Resource resource : resources.getResources()) {
-                if (resource.getObjectType().equals("system-all") || resource.getObjectType().equals("system-instance")) {
+                if (Resource.Duck.copyToInstance(resource)) {
                     String name=null;
                     if (resource instanceof BindableResource) {
                         name = ((BindableResource) resource).getJndiName();

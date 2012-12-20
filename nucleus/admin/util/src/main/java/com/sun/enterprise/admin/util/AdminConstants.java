@@ -61,13 +61,6 @@ public interface AdminConstants {
     public static final String NODEAGENT_SYNCINSTANCES_OVERRIDE = "syncInstances";
     public static final String NODEAGENT_DOMAIN_XML_LOCATION="/config/domain.xml";
 
-    // resource types
-    public static final String SYSTEM_ALL = "system-all";
-    public static final String SYSTEM_ADMIN = "system-admin";
-    public static final String SYSTEM_INSTANCE = "system-instance";
-    public static final String SYSTEM_PREFIX = "system-";
-    public static final String USER = "user";
-
     public static final String DAS_SERVER_NAME    = "server";
     
     public static final String DAS_CONFIG_OBJECT_NAME_PATTERN = 

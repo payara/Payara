@@ -61,6 +61,8 @@ public interface Resource extends ConfigBeanProxy {
      * where object-type defines the type of the resource.
      * It can be:
      *  system-all - These are system resources for all instances and DAS
+     *  system-all-req - These are system-all resources that are required to be
+     *                   configured in the system (cannot be deleted). 
      *  system-admin - These are system resources only in DAS
      *  system-instance - These are system resources only in instances
      *                    (and not DAS)
@@ -70,7 +72,7 @@ public interface Resource extends ConfigBeanProxy {
      *         {@link String }
      */
     @Attribute (defaultValue="user")
-    @Pattern(regexp="(system-all|system-admin|system-instance|user)")            
+    @Pattern(regexp="(system-all|system-all-req|system-admin|system-instance|user)")            
     String getObjectType();
 
     /**
@@ -84,10 +86,21 @@ public interface Resource extends ConfigBeanProxy {
 
     @DuckTyped
     String getIdentity();
-
+    
     class Duck {
         public static String getIdentity(Resource resource){
             return null;
+        }
+        /*
+         * True if this resource should be copied to any new instance or cluster.
+         * Note: this isn't a DuckTyped method because it requires every subclass
+         * to implement this method.
+         */
+        public static boolean copyToInstance(Resource resource) {
+            String ot = resource.getObjectType();
+            return "system-all".equals(ot) || 
+                    "system-all-req".equals(ot) ||
+                    "system-instance".equals(ot);
         }
     }
 }

@@ -42,6 +42,7 @@ package org.glassfish.connectors.admin.cli;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -110,13 +111,21 @@ public class DeleteConnectorResource implements AdminCommand {
         }
 
         // ensure we already have this resource
-        if (!isResourceExists(domain.getResources(), jndiName)) {
+        Resource r = ConnectorsUtil.getResourceByName(domain.getResources(), ConnectorResource.class, jndiName);
+        if (r == null) {
             report.setMessage(localStrings.getLocalString("delete.connector.resource.notfound",
                     "A connector resource named {0} does not exist.", jndiName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-
+        if ("system-all-req".equals(r.getObjectType())) {
+            report.setMessage(localStrings.getLocalString("delete.connector.resource.notAllowed", 
+                    "The {0} resource cannot be deleted as it is required to be configured in the system.", 
+                    jndiName));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+        
         if (environment.isDas()) {
 
             if ("domain".equals(target)) {
@@ -177,9 +186,5 @@ public class DeleteConnectorResource implements AdminCommand {
         report.setMessage(localStrings.getLocalString("delete.connector.resource.success",
                 "Connector resource {0} deleted successfully", jndiName));
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-    }
-
-    private boolean isResourceExists(Resources resources, String jndiName) {
-        return ConnectorsUtil.getResourceByName(resources, ConnectorResource.class, jndiName) != null;
     }
 }
