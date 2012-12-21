@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -73,7 +73,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-
+import static com.sun.enterprise.admin.servermgmt.SLogger.*;
 
 /**
  * @author  kebbs
@@ -95,9 +95,6 @@ public class KeystoreManager {
             "-J-Dsun.security.internal.keytool.skid";
 
     private static final String INSTANCE_CN_SUFFIX = "-instance";
-
-    private static final Logger logger = LogDomains.getLogger(KeystoreManager.class,
-            LogDomains.ADMIN_LOGGER);
 
     static {
         // Byron Nevins, July 2011
@@ -229,7 +226,7 @@ public class KeystoreManager {
                 dest = lo.getTrustStore();
                 FileUtils.copy(src, dest); //and then cacerts with CA-signed certs
             } catch(Exception e) {
-                logger.log(Level.SEVERE, null, e);
+                getLogger().log(Level.SEVERE, null, e);
             }
 
         }
@@ -406,7 +403,7 @@ public class KeystoreManager {
             if (certFile != null) {
                 final boolean isCertFileDeleted = certFile.delete();
                 if ( ! isCertFileDeleted) {
-                    logger.log(Level.WARNING, "errorDeletingTempCertFile",
+                    getLogger().log(Level.WARNING, "errorDeletingTempCertFile",
                             certFile.getAbsolutePath());
                 }
             }
@@ -482,7 +479,7 @@ public class KeystoreManager {
                     try {
                         is.close();
                     } catch (IOException ex) {
-                        logger.log(Level.SEVERE, null, ex);
+                        getLogger().log(Level.SEVERE, null, ex);
                     }
                 }
             }
@@ -545,7 +542,7 @@ public class KeystoreManager {
             } catch (Exception ex) {
                 //For now we eat all exceptions and dump to the log if the password
                 //alias could not be changed.
-                logger.log(Level.SEVERE, null, ex);
+                getLogger().log(Level.SEVERE, null, ex);
             }
         }
 
@@ -575,11 +572,11 @@ public class KeystoreManager {
     public static String getDASCertDN(final RepositoryConfig cfg) {
         return getCertificateDN(cfg, null);
     }
-    
+
     public static String getInstanceCertDN(final RepositoryConfig cfg) {
         return getCertificateDN(cfg, INSTANCE_CN_SUFFIX);
     }
-    
+
     private static String getCNFromCfg(RepositoryConfig cfg) {
         String option = (String)cfg.get(DomainConfig.KEYTOOLOPTIONS);
         if (option == null || option.length() == 0)

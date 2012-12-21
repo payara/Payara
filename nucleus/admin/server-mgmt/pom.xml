@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>server-mgmt</artifactId>
-    
+
     <name>admin-server-management</name>
     <description>Server Management</description>
 
@@ -92,5 +92,11 @@
             <artifactId>admin-cli</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.annotations</groupId>
+            <artifactId>logging-annotation-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
     </dependencies>
 </project>

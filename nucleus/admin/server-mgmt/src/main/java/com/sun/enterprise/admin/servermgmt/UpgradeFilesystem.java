@@ -49,6 +49,7 @@ import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import java.io.File;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import static com.sun.enterprise.admin.servermgmt.SLogger.*;
 
 /**
  * Startup service to update the filesystem from v2 to the v3 format
@@ -77,11 +78,11 @@ public class UpgradeFilesystem implements ConfigurationUpgrade, PostConstruct {
         if (agentsDir.exists() && ! nodesDir.exists() ) {
             String msg = "Renaming " + agentsDir.getPath() +
                         " to " + nodesDir.getPath();
-            Logger.getAnonymousLogger().log(Level.INFO, msg);
+            getLogger().log(Level.INFO, msg);
             if ( ! agentsDir.renameTo(nodesDir)) {
                 msg = "Failed to rename " + agentsDir.getPath() +
                         " to " + nodesDir.getPath();
-                Logger.getAnonymousLogger().log(Level.SEVERE, msg);
+                getLogger().log(Level.SEVERE, msg);
             }
         }
     }
