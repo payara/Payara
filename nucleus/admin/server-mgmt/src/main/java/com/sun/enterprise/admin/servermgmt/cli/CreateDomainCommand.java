@@ -316,7 +316,7 @@ public final class CreateDomainCommand extends CLICommand {
 
         if (saveMasterPassword)
             useMasterPassword = true;
-        
+
         if (masterPassword == null)
             masterPassword = DEFAULT_MASTER_PASSWORD;
 
@@ -356,7 +356,7 @@ public final class CreateDomainCommand extends CLICommand {
         po.param._password = true;
         return getPassword(po, SystemPropertyConstants.DEFAULT_ADMIN_PASSWORD, true);
     }
-    
+
     /**
      * Verify that the port is valid. Port must be greater than 0 and less than
      * 65535. This method will also check if the port is in use. If checkPorts
@@ -765,6 +765,10 @@ public final class CreateDomainCommand extends CLICommand {
         ctx.setDomainType("dev"); //TODO : Whenever clustering/HA is supported
         // this setting needs to be fixed. Domain type can be dev/ha/cluster and
         // this type needs to be extracted possibly using an api from installer
+
+
+        // bnevins 12/20/12 -- I'm not touching this ancient getLogger call.
+        // because it looks risky.
         ctx.setLogger(LogDomains.getLogger(
                 DomainInitializer.class, LogDomains.SERVER_LOGGER));
 

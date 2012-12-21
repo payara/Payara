@@ -49,7 +49,7 @@ import java.io.File;
 
 import org.glassfish.api.admin.*;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-
+import static com.sun.enterprise.admin.servermgmt.SLogger.*;
 public class MonitorTask extends TimerTask {
     private String type = null;
     private String filter = null;
@@ -59,8 +59,7 @@ public class MonitorTask extends TimerTask {
     private RemoteCLICommand cmd;
     private static final int NUM_ROWS = 25;
     private int counter = 0;
-    private static final Logger logger =
-            Logger.getLogger(MonitorTask.class.getPackage().getName());
+    private static final Logger logger = getLogger();
     private final static LocalStringsImpl strings =
             new LocalStringsImpl(MonitorTask.class);
     volatile Boolean allOK = null;
@@ -92,7 +91,7 @@ public class MonitorTask extends TimerTask {
                     "ec", "mt", "pt", "rc");
         }
         else if ("jvm".equals(type)) {
-            title = String.format("%1$45s", strings.get("monitor.jvm.title"));
+            title = String.format("%1$45s", MONITOR_TITLE);
             logger.info(title);
             // row title
             title = null;
@@ -105,8 +104,8 @@ public class MonitorTask extends TimerTask {
             }
             if (title == null) {
                 // default jvm stats
-                title = String.format("%1$-35s %2$-40s", strings.get("monitor.jvm.uptime.title"),
-                        strings.get("monitor.jvm.memory.title"));
+                title = String.format("%1$-35s %2$-40s",
+                        MONITOR_UPTIME_TITLE, MONITOR_MEMORY_TITLE);
                 logger.info(title);
                 title = String.format(
                         "%1$-25s %2$-10s %3$-10s %4$-10s %5$-10s %6$-10s",

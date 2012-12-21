@@ -39,10 +39,10 @@
  */
 package com.sun.enterprise.admin.servermgmt;
 
-import java.util.logging.*;
+import java.util.logging.Logger;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 /**
  *
@@ -61,154 +61,76 @@ public class SLogger {
     @LoggerInfo(subsystem = "ServerManagement", description = "Server Management Logger", publish = true)
     public static final String LOGGER_NAME = "javax.enterprise.servermgmt";
     private final static Logger logger = Logger.getLogger(LOGGER_NAME, SHARED_LOGMESSAGE_RESOURCE);
-
-   // these messages are historical.  We've transitioned to this latest Logging API
-    // TODO figure out cause/action etc.  This is too expensive to do right now...
-
-
-
-
-
-/*
+    // these messages are historical.  We've transitioned to this latest Logging API
     @LogMessageInfo(message =
     "Caught an Exception: {0}",
     comment = "Unhandled Exception",
     cause = "see Exception message",
     action = "see Exception message",
-    level = "WARNING")
-    public static final String UNHANDLED_EXCEPTION = "MNTG0000";
+    level = "SEVERE")
+    public static final String UNHANDLED_EXCEPTION = "SERVERMGMT0000";
     @LogMessageInfo(message =
-    "Caught an Exception: {0}",
-    comment = "Unhandled Exception - Not an error.",
-    cause = "see Exception message",
-    action = "see Exception message",
-    level = "INFO")
-    public static final String UNHANDLED_EXCEPTION_INFO = "MNTG0001";
-    @LogMessageInfo(
-            message = "Flashlight listener registration failed for listener class: {0} , will retry later",
-    comment = "see message",
+    "Error attemping to delete temporary certificate file: {0}",
+    comment = "Delete error",
     cause = "see message",
-    action = "see message",
+    action = "delete the file manually",
     level = "WARNING")
-    public static final String ListenerRegistrationFailed = "MNTG0201";
-    @LogMessageInfo(
-            message = "Unable to create container-monitoring for {0}.",
-    comment = "see message",
-    cause = "see message",
-    action = "see message",
-    level = "SEVERE")
-    public static final String cannotCreateConfigElement = "MNTG0210";
-    @LogMessageInfo(
-            message = "Invalid statsProvider (very likely a duplicate request), cannot unregister: {0}",
-    comment = "see message",
-    cause = "see message",
-    action = "see message",
+    public static final String BAD_DELETE_TEMP_CERT_FILE = "SERVERMGMT0001";
+    @LogMessageInfo(message =
+    "Renaming {0} to {1}",
+    comment = "No error",
+    //cause = "No error",
+    //action = "delete the file manually",
     level = "INFO")
-    public static final String invalidStatsProvider = "MNTG0202";
-    @LogMessageInfo(
-            message = "Error unregistering the stats provider  {0}",
-    comment = "see message",
+    public static final String RENAME_CERT_FILE = "SERVERMGMT0002";
+    @LogMessageInfo(message =
+    "Failed to rename {0} to {1}",
+    comment = "File rename error",
     cause = "see message",
-    action = "see message",
+    action = "Check the file system",
     level = "SEVERE")
-    public static final String errorUnregisteringStatsProvider = "MNTG0208";
-    @LogMessageInfo(
-            message = "Cannot find node {0} for statsProvider {1}",
-    comment = "see message",
+    public static final String BAD_RENAME_CERT_FILE = "SERVERMGMT0003";
+    @LogMessageInfo(message =
+    "Failure while upgrading jvm-options from V2 to V3",
+    comment = "V2 to V3 Upgrade Failure",
     cause = "see message",
-    action = "see message",
-    level = "WARNING")
-    public static final String nodeNotFound = "MNTG0203";
-    @LogMessageInfo(
-     message = "Error resetting the stats provider: {0}",
-    comment = "see message",
-    cause = "see message",
-    action = "see message",
+    action = "Check documentation.",
     level = "SEVERE")
-    public static final String errorResettingStatsProvider = "MNTG0209";
-    @LogMessageInfo(
-     message = "{0} is not a ManagedObject and will not be registered with Gmbal to create an MBean",
-    comment = "see message",
-    cause = "see message",
-    action = "see message",
+    public static final String JVM_OPTION_UPGRADE_FAILURE = "SERVERMGMT0004";
+    @LogMessageInfo(message =
+    "JVM Monitoring",
+    comment = "Just a title",
     level = "INFO")
-    public static final String notaManagedObject = "MNTG0204";
-    @LogMessageInfo(
-     message = "Gmbal registration failed",
-    comment = "see message",
-    cause = "see message",
-    action = "see message",
-    level = "SEVERE")
-    public static final String gmbalRegistrationFailed = "MNTG0205";
-    @LogMessageInfo(
-     message = "Gmbal unregistration failed",
-    comment = "see message",
-    cause = "see message",
-    action = "see message",
-    level = "SEVERE")
-    public static final String gmbalUnRegistrationFailed = "MNTG0206";
-    @LogMessageInfo(
-     message = "module-monitoring-level or container-monitoring config element for {0} does not exist",
-    comment = "see message",
-    cause = "see message",
-    action = "see message",
-    level = "WARNING")
-    public static final String monitorElementDoesnotExist = "MNTG0207";
-    @LogMessageInfo(
-     message = "Unable to load the ProbeProvider",
-    comment = "see message",
-    cause = "see message",
-    action = "see message",
-    level = "SEVERE")
-    public static final String unableToLoadProbeProvider = "MNTG0104";
-    @LogMessageInfo(
-     message = "Unable to load the ProbeProvider",
-    comment = "see message",
-    cause = "see message",
-    action = "see message",
-    level = "SEVERE")
-    public static final String unableToProcessXMLProbeProvider = "MNTG0105";
-    @LogMessageInfo(
-     message = "Missing Module ({0})  From Xml Probe Providers",
-    comment = "see message",
-    cause = "see message",
-    action = "see message",
-    level = "SEVERE")
-    public static final String monitoringMissingModuleFromXmlProbeProviders = "MNTG0005";
-    @LogMessageInfo(
-     message = "mbean-enabled flag is turned on. Enabling all the MBeans",
-    comment = "see message",
-    cause = "see message",
-    action = "see message",
+    public static final String MONITOR_TITLE = "SERVERMGMT0005";
+    @LogMessageInfo(message =
+    "UpTime(ms)",
+    comment = "Just a title",
     level = "INFO")
-    public static final String mbeanEnabled = "MNTG0109";
+    public static final String MONITOR_UPTIME_TITLE = "SERVERMGMT0006";
     @LogMessageInfo(
-     message = "mbean-enabled flag is turned off. Disabling all the MBeans",
+            message = "Heap and NonHeap Memory(bytes)",
+    comment = "Just a title",
+    level = "INFO")
+    public static final String MONITOR_MEMORY_TITLE = "SERVERMGMT0007";
+    @LogMessageInfo(message =
+    "Failure while upgrading log-service. Could not create logging.properties file. ",
     comment = "see message",
     cause = "see message",
-    action = "see message",
-    level = "INFO")
-    public static final String mbeanDisabled = "MNTG0110";
-    @LogMessageInfo(
-     message = "dtrace-enabled flag is turned on/off. Enabling/Disabling DTrace",
+    action = "Check documentation.",
+    level = "SEVERE")
+    public static final String FAIL_CREATE_LOG_PROPS = "SERVERMGMT0008";
+    @LogMessageInfo(message =
+    "Failure while upgrading log-service. Could not update logging.properties file. ",
     comment = "see message",
     cause = "see message",
-    action = "see message",
-    level = "INFO")
-    public static final String dtraceEnabled = "MNTG0111";
-    @LogMessageInfo(
-     message = "monitoring-enabled flag is turned on. Enabling all the Probes and Stats",
+    action = "Check documentation.",
+    level = "SEVERE")
+    public static final String FAIL_UPDATE_LOG_PROPS = "SERVERMGMT0009";
+    @LogMessageInfo(message =
+    "Failure while upgrading log-service ",
     comment = "see message",
     cause = "see message",
-    action = "see message",
-    level = "INFO")
-    public static final String monitoringEnabledLogMsg = "MNTG0112";
-    @LogMessageInfo(
-     message = "monitoring-enabled flag is turned off. Disabling all the Stats",
-    comment = "see message",
-    cause = "see message",
-    action = "see message",
-    level = "INFO")
-    public static final String monitoringDisabledLogMsg = "MNTG0113";
-*/
+    action = "Check documentation.",
+    level = "SEVERE")
+    public static final String FAIL_UPGRADE_LOG_SERVICE = "SERVERMGMT0010";
 }

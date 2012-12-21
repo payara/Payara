@@ -37,32 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.admin.servermgmt;
-
-import java.beans.PropertyVetoException;
-import java.util.*;
-import java.util.logging.*;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
+import java.beans.PropertyVetoException;
+import java.util.*;
+import java.util.logging.Level;
+import javax.inject.Inject;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.PostConstruct;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import javax.inject.Inject;
+import static com.sun.enterprise.admin.servermgmt.SLogger.*;
 
 /**
  * Change the jvm-options from v2 to v3
+ *
  * @author Byron Nevins
  */
-
 @Service
 @PerLookup
 public class V2ToV3ConfigUpgrade implements ConfigurationUpgrade, PostConstruct {
@@ -71,10 +69,10 @@ public class V2ToV3ConfigUpgrade implements ConfigurationUpgrade, PostConstruct 
     Configs configs;
 
     /**
-     * Report the JavaConfig beans for each config.
-     * <p>
-     * Lets the caller command prepare access checks for security authorization.
-     * @return 
+     * Report the JavaConfig beans for each config. <p> Lets the caller command
+     * prepare access checks for security authorization.
+     *
+     * @return
      */
     public Collection<JavaConfig> getJavaConfigs() {
         final Collection<JavaConfig> result = new ArrayList<JavaConfig>();
@@ -85,13 +83,13 @@ public class V2ToV3ConfigUpgrade implements ConfigurationUpgrade, PostConstruct 
         }
         return result;
     }
-    
+
     @Override
     public void postConstruct() {
         // the 'prevent' defense
-        if (configs == null ||
-            configs.getConfig() == null ||
-            configs.getConfig().isEmpty()) {
+        if (configs == null
+                || configs.getConfig() == null
+                || configs.getConfig().isEmpty()) {
             return;
         }
 
@@ -111,8 +109,7 @@ public class V2ToV3ConfigUpgrade implements ConfigurationUpgrade, PostConstruct 
             }
         }
         catch (Exception e) {
-            Logger.getAnonymousLogger().log(Level.SEVERE,
-                "Failure while upgrading jvm-options from V2 to V3", e);
+            getLogger().log(Level.SEVERE, JVM_OPTION_UPGRADE_FAILURE, e);
             throw new RuntimeException(e);
         }
     }
@@ -121,8 +118,8 @@ public class V2ToV3ConfigUpgrade implements ConfigurationUpgrade, PostConstruct 
         // copy options from old to new.  Don't add items on the removal list
         // note that the remove list also has all the items we just added with
         // doAdditions() so that we don't get duplicate messes.
-        for(String s : oldJvmOptions) {
-            if(!shouldRemove(s))
+        for (String s : oldJvmOptions) {
+            if (!shouldRemove(s))
                 newJvmOptions.add(s);
         }
     }
@@ -132,21 +129,22 @@ public class V2ToV3ConfigUpgrade implements ConfigurationUpgrade, PostConstruct 
         doAdditionsFrom(ADD_LIST);
         if (isDas) {
             doAdditionsFrom(ADD_LIST_DAS);
-        } else {
+        }
+        else {
             doAdditionsFrom(ADD_LIST_NOT_DAS);
         }
     }
 
-    private void doAdditionsFrom(String [] strings) {
+    private void doAdditionsFrom(String[] strings) {
         newJvmOptions.addAll(Arrays.asList(strings));
     }
 
     private boolean shouldRemove(String option) {
-        if(!ok(option))
+        if (!ok(option))
             return true;
 
-        for(String s : REMOVAL_LIST)
-            if(option.startsWith(s))
+        for (String s : REMOVAL_LIST)
+            if (option.startsWith(s))
                 return true;
 
         return false;
@@ -155,21 +153,17 @@ public class V2ToV3ConfigUpgrade implements ConfigurationUpgrade, PostConstruct 
     private boolean ok(String s) {
         return s != null && s.length() > 0;
     }
-
-    private         List<String> oldJvmOptions = null;
-    private final   List<String> newJvmOptions = new ArrayList<String>();
-
-    private static final String[] BASE_REMOVAL_LIST = new String[] {
-            "-Djavax.management.builder.initial",
-            "-Dsun.rmi.dgc.server.gcInterval",
-            "-Dsun.rmi.dgc.client.gcInterval",
-            "-Dcom.sun.enterprise.taglibs",
-            "-Dcom.sun.enterprise.taglisteners",
-            "-XX:LogFile",
-        };
-
+    private List<String> oldJvmOptions = null;
+    private final List<String> newJvmOptions = new ArrayList<String>();
+    private static final String[] BASE_REMOVAL_LIST = new String[]{
+        "-Djavax.management.builder.initial",
+        "-Dsun.rmi.dgc.server.gcInterval",
+        "-Dsun.rmi.dgc.client.gcInterval",
+        "-Dcom.sun.enterprise.taglibs",
+        "-Dcom.sun.enterprise.taglisteners",
+        "-XX:LogFile",};
     // these are added to all configs
-    private static final String[] ADD_LIST = new String[] {
+    private static final String[] ADD_LIST = new String[]{
         "-XX:+UnlockDiagnosticVMOptions",
         "-XX:+LogVMOutput",
         "-XX:LogFile=${com.sun.aas.instanceRoot}/logs/jvm.log",
@@ -187,19 +181,15 @@ public class V2ToV3ConfigUpgrade implements ConfigurationUpgrade, PostConstruct 
         "-Dfelix.fileinstall.log.level=2",
         "-Djavax.management.builder.initial=com.sun.enterprise.v3.admin.AppServerMBeanServerBuilder",
         "-Dorg.glassfish.web.rfc2109_cookie_names_enforced=false",
-        "-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext",
-    };
-
+        "-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext",};
     // these are added to DAS only
-    private static final String[] ADD_LIST_DAS = new String[] {
+    private static final String[] ADD_LIST_DAS = new String[]{
         "-Dosgi.shell.telnet.port=6666"
     };
-
     // these are added to instances
-    private static final String[] ADD_LIST_NOT_DAS = new String[] {
+    private static final String[] ADD_LIST_NOT_DAS = new String[]{
         "-Dosgi.shell.telnet.port=${OSGI_SHELL_TELNET_PORT}"
     };
-
     private static final List<String> REMOVAL_LIST = new ArrayList<String>();
 
     static {
@@ -208,10 +198,11 @@ public class V2ToV3ConfigUpgrade implements ConfigurationUpgrade, PostConstruct 
     }
 
     private class JavaConfigChanger implements SingleConfigCode<JavaConfig> {
+
         @Override
         public Object run(JavaConfig jc) throws PropertyVetoException, TransactionFailure {
-           jc.setJvmOptions(newJvmOptions);
-           return jc;
+            jc.setJvmOptions(newJvmOptions);
+            return jc;
         }
     }
 }

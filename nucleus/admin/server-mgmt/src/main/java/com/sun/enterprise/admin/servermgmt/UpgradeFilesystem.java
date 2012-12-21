@@ -37,18 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.admin.servermgmt;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.api.admin.config.ConfigurationUpgrade;
-
 import java.io.File;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.glassfish.api.admin.config.ConfigurationUpgrade;
+import org.glassfish.hk2.api.PostConstruct;
+import org.jvnet.hk2.annotations.Service;
+
 import static com.sun.enterprise.admin.servermgmt.SLogger.*;
 
 /**
@@ -58,7 +55,6 @@ import static com.sun.enterprise.admin.servermgmt.SLogger.*;
  */
 @Service
 public class UpgradeFilesystem implements ConfigurationUpgrade, PostConstruct {
-
 
     @Override
     public void postConstruct() {
@@ -75,14 +71,10 @@ public class UpgradeFilesystem implements ConfigurationUpgrade, PostConstruct {
         File nodesDir = new File(installDir, "nodes");
 
         // Only do this if nodeagents exists and nodes does not
-        if (agentsDir.exists() && ! nodesDir.exists() ) {
-            String msg = "Renaming " + agentsDir.getPath() +
-                        " to " + nodesDir.getPath();
-            getLogger().log(Level.INFO, msg);
-            if ( ! agentsDir.renameTo(nodesDir)) {
-                msg = "Failed to rename " + agentsDir.getPath() +
-                        " to " + nodesDir.getPath();
-                getLogger().log(Level.SEVERE, msg);
+        if (agentsDir.exists() && !nodesDir.exists()) {
+            getLogger().log(Level.INFO, RENAME_CERT_FILE, new Object[]{agentsDir.getPath(), nodesDir.getPath()});
+            if (!agentsDir.renameTo(nodesDir)) {
+                getLogger().log(Level.SEVERE, BAD_RENAME_CERT_FILE, new Object[]{agentsDir.getPath(), nodesDir.getPath()});
             }
         }
     }
