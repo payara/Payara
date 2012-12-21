@@ -315,7 +315,7 @@ public class Util {
             }
         }
         if (!parameters.entrySet().isEmpty()) {
-           return ResourceUtil.runCommand("set", parameters, null); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
+           return ResourceUtil.runCommand("set", parameters, subject); 
         } else {
             return new RestActionReporter(); // noop
         }
