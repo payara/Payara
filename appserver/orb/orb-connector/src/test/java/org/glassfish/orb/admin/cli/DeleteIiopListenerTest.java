@@ -121,12 +121,12 @@ public class DeleteIiopListenerTest extends org.glassfish.tests.utils.ConfigApiT
         parameters.set("iiopport", "4440");
         parameters.set("listener_id", "iiop_1");
         CreateIiopListener createCommand = services.getService(CreateIiopListener.class);
-        cr.getCommandInvocation("create-iiop-listener", context.getActionReport()).parameters(parameters).execute(createCommand);  
+        cr.getCommandInvocation("create-iiop-listener", context.getActionReport(), adminSubject()).parameters(parameters).execute(createCommand);  
         CreateIiopListenerTest.checkActionReport(context.getActionReport());
         parameters = new ParameterMap();
         parameters.set("listener_id", "iiop_1");
         DeleteIiopListener deleteCommand = services.getService(DeleteIiopListener.class);
-        cr.getCommandInvocation("delete-iiop-listener", context.getActionReport()).parameters(parameters).execute(deleteCommand);               
+        cr.getCommandInvocation("delete-iiop-listener", context.getActionReport(), adminSubject()).parameters(parameters).execute(deleteCommand);               
 
         CreateIiopListenerTest.checkActionReport(context.getActionReport());
         boolean isDeleted = true;
@@ -150,7 +150,7 @@ public class DeleteIiopListenerTest extends org.glassfish.tests.utils.ConfigApiT
     public void testExecuteFailDoesNotExist() {
         parameters.set("DEFAULT", "doesnotexist");
         DeleteIiopListener deleteCommand = services.getService(DeleteIiopListener.class);
-        cr.getCommandInvocation("delete-iiop-listener", context.getActionReport()).parameters(parameters).execute(deleteCommand);               
+        cr.getCommandInvocation("delete-iiop-listener", context.getActionReport(), adminSubject()).parameters(parameters).execute(deleteCommand);               
         assertEquals(ActionReport.ExitCode.FAILURE, context.getActionReport().getActionExitCode());
         logger.fine("msg: " + context.getActionReport().getMessage());
     }
