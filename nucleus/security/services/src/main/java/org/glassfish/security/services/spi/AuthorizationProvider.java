@@ -57,26 +57,6 @@ import java.util.List;
 @Contract
 public interface AuthorizationProvider extends SecurityProvider {
 
-    /**
-     * Determines whether the given Subject has been granted the specified Permission.
-     * This method isolates the query from the underlying Policy configuration
-     * model.  It could, for example, multiplex queries across multiple instances of Policy
-     * configured in an implementation-specific way such that different threads, or different
-     * applications, query different Policy objects.
-     *
-     * @param subject The Subject for which permission is being tested.
-     * @param permission The Permission being queried.
-     * @return True or false, depending on whether the specified Permission
-     * is granted to the Subject by the configured Policy.
-     * Returns null if this method is not supported by this provider.
-     * @throws IllegalArgumentException Given null or illegal subject or permission
-     * @throws IllegalStateException Provider was not initialized, if this method is supported.
-     * @see AuthorizationService#isPermissionGranted(javax.security.auth.Subject, java.security.Permission)
-     */
-    Boolean isPermissionGranted(
-        Subject subject,
-        Permission permission);
-
 
     /**
      * Evaluates the specified subject, resource, action, and environment against the body of

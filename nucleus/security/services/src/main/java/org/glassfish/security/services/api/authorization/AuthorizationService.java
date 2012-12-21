@@ -73,7 +73,6 @@ public interface AuthorizationService extends SecurityService {
 	 * @return True or false, depending on whether the specified Permission
 	 * is granted to the Subject by the configured Policy.
      * @throws IllegalArgumentException Given null or illegal subject or permission
-     * @throws IllegalStateException Service was not initialized.
 	 */
 	public boolean isPermissionGranted(Subject subject, Permission permission);
 	

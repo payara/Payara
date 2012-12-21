@@ -92,15 +92,6 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider {
 
 
     @Override
-    public Boolean isPermissionGranted(
-        final Subject subject,
-        final Permission permission) {
-
-        return null;
-    }
-
-
-    @Override
     public AzResult getAuthorizationDecision(
         AzSubject subject,
         AzResource resource,

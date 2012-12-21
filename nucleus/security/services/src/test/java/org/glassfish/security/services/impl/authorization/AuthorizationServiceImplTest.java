@@ -56,14 +56,8 @@ public class AuthorizationServiceImplTest {
 
         assertSame( "NOT_INITIALIZED", NOT_INITIALIZED, impl.getInitializationState() );
 
-        try {
-            impl.isPermissionGranted( new Subject(), new AllPermission() );
-            fail( "Expected fail not initialized." );
-        } catch ( RuntimeException e ) {
-        }
-
-        assertSame("NOT_INITIALIZED", NOT_INITIALIZED, impl.getInitializationState());
-        assertNotNull( "getReasonInitializationFailed", impl.getReasonInitializationFailed() );
+        // Does not require service initialization
+        impl.isPermissionGranted( new Subject(), new AllPermission() );
     }
 
     @Test

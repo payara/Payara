@@ -205,20 +205,11 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
      * @return True or false, depending on whether the specified Permission
      * is granted to the Subject by the configured Policy.
      * @throws IllegalArgumentException Given null or illegal subject or permission
-     * @throws IllegalStateException Service was not initialized.
      * @see AuthorizationService#isPermissionGranted(javax.security.auth.Subject, java.security.Permission)
      */
     @Override
 	public boolean isPermissionGranted(
         final Subject subject, final Permission permission) {
-
-        checkServiceAvailability();
-
-        // TODO: Cache return value
-        final Boolean providerGrant = atzProvider.isPermissionGranted( subject, permission );
-        if ( null != providerGrant ) {
-            return providerGrant.booleanValue();
-        }
 
         // Validate inputs
         if ( null == subject ) {
