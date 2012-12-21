@@ -109,7 +109,7 @@ public class ListJavaMailResourcesTest extends ConfigApiTest {
     @Test
     public void testExecuteSuccessListOriginal() {
         org.glassfish.resources.javamail.admin.cli.ListJavaMailResources listCommand = habitat.getService(org.glassfish.resources.javamail.admin.cli.ListJavaMailResources.class);
-        cr.getCommandInvocation("list-javamail-resources", context.getActionReport()).parameters(parameters).execute(listCommand);
+        cr.getCommandInvocation("list-javamail-resources", context.getActionReport(), adminSubject()).parameters(parameters).execute(listCommand);
         List<MessagePart> list = context.getActionReport().getTopMessagePart().getChildren();
         if (origNum == 0) {
             //Nothing to list
@@ -133,7 +133,7 @@ public class ListJavaMailResourcesTest extends ConfigApiTest {
         parameters = new ParameterMap();
         org.glassfish.resources.javamail.admin.cli.ListJavaMailResources listCommand = habitat.getService(org.glassfish.resources.javamail.admin.cli.ListJavaMailResources.class);
         assertTrue(listCommand != null);
-        cr.getCommandInvocation("list-javamail-resources", context.getActionReport()).parameters(parameters).execute(listCommand);
+        cr.getCommandInvocation("list-javamail-resources", context.getActionReport(), adminSubject()).parameters(parameters).execute(listCommand);
         List<MessagePart> list = context.getActionReport().getTopMessagePart().getChildren();
         assertEquals(origNum + 1, list.size());
         List<String> listStr = new ArrayList<String>();
@@ -153,7 +153,7 @@ public class ListJavaMailResourcesTest extends ConfigApiTest {
         parameters.set("jndi_name", "mailresource");
         CreateJavaMailResource createCommand = habitat.getService(CreateJavaMailResource.class);
         assertTrue(createCommand != null);
-        cr.getCommandInvocation("create-javamail-resource", context.getActionReport()).parameters(parameters).execute(createCommand);
+        cr.getCommandInvocation("create-javamail-resource", context.getActionReport(), adminSubject()).parameters(parameters).execute(createCommand);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
     }
 
@@ -169,7 +169,7 @@ public class ListJavaMailResourcesTest extends ConfigApiTest {
 
         parameters = new ParameterMap();
         org.glassfish.resources.javamail.admin.cli.ListJavaMailResources listCommand = habitat.getService(org.glassfish.resources.javamail.admin.cli.ListJavaMailResources.class);
-        cr.getCommandInvocation("list-javamail-resources", context.getActionReport()).parameters(parameters).execute(listCommand);
+        cr.getCommandInvocation("list-javamail-resources", context.getActionReport(), adminSubject()).parameters(parameters).execute(listCommand);
 
         List<ActionReport.MessagePart> list = context.getActionReport().getTopMessagePart().getChildren();
         assertEquals(origNum + 1, list.size());
@@ -181,7 +181,7 @@ public class ListJavaMailResourcesTest extends ConfigApiTest {
         context = new AdminCommandContextImpl(
                 LogDomains.getLogger(ListJavaMailResourcesTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
-        cr.getCommandInvocation("list-javamail-resources", context.getActionReport()).parameters(parameters).execute(listCommand);
+        cr.getCommandInvocation("list-javamail-resources", context.getActionReport(), adminSubject()).parameters(parameters).execute(listCommand);
         list = context.getActionReport().getTopMessagePart().getChildren();
         if ((origNum - 1) == 0) {
             //Nothing to list.
@@ -201,7 +201,7 @@ public class ListJavaMailResourcesTest extends ConfigApiTest {
         parameters.set("jndi_name", "mailresource");
         DeleteJavaMailResource deleteCommand = habitat.getService(DeleteJavaMailResource.class);
         assertTrue(deleteCommand != null);
-        cr.getCommandInvocation("delete-javamail-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
+        cr.getCommandInvocation("delete-javamail-resource", context.getActionReport(), adminSubject()).parameters(parameters).execute(deleteCommand);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
     }
 }

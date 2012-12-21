@@ -160,7 +160,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
         parameters.set("DEFAULT", "jdbc/foo");
 
         //Call CommandRunnerImpl.doCommand(..) to execute the command
-        cr.getCommandInvocation("create-jdbc-resource", context.getActionReport()).parameters(parameters).execute(command);
+        cr.getCommandInvocation("create-jdbc-resource", context.getActionReport(), adminSubject()).parameters(parameters).execute(command);
         
         // Check the exit code is SUCCESS
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
@@ -214,7 +214,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
         
 
         //Call CommandRunnerImpl.doCommand(..) to execute the command
-        cr.getCommandInvocation("create-jdbc-resource", context.getActionReport()).parameters(parameters).execute(command);
+        cr.getCommandInvocation("create-jdbc-resource", context.getActionReport(), adminSubject()).parameters(parameters).execute(command);
         
         // Check the exit code is SUCCESS
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
@@ -252,7 +252,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
         parameters.set("DEFAULT", "dupRes");
 
         //Call CommandRunnerImpl.doCommand(..) to execute the command
-        cr.getCommandInvocation("create-jdbc-resource", context.getActionReport()).parameters(parameters).execute(command);
+        cr.getCommandInvocation("create-jdbc-resource", context.getActionReport(), adminSubject()).parameters(parameters).execute(command);
 
         // Check the exit code is SUCCESS
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
@@ -273,7 +273,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
         
         //Try to create a duplicate resource dupRes. Get a new instance of the command.
         CreateJdbcResource command2 = habitat.getService(CreateJdbcResource.class);
-        cr.getCommandInvocation("create-jdbc-resource", context.getActionReport()).parameters(parameters).execute(command2);
+        cr.getCommandInvocation("create-jdbc-resource", context.getActionReport(), adminSubject()).parameters(parameters).execute(command2);
         
         // Check the exit code is FAILURE
         assertEquals(ActionReport.ExitCode.FAILURE, context.getActionReport().getActionExitCode());
@@ -309,7 +309,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
         parameters.set("DEFAULT", "jdbc/nopool");
         
         // Call CommandRunnerImpl.doCommand(..) to execute the command
-        cr.getCommandInvocation("create-jdbc-resource", context.getActionReport()).parameters(parameters).execute(command);
+        cr.getCommandInvocation("create-jdbc-resource", context.getActionReport(), adminSubject()).parameters(parameters).execute(command);
         
         // Check the exit code is Failure
         assertEquals(ActionReport.ExitCode.FAILURE, context.getActionReport().getActionExitCode());
@@ -345,7 +345,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
         parameters.set("DEFAULT", "jdbc/junk");
         
         // Call CommandRunnerImpl.doCommand(..) to execute the command
-        cr.getCommandInvocation("create-jdbc-resource", context.getActionReport()).parameters(parameters).execute(command);
+        cr.getCommandInvocation("create-jdbc-resource", context.getActionReport(), adminSubject()).parameters(parameters).execute(command);
         
         // Check the exit code is Failure
         assertEquals(ActionReport.ExitCode.FAILURE, context.getActionReport().getActionExitCode());
@@ -365,7 +365,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
         parameters.set("DEFAULT", "jdbc/sun");
         
         // Call CommandRunnerImpl.doCommand(..) to execute the command
-        cr.getCommandInvocation("create-jdbc-resource", context.getActionReport()).parameters(parameters).execute(command);
+        cr.getCommandInvocation("create-jdbc-resource", context.getActionReport(), adminSubject()).parameters(parameters).execute(command);
         
         // Check the exit code is SUCCESS
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());

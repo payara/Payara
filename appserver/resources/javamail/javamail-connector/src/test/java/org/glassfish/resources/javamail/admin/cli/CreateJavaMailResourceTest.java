@@ -102,10 +102,10 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
         parameters = new ParameterMap();
         parameters.set("jndi_name", "mail/MyMailSession");
 
-        cr.getCommandInvocation("delete-javamail-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
+        cr.getCommandInvocation("delete-javamail-resource", context.getActionReport(), adminSubject()).parameters(parameters).execute(deleteCommand);
         parameters = new ParameterMap();
         parameters.set("jndi_name", "dupRes");
-        cr.getCommandInvocation("delete-javamail-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
+        cr.getCommandInvocation("delete-javamail-resource", context.getActionReport(), adminSubject()).parameters(parameters).execute(deleteCommand);
     }
 
     /**
@@ -121,7 +121,7 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
         parameters.set("jndi_name", "mail/MyMailSession");
         org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource command = habitat.getService(org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource.class);
         assertTrue(command != null);
-        cr.getCommandInvocation("create-javamail-resource", context.getActionReport()).parameters(parameters).execute(command);
+        cr.getCommandInvocation("create-javamail-resource", context.getActionReport(), adminSubject()).parameters(parameters).execute(command);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
         boolean isCreated = false;
         for (Resource resource : resources.getResources()) {
@@ -176,7 +176,7 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
         parameters.set("jndi_name", "dupRes");
         org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource command1 = habitat.getService(org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource.class);
         assertTrue(command1 != null);
-        cr.getCommandInvocation("create-javamail-resource", context.getActionReport()).parameters(parameters).execute(command1);
+        cr.getCommandInvocation("create-javamail-resource", context.getActionReport(), adminSubject()).parameters(parameters).execute(command1);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
         boolean isCreated = false;
         for (Resource resource : resources.getResources()) {
@@ -192,7 +192,7 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
         assertTrue(isCreated);
 
         org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource command2 = habitat.getService(org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource.class);
-        cr.getCommandInvocation("create-javamail-resource", context.getActionReport()).parameters(parameters).execute(command2);
+        cr.getCommandInvocation("create-javamail-resource", context.getActionReport(), adminSubject()).parameters(parameters).execute(command2);
         assertEquals(ActionReport.ExitCode.FAILURE, context.getActionReport().getActionExitCode());
         int numDupRes = 0;
         for (Resource resource : resources.getResources()) {
@@ -231,7 +231,7 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
         parameters.set("jndi_name", "mail/MyMailSession");
         org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource command = habitat.getService(org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource.class);
         assertTrue(command != null);
-        cr.getCommandInvocation("create-javamail-resource", context.getActionReport()).parameters(parameters).execute(command);
+        cr.getCommandInvocation("create-javamail-resource", context.getActionReport(), adminSubject()).parameters(parameters).execute(command);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
         boolean isCreated = false;
         for (Resource resource : resources.getResources()) {
