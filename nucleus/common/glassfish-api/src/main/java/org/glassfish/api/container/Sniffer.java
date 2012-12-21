@@ -101,6 +101,18 @@ public interface Sniffer {
     public Class<? extends Annotation>[] getAnnotationTypes();
     
     /**
+     * Returns the list of annotations types that this sniffer is interested in.
+     * If an application bundle contains at least one class annotated with
+     * one of the returned annotations, the deployment process will not
+     * call the handles method but will invoke the containers deployers as if
+     * the handles method had been called and returned true.
+     *
+     * @param context deployment context
+     * @return list of annotations this sniffer is interested in or an empty array
+     */
+    public Class<? extends Annotation>[] getAnnotationTypes(DeploymentContext context);
+
+    /**
      * Returns the container type associated with this sniffer
      * @return the container type
      */

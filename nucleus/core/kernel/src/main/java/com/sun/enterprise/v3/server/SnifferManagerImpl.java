@@ -136,11 +136,9 @@ public class SnifferManagerImpl implements SnifferManager {
         // it is important to keep an ordered sequence here to keep sniffers
         Collection<Sniffer> regularSniffers = getSniffers();
 
-        ArchiveType archiveType = habitat.getService(ArchiveType.class, context.getArchiveHandler().getArchiveType());
-
         // in their natural order.
         // scan for registered annotations and retrieve applicable sniffers
-        List<Sniffer> appSniffers = this.getApplicableSniffers(uris, types, regularSniffers, true, archiveType);
+        List<Sniffer> appSniffers = this.getApplicableSniffers(context, uris, types, regularSniffers, true);
         
         // call handles method of the sniffers
         for (Sniffer sniffer : regularSniffers) {
@@ -151,7 +149,9 @@ public class SnifferManagerImpl implements SnifferManager {
         return appSniffers;
     }
 
-    private <T extends Sniffer> List<T> getApplicableSniffers(List<URI> uris, Types types, Collection<T> sniffers, boolean checkPath, ArchiveType archiveType) {
+    private <T extends Sniffer> List<T> getApplicableSniffers(DeploymentContext context, List<URI> uris, Types types, Collection<T> sniffers, boolean checkPath) {
+        ArchiveType archiveType = habitat.getService(ArchiveType.class, context.getArchiveHandler().getArchiveType());
+
         if (sniffers==null || sniffers.isEmpty()) {
             return Collections.emptyList();
         }
@@ -162,7 +162,7 @@ public class SnifferManagerImpl implements SnifferManager {
                 !sniffer.supportsArchiveType(archiveType)) {
                 continue;
             }
-            Class<? extends Annotation>[] annotations = sniffer.getAnnotationTypes();
+            Class<? extends Annotation>[] annotations = sniffer.getAnnotationTypes(context);
             if (annotations==null) continue;
             for (Class<? extends Annotation> annotationType : annotations)  {
               if (types != null) {

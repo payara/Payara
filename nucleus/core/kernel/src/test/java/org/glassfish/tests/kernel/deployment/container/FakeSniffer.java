@@ -81,6 +81,10 @@ public class FakeSniffer implements Sniffer {
         return null;
     }
 
+    public Class<? extends Annotation>[] getAnnotationTypes(DeploymentContext context) {
+        return null;
+    }
+
     public String getModuleType() {
         return "fake";
     }
