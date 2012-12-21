@@ -40,6 +40,8 @@
 
 package org.glassfish.tests.utils;
 
+import java.security.Principal;
+import javax.security.auth.Subject;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.junit.Ignore;
 import org.jvnet.hk2.config.DomDocument;
@@ -55,6 +57,24 @@ import java.util.logging.Logger;
 public abstract class ConfigApiTest {
 
     public static final Logger logger = Logger.getAnonymousLogger();
+    
+    private final Subject adminSubject = prepareAdminSubject();
+    
+    private Subject prepareAdminSubject() {
+        final Subject s = new Subject();
+        s.getPrincipals().add(new Principal() {
+
+            @Override
+            public String getName() {
+                return "asadmin";
+            }
+        });
+        return s;
+    }
+    
+    protected Subject adminSubject() {
+        return adminSubject;
+    }
 
     /**
      * Returns the file name without the .xml extension to load the test configuration
