@@ -42,13 +42,13 @@ package org.glassfish.security.services.impl.authorization;
 import org.glassfish.security.services.api.authorization.AzObligations;
 import org.glassfish.security.services.api.authorization.AzResult;
 
+import java.text.MessageFormat;
+
 public final class AzResultImpl implements AzResult {
 	
-	private Decision decision;
-	private Status status;
-	private AzObligations obligations = null;
-	
-	private AzResultImpl() {}
+	private final Decision decision;
+	private final Status status;
+	private final AzObligations obligations;
 	
 	public AzResultImpl(Decision d, Status s, AzObligations o) {
 		decision = d;
@@ -68,4 +68,10 @@ public final class AzResultImpl implements AzResult {
 		return obligations;
 	}
 
+
+    @Override
+    public String toString() {
+        return MessageFormat.format("status={0}, decision=[1]",
+            status, decision);
+    }
 }

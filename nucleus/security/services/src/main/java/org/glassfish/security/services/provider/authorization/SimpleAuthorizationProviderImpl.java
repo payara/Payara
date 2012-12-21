@@ -40,17 +40,14 @@
 
 package org.glassfish.security.services.provider.authorization;
 
+import java.security.Permission;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.glassfish.security.services.api.authorization.AzAction;
-import org.glassfish.security.services.api.authorization.AzEnvironment;
-import org.glassfish.security.services.api.authorization.AzObligations;
-import org.glassfish.security.services.api.authorization.AzResource;
-import org.glassfish.security.services.api.authorization.AzResult;
+import org.glassfish.security.services.api.authorization.*;
 import org.glassfish.security.services.api.authorization.AzResult.Decision;
 import org.glassfish.security.services.api.authorization.AzResult.Status;
-import org.glassfish.security.services.api.authorization.AzSubject;
 import org.glassfish.security.services.api.authorization.AuthorizationService.PolicyDeploymentContext;
 
 import org.glassfish.security.services.config.SecurityProvider;
@@ -65,6 +62,7 @@ import org.jvnet.hk2.annotations.Service;
 import com.sun.logging.LogDomains;
 import org.glassfish.security.services.api.authorization.AuthorizationAttributeNames;
 
+import javax.security.auth.Subject;
 
 
 @Service (name="simpleAuthorization")
@@ -92,9 +90,23 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider {
         }
     }
 
+
     @Override
-    public AzResult getAuthorizationDecision(AzSubject subject,
-            AzResource resource, AzAction action, AzEnvironment environment) {
+    public Boolean isPermissionGranted(
+        final Subject subject,
+        final Permission permission) {
+
+        return null;
+    }
+
+
+    @Override
+    public AzResult getAuthorizationDecision(
+        AzSubject subject,
+        AzResource resource,
+        AzAction action,
+        AzEnvironment environment,
+        List<AzAttributeResolver> attributeResolvers ) {
 
         //TODO: get user roles from Rolemapper, and do the policy  evaluation
         
@@ -123,7 +135,7 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider {
     }
 
     @Override
-    public PolicyDeploymentContext findOrCreateDeployContext(String appContext) {
+    public PolicyDeploymentContext findOrCreateDeploymentContext(String appContext) {
 
         return null;
     }

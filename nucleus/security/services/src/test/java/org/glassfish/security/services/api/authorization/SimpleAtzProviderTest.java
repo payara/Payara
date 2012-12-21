@@ -41,6 +41,7 @@
 package org.glassfish.security.services.api.authorization;
 
 
+import org.glassfish.security.services.impl.authorization.*;
 import java.net.URI;
 import javax.security.auth.Subject;
 import org.glassfish.security.services.api.common.Attributes;
@@ -53,11 +54,6 @@ import org.junit.Test;
 import org.jvnet.hk2.testing.junit.HK2Runner;
 
 import org.glassfish.security.services.spi.AuthorizationProvider;
-
-import org.glassfish.security.services.impl.authorization.AzSubjectImpl;
-import org.glassfish.security.services.impl.authorization.AzResourceImpl;
-import org.glassfish.security.services.impl.authorization.AzActionImpl;
-import org.glassfish.security.services.impl.authorization.AzEnvironmentImpl;
 
 public class SimpleAtzProviderTest extends HK2Runner {
     
@@ -78,7 +74,7 @@ public class SimpleAtzProviderTest extends HK2Runner {
     }
     
     @Test
-    public void testService() {
+    public void testService() throws Exception {
         final AuthorizationService authorizationService = new AuthorizationServiceImpl();
         Assert.assertNotNull(simpleAtzPrv);
         final AzEnvironment env = new AzEnvironmentImpl();
@@ -90,7 +86,8 @@ public class SimpleAtzProviderTest extends HK2Runner {
                 authorizationService.makeAzSubject(new Subject()),
                 authorizationService.makeAzResource(URI.create("admin:///some/path")),
                 authorizationService.makeAzAction("read"),
-                env
+                env,
+                null
               );
         
         AzResult.Decision ds = rt.getDecision();
@@ -99,5 +96,4 @@ public class SimpleAtzProviderTest extends HK2Runner {
 
     }
 
-    
 }

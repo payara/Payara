@@ -42,22 +42,22 @@ package org.glassfish.security.services.api.authorization;
 
 import java.net.URI;
 import java.security.Permission;
+import java.util.List;
 import javax.security.auth.Subject;
 
 import org.glassfish.security.services.api.SecurityService;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * The AuthorizationService interface provides methods that allow server and container
+ * The <code>AuthorizationService</code> interface provides methods that allow server and container
  * to determine whether access should be allowed to a particular resource.  It is intended for
  * internal use, not for use by applications.
  */
-
 @Contract
 public interface AuthorizationService extends SecurityService {
 	
 	/**
-	 * Determine whether the given Subject has been granted the specified Permission
+	 * Determines whether the given Subject has been granted the specified Permission
 	 * by delegating to the configured java.security.Policy object.  This method is
 	 * a high-level convenience method that tests for a Subject-based permission
 	 * grant without reference to the AccessControlContext of the caller.
@@ -72,29 +72,36 @@ public interface AuthorizationService extends SecurityService {
 	 * @param permission The Permission being queried.
 	 * @return True or false, depending on whether the specified Permission
 	 * is granted to the Subject by the configured Policy.
+     * @throws IllegalArgumentException Given null or illegal subject or permission
+     * @throws IllegalStateException Service was not initialized.
 	 */
 	public boolean isPermissionGranted(Subject subject, Permission permission);
 	
 	/**
-	 * Determine whether the given Subject is authorized to access the given resource,
+	 * Determines whether the given Subject is authorized to access the given resource,
 	 * specified by a URI.
 	 * 
 	 * @param subject The Subject being tested.
 	 * @param resource URI of the resource being tested.
 	 * @return True or false, depending on whether the access is authorized.
-	 */
+     * @throws IllegalArgumentException Given null or illegal subject or resource
+     * @throws IllegalStateException Service was not initialized.
+     */
 	public boolean isAuthorized(Subject subject, URI resource);
 	
 	/**
-	 * Determine whether the given Subject is authorized to access the given resource,
+	 * Determines whether the given Subject is authorized to access the given resource,
 	 * specified by a URI.
 	 * 
 	 * @param subject The Subject being tested.
 	 * @param resource URI of the resource being tested.
 	 * @param action The action, with respect to the resource parameter,
-	 * for which authorization is desired.
+	 * for which authorization is desired. To check authorization for all actions,
+     * action is represented by null or "*".
 	 * @return True or false, depending on whether the access is authorized.
-	 */
+     * @throws IllegalArgumentException Given null or illegal subject or resource
+     * @throws IllegalStateException Service was not initialized.
+     */
 	public boolean isAuthorized(Subject subject, URI resource, String action);
 
 	/**
@@ -114,44 +121,56 @@ public interface AuthorizationService extends SecurityService {
 	 * @param resource The attributes collection representing the resource for which access is
 	 * being requested.
 	 * @param action  The attributes collection representing the action, with respect to the resource,
-	 * for which access is being requested.
+	 * for which access is being requested.  A null action is interpreted as all
+     * actions, however all actions may also be represented by the AzAction instance.
+     * See <code>{@link org.glassfish.security.services.api.authorization.AzAction}</code>.
 	 * @return The AzResult indicating the result of the access decision.
-	 */
+     * @throws IllegalArgumentException Given null or illegal subject or resource
+     * @throws IllegalStateException Service was not initialized.
+     */
 	public AzResult getAuthorizationDecision(AzSubject subject, AzResource resource, AzAction action);
 	
 	/**
-	 * Convert a Java Subject into a typed attributes collection.
+	 * Converts a Java Subject into a typed attributes collection.
 	 * 
 	 * @param subject The Subject to convert.
 	 * @return The resulting AzSubject.
-	 */
+     * @throws IllegalArgumentException Given null or illegal subject
+     */
 	public AzSubject makeAzSubject(Subject subject);
-	
-	/**
-	 * Convert a resource, expressed as a URI, into a typed attributes collection.
-	 * 
-	 * @param resource The URI to convert.
-	 * @return The resulting AzResource.
-	 */
+
+    /**
+     * Converts a resource, expressed as a URI, into a typed attributes collection.
+     * <p>
+     * Query parameters in the given URI are appended to this
+     * <code>AzResource</code> instance attributes collection.
+     *
+     * @param resource The URI to convert.
+     * @return The resulting AzResource.
+     * @throws IllegalArgumentException Given null or illegal resource
+     */
 	public AzResource makeAzResource(URI resource);
 	
 	/**
-	 * Convert an action, expressed as a String, into a typed attributes collection.
+	 * Converts an action, expressed as a String, into a typed attributes collection.
 	 * 
-	 * @param action The action to convert.
+	 * @param action The action to convert. null or "*" represents all actions.
 	 * @return The resulting AzAction.
 	 */
 	public AzAction makeAzAction(String action);
-	
-	/**
-	 * Find an existing PolicyDeploymentContext, or create a new one if one does not
+
+    // TODO: What if multiple providers? Rollback/closeWithoutChange? Would delete remove an existing PolicyDeploymentContext?
+    /**
+	 * Finds an existing PolicyDeploymentContext, or create a new one if one does not
 	 * already exist for the specified appContext.  The context will be returned in
 	 * an "open" state, and will stay that way until commit() or delete() is called.
 	 * 
 	 * @param appContext The application context for which the PolicyDeploymentContext
 	 * is desired.
-	 * @return The resulting PolicyDeployment Context.
-	 */
+	 * @return The resulting PolicyDeploymentContext,
+     * null if the configured providers do not support this feature.
+     * @throws IllegalStateException Service was not initialized.
+     */
 	public PolicyDeploymentContext findOrCreateDeploymentContext(String appContext);
 	
 	/**
@@ -187,5 +206,50 @@ public interface AuthorizationService extends SecurityService {
 		
 		public void delete();
 	}
-	
+
+
+    /**
+     * Appends the given <code>{@link org.glassfish.security.services.api.authorization.AzAttributeResolver}</code>
+     * instance to the internal ordered list of <code>AzAttributeResolver</code> instances,
+     * if not currently in the list based on
+     * <code>{@link org.glassfish.security.services.api.authorization.AzAttributeResolver#equals}</code>.
+     *
+     * @param resolver The <code>AzAttributeResolver</code> instance to append.
+     * @return true if the <code>AzAttributeResolver</code> was added,
+     * false if the <code>AzAttributeResolver</code> was already in the list.
+     * @throws IllegalArgumentException Given AzAttributeResolver was null.
+     */
+    public boolean appendAttributeResolver(AzAttributeResolver resolver);
+
+
+    /**
+     * Replaces the internal list of <code>AttributeResolver</code> instances
+     * with the given list. If multiple equivalent instances exist in the given list,
+     * only the first such instance will be inserted.
+     *
+     * @param resolverList Replacement list of <code>AzAttributeResolver</code> instances
+     * @throws IllegalArgumentException Given AzAttributeResolver list was null.
+     */
+    public void setAttributeResolvers(List<AzAttributeResolver> resolverList);
+
+
+    /**
+     * Determines the current list of <code>AttributeResolver</code> instances,
+     * in execution order.
+     *
+     * @return  The current list of AttributeResolver instances,
+     * in execution order.
+     */
+    public List<AzAttributeResolver> getAttributeResolvers();
+
+
+    /**
+     * Removes all <code>AttributeResolver</code> instances from the current
+     * internal list of <code>AttributeResolver</code> instances.
+     *
+     * @return true if any <code>AttributeResolver</code> instances were removed,
+     * false if the list was empty.
+     */
+    public boolean removeAllAttributeResolvers();
+
 }

@@ -41,6 +41,10 @@ package org.glassfish.security.services.impl.authorization;
 
 import java.net.URI;
 import java.security.Permission;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.security.Principal;
 import java.security.ProtectionDomain;
@@ -49,7 +53,7 @@ import java.security.CodeSource;
 import java.security.CodeSigner;
 import javax.security.auth.Subject;
 
-import org.glassfish.internal.api.ServerContext;
+// import org.glassfish.internal.api.ServerContext;
 import org.glassfish.security.services.api.authorization.AuthorizationService;
 import org.glassfish.security.services.api.authorization.AzAction;
 import org.glassfish.security.services.api.authorization.AzResource;
@@ -60,7 +64,6 @@ import org.glassfish.security.services.config.SecurityConfiguration;
 import org.glassfish.security.services.impl.ServiceFactory;
 
 
-//import org.jvnet.hk2.annotations.Inject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
@@ -72,187 +75,497 @@ import com.sun.logging.LogDomains;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.security.services.api.authorization.*;
-import org.glassfish.security.services.api.authorization.AzResult.Decision;
-import org.glassfish.security.services.api.authorization.AzResult.Status;
 import org.glassfish.security.services.api.common.Attributes;
 
 import org.glassfish.security.services.config.SecurityProvider;
 import org.glassfish.security.services.spi.AuthorizationProvider;
 
 
+/**
+ * <code>AuthorizationServiceImpl</code> implements
+ * <code>{@link org.glassfish.security.services.api.authorization.AuthorizationService}</code>
+ * by delegating authorization decisions to configured
+ * <code>{@link org.glassfish.security.services.spi.AuthorizationProvider}</code>
+ * instances.
+ */
 @Service
 @Singleton
-public class AuthorizationServiceImpl implements AuthorizationService, PostConstruct {
+public final class AuthorizationServiceImpl implements AuthorizationService, PostConstruct {
 
-    protected static final Logger _logger = 
+    private static final Logger logger =
         LogDomains.getLogger(AuthorizationServiceImpl.class, LogDomains.SECURITY_LOGGER);
 
     @Inject
-    private Domain domain;
+    private volatile Domain domain;
 
-    //TODO: do context switch
-    @Inject
-    ServerContext serverContext;
+//    //TODO: do context switch??
+//    @Inject
+//    private volatile ServerContext serverContext;
 
     @Inject
-    private ServiceLocator serviceLocator;
+    private volatile ServiceLocator serviceLocator;
     
+    private volatile org.glassfish.security.services.config.AuthorizationService atzSvCfg;
+
     @Inject
-    private SecurityContextService securityContextService;
+    private volatile SecurityContextService securityContextService;
+
+    private volatile SecurityProvider atzPrvConfig;
     
-    private org.glassfish.security.services.config.AuthorizationService atzSvCfg;
-    
-    private SecurityProvider atzPrvConfig;
-    
-    private AuthorizationProvider atzProvider;
+    private volatile AuthorizationProvider atzProvider;
     
     private static final CodeSource NULL_CODESOURCE = new CodeSource(null, (CodeSigner[])null);
-    
-    @Override
-    public void initialize(SecurityConfiguration securityServiceConfiguration) {
-                
-        //get service level config
-        atzSvCfg = (org.glassfish.security.services.config.AuthorizationService) securityServiceConfiguration;
 
-        if (atzSvCfg == null) {
-            atzProvider = createDefaultProvider();
-            _logger.log(Level.WARNING, "The Authorization service is not configured in the domain configuration file; using a trivial default implementation which authorizes all access");
-        } else {
-        
-            //get provider level config
-            //consider only one provider for now
-            atzPrvConfig = atzSvCfg.getSecurityProviders().get(0);
-
-            if (atzPrvConfig == null)
-                throw new RuntimeException("No provider  configured for the Authorization service in the domain configuration file");
-
-                //get the provider
-                atzProvider = serviceLocator.getService(AuthorizationProvider.class, atzPrvConfig.getName());
-        }
-        
-        //init the provider  -- use the first config under the provider config???
-        atzProvider.initialize(atzPrvConfig);
+    enum InitializationState {
+        NOT_INITIALIZED,
+        SUCCESS_INIT,
+        FAILED_INIT
     }
-    
+    private volatile InitializationState initialized = InitializationState.NOT_INITIALIZED;
+    private volatile String reasonInitFailed = "Authorization Service never initialized.";
+
+    private final List<AzAttributeResolver> attributeResolvers =
+            Collections.synchronizedList(new java.util.ArrayList<AzAttributeResolver>());
+
+
+    /**
+     * Initialize the security service instance with the specific security service configuration.
+     *
+     * @see org.glassfish.security.services.api.SecurityService#initialize
+     */
     @Override
-	public boolean isPermissionGranted(Subject subject, Permission permission) {
-        
+    public void initialize(final SecurityConfiguration securityServiceConfiguration) {
+
+        if ( InitializationState.NOT_INITIALIZED != initialized ) {
+            return;
+        }
+
+        try {
+            // Get service level config
+            if ( !( securityServiceConfiguration instanceof org.glassfish.security.services.config.AuthorizationService ) ) {
+                throw new IllegalStateException( "The Authorization service is not configured in the domain configuration file." );
+            }
+            atzSvCfg = (org.glassfish.security.services.config.AuthorizationService) securityServiceConfiguration;
+
+            // Get provider level config, consider only one provider for now and take the first provider found.
+            List<SecurityProvider> providersConfig = atzSvCfg.getSecurityProviders();
+            if ( (providersConfig == null) || ( (atzPrvConfig = providersConfig.get(0)) == null ) ) {
+                throw new IllegalStateException("No provider configured for the Authorization service in the domain configuration file." );
+            }
+
+            // Get the provider
+            final String providerName = atzPrvConfig.getName();
+            if ( logger.isLoggable(Level.FINEST) ) {
+                logger.log(Level.FINEST, "Attempting to get Authorization provider \"{0}\".", providerName );
+            }
+            atzProvider = serviceLocator.getService(AuthorizationProvider.class, providerName);
+            if (atzProvider == null) {
+                throw new IllegalStateException("Authorization provider \"" + providerName + "\" not found." );
+            }
+
+            // Initialize the provider
+            atzProvider.initialize(atzPrvConfig);
+
+            initialized = InitializationState.SUCCESS_INIT;
+            reasonInitFailed = null;
+
+            if (logger.isLoggable( Level.INFO )) {
+                logger.log(  Level.INFO , "Authorization Service has successfully initialized." );
+            }
+
+        } catch ( Exception e ) {
+            reasonInitFailed = MessageFormat.format(
+                "Authorization Service initialization failed, exception=\"{0}\", message=\"{1}\".",
+                e.getClass().getName(), e.getMessage());
+            if ( logger.isLoggable( Level.WARNING ) ) {
+                logger.log( Level.WARNING, reasonInitFailed, e );
+            }
+            throw new RuntimeException( reasonInitFailed, e );
+        } finally {
+            if ( InitializationState.SUCCESS_INIT != initialized ) {
+                initialized = InitializationState.FAILED_INIT;
+            }
+        }
+    }
+
+    /**
+     * Determine whether the given Subject has been granted the specified Permission
+     * by delegating to the configured java.security.Policy object.  This method is
+     * a high-level convenience method that tests for a Subject-based permission
+     * grant without reference to the AccessControlContext of the caller.
+     *
+     * In addition, this method isolates the query from the underlying Policy configuration
+     * model.  It could, for example, multiplex queries across multiple instances of Policy
+     * configured in an implementation-specific way such that different threads, or different
+     * applications, query different Policy objects.  The initial implementation simply
+     * delegates to the configured Policy as defined by Java SE.
+     *
+     * @param subject The Subject for which permission is being tested.
+     * @param permission The Permission being queried.
+     * @return True or false, depending on whether the specified Permission
+     * is granted to the Subject by the configured Policy.
+     * @throws IllegalArgumentException Given null or illegal subject or permission
+     * @throws IllegalStateException Service was not initialized.
+     * @see AuthorizationService#isPermissionGranted(javax.security.auth.Subject, java.security.Permission)
+     */
+    @Override
+	public boolean isPermissionGranted(
+        final Subject subject, final Permission permission) {
+
+        checkServiceAvailability();
+
+        // TODO: Cache return value
+        final Boolean providerGrant = atzProvider.isPermissionGranted( subject, permission );
+        if ( null != providerGrant ) {
+            return providerGrant.booleanValue();
+        }
+
+        // Validate inputs
+        if ( null == subject ) {
+            throw new IllegalArgumentException( "Illegal null Subject." );
+        }
+        if ( null == permission ) {
+            throw new IllegalArgumentException( "Illegal null Permission." );
+        }
+
         Set<Principal> principalset = subject.getPrincipals();
         Principal[] principalAr = (principalset.size() == 0) ? null : principalset.toArray(new Principal[principalset.size()]);
         ProtectionDomain pd = new ProtectionDomain(NULL_CODESOURCE, null, null, principalAr); 
         Policy policy = Policy.getPolicy();
         boolean result = policy.implies(pd, permission);
-        
+
         return result;
 	}
 
+
+    /**
+     * Determine whether the given Subject is authorized to access the given resource,
+     * specified by a URI.
+     *
+     * @param subject The Subject being tested.
+     * @param resource URI of the resource being tested.
+     * @return True or false, depending on whether the access is authorized.
+     * @throws IllegalArgumentException Given null or illegal subject or resource
+     * @throws IllegalStateException Service was not initialized.
+     * @see AuthorizationService#isAuthorized(javax.security.auth.Subject, java.net.URI)
+     */
     @Override
 	public boolean isAuthorized(Subject subject, URI resource) {
-		return isAuthorized(subject, resource, "*");
+		return isAuthorized(subject, resource, null);
 	}
 
+
+    /**
+     * Determine whether the given Subject is authorized to access the given resource,
+     * specified by a URI.
+     *
+     * @param subject The Subject being tested.
+     * @param resource URI of the resource being tested.
+     * @param action The action, with respect to the resource parameter,
+     * for which authorization is desired. To check authorization for all actions,
+     * action is represented by null or "*".
+     * @return True or false, depending on whether the access is authorized.
+     * @throws IllegalArgumentException Given null or illegal subject or resource
+     * @throws IllegalStateException Service was not initialized.
+     * @see AuthorizationService#isAuthorized(javax.security.auth.Subject, java.net.URI, String)
+     */
     @Override
-	public boolean isAuthorized(Subject subject, URI resource, String action) {
-	    AzResult azResult = 
-	        getAuthorizationDecision(makeAzSubject(subject), makeAzResource(resource), makeAzAction(action));
-		
-	    boolean result = false;
-	    	    
-	    if ( (AzResult.Decision.PERMIT.equals(azResult.getDecision())) &&
-	         (AzResult.Status.OK.equals(azResult.getStatus())) ) 
-	        result = true;
-	    
-	    return result;
+    public boolean isAuthorized(final Subject subject, final URI resource, final String action) {
+
+        checkServiceAvailability();
+
+        // Validate inputs
+        if ( null == subject ) {
+            throw new IllegalArgumentException( "Illegal null Subject." );
+        }
+        if ( null == resource ) {
+            throw new IllegalArgumentException( "Illegal null resource URI." );
+        }
+        // Note: null action means all actions (i.e., no action condition)
+
+        // Convert parameters
+        AzSubject azSubject = makeAzSubject( subject );
+        AzResource azResource = makeAzResource( resource );
+        AzAction azAction = makeAzAction(action);
+
+        AzResult azResult = getAuthorizationDecision(azSubject, azResource, azAction);
+
+        boolean result =
+            AzResult.Status.OK.equals(azResult.getStatus()) &&
+            AzResult.Decision.PERMIT.equals(azResult.getDecision());
+        return result;
 	}
 
+
+    /**
+     * The primary authorization method.  The isAuthorized() methods call this method
+     * after converting their arguments into the appropriate attribute collection type.
+     * It returns a full AzResult, including authorization status, decision, and
+     * obligations.
+     *
+     * This method performs two steps prior to invoking the configured AuthorizationProvider
+     * to evaluate the request:  First, it acquires the current AzEnvironment attributes by
+     * calling the Security Context service.  Second, it calls the Role Mapping service to
+     * determine which roles the subject has, and adds the resulting role attributes into
+     * the AzSubject.
+     *
+     * @param subject The attributes collection representing the Subject for which an authorization
+     * decision is requested.
+     * @param resource The attributes collection representing the resource for which access is
+     * being requested.
+     * @param action  The attributes collection representing the action, with respect to the resource,
+     * for which access is being requested.  A null action is interpreted as all
+     * actions, however all actions may also be represented by the AzAction instance.
+     * See <code>{@link org.glassfish.security.services.api.authorization.AzAction}</code>.
+     * @return The AzResult indicating the result of the access decision.
+     * @throws IllegalArgumentException Given null or illegal subject or resource
+     * @throws IllegalStateException Service was not initialized.
+     * @see AuthorizationService#getAuthorizationDecision
+     */
     @Override
-	public AzResult getAuthorizationDecision(AzSubject subject,
-			AzResource resource, AzAction action) {
-        //TODO: setup current AzEnvironment instance. Should a null or empty instance to represent current environment?
-                final AzEnvironment env = new AzEnvironmentImpl();
-                final Attributes attrs = securityContextService.getEnvironmentAttributes();
-                for (String attrName : attrs.getAttributeNames()) {
-                    env.addAttribute(attrName, attrs.getAttributeValue(attrName), true);
-                }
-		return atzProvider.getAuthorizationDecision(subject, resource, action, env);
+    public AzResult getAuthorizationDecision(
+            final AzSubject subject,
+            final AzResource resource,
+            final AzAction action) {
+
+        checkServiceAvailability();
+
+        // Validate inputs
+        if ( (null == subject) || (null == resource) ) {
+            throw new IllegalArgumentException( "Illegal null AzSubject or AzResource." );
+        }
+
+        // TODO: setup current AzEnvironment instance. Should a null or empty instance to represent current environment?
+        final AzEnvironment env = new AzEnvironmentImpl();
+        final Attributes attrs = securityContextService.getEnvironmentAttributes();
+        for (String attrName : attrs.getAttributeNames()) {
+            env.addAttribute(attrName, attrs.getAttributeValue(attrName), true);
+        }
+
+        AzResult result =  atzProvider.getAuthorizationDecision(
+            subject, resource, action, env, attributeResolvers );
+
+        if ( logger.isLoggable(Level.FINEST) ) {
+            logger.log(Level.FINEST,
+            "Authorization Service result for {0} was {1}.",
+            new String[]{ subject.toString(), result.toString() } );
+        }
+
+        return result;
 	}
 
+
+    /**
+     * Convert a Java Subject into a typed attributes collection.
+     *
+     * @param subject The Subject to convert.
+     * @return The resulting AzSubject.
+     * @throws IllegalArgumentException Given null or illegal subject
+     * @see AuthorizationService#makeAzSubject(javax.security.auth.Subject)
+     */
     @Override
-	public AzSubject makeAzSubject(Subject subject) {
+    public AzSubject makeAzSubject(final Subject subject) {
+        AzSubject azs = new AzSubjectImpl(subject);
+        return azs;
+    }
 
-	    if (subject == null)
-	        return null;
-	    
-	    AzSubject azs = new AzSubjectImpl();
 
-	    Set<Principal> principals = subject.getPrincipals();
-
-	    String AttName = Principal.class.getSimpleName();
-	    for (Principal p : principals) {
-	        String pname = p.getName();
-	        azs.addAttribute(AttName, pname, false);
-	    }
-	    
-		return azs;
-	}
-
+    /**
+     * Convert a resource, expressed as a URI, into a typed attributes collection.
+     * <p>
+     * Query parameters in the given URI are appended to this
+     * <code>AzResource</code> instance attributes collection.
+     *
+     * @param resource The URI to convert.
+     * @return The resulting AzResource.
+     * @see AuthorizationService#makeAzResource(java.net.URI)
+     * @throws IllegalArgumentException Given null or illegal resource
+     */
     @Override
-	public AzResource makeAzResource(URI resource) {
-	    
-	    if (resource == null)
-	        return null;
-	    
-	    String attName = URI.class.getSimpleName();
-	    
-	    AzResource azr = new AzResourceImpl();
-	    azr.addAttribute(attName, resource.toString(), false);
-	    
-		return azr;
-	}
+    public AzResource makeAzResource(final URI resource) {
+        AzResource azr = new AzResourceImpl( resource );
+        return azr;
+    }
 
+
+    /**
+     * Convert an action, expressed as a String, into a typed attributes collection.
+     *
+     * @param action The action to convert. null or "*" represents all actions.
+     * @return The resulting AzAction.
+     * @see AuthorizationService#makeAzAction(String)
+     */
     @Override
-	public AzAction makeAzAction(String action) {
-	    if (action == null)
-	        return null;
-	    
-	    AzAction aza = new AzActionImpl();
-	    
-	    aza.addAttribute("ACTION", action, false);
-		return aza;
-	}
+    public AzAction makeAzAction(final String action) {
+        AzAction aza = new AzActionImpl( action );
+        return aza;
+    }
 
+
+    /**
+     * Find an existing PolicyDeploymentContext, or create a new one if one does not
+     * already exist for the specified appContext.  The context will be returned in
+     * an "open" state, and will stay that way until commit() or delete() is called.
+     *
+     * @param appContext The application context for which the PolicyDeploymentContext
+     * is desired.
+     * @return The resulting PolicyDeploymentContext,
+     * null if the configured providers do not support this feature.
+     * @throws IllegalStateException Service was not initialized.
+     * @see AuthorizationService#findOrCreateDeploymentContext(String)
+     */
     @Override
-	public PolicyDeploymentContext findOrCreateDeploymentContext(
-			String appContext) {
-		return atzProvider.findOrCreateDeployContext(appContext);
+    public PolicyDeploymentContext findOrCreateDeploymentContext(
+            final String appContext) {
+
+        checkServiceAvailability();
+
+        // TODO: Unsupported Operation Exception undocumented, not optional
+
+        return atzProvider.findOrCreateDeploymentContext(appContext);
 	}
 
-   @Override
+
+    /**
+     * Called when the instance has been created and the component is
+     * about to be place into commission.
+     * <p>
+     * The component has been injected with any dependency and
+     * will be placed into commission by the subsystem.
+     * <p>
+     * Hk2 will catch all unchecked exceptions,
+     * and will consequently cause the backing inhabitant to be released.
+     *
+     * @see org.glassfish.hk2.api.PostConstruct#postConstruct()
+     */
+    @Override
     public void postConstruct() {
-            
+
         org.glassfish.security.services.config.AuthorizationService atzConfiguration =
-           ServiceFactory.getSecurityServiceConfiguration(
-                   domain, org.glassfish.security.services.config.AuthorizationService.class);
-       
+                ServiceFactory.getSecurityServiceConfiguration(
+                        domain, org.glassfish.security.services.config.AuthorizationService.class);
+
         initialize(atzConfiguration);
     }
-   
-    private AuthorizationProvider createDefaultProvider() {
-        return new AuthorizationProvider() {
 
-            @Override
-            public AzResult getAuthorizationDecision(AzSubject subject, AzResource resource, AzAction action, AzEnvironment environment) {
-                return new AzResultImpl(Decision.PERMIT, Status.OK, new AzObligationsImpl());
-            }
 
-            @Override
-            public PolicyDeploymentContext findOrCreateDeployContext(String appContext) {
-                return null;
+    /**
+     * Appends the given <code>{@link org.glassfish.security.services.api.authorization.AzAttributeResolver}</code>
+     * instance to the internal ordered list of <code>AzAttributeResolver</code> instances,
+     * if not currently in the list based on
+     * <code>{@link org.glassfish.security.services.api.authorization.AzAttributeResolver#equals}</code>.
+     *
+     * @param resolver The <code>AzAttributeResolver</code> instance to append.
+     * @return true if the <code>AzAttributeResolver</code> was added,
+     * false if the <code>AzAttributeResolver</code> was already in the list.
+     * @throws IllegalArgumentException Given AzAttributeResolver was null.
+     * @see AuthorizationService#appendAttributeResolver
+     */
+    @Override
+    public boolean appendAttributeResolver(AzAttributeResolver resolver) {
+        if ( null == resolver ) {
+            throw new IllegalArgumentException( "Illegal null AzAttributeResolver." );
+        }
+        synchronized ( attributeResolvers ) {
+            if ( !attributeResolvers.contains( resolver ) ) {
+                attributeResolvers.add( resolver );
+                return true;
             }
+        }
+        return false;
+    }
 
-            @Override
-            public void initialize(SecurityProvider providerConfig) {
+
+    /**
+     * Replaces the internal list of <code>AttributeResolver</code> instances
+     * with the given list. If multiple equivalent instances exist in the given list,
+     * only the first such instance will be inserted.
+     *
+     * @param resolverList Replacement list of <code>AzAttributeResolver</code> instances
+     * @throws IllegalArgumentException Given AzAttributeResolver list was null.
+     * @see AuthorizationService#setAttributeResolvers
+     */
+    @Override
+    public void setAttributeResolvers(List<AzAttributeResolver> resolverList) {
+        if ( null == resolverList ) {
+            throw new IllegalArgumentException( "Illegal null List<AzAttributeResolver>." );
+        }
+
+        synchronized ( attributeResolvers ) {
+            attributeResolvers.clear();
+            for ( AzAttributeResolver ar : resolverList ) {
+                if ( (null != ar) && !attributeResolvers.contains(ar) ) {
+                    attributeResolvers.add( ar );
+                }
             }
-        };
-   }
+        }
+    }
+
+
+    /**
+     * Determines the current list of <code>AttributeResolver</code> instances,
+     * in execution order.
+     *
+     * @return  The current list of AttributeResolver instances,
+     * in execution order.
+     * @see AuthorizationService#getAttributeResolvers
+     */
+    @Override
+    public List<AzAttributeResolver> getAttributeResolvers() {
+        return new ArrayList<AzAttributeResolver>( attributeResolvers );
+    }
+
+
+    /**
+     * Removes all <code>AttributeResolver</code> instances from the current
+     * internal list of <code>AttributeResolver</code> instances.
+     *
+     * @return true if any <code>AttributeResolver</code> instances were removed,
+     * false if the list was empty.
+     * @see AuthorizationService#removeAllAttributeResolvers
+     */
+    @Override
+    public boolean removeAllAttributeResolvers() {
+        synchronized ( attributeResolvers ) {
+            if ( attributeResolvers.isEmpty() ) {
+                return false;
+            } else {
+                attributeResolvers.clear();
+                return true;
+            }
+        }
+    }
+
+
+    /**
+     * Determines whether this service has been initialized.
+     * @return The initialization state
+     */
+    final InitializationState getInitializationState() {
+        return initialized;
+    }
+
+
+    /**
+     * Determines the reason why the service failed to initialize.
+     * @return The reason why the service failed to initialize,
+     * null if initialization was successful or the failure reason was unknown.
+     */
+    final String getReasonInitializationFailed() {
+        return reasonInitFailed;
+    }
+
+
+    /**
+     * Checks whether this service is available.
+     * @throws IllegalStateException This service is not available.
+     */
+    final void checkServiceAvailability() {
+        if ( InitializationState.SUCCESS_INIT != getInitializationState() ) {
+            throw new IllegalStateException(
+                "The Authorization service is unavailable. " +
+                getReasonInitializationFailed() );
+        }
+    }
+
 }

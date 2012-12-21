@@ -39,48 +39,86 @@
  */
 package org.glassfish.security.services.spi;
 
-import org.glassfish.security.services.api.authorization.AuthorizationService;
-import org.glassfish.security.services.api.authorization.AzAction;
-import org.glassfish.security.services.api.authorization.AzEnvironment;
-import org.glassfish.security.services.api.authorization.AzResource;
-import org.glassfish.security.services.api.authorization.AzResult;
-import org.glassfish.security.services.api.authorization.AzSubject;
+import org.glassfish.security.services.api.authorization.*;
 
 import org.jvnet.hk2.annotations.Contract;
 
+import javax.security.auth.Subject;
+import java.security.Permission;
+import java.util.List;
 
+
+/**
+ * <code>AuthorizationProvider</code> instances are used by a
+ * <code>{@link org.glassfish.security.services.api.authorization.AuthorizationService}</code>
+ * to make access authorization decisions. This is part of a plug-in mechanism,
+ * which allows access decisions to deferred to an configured implementation.
+ */
 @Contract
 public interface AuthorizationProvider extends SecurityProvider {
 
-    
-    
     /**
-     * Evaluate the specified subject, resource, action, and environment against the body of 
-     * policy managed by this provider and return an access control result.
-     * @param subject The attributes collection representing the Subject for which an authorization decision 
-     *                is requested.
-     * @param resource The attributes collection representing the resource for which access is being requested.
-     * @param action The attributes collection representing the action, with respect to the resource, 
-     *               for which access is being requested.
-     * @param environment The attributes collection representing the environment, or context, 
-     *                    in which the access decision is being requested.
-     * @return The AzResult indicating the result of the access decision.
+     * Determines whether the given Subject has been granted the specified Permission.
+     * This method isolates the query from the underlying Policy configuration
+     * model.  It could, for example, multiplex queries across multiple instances of Policy
+     * configured in an implementation-specific way such that different threads, or different
+     * applications, query different Policy objects.
+     *
+     * @param subject The Subject for which permission is being tested.
+     * @param permission The Permission being queried.
+     * @return True or false, depending on whether the specified Permission
+     * is granted to the Subject by the configured Policy.
+     * Returns null if this method is not supported by this provider.
+     * @throws IllegalArgumentException Given null or illegal subject or permission
+     * @throws IllegalStateException Provider was not initialized, if this method is supported.
+     * @see AuthorizationService#isPermissionGranted(javax.security.auth.Subject, java.security.Permission)
      */
-    AzResult getAuthorizationDecision(AzSubject subject, 
-                                      AzResource resource, 
-                                      AzAction action, 
-                                      AzEnvironment environment);
-    
-    
-    /**
-     * Find an existing PolicyDeploymentContext, or create a new one if one does not already exist 
-     * for the specified appContext. The context will be returned in an "open" state, and will stay 
-     * that way until commit() or delete() is called.
-     * @param appContext The application context for which the PolicyDeploymentContext is desired.
-     * @return The resulting PolicyDeployment Context.
-     */
-    AuthorizationService.PolicyDeploymentContext findOrCreateDeployContext(String appContext);
+    Boolean isPermissionGranted(
+        Subject subject,
+        Permission permission);
 
-    
-    
+
+    /**
+     * Evaluates the specified subject, resource, action, and environment against the body of
+     * policy managed by this provider and returns an access control result.
+     *
+     * @param subject The attributes collection representing the Subject for which an authorization
+     * decision is requested.
+     * @param resource The attributes collection representing the resource for which access is
+     * being requested.
+     * @param action  The attributes collection representing the action, with respect to the resource,
+     * for which access is being requested.  A null action is interpreted as all
+     * actions, however all actions may also be represented by the AzAction instance.
+     * See <code>{@link org.glassfish.security.services.api.authorization.AzAction}</code>.
+     * @param environment The attributes collection representing the environment, or context,
+     *                    in which the access decision is being requested, null if none.
+     * @param attributeResolvers The ordered list of attribute resolvers, for
+     * run time determination of missing attributes, null if none.
+     * @return The AzResult indicating the result of the access decision.
+     * @throws IllegalArgumentException Given null or illegal subject or resource
+     * @throws IllegalStateException Provider was not initialized.
+     * @see AuthorizationService#getAuthorizationDecision
+     */
+    AzResult getAuthorizationDecision(
+        AzSubject subject,
+        AzResource resource,
+        AzAction action,
+        AzEnvironment environment,
+        List<AzAttributeResolver> attributeResolvers );
+
+
+    /**
+     * Finds an existing PolicyDeploymentContext, or create a new one if one does not
+     * already exist for the specified appContext.  The context will be returned in
+     * an "open" state, and will stay that way until commit() or delete() is called.
+     *
+     * @param appContext The application context for which the PolicyDeploymentContext
+     * is desired.
+     * @return The resulting PolicyDeploymentContext,
+     * null if this provider does not support this feature.
+     * @throws IllegalStateException Provider was not initialized, if this method is supported.
+     * @see AuthorizationService#findOrCreateDeploymentContext(String)
+     */
+    AuthorizationService.PolicyDeploymentContext findOrCreateDeploymentContext(
+        String appContext);
 }

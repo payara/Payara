@@ -40,15 +40,21 @@
 package org.glassfish.security.services.api.authorization;
 
 
+import org.glassfish.security.services.api.common.Attributes;
+
 /**
- * Extends the AzAttributes interface to provide a type-safe interface for Obligations attributes.
+ * Extends the Attributes interface to provide an abstract layer
+ * specifically for Authorization attributes.
  */
-public interface AzObligations extends AzAttributes {
+public interface AzAttributes extends Attributes {
 
     /**
-     * The name of this collection. For example, this name may be used to
-     * qualify attributes by collection type in XACML.
+     * Determines a name to denote this collection of attributes.
+     * <p>
+     * For example, this name may be used to qualify attributes by collection
+     * type in XACML.
+     *
+     * @return The collection name
      */
-    String NAME = "OBLIGATIONS";
-
+    String getName();
 }

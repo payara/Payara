@@ -39,9 +39,131 @@
  */
 package org.glassfish.security.services.impl.authorization;
 
+import com.sun.logging.LogDomains;
 import org.glassfish.security.services.api.authorization.AzResource;
-import org.glassfish.security.services.impl.common.AttributesImpl;
+import org.glassfish.security.services.api.common.Attributes;
 
-public final class AzResourceImpl extends AttributesImpl implements AzResource {
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+public final class AzResourceImpl extends AzAttributesImpl implements AzResource {
+
+
+    private static final Logger logger = LogDomains.getLogger(
+        AzResourceImpl.class, LogDomains.SECURITY_LOGGER);
+
+    private static final boolean REPLACE = true;
+
+
+    private final URI uri;
+
+
+    /**
+     * Constructor
+     *
+     * @param resource The represented resource
+     * @throws IllegalArgumentException Given resource was null
+     */
+    public AzResourceImpl( URI resource )  {
+        super(NAME);
+
+        if ( null == resource ) {
+            throw new IllegalArgumentException("Illegal null resource URI.");
+        }
+        this.uri = resource;
+
+        // Dump the query parameters into the attribute map.
+        addAttributesFromUriQuery( uri, this, !REPLACE );
+    }
+
+
+    /**
+     * Determines the URI representing this resource.
+     * @return The URI representing this resource., never null.
+     */
+    @Override
+    public URI getUri() {
+        return uri;
+    }
+
+
+    /**
+     * Determines the URI used to initialize this resource.
+     * @return The URI used to initialize this resource.
+     */
+    @Override
+    public String toString() {
+        return uri.toString();
+    }
+
+
+    /**
+     * Yet another URI query parser, but this one knows how to populate
+     * <code>{@link org.glassfish.security.services.api.common.Attributes}</code>.
+     *
+     * @param uri The URI from which the query will be derived.
+     * @param attributes Attributes collection to populate
+     * @param replace true to replace entire attribute, false to append value to attribute.
+     * See <code>{@link org.glassfish.security.services.api.common.Attributes#addAttribute}</code>.
+     * @throws IllegalArgumentException URI or Attributes is null.
+     */
+    static void addAttributesFromUriQuery( URI uri, Attributes attributes, boolean replace ) {
+        if ( null == uri ) {
+            throw new IllegalArgumentException( "Illegal null URI." );
+        }
+        if ( null == attributes ) {
+            throw new IllegalArgumentException( "Illegal null Attributes." );
+        }
+
+        String query = uri.getRawQuery();
+        if ( ( null != query ) && ( query.length() > 0 ) ) {
+            String[] params = query.split( "&" );
+            if ( ( null != params ) && ( params.length > 0 ) ) {
+                for ( String nv : params ) {
+                    if ( (null == nv) || (nv.length() <= 0) )  {
+                        continue;
+                    }
+
+                    String name, value;
+                    int equalsPos = nv.indexOf( "=" );
+                    if ( -1 == equalsPos ) {
+                        name = decodeURI( nv );
+                        value = "";
+                    } else {
+                        name = decodeURI( nv.substring( 0, equalsPos ) );
+                        value = decodeURI( nv.substring( equalsPos + 1 ) );
+                    }
+
+                    attributes.addAttribute( name, value, replace );
+                }
+            }
+        }
+    }
+
+
+    /**
+     * URI decode the input, assumes UTF-8 encoding.
+     *
+     * @param input The input to decode.
+     * @return The decoded input, null returns null.
+     */
+    static String decodeURI( String input ) {
+        if ( null == input ) {
+            return null;
+        }
+
+        String output = input;
+        try {
+            output = URLDecoder.decode(input, "UTF-8");
+        } catch ( UnsupportedEncodingException e ) {
+            if ( logger.isLoggable( Level.WARNING ) ) {
+                logger.log( Level.WARNING, "Unable to decode URI: {0}.", e.getMessage() );
+            }
+        }
+
+        return output;
+    }
 }

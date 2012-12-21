@@ -40,11 +40,24 @@
 package org.glassfish.security.services.api.authorization;
 
 
-import org.glassfish.security.services.api.common.Attributes;
+import javax.security.auth.Subject;
 
 /**
- * Extends the Attributes interface to provide a type-safe interface for Subject attributes.
+ * Extends the AzAttributes interface to provide a type-safe interface for Subject attributes.
  */
-public interface AzSubject extends Attributes {
+public interface AzSubject extends AzAttributes {
 
+    /**
+     * The name of this collection. For example, this name may be used to
+     * qualify attributes by collection type in XACML.
+     */
+    String NAME = "SUBJECT";
+
+
+    /**
+     * Determines the <code>{@link javax.security.auth.Subject}</code>
+     * represented by this AzSubject.
+     * @return The represented Subject
+     */
+    Subject getSubject() ;
 }

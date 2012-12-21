@@ -37,18 +37,62 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.security.services.api.authorization;
+package org.glassfish.security.services.impl.authorization;
 
+import org.glassfish.security.services.api.authorization.AzAttributes;
+import org.glassfish.security.services.impl.common.AttributesImpl;
 
 /**
- * Extends the AzAttributes interface to provide a type-safe interface for Obligations attributes.
+ * <code>AzAttributesImpl</code> implements AzAttributes to provide an abstract
+ * layer specifically for Authorization attributes.
  */
-public interface AzObligations extends AzAttributes {
+public abstract class AzAttributesImpl extends AttributesImpl implements AzAttributes {
+
+    private final String name;
+
 
     /**
-     * The name of this collection. For example, this name may be used to
-     * qualify attributes by collection type in XACML.
+     * Copy constructor
+     *
+     * @param other The copy source
      */
-    String NAME = "OBLIGATIONS";
+    public AzAttributesImpl( AzAttributesImpl other ) {
+        super( other );
 
+        this.name = other.getName();
+    }
+
+
+    /**
+     * Constructor
+     * @param name The name of this collection.
+     * @throws IllegalArgumentException Given name is null or empty
+     */
+    public AzAttributesImpl( String name ) {
+
+        if ( null == name ) {
+            throw new IllegalArgumentException( "Illegal null name given." );
+        }
+
+        name = name.trim();
+        if ( name.isEmpty() ) {
+            throw new IllegalArgumentException( "Illegal empty name given." );
+        }
+
+        this.name = name;
+    }
+
+    /**
+     * Determines a name to denote this collection of attributes.
+     * <p>
+     * For example, this name may be used to qualify attributes by collection
+     * type in XACML.
+     *
+     * @return The collection name
+     * @see org.glassfish.security.services.api.authorization.AzAttributes#getName()
+     */
+    @Override
+    public String getName() {
+        return name;
+    }
 }

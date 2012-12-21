@@ -40,11 +40,23 @@
 package org.glassfish.security.services.api.authorization;
 
 
-import org.glassfish.security.services.api.common.Attributes;
+import java.net.URI;
 
 /**
- * Extends the Attributes interface to provide a type-safe interface for Resource attributes.
+ * Extends the AzAttributes interface to provide a type-safe interface for Resource attributes.
  */
-public interface AzResource extends Attributes {
+public interface AzResource extends AzAttributes {
 
+    /**
+     * The name of this collection. For example, this name may be used to
+     * qualify attributes by collection type in XACML.
+     */
+    String NAME = "RESOURCE";
+
+
+    /**
+     * Determines the URI representing this resource.
+     * @return The URI representing this resource, never null.
+     */
+    public URI getUri();
 }

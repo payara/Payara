@@ -40,8 +40,42 @@
 package org.glassfish.security.services.impl.authorization;
 
 import org.glassfish.security.services.api.authorization.AzSubject;
-import org.glassfish.security.services.impl.common.AttributesImpl;
 
-public final class AzSubjectImpl extends AttributesImpl implements AzSubject {
+import javax.security.auth.Subject;
 
+public final class AzSubjectImpl extends AzAttributesImpl implements AzSubject {
+
+    final private Subject subject;
+
+    /**
+     * Constructor
+     *
+     * @param subject The represented subject
+     * @throws IllegalArgumentException Given subject was null
+     */
+    public AzSubjectImpl( Subject subject )  {
+        super(NAME);
+
+        if ( null == subject ) {
+            throw new IllegalArgumentException("Illegal null Subject.");
+        }
+        this.subject = subject;
+    }
+
+
+    /**
+     * Determines the <code>{@link javax.security.auth.Subject}</code>
+     * represented by this AzSubject.
+     * @return The represented Subject.
+     */
+    @Override
+    public final Subject getSubject() {
+        return subject;
+    }
+
+
+    @Override
+    public String toString() {
+        return subject.toString();
+    }
 }

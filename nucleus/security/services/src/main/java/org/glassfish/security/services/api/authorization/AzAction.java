@@ -40,11 +40,20 @@
 package org.glassfish.security.services.api.authorization;
 
 
-import org.glassfish.security.services.api.common.Attributes;
-
 /**
- * Extends the Attributes interface to provide a type-safe interface for Action attributes.
+ * Extends the AzAttributes interface to provide a type-safe interface for Action attributes.
  */
-public interface AzAction extends Attributes {
+public interface AzAction extends AzAttributes {
 
+    /**
+     * The name of this collection. For example, this name may be used to
+     * qualify attributes by collection type in XACML.
+     */
+    String NAME = "ACTION";
+
+    /**
+     * Determines the action represented as a string.
+     * @return The represented action, null represents all actions
+     */
+    String getAction();
 }

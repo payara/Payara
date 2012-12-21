@@ -40,7 +40,6 @@
 package org.glassfish.security.services.impl.common;
 
 
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -50,11 +49,23 @@ import org.glassfish.security.services.api.common.Attributes;
 
 public class AttributesImpl implements Attributes {
 
-	private Map<String, Attribute> attributes = new TreeMap<String, Attribute>();
-	
-	public AttributesImpl() { }
+	private final TreeMap<String, Attribute> attributes;
 
-	public int getAttributeCount() {
+    public AttributesImpl() {
+        attributes = new TreeMap<String, Attribute>();
+    }
+
+    /**
+     * Copy constructor
+     */
+    public AttributesImpl( AttributesImpl other ) {
+        if ( null == other ) {
+            throw new NullPointerException( "Given illegal null AttributesImpl." );
+        }
+        attributes = new TreeMap<String, Attribute>( other.attributes );
+    }
+
+    public int getAttributeCount() {
 		return attributes.size();
 	}
 

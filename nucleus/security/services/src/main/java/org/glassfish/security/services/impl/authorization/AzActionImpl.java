@@ -40,8 +40,44 @@
 package org.glassfish.security.services.impl.authorization;
 
 import org.glassfish.security.services.api.authorization.AzAction;
-import org.glassfish.security.services.impl.common.AttributesImpl;
 
-public final class AzActionImpl extends AttributesImpl implements AzAction {
+public final class AzActionImpl extends AzAttributesImpl implements AzAction {
 
+    private final String action;
+
+
+    /**
+     * Constructor
+     *
+     * @param action The represented action, null or "*" to represent all actions
+     */
+    public AzActionImpl( String action )  {
+        super( NAME );
+
+        if ( "*".equals( action ) ) {
+            action = null;
+        }
+        this.action = action;
+    }
+
+
+    /**
+     * Determines the action represented as a string.
+     * @return The represented action, null represents all actions
+     * @see org.glassfish.security.services.api.authorization.AzAction#getAction()
+     */
+    @Override
+    public String getAction() {
+        return action;
+    }
+
+
+    /**
+     * Determines the represented action, "*" represents all actions
+     * @return The represented action.
+     */
+    @Override
+    public String toString() {
+        return action == null ? "*" : action;
+    }
 }

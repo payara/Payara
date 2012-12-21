@@ -37,18 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.security.services.api.authorization;
+package org.glassfish.security.services.impl.authorization;
 
+import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
- * Extends the AzAttributes interface to provide a type-safe interface for Obligations attributes.
+ * @see AzActionImpl
  */
-public interface AzObligations extends AzAttributes {
+public class AzActionImplTest {
+    @Test
+    public void testToString() throws Exception {
 
-    /**
-     * The name of this collection. For example, this name may be used to
-     * qualify attributes by collection type in XACML.
-     */
-    String NAME = "OBLIGATIONS";
+        AzActionImpl nullAction = new AzActionImpl(null);
+        assertEquals( "null Action", "*", nullAction.toString() );
 
+        AzActionImpl createAction = new AzActionImpl("create");
+        assertEquals( "non-null Action", "create", createAction.toString() );
+    }
 }
