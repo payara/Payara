@@ -41,6 +41,13 @@
 -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
+  <security-configurations>
+    <authorization-service default="true" name="authorizationService">
+      <security-provider name="simpleAuthorization" type="Simple" provider-name="simpleAuthorizationProvider">
+        <authorization-provider-config support-policy-deploy="false" name="simpleAuthorizationProviderConfig"></authorization-provider-config>
+      </security-provider>
+    </authorization-service>
+  </security-configurations>
   <system-applications />
   <applications />
   <resources>
