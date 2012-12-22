@@ -117,7 +117,7 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider {
                 isDAS 
                 || isLocalPassword
                 || (adminIndicator != null) 
-                ||(action.getAttributeValue("ACTION").equals("read"))) 
+                || action.getAction().equals("read")) 
                 ? Decision.PERMIT : Decision.DENY; 
         
         AzResult rtn = new AzResultImpl(d, Status.OK, new AzObligationsImpl());
