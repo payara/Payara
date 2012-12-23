@@ -53,6 +53,7 @@ import org.glassfish.api.*;
  * preprocessors, all preprocessing is disabled.
  */
 public class PreprocessorUtil {
+
     private static boolean _preprocessorEnabled = false;
     private static BytecodePreprocessor[] _preprocessor;
 
@@ -130,16 +131,7 @@ public class PreprocessorUtil {
                 if (ppClass != null){
                     _preprocessor[i] = (BytecodePreprocessor)
                                                         ppClass.newInstance();
-                    if (_preprocessor[i] instanceof BytecodePreprocessor){
-                        _preprocessor[i] =
-                            (BytecodePreprocessor)_preprocessor[i];
                         _preprocessorEnabled = true;
-                    } else {
-                        _logger.log(Level.SEVERE, CULoggerInfo.invalidType,
-                            ppClassName);
-                        _logger.log(Level.SEVERE, CULoggerInfo.disabled);
-                        _preprocessorEnabled = false;
-                    }
                 }
                 if (_preprocessor[i] != null){
                     if (!_preprocessor[i].initialize(new Hashtable())) {

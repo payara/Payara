@@ -157,6 +157,9 @@ public class MultiLruCache extends BaseCache {
      */
     protected CacheItem itemAdded(CacheItem item) {
         CacheItem overflow = null;
+        if(! (item instanceof LruCacheItem))
+            return null;
+
         LruCacheItem lc = (LruCacheItem) item;
 
         int index = getIndex(item.hashCode());
@@ -196,6 +199,8 @@ public class MultiLruCache extends BaseCache {
         int segment = (index/segmentSize);
         LruCacheItem[] list = lists[segment];
 
+        if(! (item instanceof LruCacheItem))
+            return;
         LruCacheItem lc = (LruCacheItem) item;
 
         // update the LRU list
@@ -238,6 +243,8 @@ public class MultiLruCache extends BaseCache {
      * Cache bucket is already synchronized by the caller
      */
     protected void itemRemoved(CacheItem item) {
+        if(! (item instanceof LruCacheItem))
+            return;
         LruCacheItem l = (LruCacheItem) item;
 
         int index = getIndex(item.hashCode());

@@ -176,6 +176,8 @@ public class LruCache extends BaseCache {
     protected CacheItem itemAdded(CacheItem item) {
         boolean updateThreshold = false;
         CacheItem overflow = null;
+        if(! (item instanceof LruCacheItem))
+            return null;
         LruCacheItem lc = (LruCacheItem) item;
 
         // set the timestamp
@@ -218,6 +220,8 @@ public class LruCache extends BaseCache {
      * Cache bucket is already synchronized by the caller
      */
     protected void itemAccessed(CacheItem item) {
+        if(! (item instanceof LruCacheItem))
+            return;
         LruCacheItem lc = (LruCacheItem) item;
 
         synchronized (this) {
@@ -266,6 +270,8 @@ public class LruCache extends BaseCache {
      * Cache bucket is already synchronized by the caller
      */
     protected void itemRemoved(CacheItem item) {
+        if(! (item instanceof LruCacheItem))
+            return;
         LruCacheItem l = (LruCacheItem) item;
 
         // remove the item from the LRU list
