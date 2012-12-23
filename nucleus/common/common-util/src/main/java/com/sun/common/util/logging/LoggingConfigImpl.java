@@ -96,7 +96,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
 
     }
 
-    // this is so the launcher can pass in where the dir is since 
+    // this is so the launcher can pass in where the dir is since
 
     public void setupConfigDir(File file, File installDir) {
         loggingConfigDir = file;
@@ -196,10 +196,9 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
     private void setWebLoggers(String value) {
         // set the rest of the web loggers to the same level
         // these are only accessible via the web-container name so all values should be the same
-        String property = null;
-        property = (String) props.setProperty("org.apache.catalina.level", value);
-        property = (String) props.setProperty("org.apache.coyote.level", value);
-        property = (String) props.setProperty("org.apache.jasper.level", value);
+        props.setProperty("org.apache.catalina.level", value);
+        props.setProperty("org.apache.coyote.level", value);
+        props.setProperty("org.apache.jasper.level", value);
     }
 
     /**
@@ -406,7 +405,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
 
     /* delete the properties from logging.properties file.  properties is a Map of names of properties and
       * their cooresponding value.
-      * 
+      *
       * @param properties Map of the name and value of property to delete
       *
       * @throws  IOException
@@ -511,7 +510,6 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
     public String createZipFile(String sourceDir) throws IOException {
 
         String zipFile = getZipFileName(sourceDir);
-        boolean zipDone = false;
         try {
             //create object of FileOutputStream
             FileOutputStream fout = new FileOutputStream(zipFile);
@@ -522,7 +520,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             //create File object from source directory
             File fileSource = new File(sourceDir);
 
-            zipDone = addDirectory(zout, fileSource,
+            addDirectory(zout, fileSource,
                     fileSource.getAbsolutePath().length() + 1);
 
             //close the ZipOutputStream
@@ -545,7 +543,6 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
     public String createZipFile(String sourceDir, String zipFileName) throws IOException {
 
         String zipFile = getZipFileName(sourceDir, zipFileName);
-        boolean zipDone = false;
         try {
             //create object of FileOutputStream
             FileOutputStream fout = new FileOutputStream(zipFile);
@@ -556,7 +553,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             //create File object from source directory
             File fileSource = new File(sourceDir);
 
-            zipDone = addDirectory(zout, fileSource,
+            addDirectory(zout, fileSource,
                     fileSource.getAbsolutePath().length() + 1);
 
             //close the ZipOutputStream
@@ -578,7 +575,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
-    private boolean addDirectory(ZipOutputStream zout, File fileSource, int ignoreLength) throws IOException {
+    private void addDirectory(ZipOutputStream zout, File fileSource, int ignoreLength) throws IOException {
 
         boolean zipDone = false;
 
