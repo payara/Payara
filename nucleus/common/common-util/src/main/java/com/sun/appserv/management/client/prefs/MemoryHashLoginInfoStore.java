@@ -76,8 +76,7 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
             final File dir = AsadminSecurityUtil.getDefaultClientDir();
             store = new File(dir, DEFAULT_STORE_NAME);
 
-            if (!store.exists()) {
-                store.createNewFile();
+            if (store.createNewFile()) {
                 bw = new BufferedWriter(new FileWriter(store));
                 FileMapTransform.writePreamble(bw);
                 state = new HashMap<HostPortKey, LoginInfo> ();

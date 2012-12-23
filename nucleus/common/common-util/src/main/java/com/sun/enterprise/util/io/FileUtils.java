@@ -56,6 +56,7 @@ public class FileUtils {
     final static Logger _utillogger = CULoggerInfo.getLogger();
     private final static LocalStringsImpl messages = new LocalStringsImpl(FileUtils.class);
 
+    
     /**
      * The method, java.io.File.getParentFile() does not necessarily do what
      * you would think it does.  What it really does is to simply chop off the
@@ -996,11 +997,11 @@ public class FileUtils {
                      */
                     if (retries == 0) {
                         if (_utillogger.isLoggable(Level.FINE)) {
-                            _utillogger.log(Level.FINE, CULoggerInfo.renameInitialSuccess, 
+                            _utillogger.log(Level.FINE, CULoggerInfo.renameInitialSuccess,
                                     new Object [] {fromFilePath, toFilePath});
                         }
                     } else {
-                        _utillogger.log(FILE_OPERATION_LOG_LEVEL, CULoggerInfo.retryRenameSuccess, 
+                        _utillogger.log(FILE_OPERATION_LOG_LEVEL, CULoggerInfo.retryRenameSuccess,
                                 new Object [] {fromFilePath, toFilePath, Integer.valueOf(retries)});
                     }
                 }
@@ -1008,7 +1009,7 @@ public class FileUtils {
                 /*
                  *The rename has failed.  Write a warning message.
                  */
-                _utillogger.log(Level.WARNING, CULoggerInfo.retryRenameFailure, 
+                _utillogger.log(Level.WARNING, CULoggerInfo.retryRenameFailure,
                         new Object [] {fromFilePath, toFilePath, Integer.valueOf(retries) });
             }
             return result;
