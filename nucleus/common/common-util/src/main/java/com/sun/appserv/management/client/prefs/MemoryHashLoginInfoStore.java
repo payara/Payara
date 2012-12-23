@@ -56,12 +56,12 @@ import java.util.*;
  * @since Appserver 9.0
  */
 public class MemoryHashLoginInfoStore implements LoginInfoStore {
-    
+
     public static final String DEFAULT_STORE_NAME = "pass";
-    
+
     private static final GFBase64Encoder encoder = new GFBase64Encoder();
     private static final GFBase64Decoder decoder = new GFBase64Decoder();
-    
+
     private Map<HostPortKey, LoginInfo> state;
     private final File store;
     /**
@@ -75,6 +75,7 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
         try {
             final File dir = AsadminSecurityUtil.getDefaultClientDir();
             store = new File(dir, DEFAULT_STORE_NAME);
+
             if (!store.exists()) {
                 store.createNewFile();
                 bw = new BufferedWriter(new FileWriter(store));
@@ -161,7 +162,7 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
     public String getName() {
         return ( store.getAbsoluteFile().getAbsolutePath() );
     }
-    
+
     ///// PRIVATE METHODS /////
     private void commit(final HostPortKey key, LoginInfo old) {
         BufferedWriter writer = null;
@@ -188,14 +189,14 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
             } catch(final Exception ee) {} //ignore
         }
     }
-    
+
     private void protect()
     {
         /*
              note: if this is Windows we still try 'chmod' -- they may have MKS or
             some other UNIXy package for Windows.
             cacls is too dangerous to use because it requires a "Y" to be written to
-            stdin of the cacls process.  If cacls doesn't exist or if they are using         
+            stdin of the cacls process.  If cacls doesn't exist or if they are using
             a non-NTFS file system we would hang here forever.
          */
         try
@@ -245,7 +246,7 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
         }
         private static void writeOne(final LoginInfo login, final BufferedWriter writer) throws IOException, URISyntaxException {
             writer.write(login2Line(login));
-            writer.newLine();            
+            writer.newLine();
         }
         static HostPortKey uri2Key(final URI uri) {
             final String host     = uri.getHost();
@@ -264,7 +265,7 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
             final String scheme   = "asadmin";
             final String host     = login.getHost();
             final int port        = login.getPort();
-            final String user     = login.getUser();            
+            final String user     = login.getUser();
             final String path     = null;
             final String query    = null;
             final String frag     = null;
@@ -272,7 +273,7 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
             final String password = login.getPassword();
             final String encp     = encoder.encode(password.getBytes());
             final String line     = uri.toString() + ' ' + encp;
-            
+
             return ( line );
         }
         static void writePreamble(final BufferedWriter bw) throws IOException {
@@ -281,7 +282,7 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
             bw.newLine();
         }
     }
-    
+
     private static class HostPortKey {
         private final String host;
         private final int port;
