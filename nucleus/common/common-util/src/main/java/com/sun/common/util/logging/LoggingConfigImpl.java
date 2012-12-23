@@ -576,9 +576,6 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       */
 
     private void addDirectory(ZipOutputStream zout, File fileSource, int ignoreLength) throws IOException {
-
-        boolean zipDone = false;
-
         //get sub-folder/files list
         File[] files = fileSource.listFiles();
 
@@ -625,14 +622,11 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
 
                 //close the InputStream
                 fin.close();
-
-                zipDone = true;
             } catch (IOException ioe) {
                 Logger.getAnonymousLogger().log(Level.SEVERE, "Error while creating zip file :", ioe);
                 throw ioe;
             }
         }
-        return zipDone;
     }
 
     /* Return a logging file details  in the logging.properties file.
