@@ -47,24 +47,23 @@ import java.util.logging.Logger;
 import org.glassfish.api.*;
 
 /**
- * PreprocessorUtil is a utility class for managing the bytecode 
+ * PreprocessorUtil is a utility class for managing the bytecode
  * preprocessor(s). The list of preprocessors are passed in as a string array
  * to the initialize method.  If there is a problem initialize any of the
- * preprocessors, all preprocessing is disabled. 
+ * preprocessors, all preprocessing is disabled.
  */
 public class PreprocessorUtil {
-    
     private static boolean _preprocessorEnabled = false;
     private static BytecodePreprocessor[] _preprocessor;
-    
+
     /**
-     * Initializes the preprocessor utility with the associated class names 
+     * Initializes the preprocessor utility with the associated class names
      * array arugment.
      * @param ppClassNames - the String array of preprocessor class names.
-     * @return - true if successful, otherwise false.  All preprocessors must 
+     * @return - true if successful, otherwise false.  All preprocessors must
      * successfully initialize for true to be returned.
-     */    
-    public static boolean init (String[] ppClassNames) {        
+     */
+    public static boolean init (String[] ppClassNames) {
         if (ppClassNames != null) {
             setupPreprocessor(ppClassNames);
         }
@@ -76,28 +75,28 @@ public class PreprocessorUtil {
      * @param className - the class name.
      * @param classBytes - the class byte array.
      * @return - the processed class byte array.
-     */    
+     */
     public static byte[] processClass (String className, byte[] classBytes) {
         Logger _logger = CULoggerInfo.getLogger();
         byte[] goodBytes = classBytes;
-        if (_preprocessorEnabled) {            
+        if (_preprocessorEnabled) {
             if (_preprocessor != null) {
                 // Loop through all of the defined preprocessors...
                 for (int i=0; i < _preprocessor.length; i++) {
-                    classBytes = 
+                    classBytes =
                         _preprocessor[i].preprocess(className, classBytes);
-                    _logger.log(Level.FINE, 
-                            "[PreprocessorUtil.processClass] Preprocessor {0} Processed Class: {1}", 
-                            new Object[]{i, className}); 
+                    _logger.log(Level.FINE,
+                            "[PreprocessorUtil.processClass] Preprocessor {0} Processed Class: {1}",
+                            new Object[]{i, className});
                     // Verify the preprocessor returned some bytes
-                    if (classBytes != null){                           
+                    if (classBytes != null){
                         goodBytes = classBytes;
                     }
                     else{
                         _logger.log(Level.SEVERE, CULoggerInfo.preprocessFailed,
                             new String[] {className,
                                           _preprocessor[i].getClass().getName()});
-                            
+
                         // If were on the 1st preprocessor
                         if (i == 0){
                             _logger.log(Level.SEVERE, CULoggerInfo.resettingOriginal,
@@ -107,14 +106,14 @@ public class PreprocessorUtil {
                         else {
                             _logger.log(Level.SEVERE, CULoggerInfo.resettingLastGood,
                                 className);
-                        }                        
-                    }                        
+                        }
+                    }
                 }
             }
         }
-        return goodBytes;               
+        return goodBytes;
     }
-    
+
     private synchronized static void setupPreprocessor(String[] ppClassNames) {
         Logger _logger = CULoggerInfo.getLogger();
 
@@ -123,51 +122,51 @@ public class PreprocessorUtil {
             return;
         }
 
-        try {            
+        try {
             _preprocessor = new BytecodePreprocessor[ppClassNames.length];
-            for (int i = 0; i < ppClassNames.length; i++) {                
-                String ppClassName = ppClassNames[i].trim();            
+            for (int i = 0; i < ppClassNames.length; i++) {
+                String ppClassName = ppClassNames[i].trim();
                 Class ppClass = Class.forName(ppClassName);
                 if (ppClass != null){
                     _preprocessor[i] = (BytecodePreprocessor)
                                                         ppClass.newInstance();
                     if (_preprocessor[i] instanceof BytecodePreprocessor){
-                        _preprocessor[i] = 
+                        _preprocessor[i] =
                             (BytecodePreprocessor)_preprocessor[i];
                         _preprocessorEnabled = true;
-                    } else {                    
+                    } else {
                         _logger.log(Level.SEVERE, CULoggerInfo.invalidType,
-                            ppClassName);     
+                            ppClassName);
                         _logger.log(Level.SEVERE, CULoggerInfo.disabled);
                         _preprocessorEnabled = false;
                     }
                 }
                 if (_preprocessor[i] != null){
                     if (!_preprocessor[i].initialize(new Hashtable())) {
-                        _logger.log(Level.SEVERE, CULoggerInfo.failedInit, 
-                            ppClassName); 
+                        _logger.log(Level.SEVERE, CULoggerInfo.failedInit,
+                            ppClassName);
                         _logger.log(Level.SEVERE, CULoggerInfo.disabled);
                         _preprocessorEnabled = false;
-                    }                    
+                    }
                 } else {
                     _logger.log(Level.SEVERE, CULoggerInfo.failedInit,
-                        ppClassName); 
-                    _logger.log(Level.SEVERE, CULoggerInfo.disabled); 
+                        ppClassName);
+                    _logger.log(Level.SEVERE, CULoggerInfo.disabled);
                     _preprocessorEnabled = false;
                 }
             }
-        } catch (Throwable t) {            
-            _logger.log(Level.SEVERE, CULoggerInfo.setupEx, t); 
-            _logger.log(Level.SEVERE, CULoggerInfo.disabled); 
+        } catch (Throwable t) {
+            _logger.log(Level.SEVERE, CULoggerInfo.setupEx, t);
+            _logger.log(Level.SEVERE, CULoggerInfo.disabled);
             _preprocessorEnabled = false;
         }
-    }        
+    }
 
     /**
      * Indicates whether or not the preprocessor is enabled
      * @return - true of the preprocessor is enabled, otherwise false.
-     */    
+     */
     public static boolean isPreprocessorEnabled() {
         return _preprocessorEnabled;
-    }    
+    }
 }
