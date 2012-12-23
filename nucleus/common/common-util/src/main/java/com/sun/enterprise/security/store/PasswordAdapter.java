@@ -389,7 +389,6 @@ public final class PasswordAdapter {
         // the existing store if a failure occurs.
         if ( keystoreExists )
         {
-            final KeyStore oldStore = _pwdStore;
             final KeyStore newKeyStore = duplicateKeyStore( masterPassword );
 
             // 'newKeyStore' is now complete; rename the old KeyStore, the write the new one in its place
@@ -476,7 +475,6 @@ public final class PasswordAdapter {
         throws KeyStoreException, IOException, NoSuchAlgorithmException,
             CertificateException, UnrecoverableKeyException
      {
-        final char[]    oldMasterPassword       = getMasterPassword();
         //debug( "Changing master password from " + new String(oldMasterPassword) + " to "  + new String(newMasterPassword) );
         //debugState( "BEFORE changing master password" );
 

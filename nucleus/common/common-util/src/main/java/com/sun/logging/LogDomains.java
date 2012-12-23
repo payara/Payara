@@ -330,17 +330,12 @@ public class LogDomains {
 
     public static synchronized Logger getLogger(final Class clazz, final String name) {
         final ClassLoader cloader = clazz.getClassLoader();
-        Logger l = LogManager.getLogManager().getLogger(name);
-
-        if (l == null) {
+        if(LogManager.getLogManager().getLogger(name) == null) {
             //first time through for this logger.  create it and find the resource bundle
 
             // should be pass in a resource bundle?
-            l = Logger.getLogger(name);
-
+            Logger.getLogger(name);
         }
-        ;
-
 
         // now create the real logger which is the logger name with the package name
         // this is what will be returned.
