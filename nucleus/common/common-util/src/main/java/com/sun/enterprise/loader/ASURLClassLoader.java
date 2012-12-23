@@ -102,13 +102,13 @@ public class ASURLClassLoader
        are being used but they could be nulled out while being used.
        Another benefit is that there is no synchronization needed to get the Map/Vector/List itself.
     */
-    
+
     /** logger for this class */
     private static final Logger _logger=CULoggerInfo.getLogger();
 
     /*
        list of url entries of this class loader. Using LinkedHashSet instead of original ArrayList
-       for faster search.      
+       for faster search.
     */
     private final Set<URLEntry> urlSet = Collections.synchronizedSet(new LinkedHashSet<URLEntry>());
 
@@ -120,11 +120,11 @@ public class ASURLClassLoader
 
     /**
         State flag to track whether this instance has been shut off.
-    
+
         Note: 'volatile' *does not by itself eliminate a race condition* similar to null-check idiom bug.
     */
     private volatile boolean doneCalled = false;
-    
+
     /**
         snapshot of classloader state at the time done was called.
         <p>
@@ -137,7 +137,7 @@ public class ASURLClassLoader
 
     private final ArrayList<ClassFileTransformer> transformers = new ArrayList<ClassFileTransformer>(1);
 
-    private final static StringManager sm = 
+    private final static StringManager sm =
         StringManager.getManager(ASURLClassLoader.class);
 
     /**
@@ -197,14 +197,14 @@ public class ASURLClassLoader
             if( doneCalled ) {
                 return;
             }
-            
+
             // Capture the fact that the classloader is now effectively disabled.
             // First create a snapshot of our state.  This should be called
             // before setting doneCalled = true.
             doneSnapshot = "ASURLClassLoader.done() called ON " + this.toString()
                 + "\n AT " + new Date() +
                 " \n BY :" + Thread.currentThread().getStackTrace().toString();
-            
+
             // Presumably OK to set this flag now while the rest of the cleanup proceeeds,
             // because we've taken the snapshot.
             doneCalled = true;
@@ -216,7 +216,7 @@ public class ASURLClassLoader
                     try {
                         u.zip.reallyClose();
                     } catch (IOException ioe) {
-                        _logger.log(Level.INFO, 
+                        _logger.log(Level.INFO,
                                 CULoggerInfo.getString(CULoggerInfo.exceptionClosingURLEntry, u.source),
                                 ioe);
                     }
@@ -252,8 +252,8 @@ public class ASURLClassLoader
         try {
             appendURL(file.toURI().toURL());
         } catch (MalformedURLException mue) {
-            _logger.log(Level.SEVERE, 
-                    CULoggerInfo.getString(CULoggerInfo.badUrlEntry, file.toURI()), 
+            _logger.log(Level.SEVERE,
+                    CULoggerInfo.getString(CULoggerInfo.badUrlEntry, file.toURI()),
                     mue);
 
             IOException ioe = new IOException();
@@ -307,7 +307,7 @@ public class ASURLClassLoader
                     try {
                         entry.zip.reallyClose();
                     } catch (IOException ioe) {
-                        _logger.log(Level.INFO, 
+                        _logger.log(Level.INFO,
                                 CULoggerInfo.getString(CULoggerInfo.exceptionClosingDupUrlEntry, url),
                                 ioe);
                     }
@@ -488,7 +488,7 @@ public class ASURLClassLoader
 
         return (URL) result;
     }
-    
+
     public URL findResource(String name) {
 
         // quick quick that relies on 'doneCalled' being 'volatile'
@@ -498,7 +498,7 @@ public class ASURLClassLoader
                     new Throwable());
             return null;
         }
-                
+
         // This code is dubious, because it iterates over items that could
         // be changing via another thread.   It appears that since 'urlSet' cannot shrink
         // that the iteration at least won't go out of bounds.  And it's probably OK
@@ -539,7 +539,7 @@ public class ASURLClassLoader
      * Returns an enumeration of java.net.URL objects
      * representing all the resources with the given name.
      *
-     * This method is synchronized to avoid (a) race condition checking 'doneCalled', 
+     * This method is synchronized to avoid (a) race condition checking 'doneCalled',
      * (b) changes to contents or length of 'resourcesList' and/or 'notFoundResources' while iterating
      * over them, (c) thread visibility to all of the above.
      */
@@ -735,7 +735,7 @@ public class ASURLClassLoader
         } catch (IllegalClassFormatException icfEx) {
             throw new ClassNotFoundException(icfEx.toString(), icfEx);
         }
-        Class clazz = null; 
+        Class clazz = null;
         try {
             clazz = defineClass(name, classData.classBytes, 0, classData.classBytes.length, classData.pd);
             return clazz;
@@ -753,7 +753,7 @@ public class ASURLClassLoader
      * <p>
      * To preclude a race condition on checking 'doneCalled', as well as transient errors
      * if done() is called while running, this method is 'synchronized'.
-     
+
      * @param name class name in java.lang.Object format
      * @return class bytes as well protection domain information
      * @throws ClassNotFoundException
@@ -762,7 +762,7 @@ public class ASURLClassLoader
 
         if( doneCalled ) {
             _logger.log(Level.WARNING,
-                    CULoggerInfo.getString(CULoggerInfo.findClassAfterDone, name, this.toString()), 
+                    CULoggerInfo.getString(CULoggerInfo.findClassAfterDone, name, this.toString()),
                     new Throwable());
             throw new ClassNotFoundException(name);
         }
@@ -815,7 +815,7 @@ public class ASURLClassLoader
                 try {
                     bstream.close();
                 } catch (IOException closeIOE) {
-                    ASURLClassLoader._logger.log(Level.INFO, 
+                    ASURLClassLoader._logger.log(Level.INFO,
                             CULoggerInfo.exceptionInASURLClassLoader, closeIOE);
                 }
             }
@@ -921,22 +921,22 @@ public class ASURLClassLoader
         /** the url, ensure thread visibility by making it 'final' */
         final URL source;
 
-        /** file of the url, 
+        /** file of the url,
             ensure thread visibility by making it 'volatile' */
         volatile File file       = null;
 
-        /** jar file if url is a jar else null, 
+        /** jar file if url is a jar else null,
             ensure thread visibility by making it 'volatile'  */
         volatile ProtectedJarFile zip     = null;
 
-        /** true if url is a jar, 
+        /** true if url is a jar,
             ensure thread visibility by making it 'volatile'  */
         volatile boolean isJar  = false;
 
         /** ensure thread visibility by making it 'volatile'  */
         volatile Hashtable<String,String> table = null;
 
-        /** ProtectionDomain with signers if jar is signed, 
+        /** ProtectionDomain with signers if jar is signed,
             ensure thread visibility by making it 'volatile'  */
         volatile ProtectionDomain pd = null;
 
@@ -1046,8 +1046,8 @@ public class ASURLClassLoader
                         processFile(targetFile, table, "");
                         result = true;
                     } catch (IOException ioe) {
-                        _logger.log(Level.SEVERE, 
-                                CULoggerInfo.getString(CULoggerInfo.exceptionProcessingFile, target, file.getAbsolutePath()), 
+                        _logger.log(Level.SEVERE,
+                                CULoggerInfo.getString(CULoggerInfo.exceptionProcessingFile, target, file.getAbsolutePath()),
                                 ioe);
                         return false;
                     }
@@ -1089,8 +1089,8 @@ public class ASURLClassLoader
                 /*
                  *Log any exception and return false.
                  */
-                _logger.log(Level.SEVERE, 
-                        CULoggerInfo.getString(CULoggerInfo.exceptionCheckingFile, targetPath, file.getAbsolutePath()), 
+                _logger.log(Level.SEVERE,
+                        CULoggerInfo.getString(CULoggerInfo.exceptionCheckingFile, targetPath, file.getAbsolutePath()),
                         pae.getCause());
                 return null;
             }
@@ -1219,7 +1219,7 @@ public class ASURLClassLoader
         /**
          * Invoked by Garbage Collector. If underlying InputStream was not closed properly,
          * the stack trace of the constructor will be logged!
-         * 
+         *
          * 'closed' is 'volatile', but it's a race condition to check it and how this code
          * relates to _close() is unclear.
          */
@@ -1242,7 +1242,7 @@ public class ASURLClassLoader
                 return;
             }
             // race condition with above check, but should have no harmful effects
-            
+
             closed = true;
             getStreams().remove(this);
             super.close();
@@ -1391,7 +1391,7 @@ public class ASURLClassLoader
     private static final class ClassData {
         /** must be 'volatile' to ensure thread visibility */
         protected volatile byte[] classBytes;
-        
+
         /** must be 'final' to ensure thread visibility */
         protected final ProtectionDomain pd;
 
@@ -1464,7 +1464,7 @@ public class ASURLClassLoader
                     }
                 }
             }
-            Class clazz = null; 
+            Class clazz = null;
             try {
                 clazz = defineClass(name, classData.classBytes, 0, classData.classBytes.length, classData.pd);
                 return clazz;
