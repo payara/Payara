@@ -1390,10 +1390,10 @@ public class ASURLClassLoader
      */
     private static final class ClassData {
         /** must be 'volatile' to ensure thread visibility */
-        protected volatile byte[] classBytes;
+        private volatile byte[] classBytes;
 
         /** must be 'final' to ensure thread visibility */
-        protected final ProtectionDomain pd;
+        private final ProtectionDomain pd;
 
         ClassData(byte[] classData, ProtectionDomain pd) {
             this.classBytes = classData;
