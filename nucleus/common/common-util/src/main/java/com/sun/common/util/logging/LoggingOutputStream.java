@@ -379,13 +379,12 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
  * avoid duplicate logging of stacktrace
  */
 
-    private class StackTraceObjects {
+    private static class StackTraceObjects {
 
         private ByteArrayOutputStream stackTraceBuf;
         private PrintStream stStream;
         private String stString;
         private ByteArrayOutputStream comparisonBuf;
-        private int comparisonBufIndex = 0;
         private PrintStream cbStream;
         private int stackTraceBufBytes = 0;
         private int charsIgnored = 0;

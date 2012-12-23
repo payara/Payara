@@ -81,10 +81,8 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
     Properties props = new Properties();
     FileInputStream fis;
     String loggingPropertiesName;
-    LogManager logMgr = null;
     File loggingConfigDir = null;
     File file = null;
-    File libFolder = null;
 
     /**
      * Constructor
@@ -101,8 +99,6 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
     public void setupConfigDir(File file, File installDir) {
         loggingConfigDir = file;
         loggingPropertiesName = ServerEnvironmentImpl.kLoggingPropertiesFileName;
-        logMgr = LogManager.getLogManager();
-        libFolder = new File(installDir, "lib");
     }
 
     /*
@@ -176,13 +172,28 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
         }
     }
 
-
-    private void closePropFile() throws IOException {
+    private void safeCloseStream(OutputStream os) {
         try {
-            FileOutputStream ois = new FileOutputStream(file);
+            if(os != null)
+                os.close();
+        }
+        catch (Exception e) {
+            // nothing can be done about it...
+        }
+    }
+    private void safeCloseStream(InputStream is) {
+        try {
+            is.close();
+        }
+        catch (Exception e) {
+            // nothing can be done about it...
+        }
+    }
+    private void closePropFile() throws IOException {
+        FileOutputStream ois = null;
+        try {
+            ois = new FileOutputStream(file);
             props.store(ois, "GlassFish logging.properties list");
-            ois.close();
-            fileMonitoring.fileModified(file);
         } catch (FileNotFoundException e) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "Cannot close logging.properties file : ", e);
             throw new IOException();
@@ -190,7 +201,10 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             //System.out.println("some other exception");
             Logger.getAnonymousLogger().log(Level.SEVERE, "Cannot close logging.properties file : ", e);
             throw new IOException();
+        } finally {
+            safeCloseStream(ois);
         }
+        fileMonitoring.fileModified(file);
     }
 
     private void setWebLoggers(String value) {
@@ -508,14 +522,14 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       */
 
     public String createZipFile(String sourceDir) throws IOException {
-
+        ZipOutputStream zout = null;
         String zipFile = getZipFileName(sourceDir);
         try {
             //create object of FileOutputStream
             FileOutputStream fout = new FileOutputStream(zipFile);
 
             //create object of ZipOutputStream from FileOutputStream
-            ZipOutputStream zout = new ZipOutputStream(fout);
+            zout = new ZipOutputStream(fout);
 
             //create File object from source directory
             File fileSource = new File(sourceDir);
@@ -525,9 +539,13 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
 
             //close the ZipOutputStream
             zout.close();
-        } catch (IOException ioe) {
+        }
+        catch (IOException ioe) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "Error while creating zip file :", ioe);
             throw ioe;
+        }
+        finally {
+            safeCloseStream(zout);
         }
         return zipFile;
     }
@@ -541,14 +559,14 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       */
 
     public String createZipFile(String sourceDir, String zipFileName) throws IOException {
-
+        ZipOutputStream zout = null;
         String zipFile = getZipFileName(sourceDir, zipFileName);
         try {
             //create object of FileOutputStream
             FileOutputStream fout = new FileOutputStream(zipFile);
 
             //create object of ZipOutputStream from FileOutputStream
-            ZipOutputStream zout = new ZipOutputStream(fout);
+            zout = new ZipOutputStream(fout);
 
             //create File object from source directory
             File fileSource = new File(sourceDir);
@@ -558,9 +576,13 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
 
             //close the ZipOutputStream
             zout.close();
-        } catch (IOException ioe) {
+        }
+        catch (IOException ioe) {
             Logger.getAnonymousLogger().log(Level.SEVERE, "Error while creating zip file :", ioe);
             throw ioe;
+        }
+        finally {
+            safeCloseStream(zout);
         }
         return zipFile;
     }
@@ -578,7 +600,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
     private void addDirectory(ZipOutputStream zout, File fileSource, int ignoreLength) throws IOException {
         //get sub-folder/files list
         File[] files = fileSource.listFiles();
-
+        FileInputStream fin = null;
         for (int i = 0; i < files.length; i++) {
             //if the file is directory, call the function recursively
             if (files[i].isDirectory()) {
@@ -598,7 +620,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
                 byte[] buffer = new byte[1024];
 
                 //create object of FileInputStream
-                FileInputStream fin = new FileInputStream(files[i].getAbsolutePath());
+                fin = new FileInputStream(files[i].getAbsolutePath());
                 zout.putNextEntry(new ZipEntry(ignoreLength > -1 ?
                         files[i].getAbsolutePath().substring(ignoreLength) :
                         files[i].getAbsolutePath()));
@@ -620,11 +642,12 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
                             */
                 zout.closeEntry();
 
-                //close the InputStream
-                fin.close();
             } catch (IOException ioe) {
                 Logger.getAnonymousLogger().log(Level.SEVERE, "Error while creating zip file :", ioe);
                 throw ioe;
+            }
+            finally {
+                safeCloseStream(fin);
             }
         }
     }
@@ -689,15 +712,20 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       */
 
     public Map<String, String> getDefaultLoggingProperties() throws IOException {
-        Map<String, String> m = new HashMap<String, String>();
-        String rootFolder = env.getProps().get(com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
-        String templateDir = rootFolder + File.separator + "lib" + File.separator + "templates";
-        File loggingTemplateFile = new File(templateDir, ServerEnvironmentImpl.kLoggingPropertiesFileName);
-
+        FileInputStream fisForLoggingTemplate = null;
         Properties propsLoggingTempleate = new Properties();
-        FileInputStream fisForLoggingTemplate = new java.io.FileInputStream(loggingTemplateFile);
-        propsLoggingTempleate.load(fisForLoggingTemplate);
-        fisForLoggingTemplate.close();
+        Map<String, String> m = new HashMap<String, String>();
+        try {
+            String rootFolder = env.getProps().get(com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
+            String templateDir = rootFolder + File.separator + "lib" + File.separator + "templates";
+            File loggingTemplateFile = new File(templateDir, ServerEnvironmentImpl.kLoggingPropertiesFileName);
+
+            fisForLoggingTemplate = new java.io.FileInputStream(loggingTemplateFile);
+            propsLoggingTempleate.load(fisForLoggingTemplate);
+        }
+        finally {
+            safeCloseStream(fisForLoggingTemplate);
+        }
 
         Enumeration e = propsLoggingTempleate.propertyNames();
 
@@ -711,5 +739,4 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
         }
         return m;
     }
-
 }

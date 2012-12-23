@@ -203,7 +203,7 @@ public class ASURLClassLoader
             // before setting doneCalled = true.
             doneSnapshot = "ASURLClassLoader.done() called ON " + this.toString()
                 + "\n AT " + new Date() +
-                " \n BY :" + Thread.currentThread().getStackTrace().toString();
+                " \n BY :" + Arrays.toString(Thread.currentThread().getStackTrace());
 
             // Presumably OK to set this flag now while the rest of the cleanup proceeeds,
             // because we've taken the snapshot.

@@ -155,12 +155,10 @@ public class LruCache extends BaseCache {
             tail = head = null;
         }
 
-        if (trimItem != null) {
             trimItem.isTrimmed = true;
             trimItem.lPrev = null;
             trimCount++;
             listSize--;
-        }
 
         return trimItem;
     }

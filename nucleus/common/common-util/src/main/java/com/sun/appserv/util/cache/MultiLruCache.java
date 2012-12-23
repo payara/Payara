@@ -100,16 +100,6 @@ public class MultiLruCache extends BaseCache {
     }
 
     /**
-     * get the LRU list associated with the index
-     * @param index into the BaseCache hashtable
-     * @return the LRU list to be used
-     */
-    private LruCacheItem[] getLRUList(int index) {
-        int segment = (index/segmentSize);
-        return lists[segment];
-    }
-
-    /**
      * create new item
      * @param hashCode for the entry
      * @param key <code>Object</code> key
