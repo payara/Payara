@@ -56,7 +56,6 @@ public class FileUtils {
     final static Logger _utillogger = CULoggerInfo.getLogger();
     private final static LocalStringsImpl messages = new LocalStringsImpl(FileUtils.class);
 
-    
     /**
      * The method, java.io.File.getParentFile() does not necessarily do what
      * you would think it does.  What it really does is to simply chop off the
@@ -803,8 +802,8 @@ public class FileUtils {
         if (!fin.exists())
             throw new IllegalArgumentException("File source doesn't exist");
 
-        if (!safeIsDirectory(fout.getParentFile()))
-            fout.getParentFile().mkdirs();
+            if(!mkdirsMaybe(fout.getParentFile()))
+                throw new RuntimeException("Can't create parent dir of output file: " + fout);
 
         copyFile(fin, fout);
     }
@@ -821,9 +820,7 @@ public class FileUtils {
         if (!safeIsDirectory(din))
             throw new IllegalArgumentException("Source isn't a directory");
 
-        dout.mkdirs();
-
-        if (!safeIsDirectory(dout))
+        if(!mkdirsMaybe(dout))
             throw new IllegalArgumentException("Can't create destination directory");
 
         FileListerRelative flr = new FileListerRelative(din);
@@ -1110,7 +1107,9 @@ public class FileUtils {
                 return null;
             bis = new BufferedInputStream(is);
 
-            f.getParentFile().mkdirs();
+            if(!mkdirsMaybe(f.getParentFile()))
+                throw new RuntimeException("Can't create parent dir of output file: " + f);
+
             os = new BufferedOutputStream(FileUtils.openFileOutputStream(f));
             byte buf[] = new byte[10240];
             int len = 0;

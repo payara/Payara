@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -413,7 +413,9 @@ public final class PasswordAdapter {
             {
                 try
                 {
-                    saveOld.renameTo( _keyFile );
+                    if(!saveOld.renameTo( _keyFile ))
+                        throw new RuntimeException( "Could not write new KeyStore, and " +
+                        "cannot restore KeyStore to original state", t );
                 }
                 catch( final Throwable tt )
                 {
@@ -428,7 +430,9 @@ public final class PasswordAdapter {
             try
             {
                 //debug( "deleting old keystore " + saveOld );
-                saveOld.delete();
+                if(!saveOld.delete())
+                    throw new RuntimeException( "Can't remove old KeyStore \"" +  _keyFile  + "\"");
+
                // //debug( "done deleting old keystore "  saveOld );
             }
             catch( Throwable t )
