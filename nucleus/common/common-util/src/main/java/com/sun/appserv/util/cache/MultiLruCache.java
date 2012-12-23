@@ -112,14 +112,14 @@ public class MultiLruCache extends BaseCache {
     /**
      * create new item
      * @param hashCode for the entry
-     * @param key <code>Object</code> key 
+     * @param key <code>Object</code> key
      * @param value <code>Object</code> value
      * @param size size in bytes of the item
-     * 
+     *
      * subclasses may override to provide their own CacheItem extensions
      * e.g. one that permits persistence.
      */
-    protected CacheItem createItem(int hashCode, Object key, 
+    protected CacheItem createItem(int hashCode, Object key,
                                         Object value, int size) {
         return new LruCacheItem(hashCode, key, value, size);
     }
@@ -137,10 +137,10 @@ public class MultiLruCache extends BaseCache {
 
         list[LRU_TAIL] = l.lPrev;
         list[LRU_TAIL].lNext = null;
-   
+
         l.lPrev = null;
         listsLength[segment]--;
-            
+
         l.isTrimmed = true;
 
         trimCount++;
@@ -186,7 +186,7 @@ public class MultiLruCache extends BaseCache {
     }
 
     /**
-     * this item is accessed 
+     * this item is accessed
      * @param item <code>CacheItem</code> accessed
      *
      * Cache bucket is already synchronized by the caller
@@ -209,7 +209,7 @@ public class MultiLruCache extends BaseCache {
                 lc.lNext = list[LRU_HEAD];
                 list[LRU_HEAD].lPrev = lc;
                 list[LRU_HEAD] = lc;
-    
+
                 // patch up the previous neighbors
                 prev.lNext = next;
                 if (next != null)
@@ -228,7 +228,7 @@ public class MultiLruCache extends BaseCache {
      * Cache bucket is already synchronized by the caller
      */
     protected void itemRefreshed(CacheItem item, int oldSize) {
-        itemAccessed(item);   
+        itemAccessed(item);
     }
 
     /**
@@ -288,7 +288,7 @@ public class MultiLruCache extends BaseCache {
     }
 
     /**
-     * get generic stats from subclasses 
+     * get generic stats from subclasses
      */
 
     /**

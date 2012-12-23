@@ -116,14 +116,14 @@ public class LruCache extends BaseCache {
     /**
      * create new item
      * @param hashCode for the entry
-     * @param key <code>Object</code> key 
+     * @param key <code>Object</code> key
      * @param value <code>Object</code> value
      * @param size size in bytes of the item
-     * 
+     *
      * subclasses may override to provide their own CacheItem extensions
      * e.g. one that permits persistence.
      */
-    protected CacheItem createItem(int hashCode, Object key, 
+    protected CacheItem createItem(int hashCode, Object key,
                                         Object value, int size) {
         return new LruCacheItem(hashCode, key, value, size);
     }
@@ -197,7 +197,7 @@ public class LruCache extends BaseCache {
             listSize++;
 
             if (isThresholdReached()) {
-                if (!isUnbounded) 
+                if (!isUnbounded)
                     overflow = trimLru(lc.lastAccessed);
                 else
                     updateThreshold = true;
@@ -206,13 +206,13 @@ public class LruCache extends BaseCache {
 
         // update the base cache threshold if needed
         if (updateThreshold)
-            super.handleOverflow(); 
+            super.handleOverflow();
 
         return overflow;
     }
 
     /**
-     * this item is accessed 
+     * this item is accessed
      * @param item <code>CacheItem</code> accessed
      *
      * Cache bucket is already synchronized by the caller
@@ -238,7 +238,7 @@ public class LruCache extends BaseCache {
                 lc.lNext = head;
                 head.lPrev = lc;
                 head = lc;
-    
+
                 // patch up the previous neighbors
                 prev.lNext = next;
                 if (next != null)
@@ -256,7 +256,7 @@ public class LruCache extends BaseCache {
      * Cache bucket is already synchronized by the caller
      */
     protected void itemRefreshed(CacheItem item, int oldSize) {
-        itemAccessed(item);   
+        itemAccessed(item);
     }
 
     /**
@@ -303,7 +303,7 @@ public class LruCache extends BaseCache {
      * identical timeout (otherwise traversing from tail won't be right).
      */
     public void trimExpiredEntries(int maxCount) {
-        
+
         int count = 0;
         LruCacheItem item;
         long currentTime = System.currentTimeMillis();
@@ -314,7 +314,7 @@ public class LruCache extends BaseCache {
             for (item = tail; item != null && count < maxCount;
                                                 item = item.lPrev) {
 
-                if (timeout != NO_TIMEOUT && 
+                if (timeout != NO_TIMEOUT &&
                     (item.lastAccessed + timeout) <= currentTime) {
                     item.isTrimmed = true;
 		    list.add(item);
@@ -337,7 +337,7 @@ public class LruCache extends BaseCache {
             listSize -= count;
             trimCount += count;
         }
-        
+
         // trim the items from the BaseCache from the old tail backwards
         for (int index=list.size()-1; index >= 0; index--) {
             trimItem((LruCacheItem) list.get(index));
@@ -346,7 +346,7 @@ public class LruCache extends BaseCache {
 
 
     /**
-     * get generic stats from subclasses 
+     * get generic stats from subclasses
      */
 
     /**
@@ -396,49 +396,49 @@ public class LruCache extends BaseCache {
          public LruCacheItem getLNext() {
              return lNext;
          }
- 
+
         /**
          * Reset the next item reference
          */
          public void setLNext(LruCacheItem item) {
              lNext = item;
          }
- 
+
         /**
          * Return the previous item
          */
          public LruCacheItem getLPrev() {
              return lPrev;
          }
- 
+
         /**
          * Reset the previous item reference
          */
          public void setLPrev(LruCacheItem item) {
              lPrev = item;
          }
- 
+
         /**
          * Return <code>true</code> if this item is trimmed
          */
          public boolean isTrimmed() {
              return isTrimmed;
          }
- 
+
         /**
          * Set the trimmed flag
          */
          public void setTrimmed(boolean value) {
              isTrimmed = value;
          }
- 
+
         /**
          * Return the last accessed timestamp
          */
          public long getLastAccessed() {
              return lastAccessed;
          }
- 
+
         /**
          * Reset the last accessed timestamp
          */
