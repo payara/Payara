@@ -46,6 +46,7 @@ import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Locale;
 
 /**
  * MultiLruCache -- in-memory bounded LRU cache with multiple LRU lists
@@ -77,7 +78,7 @@ public class BoundedMultiLruCache extends MultiLruCache {
                 int index;
 
                 // upper case the string
-                prop = prop.toUpperCase();
+                prop = prop.toUpperCase(Locale.ENGLISH);
 
                 // look for 200KB or 80Kb or 1MB or 2Mb like suffixes
                 if ((index = prop.indexOf("KB")) != -1) {

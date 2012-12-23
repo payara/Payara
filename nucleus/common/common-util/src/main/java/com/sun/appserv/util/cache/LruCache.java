@@ -137,6 +137,9 @@ public class LruCache extends BaseCache {
      */
     protected CacheItem trimLru(long currentTime) {
 
+	if(tail == null)
+	    return null;
+
         LruCacheItem trimItem = tail;
 
         if (tail != head) {
@@ -220,6 +223,10 @@ public class LruCache extends BaseCache {
      * Cache bucket is already synchronized by the caller
      */
     protected void itemAccessed(CacheItem item) {
+	if(head == null)
+	    return;
+	if(item == null)
+	    return;
         if(! (item instanceof LruCacheItem))
             return;
         LruCacheItem lc = (LruCacheItem) item;

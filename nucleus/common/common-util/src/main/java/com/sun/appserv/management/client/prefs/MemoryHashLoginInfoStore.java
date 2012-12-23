@@ -40,7 +40,6 @@
 
 package com.sun.appserv.management.client.prefs;
 
-
 import com.sun.enterprise.security.store.AsadminSecurityUtil;
 import com.sun.enterprise.universal.GFBase64Decoder;
 import com.sun.enterprise.universal.GFBase64Encoder;
@@ -265,10 +264,7 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
             final String host     = login.getHost();
             final int port        = login.getPort();
             final String user     = login.getUser();
-            final String path     = null;
-            final String query    = null;
-            final String frag     = null;
-            final URI uri         = new URI(scheme, user, host, port, path, query, frag);
+            final URI uri         = new URI(scheme, user, host, port, null, null, null);
             final String password = login.getPassword();
             final String encp     = encoder.encode(password.getBytes());
             final String line     = uri.toString() + ' ' + encp;

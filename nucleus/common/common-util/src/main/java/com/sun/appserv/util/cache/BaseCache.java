@@ -753,7 +753,8 @@ public class BaseCache implements Cache {
 
             // wait till refresh is finished
             try {
-                bucketLocks[index].wait();
+		while(refreshFlags[index])
+                	bucketLocks[index].wait();
             } catch (InterruptedException ie) {}
         }
         return true;
