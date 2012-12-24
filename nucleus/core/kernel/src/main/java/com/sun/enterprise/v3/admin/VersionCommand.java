@@ -40,22 +40,17 @@
 
 package com.sun.enterprise.v3.admin;
 
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
-import org.glassfish.api.ActionReport.ExitCode;
-import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
-
-import org.glassfish.hk2.api.PerLookup;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.util.Properties;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.ActionReport.ExitCode;
+import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * Return the version and build number
@@ -80,6 +75,7 @@ public class VersionCommand implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(VersionCommand.class);
 
+    @Override
     public void execute(AdminCommandContext context) {
         String vers;
         if (verbose) {
