@@ -53,6 +53,7 @@ import org.glassfish.hk2.api.PerLookup;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.Properties;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 
@@ -90,6 +91,11 @@ public class VersionCommand implements AdminCommand {
                 "{0}", Version.getFullVersion());
         }
         ActionReport report = context.getActionReport();
+        Properties ep = new Properties();
+        ep.setProperty("version", Version.getVersion());
+        ep.setProperty("full-version", Version.getFullVersion());
+        ep.setProperty("version-number", Version.getVersionNumber());     
+        report.setExtraProperties(ep);
         report.setActionExitCode(ExitCode.SUCCESS);
         report.setMessage(vers);
     }
