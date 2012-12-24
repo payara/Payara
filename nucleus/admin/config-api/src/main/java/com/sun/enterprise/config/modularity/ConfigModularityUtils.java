@@ -46,8 +46,11 @@ import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue
 import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
 import com.sun.enterprise.config.modularity.parser.ConfigurationPopulator;
 import com.sun.enterprise.config.modularity.parser.ModuleXMLConfigurationFileParser;
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Module;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
@@ -55,7 +58,6 @@ import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.Named;
@@ -161,7 +163,6 @@ public final class ConfigModularityUtils {
             } catch (IOException e) {
                 LOG.log(Level.SEVERE, "Cannot parse default module configuration", e);
             }
-
         }
         return defaults;
     }
@@ -179,6 +180,8 @@ public final class ConfigModularityUtils {
      */
     public Method findSuitableCollectionGetter(Class owner, Class typeToSet) {
         Method[] methods = owner.getMethods();
+        Method tm = returnException(owner, typeToSet);
+        if (tm != null) return tm;
         for (Method m : methods) {
             if (m.getName().startsWith("get")) {
                 Type t = m.getGenericReturnType();
@@ -189,7 +192,7 @@ public final class ConfigModularityUtils {
                         if (Collection.class.isAssignableFrom(m.getReturnType())) {
                             if (actualGenericParameter instanceof Class) {
                                 if (typeToSet.isAssignableFrom((Class) actualGenericParameter)) {
-                                    if ((m.getAnnotation(DuckTyped.class) == null)) {
+                                    if ((m.getAnnotation(DuckTyped.class) != null)) {
                                         return m;
                                     } else {
                                         Method deepM = findDeeperSuitableCollectionGetter(owner, typeToSet);
@@ -203,6 +206,18 @@ public final class ConfigModularityUtils {
             }
         }
         return findDeeperSuitableCollectionGetter(owner, typeToSet);
+    }
+
+    private Method returnException(Class owner, Class typeToSet) {
+        if (owner.isAssignableFrom(Applications.class) && (typeToSet.isAssignableFrom(Application.class)) || typeToSet.isAssignableFrom(Module.class)) {
+            try {
+                Method m = owner.getMethod("getModules");
+                return m;
+            } catch (NoSuchMethodException e) {
+                LOG.log(Level.INFO, "Failed to find the suitable method in returnException: " + owner.getName() + " : " + typeToSet.getName(), e);
+            }
+        }
+        return null;
     }
 
     public Method findDeeperSuitableCollectionGetter(Class owner, Class typeToSet) {
@@ -329,12 +344,10 @@ public final class ConfigModularityUtils {
 
         if (childElement.contains("CURRENT_INSTANCE_CONFIG_NAME")) {
             Domain d = serviceLocator.<Domain>getService(Domain.class);
-            LOG.info("Configs size before CM apply changes: " + d.getConfigs().getConfig().size());
             return serviceLocator.<Config>getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         }
         if (childElement.contains("CURRENT_INSTANCE_SERVER_NAME")) {
             Domain d = serviceLocator.<Domain>getService(Domain.class);
-            LOG.info("Servers size before CM apply changes: " + d.getServers().getServer().size());
             return serviceLocator.<Server>getService(Server.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         }
         if (childElement.endsWith("]")) {
@@ -395,7 +408,6 @@ public final class ConfigModularityUtils {
     }
 
     public <T extends ConfigBeanProxy> T setConfigBean(T finalConfigBean, ConfigBeanDefaultValue configBeanDefaultValue, ConfigBeanProxy parent) {
-
         Class owningClassForLocation = getOwningClassForLocation(configBeanDefaultValue.getLocation());
         Class configBeanClass = getClassForFullName(configBeanDefaultValue.getConfigBeanClassName());
 
@@ -426,7 +438,6 @@ public final class ConfigModularityUtils {
         } catch (IllegalAccessException e) {
             LOG.log(Level.INFO, "Cannot set config bean dues to:", e);
         }
-
 
         Method m = getMatchingSetterMethod(owningClassForLocation, configBeanClass);
         if (m != null) {
@@ -746,7 +757,7 @@ public final class ConfigModularityUtils {
     }
 
 
-    public Class getDuckClass(Class configBeanType) {
+    public  Class getDuckClass(Class configBeanType) {
         Class duck;
         final Class[] clz = configBeanType.getDeclaredClasses();
         for (Class aClz : clz) {
@@ -758,7 +769,7 @@ public final class ConfigModularityUtils {
         return null;
     }
 
-    public Method getGetDefaultValuesMethod(Class configBeanType) {
+    public  Method getGetDefaultValuesMethod(Class configBeanType) {
         Class duck = getDuckClass(configBeanType);
         if (duck == null) {
             return null;

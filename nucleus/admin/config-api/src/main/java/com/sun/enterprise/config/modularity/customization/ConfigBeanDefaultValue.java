@@ -128,7 +128,7 @@ public class ConfigBeanDefaultValue {
      * @param customizationTokens
      * @param <U>                       Type of the config bean which is an extension of ConfigBeanProxy
      * @throws Exception If the stream is not readable or closing the stream throws exception constructor
-     * will fail with the exception.
+     *                   will fail with the exception.
      */
     public <U extends ConfigBeanProxy> ConfigBeanDefaultValue(String location, String configBeanClassName,
                                                               InputStream xmlSnippetFileInputStream,
@@ -184,4 +184,12 @@ public class ConfigBeanDefaultValue {
         return s;
     }
 
+    @Override
+    public String toString() {
+        return "ConfigBeanDefaultValue{" +
+                "location='" + location + '\'' +
+                ", configBeanClassName='" + configBeanClassName + '\'' +
+                ", replaceCurrentIfExists=" + replaceCurrentIfExists +
+                '}';
+    }
 }
