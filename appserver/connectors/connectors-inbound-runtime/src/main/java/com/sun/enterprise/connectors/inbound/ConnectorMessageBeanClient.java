@@ -469,6 +469,7 @@ public final class ConnectorMessageBeanClient
     
     /** 
      * {@inheritDoc}
+     * @Override
      */
     public String getActivationName(){
       if(activationName == null){
