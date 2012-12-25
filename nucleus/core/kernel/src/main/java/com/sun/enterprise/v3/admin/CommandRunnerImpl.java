@@ -47,6 +47,7 @@ import com.sun.enterprise.universal.collections.ManifestUtils;
 import com.sun.enterprise.universal.glassfish.AdminCommandResponse;
 import com.sun.enterprise.util.AnnotationUtil;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.v3.common.XMLContentActionReporter;
 import java.io.*;
 import java.lang.annotation.Annotation;
@@ -1440,8 +1441,10 @@ public class CommandRunnerImpl implements CommandRunner {
                             Supplemental.Timing.Before, context, parameters, ufm.optionNameToFileMap());
                     if (preSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
                         report.setActionExitCode(preSupplementalReturn);
-                        report.setMessage(adminStrings.getLocalString("commandrunner.executor.supplementalcmdfailed",
+                        if (!StringUtils.ok(report.getTopMessagePart().getMessage())) {
+                            report.setMessage(adminStrings.getLocalString("commandrunner.executor.supplementalcmdfailed",
                                 "A supplemental command failed; cannot proceed further"));
+                        }
                         return;
                     }
                     //Run main command if it is applicable for this instance type
