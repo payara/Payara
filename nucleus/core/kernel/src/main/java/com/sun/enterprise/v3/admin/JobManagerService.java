@@ -304,7 +304,7 @@ public class JobManagerService implements JobManager,PostConstruct {
                 return jobInfos;
             }
         } catch (JAXBException e) {
-            throw new RuntimeException(adminStrings.getLocalString("error.reading.completed.jobs","Error reading completed jobs ",  e.getLocalizedMessage()));
+            throw new RuntimeException(adminStrings.getLocalString("error.reading.completed.jobs","Error reading completed jobs ",  e.getLocalizedMessage()), e);
         }
         return null;
     }
