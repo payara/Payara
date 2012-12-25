@@ -335,7 +335,7 @@ public class JobManagerService implements JobManager,PostConstruct {
             Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
             jaxbMarshaller.marshal(jobInfos, jobsFile);
         } catch (JAXBException e) {
-            throw new RuntimeException(adminStrings.getLocalString("error.purging.completed.job","Error purging completed job ", jobId,e.getLocalizedMessage()));
+            throw new RuntimeException(adminStrings.getLocalString("error.purging.completed.job","Error purging completed job ", jobId,e.getLocalizedMessage()), e);
         }
         return jobInfos;
 
