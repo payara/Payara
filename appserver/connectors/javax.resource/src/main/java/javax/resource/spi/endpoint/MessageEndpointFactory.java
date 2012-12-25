@@ -114,6 +114,43 @@ public interface MessageEndpointFactory {
      */
     boolean isDeliveryTransacted(java.lang.reflect.Method method)
 	throws NoSuchMethodException;
+    
+    /**
+     * Returns a unique name for this message endpoint. If the application has 
+     * been deployed into a clustered application server then this method must 
+     * return the same name for the same endpoint in each application server 
+     * instance. Otherwise, a different name must be returned for every endpoint 
+     * in every application in every application server instance.
+     * 
+     * The name must consist of Java letters or digits (as defined in the Java 
+     * Language Specification) or the ASCII underscore (_ or \u005f).
+     *
+     * Since a subscription name may be visible to the user or administrator it
+     * is recommended that this name is at least partly human-readable.
+     *
+     * The resource adapter may use this value as a valid JMS subscription name, 
+     * either on its own or in combination with the value returned by the 
+     * <code>BootstrapContext.getInstanceName</code> method. This value may be 
+     * used on its own if the subscription name needs to be the same for the same 
+     * endpoint in each application server instance within a cluster but otherwise 
+     * unique. This value may be used in combination with the value returned by the 
+     * <code>BootstrapContext.getInstanceName</code> method if the subscription 
+     * name needs to be unique to this endpoint.
+     *
+     * Since a durable subscription can be used to store messages indefinitely it
+     * is recommended that this name remains unchanged even if the application
+     * server is restarted or reconfigured, or if the application is redeployed.
+     *
+     * The combination of this value and the value returned by the
+     * <code>BootstrapContext.getInstanceName</code>  method should be no longer
+     * than 128 characters.
+     *
+     * @return a new <code>String</code> instance.
+     * @see javax.resource.spi.BootstrapContext
+     * @version Java EE Connector Architecture 1.7
+     */
+    String getActivationName();
+
 }
 
 

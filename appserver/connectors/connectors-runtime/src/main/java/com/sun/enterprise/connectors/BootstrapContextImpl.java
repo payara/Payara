@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010,2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,8 @@ package com.sun.enterprise.connectors;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.WorkContextHandler;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.logging.LogDomains;
 
 import javax.resource.spi.BootstrapContext;
@@ -50,6 +52,11 @@ import javax.resource.spi.work.WorkManager;
 import javax.resource.spi.work.WorkContext;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.naming.InitialContext;
+
+import org.glassfish.internal.api.Globals;
+import org.glassfish.server.ServerEnvironmentImpl;
+import org.glassfish.api.admin.ProcessEnvironment;
+import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
 import java.io.Serializable;
 import java.util.Timer;
 import java.util.logging.Logger;
@@ -63,12 +70,15 @@ import java.util.logging.Level;
  */
 public final class BootstrapContextImpl implements BootstrapContext, Serializable {
 
+    private static final long serialVersionUID = -8449694716854376406L;
     private String poolId;
     private transient WorkManager wm;
     private XATerminator xa;
     private String moduleName;
     private String threadPoolId;
     private ClassLoader rarCL;
+    private String instanceName;
+    private ProcessType processType;
 
     private static final Logger logger =
             LogDomains.getLogger(BootstrapContextImpl.class, LogDomains.RSR_LOGGER);
@@ -182,4 +192,37 @@ public final class BootstrapContextImpl implements BootstrapContext, Serializabl
             xa = ConnectorRuntime.getRuntime().getXATerminatorProxy(moduleName);
         }
     }
+    
+
+    /** 
+     * {@inheritDoc}
+     * @Override
+     */
+    public String getInstanceName(){
+
+      if(processType == null){
+        ProcessEnvironment pe = Globals.get(ProcessEnvironment.class);
+        processType = pe.getProcessType();
+
+        // Only if this RA is running in a server environment and the server 
+        // is a clustered instance, set the variable instanceName as the real
+        // server instance name. Otherwise keep the instance name as null.
+        if(processType.isServer()){
+          ServerEnvironmentImpl env = Globals.get(ServerEnvironmentImpl.class);
+          String instance = env.getInstanceName();
+          
+          // Only if this RA is running in a server environment, then the Domain instance 
+          // can be looked up through HK2. 
+          Domain domain = Globals.get(Domain.class);
+          Server server = domain.getServerNamed(instance);
+
+          if(server.isCluster()){
+            instanceName = instance;
+          }
+        }
+      }
+
+      return instanceName;
+  }
+
 }

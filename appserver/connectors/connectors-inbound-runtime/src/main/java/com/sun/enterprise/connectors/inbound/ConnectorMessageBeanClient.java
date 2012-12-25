@@ -58,6 +58,8 @@ import javax.transaction.xa.XAResource;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.connectors.ActiveResourceAdapter;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
@@ -72,6 +74,8 @@ import com.sun.logging.LogDomains;
 import org.glassfish.ejb.api.MessageBeanListener;
 import org.glassfish.ejb.api.MessageBeanProtocolManager;
 import org.glassfish.ejb.spi.MessageBeanClient;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.server.ServerEnvironmentImpl;
 
 /**
  * Main helper implementation for message-beans associated with
@@ -85,7 +89,8 @@ public final class ConnectorMessageBeanClient
 
     private static final String MESSAGE_ENDPOINT =
             "javax.resource.spi.endpoint.MessageEndpoint";
-
+    private String activationName;
+    
     private ConnectorRegistry registry_;
 
     private MessageBeanProtocolManager messageBeanPM_;
@@ -117,15 +122,16 @@ public final class ConnectorMessageBeanClient
      * @param descriptor <code>EjbMessageBeanDescriptor</code> object.
      */
     public ConnectorMessageBeanClient(EjbMessageBeanDescriptor descriptor) {
-        descriptor_ = descriptor;
+        this.descriptor_ = descriptor;
         allocator_ = new BasicResourceAllocator();
 
         String appName = descriptor.getApplication().getName();
 
-        String moduleID =
-                descriptor.getEjbBundleDescriptor().getModuleID();
+        String moduleID = descriptor.getEjbBundleDescriptor().getModuleID();
 
         String beanName = descriptor.getName();
+
+        activationName = null;
 
         beanID_ = appName + ":" + moduleID + ":" + beanName;
 
@@ -460,4 +466,45 @@ public final class ConnectorMessageBeanClient
         }
         return endpoint;
     }
+    
+    /** 
+     * {@inheritDoc}
+     */
+    public String getActivationName(){
+      if(activationName == null){
+        
+        String appName = descriptor_.getApplication().getName();
+        String moduleID = descriptor_.getEjbBundleDescriptor().getModuleID();
+        String beanName = descriptor_.getName();
+
+        ServerEnvironmentImpl env = Globals.get(ServerEnvironmentImpl.class);
+        String instanceName = env.getInstanceName();
+        
+        Domain domain = Globals.get(Domain.class);
+        Server server = domain.getServerNamed(instanceName);
+
+        String target;
+        if(server.isCluster()){
+          // this application is deployed in a cluster
+          target=server.getCluster().getName();
+        }else{
+          // this application is deployed in a standalone server instance.
+          target=instanceName;
+        }
+        
+        StringBuilder sb = new StringBuilder(64);
+
+        sb.append(domain.getName()).append("_").append(target).append("_")
+        .append(appName).append("_").append(moduleID).append("_").append(beanName);
+
+        
+        if(sb.length()>128){
+            activationName = sb.substring(0, 128);
+        }else{
+            activationName = sb.toString();
+        }
+      }
+      return activationName;
+    }
+    
 }

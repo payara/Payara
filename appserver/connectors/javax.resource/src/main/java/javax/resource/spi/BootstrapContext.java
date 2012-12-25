@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010,2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -129,4 +129,34 @@ public interface BootstrapContext {
      * @since 1.6
      */
     TransactionSynchronizationRegistry getTransactionSynchronizationRegistry();
+    
+    /**
+     * Returns the name of the application server instance in which this method is 
+     * being executed. If the application has been deployed into a clustered application 
+     * server then this name must be different for every instance within the cluster.
+     * Otherwise if this resource adapter is deployed into a standalone application 
+     * server, returns null.
+     * 
+     * The name must consist of Java letters or digits (as defined in the Java Language 
+     * Specification) or the ASCII underscore (_ or \u005f).
+     * 
+     * Since an instance name may be visible to the user or administrator it is 
+     * recommended that this name is at least partly human-readable.
+     * 
+     * It is recommended that this name remains unchanged even if the application server 
+     * instance is restarted or reconfigured.
+     * 
+     * The resource adapter may use this value in combination with the value returned 
+     * by the <code>MessageEndpointFactory.getActivationName</code> method as a valid 
+     * JMS subscription name which is unique to the message endpoint.
+     * 
+     * The combination of this value and the value returned by the 
+     * <code>MessageEndpointFactory.getActivationName</code> method should be no longer 
+     * than 128 characters.
+     * 
+     * @return a new <code>String</code> instance.
+     * @see javax.resource.spi.endpoint.MessageEndpointFactory
+     * @version Java EE Connector Architecture 1.7
+     */
+    String getInstanceName();
 }
