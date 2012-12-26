@@ -104,10 +104,16 @@ public class InputBuffer extends Reader
     public static final String ALREADY_SET_READ_LISTENER = "AS-WEB-CORE-00351";
 
     @LogMessageInfo(
+            message = "Cannot set ReaderListener for non-async or non-upgrade request",
+            level = "WARNING"
+    )
+    public static final String NON_ASYNC_UPGRADE_EXCEPTION = "AS-WEB-CORE-00352";
+
+    @LogMessageInfo(
             message = "Error in invoking ReadListener.onDataAvailable",
             level = "WARNING"
      )
-    public static final String READ_LISTENER_ON_DATA_AVAILABLE_ERROR = "AS-WEB-CORE-00352";
+    public static final String READ_LISTENER_ON_DATA_AVAILABLE_ERROR = "AS-WEB-CORE-00353";
 
     // -------------------------------------------------------------- Constants
 
@@ -292,6 +298,10 @@ public class InputBuffer extends Reader
     public void setReadListener(ReadListener readListener) {
         if (readHandler != null) {
             throw new IllegalStateException(rb.getString(ALREADY_SET_READ_LISTENER));
+        }
+
+        if (!(request.isAsyncStarted() || request.isUpgrade())) {
+            throw new IllegalStateException(rb.getString(NON_ASYNC_UPGRADE_EXCEPTION));
         }
 
         readHandler = new ReadHandlerImpl(readListener);

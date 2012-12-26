@@ -100,10 +100,16 @@ public class OutputBuffer extends Writer
     public static final String WRITE_LISTENER_BEEN_SET = "AS-WEB-CORE-00355";
 
     @LogMessageInfo(
+            message = "Cannot set WriteListener for non-async or non-upgrade request",
+            level = "WARNING"
+    )
+    public static final String NON_ASYNC_UPGRADE_EXCEPTION = "AS-WEB-CORE-00356";
+
+    @LogMessageInfo(
             message = "Error in invoking WriteListener.onWritePossible",
             level = "WARNING"
     )
-    public static final String WRITE_LISTENER_ON_WRITE_POSSIBLE_ERROR = "AS-WEB-CORE-00356";
+    public static final String WRITE_LISTENER_ON_WRITE_POSSIBLE_ERROR = "AS-WEB-CORE-00357";
 
     // -------------------------------------------------------------- Constants
 
@@ -519,6 +525,11 @@ public class OutputBuffer extends Writer
     public void setWriteListener(WriteListener writeListener) {
         if (writeHandler != null) {
             throw new IllegalStateException(rb.getString(WRITE_LISTENER_BEEN_SET));
+        }
+
+        Request req = (Request)response.getRequest();
+        if (!(req.isAsyncStarted() || req.isUpgrade())) {
+            throw new IllegalStateException(rb.getString(NON_ASYNC_UPGRADE_EXCEPTION));
         }
 
         writeHandler = new WriteHandlerImpl(writeListener);
