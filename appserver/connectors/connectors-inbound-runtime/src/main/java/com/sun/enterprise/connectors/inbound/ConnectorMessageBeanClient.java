@@ -58,6 +58,7 @@ import javax.transaction.xa.XAResource;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.connectors.ActiveResourceAdapter;
@@ -485,12 +486,13 @@ public final class ConnectorMessageBeanClient
         Server server = domain.getServerNamed(instanceName);
 
         String target;
-        if(server.isCluster()){
+        Cluster cluster = server.getCluster();
+        if(cluster!=null){
           // this application is deployed in a cluster
-          target=server.getCluster().getName();
+          target = cluster.getName();
         }else{
           // this application is deployed in a standalone server instance.
-          target=instanceName;
+          target = instanceName;
         }
         
         StringBuilder sb = new StringBuilder(64);
