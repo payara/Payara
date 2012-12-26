@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJBException;
 import javax.ejb.NoSuchEJBException;
 
+import org.glassfish.ejb.LogFacade;
 import org.glassfish.ejb.api.EjbContainerServices;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
@@ -68,7 +69,6 @@ import com.sun.logging.LogDomains;
 @Service
 public class EjbContainerServicesImpl implements EjbContainerServices, Serializable {
 
-     private transient Logger _logger = LogDomains.getLogger(EjbContainerUtilImpl.class, LogDomains.EJB_LOGGER);
 
 
     public <S> S  getBusinessObject(Object ejbRef, java.lang.Class<S> businessInterface) {
@@ -147,7 +147,7 @@ public class EjbContainerServicesImpl implements EjbContainerServices, Serializa
         try {
             localObjectImpl.remove();
         } catch(EJBException e) {
-            _logger.log(Level.FINE, "EJBException during remove. ", e);    
+            LogFacade.getLogger().log(Level.FINE, "EJBException during remove. ", e);    
         } catch(javax.ejb.RemoveException re) {
             throw new NoSuchEJBException(re.getMessage(), re);
         }
