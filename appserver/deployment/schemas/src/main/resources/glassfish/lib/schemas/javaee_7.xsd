@@ -10,7 +10,7 @@
 
       DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
       
-      Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+      Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
       
       The contents of this file are subject to the terms of either the GNU
       General Public License Version 2 only ("GPL") or the Common Development
@@ -258,7 +258,7 @@
     <xsd:annotation>
       <xsd:documentation>
 
-        Configuration of an administered object, possibly of a custom resource.
+        Configuration of an administered object.
         
       </xsd:documentation>
     </xsd:annotation>
@@ -286,19 +286,28 @@
         </xsd:annotation>
       </xsd:element>
       <xsd:element name="class-name"
+                   type="javaee:fully-qualified-classType">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            The administered object's class name.
+            
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="interface-name"
                    type="javaee:fully-qualified-classType"
                    minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>
 
-            The administered object type.
+            The administered object's interface type.
             
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
       <xsd:element name="resource-adapter-name"
-                   type="javaee:string"
-                   minOccurs="0">
+                   type="javaee:string">
         <xsd:annotation>
           <xsd:documentation>
 
@@ -1397,18 +1406,6 @@
 
             Set to false if connections should not participate in
             transactions.
-            
-          </xsd:documentation>
-        </xsd:annotation>
-      </xsd:element>
-      <xsd:element name="initial-pool-size"
-                   type="javaee:xsdIntegerType"
-                   minOccurs="0">
-        <xsd:annotation>
-          <xsd:documentation>
-
-            Number of connections that should be created when a
-            connection pool is initialized.
             
           </xsd:documentation>
         </xsd:annotation>
