@@ -42,6 +42,7 @@ package com.sun.enterprise.connectors;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.WorkContextHandler;
+import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.logging.LogDomains;
@@ -215,8 +216,10 @@ public final class BootstrapContextImpl implements BootstrapContext, Serializabl
           // can be looked up through HK2. 
           Domain domain = Globals.get(Domain.class);
           Server server = domain.getServerNamed(instance);
-
-          if(server.isCluster()){
+          
+          Cluster cluster = server.getCluster();
+          if(cluster!=null){
+            String cName = cluster.getName();
             instanceName = instance;
           }
         }
