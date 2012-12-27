@@ -229,7 +229,7 @@ public class CreateConnectorConnectionPool implements AdminCommand {
                 ActionReport subReport = report.addSubActionsReport();
                 ParameterMap parameters = new ParameterMap();
                 parameters.set("pool_name", poolname);
-                commandRunner.getCommandInvocation("ping-connection-pool", subReport).parameters(parameters).execute();
+                commandRunner.getCommandInvocation("ping-connection-pool", subReport, context.getSubject()).parameters(parameters).execute();
                 if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())) {
                     subReport.setMessage(localStrings.getLocalString("ping.create.connector.connection.pool.fail",
                             "\nAttempting to ping during Connector Connection " +

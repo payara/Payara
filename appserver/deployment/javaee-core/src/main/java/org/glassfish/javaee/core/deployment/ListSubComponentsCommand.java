@@ -250,7 +250,7 @@ public class ListSubComponentsCommand implements AdminCommand {
                 Module module = application.getModule(key);
                 if (module != null) {
                     ActionReport subReport = report.addSubActionsReport();
-                    CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("_list-resources", subReport);
+                    CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("_list-resources", subReport, context.getSubject());
                     final ParameterMap parameters = new ParameterMap();
                     parameters.add("appname", application.getName());
                     parameters.add("modulename", module.getName());
