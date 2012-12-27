@@ -80,6 +80,7 @@ import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.logging.LogDomains;
+import org.glassfish.internal.api.KernelIdentity;
 
 
 /**
@@ -123,6 +124,9 @@ public class ConnectorResourceManagerLifecycleListener implements org.glassfish.
 
     @Inject
     private ServerEnvironment serverEnvironment;
+    
+    @Inject 
+    private KernelIdentity kernelIdentity;
 
     private static final Logger logger =
             LogDomains.getLogger(ConnectorRuntime.class, LogDomains.RESOURCE_BUNDLE);
@@ -267,7 +271,7 @@ public class ConnectorResourceManagerLifecycleListener implements org.glassfish.
                                 CommandRunner commandRunner = commandRunnerProvider.get();
                                 ActionReport report = actionReportProvider.get();
                                 CommandRunner.CommandInvocation invocation =
-                                        commandRunner.getCommandInvocation("ping-connection-pool", report);
+                                        commandRunner.getCommandInvocation("ping-connection-pool", report, kernelIdentity.getSubject());
                                 ParameterMap params = new ParameterMap();
                                 params.add("appname",poolInfo.getApplicationName());
                                 params.add("modulename",poolInfo.getModuleName());

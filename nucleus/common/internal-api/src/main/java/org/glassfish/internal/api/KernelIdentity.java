@@ -37,31 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.util;
+package org.glassfish.internal.api;
 
 import java.security.Principal;
-import org.glassfish.security.services.api.authorization.AuthorizationAdminConstants;
+import javax.security.auth.Subject;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
- * A simple Principal that indicates that the Subject has been authenticated
- * as another server in the domain.
+ * Represents the "kernel" identity.
+ * <p>
+ * For example, the kernel identity is useful for running commands using
+ * the command framework from trusted server code that does not have a
+ * previously-authenticated subject on whose behalf the work is being done.
+ * <p>
+ * It's safer to require such uses to specify the kernel identity rather than
+ * to assume that if no subject is specified to authorization then it should
+ * be treated as the kernel identity.  
  * 
  * @author tjquinn
  */
-public class AdminIndicatorPrincipal implements Principal {
-
-    private final String adminIndicator;
+@Contract
+public interface KernelIdentity {
     
-    public AdminIndicatorPrincipal(final String adminIndicator) {
-        this.adminIndicator = adminIndicator;
-    }
-    @Override
-    public String getName() {
-        return AuthorizationAdminConstants.SERVER;
-    }
+    public Subject getSubject();
     
-    public String getIndicator() {
-        return adminIndicator;
-    }
+    public interface KernelPrincipal extends Principal {};
     
+    public class Util {
+        public boolean isKernel(final Subject s) {
+            return ! s.getPrincipals(KernelPrincipal.class).isEmpty();
+        }
+    }
 }

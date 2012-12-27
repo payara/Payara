@@ -39,7 +39,7 @@
  */
 package com.sun.enterprise.admin.util;
 
-import java.security.Principal;
+import org.glassfish.security.services.api.authorization.AuthorizationAdminConstants;
 
 /**
  * Indicates that the identity of a Subject has, at least partially, been
@@ -51,16 +51,9 @@ import java.security.Principal;
  * 
  * @author tjquinn
  */
-public class AdminTokenPrincipal implements Principal {
+public class AdminTokenPrincipal extends TokenPrincipal {
 
-    private final String name;
-    public AdminTokenPrincipal(final String name) {
-        this.name = name;
+    public AdminTokenPrincipal(final String token) {
+        super(AuthorizationAdminConstants.ADMIN_TOKEN, token);
     }
-    
-    @Override
-    public String getName() {
-        return name;
-    }
-    
 }

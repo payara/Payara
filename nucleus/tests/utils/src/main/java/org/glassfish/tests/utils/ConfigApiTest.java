@@ -40,8 +40,12 @@
 
 package org.glassfish.tests.utils;
 
+import java.lang.reflect.Method;
 import java.security.Principal;
+import java.util.List;
+import java.util.Set;
 import javax.security.auth.Subject;
+import org.glassfish.hk2.api.Filter;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.junit.Ignore;
 import org.jvnet.hk2.config.DomDocument;
@@ -49,6 +53,8 @@ import org.jvnet.hk2.config.Transactions;
 import static org.junit.Assert.*;
 
 import java.util.logging.Logger;
+import org.glassfish.hk2.api.Descriptor;
+import org.glassfish.hk2.api.ServiceHandle;
 
 /**
  * Super class for all config-api related tests, give access to a configured habitat
@@ -61,6 +67,32 @@ public abstract class ConfigApiTest {
     private final Subject adminSubject = prepareAdminSubject();
     
     private Subject prepareAdminSubject() {
+        final ServiceLocator locator = getBaseServiceLocator();
+        if (locator != null) {
+            final List<ServiceHandle<? extends Object>> kernelIdentities = 
+                    (List<ServiceHandle<? extends Object>>) getBaseServiceLocator().getAllServices(
+                    new Filter() {
+
+                @Override
+                public boolean matches(Descriptor d) {
+                    if (d == null) {
+                        return false;
+                    }
+                    final Set<String> contracts = d.getAdvertisedContracts();
+                    return (contracts == null ? false : contracts.contains("org.glassfish.internal.api.KernelIdentity"));
+                }
+            });
+            if ( ! kernelIdentities.isEmpty()) {
+                final Object kernelIdentity = kernelIdentities.get(0);
+                try {
+                    final Method getSubjectMethod = kernelIdentity.getClass().getDeclaredMethod("getSubject", Subject.class);
+                    return (Subject) getSubjectMethod.invoke(kernelIdentity);
+                } catch (Exception ex) {
+                    // ignore - fallback to creating a subject explicitly that
+                    // should match the GlassFish admin identity
+                }
+            }
+        }
         final Subject s = new Subject();
         s.getPrincipals().add(new Principal() {
 

@@ -40,6 +40,7 @@
 package com.sun.enterprise.admin.util;
 
 import java.security.Principal;
+import org.glassfish.security.services.api.authorization.AuthorizationAdminConstants;
 
 /**
  *
@@ -49,7 +50,7 @@ public class AdminLocalPasswordPrincipal implements Principal {
 
     @Override
     public String getName() {
-        return "localPassword";
+        return AuthorizationAdminConstants.LOCAL_PASSWORD;
     }
     
 }

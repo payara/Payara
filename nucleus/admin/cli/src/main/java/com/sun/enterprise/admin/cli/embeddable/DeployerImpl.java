@@ -69,6 +69,7 @@ import java.util.Collection;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.internal.api.KernelIdentity;
 
 /**
  * This is an implementation of {@link Deployer}.
@@ -93,6 +94,9 @@ public class DeployerImpl implements Deployer {
 
     @Inject
     ServiceLocator habitat;
+    
+    @Inject
+    private KernelIdentity kernelIdentity;
 
     @Override
     public String deploy(URI archive, String... params) throws GlassFishException {
@@ -116,7 +120,7 @@ public class DeployerImpl implements Deployer {
             ActionReport actionReport = executer.createActionReport();
             ParameterMap commandParams = executer.getParameters(command, newParams);
             org.glassfish.api.admin.CommandRunner.CommandInvocation inv =
-                    executer.getCommandRunner().getCommandInvocation(command, actionReport);
+                    executer.getCommandRunner().getCommandInvocation(command, actionReport, kernelIdentity.getSubject());
             inv.parameters(commandParams);
             // set outputbound payload if --retrieve option is specified.
             Payload.Outbound outboundPayload = null;

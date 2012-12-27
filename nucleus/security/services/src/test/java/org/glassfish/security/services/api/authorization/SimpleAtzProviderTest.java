@@ -41,9 +41,11 @@
 package org.glassfish.security.services.api.authorization;
 
 
+import org.glassfish.security.common.Group;
 import org.glassfish.security.services.impl.authorization.*;
 import java.net.URI;
 import javax.security.auth.Subject;
+import org.glassfish.internal.api.KernelIdentity;
 import org.glassfish.security.services.api.common.Attributes;
 import org.glassfish.security.services.api.context.SecurityContextService;
 import org.glassfish.security.services.impl.authorization.AuthorizationServiceImpl;
@@ -59,6 +61,7 @@ public class SimpleAtzProviderTest extends HK2Runner {
     
     private AuthorizationProvider simpleAtzPrv = null;
     private SecurityContextService contextService = null;
+    private KernelIdentity kernelIdentity = null;
     
     @Before
     public void before() {
@@ -68,9 +71,11 @@ public class SimpleAtzProviderTest extends HK2Runner {
         Assert.assertNotNull(simpleAtzPrv);
         contextService = testLocator.getService(SecurityContextService.class);
         Assert.assertNotNull(contextService);
+        kernelIdentity = testLocator.getService(KernelIdentity.class);
+        Assert.assertNotNull("Could not locate KernelIdentity", kernelIdentity);
         
         contextService.getEnvironmentAttributes().addAttribute(
-                AuthorizationAttributeNames.ISDAS_ATTRIBUTE, "true", true);
+                AuthorizationAdminConstants.ISDAS_ATTRIBUTE, "true", true);
     }
     
     @Test
@@ -82,9 +87,10 @@ public class SimpleAtzProviderTest extends HK2Runner {
         for (String attrName : attrs.getAttributeNames()) {
             env.addAttribute(attrName, attrs.getAttributeValue(attrName), true);
         }
+        AzSubject azS = authorizationService.makeAzSubject(kernelIdentity.getSubject());
         AzResult rt = simpleAtzPrv.getAuthorizationDecision(
-                authorizationService.makeAzSubject(new Subject()),
-                authorizationService.makeAzResource(URI.create("admin:///some/path")),
+                azS,
+                authorizationService.makeAzResource(URI.create("admin://some/path")),
                 authorizationService.makeAzAction("read"),
                 env,
                 null

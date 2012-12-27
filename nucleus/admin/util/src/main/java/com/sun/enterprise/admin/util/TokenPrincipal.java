@@ -40,28 +40,27 @@
 package com.sun.enterprise.admin.util;
 
 import java.security.Principal;
-import org.glassfish.security.services.api.authorization.AuthorizationAdminConstants;
 
 /**
- * A simple Principal that indicates that the Subject has been authenticated
- * as another server in the domain.
- * 
+ *
  * @author tjquinn
  */
-public class AdminIndicatorPrincipal implements Principal {
-
-    private final String adminIndicator;
+public abstract class TokenPrincipal implements Principal {
     
-    public AdminIndicatorPrincipal(final String adminIndicator) {
-        this.adminIndicator = adminIndicator;
-    }
+    private final String name;
+    private final String token;
+    
     @Override
     public String getName() {
-        return AuthorizationAdminConstants.SERVER;
+        return name;
     }
     
-    public String getIndicator() {
-        return adminIndicator;
+    public String getToken() {
+        return token;
     }
     
+    public TokenPrincipal(final String name, final String token) {
+        this.name = name;
+        this.token = token;
+    }
 }

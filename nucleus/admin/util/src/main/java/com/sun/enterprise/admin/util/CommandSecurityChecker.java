@@ -59,7 +59,7 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.logging.annotation.LoggerInfo;
-import org.glassfish.security.services.api.authorization.AuthorizationAttributeNames;
+import org.glassfish.security.services.api.authorization.AuthorizationAdminConstants;
 import org.glassfish.security.services.api.authorization.AuthorizationService;
 import org.glassfish.security.services.api.authorization.AzAction;
 import org.glassfish.security.services.api.authorization.AzResource;
@@ -127,7 +127,7 @@ public class CommandSecurityChecker implements PostConstruct {
          * in making authorization decisions.
          */
         securityContextService.getEnvironmentAttributes().addAttribute(
-                AuthorizationAttributeNames.ISDAS_ATTRIBUTE, 
+                AuthorizationAdminConstants.ISDAS_ATTRIBUTE, 
                 Boolean.toString(serverEnv.isDas()), true);
     }
     
@@ -162,8 +162,8 @@ public class CommandSecurityChecker implements PostConstruct {
             final AdminCommand command,
             final AdminCommandContext adminCommandContext) throws SecurityException {
         if (subject == null) {
-//            ADMSEC_AUTHZ_LOGGER.log(Level.WARNING, command.getClass().getName(),
-//                    new IllegalArgumentException("subject"));
+            ADMSEC_AUTHZ_LOGGER.log(Level.WARNING, command.getClass().getName(),
+                    new IllegalArgumentException("subject"));
             subject = new Subject();
         }
         
@@ -262,7 +262,6 @@ public class CommandSecurityChecker implements PostConstruct {
                         resourceAttrs, 
                         actionAttrs);
             }
-            augmentSubjectAttrs(subject, subjectAttrs);
             mapToAzAttrs(subjectAttrs, azSubject);
             mapToAzAttrs(resourceAttrs, azResource);
             mapToAzAttrs(actionAttrs, azAction);
@@ -280,28 +279,6 @@ public class CommandSecurityChecker implements PostConstruct {
             ADMSEC_AUTHZ_LOGGER.log(PROGRESS_LEVEL, sb.toString());
         }
         return result;
-    }
-    
-    private void augmentSubjectAttrs(final Subject s, final Map<String,String> subjectAttrs) {
-        augmentSubjectAttrs(s, subjectAttrs, AdminIndicatorPrincipal.class, 
-                AuthorizationAttributeNames.ADMIN_INDICATOR_ATTRIBUTE);
-        augmentSubjectAttrs(s, subjectAttrs, AdminTokenPrincipal.class, 
-                AuthorizationAttributeNames.ADMIN_TOKEN_ATTRIBUTE);
-        augmentSubjectAttrs(s, subjectAttrs, AdminLocalPasswordPrincipal.class,
-                AuthorizationAttributeNames.ADMIN_LOCAL_PASSWORD_ATTRIBUTE);
-        
-    }
-    
-    private void augmentSubjectAttrs(final Subject s, final Map<String,String> subjectAttrs, 
-            final Class<? extends Principal> principalClass, final String attrName) {
-        if (s == null) {
-            return;
-        }
-        final Set<? extends Principal> principals = s.getPrincipals(principalClass);
-        for (Principal p : principals) {
-            subjectAttrs.put(attrName, p.getName());
-            break;
-        }
     }
     
     private String formattedAccessCheck(final URI resourceURI, final AccessCheck a) {

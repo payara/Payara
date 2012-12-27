@@ -39,29 +39,16 @@
  */
 package com.sun.enterprise.admin.util;
 
-import java.security.Principal;
 import org.glassfish.security.services.api.authorization.AuthorizationAdminConstants;
 
 /**
- * A simple Principal that indicates that the Subject has been authenticated
- * as another server in the domain.
+ * Identifies a Subject as having authenticated using a ReST token.
  * 
  * @author tjquinn
  */
-public class AdminIndicatorPrincipal implements Principal {
+public class RestTokenPrincipal extends TokenPrincipal {
 
-    private final String adminIndicator;
-    
-    public AdminIndicatorPrincipal(final String adminIndicator) {
-        this.adminIndicator = adminIndicator;
+    public RestTokenPrincipal(final String token) {
+        super(AuthorizationAdminConstants.REST_TOKEN, token);
     }
-    @Override
-    public String getName() {
-        return AuthorizationAdminConstants.SERVER;
-    }
-    
-    public String getIndicator() {
-        return adminIndicator;
-    }
-    
 }

@@ -62,6 +62,7 @@ import org.jvnet.hk2.annotations.Service;
 import com.sun.enterprise.admin.cli.CLIUtil;
 import com.sun.enterprise.admin.cli.Parser;
 import com.sun.enterprise.admin.cli.ProgramOptions;
+import org.glassfish.internal.api.KernelIdentity;
 
 /**
  * @author bhavanishankar@dev.java.net
@@ -79,6 +80,9 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
 
     @Inject
     ServiceLocator habitat;
+    
+    @Inject
+    private KernelIdentity kernelIdentity;
 
     private boolean terse;
 
@@ -138,12 +142,28 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
         this.terse = terse;
     }
 
+    /**
+     * Runs a command from somewhere OTHER THAN an already-running, 
+     * previously-authorized command.
+     * <p>
+     * If a command is already running then it should have a valid Subject and
+     * that Subject must be used in running a nested command.  This
+     * method uses the kernel identity to authorized the command to be run and
+     * this should never be done if a user has authenticated to the system
+     * and is running a separate, already-authorized command.  This method
+     * is, therefore, used from some embedded functionality.
+     * 
+     * @param command
+     * @param args
+     * @return
+     * @throws CommandException 
+     */
     /* package */ ActionReport executeCommand(String command, String... args) throws CommandException {
         ParameterMap commandParams = getParameters(command, args);
         final ActionReport actionReport = createActionReport();
 
         org.glassfish.api.admin.CommandRunner.CommandInvocation inv =
-                commandRunner.getCommandInvocation(command, actionReport);
+                commandRunner.getCommandInvocation(command, actionReport, kernelIdentity.getSubject());
 
         inv.parameters(commandParams).execute();
 

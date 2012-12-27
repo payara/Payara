@@ -42,6 +42,7 @@ package com.sun.enterprise.v3.server;
 
 
 import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.admin.util.AdminConstants;
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModuleState;
 import com.sun.enterprise.module.ModulesRegistry;
@@ -49,6 +50,7 @@ import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Result;
+import com.sun.enterprise.v3.admin.StopServer;
 import com.sun.enterprise.v3.common.DoNothingActionReporter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,6 +65,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.security.auth.Subject;
 import org.glassfish.api.Async;
 import org.glassfish.api.FutureProvider;
 import org.glassfish.api.StartupRunLevel;
@@ -84,6 +87,7 @@ import org.glassfish.hk2.runlevel.RunLevelController;
 import org.glassfish.hk2.runlevel.RunLevelListener;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.InitRunLevel;
+import org.glassfish.internal.api.KernelIdentity;
 import org.glassfish.internal.api.PostStartupRunLevel;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.server.ServerEnvironmentImpl;
@@ -139,7 +143,7 @@ public class AppServerStartup implements ModuleStartup {
 
     @Inject
     Provider<CommandRunner> commandRunnerProvider;
-
+    
     private long platformInitTime;
 
     private String platform = System.getProperty("GlassFish_Platform");
@@ -298,16 +302,17 @@ public class AppServerStartup implements ModuleStartup {
            final ParameterMap params = new ParameterMap();
             // By default we don't want to shutdown forcefully, as that will cause the VM to exit and that's not
             // a very good behavior for a code known to be embedded in other processes.
-            final boolean noForcedShutdown =
-                    Boolean.parseBoolean(context.getArguments().getProperty(
-                            com.sun.enterprise.glassfish.bootstrap.Constants.NO_FORCED_SHUTDOWN, "true"));
+        final boolean noForcedShutdown =
+                Boolean.parseBoolean(context.getArguments().getProperty(
+                        com.sun.enterprise.glassfish.bootstrap.Constants.NO_FORCED_SHUTDOWN, "true"));
             if (noForcedShutdown) {
                 params.set("force", "false");
             }
+            final KernelIdentity kernelIdentity = locator.getService(KernelIdentity.class);
             if (env.isDas()) {
-                runner.getCommandInvocation("stop-domain", new DoNothingActionReporter()).parameters(params).execute();
+                runner.getCommandInvocation("stop-domain", new DoNothingActionReporter(), kernelIdentity.getSubject()).parameters(params).execute();
             } else {
-                runner.getCommandInvocation("_stop-instance", new DoNothingActionReporter()).parameters(params).execute();
+                runner.getCommandInvocation("_stop-instance", new DoNothingActionReporter(), kernelIdentity.getSubject()).parameters(params).execute();
             }
         }
     }
