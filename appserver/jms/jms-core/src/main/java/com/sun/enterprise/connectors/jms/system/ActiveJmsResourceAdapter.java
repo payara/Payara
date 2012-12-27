@@ -2101,6 +2101,17 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                          MdbContainerProps.getMaxRuntimeExceptions(),"", "java.lang.Integer"));
          }
         }
+
+        //Set SE/EE specific MQ-RA ActivationSpec properties
+        try {
+            boolean clustered = isClustered();
+            logFine("Are we in a Clustered contained ? " + clustered);
+            if (clustered)
+                setClusterActivationSpecProperties(descriptor_);
+        } catch (Exception e) {
+            ConnectorRuntimeException crex = new ConnectorRuntimeException(e.getMessage());
+            throw (ConnectorRuntimeException)crex.initCause(e);
+        }
     }
 
     /**
