@@ -37,17 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.security.services.api.authorization;
+package org.glassfish.security.services.impl;
+
+import java.security.Principal;
+import javax.inject.Singleton;
+import org.glassfish.internal.api.KernelIdentity;
+import org.glassfish.security.services.api.authentication.AbstractKernelIdentity;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * Common attribute names, used in authorization and set by code using
- * the authorization service.
+ * Nucleus (open-source) implementation of the KernelIdentity contract.
  * 
  * @author tjquinn
  */
-public interface AuthorizationAttributeNames {
-    public final static String ISDAS_ATTRIBUTE = "isDAS";
-    public final static String ADMIN_INDICATOR_ATTRIBUTE = "adminIndicator";
-    public final static String ADMIN_TOKEN_ATTRIBUTE = "adminToken";
-    public final static String ADMIN_LOCAL_PASSWORD_ATTRIBUTE = "localPassword";
+@Service(name="nucleus")
+@Singleton
+public class NucleusKernelIdentity extends AbstractKernelIdentity {
+
+    @Override
+    protected Principal getKernelPrincipal() {
+        return new NucleusKernelPrincipal();
+    }
+    
+    private static class NucleusKernelPrincipal implements KernelIdentity.KernelPrincipal {
+
+        @Override
+        public String getName() {
+            return "nucleus-kernel";
+        }
+    }
 }
