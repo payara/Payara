@@ -346,23 +346,23 @@ public final class EJBSecurityManager
         
         PolicyConfiguration pc =
                 getPolicyFactory().getPolicyConfiguration(pcid, false);
+        // pc will always has a value which is provided by implementation
+        // of PolicyConfigurationFactory
         assert pc != null;
-        if (pc != null) {
-            String eName = eDescriptor.getName();
-            for (RoleReference roleRef : eDescriptor.getRoleReferences()) {
-                String rolename = roleRef.getRoleName();
-                EJBRoleRefPermission ejbrr =
-                        new EJBRoleRefPermission(eName, rolename);
-                String rolelink = roleRef.getSecurityRoleLink().getName();
+        String eName = eDescriptor.getName();
+        for (RoleReference roleRef : eDescriptor.getRoleReferences()) {
+            String rolename = roleRef.getRoleName();
+            EJBRoleRefPermission ejbrr =
+                    new EJBRoleRefPermission(eName, rolename);
+            String rolelink = roleRef.getSecurityRoleLink().getName();
 
-                pc.addToRole(rolelink, ejbrr);
+            pc.addToRole(rolelink, ejbrr);
 
-                if (_logger.isLoggable(Level.FINE)) {
-                    _logger.fine("JACC: Converting role-ref -> " + roleRef.toString() +
-                            " to permission with name(" + ejbrr.getName() +
-                            ") and actions (" + ejbrr.getActions() +
-                            ")" + "mapped to role (" + rolelink + ")");
-                }
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.fine("JACC: Converting role-ref -> " + roleRef.toString() +
+                        " to permission with name(" + ejbrr.getName() +
+                        ") and actions (" + ejbrr.getActions() +
+                        ")" + "mapped to role (" + rolelink + ")");
             }
         }
     }
@@ -489,85 +489,43 @@ public final class EJBSecurityManager
         PolicyConfiguration pc =
                 getPolicyFactory().getPolicyConfiguration(pcid, false);
 
+        // pc will always has a value which is provided by implementation
+        // of PolicyConfigurationFactory
         assert pc != null;
 
-        if (pc != null) {
+        String eName = eDescriptor.getName();
 
-            String eName = eDescriptor.getName();
+        Permissions uncheckedPermissions = null;
+        Permissions excludedPermissions = null;
+        HashMap rolePermissionsTable = null;
 
-            Permissions uncheckedPermissions = null;
-            Permissions excludedPermissions = null;
-            HashMap rolePermissionsTable = null;
+        EJBMethodPermission ejbmp = null;
 
-            EJBMethodPermission ejbmp = null;
+        // phase 1
+        Map mpMap = eDescriptor.getMethodPermissionsFromDD();
+        if (mpMap != null) {
 
-            // phase 1
-            Map mpMap = eDescriptor.getMethodPermissionsFromDD();
-            if (mpMap != null) {
+            Iterator mpIt = mpMap.entrySet().iterator();
 
-                Iterator mpIt = mpMap.entrySet().iterator();
+            while (mpIt.hasNext()) {
 
-                while (mpIt.hasNext()) {
+                Map.Entry entry = (Map.Entry)mpIt.next();
+                MethodPermission mp = (MethodPermission) entry.getKey();
 
-                    Map.Entry entry = (Map.Entry)mpIt.next();
-                    MethodPermission mp = (MethodPermission) entry.getKey();
+                Iterator mdIt = ((ArrayList) entry.getValue()).iterator();
 
-                    Iterator mdIt = ((ArrayList) entry.getValue()).iterator();
+                while (mdIt.hasNext()) {
 
-                    while (mdIt.hasNext()) {
+                    MethodDescriptor md = (MethodDescriptor) mdIt.next();
 
-                        MethodDescriptor md = (MethodDescriptor) mdIt.next();
+                    String mthdName = md.getName();
+                    String mthdIntf = md.getEjbClassSymbol();
+                    String mthdParams[] = md.getStyle() == 3 ?
+                            md.getParameterClassNames() : null;
 
-                        String mthdName = md.getName();
-                        String mthdIntf = md.getEjbClassSymbol();
-                        String mthdParams[] = md.getStyle() == 3 ?
-                                md.getParameterClassNames() : null;
-
-                        ejbmp = new EJBMethodPermission(eName, mthdName.equals("*") ?
-                                null : mthdName,
-                                mthdIntf, mthdParams);
-                        rolePermissionsTable =
-                                addToRolePermissionsTable(rolePermissionsTable, mp, ejbmp);
-
-                        uncheckedPermissions =
-                                addToUncheckedPermissions(uncheckedPermissions, mp, ejbmp);
-
-                        excludedPermissions =
-                                addToExcludedPermissions(excludedPermissions, mp, ejbmp);
-                    }
-                }
-            }
-
-            // phase 2 - configures additional perms:
-            //      . to optimize performance of Permissions.implies
-            //      . to cause any uncovered methods to be unchecked
-
-            Iterator mdIt = eDescriptor.getMethodDescriptors().iterator();
-            while (mdIt.hasNext()) {
-
-                MethodDescriptor md = (MethodDescriptor) mdIt.next();
-                Method mthd = md.getMethod(eDescriptor);
-                String mthdIntf = md.getEjbClassSymbol();
-
-                if (mthd == null) {
-                    continue;
-                }
-
-                if (mthdIntf == null || mthdIntf.equals("")) {
-                    _logger.log(Level.SEVERE, "method_descriptor_not_defined" , new Object[] {eName,
-                        md.getName(), md.getParameterClassNames()});
-
-                    continue;
-                }
-
-                ejbmp = new EJBMethodPermission(eName, mthdIntf, mthd);
-
-                Iterator mpIt = eDescriptor.getMethodPermissionsFor(md).iterator();
-
-                while (mpIt.hasNext()) {
-
-                    MethodPermission mp = (MethodPermission) mpIt.next();
-
+                    ejbmp = new EJBMethodPermission(eName, mthdName.equals("*") ?
+                            null : mthdName,
+                            mthdIntf, mthdParams);
                     rolePermissionsTable =
                             addToRolePermissionsTable(rolePermissionsTable, mp, ejbmp);
 
@@ -578,22 +536,63 @@ public final class EJBSecurityManager
                             addToExcludedPermissions(excludedPermissions, mp, ejbmp);
                 }
             }
+        }
 
-            if (uncheckedPermissions != null) {
-                pc.addToUncheckedPolicy(uncheckedPermissions);
+        // phase 2 - configures additional perms:
+        //      . to optimize performance of Permissions.implies
+        //      . to cause any uncovered methods to be unchecked
+
+        Iterator mdIt = eDescriptor.getMethodDescriptors().iterator();
+        while (mdIt.hasNext()) {
+
+            MethodDescriptor md = (MethodDescriptor) mdIt.next();
+            Method mthd = md.getMethod(eDescriptor);
+            String mthdIntf = md.getEjbClassSymbol();
+
+            if (mthd == null) {
+                continue;
             }
-            if (excludedPermissions != null) {
-                pc.addToExcludedPolicy(excludedPermissions);
+
+            if (mthdIntf == null || mthdIntf.equals("")) {
+                _logger.log(Level.SEVERE, "method_descriptor_not_defined" , new Object[] {eName,
+                        md.getName(), md.getParameterClassNames()});
+
+                continue;
             }
-            if (rolePermissionsTable != null) {
 
-                Iterator roleIt = rolePermissionsTable.entrySet().iterator();
+            ejbmp = new EJBMethodPermission(eName, mthdIntf, mthd);
 
-                while (roleIt.hasNext()) {
-                    Map.Entry entry = (Map.Entry)roleIt.next();
-                    pc.addToRole((String) entry.getKey(),
-                            (Permissions) entry.getValue());
-                }
+            Iterator mpIt = eDescriptor.getMethodPermissionsFor(md).iterator();
+
+            while (mpIt.hasNext()) {
+
+                MethodPermission mp = (MethodPermission) mpIt.next();
+
+                rolePermissionsTable =
+                        addToRolePermissionsTable(rolePermissionsTable, mp, ejbmp);
+
+                uncheckedPermissions =
+                        addToUncheckedPermissions(uncheckedPermissions, mp, ejbmp);
+
+                excludedPermissions =
+                        addToExcludedPermissions(excludedPermissions, mp, ejbmp);
+            }
+        }
+
+        if (uncheckedPermissions != null) {
+            pc.addToUncheckedPolicy(uncheckedPermissions);
+        }
+        if (excludedPermissions != null) {
+            pc.addToExcludedPolicy(excludedPermissions);
+        }
+        if (rolePermissionsTable != null) {
+
+            Iterator roleIt = rolePermissionsTable.entrySet().iterator();
+
+            while (roleIt.hasNext()) {
+                Map.Entry entry = (Map.Entry)roleIt.next();
+                pc.addToRole((String) entry.getKey(),
+                        (Permissions) entry.getValue());
             }
         }
     }
