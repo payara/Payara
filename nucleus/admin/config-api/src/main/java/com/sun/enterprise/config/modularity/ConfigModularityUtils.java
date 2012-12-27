@@ -343,11 +343,9 @@ public final class ConfigModularityUtils {
     public ConfigBeanProxy getOwner(ConfigBeanProxy parent, String parentElement, String childElement) throws InvocationTargetException, IllegalAccessException {
 
         if (childElement.contains("CURRENT_INSTANCE_CONFIG_NAME")) {
-            Domain d = serviceLocator.<Domain>getService(Domain.class);
             return serviceLocator.<Config>getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         }
         if (childElement.contains("CURRENT_INSTANCE_SERVER_NAME")) {
-            Domain d = serviceLocator.<Domain>getService(Domain.class);
             return serviceLocator.<Server>getService(Server.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         }
         if (childElement.endsWith("]")) {

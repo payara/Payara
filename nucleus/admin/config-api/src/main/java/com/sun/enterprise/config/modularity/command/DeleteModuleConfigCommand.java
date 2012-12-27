@@ -330,7 +330,6 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
 
     @Override
     public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
-        String className = configModularityUtils.convertConfigElementNameToClassName(serviceName);
         Class configBeanType = configModularityUtils.getClassFor(serviceName);
         if (configBeanType == null) {
             //TODO check if this is the correct course of action.

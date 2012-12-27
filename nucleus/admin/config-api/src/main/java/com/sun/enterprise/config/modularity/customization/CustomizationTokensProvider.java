@@ -54,7 +54,6 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -66,16 +65,27 @@ import java.util.logging.Logger;
 
 public class CustomizationTokensProvider {
     private static final Logger LOG = Logger.getLogger(CustomizationTokensProvider.class.getName());
+    private static Field classesField;
 
-    //TODO require further testing
+    static {
+        try {
+            classesField = ClassLoader.class.getDeclaredField("classes");
+        } catch (NoSuchFieldException e) {
+            LOG.log(Level.INFO, "Failed on getting the classes", e);
+        }
+    }
+
+    //TODO requires getting the right classloader or all classloaders present to search all modules
     public List<ConfigCustomizationToken> getPresentConfigCustomizationTokens(String runtimeType) throws NoSuchFieldException, IllegalAccessException {
         List<ConfigCustomizationToken> ctk = new ArrayList<ConfigCustomizationToken>();
         ClassLoader cl = this.getClass().getClassLoader();
-        Field classes = cl.getClass().getDeclaredField("classes");
-        classes.setAccessible(true);
-        Vector<Class> clzs = (Vector<Class>) classes.get(cl);
-        for (Iterator<Class> iter = clzs.iterator(); iter.hasNext(); ) {
-            Class clz = iter.next();
+        classesField.setAccessible(true);
+        final Vector<Class> clzs = (Vector<Class>) classesField.get(cl);
+        Class[] clzss = new Class[clzs.size()];
+        synchronized (clzs) {
+            clzs.toArray(clzss);
+        }
+        for (Class clz : clzss) {
             if (clz != null) {
                 if (clz.isAnnotationPresent(HasCustomizationTokens.class)) {
                     ctk.addAll(getTokens(clz, runtimeType));
@@ -94,7 +104,7 @@ public class CustomizationTokensProvider {
         return ctk;
     }
 
-    public List<ConfigBeanDefaultValue> getDefaultConfigurations(Class configBeanClass, String runtimeType) {
+    private List<ConfigBeanDefaultValue> getDefaultConfigurations(Class configBeanClass, String runtimeType) {
 
         CustomConfiguration c = (CustomConfiguration) configBeanClass.getAnnotation(CustomConfiguration.class);
         List<ConfigBeanDefaultValue> defaults = Collections.emptyList();
@@ -122,7 +132,7 @@ public class CustomizationTokensProvider {
         return defaults;
     }
 
-    public Class getDuckClass(Class configBeanType) {
+    private Class getDuckClass(Class configBeanType) {
         Class duck;
         final Class[] clz = configBeanType.getDeclaredClasses();
         for (Class aClz : clz) {
@@ -134,7 +144,7 @@ public class CustomizationTokensProvider {
         return null;
     }
 
-    public Method getGetDefaultValuesMethod(Class configBeanType) {
+    private Method getGetDefaultValuesMethod(Class configBeanType) {
         Class duck = getDuckClass(configBeanType);
         if (duck == null) {
             return null;
@@ -148,7 +158,7 @@ public class CustomizationTokensProvider {
         return m;
     }
 
-    public <U extends ConfigBeanProxy> URL getConfigurationFileUrl(Class<U> configBeanClass, String baseFileName, String runtimeType) {
+    private <U extends ConfigBeanProxy> URL getConfigurationFileUrl(Class<U> configBeanClass, String baseFileName, String runtimeType) {
         String fileName = runtimeType + "-" + baseFileName;
         URL fileUrl = configBeanClass.getClassLoader().getResource("META-INF/configuration/" + fileName);
         if (fileUrl == null) {
