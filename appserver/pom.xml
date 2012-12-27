@@ -112,7 +112,7 @@
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <websocket-api.version>1.0-b08</websocket-api.version>
         <tyrus.version>1.0-b08</tyrus.version>
-        <json.version>1.0-b01</json.version>
+        <json.version>1.0-b02</json.version>
     </properties>
 
     <modules>
