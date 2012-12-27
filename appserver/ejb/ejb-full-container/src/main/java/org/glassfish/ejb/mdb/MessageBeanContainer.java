@@ -958,7 +958,7 @@ public final class MessageBeanContainer extends BaseContainer implements
             } finally {
                 synchronized (this) {
                     this.done = true;
-                    this.notify();
+                    this.notifyAll();
                 }
                 try {
                     mdbPool.close();
