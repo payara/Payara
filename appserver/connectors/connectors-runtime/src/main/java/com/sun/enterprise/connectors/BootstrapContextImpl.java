@@ -219,7 +219,6 @@ public final class BootstrapContextImpl implements BootstrapContext, Serializabl
           
           Cluster cluster = server.getCluster();
           if(cluster!=null){
-            String cName = cluster.getName();
             instanceName = instance;
           }
         }
