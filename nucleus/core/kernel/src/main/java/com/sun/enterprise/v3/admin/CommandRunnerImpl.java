@@ -321,22 +321,6 @@ public class CommandRunnerImpl implements CommandRunner {
      *
      * @param name name of the requested command to invoke
      * @param report where to place the status of the command execution
-     * @return a new command invocation for that command name
-     */
-    @Override
-    @Deprecated
-    public CommandInvocation getCommandInvocation(String name,
-            ActionReport report) {
-        return getCommandInvocation(null, name, report);
-    }
-
-    /**
-     * Obtain a new command invocation object for the null scope.
-     * Command invocations can be configured and used
-     * to trigger a command execution.
-     *
-     * @param name name of the requested command to invoke
-     * @param report where to place the status of the command execution
      * @param subject the Subject under which to execute the command
      * @return a new command invocation for that command name
      */
@@ -344,23 +328,6 @@ public class CommandRunnerImpl implements CommandRunner {
     public CommandInvocation getCommandInvocation(String name,
             ActionReport report, Subject subject) {
         return getCommandInvocation(null, name, report, subject);
-    }
-
-    /**
-     * Obtain a new command invocation object.
-     * Command invocations can be configured and used
-     * to trigger a command execution.
-     *
-     * @param scope the scope (or name space) for the command
-     * @param name name of the requested command to invoke
-     * @param report where to place the status of the command execution
-     * @return a new command invocation for that command name
-     */
-    @Override
-    @Deprecated
-    public CommandInvocation getCommandInvocation(String scope, String name,
-            ActionReport report) {
-        return new ExecutionContext(scope, name, report, null);
     }
 
     /**
@@ -1686,13 +1653,6 @@ public class CommandRunnerImpl implements CommandRunner {
             return this;
         }
 
-        @Deprecated
-        @Override
-        public CommandInvocation subject(Subject subject) {
-            this.subject = subject;
-            return this;
-        }
-        
         @Override
         public CommandInvocation listener(String nameRegexp, AdminCommandEventBroker.AdminCommandListener listener) {
             nameListerPairs.add(new NameListerPair(nameRegexp, listener));
