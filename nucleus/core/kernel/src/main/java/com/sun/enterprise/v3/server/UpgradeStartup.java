@@ -116,6 +116,9 @@ public class UpgradeStartup implements ModuleStartup {
     // we need to refine, a better logger should be used.
     @Inject
     Logger logger;
+    
+    @Inject
+    private KernelIdentity kernelIdentity;
 
     private final static String MODULE_TYPE = "moduleType";
 
@@ -222,7 +225,7 @@ public class UpgradeStartup implements ModuleStartup {
         try {
             Thread.sleep(3000);
             if (runner!=null) {
-                runner.getCommandInvocation("stop-domain", new DoNothingActionReporter()).execute();
+                runner.getCommandInvocation("stop-domain", new DoNothingActionReporter(), kernelIdentity.getSubject()).execute();
             }
 
         } catch (InterruptedException e) {
@@ -334,7 +337,7 @@ public class UpgradeStartup implements ModuleStartup {
         deployParams.target = DOMAIN_TARGET;
 
         ActionReport report = new DoNothingActionReporter();
-        commandRunner.getCommandInvocation("deploy", report).parameters(deployParams).execute();
+        commandRunner.getCommandInvocation("deploy", report, kernelIdentity.getSubject()).parameters(deployParams).execute();
 
         // should we delete the temp file after we are done
         // it seems it might be useful to keep it around for debugging purpose
