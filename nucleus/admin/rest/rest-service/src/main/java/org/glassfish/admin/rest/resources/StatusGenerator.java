@@ -293,7 +293,7 @@ public class StatusGenerator extends AbstractResource {
         ar = new RestActionReporter();
         parameters = new ParameterMap();
         parameters.add("DEFAULT", "_");
-        cr.getCommandInvocation("list-commands", ar).parameters(parameters).execute();
+        cr.getCommandInvocation("list-commands", ar, getSubject()).parameters(parameters).execute();
         children = ar.getTopMessagePart().getChildren();
         for (ActionReport.MessagePart part : children) {
             allCommands.add(part.getMessage());

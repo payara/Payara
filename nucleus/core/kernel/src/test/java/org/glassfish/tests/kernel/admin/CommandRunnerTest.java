@@ -56,6 +56,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import javax.inject.Inject;
+import org.glassfish.internal.api.KernelIdentity;
 import org.jvnet.hk2.testing.junit.HK2Runner;
 
 /**
@@ -68,6 +69,9 @@ public class CommandRunnerTest extends HK2Runner {
 
     @Inject
     CommandRunner commandRunner;
+    
+    @Inject
+    KernelIdentity kernelIdentity;
 
     @BeforeClass
     public void setup() {
@@ -104,7 +108,7 @@ public class CommandRunnerTest extends HK2Runner {
         Assert.assertTrue(commandRunner!=null);
         try {
             ActionReport report = commandRunner.getActionReport("plain");
-            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("list-contracts", report);
+            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("list-contracts", report, kernelIdentity.getSubject());
             inv.execute();
             System.out.println(report.getTopMessagePart().getMessage());
             for (ActionReport.MessagePart child : report.getTopMessagePart().getChildren()) {

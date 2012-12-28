@@ -52,7 +52,7 @@ import java.util.Properties;
  * Usage is like this:
  *
  *      CommandRunner.CommandInvocation ci =
- *              commandRunner.getCommandInvocation("some-command", areport);
+ *              commandRunner.getCommandInvocation("some-command", areport, theSubject);
  *      InputStreamPayload in = new InputStreamInboundPayload();
  *      // get an InputStream is from somewhere
  *      in.addStream("someoption", is)

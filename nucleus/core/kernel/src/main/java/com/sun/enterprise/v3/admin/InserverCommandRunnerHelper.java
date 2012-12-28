@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.CommandRunner;
@@ -76,7 +77,8 @@ public class InserverCommandRunnerHelper {
 
     public ActionReport runCommand(final String command,
             final ParameterMap parameters,
-            final ActionReport report) {
+            final ActionReport report,
+            final Subject subject) {
         try {
             final AdminCommand adminCommand = commandRunner.getCommand(command, report, logger);
             if (adminCommand==null) {
@@ -92,7 +94,7 @@ public class InserverCommandRunnerHelper {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return report;
             }
-            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation(command, report);
+            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation(command, report, subject);
             inv.parameters(parameters).execute();
         } catch (Throwable t) {
             /*

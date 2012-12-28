@@ -276,7 +276,7 @@ public class CreateJdbcConnectionPool implements AdminCommand {
                 ActionReport subReport = report.addSubActionsReport();
                 ParameterMap parameters = new ParameterMap();
                 parameters.set("pool_name", jdbc_connection_pool_id);
-                commandRunner.getCommandInvocation("ping-connection-pool", subReport).parameters(parameters).execute();
+                commandRunner.getCommandInvocation("ping-connection-pool", subReport, context.getSubject()).parameters(parameters).execute();
                 if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())) {
                     subReport.setMessage(localStrings.getLocalString("ping.create.jdbc.connection.pool.fail",
                             "\nAttempting to ping during JDBC Connection Pool " +

@@ -112,7 +112,7 @@ public class ConfigAttributeSetTest  extends ConfigApiTest implements ConfigList
         parameters.set("DEFAULT", "configs.config.server-config.http-service.http-listener.http-listener-1.port");
 
         // execute the set command.
-        runner.getCommandInvocation("set", new HTMLActionReporter()).parameters(parameters).execute();
+        runner.getCommandInvocation("set", new HTMLActionReporter(), adminSubject()).parameters(parameters).execute();
                                                                                                                                                                                                                            
         // check the result.
         String port = listener.getPort();

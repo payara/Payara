@@ -77,7 +77,7 @@ public class ProgressExecOtherCommand implements AdminCommand {
         //Execute other command
         final CommandRunner.CommandInvocation commandInvocation = 
                 commandRunner.getCommandInvocation("progress-simple", 
-                    context.getActionReport().addSubActionsReport());
+                    context.getActionReport().addSubActionsReport(), context.getSubject());
         commandInvocation
                 .subject(context.getSubject())
                 .progressStatusChild(ps.createChild("subcommand", 20)) //Number 20 is little bit tricky. Please see javadoc of ProgressStatus

@@ -56,6 +56,7 @@ import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.internal.api.KernelIdentity;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 
@@ -112,6 +113,9 @@ public abstract class AutoOperation {
     @Inject
     private AutodeployRetryManager retryManager;
     
+    @Inject
+    private KernelIdentity kernelIdentity;
+    
     /**
      * Initializes the AutoOperation.
      * @param file the File of interest
@@ -156,7 +160,7 @@ public abstract class AutoOperation {
             for (Map.Entry<Object,Object> entry : props.entrySet())
                 p.set((String)entry.getKey(), (String)entry.getValue());
             ActionReport report = commandRunner.getActionReport("hk2-agent");
-            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation(commandName, report);
+            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation(commandName, report, kernelIdentity.getSubject());
             inv.parameters(p).execute(command);
             AutodeploymentStatus ds = AutodeploymentStatus.forExitCode(report.getActionExitCode());
             if (ds.status) {

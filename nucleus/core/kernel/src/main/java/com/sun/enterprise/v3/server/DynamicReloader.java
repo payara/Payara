@@ -57,10 +57,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
+import javax.security.auth.Subject;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.config.ApplicationName;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.KernelIdentity;
 
 /**
  * Triggers reloads of deployed applications depending on the presence of and
@@ -103,11 +105,15 @@ public class DynamicReloader implements Runnable {
     
     private ServiceLocator habitat;
     
+    private final Subject kernelSubject;
+    
     DynamicReloader(Applications applications, ServiceLocator habitat) throws URISyntaxException {
         this.applications = applications;
         this.habitat = habitat;
         initAppReloadInfo(applications);
         inProgress = new SyncBoolean(false);
+        final KernelIdentity kernelIdentity = habitat.getService(KernelIdentity.class);
+        kernelSubject = kernelIdentity.getSubject();
     }
     
     /**
@@ -233,7 +239,7 @@ public class DynamicReloader implements Runnable {
         deployParam.set(DeploymentProperties.PATH, appInfo.getApplicationDirectory().getCanonicalPath());
         deployParam.set(DeploymentProperties.NAME, appInfo.getApplication().getName());
         deployParam.set(DeploymentProperties.KEEP_REPOSITORY_DIRECTORY, "true");
-        commandRunner.getCommandInvocation("deploy", new XMLActionReporter()).parameters(deployParam).execute();
+        commandRunner.getCommandInvocation("deploy", new XMLActionReporter(), kernelSubject).parameters(deployParam).execute();
         
         
         appInfo.recordLoad();

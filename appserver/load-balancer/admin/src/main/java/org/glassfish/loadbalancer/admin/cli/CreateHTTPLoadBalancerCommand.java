@@ -45,6 +45,7 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 import java.beans.PropertyVetoException;
+import javax.security.auth.Subject;
 
 
 import org.jvnet.hk2.annotations.Service;
@@ -231,7 +232,7 @@ public final class CreateHTTPLoadBalancerCommand extends LBCommandsBase
         }
 
         try {
-            createLBConfig(lbConfigName);
+            createLBConfig(lbConfigName, context.getSubject());
 
             if (target != null) {
                 final CreateHTTPLBRefCommand command = (CreateHTTPLBRefCommand)runner
@@ -277,8 +278,8 @@ public final class CreateHTTPLoadBalancerCommand extends LBCommandsBase
         }
     }
 
-    private void createLBConfig(String config) throws CommandException {
-        CommandInvocation ci = runner.getCommandInvocation("create-http-lb-config", report);
+    private void createLBConfig(String config, final Subject subject) throws CommandException {
+        CommandInvocation ci = runner.getCommandInvocation("create-http-lb-config", report, subject);
         ParameterMap map = new ParameterMap();
         //map.add("target", target);
         map.add("responsetimeout", responsetimeout);

@@ -141,7 +141,7 @@ public class CreateProfilerTest extends ConfigApiTest {
         
 
         //Call CommandRunnerImpl.doCommand(..) to execute the command
-        cr.getCommandInvocation("create-profiler", context.getActionReport()).parameters(parameters).execute(command);
+        cr.getCommandInvocation("create-profiler", context.getActionReport(), adminSubject()).parameters(parameters).execute(command);
         
         // Check the exit code is SUCCESS
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
@@ -188,7 +188,7 @@ public class CreateProfilerTest extends ConfigApiTest {
         
 
         //Call CommandRunnerImpl.doCommand(..) to execute the command
-        cr.getCommandInvocation("create-profiler", context.getActionReport()).parameters(parameters).execute(command);
+        cr.getCommandInvocation("create-profiler", context.getActionReport(), adminSubject()).parameters(parameters).execute(command);
         
         // Check the exit code is SUCCESS
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
@@ -222,7 +222,7 @@ public class CreateProfilerTest extends ConfigApiTest {
         
 
         //Call CommandRunnerImpl.doCommand(..) to execute the command
-        cr.getCommandInvocation("create-profiler", context.getActionReport()).parameters(parameters).execute(command);
+        cr.getCommandInvocation("create-profiler", context.getActionReport(), adminSubject()).parameters(parameters).execute(command);
         
         // Check the exit code is SUCCESS
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
@@ -234,7 +234,7 @@ public class CreateProfilerTest extends ConfigApiTest {
         
 
         //Call CommandRunnerImpl.doCommand(..) to execute the command
-        cr.getCommandInvocation("create-profiler", context.getActionReport()).parameters(parameters).execute(command);
+        cr.getCommandInvocation("create-profiler", context.getActionReport(), adminSubject()).parameters(parameters).execute(command);
         
         // Check the exit code is SUCCESS
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
@@ -270,7 +270,7 @@ public class CreateProfilerTest extends ConfigApiTest {
         parameters.set("DEFAULT", "myProfiler");
         
         // Call CommandRunnerImpl.doCommand(..) to execute the command
-        cr.getCommandInvocation("create-profiler", context.getActionReport()).parameters(parameters).execute(command);
+        cr.getCommandInvocation("create-profiler", context.getActionReport(), adminSubject()).parameters(parameters).execute(command);
 
         // Check the exit code is Failure - test fails, need bug fix before uncommenting
         assertEquals(ActionReport.ExitCode.FAILURE, context.getActionReport().getActionExitCode());
@@ -293,7 +293,7 @@ public class CreateProfilerTest extends ConfigApiTest {
         parameters.set("DEFAULT", "testProfiler");
         
         // Call CommandRunnerImpl.doCommand(..) to execute the command
-        cr.getCommandInvocation("create-profiler", context.getActionReport()).parameters(parameters).execute(command);
+        cr.getCommandInvocation("create-profiler", context.getActionReport(), adminSubject()).parameters(parameters).execute(command);
 
         //Check that the profiler is created
         boolean isCreated = false;

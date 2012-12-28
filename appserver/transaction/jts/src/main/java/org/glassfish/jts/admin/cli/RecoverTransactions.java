@@ -107,7 +107,7 @@ public class RecoverTransactions extends RecoverTransactionsBase implements Admi
         try {
             boolean result;
             CommandRunner.CommandInvocation inv = runner.getCommandInvocation(
-                    "_recover-transactions-internal", report);
+                    "_recover-transactions-internal", report, context.getSubject());
 
             final ParameterMap parameters = new ParameterMap();
             parameters.add("target", destinationServer);

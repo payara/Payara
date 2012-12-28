@@ -74,7 +74,8 @@ import org.glassfish.hk2.api.PerLookup;
         description="Get Relative JWS URI",
         params={
             @RestParam(name="appname", value="$parent")
-        })
+        },
+        useForAuthorization=true)
 })
 public class GetRelativeJWSURICommand implements AdminCommand {
 

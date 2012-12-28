@@ -354,13 +354,12 @@ public class CommandResource {
         //Execute it
         final CommandRunner.CommandInvocation commandInvocation =
                 getCommandRunner().getCommandInvocation(commandName.getScope(),
-                commandName.getName(), new PropsFileActionReporter());
+                commandName.getName(), new PropsFileActionReporter(), getSubject());
         if (inbound != null) {
             commandInvocation.inbound(inbound);
         }
         commandInvocation
                 .outbound(new RestPayloadImpl.Outbound(false))
-                .subject(getSubject())
                 .managedJob()
                 .parameters(params);
         ResponseBuilder rb = Response.status(HttpURLConnection.HTTP_OK);
@@ -385,14 +384,13 @@ public class CommandResource {
         ActionReporter ar = new PropsFileActionReporter(); //new RestActionReporter(); //Must use PropsFileActionReporter because some commands react diferently on it :-(
         final RestPayloadImpl.Outbound outbound = new RestPayloadImpl.Outbound(false);
         final CommandRunner.CommandInvocation commandInvocation =
-                getCommandRunner().getCommandInvocation(commandName.getScope(), commandName.getName(), ar);
+                getCommandRunner().getCommandInvocation(commandName.getScope(), commandName.getName(), ar, getSubject());
         if (inbound != null) {
             commandInvocation.inbound(inbound);
         }
         commandInvocation
                 .outbound(outbound)
                 .parameters(params)
-                .subject(getSubject())
                 .execute();
         ar = (ActionReporter) commandInvocation.report();
         fixActionReporterSpecialCases(ar);
