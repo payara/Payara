@@ -1442,11 +1442,14 @@ public class PersistentEJBTimerService extends EJBTimerService {
             params.name = TIMER_SERVICE_APP_NAME;
 
             try {
-                // appScratchFile is a marker file and needs to be created on Das on the
-                // first access of the Timer Service application - so use & instead of &&
                 EjbContainerUtil _ejbContainerUtil = EjbContainerUtilImpl.getInstance();
-                if (_ejbContainerUtil.isDas() && (!is_upgrade & appScratchFile.createNewFile())) {
-                    params.origin = OpsParams.Origin.deploy;
+                if (_ejbContainerUtil.isDas()) {
+                    // appScratchFile is a marker file and needs to be created on Das on the
+                    // first access of the Timer Service application
+                    boolean scratchFileCreated = appScratchFile.createNewFile();
+                    if (!is_upgrade && scratchFileCreated) {
+                        params.origin = OpsParams.Origin.deploy;
+                    }
                 } else {
                     params.origin = OpsParams.Origin.load;
                 }
@@ -1474,7 +1477,9 @@ public class PersistentEJBTimerService extends EJBTimerService {
             } finally {
                 if (!deployed && params.origin.isDeploy() && appScratchFile.exists()) {
                     // Remove marker file if deploy failed
-                    appScratchFile.delete();
+                    if (!appScratchFile.delete()) {
+                        logger.log (Level.WARNING, "Failed to remove the marker file " + appScratchFile);
+                    }
                 }
             }
         }
