@@ -282,10 +282,12 @@ public class LruSessionCache
             remove(sessionKey);
             value = null;
         } finally {
-            synchronized (newItem) {
-                newItem.cacheItemState = CACHE_ITEM_VALID;
-                if (newItem.waitCount > 0) {
-                    newItem.notifyAll();
+            if (newItem != null) {
+                synchronized (newItem) {
+                    newItem.cacheItemState = CACHE_ITEM_VALID;
+                    if (newItem.waitCount > 0) {
+                        newItem.notifyAll();
+                    }
                 }
             }
 	    if (activationStartTime != -1) {

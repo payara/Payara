@@ -113,12 +113,10 @@ public final class WebServiceInvocationHandler extends EJBLocalRemoteObject
         }
 
         Object returnValue = null;
-        EjbInvocation inv = null;
+        // Invocation was created earlier in the web service dispatching
+        EjbInvocation inv = (EjbInvocation) invManager_.getCurrentInvocation();
 
         try {
-            // Invocation was created earlier in the web service dispatching
-            inv = (EjbInvocation) invManager_.getCurrentInvocation();
-
             inv.ejbObject = this;
             
             // things can become hairy here. This handler may have been created 
