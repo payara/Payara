@@ -210,7 +210,7 @@ public class EjbInvocation
      * Used by MessageBeanContainer.  true if container started
      * a transaction for this invocation.
      */
-    public boolean containerStartsTx;
+    private boolean containerStartsTx;
     
     /**
      * Used by MessageBeanContainer to keep track of the context class
@@ -704,7 +704,15 @@ public class EjbInvocation
        }
 
        return rh;
-   }       
+   }
+
+    public boolean isContainerStartsTx() {
+        return containerStartsTx;
+    }
+
+    public void setContainerStartsTx(boolean containerStartsTx) {
+        this.containerStartsTx = containerStartsTx;
+    }
 }
     
 

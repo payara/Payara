@@ -1058,7 +1058,7 @@ public final class MessageBeanContainer extends BaseContainer implements
             }
 
             // keep track of whether tx was started for later.
-            invocation.containerStartsTx = startTx;
+            invocation.setContainerStartsTx(startTx);
 
             this.invocationManager.preInvoke(invocation);
 
@@ -1221,7 +1221,7 @@ public final class MessageBeanContainer extends BaseContainer implements
                     new Object[] { appEJBName_, "" });
         } else {
             try {
-                if (invocation.containerStartsTx) {
+                if (invocation.isContainerStartsTx()) {
                     // Unregister the session associated with
                     // the message-driven bean's destination.
                     unregisterMessageBeanResource(resourceHandle);
