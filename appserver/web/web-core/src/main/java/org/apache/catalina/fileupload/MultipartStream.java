@@ -133,7 +133,6 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 public class MultipartStream {
 
     private static final Logger log = StandardServer.log;
-    private final ResourceBundle rb = log.getResourceBundle();
 
     @LogMessageInfo(
             message = "Failed to skip {0} bytes in the underlying buffer of MultipartStream on close().",

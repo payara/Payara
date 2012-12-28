@@ -60,11 +60,9 @@ package com.sun.enterprise.web.connector.grizzly;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.apache.catalina.connector.ProtocolHandler;
-import org.glassfish.grizzly.config.ssl.SSLImplementation;
 import org.glassfish.grizzly.config.ssl.ServerSocketFactory;
 import org.glassfish.grizzly.http.server.HttpHandler;
 
@@ -167,9 +165,6 @@ public class CoyoteConnectorLauncher implements ProtocolHandler
     public void init() throws Exception {
     }
     
-    ObjectName tpOname;
-    ObjectName rgOname;
-    
     @Override
     public void start() throws Exception {
 
@@ -182,9 +177,7 @@ public class CoyoteConnectorLauncher implements ProtocolHandler
     
     // -------------------- Properties--------------------
     protected boolean secure;
-    
-    protected ServerSocketFactory socketFactory;
-    protected SSLImplementation sslImplementation;
+
     // socket factory attributes ( XXX replace with normal setters )
     protected Map<String, Object> attributes = new HashMap<String, Object>();
     protected String socketFactoryName=null;
@@ -219,7 +212,7 @@ public class CoyoteConnectorLauncher implements ProtocolHandler
     }
 
     public void setSocketFactory( String valueS ) {
-	socketFactoryName = valueS;
+        socketFactoryName = valueS;
         setAttribute("socketFactory", valueS);
     }
 
@@ -228,7 +221,7 @@ public class CoyoteConnectorLauncher implements ProtocolHandler
     }
 
     public void setSSLImplementation( String valueS) {
- 	sslImplementationName=valueS;
+        sslImplementationName=valueS;
         setAttribute("sslImplementation", valueS);
     }
 
@@ -404,18 +397,6 @@ public class CoyoteConnectorLauncher implements ProtocolHandler
 
     public void setReportedname( String reportedName) {
 	reportedname = reportedName;
-    }
-
-    protected String domain;
-    protected ObjectName oname;
-    protected MBeanServer mserver;
-
-    public ObjectName getObjectName() {
-        return oname;
-    }
-
-    public String getDomain() {
-        return domain;
     }
     
     // START OF SJSAS PE 8.1 6172948
