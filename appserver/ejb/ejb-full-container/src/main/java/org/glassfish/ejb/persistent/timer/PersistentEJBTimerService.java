@@ -1443,13 +1443,10 @@ public class PersistentEJBTimerService extends EJBTimerService {
 
             try {
                 EjbContainerUtil _ejbContainerUtil = EjbContainerUtilImpl.getInstance();
-                if (_ejbContainerUtil.isDas()) {
-                    // appScratchFile is a marker file and needs to be created on Das on the
-                    // first access of the Timer Service application
-                    boolean scratchFileCreated = appScratchFile.createNewFile();
-                    if (!is_upgrade && scratchFileCreated) {
-                        params.origin = OpsParams.Origin.deploy;
-                    }
+                // appScratchFile is a marker file and needs to be created on Das on the
+                // first access of the Timer Service application
+                if (_ejbContainerUtil.isDas() && appScratchFile.createNewFile() && !is_upgrade) {
+                    params.origin = OpsParams.Origin.deploy;
                 } else {
                     params.origin = OpsParams.Origin.load;
                 }
