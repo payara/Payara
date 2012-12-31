@@ -475,7 +475,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
             realm = as.getAuthRealmName();
 
         try {
-            final Subject s = loginAsAdmin(user, password, realm, host);
+            loginAsAdmin(user, password, realm, host);
             return null;
         } catch (LoginException e) {
             if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
