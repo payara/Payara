@@ -97,8 +97,6 @@ public class AdminLoginModule implements LoginModule {
     private Subject subject;
     private CallbackHandler callbackHandler;
 
-    private String authRealm = null;
-
     // Holds principals and credentials that should be added to the real
     // subject during commit, if it is ever invoked.
     private final Subject subjectToAssemble = new Subject();
@@ -138,7 +136,6 @@ public class AdminLoginModule implements LoginModule {
     
             this.subject = subject;
             this.callbackHandler = callbackHandler;
-            authRealm = (String) options.get("auth-realm");
         }
 
         private void findServices(final ServiceLocator sl) {
