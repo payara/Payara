@@ -382,7 +382,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
          * commands.
          */
         try {
-            final Subject s = authenticator.loginAsAdmin(req);
+            authenticator.loginAsAdmin(req);
             return (env.isDas() ? AdminAccessController.Access.FULL : AdminAccessController.Access.READONLY);
         } catch (RemoteAdminAccessException ex) {
             return AdminAccessController.Access.FORBIDDEN;
