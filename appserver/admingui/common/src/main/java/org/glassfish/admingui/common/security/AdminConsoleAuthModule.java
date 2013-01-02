@@ -256,7 +256,7 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
         Client client2 = ClientFactory.newClient();
         RestUtil.initialize(client2);
         WebTarget target = client2.target(restURL);
-        target.configuration().register(new HttpBasicAuthFilter(username, password));
+        target.register(new HttpBasicAuthFilter(username, password));
         MultivaluedMap payLoad = new MultivaluedHashMap();
         payLoad.putSingle("remoteHostName", request.getRemoteHost());
 

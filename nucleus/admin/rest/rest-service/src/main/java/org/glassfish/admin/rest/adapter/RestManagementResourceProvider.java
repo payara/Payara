@@ -93,7 +93,7 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
                                             final Set<? extends Binder> additionalBinders)
             throws EndpointRegistrationException {
         ResourceConfig rc = super.getResourceConfig(classes, sc, habitat, additionalBinders);
-        rc.addClasses(ExceptionFilter.class);
+        rc.register(ExceptionFilter.class);
         return rc;
     }
 

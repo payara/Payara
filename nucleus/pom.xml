@@ -115,8 +115,8 @@
         <woodstox.version>4.1.2</woodstox.version>
         <jaxb.version>2.2.7-b41</jaxb.version>
         <antlr.version>2.7.6</antlr.version>
-        <jersey.version>2.0-m10</jersey.version>
-        <jax-rs-api.version>2.0-m12</jax-rs-api.version>
+        <jersey.version>2.0-m11</jersey.version>
+        <jax-rs-api.version>2.0-m15</jax-rs-api.version>
         <mimepull.version>1.8</mimepull.version>
         <jbi.version>1.0</jbi.version>
         <glassfish-management-api.version>3.2.0-b001</glassfish-management-api.version>
