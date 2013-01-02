@@ -151,9 +151,9 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
 
     private static final String INSTALL_ROOT_URI_PROPERTY_NAME = "com.sun.aas.installRootURI";
     private static final Logger logger = getLogger();
-    private final String PROBE_PROVIDER_CLASS_NAMES = "probe-provider-class-names";
-    private final String PROBE_PROVIDER_XML_FILE_NAMES = "probe-provider-xml-file-names";
-    private final String DELIMITER = ",";
+    private static final String PROBE_PROVIDER_CLASS_NAMES = "probe-provider-class-names";
+    private static final String PROBE_PROVIDER_XML_FILE_NAMES = "probe-provider-xml-file-names";
+    private static final String DELIMITER = ",";
     private StatsProviderManagerDelegateImpl spmd;
     private boolean monitoringEnabled;
     private boolean hasDiscoveredXMLProviders = false;
