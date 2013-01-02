@@ -181,12 +181,6 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
-            <exclusions>
-              <exclusion>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-              </exclusion>
-            </exclusions>
         </dependency>
         
         <!-- additional grizzly modules package -->

@@ -110,7 +110,7 @@ public abstract class AbstractRestResourceProvider implements RestResourceProvid
 
         UriConnegFilter.enableFor(rc, getMimeMappings(), null);
 
-        rc.register(CsrfProtectionFilter.class);
+        rc.addClasses(CsrfProtectionFilter.class);
 
 
 //        TODO - JERSEY2
@@ -130,11 +130,11 @@ public abstract class AbstractRestResourceProvider implements RestResourceProvid
 //                 rc.getFeatures().put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.TRUE);
 //        }
 //
-        rc.register(r);
-        rc.register(ReloadResource.class);
+        rc.addSingletons(r);
+        rc.addClasses(ReloadResource.class);
         rc.register(new MultiPartFeature());
         //rc.register(getJsonFeature());
-        rc.register(new AbstractBinder() {
+        rc.addBinders(new AbstractBinder() {
 
             @Override
             protected void configure() {
@@ -157,9 +157,7 @@ public abstract class AbstractRestResourceProvider implements RestResourceProvid
             }
         });
 
-        for (Binder b : additionalBinders) {
-            rc.register(b);
-        }
+        rc.addBinders(additionalBinders.toArray(new Binder[additionalBinders.size()]));
 
         rc.setProperty(MessageProperties.LEGACY_WORKERS_ORDERING, true);
 

@@ -75,7 +75,7 @@
     <properties>
         <install.dir.name>nucleus</install.dir.name>
         <findbugs.skip>true</findbugs.skip>
-        <packager.artifact.excludes>validation-api,stax-api,stax,junit,jtype,tiger-types,servlet-api,jstl-api,el-api,jsp-api,org.osgi.core,org.osgi.compendium,concurrent,grizzly-utils,grizzly-framework,grizzly-rcm,grizzly-portunif,grizzly-http,grizzly-http-server,grizzly-config,grizzly-comet,grizzly-websockets,grizzly-http-servlet,grizzly-http-ajp,glassfish-grizzly-container,grizzly-lzma,gmbal-api-only,javax.servlet</packager.artifact.excludes>
+        <packager.artifact.excludes>stax-api,stax,junit,jtype,tiger-types,servlet-api,jstl-api,el-api,jsp-api,org.osgi.core,org.osgi.compendium,concurrent,grizzly-utils,grizzly-framework,grizzly-rcm,grizzly-portunif,grizzly-http,grizzly-http-server,grizzly-config,grizzly-comet,grizzly-websockets,grizzly-http-servlet,grizzly-http-ajp,glassfish-grizzly-container,grizzly-lzma,gmbal-api-only,javax.servlet</packager.artifact.excludes>
     </properties>
 
     <modules>

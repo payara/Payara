@@ -830,7 +830,8 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
 
     private static Client createClient() {
         Client c = JerseyClientFactory.newClient();
-        c.register(new MultiPartFeature())
+        c.configuration()
+            .register(new MultiPartFeature())
             .register(new CsrfProtectionFilter("CLI"))
             .register(new ActionReportJsonReader())
             .register(new ParameterMapFormWriter())
@@ -897,7 +898,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             Metrix.event("doRestCommand() - about to create target");
             WebTarget target = createTarget(uri);
             Metrix.event("doRestCommand() - about to configure security");
-            target.setProperty(ClientProperties.SSL_CONFIG, new SslConfig(new BasicHostnameVerifier(host), getSslContext()));
+            target.configuration().setProperty(ClientProperties.SSL_CONFIG, new SslConfig(new BasicHostnameVerifier(host), getSslContext()));
             /*
              * Any code that wants to trigger a retry will say so explicitly.
              */
@@ -911,7 +912,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 final AuthenticationInfo authInfo = authenticationInfo();
                 if (authInfo != null) {
                     HttpBasicAuthFilter besicAuth = new HttpBasicAuthFilter(authInfo.getUser(), authInfo.getPassword() == null ? "" : authInfo.getPassword());
-                    target.register(besicAuth);
+                    target.configuration().register(besicAuth);
                 }
                 Metrix.event("doRestCommand() - about to prepare request builder");
                 Builder request = target.request(acceptedResponseTypes);

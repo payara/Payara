@@ -47,9 +47,9 @@ import java.util.Map;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
+import javax.ws.rs.client.Configuration;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.UriBuilder;
 
@@ -82,13 +82,13 @@ public class ClientWrapper implements Client {
 
     public ClientWrapper(final Map<String, String> headers, String userName, String password) {
         realClient = JerseyClientFactory.newClient();
-        realClient.register(new MultiPartFeature());
-        realClient.register(new JettisonFeature());
-        realClient.register(new CsrfProtectionFilter());
+        realClient.configuration().register(new MultiPartFeature());
+        realClient.configuration().register(new JettisonFeature());
+        realClient.configuration().register(new CsrfProtectionFilter());
         if ((userName != null) && (password != null)) {
-            realClient.register(new HttpBasicAuthFilter(userName, password));
+            realClient.configuration().register(new HttpBasicAuthFilter(userName, password));
         }
-        realClient.register(new ClientRequestFilter() {
+        realClient.configuration().register(new ClientRequestFilter() {
 
             @Override
             public void filter(ClientRequestContext rc) throws IOException {
@@ -105,6 +105,10 @@ public class ClientWrapper implements Client {
         realClient.close();
     }
 
+    @Override
+    public Configuration configuration() {
+        return realClient.configuration();
+    }
 
     @Override
     public WebTarget target(String uri) throws IllegalArgumentException, NullPointerException {
@@ -129,70 +133,5 @@ public class ClientWrapper implements Client {
     @Override
     public Builder invocation(Link link) throws NullPointerException {
         return realClient.invocation(link);
-    }
-
-    @Override
-    public Configuration getConfiguration() {
-        return realClient.getConfiguration();
-    }
-
-    @Override
-    public Client setProperty(String name, Object value) {
-        realClient.setProperty(name, value);
-        return this;
-    }
-
-    @Override
-    public Client register(Class<?> componentClass) {
-        realClient.register(componentClass);
-        return this;
-    }
-
-    @Override
-    public Client register(Class<?> componentClass, int bindingPriority) {
-        realClient.register(componentClass, bindingPriority);
-        return this;
-    }
-
-    @Override
-    public Client register(Class<?> componentClass, Class<?>... contracts) {
-        realClient.register(componentClass, contracts);
-        return this;
-    }
-
-    @Override
-    public Client register(Class<?> componentClass, Map<Class<?>, Integer> contracts) {
-        realClient.register(componentClass, contracts);
-        return this;
-    }
-
-    @Override
-    public Client register(Object component) {
-        realClient.register(component);
-        return this;
-    }
-
-    @Override
-    public Client register(Object component, int bindingPriority) {
-        realClient.register(component, bindingPriority);
-        return this;
-    }
-
-    @Override
-    public Client register(Object component, Class<?>... contracts) {
-        realClient.register(component, contracts);
-        return this;
-    }
-
-    @Override
-    public Client register(Object component, Map<Class<?>, Integer> contracts) {
-        realClient.register(component, contracts);
-        return this;
-    }
-
-    @Override
-    public Client replaceWith(Configuration config) {
-        realClient.replaceWith(config);
-        return this;
     }
 }

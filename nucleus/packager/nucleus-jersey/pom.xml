@@ -90,7 +90,6 @@
                                ,org.glassfish.jersey.containers,
                                ,org.glassfish.jersey.containers.glassfish,
                                ,org.glassfish.jersey.media,
-                               ,org.glassfish.jersey.ext,
                                ,javax.ws.rs,
                                ,com.googlecode.guava-osgi,
                                ,org.codehaus.jackson,
@@ -108,12 +107,6 @@
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-server</artifactId>
             <version>${jersey.version}</version>
-            <exclusions>
-              <exclusion>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-              </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
@@ -140,22 +133,11 @@
             <artifactId>jersey-media-sse</artifactId>
             <version>${jersey.version}</version>
         </dependency>
-        <dependency>
+         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-multipart</artifactId>
             <version>${jersey.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.ext</groupId>
-            <artifactId>jersey-bean-validation</artifactId>
-            <version>${jersey.version}</version>
-            <exclusions>
-              <exclusion>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-              </exclusion>
-            </exclusions>
-         </dependency>
         <!-- previous package - required for dependency graph calculation -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
