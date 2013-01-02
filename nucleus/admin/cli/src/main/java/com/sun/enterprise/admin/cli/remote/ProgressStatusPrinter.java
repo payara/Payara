@@ -242,7 +242,7 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
                 }
             }
             //Change ticker
-            if (!debugOutput && commandProgress != null) {
+            if (!debugOutput) {
                 if (commandProgress.isSpinnerActive()) {
                     if (this.ticker == null) {
                         this.ticker = new Ticker(disableAnimation ? 1500L : 500L);
