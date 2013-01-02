@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,19 +40,26 @@
 
 package com.sun.enterprise.deployment.annotation.factory;
 
-import org.glassfish.apf.*;
+import org.glassfish.apf.AnnotationHandler;
+import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationProcessor;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.apf.factory.Factory;
 import org.glassfish.apf.impl.AnnotationProcessorImpl;
-import org.glassfish.api.ContractProvider;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -63,10 +70,10 @@ import java.util.Set;
  */
 @Service
 @Singleton
-public class SJSASFactory extends Factory implements ContractProvider, PostConstruct {
+public class SJSASFactory extends Factory {
 
     @Inject
-    ServiceLocator habitat;
+    private ServiceLocator locator;
 
     private Set<String> annotationClassNames = new HashSet<String>();
 
@@ -84,45 +91,67 @@ public class SJSASFactory extends Factory implements ContractProvider, PostConst
         return (HashSet<String>)((HashSet<String>)annotationClassNames).clone();
     }
     
-    public static String getAnnotationHandlerForStringValue(Class<?> onMe) {
-        AnnotationHandlerFor ahf = onMe.getAnnotation(AnnotationHandlerFor.class);
-        if (ahf == null) return null;
+    private static String getAnnotationHandlerForStringValue(ActiveDescriptor<AnnotationHandler> onMe) {
+        Map<String, List<String>> metadata = onMe.getMetadata();
+        List<String> answers = metadata.get(AnnotationHandler.ANNOTATION_HANDLER_METADATA);
+        if (answers == null || answers.isEmpty()) return null;
         
-        return ahf.value().getName();
+        return answers.get(0);
     }
 
-    public void postConstruct() {
-        if (systemProcessor == null) {
-            // initialize our system annotation processor...            
-            systemProcessor = new AnnotationProcessorImpl();
-            for (final AnnotationHandler i : habitat.<AnnotationHandler>getAllServices(AnnotationHandler.class)) {
+    @SuppressWarnings({ "unused", "unchecked" })
+    @PostConstruct
+    private void postConstruct() {
+        if (systemProcessor != null) return;
+        
+        // initialize our system annotation processor...            
+        systemProcessor = new AnnotationProcessorImpl();
+        for (ActiveDescriptor<?> i : locator.getDescriptors(BuilderHelper.createContractFilter(
+                AnnotationHandler.class.getName()))) {
+            ActiveDescriptor<AnnotationHandler> descriptor = (ActiveDescriptor<AnnotationHandler>) i;
+            
+            String annotationTypeName = getAnnotationHandlerForStringValue(descriptor);
+            if (annotationTypeName == null) continue;
                 
-                String annotationTypeName = getAnnotationHandlerForStringValue(i.getClass());
-                if (annotationTypeName == null) continue;
-                
-                systemProcessor.pushAnnotationHandler(annotationTypeName, new AnnotationHandler() {
-                    @Override
-                    public Class<? extends Annotation> getAnnotationType() {
-                        final AnnotationHandler realHandler = i;
-                        return realHandler.getAnnotationType();
-                    }
-
-                    @Override
-                    public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
-                        final AnnotationHandler realHandler = i;
-                        return realHandler.processAnnotation(element);
-                    }
-
-                    @Override
-                    public Class<? extends Annotation>[] getTypeDependencies() {
-                        final AnnotationHandler realHandler = i;
-                        return realHandler.getTypeDependencies();
-                    }
-                });
-                annotationClassNames.add("L" +
+            systemProcessor.pushAnnotationHandler(annotationTypeName, new LazyAnnotationHandler(descriptor)); 
+            annotationClassNames.add("L" +
                     annotationTypeName.
                     replace('.', '/') + ";");
-            }
         }
+        
+        
+    }
+    
+    private class LazyAnnotationHandler implements AnnotationHandler {
+        private final ActiveDescriptor<AnnotationHandler> descriptor;
+        private AnnotationHandler handler;
+        
+        private LazyAnnotationHandler(ActiveDescriptor<AnnotationHandler> descriptor) {
+            this.descriptor = descriptor;
+        }
+        
+        private AnnotationHandler getHandler() {
+            if (handler != null) return handler;
+            
+            handler = locator.getServiceHandle(descriptor).getService();
+            return handler;
+        }
+
+        @Override
+        public Class<? extends Annotation> getAnnotationType() {
+            return getHandler().getAnnotationType();
+        }
+
+        @Override
+        public HandlerProcessingResult processAnnotation(
+                AnnotationInfo element) throws AnnotationProcessorException {
+            return getHandler().processAnnotation(element);
+        }
+
+        @Override
+        public Class<? extends Annotation>[] getTypeDependencies() {
+            return getHandler().getTypeDependencies();
+        }
+        
     }
 }
