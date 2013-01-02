@@ -1166,24 +1166,22 @@ public class PayloadFilesManagerTest {
         }
     }
 
-    private void cleanup(final File... files) {
+    private void cleanup(final File f) {
         boolean ok = true;
-        for (File f : files) {
-            /*
-             * If this is a directory we've been asked to clean up then
-             * clean it recursively.
-             */
-            if (f.isDirectory()) {
-                if ( ! FileUtils.whack(f)) {
-                    System.err.println("** Could not whack " + f.getAbsolutePath());
-                    ok = false;
-                }
-            } else {
-                if ( f.exists() && ! f.delete()) {
-                    System.err.println("** Could not clean up " + f.getAbsolutePath());
-                    ok = false;
-                    f.deleteOnExit();
-                }
+        /*
+         * If this is a directory we've been asked to clean up then
+         * clean it recursively.
+         */
+        if (f.isDirectory()) {
+            if ( ! FileUtils.whack(f)) {
+                System.err.println("** Could not whack " + f.getAbsolutePath());
+                ok = false;
+            }
+        } else {
+            if ( f.exists() && ! f.delete()) {
+                System.err.println("** Could not clean up " + f.getAbsolutePath());
+                ok = false;
+                f.deleteOnExit();
             }
         }
         if ( ! ok) {
