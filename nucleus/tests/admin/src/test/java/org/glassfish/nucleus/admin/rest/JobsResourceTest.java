@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,56 +37,55 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.nucleus.admin.rest;
 
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import static org.testng.AssertJUnit.*;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.composite.CompositeResource;
+import org.glassfish.admin.rest.composite.CompositeUtil;
+import org.glassfish.admin.rest.resources.composite.Job;
+import static org.glassfish.tests.utils.NucleusTestUtils.nadminWithOutput;
+import org.testng.Assert;
+import static org.testng.AssertJUnit.assertNotNull;
 import org.testng.annotations.Test;
 
 /**
  *
- * @author jasonlee
+ * @author jdlee
  */
-public class ConfigTest extends RestTestBase {
+@Test(testName="JobsResourceTest")
+public class JobsResourceTest extends RestTestBase {
+    public static final String URL_JOBS = "/jobs";
 
-    public static final String BASE_CONFIGS_URL = "/domain/configs";
-
-    @Test
-    public void testConfigCopy() {
-        String configName = "config-" + generateRandomString();
-        MultivaluedMap formData = new MultivaluedHashMap();
-        formData.add("id", "default-config");
-        formData.add("id", configName);
-        createAndVerifyConfig(configName, formData);
-        deleteAndVerifyConfig(configName);
+    public void testJobsListing() {
+        Assert.assertTrue(isSuccess(get(URL_JOBS)));
     }
 
-    @Test
-    public void duplicateCopyShouldFail() {
-        MultivaluedMap formData = new MultivaluedHashMap();
-        formData.add("id", "default-config");
-        formData.add("id", "server-config");
-
-        Response response = post(BASE_CONFIGS_URL + "/copy-config", formData);
-        assertFalse(isSuccess(response));
+    public void testGetJob() throws JSONException {
+        issueDetachedCommand();
+        Response response = get(URL_JOBS);
+        JSONObject json = response.readEntity(JSONObject.class);
+        assertNotNull(json.get("items"));
+        final JSONArray metadata = json.getJSONArray("metadata");
+        assertNotNull(metadata);
+        Assert.assertTrue(json.getJSONArray("metadata").length() > 0);
+        JSONObject jobRow = metadata.getJSONObject(0);
+        String uri = jobRow.getString("id");
+        response = get(uri);
+        Assert.assertTrue(isSuccess(response));
+        final JSONObject entity = response.readEntity(JSONObject.class);
+        Job job = CompositeUtil.instance().unmarshallClass(Job.class, entity);
+        Assert.assertNotNull(job);
     }
 
-    public void createAndVerifyConfig(String configName, MultivaluedMap configData) {
-        Response response = post(BASE_CONFIGS_URL + "/copy-config", configData);
-        checkStatusForSuccess(response);
-
-        response = get(BASE_CONFIGS_URL + "/config/" + configName);
-        checkStatusForSuccess(response);
+    private void issueDetachedCommand() {
+        nadminWithOutput("--detach", "uptime");
     }
 
-    public void deleteAndVerifyConfig(String configName) {
-        Response response = post(BASE_CONFIGS_URL + "/config/" + configName + "/delete-config");
-        checkStatusForSuccess(response);
-
-        response = get(BASE_CONFIGS_URL + "/config/" + configName);
-        assertFalse(isSuccess(response));
+    @Override
+    protected String getResponseType() {
+        return CompositeResource.MEDIA_TYPE_JSON;
     }
 }

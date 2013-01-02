@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,56 +37,40 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.admin.rest.resources.composite;
 
-package org.glassfish.nucleus.admin.rest;
-
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
+import com.sun.enterprise.v3.admin.commands.ListJobsCommand;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import javax.ws.rs.GET;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import static org.testng.AssertJUnit.*;
-import org.testng.annotations.Test;
+import org.glassfish.admin.rest.composite.CompositeResource;
+import org.glassfish.admin.rest.composite.RestModel;
+import org.glassfish.admin.rest.utils.StringUtil;
+import org.glassfish.api.ActionReport;
 
 /**
  *
- * @author jasonlee
+ * @author jdlee
  */
-public class ConfigTest extends RestTestBase {
+public class JobResource extends CompositeResource {
 
-    public static final String BASE_CONFIGS_URL = "/domain/configs";
+    @GET
+    public RestModel<Job> getJob(@PathParam("jobId") String jobId) {
+        ActionReport ar = executeReadCommand("list-jobs");
+        Collection<Map<String, Object>> jobMaps = (List<Map<String, Object>>)ar.getExtraProperties().get("jobs");
+        if (jobMaps != null) {
+            for (Map<String, Object> jobMap : jobMaps) {
+                if (StringUtil.compareStrings(jobId, (String) jobMap.get(ListJobsCommand.ID))) {
+                    Job model = JobsResources.constructJobModel(jobMap);
+                    return model;
+                }
+            }
+        }
 
-    @Test
-    public void testConfigCopy() {
-        String configName = "config-" + generateRandomString();
-        MultivaluedMap formData = new MultivaluedHashMap();
-        formData.add("id", "default-config");
-        formData.add("id", configName);
-        createAndVerifyConfig(configName, formData);
-        deleteAndVerifyConfig(configName);
-    }
-
-    @Test
-    public void duplicateCopyShouldFail() {
-        MultivaluedMap formData = new MultivaluedHashMap();
-        formData.add("id", "default-config");
-        formData.add("id", "server-config");
-
-        Response response = post(BASE_CONFIGS_URL + "/copy-config", formData);
-        assertFalse(isSuccess(response));
-    }
-
-    public void createAndVerifyConfig(String configName, MultivaluedMap configData) {
-        Response response = post(BASE_CONFIGS_URL + "/copy-config", configData);
-        checkStatusForSuccess(response);
-
-        response = get(BASE_CONFIGS_URL + "/config/" + configName);
-        checkStatusForSuccess(response);
-    }
-
-    public void deleteAndVerifyConfig(String configName) {
-        Response response = post(BASE_CONFIGS_URL + "/config/" + configName + "/delete-config");
-        checkStatusForSuccess(response);
-
-        response = get(BASE_CONFIGS_URL + "/config/" + configName);
-        assertFalse(isSuccess(response));
+        throw new WebApplicationException(Response.Status.NOT_FOUND);
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,56 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.admin.rest.resources.composite;
 
-package org.glassfish.nucleus.admin.rest;
-
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import static org.testng.AssertJUnit.*;
-import org.testng.annotations.Test;
+import java.util.Date;
+import org.glassfish.admin.rest.composite.RestModel;
 
 /**
  *
- * @author jasonlee
+ * @author jdlee
  */
-public class ConfigTest extends RestTestBase {
+public interface Job extends RestModel {
+    String getJobId();
+    void setJobId(String jobid);
 
-    public static final String BASE_CONFIGS_URL = "/domain/configs";
+    String getJobName();
+    void setJobName(String jobName);
 
-    @Test
-    public void testConfigCopy() {
-        String configName = "config-" + generateRandomString();
-        MultivaluedMap formData = new MultivaluedHashMap();
-        formData.add("id", "default-config");
-        formData.add("id", configName);
-        createAndVerifyConfig(configName, formData);
-        deleteAndVerifyConfig(configName);
-    }
+    String getExecutionDate();
+    void setExecutionDate(String executionDate);
 
-    @Test
-    public void duplicateCopyShouldFail() {
-        MultivaluedMap formData = new MultivaluedHashMap();
-        formData.add("id", "default-config");
-        formData.add("id", "server-config");
+    String getMessage();
+    void setMessage(String message);
 
-        Response response = post(BASE_CONFIGS_URL + "/copy-config", formData);
-        assertFalse(isSuccess(response));
-    }
+    String getExitCode();
+    void setExitCode(String exitCode);
 
-    public void createAndVerifyConfig(String configName, MultivaluedMap configData) {
-        Response response = post(BASE_CONFIGS_URL + "/copy-config", configData);
-        checkStatusForSuccess(response);
-
-        response = get(BASE_CONFIGS_URL + "/config/" + configName);
-        checkStatusForSuccess(response);
-    }
-
-    public void deleteAndVerifyConfig(String configName) {
-        Response response = post(BASE_CONFIGS_URL + "/config/" + configName + "/delete-config");
-        checkStatusForSuccess(response);
-
-        response = get(BASE_CONFIGS_URL + "/config/" + configName);
-        assertFalse(isSuccess(response));
-    }
+    String getUser();
+    void setUser(String user);
 }

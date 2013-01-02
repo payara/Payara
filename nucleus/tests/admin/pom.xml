@@ -45,19 +45,19 @@ INSTRUCTIONS for running nucleus admin dev tests.
 
 To run all of the tests using the staged nucleus build in distributions/nucleus:
     mvn test
-    
+
 To run just one test:
     mvn -Dtest=MiscCommandsTest,NucleusStartStopTest test
 
-Some tests require testing libraries/modules in running distribution. Please do 
+Some tests require testing libraries/modules in running distribution. Please do
 NOT start test against running instance.
 
 To run tests based on your own install:
     mvn -Dnucleus.home=...somedirectory/nucleus test
-    
+
 To see the output of a test run, look in the target/surefire-reports directory.
-The TEST-TestSuite.xml file is especially useful. 
-    
+The TEST-TestSuite.xml file is especially useful.
+
 INSTRUCTIONS for adding tests.
 
 Copy one of the existing test files, such as MiscCommandsTest.java.  Then add
@@ -65,11 +65,11 @@ tests.  The file will automatically be picked up as part of the suite. There is
 no need to modify this pom.xml file or any other configuration file. Useful
 utilities are in the NucleusTestUtils class.
 
-Test suit contains place for additional modules/libraries with testing content 
+Test suit contains place for additional modules/libraries with testing content
 that are copied into the Nucleus before start and removed after stop:
 - src/addon/module/* -> <Nucleus>/modules
-(If you need to add your testing module to different directory in nucleus than 
-modify org.glassfish.nucleus.admin.NucleusStartStopTest static initializer 
+(If you need to add your testing module to different directory in nucleus than
+modify org.glassfish.nucleus.admin.NucleusStartStopTest static initializer
 of COPY_LIB map constant.)
 
 -->
@@ -106,7 +106,7 @@ of COPY_LIB map constant.)
               </properties>
             </configuration>
           </plugin>
-          
+
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-invoker-plugin</artifactId>
@@ -172,6 +172,13 @@ of COPY_LIB map constant.)
             <artifactId>hk2-api</artifactId>
             <version>${hk2.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>rest-service</artifactId>
+            <version>4.0-SNAPSHOT</version>
+            <scope>test</scope>
+            <type>jar</type>
         </dependency>
     </dependencies>
 </project>

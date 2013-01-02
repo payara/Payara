@@ -210,6 +210,10 @@ public class RestTestBase {
         }
     }
 
+    protected String getResponseType() {
+        return RESPONSE_TYPE;
+    }
+
     protected Response get(String address) {
         return get(address, new HashMap<String, String>());
     }
@@ -219,37 +223,37 @@ public class RestTestBase {
         for (Map.Entry<String, String> entry : payload.entrySet()) {
             target = target.queryParam(entry.getKey(), entry.getValue());
         }
-        return target.request(RESPONSE_TYPE)
+        return target.request(getResponseType())
                 .get(Response.class);
     }
 
     protected Response options(String address) {
         return getClient().target(getAddress(address)).
-                request(RESPONSE_TYPE).
+                request(getResponseType()).
                 options(Response.class);
     }
 
     protected Response post(String address, Map<String, String> payload) {
         return getClient().target(getAddress(address)).
-                request(RESPONSE_TYPE).
+                request(getResponseType()).
                 post(Entity.entity(buildMultivaluedMap(payload), MediaType.APPLICATION_FORM_URLENCODED), Response.class);
     }
 
     protected Response post(String address) {
         return getClient().target(getAddress(address)).
-                request(RESPONSE_TYPE).
+                request(getResponseType()).
                 post(Entity.entity(null, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
     }
 
     protected Response put(String address, Map<String, String> payload) {
         return getClient().target(getAddress(address)).
-                request(RESPONSE_TYPE).
+                request(getResponseType()).
                 put(Entity.entity(buildMultivaluedMap(payload), MediaType.APPLICATION_FORM_URLENCODED), Response.class);
     }
 
     protected Response put(String address) {
         return getClient().target(getAddress(address)).
-                request(RESPONSE_TYPE).
+                request(getResponseType()).
                 put(Entity.entity(null, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
     }
 
@@ -264,7 +268,7 @@ public class RestTestBase {
             }
         }
         return getClient().target(getAddress(address)).
-                request(RESPONSE_TYPE).
+                request(getResponseType()).
                 post(Entity.entity(form, MediaType.MULTIPART_FORM_DATA), Response.class);
     }
 
@@ -277,7 +281,7 @@ public class RestTestBase {
         for (Map.Entry<String, String> entry : payload.entrySet()) {
             target = target.queryParam(entry.getKey(), entry.getValue());
         }
-        return target.request(RESPONSE_TYPE)
+        return target.request(getResponseType())
                 .delete(Response.class);
     }
 
