@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -83,6 +83,7 @@ import static org.junit.Assert.*;
 public class PayloadFilesManagerTest {
 
     private Logger defaultLogger = Logger.getAnonymousLogger();
+    private PayloadFilesManager tempMgr;
 
     public PayloadFilesManagerTest() {
     }
@@ -97,6 +98,11 @@ public class PayloadFilesManagerTest {
 
     @Before
     public void setUp() {
+        try {
+            tempMgr = new PayloadFilesManager.Temp(defaultLogger);
+        } catch (Exception e) {
+            fail("Could not set up class for test run" + e.getLocalizedMessage());
+        }
     }
 
     @After
@@ -110,17 +116,12 @@ public class PayloadFilesManagerTest {
     public void testGetOutputFileURI() throws Exception {
         ////System.out.println("getOutputFileURI");
 
-        PayloadFilesManager.Temp instance = new PayloadFilesManager.Temp(Logger.getAnonymousLogger());
-        try {
-            String originalPath = "way/over/there/myApp.ear";
-            Part testPart = PayloadImpl.Part.newInstance("text/plain", originalPath, null, "random content");
-            URI result = instance.getOutputFileURI(testPart, testPart.getName());
-            ////System.out.println("  " + originalPath + " -> " + result);
-            assertTrue(result.toASCIIString().endsWith("/myApp.ear"));
-        } finally {
-            instance.cleanup();
-        }
-        
+        PayloadFilesManager instance = new PayloadFilesManager.Temp(Logger.getAnonymousLogger());
+        String originalPath = "way/over/there/myApp.ear";
+        Part testPart = PayloadImpl.Part.newInstance("text/plain", originalPath, null, "random content");
+        URI result = instance.getOutputFileURI(testPart, testPart.getName());
+        ////System.out.println("  " + originalPath + " -> " + result);
+        assertTrue(result.toASCIIString().endsWith("/myApp.ear"));
     }
 
     @Test
@@ -131,17 +132,13 @@ public class PayloadFilesManagerTest {
         tmpDir.delete();
         tmpDir.mkdir();
 
-        try {
-            final PayloadFilesManager instance = new PayloadFilesManager.Perm(tmpDir,
-                    null, Logger.getAnonymousLogger());
-            final String originalPath = "some/path";
-            final Part testPart = PayloadImpl.Part.newInstance("text/plain", originalPath, null, "random content");
-            final URI result = instance.getOutputFileURI(testPart, testPart.getName());
-            ////System.out.println("  " + originalPath + " -> " + result);
-            assertFalse(result.toASCIIString().contains("{"));
-        } finally {
-            cleanup(tmpDir);
-        }
+        final PayloadFilesManager instance = new PayloadFilesManager.Perm(tmpDir,
+                null, Logger.getAnonymousLogger());
+        final String originalPath = "some/path";
+        final Part testPart = PayloadImpl.Part.newInstance("text/plain", originalPath, null, "random content");
+        final URI result = instance.getOutputFileURI(testPart, testPart.getName());
+        ////System.out.println("  " + originalPath + " -> " + result);
+        assertFalse(result.toASCIIString().contains("{"));
     }
 
     @Test
@@ -360,7 +357,6 @@ public class PayloadFilesManagerTest {
                     for (File f : desiredResults) {
                         f.delete();
                     }
-                    cleanup(origDir);
                 }
 
             }.init(targetDir).run("simplePermanentTransferTest");
@@ -503,7 +499,6 @@ public class PayloadFilesManagerTest {
                     for (File f : desiredPresent) {
                         f.delete();
                     }
-                    cleanup(origDir);
                 }
 
             }.init(targetDir).run("simplePermanentTransferAndRemovalTest");
@@ -628,7 +623,6 @@ public class PayloadFilesManagerTest {
                             f.delete();
                         }
                     }
-                    cleanup(origDir);
                 }
 
             }.init(targetDir).run("simplePermanentDirWithNoSlashRemovalTest");
@@ -740,7 +734,6 @@ public class PayloadFilesManagerTest {
                             f.delete();
                         }
                     }
-                    cleanup(origDir);
                 }
 
             }.init(targetDir).run("replacementTest");
@@ -858,7 +851,6 @@ public class PayloadFilesManagerTest {
                     for (File f : desiredResults) {
                         f.delete();
                     }
-                    cleanup(origDir);
                 }
 
             }.init(targetDir).run("simplePermanentTransferDirTest");
@@ -965,7 +957,6 @@ public class PayloadFilesManagerTest {
                     for (File f : desiredResults) {
                         f.delete();
                     }
-                    cleanup(origDir);
                 }
 
             }.init(targetDir).run("simplePermanentRecursiveTransferTest");
@@ -1062,7 +1053,6 @@ public class PayloadFilesManagerTest {
                     for (File f : desiredResults) {
                         f.delete();
                     }
-                    cleanup(origDir);
                 }
 
             }.init(targetDir).run("simplePermanentRecursiveTransferDirOnlyTest");
@@ -1154,8 +1144,7 @@ public class PayloadFilesManagerTest {
                 }
 
                 @Override
-                protected void doCleanup() {
-                    cleanup(origDir);
+                protected void cleanup() {
                 }
 
             }.run("simpleTempRecursiveTransferDirOnlyTest");
@@ -1166,28 +1155,6 @@ public class PayloadFilesManagerTest {
         }
     }
 
-    private void cleanup(final File f) {
-        boolean ok = true;
-        /*
-         * If this is a directory we've been asked to clean up then
-         * clean it recursively.
-         */
-        if (f.isDirectory()) {
-            if ( ! FileUtils.whack(f)) {
-                System.err.println("** Could not whack " + f.getAbsolutePath());
-                ok = false;
-            }
-        } else {
-            if ( f.exists() && ! f.delete()) {
-                System.err.println("** Could not clean up " + f.getAbsolutePath());
-                ok = false;
-                f.deleteOnExit();
-            }
-        }
-        if ( ! ok) {
-            new Exception().printStackTrace();
-        }
-    }
     private void writeFile(final File file, final String... content) throws FileNotFoundException {
         PrintStream ps = new PrintStream(file);
         for (String s : content) {
@@ -1270,26 +1237,18 @@ public class PayloadFilesManagerTest {
     
     private abstract class CommonTempTest extends CommonTest {
 
-        private List<PayloadFilesManager.Temp> tempInstances = new ArrayList<PayloadFilesManager.Temp>();
+        private PayloadFilesManager.Temp tempInstance;
 
         @Override
         protected PayloadFilesManager instance() throws IOException {
-            final PayloadFilesManager.Temp tempInstance = new PayloadFilesManager.Temp(Logger.getAnonymousLogger());
-            tempInstances.add(tempInstance);
-//            System.err.println("** Temp recording " + tempInstance.getTargetDir().getAbsolutePath());
+            tempInstance = new PayloadFilesManager.Temp(Logger.getAnonymousLogger());
             return tempInstance;
         }
 
         @Override
         protected void cleanup() {
-            doCleanup();
-            for (PayloadFilesManager.Temp tempInstance : tempInstances) {
-//                System.err.println("** Temp cleaning " + tempInstance.getTargetDir().getAbsolutePath());
-                tempInstance.cleanup();
-            }
+            tempInstance.cleanup();
         }
-        
-        protected void doCleanup() {}
     }
 
     private abstract class CommonPermTest extends CommonTest {
@@ -1299,7 +1258,6 @@ public class PayloadFilesManagerTest {
         protected CommonPermTest init(final File targetDir) {
             permInstance = new PayloadFilesManager.Perm(targetDir, null, debugLogger());
             myTargetDir = targetDir;
-//            System.err.println("** Perm creating " + permInstance.getTargetDir().getAbsolutePath());
             return this;
         }
 
