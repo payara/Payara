@@ -229,7 +229,7 @@ public class JobManagerService implements JobManager,PostConstruct {
      * and need to be purged
      * @return  list of jobs to be purged
      */
-    public ArrayList<JobInfo> getExpiredJobs() {
+    public synchronized ArrayList<JobInfo> getExpiredJobs() {
         ArrayList<JobInfo> expiredJobs = new ArrayList<JobInfo>();
         JobInfos jobInfos = getCompletedJobs();
         for(JobInfo job:jobInfos.getJobInfoList()) {
@@ -294,19 +294,21 @@ public class JobManagerService implements JobManager,PostConstruct {
      * @return JobsInfos which contains information about completed jobs
      */
     @Override
-    public synchronized JobInfos getCompletedJobs() {
-        try {
-            if (jaxbContext == null)
-                jaxbContext = JAXBContext.newInstance(JobInfos.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            if (jobsFile != null && jobsFile.exists())  {
-                JobInfos jobInfos = (JobInfos)unmarshaller.unmarshal(jobsFile);
-                return jobInfos;
+    public  JobInfos getCompletedJobs() {
+        synchronized (jobsFile) {
+            try {
+                if (jaxbContext == null)
+                    jaxbContext = JAXBContext.newInstance(JobInfos.class);
+                Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+                if (jobsFile != null && jobsFile.exists())  {
+                    JobInfos jobInfos = (JobInfos)unmarshaller.unmarshal(jobsFile);
+                    return jobInfos;
+                }
+            } catch (JAXBException e) {
+                throw new RuntimeException(adminStrings.getLocalString("error.reading.completed.jobs","Error reading completed jobs ",  e.getLocalizedMessage()), e);
             }
-        } catch (JAXBException e) {
-            throw new RuntimeException(adminStrings.getLocalString("error.reading.completed.jobs","Error reading completed jobs ",  e.getLocalizedMessage()), e);
+            return null;
         }
-        return null;
     }
 
     /**
@@ -316,28 +318,31 @@ public class JobManagerService implements JobManager,PostConstruct {
      * @return  the new list of completed jobs
      */
     @Override
-    public synchronized JobInfos purgeCompletedJobForId(String jobId) {
-        CopyOnWriteArrayList<JobInfo> jobList = new CopyOnWriteArrayList<JobInfo>();
-        if (getCompletedJobs()!= null)
-            jobList.addAll(getCompletedJobs().getJobInfoList());
-        for (JobInfo jobInfo: jobList ) {
-            if (jobInfo.jobId.equals(jobId)) {
-                jobList.remove(jobInfo);
+    public  JobInfos purgeCompletedJobForId(String jobId) {
+        synchronized (jobsFile) {
+            CopyOnWriteArrayList<JobInfo> jobList = new CopyOnWriteArrayList<JobInfo>();
+            if (getCompletedJobs()!= null)
+                jobList.addAll(getCompletedJobs().getJobInfoList());
+            for (JobInfo jobInfo: jobList ) {
+                if (jobInfo.jobId.equals(jobId)) {
+                    jobList.remove(jobInfo);
+                }
+
             }
 
-        }
-        JobInfos jobInfos = new JobInfos();
-        try {
-            if (jaxbContext == null)
-                jaxbContext = JAXBContext.newInstance(JobInfos.class);
+            JobInfos jobInfos = new JobInfos();
+            try {
+                if (jaxbContext == null)
+                    jaxbContext = JAXBContext.newInstance(JobInfos.class);
 
-            jobInfos.setJobInfoList(jobList);
-            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-            jaxbMarshaller.marshal(jobInfos, jobsFile);
-        } catch (JAXBException e) {
-            throw new RuntimeException(adminStrings.getLocalString("error.purging.completed.job","Error purging completed job ", jobId,e.getLocalizedMessage()), e);
+                jobInfos.setJobInfoList(jobList);
+                Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+                jaxbMarshaller.marshal(jobInfos, jobsFile);
+            } catch (JAXBException e) {
+                throw new RuntimeException(adminStrings.getLocalString("error.purging.completed.job","Error purging completed job ", jobId,e.getLocalizedMessage()), e);
+            }
+            return jobInfos;
         }
-        return jobInfos;
 
     }
 
@@ -347,5 +352,10 @@ public class JobManagerService implements JobManager,PostConstruct {
         jobsFile =
                 new File(serverEnvironment.getConfigDirPath(),JOBS_FILE);
         pool = executorFactory.provide();
+    }
+
+    @Override
+    public File getJobsFile() {
+        return jobsFile;
     }
 }

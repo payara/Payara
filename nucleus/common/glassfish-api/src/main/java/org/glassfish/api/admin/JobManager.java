@@ -39,6 +39,7 @@
  */
 package org.glassfish.api.admin;
 
+import java.io.File;
 import java.util.Iterator;
 
 import org.glassfish.api.admin.progress.JobInfo;
@@ -78,5 +79,7 @@ public interface JobManager {
     public Object getCompletedJobForId(String id);
 
     public Object purgeCompletedJobForId(String id);
-    
+
+    public File getJobsFile();
+
 }

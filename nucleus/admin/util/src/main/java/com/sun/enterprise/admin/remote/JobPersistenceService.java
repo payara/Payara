@@ -40,6 +40,7 @@
 package com.sun.enterprise.admin.remote;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.io.FileUtils;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.JobManager;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -55,6 +56,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 
@@ -87,24 +89,25 @@ public class JobPersistenceService implements JobPersistence {
     private static final LocalStringManagerImpl adminStrings =
             new LocalStringManagerImpl(JobPersistenceService.class);
     @Override
-    public synchronized void persist(Object obj) {
+    public  void persist(Object obj) {
         JobInfo jobInfo = (JobInfo)obj;
-        File file = new File(
-              serverEnvironment.getConfigDirPath(),JOBS_FILE);
-        jobInfos = jobManager.getCompletedJobs();
-                if (jobInfos == null)
-                    jobInfos = new JobInfos();
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(JobInfos.class);
-            jaxbMarshaller = jaxbContext.createMarshaller();
-            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            jobInfos.getJobInfoList().add(jobInfo);
-            jaxbMarshaller.marshal(jobInfos, file);
-            jobManager.purgeJob(jobInfo.jobId);
+        File file = jobManager.getJobsFile();
+        synchronized (file) {
+            jobInfos = jobManager.getCompletedJobs();
+            if (jobInfos == null)
+                jobInfos = new JobInfos();
+            try {
+                JAXBContext jaxbContext = JAXBContext.newInstance(JobInfos.class);
+                jaxbMarshaller = jaxbContext.createMarshaller();
+                jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+                jobInfos.getJobInfoList().add(jobInfo);
+                jaxbMarshaller.marshal(jobInfos, file);
+                jobManager.purgeJob(jobInfo.jobId);
 
-        } catch (JAXBException e) {
-            throw new RuntimeException(adminStrings.getLocalString("error.persisting.jobs","Error while persisting jobs",jobInfo.jobId,e.getLocalizedMessage()));
+            } catch (JAXBException e) {
+                throw new RuntimeException(adminStrings.getLocalString("error.persisting.jobs","Error while persisting jobs",jobInfo.jobId,e.getLocalizedMessage()));
 
+            }
         }
 
     }
