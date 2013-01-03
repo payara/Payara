@@ -508,7 +508,9 @@ public class StandardPipeline
             }
         }
 
-        this.basic = valve;
+        synchronized (this) {
+            this.basic = valve;
+        }
 
     }
 

@@ -1725,10 +1725,8 @@ public class StandardWrapper
             throw e;
         } catch (Throwable e) {
             // Set response status before firing event, see IT 10022
-            if (response instanceof HttpServletResponse) {
-                ((HttpServletResponse)response).setStatus(
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            }
+            ((HttpServletResponse)response).setStatus(
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             supp.fireInstanceEvent(AFTER_SERVICE_EVENT,
                                    serv, request, response, e);
             throw new ServletException(rb.getString(SERVLET_EXECUTION_EXCEPTION), e);
