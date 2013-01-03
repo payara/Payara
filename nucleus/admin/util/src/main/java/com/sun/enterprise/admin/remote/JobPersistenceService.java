@@ -105,7 +105,7 @@ public class JobPersistenceService implements JobPersistence {
                 jobManager.purgeJob(jobInfo.jobId);
 
             } catch (JAXBException e) {
-                throw new RuntimeException(adminStrings.getLocalString("error.persisting.jobs","Error while persisting jobs",jobInfo.jobId,e.getLocalizedMessage()));
+                throw new RuntimeException(adminStrings.getLocalString("error.persisting.jobs","Error while persisting jobs",jobInfo.jobId,e.getLocalizedMessage()),e);
 
             }
         }
