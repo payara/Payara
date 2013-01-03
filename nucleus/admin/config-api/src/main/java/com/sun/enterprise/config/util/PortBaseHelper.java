@@ -43,6 +43,7 @@ package com.sun.enterprise.config.util;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import java.beans.PropertyVetoException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jvnet.hk2.config.TransactionFailure;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
@@ -201,7 +202,7 @@ public class PortBaseHelper {
             throw new TransactionFailure(
                 strings.get("PortBasePortInUse", portNum, portName));
         }
-        _logger.finer("Port =" + portNum);
+        _logger.log(Level.FINER,ConfigApiLoggerInfo.portBaseHelperPort, portNum);
     }
 
     public void setPorts() throws TransactionFailure, PropertyVetoException {

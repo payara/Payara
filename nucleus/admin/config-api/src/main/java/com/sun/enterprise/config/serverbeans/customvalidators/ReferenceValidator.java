@@ -67,8 +67,7 @@ public class ReferenceValidator implements ConstraintValidator<ReferenceConstrai
             this.annotation = annotation;
         }
     }
-    
-    static final Logger logger = LogDomains.getLogger(ConfigRefValidator.class, LogDomains.ADMIN_LOGGER);
+
     static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ReferenceValidator.class);
     
     private ReferenceConstraint rc;

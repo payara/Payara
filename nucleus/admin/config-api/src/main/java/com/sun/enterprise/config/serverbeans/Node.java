@@ -42,6 +42,7 @@ package com.sun.enterprise.config.serverbeans;
 
 import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTargetName;
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.net.NetUtils;
 import com.sun.enterprise.util.StringUtils;
@@ -475,7 +476,7 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
                         "Node.localhost",
                         "Cannot remove Node {0}. ", child.getName());
 
-                logger.log(Level.SEVERE, msg);
+                logger.log(Level.SEVERE, ConfigApiLoggerInfo.cannotRemoveNode, child.getName());
                 throw new TransactionFailure(msg);
             }
 
@@ -497,7 +498,7 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
                 final String msg = localStrings.getLocalString(
                         "Node.referencedByInstance",
                         "Node {0} referenced in server instance(s): {1}.  Remove instances before removing node.", child.getName(), sb.toString());
-                logger.log(Level.SEVERE, msg);
+                logger.log(Level.SEVERE, ConfigApiLoggerInfo.referencedByInstance, new Object[]{child.getName(), sb.toString()});
                 throw new TransactionFailure(msg);
             }
 

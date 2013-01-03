@@ -45,6 +45,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
@@ -183,7 +184,7 @@ public interface HttpService extends ConfigBeanProxy, PropertyBag, ConfigExtensi
                 }, param);
             } catch (TransactionFailure ex) {
                 // Will use the BG logging infrastrucre... And probably some exception type?
-                logger.log(Level.INFO, "Unable to create default Http service configuration", ex);
+                logger.log(Level.INFO, ConfigApiLoggerInfo.unableToCreateHttpServiceConfig, ex);
             }
             return param.getExtensionByType(HttpService.class);
         }

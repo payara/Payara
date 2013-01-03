@@ -41,6 +41,7 @@
 package com.sun.enterprise.config.serverbeans;
 
 import com.sun.enterprise.config.modularity.parser.ModuleConfigurationLoader;
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.admin.config.ApplicationName;
 import org.glassfish.api.admin.config.PropertiesDesc;
@@ -64,6 +65,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -499,7 +501,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                 }
             }
             catch(Exception e) {
-                 Logger.getAnonymousLogger().warning("Error when getting servers " + e.getLocalizedMessage());
+                 Logger.getAnonymousLogger().log(Level.WARNING,ConfigApiLoggerInfo.errorGettingServers , e.getLocalizedMessage());
             }
             return ret;
         }
@@ -521,7 +523,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                 }
             }
             catch(Exception e) {
-                Logger.getAnonymousLogger().warning("Error when getting clusters on node " + e.getLocalizedMessage());
+                Logger.getAnonymousLogger().log(Level.WARNING, ConfigApiLoggerInfo.errorGettingCluster, e.getLocalizedMessage());
 
             }
             return new ArrayList(clMap.values());

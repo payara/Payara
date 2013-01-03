@@ -61,6 +61,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.logging.LogDomains;
+import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.*;
 
 /**
  * Listens for changes to the Config for the current server and adds an 
@@ -92,7 +93,7 @@ public final class ConfigConfigBeanListener implements ConfigListener {
             Object ov = e.getOldValue();
             if (ov instanceof ConfigBeanProxy) {
                 ConfigBeanProxy ovbp = (ConfigBeanProxy) ov;
-                logger.log(Level.FINE, "removing default instance index for {0}",
+                logger.log(Level.FINE, removingDefaultInstanceIndexFor,
                         ConfigSupport.getImpl(ovbp).getProxyType().getName());
                 ServiceLocatorUtilities.removeFilter(habitat, BuilderHelper.createNameAndContractFilter(
                         ConfigSupport.getImpl(ovbp).getProxyType().getName(),
@@ -104,7 +105,7 @@ public final class ConfigConfigBeanListener implements ConfigListener {
             if (nv instanceof ConfigBean) {
                 ConfigBean nvb = (ConfigBean) nv;
                 ConfigBeanProxy nvbp = nvb.getProxy(nvb.getProxyType());
-                logger.log(Level.FINE, "adding default instance index for {0}",
+                logger.log(Level.FINE, AddingDefaultInstanceIndexFor,
                         nvb.getProxyType().getName());
                 ServiceLocatorUtilities.addOneConstant(habitat, nvbp,
                         ServerEnvironment.DEFAULT_INSTANCE_NAME,

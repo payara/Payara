@@ -426,7 +426,6 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
     void deleteResourceRef(String refName) throws TransactionFailure;
 
     class Duck {
-        private final static Logger LOG = Logger.getLogger(Duck.class.getName());
 
         public static String setLoggingProperty(Config c, String property, String value) {
             ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(c)).getMasterView();

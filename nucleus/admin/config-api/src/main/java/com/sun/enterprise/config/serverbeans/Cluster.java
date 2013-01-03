@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTarget
 import com.sun.enterprise.config.serverbeans.customvalidators.ConfigRefConstraint;
 import com.sun.enterprise.config.serverbeans.customvalidators.ConfigRefValidator;
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.logging.LogDomains;
@@ -488,7 +489,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
             return null;
         }
 
-        
+
         public static boolean isResourceRefExists(Cluster cluster, String refName) {
             return getResourceRef(cluster, refName) != null;
         }
@@ -630,10 +631,8 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
                 Config config = habitat.getService(Config.class, "default-config");
                 if (config==null) {
                     config = habitat.<Config>getAllServices(Config.class).iterator().next();
-                    logger.warning(localStrings.getLocalString(Cluster.class,
-                            "Cluster.no_default_config_found",
-                            "No default config found, using config {0} as the default config for the cluster {1}",
-                            config.getName(), instance.getName()));
+                    logger.log(Level.WARNING,ConfigApiLoggerInfo.noDefaultConfigFound,
+                            new Object[]{config.getName(), instance.getName()});
                 }
 
                 Configs configs = domain.getConfigs();
@@ -641,7 +640,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
                 final String configName = instance.getName() + "-config";
                 instance.setConfigRef(configName);
                 command.copyConfig(writableConfigs,config,configName,logger);
-                
+
 
             }  else {
 
@@ -679,8 +678,8 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
                 broadcastProtocol = "tcp";
             }
             if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "cluster attribute gms broadcast=" + instance.getBroadcast());
-                logger.log(Level.FINE, "cluster property GMS_DISCOVERY_URI_LIST=" + discoveryUriList);
+                logger.log(Level.FINE,ConfigApiLoggerInfo.clusterGSMBroadCast, instance.getBroadcast());
+                logger.log(Level.FINE, ConfigApiLoggerInfo.clusterGSMDeliveryURI , discoveryUriList);
             }
             if (DEFAULT_BROADCAST.equals(broadcastProtocol)) {
 
@@ -834,7 +833,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
 
         @Inject
         Configs configs;
-        
+
         @Inject
         private ServerEnvironment env;
 
@@ -864,7 +863,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
                         ,child.getName() ,namesOfServers.toString()
                 );
 
-                logger.log(Level.SEVERE, msg);
+                logger.log(Level.SEVERE, ConfigApiLoggerInfo.clusterMustNotContainInstance,new Object[]{child.getName() ,namesOfServers.toString()});
                 throw new TransactionFailure(msg);
             }
 
@@ -900,9 +899,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
                     configList.remove(config);
                 }
             } catch (TransactionFailure ex) {
-                logger.log(Level.SEVERE,
-                        localStrings.getLocalString("deleteConfigFailed",
-                                "Unable to remove config {0}", instanceConfig), ex);
+                logger.log(Level.SEVERE, ConfigApiLoggerInfo.deleteConfigFailed, new Object[]{instanceConfig, ex});
                 String msg = ex.getMessage() != null ? ex.getMessage()
                         : localStrings.getLocalString("deleteConfigFailed",
                         "Unable to remove config {0}", instanceConfig);

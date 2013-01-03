@@ -65,6 +65,7 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
+ import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.*;
 
 /**
  * Upgrade service to add the default-config if it doesn't exist.
@@ -101,26 +102,19 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
         Config defaultConfig = configs.getConfigByName(DEFAULT_CONFIG);
         if (defaultConfig != null) {
             Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                    Level.INFO, localStrings.getLocalString(
-                    "DefaultConfigUpgrade.existingDefaultConfig",
-                    "Existing default-config detected during upgrade. No need to create default-config."));
+                    Level.INFO,existingDefaultConfig);
             return;
         }
 
         String installRoot = System.getProperty(INSTALL_ROOT);
         if (installRoot == null) {
             Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                    Level.INFO, localStrings.getLocalString(
-                    "DefaultConfigUpgrade.installRootIsNull",
-                    "System Property com.sun.aas.installRoot is null. We could be running in unit tests."
-                    + "Exiting DefaultConfigUpgrade"));
+                    Level.INFO, installRootIsNull);
             return;
         }
 
         Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                Level.INFO, localStrings.getLocalString(
-                "DefaultConfigUpgrade.runningDefaultConfigUpgrade",
-                "default-config not detected during upgrade. Running DefaultConfigUpgrade to create default-config."));
+                Level.INFO, runningDefaultConfigUpgrade);
 
         String template = getDomainXmlTemplate();
 
@@ -154,19 +148,13 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
 
         } catch (TransactionFailure ex) {
             Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                    Level.SEVERE, localStrings.getLocalString(
-                    "DefaultConfigUpgrade.failure",
-                    "Failure during upgrade - could not create default-config"), ex);
+                    Level.SEVERE, defaultConfigUpgradeFailure, ex);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                    Level.SEVERE, localStrings.getLocalString(
-                    "DefaultConfigUpgrade.failure",
-                    "Failure during upgrade - could not create default-config"), ex);
+                    Level.SEVERE, defaultConfigUpgradeFailure, ex);
         } catch (XMLStreamException ex) {
             Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                    Level.SEVERE, localStrings.getLocalString(
-                    "DefaultConfigUpgrade.failure",
-                    "Failure during upgrade - could not create default-config"), ex);
+                    Level.SEVERE, defaultConfigUpgradeFailure, ex);
         } finally {
             try {
                 if (parser != null) {
@@ -195,9 +183,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                     "DefaultConfigUpgrade failed. Missing domain.xml template here " + template, template));
         } else {
             Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                    Level.INFO, localStrings.getLocalString(
-                    "DefaultConfigUpgrade.foundDomainXmlTemaplate",
-                    "Found domain.xml template to create default-config: " + template, template));
+                    Level.INFO, foundDomainXmlTemaplate, new Object[]{template, template});
         }
         return template;
     }
@@ -258,10 +244,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating SecurityService Config", ex);
+                        Level.SEVERE, failureCreatingSecurityServiceConfig, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing security-service", ex);
+                        Level.SEVERE, problemParsingSecurityServiceConfig, ex);
             }
         }
     }
@@ -399,10 +385,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
             }
         } catch (TransactionFailure ex) {
             Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                    Level.SEVERE, "Failed to create HttpService VirtualService config object", ex);
+                    Level.SEVERE, failureCreatingHttpServiceVS, ex);
         } catch (XMLStreamException ex) {
             Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                    Level.SEVERE, "Problem parsing http-service virtual-server in domain.xml template", ex);
+                    Level.SEVERE, problemParsingHttpServiceVs, ex);
         }
     }
 
@@ -418,10 +404,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failed creating VirtualServer Property config object", ex);
+                        Level.SEVERE, failureCreatingHttpServiceVS, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing virtual-server property element in domain.xml template", ex);
+                        Level.SEVERE, problemParsingHttpServiceVs, ex);
             }
         }
     }
@@ -479,10 +465,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failed to create AdminService Property config object", ex);
+                        Level.SEVERE, failedToCreateAdminService, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing asadmin-service property element in domain.xml template", ex);
+                        Level.SEVERE, problemParsingAdminService, ex);
             }
         }
     }
@@ -501,7 +487,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 ls = config.createChild(LogService.class);
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating LogService config object", ex);
+                        Level.SEVERE, failureCreatingLogService, ex);
             }
             config.setLogService(ls);
 
@@ -536,10 +522,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
             }
         } catch (TransactionFailure ex) {
             Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                    Level.SEVERE, "Failure creating ModuleLogLevel config object", ex);
+                    Level.SEVERE, failureCreateModuleLogLevel, ex);
         } catch (XMLStreamException ex) {
             Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                    Level.SEVERE, "Problem parsing module-log-levels in domain.xml template", ex);
+                    Level.SEVERE, problemParsingModuleLogLevel, ex);
         }
     }
 
@@ -611,7 +597,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating SecurityService config object", ex);
+                        Level.SEVERE, failureCreatingSecurityService, ex);
             }
             return null;
         }
@@ -647,10 +633,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating AuthRealm", ex);
+                        Level.SEVERE, failureCreatingAuthRealm, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(Level.SEVERE,
-                        "Problem parsing auth-realm", ex);
+                        failureParsingAuthRealm, ex);
             }
         }
     }
@@ -669,10 +655,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Create AuthRealm Property failed. Attr = " + attr + " Val = " + val, ex);
+                        Level.SEVERE, failureCreatingAuthRealmProperty , new Object[]{attr, val, ex});
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing auth-realm property", ex);
+                        Level.SEVERE, failureParsingAuthRealmProperty, ex);
             }
         }
     }
@@ -711,10 +697,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating JaccProvider", ex);
+                        Level.SEVERE, failureCreatingJaccProvider, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(Level.SEVERE,
-                        "Problem parsing jacc-provider", ex);
+                        problemParsingJaacProvider, ex);
             }
         }
     }
@@ -742,10 +728,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Create JaccProvider Property failed. Attr = " + attr + " Val = " + val, ex);
+                        Level.SEVERE, failureCreatingJaccProviderAttr , new Object[]{attr, val, ex});
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing jacc-provider property", ex);
+                        Level.SEVERE, problemParsingJaacProviderAttr, ex);
             }
         }
     }
@@ -778,7 +764,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
 
         } catch (TransactionFailure ex) {
             Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                    Level.SEVERE, "Failure creating AuditModule config object", ex);
+                    Level.SEVERE, failureCreatingAuditModule, ex);
         }
 
     }
@@ -795,10 +781,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Create JaccProvider Property failed.", ex);
+                        Level.SEVERE, failureCreatingAuditModuleAttr, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing jacc-provider property", ex);
+                        Level.SEVERE, failureParsingAuditModuleProp, ex);
             }
         }
     }
@@ -839,7 +825,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating JaccProvider", ex);
+                        Level.SEVERE, failureCreatingJaccProvider, ex);
             }
         }
     }
@@ -884,10 +870,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating ProviderConfig", ex);
+                        Level.SEVERE, failureCreatingProviderConfig, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(Level.SEVERE,
-                        "Problem parsing provider-config", ex);
+                        ProblemParsingProviderConfig, ex);
             }
         }
     }
@@ -912,10 +898,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Create ProviderConfig RequestPolicy failed.", ex);
+                        Level.SEVERE, createProviderConfigRequestPolicyFailed, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing request-policy property", ex);
+                        Level.SEVERE, problemParsingRequestPolicyProp, ex);
             }
         }
     }
@@ -940,10 +926,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Create ProviderConfig RequestPolicy failed.", ex);
+                        Level.SEVERE, createProviderConfigRequestPolicyFailed, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing request-policy property", ex);
+                        Level.SEVERE, problemParsingRequestPolicyProp, ex);
             }
         }
     }
@@ -960,10 +946,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Create ProviderConfig Property failed", ex);
+                        Level.SEVERE, createProviderConfigPropertyFailed, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing provider-config property", ex);
+                        Level.SEVERE, problemParsingProviderConfigProp, ex);
             }
         }
     }
@@ -1011,7 +997,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
 
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating JavaConfig config object", ex);
+                        Level.SEVERE,failureCreatingJavaConfigObject , ex);
             }
             return null;
         }
@@ -1028,7 +1014,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing jvm-options", ex);
+                        Level.SEVERE, problemParsingJvmOptions, ex);
             }
         }
     }
@@ -1049,7 +1035,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 config.setAvailabilityService(as);
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating AvailabilityService config object", ex);
+                        Level.SEVERE, failureCreatingAvailabilityServiceConfig, ex);
             }
 
             return null;
@@ -1072,7 +1058,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 createTransports(nc);
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating NetworkConfig config object", ex);
+                        Level.SEVERE,failureCreatingNetworkConfig , ex);
             }
 
             return null;
@@ -1110,10 +1096,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating Protocols config object", ex);
+                        Level.SEVERE,failureCreatingProtocolsConfig, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing protocols element in domain.xml template", ex);
+                        Level.SEVERE, problemParsingProtocolsConfig, ex);
             }
         }
     }
@@ -1158,10 +1144,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating Protocol config object", ex);
+                        Level.SEVERE, failureCreatingProtocolConfig, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing protocol element in domain.xml template", ex);
+                        Level.SEVERE,problemParsingProtocolElement , ex);
             }
         }
     }
@@ -1189,7 +1175,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                     }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating Http config object", ex);
+                        Level.SEVERE, failureCreatingHttpConfig, ex);
             }
         }
 
@@ -1213,10 +1199,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating FileCache config object", ex);
+                        Level.SEVERE, failureCreatingFileCacheConfig, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing file-cache element in domain.xml template", ex);
+                        Level.SEVERE, problemParsingFileCacheElement, ex);
             }
         }
     }
@@ -1250,10 +1236,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating Ssl config object", ex);
+                        Level.SEVERE, failureCreatingSSLConfig, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing ssl element in domain.xml template", ex);
+                        Level.SEVERE,problemParsingSSlElement, ex);
             }
         }
     }
@@ -1272,7 +1258,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                         }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating HttpRedirect config object", ex);
+                        Level.SEVERE, failureCreatingHttpRedirect, ex);
             }
         }
     
@@ -1288,7 +1274,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                         createProtocolFinder(pu);
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating PortUnification config object", ex);
+                        Level.SEVERE, failureCreatingPortUnification, ex);
             }
         }
     
@@ -1317,10 +1303,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating ProtocolFinder config object", ex);
+                        Level.SEVERE, failureCreatingProtocolFinder, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing protocol-finder element in domain.xml template", ex);
+                        Level.SEVERE, problemParsingProtocolFinder, ex);
             }
         }
     }
@@ -1344,10 +1330,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating NetworkListeners config object", ex);
+                        Level.SEVERE,failureCreatingNetworkListeners , ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing network-listeners element in domain.xml template", ex);
+                        Level.SEVERE,problemParsingNetworkListeners , ex);
             }
         }
     }
@@ -1390,10 +1376,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating NetworkListener config object", ex);
+                        Level.SEVERE,failureCreatingNetworkListener, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing network-listener element in domain.xml template", ex);
+                        Level.SEVERE, ProblemParsingNetworkListener, ex);
             }
         }
     }
@@ -1415,10 +1401,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating Transports config object", ex);
+                        Level.SEVERE, failureCreatingTransportsConfig, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing transports element in domain.xml template", ex);
+                        Level.SEVERE,failureParsingTransportsConfig , ex);
             }
         }
     }
@@ -1443,10 +1429,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating Transport config object", ex);
+                        Level.SEVERE,failureCreatingTransportConfig , ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing transport element in domain.xml template", ex);
+                        Level.SEVERE, problemParsingTransportConfig, ex);
             }
         }
     }
@@ -1467,7 +1453,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 createThreadPool(tps);
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure to create ThreadPools config object", ex);
+                        Level.SEVERE,failureToCreateThreadPoolsObject , ex);
             }
             return null;
         }
@@ -1503,10 +1489,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating ThreadPool config object", ex);
+                        Level.SEVERE, failureTocreateThreadpoolObject, ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing thread-pool element in domain.xml template", ex);
+                        Level.SEVERE,problemParsingThreadPoolElement , ex);
             }
         }
     }
@@ -1558,10 +1544,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 }
             } catch (TransactionFailure ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Failure creating SystemProperty config object", ex);
+                        Level.SEVERE,failureCreatingSystemProperty , ex);
             } catch (XMLStreamException ex) {
                 Logger.getLogger(DefaultConfigUpgrade.class.getName()).log(
-                        Level.SEVERE, "Problem parsing system-property element in domain.xml template", ex);
+                        Level.SEVERE,problemParsingSystemProperty, ex);
             }
         }
     }

@@ -47,7 +47,6 @@ import java.io.InputStream;
 import java.net.*;
 import java.net.URL;
 import java.util.*;
-import java.util.logging.Logger;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;

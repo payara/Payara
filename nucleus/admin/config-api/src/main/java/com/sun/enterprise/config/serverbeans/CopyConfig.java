@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.config.serverbeans;
 
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.Param;
@@ -55,6 +56,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -131,9 +133,7 @@ public abstract class CopyConfig implements AdminCommand {
             File dest = new File(configConfigDir, ServerEnvironmentImpl.kLoggingPropertiesFileName);
             FileUtils.copy(src, dest);
         } catch (Exception e) {
-            logger.warning(localStrings.getLocalString(
-                    "config.copyConfigError",
-                    "CopyConfig error caused by {0}", e.getLocalizedMessage()));
+            logger.log(Level.WARNING, ConfigApiLoggerInfo.copyConfigError, e.getLocalizedMessage());
         }
         return destCopy;
     }

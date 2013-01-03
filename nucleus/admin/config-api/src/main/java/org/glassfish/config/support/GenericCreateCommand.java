@@ -41,47 +41,52 @@
 package org.glassfish.config.support;
 
 import com.sun.enterprise.util.AnnotationUtil;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.ExceptionUtil;
-import java.util.logging.Level;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandSecurity;
+import org.glassfish.api.admin.CommandModel;
+import org.glassfish.api.admin.ManagedJob;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.common.util.admin.GenericCommandModel;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.DomDocument;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
-import org.jvnet.hk2.component.*;
-import org.jvnet.hk2.config.*;
-
-import java.util.List;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
-import javax.security.auth.Subject;
-import org.glassfish.api.admin.AccessRequired.AccessCheck;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.AdminCommandSecurity;
+import java.util.List;
+import java.util.logging.Level;
+
+import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.*;
 
 /**
  * Generic create command implementation.
- *
+ * <p/>
  * This command can create POJO configuration objects from an asadmin command
  * invocation parameters.
- *
+ * <p/>
  * So far, such POJO must be ConfigBeanProxy subclasses and be annotated with the
- * {@link org.glassfish.api.Param} annotation to property function. 
+ * {@link org.glassfish.api.Param} annotation to property function.
  *
  * @author Jerome Dochez
  */
 @PerLookup
-public class GenericCreateCommand extends GenericCrudCommand implements AdminCommand, 
-    AdminCommandSecurity.AccessCheckProvider {
+public class GenericCreateCommand extends GenericCrudCommand implements AdminCommand,
+        AdminCommandSecurity.AccessCheckProvider {
 
     GenericCommandModel model;
     Create create;
-    
+
     private ConfigBeanProxy parentBean;
-    
+
     @Override
     public void postConstruct() {
 
@@ -100,16 +105,14 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
                     logger.log(Level.FINE, "I take {0} parameters", param.getName());
                 }
             }
-        } catch(Exception e) {
-            String msg = localStrings.getLocalString(GenericCrudCommand.class,
-                    "GenericCreateCommand.command_model_exception",
-                    "Exception while creating the command model for the generic command {0} : {1}",
-                    commandName, e.getMessage());
+        } catch (Exception e) {
+            String msg = getString(command_model_exception,
+                    new String[]{commandName, e.getMessage()});
             logger.severe(msg);
             throw new RuntimeException(msg, e);
 
         }
-        
+
     }
 
     @Override
@@ -118,8 +121,8 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
         checks.add(new AccessCheck(parentBean, (Class<? extends ConfigBeanProxy>) targetType, "create"));
         return checks;
     }
-    
-    
+
+
     @Override
     void prepareInjection(final AdminCommandContext ctx) {
         super.prepareInjection(ctx);
@@ -128,29 +131,27 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
 
     @Override
     public boolean preAuthorization(final AdminCommandContext adminCommandContext) {
-        if ( ! super.preAuthorization(adminCommandContext)) {
+        if (!super.preAuthorization(adminCommandContext)) {
             return false;
         }
         prepareInjection(adminCommandContext);
         return true;
     }
 
-    
+
     @Override
     public void execute(final AdminCommandContext context) {
 
         final ActionReport result = context.getActionReport();
-        if (parentBean==null) {
-            String msg = localStrings.getLocalString(GenericCrudCommand.class,
-                    "GenericCreateCommand.target_object_not_found",
-                    "The CrudResolver {0} could not find the configuration object of type {1} where instances of {2} should be added",
-                    resolver.getClass().toString(), parentType, targetType);
+        if (parentBean == null) {
+            String msg = getString(target_object_not_found,
+                    new Object[]{resolver.getClass().toString(), parentType, targetType});
             result.failure(logger, msg);
             return;
         }
-        
+
         try {
-            ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy> () {
+            ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
                 @Override
                 public Object run(ConfigBeanProxy writableParent) throws PropertyVetoException, TransactionFailure {
 
@@ -165,23 +166,21 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
                     }
 
                     // check that such instance does not exist yet...
-                    if (name!=null) {
+                    if (name != null) {
                         Object cbp = habitat.getService(targetType, name);
-                        if (cbp!=null) {
-                            String msg = localStrings.getLocalString(GenericCrudCommand.class,
-                                    "GenericCreateCommand.already_existing_instance",
-                                    "A {0} instance with a \"{1}\" name already exist in the configuration",
-                                    targetType.getSimpleName(), name);
+                        if (cbp != null) {
+                            String msg = getString(already_existing_instance,
+                                    new Object[]{targetType.getSimpleName(), name});
                             result.failure(logger, msg);
                             throw new TransactionFailure(msg);
                         }
                     }
 
                     try {
-                        if (targetMethod.getParameterTypes().length==0) {
+                        if (targetMethod.getParameterTypes().length == 0) {
                             // return type must be a list to which we add our child.
                             Object result = targetMethod.invoke(writableParent);
-                            if (result instanceof List) {                                
+                            if (result instanceof List) {
                                 List<ConfigBeanProxy> children = List.class.cast(result);
                                 children.add(childBean);
                             }
@@ -189,24 +188,21 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
                             targetMethod.invoke(writableParent, childBean);
                         }
                     } catch (Exception e) {
-                        String msg = localStrings.getLocalString(GenericCrudCommand.class,
-                                "GenericCrudCommand.method_invocation_exception",
-                                "Exception while invoking {0} method : {1}",
-                                targetMethod.toString(), e.toString());
+                        String msg = getString(method_invocation_exception,
+                                new Object[]{targetMethod.toString(), e.toString()});
                         result.failure(logger, msg, e);
-                        throw new TransactionFailure(msg,e);
+                        throw new TransactionFailure(msg, e);
                     }
 
-                    
+
                     CreationDecorator<ConfigBeanProxy> decorator = null;
                     if (create != null) {
                         decorator = habitat.getService(create.decorator());
                     }
-                    if (decorator==null) {
-                        String msg = localStrings.getLocalString(GenericCrudCommand.class,
-                                "GenericCreateCommand.decorator_not_found",
-                                "The CreationDecorator {0} could not be found in the habitat, is it annotated with @Service ?",
-                                create == null ? "null" : create.decorator().toString());
+                    if (decorator == null) {
+                        String msg = getString(
+                                decorator_not_found,
+                                new Object[]{create == null ? "null" : create.decorator().toString()});
                         result.failure(logger, msg);
                         throw new TransactionFailure(msg);
                     } else {
@@ -220,11 +216,10 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
                     return childBean;
                 }
             }, parentBean);
-        } catch(TransactionFailure e) {
-            String msg = localStrings.getLocalString(GenericCrudCommand.class,
-                    "GenericCreateCommand.transaction_exception",
-                    "Exception while adding the new configuration : {0} ",
-                    getRootCauseMessage(e));
+        } catch (TransactionFailure e) {
+            String msg = getString(
+                    transaction_exception, new Object[]{
+                    getRootCauseMessage(e)});
             result.failure(logger, msg);
         }
     }
@@ -246,7 +241,7 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
             return e.getMessage();
         }
     }
-    
+
     @Override
     public Class getDecoratorClass() {
         if (create != null) {

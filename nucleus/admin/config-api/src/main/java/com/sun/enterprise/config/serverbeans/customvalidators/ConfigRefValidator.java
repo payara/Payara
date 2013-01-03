@@ -46,6 +46,7 @@ import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 
@@ -90,24 +91,18 @@ public class ConfigRefValidator
         
         // cannot use default-config
         if (configRef.equals(SystemPropertyConstants.TEMPLATE_CONFIG_NAME)) {
-            logger.warning(localStrings.getLocalString("configref.defaultconfig",
-                    "The default configuration template (named default-config) "
-                    + "cannot be referenced by a server."));
+            logger.warning(ConfigApiLoggerInfo.configrefDefaultconfig);
            return false;
         }
         // cannot change config-ref of DAS
         if (server != null) {
             if (server.isDas() && !configRef.equals(SystemPropertyConstants.DAS_SERVER_CONFIG)) {
-                logger.warning(localStrings.getLocalString("configref.dasconfig",
-                        "The configuration of the Domain Administration Server "
-                                + "cannot be changed from server-config."));
+                logger.warning(ConfigApiLoggerInfo.configrefDASconfig);
                 return false;
             }
             // cannot use server-config if not DAS
             if (!server.isDas() && configRef.equals(SystemPropertyConstants.DAS_SERVER_CONFIG)) {
-                logger.warning(localStrings.getLocalString("configref.serverconfig",
-                        "The configuration of the Domain Administration Server "
-                                + "(named server-config) cannot be referenced by a server."));
+                logger.warning(ConfigApiLoggerInfo.configrefServerconfig);
                 return false;
             }
 
@@ -126,15 +121,13 @@ public class ConfigRefValidator
                         // the value of desired config-ref will be different than the current config-ref.
                         // During _register-instance, (create-local-instance --cluster c1 i1)
                         // cluster.getConfigRef().equals(configRef) will be true and not come here.
-                        logger.warning(localStrings.getLocalString("configref.clusteredinstance",
-                                "Cannot change a config-ref when the instance is part of a cluster."));
+                        logger.warning(ConfigApiLoggerInfo.configrefClusteredInstance);
                         return false;
                     }
                 }
                 // cannot use a non-existent config  (Only used by set.  _register-instance will fail earlier)
                 if (configs == null || configs.getConfigByName(configRef) == null) {
-                    logger.warning(localStrings.getLocalString("configref.nonexistent",
-                            "A configuration that doesn't exist cannot be referenced by a server."));
+                    logger.warning(ConfigApiLoggerInfo.configrefNonexistent);
                     return false;
                 }
             }

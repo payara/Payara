@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.config.serverbeans;
 
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.config.util.InstanceRegisterInstanceCommandParameters;
 import static com.sun.enterprise.config.util.RegisterInstanceCommandParameters.ParameterNames.*;
 import com.sun.enterprise.config.serverbeans.customvalidators.ConfigRefConstraint;
@@ -650,7 +651,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                             "Can''t find the default config (an element named \"default-config\") "
                             + "in domain.xml.  You may specify the name of an existing config element next time.");
 
-                    logger.log(Level.SEVERE, msg);
+                    logger.log(Level.SEVERE, ConfigApiLoggerInfo.noDefaultConfig);
                     throw new TransactionFailure(msg);
                 }
                final String configName = instance.getName() + "-config";
@@ -870,9 +871,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                         }
                     }
                     catch (TransactionFailure ex) {
-                        logger.log(Level.SEVERE,
-                                localStrings.getLocalString("deleteServerRefFailed",
-                                "Unable to remove server-ref {0} from cluster {1}", instanceName, cluster.getName()), ex);
+                        logger.log(Level.SEVERE,ConfigApiLoggerInfo.deleteServerRefFailed,new Object[]{ instanceName, cluster.getName(), ex});
                         String msg = ex.getMessage() != null ? ex.getMessage()
                                 : localStrings.getLocalString("deleteServerRefFailed",
                                 "Unable to remove server-ref {0} from cluster {1}", instanceName, cluster.getName());
