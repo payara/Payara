@@ -149,7 +149,7 @@ public class RestTestBase {
                 put("X-GlassFish-3", "dummy"); // from Constants in rest-service
             }}, adminUser, adminPass);
         }
-        client.configuration().register(new LoggingFilter());
+        client.register(new LoggingFilter());
         return client;
     }
 
@@ -159,7 +159,7 @@ public class RestTestBase {
     }
 
     protected void authenticate() {
-        getClient().configuration().
+        getClient().
                 register(basicAuthFilter);
     }
 
