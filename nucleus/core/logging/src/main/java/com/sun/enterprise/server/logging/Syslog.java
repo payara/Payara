@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -87,7 +87,7 @@ public class Syslog {
     public static final int LOCAL6 = 176;
     public static final int LOCAL7 = 184;
 
-    private static final int PACKET_SIZE=514;
+    private static final int SYSLOG_PORT=514;
 
     private final InetAddress addr;
 
@@ -105,11 +105,12 @@ public class Syslog {
       int fl=facility | level;
 
       String what="<" + fl + ">" + msg;
-      // System.out.println(what);
+      // System.out.println("Writing to syslog:" + what);
 
       try {
-        DatagramPacket dp = new DatagramPacket(what.getBytes(),
-          what.length(), addr, PACKET_SIZE);
+        byte[] buf = what.getBytes();
+        int len = buf.length;
+        DatagramPacket dp = new DatagramPacket(buf,len,addr,SYSLOG_PORT);
         DatagramSocket s = new DatagramSocket();
         s.send(dp);
         if(!s.isClosed()) {

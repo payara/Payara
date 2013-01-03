@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,7 +74,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
     private Thread pump= null;
     private BooleanLatch done = new BooleanLatch();
     private BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<LogRecord>(5000);
-    
+    private SimpleFormatter simpleFormatter = new SimpleFormatter();
     
 
     public void postConstruct() {
@@ -132,32 +132,32 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
         }
         Level level= record.getLevel();
         long millisec = record.getMillis();
-        int l;
-        String slLvl;
+        int syslogLevel = Syslog.INFO;
+        String logLevel = "INFO";
 
         if (level.equals(Level.SEVERE)) {
-            l = Syslog.CRIT;
-            slLvl = "CRIT";
-        }else if (level.equals(Level.WARNING)){
-            l = Syslog.WARNING;
-            slLvl = "WARNING";
-        }else if (level.equals(Level.INFO)) {
-            l = Syslog.INFO;
-            slLvl = "INFO";
-        }else   {
-            l = Syslog.DEBUG;
-            slLvl = "DEBUG";
-        }
+            syslogLevel = Syslog.CRIT;
+            logLevel = "CRIT";            
+        } else if (level.equals(Level.WARNING)){
+            syslogLevel = Syslog.WARNING;
+            logLevel = "WARNING";
+        } else if(level.intValue() <= Level.FINE.intValue())   {
+            syslogLevel = Syslog.DEBUG;
+            logLevel = "DEBUG";
+        } 
         
         //format the message
-        String msg;
+        StringBuilder sb = new StringBuilder();
         SimpleDateFormat formatter = new SimpleDateFormat("MMM dd HH:mm:ss");
-        msg = formatter.format(millisec);
-        msg = msg +" [ " + slLvl +" glassfish ] " +record.getMessage();
-
+        sb.append(formatter.format(millisec));
+        sb.append(" [ ");
+        sb.append(logLevel);
+        sb.append(" glassfish ] ");        
+        String formattedMsg = simpleFormatter.formatMessage(record);
+        sb.append(formattedMsg);
          //send message
         if (sysLogger != null) {
-            sysLogger.log(Syslog.DAEMON, Syslog.WARNING, msg);
+            sysLogger.log(Syslog.DAEMON, syslogLevel, sb.toString());
         }
 
     }
