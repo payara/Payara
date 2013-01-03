@@ -64,6 +64,9 @@ public class ComponentInvocation
 
     // the component instance, type Servlet, Filter or EnterpriseBean
     public Object instance;
+    
+    // the name of this instance
+    protected String instanceName;
 
     // ServletContext for servlet, Container for EJB
     public Object container;
@@ -135,6 +138,10 @@ public class ComponentInvocation
 
     public Object getInstance() {
         return instance;
+    }
+    
+    public String getInstanceName() {
+      return instanceName;
     }
 
     public String getComponentId() {

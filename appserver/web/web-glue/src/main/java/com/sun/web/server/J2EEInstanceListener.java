@@ -270,7 +270,16 @@ public final class J2EEInstanceListener implements InstanceListener {
         // END OF IASRI 4713234
         // END IASRI 4688449
 
-        ComponentInvocation inv = new WebComponentInvocation(wm, instance);
+        ComponentInvocation inv;
+        if (eventType == InstanceEvent.EventType.BEFORE_INIT_EVENT) {
+          // The servletName is not avaiable from servlet instance before servlet init.
+          // We have to pass the servletName to ComponentInvocation so it can be retrieved 
+          // in RealmAdapter.getServletName().
+          inv = new WebComponentInvocation(wm, instance, event.getWrapper().getName());
+        } else {
+          inv = new WebComponentInvocation(wm, instance);
+        }
+        
         try {
             im.preInvoke(inv);
             if (eventType == InstanceEvent.EventType.BEFORE_SERVICE_EVENT) {

@@ -678,17 +678,25 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     /**
      * Obtain servlet name from invocation.
      *
-     * <P>In order to obtain the servlet name the following must be true:
-     * The ComponentInvocation contains a 'class' of type HttpServlet, which
-     * contains a valid ServletConfig object. This method returns the
-     * value returned by getServletName() on the ServletConfig. If the above
-     * is not met, null is returned.
+     * <P>In order to obtain the servlet name one of the following must be true:
+     * 1. The instanceName of the ComponentInvocation is not null
+     * 2. The ComponentInvocation contains a 'class' of type HttpServlet, which
+     * contains a valid ServletConfig object. This method returns the value returned 
+     * by getServletName() on the ServletConfig.
+     * 
+     * <P>If the above is not met, null is returned.
      *
      * @param inv The invocation object to process.
      * @return Servlet name or null.
      *
      */
     private String getServletName(ComponentInvocation inv) {
+      
+        String servletName = inv.getInstanceName();
+        if (servletName != null) {
+            return servletName;
+        }
+        
         Object invInstance = inv.getInstance();
 
         if (invInstance instanceof HttpServlet) {
