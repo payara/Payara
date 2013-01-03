@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.deploy.shared;
 
-import org.glassfish.api.ContractProvider;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ReadableArchiveFactory;
@@ -77,7 +76,7 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
  */
 @Service
 @Singleton
-public class ArchiveFactory implements ContractProvider {
+public class ArchiveFactory {
 
     @Inject
     ServiceLocator habitat;
