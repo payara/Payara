@@ -465,7 +465,7 @@ public class CommandResource {
         if (model != null ) {
             ExecuteOn executeOn = model.getClusteringAttributes();
             if ((executeOn != null) && (executeOn.value().length ==1) &&
-                    executeOn.value()[0].equals(RuntimeType.SINGLE_INSTANCE)) {
+                    executeOn.value()[0].equals(org.glassfish.api.admin.RuntimeType.SINGLE_INSTANCE)) {
                 return true;
             }
         }

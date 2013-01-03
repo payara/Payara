@@ -109,8 +109,7 @@ public class RestUtil {
     public static Client getJerseyClient() {
         if (JERSEY_CLIENT == null) {
             JERSEY_CLIENT = ClientFactory.newClient();
-            JERSEY_CLIENT.configuration()
-                    .register(new CsrfProtectionFilter())
+            JERSEY_CLIENT.register(new CsrfProtectionFilter())
                     .register(new RequiredHeadersFilter())
                     .register(new JacksonFeature());
         }
@@ -925,9 +924,9 @@ public class RestUtil {
         try {
             ServiceLocator habitat = SecurityServicesUtil.getInstance().getHabitat();
             SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
-            client.configuration().setProperty(ClientProperties.SSL_CONFIG, new SslConfig(new BasicHostnameVerifier(),
+            client.setProperty(ClientProperties.SSL_CONFIG, new SslConfig(new BasicHostnameVerifier(),
                                                                                           habitat.<SSLUtils>getService(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), null)));
-            client.configuration().register(CsrfProtectionFilter.class);
+            client.register(CsrfProtectionFilter.class);
 
         } catch (Exception ex) {
             Throwable cause = ex;

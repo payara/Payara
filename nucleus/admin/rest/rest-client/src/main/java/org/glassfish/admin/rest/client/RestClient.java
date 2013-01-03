@@ -70,9 +70,9 @@ public class RestClient {
         this.useSsl = useSsl;
         client = ClientFactory.newClient();
 
-        client.configuration().register(new CsrfProtectionFilter());
+        client.register(new CsrfProtectionFilter());
         if(user != null) {
-            client.configuration().register(new HttpBasicAuthFilter(user, password));
+            client.register(new HttpBasicAuthFilter(user, password));
         }
     }
 
