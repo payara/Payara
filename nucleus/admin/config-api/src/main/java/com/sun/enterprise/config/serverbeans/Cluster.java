@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -836,13 +836,26 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
 
         @Inject
         private ServerEnvironment env;
+        
+        @Inject
+        CommandRunner runner;
 
         @Override
         public void decorate(AdminCommandContext context, Clusters parent, Cluster child) throws
                 PropertyVetoException, TransactionFailure{
+            
             Logger logger = LogDomains.getLogger(Cluster.class, LogDomains.ADMIN_LOGGER);
             LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Cluster.class);
             final ActionReport report = context.getActionReport();
+            
+            // check to see if the clustering software is installed
+            AdminCommand command = runner.getCommand("copy-config", report, context.getLogger());
+            if (command == null) {
+                String msg = localStrings.getLocalString("cannot.execute.command",
+                        "Cluster software is not installed");
+                throw new TransactionFailure(msg);
+            }
+            
             String instanceConfig = child.getConfigRef();
             final Config config = configs.getConfigByName(instanceConfig);
             Transaction t = Transaction.getTransaction(parent);

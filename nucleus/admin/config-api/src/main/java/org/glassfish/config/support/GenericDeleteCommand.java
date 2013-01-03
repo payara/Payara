@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -147,17 +147,6 @@ public class GenericDeleteCommand extends GenericCrudCommand implements AdminCom
     public void execute(final AdminCommandContext context) {
 
         final ActionReport result = context.getActionReport();
-        
-        //check if cluster software is installed else fail , see issue 12023
-        //This will be revisited with issue 12900
-        final CopyConfig command = (CopyConfig) runner
-                .getCommand("copy-config", context.getActionReport(), context.getLogger());
-        if (command == null ) {
-            String msg = localStrings.getLocalString("cannot.execute.command",
-                    "Cluster software is not installed");
-            result.failure(logger,msg) ;
-            return;
-        }
         
         if (tgt==null) {
             
