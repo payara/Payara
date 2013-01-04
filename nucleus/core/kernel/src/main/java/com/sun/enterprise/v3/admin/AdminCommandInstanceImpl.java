@@ -148,7 +148,7 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
         if (isManagedJob) {
             JobPersistence jobPersistenceService = Globals.getDefaultHabitat().getService(JobPersistenceService.class);
             List<String> userList =  SubjectUtil.getUsernamesFromSubject(subject);
-            jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,State.COMPLETED.name(),"admin",report.getMessage()));
+            jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,State.COMPLETED.name(),userList.get(0),report.getMessage()));
         }
         complete(report);
     }
