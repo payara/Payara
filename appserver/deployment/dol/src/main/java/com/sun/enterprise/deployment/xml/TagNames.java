@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -126,6 +126,7 @@ public interface TagNames {
     public static final String ADMINISTERED_OBJECT = "administered-object";
     public static final String ADMINISTERED_OBJECT_DESCRIPTION = "description";
     public static final String ADMINISTERED_OBJECT_NAME = "name";
+    public static final String ADMINISTERED_OBJECT_INTERFACE_NAME = "interface-name";
     public static final String ADMINISTERED_OBJECT_CLASS_NAME = "class-name";
     public static final String ADMINISTERED_OBJECT_ADAPTER_NAME = "resource-adapter-name";
     public static final String ADMINISTERED_OBJECT_PROPERTY = "property";

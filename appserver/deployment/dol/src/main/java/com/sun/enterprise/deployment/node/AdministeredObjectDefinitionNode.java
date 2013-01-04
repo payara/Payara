@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -66,6 +66,7 @@ public class AdministeredObjectDefinitionNode extends DeploymentDescriptorNode<A
         // no need to be synchronized for now
         Map<String, String> table = super.getDispatchTable();
         table.put(TagNames.ADMINISTERED_OBJECT_NAME, "setName");
+        table.put(TagNames.ADMINISTERED_OBJECT_INTERFACE_NAME, "setInterfaceName");
         table.put(TagNames.ADMINISTERED_OBJECT_CLASS_NAME, "setClassName");
         table.put(TagNames.ADMINISTERED_OBJECT_ADAPTER_NAME, "setResourceAdapterName");
 
@@ -76,6 +77,7 @@ public class AdministeredObjectDefinitionNode extends DeploymentDescriptorNode<A
         Node node = appendChild(parent, nodeName);
         appendTextChild(node, TagNames.ADMINISTERED_OBJECT_DESCRIPTION, desc.getDescription());
         appendTextChild(node, TagNames.ADMINISTERED_OBJECT_NAME, desc.getName());
+        appendTextChild(node, TagNames.ADMINISTERED_OBJECT_INTERFACE_NAME, desc.getInterfaceName());
         appendTextChild(node, TagNames.ADMINISTERED_OBJECT_CLASS_NAME, desc.getClassName());
         appendTextChild(node, TagNames.ADMINISTERED_OBJECT_ADAPTER_NAME, desc.getResourceAdapterName());
         

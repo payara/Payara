@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -221,14 +221,16 @@ public class AdministeredObjectDefinitionHandler extends AbstractResourceHandler
                     }
                 }
 
+                if (desc.getInterfaceName() == null || desc.getInterfaceName().equals("")) {
+                    desc.setInterfaceName(defn.interfaceName());
+                }
+
                 if (desc.getClassName() == null || desc.getClassName().equals("")) {
                     desc.setClassName(defn.className());
                 }
 
                 if (desc.getResourceAdapterName() == null || desc.getResourceAdapterName().equals("")) {
-                    if (defn.resourceAdapterName() != null && !defn.resourceAdapterName().equals("")) {
-                        desc.setResourceAdapterName(defn.resourceAdapterName());
-                    }
+                    desc.setResourceAdapterName(defn.resourceAdapterName());
                 }
                 
                 Properties properties = desc.getProperties();
@@ -260,14 +262,13 @@ public class AdministeredObjectDefinitionHandler extends AbstractResourceHandler
         desc.setMetadataSource(MetadataSource.ANNOTATION);
 
         desc.setName(defn.name());
+        desc.setInterfaceName(defn.interfaceName());
         desc.setClassName(defn.className());
         desc.setResourceAdapterName(defn.resourceAdapterName());
 
         if (defn.description() != null && !defn.description().equals("")) {
             desc.setDescription(defn.description());
         }
-
-        //TODO: add more properties here
 
         if (defn.properties() != null) {
             Properties properties = desc.getProperties();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -70,14 +70,19 @@ public @interface AdministeredObjectDefinition {
     String name();
 
     /**
-     *  Type of the administered object.
+     *  Interface name of the administered object.
+     */
+    String interfaceName() default "";
+
+    /**
+     *  Class name of the administered object.
      */
     String className();
 
     /**
      *  Name of the resource adapter.
      */
-    String resourceAdapterName() default "";
+    String resourceAdapterName();
 
     /**
      *  Properties of the administered object.  These may be

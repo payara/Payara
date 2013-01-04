@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -685,6 +685,19 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
         {
             AdminObject ao = (AdminObject) i.next();
             if (type.equals(ao.getAdminObjectInterface()))
+                adminObjects.add(ao);
+        }
+        return adminObjects;
+    }
+
+    public List<AdminObject> getAdminObjectsByClass(String adminObjectClass)
+    {
+        List<AdminObject> adminObjects = new ArrayList<AdminObject>();
+        Iterator i = getAdminObjects().iterator();
+        while (i.hasNext())
+        {
+            AdminObject ao = (AdminObject) i.next();
+            if (adminObjectClass.equals(ao.getAdminObjectClass()))
                 adminObjects.add(ao);
         }
         return adminObjects;

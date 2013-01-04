@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -399,7 +399,10 @@ public class ActiveOutboundResourceAdapter extends ActiveResourceAdapterImpl {
         ConnectorDescriptor desc = registry.getDescriptor(connectorName);
 
         AdminObject aoDesc = null;
-        if(adminObjectClassName == null){
+        // The admin-object can be identified by interface name, class name
+        // or the combination of the both names.
+        if(adminObjectClassName == null || adminObjectClassName.trim().equals("")){
+            // get AO through interface name
             List<AdminObject> adminObjects =
                     desc.getAdminObjectsByType(adminObjectType);
             if(adminObjects.size() > 1){
@@ -408,8 +411,23 @@ public class ActiveOutboundResourceAdapter extends ActiveResourceAdapterImpl {
             }else{
                 aoDesc = adminObjects.get(0);
             }
+        }else if(adminObjectType == null || adminObjectType.trim().equals("")){
+          // get AO through class name
+          List<AdminObject> adminObjects =
+                  desc.getAdminObjectsByClass(adminObjectClassName);
+          if(adminObjects.size() > 1){
+              String msg = localStrings.getString("aor.could_not_determine_aor_class", adminObjectClassName);
+              throw new ConnectorRuntimeException(msg);
+          }else{
+              aoDesc = adminObjects.get(0);
+          }
         }else{
-            aoDesc = desc.getAdminObject(adminObjectType, adminObjectClassName);
+          // get AO through interface name and class name
+          aoDesc = desc.getAdminObject(adminObjectType, adminObjectClassName);
+        }
+        if(aoDesc==null){
+          String msg = localStrings.getString("aor.could_not_determine_aor", adminObjectType, adminObjectClassName);
+          throw new ConnectorRuntimeException(msg);
         }
 
         AdministeredObjectResource aor = new AdministeredObjectResource(resourceInfo);

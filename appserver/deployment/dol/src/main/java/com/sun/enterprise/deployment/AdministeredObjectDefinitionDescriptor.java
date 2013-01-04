@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,6 +54,7 @@ public class AdministeredObjectDefinitionDescriptor extends ResourceDescriptor {
     private static final long serialVersionUID = -892751088457716458L;
     // the <description> element will be processed by base class
     private String name ;
+    private String interfaceName;
     private String className;
     private String resourceAdapterName;
     private Properties properties = new Properties();
@@ -73,6 +74,14 @@ public class AdministeredObjectDefinitionDescriptor extends ResourceDescriptor {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getInterfaceName() {
+        return interfaceName;
+    }
+
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
     }
 
     public String getClassName() {
@@ -138,6 +147,7 @@ public class AdministeredObjectDefinitionDescriptor extends ResourceDescriptor {
     public boolean isConflict(AdministeredObjectDefinitionDescriptor other) {
         return (getName().equals(other.getName())) &&
             !(
+                DOLUtils.equals(getInterfaceName(), other.getInterfaceName()) &&
                 DOLUtils.equals(getClassName(), other.getClassName()) &&
                 DOLUtils.equals(getResourceAdapterName(), other.getResourceAdapterName()) &&
                 properties.equals(other.properties)
