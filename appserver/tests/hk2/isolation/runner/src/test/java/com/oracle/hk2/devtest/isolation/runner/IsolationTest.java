@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -65,6 +65,10 @@ public class IsolationTest extends NucleusStartStopTest {
     private final static String ISO2_APP_NAME = "hk2-isolation-web-iso2";
     private final static String ISO2_URL = "http://localhost:8080/hk2-isolation-web-iso2/iso2";
     
+    private final static String SOURCE_HOME = System.getProperty("source.home", "$");
+    private final static String SOURCE_HOME_ISO1_WAR = "/appserver/tests/hk2/" + ISO1_WAR;
+    private final static String SOURCE_HOME_ISO2_WAR = "/appserver/tests/hk2/" + ISO2_WAR;
+    
     private static final String SERVLET_CONTEXT_LOCATOR = "ServletContextLocator";
     private static final String JNDI_APP_LOCATOR = "JndiAppLocator";
     
@@ -98,8 +102,16 @@ public class IsolationTest extends NucleusStartStopTest {
     
     @BeforeTest
     public void beforeTest() {
-        deployed1 = NucleusTestUtils.nadmin("deploy", ISO1_WAR);
-        deployed2 = NucleusTestUtils.nadmin("deploy", ISO2_WAR);
+        String iso1War = ISO1_WAR;
+        String iso2War = ISO2_WAR;
+        
+        if (!SOURCE_HOME.startsWith("$")) {
+            iso1War = SOURCE_HOME + SOURCE_HOME_ISO1_WAR;
+            iso2War = SOURCE_HOME + SOURCE_HOME_ISO2_WAR;
+        }
+        
+        deployed1 = NucleusTestUtils.nadmin("deploy", iso1War);
+        deployed2 = NucleusTestUtils.nadmin("deploy", iso2War);
         
         Assert.assertTrue(deployed1);
         Assert.assertTrue(deployed2);
