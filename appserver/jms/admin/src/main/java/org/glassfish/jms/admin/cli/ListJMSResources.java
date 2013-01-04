@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -132,7 +132,7 @@ public class ListJMSResources implements AdminCommand {
             //list all JMS resources
             for (Object r :  adminObjectResources) {
                AdminObjectResource adminObject = (AdminObjectResource) r;
-               if (JMSRA.equalsIgnoreCase(adminObject.getResAdapter()))
+               if (JMSRA.equals(adminObject.getResAdapter()))
               //if(QUEUE.equals(r.getResType()) || TOPIC.equals(r.getResType()))
                 list.add(adminObject.getJndiName());
             }
@@ -142,37 +142,13 @@ public class ListJMSResources implements AdminCommand {
                 ConnectorConnectionPool cp = (ConnectorConnectionPool) ConnectorsUtil.getResourceByName(
                         domain.getResources(), ConnectorConnectionPool.class, cr.getPoolName());
 
-                if (cp  != null && JMSRA.equalsIgnoreCase(cp.getResourceAdapterName())){
+                if (cp  != null && JMSRA.equals(cp.getResourceAdapterName())){
                       list.add(cr.getJndiName());
                 }
                //if(QUEUE_CF.equals(cp.getConnectionDefinitionName()) || TOPIC_CF.equals(cp.getConnectionDefinitionName())
                  //      || UNIFIED_CF.equals(cp.getConnectionDefinitionName()))
 
             }
-            if (list.isEmpty()) {
-                final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-                part.setMessage(localStrings.getLocalString("nothingToList",
-                    "Nothing to list."));
-                extraProperties.put("jmsResources", list);
-            } else {
-
-               List <String> resourceList = null;
-
-               if(CommandTarget.DOMAIN.isValid(habitat, target))
-                     resourceList = list;
-               else
-                     resourceList =  filterListForTarget(list);
-               //if(resourceList == null)
-                 //   resourceList = list;
-
-
-                for (String jndiName : resourceList) {
-                    final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-                    part.setMessage(jndiName);
-                }
-                extraProperties.put("jmsResources", resourceList);
-            }
-            report.setExtraProperties(extraProperties);
         } catch (Exception e) {
             report.setMessage(localStrings.getLocalString("list.jms.resources.fail",
                     "Unable to list JMS Resources") + " " + e.getLocalizedMessage());
@@ -183,39 +159,44 @@ public class ListJMSResources implements AdminCommand {
       } else {
           if(resourceType.equals(TOPIC_CF) || resourceType.equals(QUEUE_CF) || resourceType.equals(UNIFIED_CF)){
 
-
             for (Object c : connectorResources) {
                ConnectorResource cr = (ConnectorResource)c;
                ConnectorConnectionPool cp = (ConnectorConnectionPool)
                        ConnectorsUtil.getResourceByName(domain.getResources(), ConnectorConnectionPool.class, cr.getPoolName());
-               if(cp != null && resourceType.equals(cp.getConnectionDefinitionName()) && JMSRA.equalsIgnoreCase(cp.getResourceAdapterName()))
-                    list.add(cp.getName());
+               if(cp != null && resourceType.equals(cp.getConnectionDefinitionName()) && JMSRA.equals(cp.getResourceAdapterName()))
+                    list.add(cr.getJndiName());
             }
           }  else if (resourceType.equals(TOPIC) || resourceType.equals(QUEUE))
           {
                 for (Object r : adminObjectResources) {
                     AdminObjectResource res = (AdminObjectResource)r;
-                    if(resourceType.equals(res.getResType()))                             
+                    if(resourceType.equals(res.getResType()) && JMSRA.equals(res.getResAdapter()))
                         list.add(res.getJndiName());
-            }
-
+                }
           }
+      }
+        if (list.isEmpty()) {
+            final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
+            part.setMessage(localStrings.getLocalString("nothingToList", "Nothing to list."));
+            extraProperties.put("jmsResources", list);
+        } else {
+            List <String> resourceList = null;
 
+            if(CommandTarget.DOMAIN.isValid(habitat, target))
+                resourceList = list;
+            else
+                resourceList =  filterListForTarget(list);
 
-        //List <String> resourceList = filterListForTarget(list);
-        //if(resourceList == null)
-          // resourceList = list;
-
-        for (String jndiName : list) {
-              final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-              part.setMessage(jndiName);
-         }
+            for (String jndiName : resourceList) {
+                final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
+                part.setMessage(jndiName);
+            }
+            extraProperties.put("jmsResources", resourceList);
         }
-
+        report.setExtraProperties(extraProperties);
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-
-
   }
+
     private List filterListForTarget(List <String> list){
         List <String> resourceList = new ArrayList();
             if (target != null){
