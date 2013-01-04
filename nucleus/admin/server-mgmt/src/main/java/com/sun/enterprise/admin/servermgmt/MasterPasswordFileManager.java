@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -80,7 +80,7 @@ public class MasterPasswordFileManager extends KeystoreManager {
      *
      * @return The password protecting the master password keywtore
      */    
-    private char[] getMasterPasswordPassword(RepositoryConfig config)
+    private char[] getMasterPasswordPassword()
             throws RepositoryException 
     {
         //XXX fixed String
@@ -109,7 +109,7 @@ public class MasterPasswordFileManager extends KeystoreManager {
         final File pwdFile = layout.getMasterPasswordFile();                     
         try {                    
             PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(), 
-                getMasterPasswordPassword(config));
+                getMasterPasswordPassword());
             p.setPasswordForAlias(MASTER_PASSWORD_ALIAS, masterPassword.getBytes());
             chmod("600", pwdFile);
         } catch (Exception ex) {                        
@@ -132,7 +132,7 @@ public class MasterPasswordFileManager extends KeystoreManager {
         if (pwdFile.exists()) {            
             try {                    
                 PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(), 
-                    getMasterPasswordPassword(config));
+                    getMasterPasswordPassword());
                 return p.getPasswordForAlias(MASTER_PASSWORD_ALIAS);
             } catch (Exception ex) {            
                 throw new RepositoryException(_strMgr.getString("masterPasswordFileNotRead", pwdFile),
@@ -157,5 +157,29 @@ public class MasterPasswordFileManager extends KeystoreManager {
         if (saveMasterPassword) {
             createMasterPasswordFile(config, newPassword);
         }         
-    }        
+    }
+
+    /**
+     * Changes the master password in the master password file
+     * @param saveMasterPassword
+     * @param config
+     * @param newPassword
+     * @throws RepositoryException
+     */
+    public void changeMasterPasswordInMasterPasswordFile(File pwdFile, String newPassword,
+        boolean saveMasterPassword) throws RepositoryException 
+    {
+    	    FileUtils.deleteFile(pwdFile);
+        if (saveMasterPassword) {
+        	 try {                    
+                 PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(), 
+                     getMasterPasswordPassword());
+                 p.setPasswordForAlias(MASTER_PASSWORD_ALIAS, newPassword.getBytes());
+                 chmod("600", pwdFile);
+             } catch (Exception ex) {                        
+                 throw new RepositoryException(_strMgr.getString("masterPasswordFileNotCreated", pwdFile),
+                     ex);
+             } 
+        }         
+    }
 }

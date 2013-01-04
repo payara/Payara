@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,7 @@ import com.sun.appserv.management.client.prefs.LoginInfoStoreFactory;
 import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.servermgmt.*;
+import com.sun.enterprise.admin.servermgmt.domain.DomainBuilder;
 import com.sun.enterprise.admin.servermgmt.pe.PEDomainsManager;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.config.serverbeans.Config;
@@ -465,98 +466,120 @@ public final class CreateDomainCommand extends CLICommand {
         if (FileUtils.safeGetCanonicalFile(new File(domainFilePath)).exists()) {
             throw new CommandValidationException(strings.get("DomainExists", domainName));
         }
+        DomainConfig domainConfig = null;
+        if (template != null && template.endsWith(".jar")) {
+            domainConfig = new DomainConfig(domainName,
+                    domainPath, adminUser, adminPassword,
+                    masterPassword, saveMasterPassword,
+                    adminPort, instancePort,
+                    domainProperties);
+            domainConfig.put(DomainConfig.K_VALIDATE_PORTS,
+                    Boolean.valueOf(checkPorts));
+            domainConfig.put(DomainConfig.KEYTOOLOPTIONS, keytoolOptions);
+            domainConfig.put(DomainConfig.K_TEMPLATE_NAME, template);
+            initSecureAdminSettings(domainConfig);
+            try {
+                DomainBuilder domainBuilder = new DomainBuilder(domainConfig);
+                domainBuilder.validateTemplate();
+                domainBuilder.run();
+            } catch (Exception e) {
+                throw new DomainException(e.getMessage());
+            }
+        }
+        else {
+            final Integer adminPortInt = getPort(domainProperties,
+                    DomainConfig.K_ADMIN_PORT,
+                    adminPort,
+                    Integer.toString(CLIConstants.DEFAULT_ADMIN_PORT),
+                    "Admin");
 
-        final Integer adminPortInt = getPort(domainProperties,
-                DomainConfig.K_ADMIN_PORT,
-                adminPort,
-                Integer.toString(CLIConstants.DEFAULT_ADMIN_PORT),
-                "Admin");
+            final Integer instancePortInt = getPort(domainProperties,
+                    DomainConfig.K_INSTANCE_PORT,
+                    instancePort,
+                    Integer.toString(DEFAULT_INSTANCE_PORT),
+                    "HTTP Instance");
 
-        final Integer instancePortInt = getPort(domainProperties,
-                DomainConfig.K_INSTANCE_PORT,
-                instancePort,
-                Integer.toString(DEFAULT_INSTANCE_PORT),
-                "HTTP Instance");
+            final Integer jmsPort = getPort(domainProperties,
+                    DomainConfig.K_JMS_PORT, null,
+                    Integer.toString(DEFAULT_JMS_PORT), "JMS");
 
-        final Integer jmsPort = getPort(domainProperties,
-                DomainConfig.K_JMS_PORT, null,
-                Integer.toString(DEFAULT_JMS_PORT), "JMS");
+            final Integer orbPort = getPort(domainProperties,
+                    DomainConfig.K_ORB_LISTENER_PORT,
+                    null, Integer.toString(DEFAULT_IIOP_PORT),
+                    "IIOP");
 
-        final Integer orbPort = getPort(domainProperties,
-                DomainConfig.K_ORB_LISTENER_PORT,
-                null, Integer.toString(DEFAULT_IIOP_PORT),
-                "IIOP");
+            final Integer httpSSLPort = getPort(domainProperties,
+                    DomainConfig.K_HTTP_SSL_PORT, null,
+                    Integer.toString(DEFAULT_HTTPSSL_PORT),
+                    "HTTP_SSL");
 
-        final Integer httpSSLPort = getPort(domainProperties,
-                DomainConfig.K_HTTP_SSL_PORT, null,
-                Integer.toString(DEFAULT_HTTPSSL_PORT),
-                "HTTP_SSL");
+            final Integer iiopSSLPort = getPort(domainProperties,
+                    DomainConfig.K_IIOP_SSL_PORT, null,
+                    Integer.toString(DEFAULT_IIOPSSL_PORT),
+                    "IIOP_SSL");
 
-        final Integer iiopSSLPort = getPort(domainProperties,
-                DomainConfig.K_IIOP_SSL_PORT, null,
-                Integer.toString(DEFAULT_IIOPSSL_PORT),
-                "IIOP_SSL");
+            final Integer iiopMutualAuthPort = getPort(domainProperties,
+                    DomainConfig.K_IIOP_MUTUALAUTH_PORT, null,
+                    Integer.toString(DEFAULT_IIOPMUTUALAUTH_PORT),
+                    "IIOP_MUTUALAUTH");
 
-        final Integer iiopMutualAuthPort = getPort(domainProperties,
-                DomainConfig.K_IIOP_MUTUALAUTH_PORT, null,
-                Integer.toString(DEFAULT_IIOPMUTUALAUTH_PORT),
-                "IIOP_MUTUALAUTH");
+            final Integer jmxPort = getPort(domainProperties,
+                    DomainConfig.K_JMX_PORT, null,
+                    Integer.toString(DEFAULT_JMX_PORT),
+                    "JMX_ADMIN");
 
-        final Integer jmxPort = getPort(domainProperties,
-                DomainConfig.K_JMX_PORT, null,
-                Integer.toString(DEFAULT_JMX_PORT),
-                "JMX_ADMIN");
+            final Integer osgiShellTelnetPort = getPort(domainProperties,
+                    DomainConfig.K_OSGI_SHELL_TELNET_PORT, null,
+                    Integer.toString(DEFAULT_OSGI_SHELL_TELNET_PORT),
+                    "OSGI_SHELL");
 
-        final Integer osgiShellTelnetPort = getPort(domainProperties,
-                DomainConfig.K_OSGI_SHELL_TELNET_PORT, null,
-                Integer.toString(DEFAULT_OSGI_SHELL_TELNET_PORT),
-                "OSGI_SHELL");
+            final Integer javaDebuggerPort = getPort(domainProperties,
+                    DomainConfig.K_JAVA_DEBUGGER_PORT, null,
+                    Integer.toString(DEFAULT_JAVA_DEBUGGER_PORT),
+                    "JAVA_DEBUGGER");
 
-        final Integer javaDebuggerPort = getPort(domainProperties,
-                DomainConfig.K_JAVA_DEBUGGER_PORT, null,
-                Integer.toString(DEFAULT_JAVA_DEBUGGER_PORT),
-                "JAVA_DEBUGGER");
-
-        checkPortPrivilege(new Integer[]{
+            checkPortPrivilege(new Integer[]{
                     adminPortInt, instancePortInt, jmsPort, orbPort, httpSSLPort,
                     jmsPort, orbPort, httpSSLPort, iiopSSLPort,
                     iiopMutualAuthPort, jmxPort, osgiShellTelnetPort, javaDebuggerPort
-                });
+            });
 
-        DomainConfig domainConfig = new DomainConfig(domainName,
-                adminPortInt, domainPath, adminUser,
-                adminPassword,
-                masterPassword,
-                saveMasterPassword, instancePortInt,
-                jmsPort, orbPort,
-                httpSSLPort, iiopSSLPort,
-                iiopMutualAuthPort, jmxPort, osgiShellTelnetPort, javaDebuggerPort,
-                domainProperties);
-        if (template != null) {
-            domainConfig.put(DomainConfig.K_TEMPLATE_NAME, template);
+            domainConfig = new DomainConfig(domainName,
+                    adminPortInt, domainPath, adminUser,
+                    adminPassword,
+                    masterPassword,
+                    saveMasterPassword, instancePortInt,
+                    jmsPort, orbPort,
+                    httpSSLPort, iiopSSLPort,
+                    iiopMutualAuthPort, jmxPort, osgiShellTelnetPort, javaDebuggerPort,
+                    domainProperties);
+            if (template != null) {
+                domainConfig.put(DomainConfig.K_TEMPLATE_NAME, template);
+            }
+
+            domainConfig.put(DomainConfig.K_VALIDATE_PORTS,
+                    Boolean.valueOf(checkPorts));
+
+            domainConfig.put(DomainConfig.KEYTOOLOPTIONS, keytoolOptions);
+            /*
+             * We must init the secure admin settings after the key tool options
+             * have been set, in case those options override the default CN.
+             */
+            initSecureAdminSettings(domainConfig);
+            DomainsManager manager = new PEDomainsManager();
+
+            manager.createDomain(domainConfig);
+            try {
+                modifyInitialDomainXml(domainConfig);
+            }
+            catch (Throwable e) {
+                logger.warning(
+                        strings.get("CustomizationFailed", e.getMessage()));
         }
-
-        domainConfig.put(DomainConfig.K_VALIDATE_PORTS,
-                Boolean.valueOf(checkPorts));
-
-        domainConfig.put(DomainConfig.KEYTOOLOPTIONS, keytoolOptions);
-        /*
-         * We must init the secure admin settings after the key tool options
-         * have been set, in case those options override the default CN.
-         */
-        initSecureAdminSettings(domainConfig);
-        DomainsManager manager = new PEDomainsManager();
-
-        manager.createDomain(domainConfig);
-        try {
-            modifyInitialDomainXml(domainConfig);
-        }
-        catch (Throwable e) {
-            logger.warning(
-                    strings.get("CustomizationFailed", e.getMessage()));
-        }
+		}
         logger.info(strings.get("DomainCreated", domainName));
-        logger.info(strings.get("DomainPort", domainName, adminPortInt.toString()));
+        Integer adminPort = (Integer)domainConfig.get(DomainConfig.K_ADMIN_PORT);
+        logger.info(strings.get("DomainPort", domainName, adminPort));
         if (adminPassword.equals(
                 SystemPropertyConstants.DEFAULT_ADMIN_PASSWORD))
             logger.info(strings.get("DomainAllowsUnauth", domainName,
@@ -566,7 +589,7 @@ public final class CreateDomainCommand extends CLICommand {
                     strings.get("DomainAdminUser", domainName, adminUser));
         //checkAsadminPrefsFile();
         if (saveLoginOpt) {
-            saveLogin(adminPortInt, adminUser, adminPassword, domainName);
+            saveLogin(adminPort, adminUser, adminPassword, domainName);
         }
     }
 

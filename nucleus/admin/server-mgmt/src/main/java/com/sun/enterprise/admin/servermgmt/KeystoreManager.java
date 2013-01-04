@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.admin.servermgmt;
 
+import com.sun.enterprise.admin.servermgmt.domain.DomainConstants;
 import com.sun.enterprise.admin.servermgmt.pe.PEFileLayout;
 import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.universal.io.SmartFile;
@@ -186,7 +187,9 @@ public class KeystoreManager {
     protected void createSSLCertificateDatabase(RepositoryConfig config,
             String masterPassword) {
         try {
-            createKeyStore(config, masterPassword);
+        	final PEFileLayout layout = getFileLayout(config);
+            final File keystore = layout.getKeyStore();
+            createKeyStore(keystore, config, masterPassword);
             createTrustStore(config, masterPassword);
         }
         catch (RepositoryException re) {
@@ -216,11 +219,9 @@ public class KeystoreManager {
      * @param masterPassword
      * @throws RepositoryException
      */
-    protected void createKeyStore(
+    protected void createKeyStore(File keystore,
             RepositoryConfig config, String masterPassword) throws RepositoryException {
         //Generate a new self signed certificate with s1as as the alias
-        final PEFileLayout layout = getFileLayout(config);
-        final File keystore = layout.getKeyStore();
         //Create the default self signed cert
         final String dasCertDN = getDASCertDN(config);
         System.out.println(_strMgr.getString("CertificateDN", dasCertDN));
@@ -336,15 +337,28 @@ public class KeystoreManager {
 
         changeKeystorePassword(DEFAULT_MASTER_PASSWORD, masterPassword, truststore);
 
-        copyCert(layout, CERTIFICATE_ALIAS, masterPassword);
-        copyCert(layout, INSTANCE_SECURE_ADMIN_ALIAS, masterPassword);
+        copyCert(layout.getConfigRoot(), CERTIFICATE_ALIAS, masterPassword);
+        copyCert(layout.getConfigRoot(), INSTANCE_SECURE_ADMIN_ALIAS, masterPassword);
     }
 
-    private void copyCert(final PEFileLayout layout,
+    protected void copyCertificates(File configRoot, DomainConfig config, String masterPassword)
+       throws DomainException 
+    {
+        try {
+            copyCert(configRoot, CERTIFICATE_ALIAS, masterPassword);
+            copyCert(configRoot, INSTANCE_SECURE_ADMIN_ALIAS, masterPassword);
+        } catch(RepositoryException re) {
+            String msg = _strMgr.getString("SomeProblemWithKeytool", re.getMessage());
+            throw new DomainException(msg);
+
+        }
+    }
+
+    private void copyCert(final File configRoot,
             final String alias,
             final String masterPassword) throws RepositoryException {
-        final File keystore = layout.getKeyStore();
-        final File truststore = layout.getTrustStore();
+    	File keystore = new File(configRoot, DomainConstants.KEYSTORE_FILE);
+    	File truststore = new File(configRoot, DomainConstants.TRUSTSTORE_FILE);
         File certFile = null;
         String[] input = {masterPassword};
         String[] keytoolCmd = null;
@@ -352,7 +366,7 @@ public class KeystoreManager {
 
         try {
             //export the newly created certificate from the keystore
-            certFile = new File(layout.getConfigRoot(), alias + ".cer");
+            certFile = new File(configRoot, alias + ".cer");
             keytoolCmd = new String[]{
                 "-export",
                 "-keystore", keystore.getAbsolutePath(),

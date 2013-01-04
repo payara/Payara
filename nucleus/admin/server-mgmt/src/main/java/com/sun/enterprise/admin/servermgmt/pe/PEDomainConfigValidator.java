@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010,2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,7 +63,7 @@ import java.util.TreeSet;
  * This class defines the domain config entries that are required to create a
  * PE Tomcat domain.
  */
-class PEDomainConfigValidator extends DomainConfigValidator
+public class PEDomainConfigValidator extends DomainConfigValidator
 {
     /**
      * i18n strings manager object
@@ -106,7 +106,7 @@ class PEDomainConfigValidator extends DomainConfigValidator
     };
 
     /** Creates a new instance of PEDomainConfigValidator */
-    PEDomainConfigValidator()
+    public PEDomainConfigValidator()
     {
         super(entries);
     }

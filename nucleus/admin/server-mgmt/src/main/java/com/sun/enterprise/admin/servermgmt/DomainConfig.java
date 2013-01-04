@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -93,6 +93,8 @@ public class DomainConfig extends RepositoryConfig {
     public static final String K_INSTANCE_CERT_DN = "domain.instance.cert.dn";
     public static final String K_SECURE_ADMIN_IDENTIFIER = "domain.indicator";
 
+    private Properties _domainProperties;
+
     /**
      * The DomainConfig always contains the K_DOMAINS_ROOT and K_HOST_NAME
      * attributes.
@@ -151,6 +153,23 @@ public class DomainConfig extends RepositoryConfig {
         }
     }
 
+    /**
+     * This constructor is used at domain creation time only.
+     */
+    public DomainConfig(String domainName, String domainRoot,
+            String adminUser, String adminPassword, String masterPassword,
+            Boolean saveMasterPassword, String adminPort, String instancePort,
+            Properties domainProperties) throws DomainException {
+        this(domainName, domainRoot);
+        put(K_ADMIN_PORT, adminPort);
+        put(K_PASSWORD, adminPassword);
+        put(K_MASTER_PASSWORD, masterPassword);
+        put(K_SAVE_MASTER_PASSWORD, saveMasterPassword);
+        put(K_USER, adminUser);
+        put(K_INSTANCE_PORT, instancePort);
+        _domainProperties = domainProperties;
+    }
+
     public String getDomainName() {
         return super.getRepositoryName();
     }
@@ -172,5 +191,16 @@ public class DomainConfig extends RepositoryConfig {
 
     public String getProfile() {
         return ((String) get(K_PROFILE));
+    }
+
+    public void add(String key, Object value) {
+       put(key, value);
+    }
+
+    public Properties getDomainProperties() {
+    	if (_domainProperties == null) {
+    		_domainProperties = new Properties();
+    	}
+    	return _domainProperties;
     }
 }

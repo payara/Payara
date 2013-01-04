@@ -1,0 +1,2 @@
+Substitute @JAVA_HOME@ @JAVA@ @MW
+_HOME@
