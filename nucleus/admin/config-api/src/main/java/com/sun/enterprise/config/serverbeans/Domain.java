@@ -481,6 +481,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     <P extends ConfigBeanProxy> boolean checkIfExtensionExists(Class<P> configBeanType);
 
     class Duck {
+        private final static Logger logger=ConfigApiLoggerInfo.getLogger();
         public static String getName(Domain domain) {
             return domain.getPropertyValue(DOMAIN_NAME_PROPERTY);
         }
@@ -501,7 +502,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                 }
             }
             catch(Exception e) {
-                 Logger.getAnonymousLogger().log(Level.WARNING,ConfigApiLoggerInfo.errorGettingServers , e.getLocalizedMessage());
+                 logger.log(Level.WARNING,ConfigApiLoggerInfo.errorGettingServers , e.getLocalizedMessage());
             }
             return ret;
         }
@@ -523,7 +524,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                 }
             }
             catch(Exception e) {
-                Logger.getAnonymousLogger().log(Level.WARNING, ConfigApiLoggerInfo.errorGettingCluster, e.getLocalizedMessage());
+                logger.log(Level.WARNING, ConfigApiLoggerInfo.errorGettingCluster, e.getLocalizedMessage());
 
             }
             return new ArrayList(clMap.values());

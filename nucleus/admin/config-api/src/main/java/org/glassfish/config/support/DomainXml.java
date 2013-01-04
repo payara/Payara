@@ -150,7 +150,7 @@ public abstract class DomainXml implements Populator {
         Server server = habitat.getService(Server.class, env.getInstanceName());
         if (server == null) {
             LogRecord lr = new LogRecord(Level.SEVERE,
-                    BadEnv);
+                    badEnv);
             lr.setLoggerName(getClass().getName());
             EarlyLogHandler.earlyMessages.add(lr);
             return;
@@ -173,7 +173,7 @@ public abstract class DomainXml implements Populator {
         for (ServiceHandle<?> cu : habitat.getAllServiceHandles(ConfigurationUpgrade.class)) {
             try {
                 cu.getService(); // run the upgrade
-                LogRecord lr = new LogRecord(Level.FINE, successfullUpgrade + cu.getClass());
+                LogRecord lr = new LogRecord(Level.FINE, successfulUpgrade + cu.getClass());
                 lr.setLoggerName(getClass().getName());
                 EarlyLogHandler.earlyMessages.add(lr);
             } catch (Exception e) {
@@ -197,7 +197,7 @@ public abstract class DomainXml implements Populator {
             return domainXml.toURI().toURL();
         } else {
 
-            LogRecord lr = new LogRecord(Level.SEVERE, domainXml.getAbsolutePath() + NoBackupFile
+            LogRecord lr = new LogRecord(Level.SEVERE, domainXml.getAbsolutePath() + noBackupFile
             );
             lr.setLoggerName(getClass().getName());
             EarlyLogHandler.earlyMessages.add(lr);
@@ -208,7 +208,7 @@ public abstract class DomainXml implements Populator {
             }
 
             lr = new LogRecord(Level.SEVERE,
-                    NoBackupFile);
+                    noBackupFile);
             lr.setLoggerName(getClass().getName());
             EarlyLogHandler.earlyMessages.add(lr);
 

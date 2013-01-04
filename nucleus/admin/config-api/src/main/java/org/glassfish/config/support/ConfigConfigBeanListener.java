@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -76,8 +77,7 @@ public final class ConfigConfigBeanListener implements ConfigListener {
     private ServiceLocator habitat;
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
-    static final Logger logger = LogDomains.getLogger(ConfigConfigBeanListener.class,
-            LogDomains.ADMIN_LOGGER);
+    static final Logger logger = ConfigApiLoggerInfo.getLogger();
 
 
     /* force serial behavior; don't allow more than one thread to make a mess here */

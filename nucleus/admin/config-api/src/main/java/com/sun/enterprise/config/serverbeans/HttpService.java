@@ -134,7 +134,7 @@ public interface HttpService extends ConfigBeanProxy, PropertyBag, ConfigExtensi
     void setSsoEnabled(String value);
 
     class Duck {
-        private static final Logger logger = Logger.getLogger(HttpService.Duck.class.getName());
+        private static final Logger logger = ConfigApiLoggerInfo.getLogger();
 
         public static VirtualServer getVirtualServerByName(HttpService target, String name) {
             for (VirtualServer v : target.getVirtualServer()) {

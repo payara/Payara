@@ -485,7 +485,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
         public void decorate(AdminCommandContext context, final Server instance) throws TransactionFailure, PropertyVetoException {
             Config ourConfig = null;
             Cluster ourCluster = null;
-            Logger logger = LogDomains.getLogger(Server.class, LogDomains.ADMIN_LOGGER);
+            Logger logger = ConfigApiLoggerInfo.getLogger();
             LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Server.class);
             Transaction tx = Transaction.getTransaction(instance);
             String configRef = instance.getConfigRef();

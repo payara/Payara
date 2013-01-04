@@ -61,7 +61,7 @@ import org.glassfish.api.admin.config.Named;
 public class ConfigRefValidator
     implements ConstraintValidator<ConfigRefConstraint, Named>, Payload {
 
-    static final Logger logger = LogDomains.getLogger(ConfigRefValidator.class, LogDomains.ADMIN_LOGGER);
+    static final Logger logger = ConfigApiLoggerInfo.getLogger();
     static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ConfigRefValidator.class);
 
     public void initialize(final ConfigRefConstraint constraint) {       
@@ -91,18 +91,18 @@ public class ConfigRefValidator
         
         // cannot use default-config
         if (configRef.equals(SystemPropertyConstants.TEMPLATE_CONFIG_NAME)) {
-            logger.warning(ConfigApiLoggerInfo.configrefDefaultconfig);
+            logger.warning(ConfigApiLoggerInfo.configRefDefaultconfig);
            return false;
         }
         // cannot change config-ref of DAS
         if (server != null) {
             if (server.isDas() && !configRef.equals(SystemPropertyConstants.DAS_SERVER_CONFIG)) {
-                logger.warning(ConfigApiLoggerInfo.configrefDASconfig);
+                logger.warning(ConfigApiLoggerInfo.configRefDASconfig);
                 return false;
             }
             // cannot use server-config if not DAS
             if (!server.isDas() && configRef.equals(SystemPropertyConstants.DAS_SERVER_CONFIG)) {
-                logger.warning(ConfigApiLoggerInfo.configrefServerconfig);
+                logger.warning(ConfigApiLoggerInfo.configRefServerconfig);
                 return false;
             }
 
@@ -121,13 +121,13 @@ public class ConfigRefValidator
                         // the value of desired config-ref will be different than the current config-ref.
                         // During _register-instance, (create-local-instance --cluster c1 i1)
                         // cluster.getConfigRef().equals(configRef) will be true and not come here.
-                        logger.warning(ConfigApiLoggerInfo.configrefClusteredInstance);
+                        logger.warning(ConfigApiLoggerInfo.configRefClusteredInstance);
                         return false;
                     }
                 }
                 // cannot use a non-existent config  (Only used by set.  _register-instance will fail earlier)
                 if (configs == null || configs.getConfigByName(configRef) == null) {
-                    logger.warning(ConfigApiLoggerInfo.configrefNonexistent);
+                    logger.warning(ConfigApiLoggerInfo.configRefNonexistent);
                     return false;
                 }
             }

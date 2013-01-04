@@ -68,7 +68,7 @@ public class ConfigApiLoggerInfo {
         return adminLogger;
     }
 
-    public static final String getString(String message, Object[] parameters) {
+    public static String getString(String message, Object[] parameters) {
         return MessageFormat.format(message, parameters);
     }
 
@@ -168,7 +168,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "WARNING")
-    public final static String configrefDefaultconfig = LOGMSG_PREFIX + "-0014";
+    public final static String configRefDefaultconfig = LOGMSG_PREFIX + "-0014";
     @LogMessageInfo(
             message = "The configuration of the Domain Administration Server "
                     + "cannot be changed from server-config.",
@@ -176,7 +176,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "WARNING")
-    public final static String configrefDASconfig = LOGMSG_PREFIX + "-0015";
+    public final static String configRefDASconfig = LOGMSG_PREFIX + "-0015";
     @LogMessageInfo(
             message = "The configuration of the Domain Administration Server "
                     + "(named server-config) cannot be referenced by a server.",
@@ -184,7 +184,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "WARNING")
-    public final static String configrefServerconfig = LOGMSG_PREFIX + "-0016";
+    public final static String configRefServerconfig = LOGMSG_PREFIX + "-0016";
     @LogMessageInfo(
             message = "The configuration of the Domain Administration Server "
                     + "(named server-config) cannot be referenced by a server.",
@@ -192,14 +192,14 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "WARNING")
-    public final static String configrefClusteredInstance = LOGMSG_PREFIX + "-0017";
+    public final static String configRefClusteredInstance = LOGMSG_PREFIX + "-0017";
     @LogMessageInfo(
             message = "A configuration that doesn't exist cannot be referenced by a server.",
             cause = "unknown",
             action = "unknown",
             publish = true,
             level = "WARNING")
-    public final static String configrefNonexistent = LOGMSG_PREFIX + "-0018";
+    public final static String configRefNonexistent = LOGMSG_PREFIX + "-0018";
 
 
     @LogMessageInfo(
@@ -721,7 +721,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureTocreateThreadpoolObject = LOGMSG_PREFIX + "-0079";
+    public final static String failureToCreateThreadpoolObject = LOGMSG_PREFIX + "-0079";
 
     @LogMessageInfo(
             message = "Problem parsing thread-pool element in domain.xml template",
@@ -776,7 +776,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String BadEnv = LOGMSG_PREFIX + "-0086";
+    public final static String badEnv = LOGMSG_PREFIX + "-0086";
 
 
     @LogMessageInfo(
@@ -784,7 +784,7 @@ public class ConfigApiLoggerInfo {
 
             publish = true,
             level = "FINE")
-    public final static String successfullUpgrade = LOGMSG_PREFIX + "-0087";
+    public final static String successfulUpgrade = LOGMSG_PREFIX + "-0087";
 
 
     @LogMessageInfo(
@@ -802,7 +802,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String NoConfigFile = LOGMSG_PREFIX + "-0089";
+    public final static String noConfigFile = LOGMSG_PREFIX + "-0089";
 
 
     @LogMessageInfo(
@@ -811,7 +811,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String NoBackupFile = LOGMSG_PREFIX + "-0090";
+    public final static String noBackupFile = LOGMSG_PREFIX + "-0090";
 
 
     @LogMessageInfo(
@@ -825,7 +825,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String command_model_exception = LOGMSG_PREFIX + "-0093";
+    public final static String commandModelException = LOGMSG_PREFIX + "-0093";
 
     @LogMessageInfo(
             message = "The CrudResolver {0} could not find the configuration object of type {1} where instances of {2} should be added",
@@ -833,7 +833,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String target_object_not_found = LOGMSG_PREFIX + "-0094";
+    public final static String targetObjectNotFound = LOGMSG_PREFIX + "-0094";
 
     @LogMessageInfo(
             message = "A {0} instance with a {1} name already exist in the configuration",
@@ -841,7 +841,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String already_existing_instance = LOGMSG_PREFIX + "-0095";
+    public final static String alreadyExistingInstance = LOGMSG_PREFIX + "-0095";
 
     @LogMessageInfo(
             message = "Exception while invoking {0} method : {1}",
@@ -849,7 +849,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String method_invocation_exception = LOGMSG_PREFIX + "-0096";
+    public final static String methodInvocationException = LOGMSG_PREFIX + "-0096";
 
     @LogMessageInfo(
             message = "The CreationDecorator {0} could not be found in the habitat, is it annotated with @Service?",
@@ -857,7 +857,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String decorator_not_found = LOGMSG_PREFIX + "-0097";
+    public final static String decoratorNotFound = LOGMSG_PREFIX + "-0097";
 
 
     @LogMessageInfo(
@@ -866,7 +866,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String transaction_exception = LOGMSG_PREFIX + "-0098";
+    public final static String transactionException = LOGMSG_PREFIX + "-0098";
     //Remaining packages: The GenericCrudCommand and below in support package
     //Entire modularity package
 }

@@ -467,7 +467,7 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
         @Override
         public void decorate(AdminCommandContext context, Nodes parent, Node child) throws
                 PropertyVetoException, TransactionFailure {
-            Logger logger = LogDomains.getLogger(Node.class, LogDomains.ADMIN_LOGGER);
+            Logger logger = ConfigApiLoggerInfo.getLogger();
             LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Node.class);
             String nodeName = child.getName();
 

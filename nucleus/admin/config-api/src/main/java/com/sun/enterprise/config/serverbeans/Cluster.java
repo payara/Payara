@@ -610,7 +610,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
          */
         @Override
         public void decorate(AdminCommandContext context, final Cluster instance) throws TransactionFailure, PropertyVetoException {
-            Logger logger = LogDomains.getLogger(Cluster.class, LogDomains.ADMIN_LOGGER);
+            Logger logger = ConfigApiLoggerInfo.getLogger();
             LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Cluster.class);
             Transaction t = Transaction.getTransaction(instance);
             //check if cluster software is installed else fail , see issue 12023
@@ -844,7 +844,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
         public void decorate(AdminCommandContext context, Clusters parent, Cluster child) throws
                 PropertyVetoException, TransactionFailure{
             
-            Logger logger = LogDomains.getLogger(Cluster.class, LogDomains.ADMIN_LOGGER);
+            Logger logger = ConfigApiLoggerInfo.getLogger();
             LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Cluster.class);
             final ActionReport report = context.getActionReport();
             
