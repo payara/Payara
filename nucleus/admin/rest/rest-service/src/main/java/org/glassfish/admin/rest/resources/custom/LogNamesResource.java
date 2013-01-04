@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@ package org.glassfish.admin.rest.resources.custom;
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilter;
 
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.LogManager;
 
 import javax.ws.rs.GET;
@@ -50,7 +51,6 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.Vector;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 
 /**
  * REST resource to get Log Names
@@ -60,8 +60,7 @@ import javax.ws.rs.core.Context;
  */
 public class LogNamesResource {
 
-    @Context
-    protected ServiceLocator habitat;
+    protected ServiceLocator habitat = Globals.getDefaultBaseServiceLocator();
 
     @GET
     @Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON})

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,14 +40,16 @@
 
 package com.sun.enterprise.server.logging.logviewer.backend;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.EOFException;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.sun.enterprise.server.logging.LogFacade;
 
@@ -377,44 +379,32 @@ public class LogFile implements java.io.Serializable {
                         "Log Entries must start with: '" + RECORD_BEGIN_MARKER +
                                 "': '" + line + "'.");
             }
-
-            StringTokenizer tokenizer =
-                    new StringTokenizer(line, FIELD_SEPARATOR);
+            
+            line = line.substring(RECORD_BEGIN_MARKER.length());            
+            String[] tokens = line.split(FIELD_SEPARATOR_REGEX);
 
             // We expect atleast the following tokens to be in the first line
             // [#, DateTime, log level, Product Name, Logger Name, Name Value
             // Pairs.
             // If we don't have them here. Then it's a wrong message.
-            if (!(tokenizer.countTokens() > 5)) {
+            if (!(tokens.length > 5)) {
                 throw new IllegalArgumentException(
                         "Log Entry does not contain all required fields: '" +
                                 line + "'.");
             }
 
             // The first token is the Record Begin Marker
-            tokenizer.nextToken();
             try {
                 setLoggedDateTime(
-                        SIMPLE_DATE_FORMAT.parse(tokenizer.nextToken()));
-                setLoggedLevel(tokenizer.nextToken());
-                setLoggedProduct(tokenizer.nextToken());
-                setLoggedLoggerName(tokenizer.nextToken());
-                setLoggedNameValuePairs(tokenizer.nextToken());
-                String messageIdandMessage = tokenizer.nextToken();
+                        SIMPLE_DATE_FORMAT.parse(tokens[0]));
+                setLoggedLevel(tokens[1]);
+                setLoggedProduct(tokens[2]);
+                setLoggedLoggerName(tokens[3]);
+                setLoggedNameValuePairs(tokens[4]);
+                String message = tokens[5];
 
-                if (messageIdandMessage != null) {
-                    int index = messageIdandMessage.indexOf(":");
-                    if (index != -1) {
-                        String messageId = messageIdandMessage.substring(0, index);
-                        if(messageId.length()<10 && !messageId.contains(" ") && isAlphaNumeric(messageId)) {
-                            setMessageId(messageIdandMessage.substring(0, index));
-                            setLoggedMessage(messageIdandMessage.substring(index + 1));
-                        } else {
-                            setLoggedMessage(messageIdandMessage);                            
-                        }
-                    } else {
-                        setLoggedMessage(messageIdandMessage);
-                    }
+                if (message != null) {
+                    setLoggedMessage(message);
                 }
                 setRecordNumber(recordNumber);
             } catch (Exception e) {
@@ -424,18 +414,6 @@ public class LogFile implements java.io.Serializable {
                 throw t;
             }
         }
-
-    private boolean isAlphaNumeric(String inputStr) {
-        char str[] = inputStr.toCharArray();
-        for (int i = 0; i < str.length; i++) {
-            if (Character.isLetterOrDigit(str[i]) == false) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
 
         /**
          *
@@ -579,7 +557,8 @@ public class LogFile implements java.io.Serializable {
     public static final String RECORD_END_MARKER = "|#]";
     public static final String FIELD_SEPARATOR = "|";
 
-
+    private static final String FIELD_SEPARATOR_REGEX = "\\|";
+    
     private long _indexSize = 10;
     private String _logFileName = null;
     private List _recordIdx		= new ArrayList();
