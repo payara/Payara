@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,19 +41,27 @@
 package com.sun.enterprise.server.logging;
 
 
-import com.sun.appserv.server.util.Version;
-import org.jvnet.hk2.annotations.ContractsProvided;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.logging.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
+
+import org.glassfish.api.VersionInfo;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+import org.jvnet.hk2.annotations.ContractsProvided;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * UniformLogFormatter conforms to the logging format defined by the
@@ -78,9 +86,13 @@ import java.util.logging.Formatter;
 @ContractsProvided({UniformLogFormatter.class, Formatter.class})
 @PerLookup
 public class UniformLogFormatter extends Formatter implements LogEventBroadcaster {
+    
     private static final String RECORD_NUMBER = "RecordNumber";
     private static final String METHOD_NAME = "MethodName";
     private static final String CLASS_NAME = "ClassName";
+    
+    private ServiceLocator habitat = Globals.getDefaultBaseServiceLocator();        
+
     // loggerResourceBundleTable caches references to all the ResourceBundle
     // and can be searched using the LoggerName as the key 
     private HashMap loggerResourceBundleTable;
@@ -93,7 +105,7 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
     private static boolean RECORD_NUMBER_IN_KEY_VALUE = false;
 
     private FormatterDelegate _delegate = null;
-
+    
     static {
         String logSource = System.getProperty(
                 "com.sun.aas.logging.keyvalue.logsource");
@@ -138,6 +150,8 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
     
     private ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
     
+    private String productId = "";
+    
     public UniformLogFormatter() {
         super();
         loggerResourceBundleTable = new HashMap();
@@ -176,12 +190,21 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
      * GlassFish can override to specify their product version
      */
     protected String getProductId() {
-
-        String version = Version.getAbbrevProductName() + Version.getVersionPrefix() + 
-                Version.getMajorVersion() + "." + Version.getMinorVersion();
-        return (version);
+        if (habitat != null) {
+            VersionInfo versionInfo = habitat.getService(VersionInfo.class);
+            if (productId.isEmpty() && versionInfo != null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(versionInfo.getAbbreviatedProductName());
+                sb.append(' ');
+                sb.append(versionInfo.getVersionPrefix());
+                sb.append(versionInfo.getMajorVersion());
+                sb.append('.');
+                sb.append(versionInfo.getMinorVersion());
+                productId = sb.toString();            
+            }            
+        }
+        return productId;
     }
-
 
     /**
      * Sun One Appserver SE/EE? can override to specify their product specific
@@ -271,8 +294,10 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
             logEvent.setComponentId(compId);
             recordBuffer.append(compId).append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
             
-            logEvent.setLogger(record.getLoggerName());
-            recordBuffer.append(record.getLoggerName()).append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
+            String loggerName = record.getLoggerName();
+            loggerName = (loggerName == null) ? "" : loggerName;
+            logEvent.setLogger(loggerName);
+            recordBuffer.append(loggerName).append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TID)) {
                 recordBuffer.append("_ThreadID").append(NV_SEPARATOR);
