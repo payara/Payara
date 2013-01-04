@@ -39,9 +39,15 @@
  */
 package com.oracle.hk2.devtest.isolation.runner;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
+
 import org.glassfish.tests.utils.NucleusStartStopTest;
 import org.glassfish.tests.utils.NucleusTestUtils;
 import org.testng.Assert;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -59,14 +65,56 @@ public class IsolationTest extends NucleusStartStopTest {
     private final static String ISO2_APP_NAME = "hk2-isolation-web-iso2";
     private final static String ISO2_URL = "http://localhost:8080/hk2-isolation-web-iso2/iso2";
     
-    private String getName(String rawHTML) {
-        int leftParen = rawHTML.indexOf("(");
-        int rightParen = rawHTML.indexOf(")");
+    private static final String SERVLET_CONTEXT_LOCATOR = "ServletContextLocator";
+    private static final String JNDI_APP_LOCATOR = "JndiAppLocator";
+    
+    private boolean deployed1;
+    private boolean deployed2;
+    
+    private Map<String, String> getNames(String rawHTML) {
+        Map<String, String> retVal = new HashMap<String, String>();
         
-        Assert.assertTrue(leftParen >= 0);
-        Assert.assertTrue(rightParen > leftParen);
+        StringTokenizer st = new StringTokenizer(rawHTML, "\n");
+        while (st.hasMoreTokens()) {
+            String line = st.nextToken();
+            
+            int equalsIndex = line.indexOf('=');
+            if (equalsIndex < 0) continue;  // Skip lines that do not have = in it
+            
+            String key = line.substring(0, equalsIndex);
+            String value = line.substring(equalsIndex + 1, line.length());
+            
+            retVal.put(key, value);
+        }
         
-        return rawHTML.substring(leftParen+1, rightParen);
+        return retVal;
+    }
+    
+    private String getName(String rawHTML, String key) {
+        Map<String, String> names = getNames(rawHTML);
+        
+        return names.get(key);
+    }
+    
+    @BeforeTest
+    public void beforeTest() {
+        deployed1 = NucleusTestUtils.nadmin("deploy", ISO1_WAR);
+        deployed2 = NucleusTestUtils.nadmin("deploy", ISO2_WAR);
+        
+        Assert.assertTrue(deployed1);
+        Assert.assertTrue(deployed2);
+    }
+    
+    @AfterTest
+    public void afterTest() {
+        if (deployed1) {
+            deployed1 = false;
+            NucleusTestUtils.nadmin("undeploy", ISO1_APP_NAME);
+        }
+        if (deployed2) {
+            deployed2 = false;
+            NucleusTestUtils.nadmin("undeploy", ISO2_APP_NAME);
+        }
     }
     
     /**
@@ -74,30 +122,26 @@ public class IsolationTest extends NucleusStartStopTest {
      */
     @Test(enabled=false)
     public void testWebAppsAreIsolated() {
-        boolean deployed1 = NucleusTestUtils.nadmin("deploy", ISO1_WAR);
-        boolean deployed2 = NucleusTestUtils.nadmin("deploy", ISO2_WAR);
-        
-        try {
-            Assert.assertTrue(deployed1);
-            Assert.assertTrue(deployed2);
+        String fromURL1 = NucleusTestUtils.getURL(ISO1_URL);
+        String fromURL2 = NucleusTestUtils.getURL(ISO2_URL);
             
-            String fromURL1 = NucleusTestUtils.getURL(ISO1_URL);
-            String fromURL2 = NucleusTestUtils.getURL(ISO2_URL);
+        String iso1Name = getName(fromURL1, SERVLET_CONTEXT_LOCATOR);
+        String iso2Name = getName(fromURL2, SERVLET_CONTEXT_LOCATOR);
             
-            String iso1Name = getName(fromURL1);
-            String iso2Name = getName(fromURL2);
+        Assert.assertNotEquals(iso1Name, iso2Name);
+    }
+    
+    /**
+     * Ensures that the application service locators in two web-apps are different
+     */
+    @Test(enabled=false)
+    public void testWebAppsApplicationServiceLocatorsAreIsolated() {
+        String fromURL1 = NucleusTestUtils.getURL(ISO1_URL);
+        String fromURL2 = NucleusTestUtils.getURL(ISO2_URL);
             
-            Assert.assertNotEquals(iso1Name, iso2Name);
-        }
-        finally {
-            if (deployed1) {
-                NucleusTestUtils.nadmin("undeploy", ISO1_APP_NAME);
-            }
-            if (deployed2) {
-                NucleusTestUtils.nadmin("undeploy", ISO2_APP_NAME);
-            }
-        }
-        
-        
+        String iso1Name = getName(fromURL1, JNDI_APP_LOCATOR);
+        String iso2Name = getName(fromURL2, JNDI_APP_LOCATOR);
+            
+        Assert.assertNotEquals(iso1Name, iso2Name);
     }
 }
