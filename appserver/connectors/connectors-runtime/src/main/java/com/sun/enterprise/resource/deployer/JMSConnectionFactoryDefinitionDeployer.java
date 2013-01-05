@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -195,6 +195,10 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
         return new Class[0];
     }
 
+    private boolean isValidProperty(String s) {
+        return (s != null) && !s.equals("");
+    }
+
     abstract class FakeConfigBean implements ConfigBeanProxy {
 
         public ConfigBeanProxy deepCopy(ConfigBeanProxy parent) {
@@ -377,7 +381,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getMaxWaitTimeInMillis() {
             String maxWaitTimeInMillis = desc.getProperty(PROPERTY_PREFIX + "max-wait-time-in-millis");
-            if (maxWaitTimeInMillis != null && !maxWaitTimeInMillis.equals("")) {
+            if (isValidProperty(maxWaitTimeInMillis)) {
                 return maxWaitTimeInMillis;
             } else {
                 return "60000";
@@ -390,7 +394,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getPoolResizeQuantity() {
             String poolResizeQuantity = desc.getProperty(PROPERTY_PREFIX + "pool-resize-quantity");
-            if (poolResizeQuantity != null && !poolResizeQuantity.equals("")) {
+            if (isValidProperty(poolResizeQuantity)) {
                 return poolResizeQuantity;
             } else {
                 return "2";
@@ -416,7 +420,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getIsConnectionValidationRequired() {
             String isConnectionValidationRequired = desc.getProperty(PROPERTY_PREFIX + "is-connection-validation-required");
-            if (isConnectionValidationRequired != null && !isConnectionValidationRequired.equals("")) {
+            if (isValidProperty(isConnectionValidationRequired)) {
                 return isConnectionValidationRequired;
             } else {
                 return "false";
@@ -429,7 +433,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getResourceAdapterName() {
             String resourceAdapterName = desc.getResourceAdapterName();
-            if (resourceAdapterName != null && !resourceAdapterName.equals("")) {
+            if (isValidProperty(resourceAdapterName)) {
                 return resourceAdapterName;
             } else {
                 return null;
@@ -450,7 +454,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getFailAllConnections() {
             String failAllConnections = desc.getProperty(PROPERTY_PREFIX + "fail-all-connections");
-            if (failAllConnections != null && !failAllConnections.equals("")) {
+            if (isValidProperty(failAllConnections)) {
                 return failAllConnections;
             } else {
                 return "false";
@@ -463,7 +467,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getTransactionSupport() {
             String transactionSupport = desc.getProperty(PROPERTY_PREFIX + "transaction-support");
-            if (transactionSupport != null && !transactionSupport.equals("")) {
+            if (isValidProperty(transactionSupport)) {
                 return transactionSupport;
             } else {
                 return "NoTransaction";
@@ -476,7 +480,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getValidateAtmostOncePeriodInSeconds() {
             String validateAtmostOncePeriodInSeconds = desc.getProperty(PROPERTY_PREFIX + "validate-at-most-once-period-in-seconds");
-            if (validateAtmostOncePeriodInSeconds != null && !validateAtmostOncePeriodInSeconds.equals("")) {
+            if (isValidProperty(validateAtmostOncePeriodInSeconds)) {
                 return validateAtmostOncePeriodInSeconds;
             } else {
                 return "0";
@@ -489,7 +493,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getConnectionLeakTimeoutInSeconds() {
             String connectionLeakTimeoutInSeconds = desc.getProperty(PROPERTY_PREFIX + "connection-leak-timeout-in-seconds");
-            if (connectionLeakTimeoutInSeconds != null && !connectionLeakTimeoutInSeconds.equals("")) {
+            if (isValidProperty(connectionLeakTimeoutInSeconds)) {
                 return connectionLeakTimeoutInSeconds;
             } else {
                 return "0";
@@ -502,7 +506,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getConnectionLeakReclaim() {
             String connectionLeakReclaim = desc.getProperty(PROPERTY_PREFIX + "connection-leak-reclaim");
-            if (connectionLeakReclaim != null && !connectionLeakReclaim.equals("")) {
+            if (isValidProperty(connectionLeakReclaim)) {
                 return connectionLeakReclaim;
             } else {
                 return "0";
@@ -515,7 +519,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getConnectionCreationRetryAttempts() {
             String connectionCreationRetryAttempts = desc.getProperty(PROPERTY_PREFIX + "connection-creation-retry-attempts");
-            if (connectionCreationRetryAttempts != null && !connectionCreationRetryAttempts.equals("")) {
+            if (isValidProperty(connectionCreationRetryAttempts)) {
                 return connectionCreationRetryAttempts;
             } else {
                 return "0";
@@ -528,7 +532,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getConnectionCreationRetryIntervalInSeconds() {
             String connectionCreationRetryIntervalInSeconds = desc.getProperty(PROPERTY_PREFIX + "connection-creation-retry-interval-in-seconds");
-            if (connectionCreationRetryIntervalInSeconds != null && !connectionCreationRetryIntervalInSeconds.equals("")) {
+            if (isValidProperty(connectionCreationRetryIntervalInSeconds)) {
                 return connectionCreationRetryIntervalInSeconds;
             } else {
                 return "0";
@@ -541,7 +545,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getLazyConnectionEnlistment() {
             String lazyConnectionEnlistment = desc.getProperty(PROPERTY_PREFIX + "lazy-connection-enlistment");
-            if (lazyConnectionEnlistment != null && !lazyConnectionEnlistment.equals("")) {
+            if (isValidProperty(lazyConnectionEnlistment)) {
                 return lazyConnectionEnlistment;
             } else {
                 return "false";
@@ -554,7 +558,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getLazyConnectionAssociation() {
             String lazyConnectionAssociation = desc.getProperty(PROPERTY_PREFIX + "lazy-connection-association");
-            if (lazyConnectionAssociation != null && !lazyConnectionAssociation.equals("")) {
+            if (isValidProperty(lazyConnectionAssociation)) {
                 return lazyConnectionAssociation;
             } else {
                 return "false";
@@ -567,7 +571,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getAssociateWithThread() {
             String associateWithThread = desc.getProperty(PROPERTY_PREFIX + "associate-with-thread");
-            if (associateWithThread != null && !associateWithThread.equals("")) {
+            if (isValidProperty(associateWithThread)) {
                 return associateWithThread;
             } else {
                 return "false";
@@ -580,7 +584,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getPooling() {
             String pooling = desc.getProperty(PROPERTY_PREFIX + "pooling");
-            if (pooling != null && !pooling.equals("")) {
+            if (isValidProperty(pooling)) {
                 return pooling;
             } else {
                 return "true";
@@ -593,7 +597,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getMatchConnections() {
             String matchConnections = desc.getProperty(PROPERTY_PREFIX + "match-connections");
-            if (matchConnections != null && !matchConnections.equals("")) {
+            if (isValidProperty(matchConnections)) {
                 return matchConnections;
             } else {
                 return "true";
@@ -606,7 +610,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getMaxConnectionUsageCount() {
             String maxConnectionUsageCount = desc.getProperty(PROPERTY_PREFIX + "max-connection-usage-count");
-            if (maxConnectionUsageCount != null && !maxConnectionUsageCount.equals("")) {
+            if (isValidProperty(maxConnectionUsageCount)) {
                 return maxConnectionUsageCount;
             } else {
                 return "0";
@@ -628,9 +632,28 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
         public List<Property> getProperty() {
             Properties p = desc.getProperties();
             List<Property> jmsConnectionFactoryProperties = new ArrayList<Property>();
+
+            if (isValidProperty(desc.getUser())) {
+                JMSConnectionFactoryProperty property = convertProperty("UserName", desc.getUser());
+                jmsConnectionFactoryProperties.add(property);
+            }
+
+            if (isValidProperty(desc.getPassword())) {
+                JMSConnectionFactoryProperty property = convertProperty("Password", desc.getPassword());
+                jmsConnectionFactoryProperties.add(property);
+            }
+
+            if (isValidProperty(desc.getClientId())) {
+                JMSConnectionFactoryProperty property = convertProperty("clientId", desc.getClientId());
+                jmsConnectionFactoryProperties.add(property);
+            }
+
             for (Entry<Object, Object> entry : p.entrySet()) {
                 String key = (String)entry.getKey();
-                if (key.startsWith(PROPERTY_PREFIX)) {
+                if (key.startsWith(PROPERTY_PREFIX)
+                    || (key.equalsIgnoreCase("UserName") && isValidProperty(desc.getUser()))
+                    || (key.equalsIgnoreCase("Password") && isValidProperty(desc.getPassword()))
+                    || (key.equalsIgnoreCase("clientId") && isValidProperty(desc.getClientId()))) {
                     continue;
                 }
                 String value = (String)entry.getValue();
@@ -638,19 +661,8 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
                 jmsConnectionFactoryProperties.add(property);
             }
 
-            if (desc.getUser() != null) {
-                JMSConnectionFactoryProperty property = convertProperty("UserName", desc.getUser());
-                jmsConnectionFactoryProperties.add(property);
-            }
-
-            if (desc.getPassword() != null) {
-                JMSConnectionFactoryProperty property = convertProperty("Password", desc.getPassword());
-                jmsConnectionFactoryProperties.add(property);
-            }
-
             return jmsConnectionFactoryProperties;
         }
-
 
         public Property getProperty(String name) {
             String value = desc.getProperty(name);
@@ -685,7 +697,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
 
         public String getPing() {
             String ping = desc.getProperty(PROPERTY_PREFIX + "ping");
-            if (ping != null && !ping.equals("")) {
+            if (isValidProperty(ping)) {
                 return ping;
             } else {
                 return "false";

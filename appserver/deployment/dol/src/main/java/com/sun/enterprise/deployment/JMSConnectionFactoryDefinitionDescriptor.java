@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,7 +58,6 @@ public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor
     private String clientId;
     private Properties properties = new Properties();
     private boolean transactional = true;
-    private int initialPoolSize = -1;
     private int maxPoolSize = -1;
     private int minPoolSize = -1;
     private int maxIdleTime = -1;
@@ -151,14 +150,6 @@ public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor
         this.transactionSet = value;
     }
 
-    public int getInitialPoolSize() {
-        return initialPoolSize;
-    }
-
-    public void setInitialPoolSize(int initialPoolSize) {
-        this.initialPoolSize = initialPoolSize;
-    }
-
     public int getMaxPoolSize() {
         return maxPoolSize;
     }
@@ -226,7 +217,6 @@ public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor
                 DOLUtils.equals(getClientId(), other.getClientId()) &&
                 properties.equals(other.properties) &&
                 isTransactional() == other.isTransactional() &&
-                getInitialPoolSize() == other.getInitialPoolSize() &&
                 getMinPoolSize() == other.getMinPoolSize() &&
                 getMaxPoolSize() == other.getMaxPoolSize() &&
                 getMaxIdleTime() == other.getMaxIdleTime()

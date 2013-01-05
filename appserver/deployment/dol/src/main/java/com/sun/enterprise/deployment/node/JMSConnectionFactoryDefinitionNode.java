@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -69,7 +69,6 @@ public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode
         table.put(TagNames.JMS_CONNECTION_FACTORY_CLIENT_ID, "setClientId");
 
         table.put(TagNames.JMS_CONNECTION_FACTORY_TRANSACTIONAL, "setTransactional");
-        table.put(TagNames.JMS_CONNECTION_FACTORY_INITIAL_POOL_SIZE, "setInitialPoolSize");
         table.put(TagNames.JMS_CONNECTION_FACTORY_MAX_POOL_SIZE, "setMaxPoolSize");
         table.put(TagNames.JMS_CONNECTION_FACTORY_MIN_POOL_SIZE, "setMinPoolSize");
         table.put(TagNames.JMS_CONNECTION_FACTORY_MAX_IDLE_TIME, "setMaxIdleTime");
@@ -91,7 +90,6 @@ public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode
         propertyNode.writeDescriptor(node, desc);
 
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_TRANSACTIONAL, String.valueOf(desc.isTransactional()));
-        appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_INITIAL_POOL_SIZE, desc.getInitialPoolSize());
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_MAX_POOL_SIZE, desc.getMaxPoolSize());
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_MIN_POOL_SIZE, desc.getMinPoolSize());
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_MAX_IDLE_TIME, desc.getMaxIdleTime());
