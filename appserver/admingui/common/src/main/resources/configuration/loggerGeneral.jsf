@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -52,18 +52,9 @@
 <event>
     <!beforeCreate
         setSessionAttribute(key="loggingTabs" value="loggerGeneral");
-        getRequestValue(key="configName" value=>$page{configName} default="server-config");
-        setPageSessionAttribute(key="rest-api" value="true");
-        setPageSessionAttribute(key="attrsInUI",value="com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging,com.sun.enterprise.server.logging.GFFileHandler.logtoConsole,com.sun.enterprise.server.logging.GFFileHandler.file,handlers,com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes,com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes,com.sun.enterprise.server.logging.GFFileHandler.flushFrequency,com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles,com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange");
-        setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/common/configuration/loggerGeneral.jsf?configName=#{pageSession.configName}");
-        //set the following for including buttons.inc
-        setPageSessionAttribute(key="edit" value="#{true}" );
-        setPageSessionAttribute(key="showDefaultButton" value="true" );
-        setPageSessionAttribute(key="showCancelButton" value="false" );
-        setPageSessionAttribute(key="hasPropertySheet" value="false" );
-        setPageSessionAttribute(key="hasPropertyTable" value="false" );
-
-        getRequestValue(key="configName" value=>$page{configName});
+        getRequestValue(key="configName" value="#{pageSession.configName}" );
+        setPageSessionAttribute(key="attrsInUI",
+            value="com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging,com.sun.enterprise.server.logging.GFFileHandler.logtoConsole,com.sun.enterprise.server.logging.GFFileHandler.file,handlers,com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes,com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes,com.sun.enterprise.server.logging.GFFileHandler.flushFrequency,com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles,com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange,com.sun.enterprise.server.logging.GFFileHandler.multiLineMode,com.sun.enterprise.server.logging.GFFileHandler.formatter,java.util.logging.ConsoleHandler.formatter");
         createMap(result="#{requestScope.attrsMap}");
         mapPut(map="#{requestScope.attrsMap}" key="target" value="#{pageSession.configName}");
         gf.restRequest(
@@ -72,6 +63,13 @@
                 method="GET"
                 result="#{pageSession.valueMap}");
         setPageSessionAttribute(key="logAttributes", value="#{pageSession.valueMap.data.extraProperties.logAttributes}");
+
+        //TODO: remove this when GLASSFISH-19494 is fixed
+        if ("#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.multiLineMode']}=#{null}") {
+            mapPut(map="#{pageSession.logAttributes}", key="com.sun.enterprise.server.logging.GFFileHandler.multiLineMode" value="false" );
+        }
+        
+        //println("---------------------------- logAttributes = #{pageSession.logAttributes}");
 
     />
 </event>
@@ -86,7 +84,7 @@
                 onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
                 <!command
                     prepareSuccessfulMsg();
-                    saveLoggingAttributes(attrs="#{pageSession.logAttributes}" attrsInUI="#{pageSession.attrsInUI}" config="#{pageSession.configName}");
+                    saveLoggingAttributes(attrs="#{pageSession.logAttributes}" config="#{pageSession.configName}");
                     gf.redirect(page="#{request.contextPath}/common/configuration/loggerGeneral.jsf?configName=#{pageSession.configName}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                 />
             </sun:button>
@@ -109,14 +107,22 @@
                 <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange']}"  selectedValue="true" />
            </sun:property>
 
-           <sun:property id="logFileProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogFile}" helpText="$resource{i18nc.log.LogFileHelp}">
-                <sun:textField id="LogFile" columns="$int{70}" maxLength="#{sessionScope.fieldLengths['maxLength.log.LogFile']}" text="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.file']}"/>
-            </sun:property>
+          <sun:property id="multiline"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.multiLineMode}" helpText="$resource{i18nc.log.multiLineModeHelp}">
+                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.multiLineMode']}"  selectedValue="true" />
+           </sun:property>
 
-            <sun:property id="logHandlerProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.Handler}" helpText="$resource{i18nc.log.HandlerHelp}">
-                <sun:textField id="LogHandler" columns="$int{70}" maxLength="#{sessionScope.fieldLengths['maxLength.log.Handler']}" text="#{pageSession.logAttributes['handlers']}" />
-            </sun:property>
+           <sun:property id="consoleFormat"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.ConsoleLogFormat}" helpText="$resource{i18nc.log.ConsoleLogFormatHelp}">
+                <sun:dropDown id="consoleFormat" selected="#{pageSession.logAttributes['java.util.logging.ConsoleHandler.formatter']}"
+                    labels={ "ULF","ODL"}
+                    values={"com.sun.enterprise.server.logging.UniformLogFormatter", "com.sun.enterprise.server.logging.ODLLogFormatter"} />
+          </sun:property>
 
+        <sun:property id="logfileFormat"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileLogFormat}" helpText="$resource{i18nc.log.FileLogFormatHelp}">
+          <sun:dropDown id="logfileFormat" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.formatter']}"
+                labels={ "ULF","ODL"}
+                values={"com.sun.enterprise.server.logging.UniformLogFormatter", "com.sun.enterprise.server.logging.ODLLogFormatter"} />
+        </sun:property>
+          
             <sun:property id="FileRotationLimitProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileRotationLimit}" helpText="$resource{i18nc.log.FileRotationLimitHelp}">
                 <sun:textField id="FileRotationLimit" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.FileRotationLimit']}" text="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes']}" />
                 <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Bytes}"/>
@@ -134,7 +140,14 @@
             <sun:property id="MaxHistoryFiles"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.MaxHistoryFiles}" helpText="$resource{i18nc.log.MaxHistoryFilesHelp}">
                 <sun:textField id="MaxHistoryFiles" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.MaxHistoryFiles']}" text="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles']}"/>
             </sun:property>
-          
+
+            <sun:property id="logFileProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogFile}" helpText="$resource{i18nc.log.LogFileHelp}">
+                <sun:textField id="LogFile" columns="$int{70}" maxLength="#{sessionScope.fieldLengths['maxLength.log.LogFile']}" text="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.file']}"/>
+            </sun:property>
+
+            <sun:property id="logHandlerProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.Handler}" helpText="$resource{i18nc.log.HandlerHelp}">
+                <sun:textField id="LogHandler" columns="$int{70}" maxLength="#{sessionScope.fieldLengths['maxLength.log.Handler']}" text="#{pageSession.logAttributes['handlers']}" />
+            </sun:property>
 
     </sun:propertySheetSection>
 </sun:propertySheet>

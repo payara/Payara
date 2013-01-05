@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -185,27 +185,25 @@ public class LoggingHandlers {
     @Handler(id = "saveLoggingAttributes",
     input = {
         @HandlerInput(name = "attrs", type = Map.class, required=true),
-        @HandlerInput(name = "attrsInUI", type = String.class, required=true), // added because of Logging backend bug
         @HandlerInput(name = "config", type = String.class, required=true)
     })
 
     public static void saveLoggingAttributes(HandlerContext handlerCtx) {
         Map<String,Object> attrs = (Map<String,Object>) handlerCtx.getInputValue("attrs");
-        String attrsInUI = (String)handlerCtx.getInputValue("attrsInUI");
-        String[] attrNames = attrsInUI.split(",");
         String config = (String)handlerCtx.getInputValue("config");
         Map<String, Object> props = new HashMap();
         try{
-            for(String key : attrNames){
+            for(String key : attrs.keySet()){
                 if ((key.equals("com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging")|| 
                       key.equals("com.sun.enterprise.server.logging.GFFileHandler.logtoConsole") ||
+                      key.equals("com.sun.enterprise.server.logging.GFFileHandler.multiLineMode") ||
                      key.equals("com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange" ))
                         && (attrs.get(key) == null)) {
                     attrs.put(key, "false");
                 }
                 props.put("id", key + "='" + attrs.get(key) + "'");
                 props.put("target", config);
-                RestUtil.restRequest((String)GuiUtil.getSessionValue("REST_URL") + "/set-log-attributes.json",
+                RestUtil.restRequest((String)GuiUtil.getSessionValue("REST_URL") + "/set-log-attributes",
                     props, "POST", null, false, true);
             }
         }catch (Exception ex){
