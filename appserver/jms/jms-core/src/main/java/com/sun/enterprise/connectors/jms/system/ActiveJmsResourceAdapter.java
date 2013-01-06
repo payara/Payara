@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1981,8 +1981,14 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         if (destinationLokup == null) {
             String appName = descriptor_.getApplication().getAppName();
             String moduleName = ConnectorsUtil.getModuleName(descriptor_);
-    
-            String destName = getPhysicalDestinationFromConfiguration(jndiName, appName, moduleName, descriptor_);
+
+            JMSDestinationDefinitionDescriptor destination = getJMSDestinationFromDescriptor(jndiName, descriptor_);
+            String destName = null;
+            if (isValidDestination(destination)) {
+                destName = destination.getDestinationName();
+            } else {
+                destName = getPhysicalDestinationFromConfiguration(jndiName, appName, moduleName);
+            }
     
             //1.3 jndi-name ==> 1.4 setDestination
             descriptor_.putRuntimeActivationConfigProperty(
@@ -1997,6 +2003,15 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 descriptor_.putRuntimeActivationConfigProperty(
                         new EnvironmentProperty(DESTINATION_TYPE,
                                 descriptor_.getDestinationType(), null));
+                _logger.log(Level.INFO, "endpoint.determine.destinationtype", new
+                        Object[]{descriptor_.getDestinationType(), jndiName, descriptor_.getName()});
+            } else if (isValidDestination(destination) &&
+                    ConnectorConstants.DEFAULT_JMS_ADAPTER.equals(destination.getResourceAdapterName())) {
+                descriptor_.putRuntimeActivationConfigProperty(
+                        new EnvironmentProperty(DESTINATION_TYPE,
+                                destination.getClassName(), null));
+                _logger.log(Level.INFO, "endpoint.determine.destinationtype", new
+                        Object[]{destination.getClassName(), destination.getName(), descriptor_.getName()});
             } else {
                 /*
                  * If destination type is not provided by the MDB component
@@ -2009,28 +2024,6 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                  * the properties as defined by the MDB.
                  */
                 try {
-                        String instanceName = getServerEnvironment().getInstanceName();
-                        List serversList = getServers().getServer();
-                        Server server = null;
-                        for (int j =0; j < serversList.size(); j ++){
-                           if (instanceName.equals(((Server)serversList.get(j)).getName())){
-                               server = (Server) serversList.get(j);
-                           }
-                        }
-     /*  
-                     AdminObjectResource[] adminObjectResources =
-                                ResourcesUtil.createInstance().getEnabledAdminObjectResources(ConnectorConstants.DEFAULT_JMS_ADAPTER);
-                    for (int i = 0; i < adminObjectResources.length; i++) {
-                        AdminObjectResource aor = adminObjectResources[i];
-                        if (aor.getJndiName().equals(jndiName)) {
-                            descriptor_.putRuntimeActivationConfigProperty(
-                                    new EnvironmentProperty(DESTINATION_TYPE,
-                                            aor.getResType(), null));
-                            _logger.log(Level.INFO, "endpoint.determine.destinationtype", new
-                                    Object[]{aor.getResType() , aor.getJndiName() , descriptor_.getName()});
-                        }
-                    }
-     */
                     AdminObjectResource aor = (AdminObjectResource)
                             ResourcesUtil.createInstance().getResource(jndiName, appName, moduleName, AdminObjectResource.class);
                     if(aor != null && ConnectorConstants.DEFAULT_JMS_ADAPTER.equals(aor.getResAdapter())){
@@ -2141,8 +2134,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         return getDomainName() + SEPARATOR + getClusterName() + SEPARATOR + descriptor_.getUniqueId() ;
     }
 
-    private String getPhysicalDestinationFromConfiguration(String logicalDest, String appName, String moduleName,
-            EjbMessageBeanDescriptor ejbMessageBeanDescriptor) throws ConnectorRuntimeException {
+    private String getPhysicalDestinationFromConfiguration(String logicalDest, String appName, String moduleName)
+            throws ConnectorRuntimeException {
         Property ep = null;
         try {
             //ServerContext sc = ApplicationServer.getServerContext();
@@ -2153,31 +2146,6 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                     ResourcesUtil.createInstance().getResource(logicalDest, appName, moduleName, AdminObjectResource.class);
             //AdminObjectResource res = (AdminObjectResource)   allResources.getAdminObjectResourceByJndiName(logicalDest);
         if (res == null) {
-            String physicalDest = null;
-            if (logicalDest.startsWith(ResourceConstants.JAVA_COMP_SCOPE_PREFIX)
-                   || !logicalDest.startsWith(ResourceConstants.JAVA_SCOPE_PREFIX)) {
-                if (isEjbInWar(ejbMessageBeanDescriptor)) {
-                    physicalDest = getPhysicalDestination(logicalDest, ejbMessageBeanDescriptor.getEjbBundleDescriptor().getModuleDescriptor());
-                } else {
-                    physicalDest = getPhysicalDestination(logicalDest, ejbMessageBeanDescriptor);
-                }
-            } else if (logicalDest.startsWith(ResourceConstants.JAVA_MODULE_SCOPE_PREFIX)) {
-                if (isEjbInWar(ejbMessageBeanDescriptor)) {
-                    physicalDest = getPhysicalDestination(logicalDest, ejbMessageBeanDescriptor.getEjbBundleDescriptor().getModuleDescriptor());
-                } else {
-                    physicalDest = getPhysicalDestination(logicalDest, ejbMessageBeanDescriptor.getEjbBundleDescriptor());
-                }
-            } else if (logicalDest.startsWith(ResourceConstants.JAVA_APP_SCOPE_PREFIX)) {
-                physicalDest = getPhysicalDestination(logicalDest, ejbMessageBeanDescriptor.getApplication());
-            } else if (logicalDest.startsWith(ResourceConstants.JAVA_GLOBAL_SCOPE_PREFIX)) {
-                physicalDest = getPhysicalDestination(logicalDest, ejbMessageBeanDescriptor.getApplication());
-                if (!isValidName(physicalDest)) {
-                    physicalDest = getPhysicalDestination(logicalDest);
-                }
-            }
-            if (isValidName(physicalDest)) {
-                return physicalDest;
-            }
             String msg = sm.getString("ajra.err_getting_dest", logicalDest);
             throw new ConnectorRuntimeException(msg);
         }
@@ -2198,8 +2166,37 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         return ep.getValue();
     }
 
-    private boolean isValidName(String name) {
-        return (name != null) && !name.equals("");
+    private JMSDestinationDefinitionDescriptor getJMSDestinationFromDescriptor(String jndiName, EjbMessageBeanDescriptor ejbMessageBeanDescriptor) {
+    JMSDestinationDefinitionDescriptor destination = null;
+        if (jndiName.startsWith(ResourceConstants.JAVA_COMP_SCOPE_PREFIX)
+               || !jndiName.startsWith(ResourceConstants.JAVA_SCOPE_PREFIX)) {
+            if (isEjbInWar(ejbMessageBeanDescriptor)) {
+                destination = getJMSDestination(jndiName, ejbMessageBeanDescriptor.getEjbBundleDescriptor().getModuleDescriptor());
+            } else {
+                destination = getJMSDestination(jndiName, ejbMessageBeanDescriptor);
+            }
+        } else if (jndiName.startsWith(ResourceConstants.JAVA_MODULE_SCOPE_PREFIX)) {
+            if (isEjbInWar(ejbMessageBeanDescriptor)) {
+                destination = getJMSDestination(jndiName, ejbMessageBeanDescriptor.getEjbBundleDescriptor().getModuleDescriptor());
+            } else {
+                destination = getJMSDestination(jndiName, ejbMessageBeanDescriptor.getEjbBundleDescriptor());
+            }
+        } else if (jndiName.startsWith(ResourceConstants.JAVA_APP_SCOPE_PREFIX)) {
+            destination = getJMSDestination(jndiName, ejbMessageBeanDescriptor.getApplication());
+        } else if (jndiName.startsWith(ResourceConstants.JAVA_GLOBAL_SCOPE_PREFIX)) {
+            destination = getJMSDestination(jndiName, ejbMessageBeanDescriptor.getApplication());
+            if (!isValidDestination(destination)) {
+                destination = getJMSDestination(jndiName);
+            }
+        }
+        if (isValidDestination(destination)) {
+            return destination;
+        }
+        return null;
+    }
+
+    private boolean isValidDestination(JMSDestinationDefinitionDescriptor descriptor) {
+        return (descriptor != null) && (descriptor.getName() != null) && !"".equals(descriptor.getName());
     }
 
     private boolean isEjbInWar(EjbBundleDescriptor ejbBundleDescriptor) {
@@ -2215,26 +2212,27 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     /*
-     * Get physical destination name from component
+     * Get JMS destination resource from component
      */
-    private String getPhysicalDestination(String logicalDestination, EjbMessageBeanDescriptor ejbMessageBeanDescriptor) {
-        return getPhysicalDestination(logicalDestination, ejbMessageBeanDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
+    private JMSDestinationDefinitionDescriptor getJMSDestination(String logicalDestination, EjbMessageBeanDescriptor ejbMessageBeanDescriptor) {
+        return getJMSDestination(logicalDestination, ejbMessageBeanDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
     }
 
     /*
-     * Get physical destination name from ejb module
+     * Get JMS destination resource from ejb module
      */
-    private String getPhysicalDestination(String logicalDestination, EjbBundleDescriptor ejbBundleDescriptor) {
-        String physicalDestination = getPhysicalDestination(logicalDestination, ejbBundleDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
-        if (isValidName(physicalDestination)) {
-            return physicalDestination;
+    private JMSDestinationDefinitionDescriptor getJMSDestination(String logicalDestination, EjbBundleDescriptor ejbBundleDescriptor) {
+        JMSDestinationDefinitionDescriptor destination =
+                getJMSDestination(logicalDestination, ejbBundleDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
+        if (isValidDestination(destination)) {
+            return destination;
         }
 
         Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ejbBundleDescriptor.getEjbs();
         for (EjbDescriptor ejbDescriptor : ejbDescriptors) {
-            physicalDestination = getPhysicalDestination(logicalDestination, ejbDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
-            if (isValidName(physicalDestination)) {
-                return physicalDestination;
+            destination = getJMSDestination(logicalDestination, ejbDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
+            if (isValidDestination(destination)) {
+                return destination;
             }
         }
 
@@ -2242,20 +2240,21 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     /*
-     * Get physical destination name from web module
+     * Get JMS destination resource from web module
      */
-    private String getPhysicalDestination(String logicalDestination, ModuleDescriptor moduleDescriptor) {
+    private JMSDestinationDefinitionDescriptor getJMSDestination(String logicalDestination, ModuleDescriptor moduleDescriptor) {
         WebBundleDescriptor webBundleDescriptor = (WebBundleDescriptor) moduleDescriptor.getDescriptor();
-        String physicalDestination = getPhysicalDestination(logicalDestination, webBundleDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
-        if (isValidName(physicalDestination)) {
-            return physicalDestination;
+        JMSDestinationDefinitionDescriptor destination =
+                getJMSDestination(logicalDestination, webBundleDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
+        if (isValidDestination(destination)) {
+            return destination;
         }
 
         Collection<EjbBundleDescriptor> ejbBundleDescriptors = moduleDescriptor.getDescriptor().getExtensionsDescriptors(EjbBundleDescriptor.class);
         for (EjbBundleDescriptor ejbBundleDescriptor : ejbBundleDescriptors) {
-            physicalDestination = getPhysicalDestination(logicalDestination, ejbBundleDescriptor);
-            if (isValidName(physicalDestination)) {
-                return physicalDestination;
+            destination = getJMSDestination(logicalDestination, ejbBundleDescriptor);
+            if (isValidDestination(destination)) {
+                return destination;
             }
         }
 
@@ -2263,39 +2262,40 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     /*
-     * Get physical destination name from application
+     * Get JMS destination resource from application
      */
-    private String getPhysicalDestination(String logicalDestination, Application application) {
+    private JMSDestinationDefinitionDescriptor getJMSDestination(String logicalDestination, Application application) {
         if (application == null) {
             return null;
         }
 
-        String physicalDestination = getPhysicalDestination(logicalDestination, application.getResourceDescriptors(JavaEEResourceType.JMSDD));
-        if (isValidName(physicalDestination)) {
-            return physicalDestination;
+        JMSDestinationDefinitionDescriptor destination =
+                getJMSDestination(logicalDestination, application.getResourceDescriptors(JavaEEResourceType.JMSDD));
+        if (isValidDestination(destination)) {
+            return destination;
         }
 
         Set<WebBundleDescriptor> webBundleDescriptors = application.getBundleDescriptors(WebBundleDescriptor.class);
         for (WebBundleDescriptor webBundleDescriptor : webBundleDescriptors) {
-            physicalDestination = getPhysicalDestination(logicalDestination, webBundleDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
-            if (isValidName(physicalDestination)) {
-                return physicalDestination;
+            destination = getJMSDestination(logicalDestination, webBundleDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
+            if (isValidDestination(destination)) {
+                return destination;
             }
         }
 
         Set<EjbBundleDescriptor> ejbBundleDescriptors = application.getBundleDescriptors(EjbBundleDescriptor.class);
         for (EjbBundleDescriptor ejbBundleDescriptor : ejbBundleDescriptors) {
-            physicalDestination = getPhysicalDestination(logicalDestination, ejbBundleDescriptor);
-            if (isValidName(physicalDestination)) {
-                return physicalDestination;
+            destination = getJMSDestination(logicalDestination, ejbBundleDescriptor);
+            if (isValidDestination(destination)) {
+                return destination;
             }
         }
 
         Set<ApplicationClientDescriptor> appClientDescriptors = application.getBundleDescriptors(ApplicationClientDescriptor.class);
         for (ApplicationClientDescriptor appClientDescriptor : appClientDescriptors) {
-            physicalDestination = getPhysicalDestination(logicalDestination, appClientDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
-            if (isValidName(physicalDestination)) {
-                return physicalDestination;
+            destination = getJMSDestination(logicalDestination, appClientDescriptor.getResourceDescriptors(JavaEEResourceType.JMSDD));
+            if (isValidDestination(destination)) {
+                return destination;
             }
         }
 
@@ -2303,18 +2303,18 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     /*
-     * Get physical destination name from deployed applications
+     * Get JMS destination resource from deployed applications
      */
-    private String getPhysicalDestination(String logicalDestination) {
+    private JMSDestinationDefinitionDescriptor getJMSDestination(String logicalDestination) {
         Domain domain = Globals.get(Domain.class);
         Applications applications = domain.getApplications();
         for (com.sun.enterprise.config.serverbeans.Application app : applications.getApplications()) {
             ApplicationInfo appInfo = appRegistry.get(app.getName());
             if (appInfo != null) {
                 Application application = appInfo.getMetaData(Application.class);
-                String physicalDestination = getPhysicalDestination(logicalDestination, application);
-                if (isValidName(physicalDestination)) {
-                    return physicalDestination;
+                JMSDestinationDefinitionDescriptor destination = getJMSDestination(logicalDestination, application);
+                if (isValidDestination(destination)) {
+                    return destination;
                 }
             }
         }
@@ -2322,13 +2322,13 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     /*
-     * Get physical destination name from descriptor set
+     * Get JMS destination resource from descriptor set
      */
-    private String getPhysicalDestination(String jndiName, Set<? extends Descriptor> descriptors) {
+    private JMSDestinationDefinitionDescriptor getJMSDestination(String jndiName, Set<? extends Descriptor> descriptors) {
         for (Descriptor descriptor : descriptors) {
             if (descriptor instanceof JMSDestinationDefinitionDescriptor) {
                 if (jndiName.equals(((JMSDestinationDefinitionDescriptor) descriptor).getName())) {
-                    return ((JMSDestinationDefinitionDescriptor) descriptor).getDestinationName();
+                    return (JMSDestinationDefinitionDescriptor) descriptor;
                 }
             }
         }
