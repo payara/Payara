@@ -197,7 +197,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
         private String getResourceName() {
             StringBuilder dottedNameForResourceName = new StringBuilder();
             if (isProperty) {
-                final int propertyLiteralIndex = pattern.indexOf(".property.");
+                final int propertyLiteralIndex = pattern.indexOf("property.");
                 dottedNameForResourceName.append(pattern.substring(0, propertyLiteralIndex));
             } else {
                 dottedNameForResourceName.append(pattern);
