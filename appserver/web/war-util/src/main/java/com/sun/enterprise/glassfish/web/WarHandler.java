@@ -425,7 +425,7 @@ public class WarHandler extends AbstractArchiveHandler {
         protected abstract void read(InputStream input) throws XMLStreamException;
 
         protected void init(InputStream input)     
-                throws XMLStreamException, FileNotFoundException {
+                throws XMLStreamException {
 
             try {
                 read(input);
