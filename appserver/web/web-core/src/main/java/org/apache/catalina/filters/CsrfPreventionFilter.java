@@ -358,16 +358,7 @@ public class CsrfPreventionFilter extends FilterBase {
         private final Map<T,T> cache;
 
         public LruCache(final int cacheSize) {
-            cache = new LinkedHashMap<T,T>() {
-                private static final long serialVersionUID = 1L;
-                @Override
-                protected boolean removeEldestEntry(Map.Entry<T,T> eldest) {
-                    if (size() > cacheSize) {
-                        return true;
-                    }
-                    return false;
-                }
-            };
+            cache = new FixSizeLinkedHashMap<T,T>(cacheSize);
         }
 
         public void add(T key) {
@@ -380,6 +371,24 @@ public class CsrfPreventionFilter extends FilterBase {
             synchronized (cache) {
                 return cache.containsKey(key);
             }
+        }
+    }
+
+    private static class FixSizeLinkedHashMap<K, V> extends LinkedHashMap<K, V> {
+        private static final long serialVersionUID = 1L;
+        private int cacheSize;
+
+        private FixSizeLinkedHashMap(int cs) {
+            super();
+            cacheSize = cs;
+        }
+
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<K,V> eldest) {
+            if (size() > cacheSize) {
+                return true;
+            }
+            return false;
         }
     }
 }
