@@ -91,16 +91,19 @@ public abstract class GenericHandler implements ArchiveHandler {
         Enumeration<String> e = source.entries();
         while (e.hasMoreElements()) {
             String entryName = e.nextElement();
-            InputStream is = new BufferedInputStream(source.getEntry(entryName));
-            OutputStream os = null;
-            try {
-                os = target.putNextEntry(entryName);
-                FileUtils.copy(is, os, source.getEntrySize(entryName));
-            } finally {
-                if (os!=null) {
-                    target.closeEntry();
-                }
-                is.close();
+            InputStream entry = source.getEntry(entryName);
+            if (entry != null) {
+              InputStream is = new BufferedInputStream(entry);
+              OutputStream os = null;
+              try {
+                  os = target.putNextEntry(entryName);
+                  FileUtils.copy(is, os, source.getEntrySize(entryName));
+              } finally {
+                  if (os!=null) {
+                      target.closeEntry();
+                  }
+                  is.close();
+              }
             }
         }
 

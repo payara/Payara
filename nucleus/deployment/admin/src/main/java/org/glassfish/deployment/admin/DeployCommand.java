@@ -423,7 +423,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             // create the parent class loader
             deploymentContext =
                     deployment.getBuilder(logger, this, report).
-                            source(archive).archiveHandler(archiveHandler).build(initialContext);
+                            source(initialContext.getSource()).archiveHandler(archiveHandler).build(initialContext);
             if (tracing!=null) {
                 tracing.addMark(DeploymentTracing.Mark.CONTEXT_CREATED);
                 deploymentContext.addModuleMetaData(tracing);
