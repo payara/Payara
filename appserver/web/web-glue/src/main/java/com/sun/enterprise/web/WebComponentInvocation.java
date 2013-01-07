@@ -75,7 +75,7 @@ public class WebComponentInvocation extends ComponentInvocation {
     
     public WebComponentInvocation(WebModule wm, Object instance, String instanceName) {
       this(wm, instance);
-      this.instanceName = instanceName;
+      setInstanceName(instanceName);
     }
 
     private Object _getResourceTableKey() {

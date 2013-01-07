@@ -66,7 +66,7 @@ public class ComponentInvocation
     public Object instance;
     
     // the name of this instance
-    protected String instanceName;
+    private String instanceName;
 
     // ServletContext for servlet, Container for EJB
     public Object container;
@@ -142,6 +142,10 @@ public class ComponentInvocation
     
     public String getInstanceName() {
       return instanceName;
+    }
+    
+    public void setInstanceName(String instanceName) {
+      this.instanceName = instanceName;
     }
 
     public String getComponentId() {
