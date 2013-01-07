@@ -77,8 +77,6 @@ public class ByteArrayServletOutputStream extends ServletOutputStream {
      */
     protected ByteArrayOutputStream buf = null;
 
-    private boolean hasSetWriteListener = false;
-
     /**
      * Construct a new ServletOutputStream.
      */

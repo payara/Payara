@@ -52,8 +52,6 @@ public class CachingOutputStreamWrapper extends ServletOutputStream {
 
     ByteArrayOutputStream baos;
 
-    private boolean hasSetWriteListener = false;
-
     public CachingOutputStreamWrapper() {
         this.baos = new ByteArrayOutputStream(4096);
     }
