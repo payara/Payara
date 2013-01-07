@@ -46,7 +46,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.appserv.server.util.Version;
-import com.sun.enterprise.v3.server.HK2Dispatcher;
 import org.glassfish.api.container.Adapter;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.ApplicationContainer;
@@ -92,7 +91,6 @@ public class ContainerMapper extends StaticHttpHandler {
     private final static Note<DataChunk> DATA_CHUNK =
             Request.<DataChunk>createNote("DataChunk");
 
-    private final HK2Dispatcher hk2Dispatcher = new HK2Dispatcher();
     private String version;
     private static final AfterServiceListener afterServiceListener =
             new AfterServiceListenerImpl();
@@ -142,6 +140,24 @@ public class ContainerMapper extends StaticHttpHandler {
                 new String[]{"index.html", "index.htm"}, null);
         // Container deployed have the right to override the default setting.
         Mapper.setAllowReplacement(true);
+    }
+    
+    private static void dispatch(HttpHandler adapter,
+            ClassLoader cl,
+            Request req,
+            Response res) throws Exception {
+        ClassLoader currentCL = Thread.currentThread().getContextClassLoader();
+        try {
+            if (cl==null) {
+                cl = adapter.getClass().getClassLoader();
+            }
+            Thread.currentThread().setContextClassLoader(cl);
+            
+            adapter.service(req, res);
+        }
+        finally {
+            Thread.currentThread().setContextClassLoader(currentCL);
+        }
     }
 
     /**
@@ -233,7 +249,8 @@ public class ContainerMapper extends StaticHttpHandler {
                     if (contextRootInfo.getContainer() instanceof ApplicationContainer) {
                         cl = ((ApplicationContainer) contextRootInfo.getContainer()).getClassLoader();
                     }
-                    hk2Dispatcher.dispatch(httpService, cl, request, response);
+                    
+                    dispatch(httpService, cl, request, response);
                 }
             }
         } catch (Exception ex) {
