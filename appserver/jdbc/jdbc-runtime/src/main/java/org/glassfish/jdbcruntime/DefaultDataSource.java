@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,12 +39,12 @@
  */
 package org.glassfish.jdbcruntime;
 
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+import org.glassfish.api.naming.DefaultResourceProxy;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.glassfish.api.naming.NamespacePrefixes;
 import org.jvnet.hk2.annotations.Service;
-
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 /**
  * Naming Object Proxy to handle the Default Data Source.
@@ -55,17 +55,29 @@ import javax.sql.DataSource;
  */
 @Service
 @NamespacePrefixes({DefaultDataSource.DEFAULT_DATASOURCE})
-public class DefaultDataSource implements NamedNamingObjectProxy {
+public class DefaultDataSource implements NamedNamingObjectProxy, DefaultResourceProxy {
 
     static final String DEFAULT_DATASOURCE = "java:comp/DefaultDataSource";
+    static final String DEFAULT_DATASOURCE_PHYS = "jdbc/__default";
     private DataSource dataSource;
 
+    @Override
     public Object handle(String name) throws NamingException {
         if(dataSource == null) {
             javax.naming.Context ctx = new javax.naming.InitialContext();
             // cache the datasource to avoid JNDI lookup overheads
-            dataSource = (DataSource)ctx.lookup("jdbc/__default");
+            dataSource = (DataSource)ctx.lookup(DEFAULT_DATASOURCE_PHYS);
         }
         return dataSource;
+    }
+
+    @Override
+    public String getPhysicalName() {
+        return DEFAULT_DATASOURCE_PHYS;
+    }
+
+    @Override
+    public String getLogicalName() {
+        return DEFAULT_DATASOURCE;
     }
 }

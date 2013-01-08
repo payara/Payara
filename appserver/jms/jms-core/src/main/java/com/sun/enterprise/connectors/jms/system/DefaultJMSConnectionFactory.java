@@ -39,12 +39,12 @@
  */
 package com.sun.enterprise.connectors.jms.system;
 
+import javax.jms.ConnectionFactory;
+import javax.naming.NamingException;
+import org.glassfish.api.naming.DefaultResourceProxy;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.glassfish.api.naming.NamespacePrefixes;
 import org.jvnet.hk2.annotations.Service;
-
-import javax.jms.ConnectionFactory;
-import javax.naming.NamingException;
 
 /**
  * Naming Object Proxy to handle the Default JMS Connection Factory.
@@ -55,16 +55,28 @@ import javax.naming.NamingException;
  */
 @Service
 @NamespacePrefixes({DefaultJMSConnectionFactory.DEFAULT_CF})
-public class DefaultJMSConnectionFactory implements NamedNamingObjectProxy {
+public class DefaultJMSConnectionFactory implements NamedNamingObjectProxy, DefaultResourceProxy {
     static final String DEFAULT_CF = "java:comp/DefaultJMSConnectionFactory";
+    static final String DEFAULT_CF_PHYS = "jms/__defaultConnectionFactory";
     private ConnectionFactory connectionFactory;
 
+    @Override
     public Object handle(String name) throws NamingException {
         if(connectionFactory == null) {
             javax.naming.Context ctx = new javax.naming.InitialContext();
             // cache the connectionFactory to avoid JNDI lookup overheads
-            connectionFactory = (ConnectionFactory) ctx.lookup("jms/__defaultConnectionFactory");
+            connectionFactory = (ConnectionFactory) ctx.lookup(DEFAULT_CF_PHYS);
         }
         return connectionFactory;
+    }
+
+    @Override
+    public String getPhysicalName() {
+        return DEFAULT_CF_PHYS;
+    }
+
+    @Override
+    public String getLogicalName() {
+        return DEFAULT_CF;
     }
 }

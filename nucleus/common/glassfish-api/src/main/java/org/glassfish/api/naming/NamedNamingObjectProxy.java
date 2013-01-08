@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,8 @@
 
 package org.glassfish.api.naming;
 
-import org.jvnet.hk2.annotations.Contract;
-
 import javax.naming.NamingException;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
  * @author Mahesh Kannan
@@ -52,10 +51,9 @@ import javax.naming.NamingException;
 public interface NamedNamingObjectProxy {
 
     /**
-     * Returns the name that will be used to publish this object in the naming maanager
+     * Returns the name that will be used to publish this object in the naming manager
      * @return the name to bind
      */
-    public Object handle(String name)
-        throws NamingException;
+    public Object handle(String name) throws NamingException;
     
 }

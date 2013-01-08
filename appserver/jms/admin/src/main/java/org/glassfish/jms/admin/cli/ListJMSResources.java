@@ -41,34 +41,29 @@
 package org.glassfish.jms.admin.cli;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.I18n;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
+import org.glassfish.api.naming.DefaultResourceProxy;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
 import org.glassfish.connectors.config.AdminObjectResource;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.glassfish.connectors.config.ConnectorResource;
-import org.jvnet.hk2.annotations.Service;
-
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
-
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
-import javax.inject.Inject;
-
-import org.glassfish.api.admin.*;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * List Connector Resources command
@@ -115,26 +110,28 @@ public class ListJMSResources implements AdminCommand {
         *
         * @param context information
         */
+    @Override
        public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-        ArrayList<String> list = new ArrayList();
+        ArrayList<Map<String,String>> list = new ArrayList<>();
         Properties extraProperties = new Properties();
 
         Collection adminObjectResourceList = domain.getResources().getResources(AdminObjectResource.class);
-        Collection connectorResourcesList = domain.getResources().getResources(ConnectorResource.class);
-        
+        Collection connectorResourcesList = domain.getResources().getResources(ConnectorResource.class);       
 
         Object [] connectorResources = connectorResourcesList.toArray();
         Object [] adminObjectResources = adminObjectResourceList.toArray();
 
-        if(resourceType == null){
-          try{
+        if (resourceType == null){
+          try {
             //list all JMS resources
             for (Object r :  adminObjectResources) {
-               AdminObjectResource adminObject = (AdminObjectResource) r;
-               if (JMSRA.equals(adminObject.getResAdapter()))
-              //if(QUEUE.equals(r.getResType()) || TOPIC.equals(r.getResType()))
-                list.add(adminObject.getJndiName());
+                AdminObjectResource adminObject = (AdminObjectResource) r;
+                if (JMSRA.equals(adminObject.getResAdapter())) {
+                    Map<String,String> m = new HashMap<>();
+                    m.put("name", adminObject.getJndiName());
+                    list.add(m);
+                }
             }
 
             for (Object c: connectorResources) {
@@ -143,11 +140,10 @@ public class ListJMSResources implements AdminCommand {
                         domain.getResources(), ConnectorConnectionPool.class, cr.getPoolName());
 
                 if (cp  != null && JMSRA.equals(cp.getResourceAdapterName())){
-                      list.add(cr.getJndiName());
+                    Map<String,String> m = new HashMap<>();
+                    m.put("name", cr.getJndiName());
+                    list.add(m);
                 }
-               //if(QUEUE_CF.equals(cp.getConnectionDefinitionName()) || TOPIC_CF.equals(cp.getConnectionDefinitionName())
-                 //      || UNIFIED_CF.equals(cp.getConnectionDefinitionName()))
-
             }
         } catch (Exception e) {
             report.setMessage(localStrings.getLocalString("list.jms.resources.fail",
@@ -157,39 +153,52 @@ public class ListJMSResources implements AdminCommand {
             return;
         }
       } else {
-          if(resourceType.equals(TOPIC_CF) || resourceType.equals(QUEUE_CF) || resourceType.equals(UNIFIED_CF)){
-
-            for (Object c : connectorResources) {
-               ConnectorResource cr = (ConnectorResource)c;
-               ConnectorConnectionPool cp = (ConnectorConnectionPool)
-                       ConnectorsUtil.getResourceByName(domain.getResources(), ConnectorConnectionPool.class, cr.getPoolName());
-               if(cp != null && resourceType.equals(cp.getConnectionDefinitionName()) && JMSRA.equals(cp.getResourceAdapterName()))
-                    list.add(cr.getJndiName());
+            switch (resourceType) {
+                case TOPIC_CF:
+                case QUEUE_CF:
+                case UNIFIED_CF:
+                    for (Object c : connectorResources) {
+                       ConnectorResource cr = (ConnectorResource)c;
+                       ConnectorConnectionPool cp = (ConnectorConnectionPool)
+                               ConnectorsUtil.getResourceByName(domain.getResources(), ConnectorConnectionPool.class, cr.getPoolName());
+                       if(cp != null && resourceType.equals(cp.getConnectionDefinitionName()) && JMSRA.equals(cp.getResourceAdapterName())) {
+                            Map<String,String> m = new HashMap<>();
+                            m.put("name", cr.getJndiName());
+                            list.add(m);
+                        }
+                    }
+                    break;
+                case TOPIC:
+                case QUEUE:
+                    for (Object r : adminObjectResources) {
+                        AdminObjectResource res = (AdminObjectResource)r;
+                        if(resourceType.equals(res.getResType()) && JMSRA.equals(res.getResAdapter())) {
+                            Map<String,String> m = new HashMap<>();
+                            m.put("name", res.getJndiName());
+                            list.add(m);
+                        }
+                    }
+                    break;
             }
-          }  else if (resourceType.equals(TOPIC) || resourceType.equals(QUEUE))
-          {
-                for (Object r : adminObjectResources) {
-                    AdminObjectResource res = (AdminObjectResource)r;
-                    if(resourceType.equals(res.getResType()) && JMSRA.equals(res.getResAdapter()))
-                        list.add(res.getJndiName());
-                }
-          }
       }
         if (list.isEmpty()) {
             final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
             part.setMessage(localStrings.getLocalString("nothingToList", "Nothing to list."));
             extraProperties.put("jmsResources", list);
         } else {
-            List <String> resourceList = null;
+            List<Map<String,String>> resourceList = 
+                CommandTarget.DOMAIN.isValid(habitat, target) ? list : filterListForTarget(list);
 
-            if(CommandTarget.DOMAIN.isValid(habitat, target))
-                resourceList = list;
-            else
-                resourceList =  filterListForTarget(list);
-
-            for (String jndiName : resourceList) {
+            List<DefaultResourceProxy> drps = habitat.getAllServices(DefaultResourceProxy.class);
+            
+            for (Map<String,String> m : resourceList) {
+                String jndiName = m.get("name");
                 final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
                 part.setMessage(jndiName);
+                String logicalName = DefaultResourceProxy.Util.getLogicalName(drps, jndiName);
+                if (logicalName != null) {
+                    m.put("logical-jndi-name", logicalName);
+                } 
             }
             extraProperties.put("jmsResources", resourceList);
         }
@@ -197,31 +206,30 @@ public class ListJMSResources implements AdminCommand {
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
   }
 
-    private List filterListForTarget(List <String> list){
-        List <String> resourceList = new ArrayList();
-            if (target != null){
-                List<ResourceRef> resourceRefs = null;
-                Cluster cluster = domain.getClusterNamed(target);
-                if (cluster != null)
-                      resourceRefs=  cluster.getResourceRef();
-
-                else {
-                    Server server = domain.getServerNamed(target);
-                     if (server != null)
-                         resourceRefs = server.getResourceRef();
-
+    private List filterListForTarget(List<Map<String,String>> list){
+        List<Map<String,String>> resourceList = new ArrayList<>();
+        if (target != null){
+            List<ResourceRef> resourceRefs = null;
+            Cluster cluster = domain.getClusterNamed(target);
+            if (cluster != null) {
+                resourceRefs=  cluster.getResourceRef();
+            } else {
+                Server server = domain.getServerNamed(target);
+                if (server != null) {
+                    resourceRefs = server.getResourceRef();
                 }
-                if (resourceRefs != null && resourceRefs.size() != 0){
-
-                    for (String jndiName : list) {
-                        for (ResourceRef resource : resourceRefs)
-                            if(jndiName.equals(resource.getRef()))
-                                resourceList.add(jndiName);
+            }
+            if (resourceRefs != null && !resourceRefs.isEmpty()) {
+                for (Map<String,String> m : list) {
+                    String jndiName = m.get("name"); 
+                    for (ResourceRef resource : resourceRefs) {
+                        if (jndiName.equals(resource.getRef())) {
+                            resourceList.add(m);
+                        }
                     }
                 }
-
-
             }
+        }
         return resourceList;
     }
 }
