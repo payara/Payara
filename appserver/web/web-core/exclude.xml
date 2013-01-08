@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -72,5 +72,17 @@
             <Method name="encodeURL"/>
         </Or>
         <Bug pattern="NM_CONFUSING"/>
+    </Match>
+
+    <!--
+        These private Comparator classes are never used with TreeSets
+        or TreeMaps and so don't need to be Serializable.
+    -->
+    <Match>
+        <Or>
+            <Class name="org.apache.catalina.servlets.DefaultServlet$LastModifiedComparator"/>
+            <Class name="org.apache.catalina.servlets.DefaultServlet$SizeComparator"/>
+        </Or>
+        <Bug pattern="SE_COMPARATOR_SHOULD_BE_SERIALIZABLE"/>
     </Match>
 </FindBugsFilter>
