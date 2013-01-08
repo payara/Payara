@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -467,26 +467,27 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     }
 
     public void clean() {
-        // need to remove the generated directories...
-        // need to remove generated/xml, generated/ejb, generated/jsp, 
-
-        // remove generated/xml
-        File generatedXmlRoot = getScratchDir("xml");
-        FileUtils.whack(generatedXmlRoot);
-
-        // remove generated/ejb
-        File generatedEjbRoot = getScratchDir("ejb");
-        // recursively delete...
-        FileUtils.whack(generatedEjbRoot);
-
-        // remove generated/jsp
-        File generatedJspRoot = getScratchDir("jsp");
-        // recursively delete...
-        FileUtils.whack(generatedJspRoot);
-
         if (parameters.origin == OpsParams.Origin.undeploy ||
             parameters.origin == OpsParams.Origin.deploy ) {
             // for undeploy or deploy failure roll back
+
+            // need to remove the generated directories...
+            // need to remove generated/xml, generated/ejb, generated/jsp, 
+
+            // remove generated/xml
+            File generatedXmlRoot = getScratchDir("xml");
+            FileUtils.whack(generatedXmlRoot);
+
+            // remove generated/ejb
+            File generatedEjbRoot = getScratchDir("ejb");
+            // recursively delete...
+            FileUtils.whack(generatedEjbRoot);
+
+            // remove generated/jsp
+            File generatedJspRoot = getScratchDir("jsp");
+            // recursively delete...
+            FileUtils.whack(generatedJspRoot);
+
             // remove the internal archive directory which holds the original
             // archive (and possibly deployment plan) that cluster sync can use
             FileUtils.whack(getAppInternalDir());
