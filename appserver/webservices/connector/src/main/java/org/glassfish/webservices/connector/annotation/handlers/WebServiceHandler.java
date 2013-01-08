@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -253,15 +253,15 @@ public class WebServiceHandler extends AbstractHandler {
         // At this point, we need to check if the @WebService points to an SEI
         // with the endpointInterface attribute, if that is the case, the
         // remaining attributes should be extracted from the SEI instead of SIB.
-        boolean sibAnnotationOverriden=false;
         if (ann.endpointInterface()!=null && ann.endpointInterface().length()>0) {
             Class endpointIntf;
             try {
                 endpointIntf = ((Class) annElem).getClassLoader().loadClass(ann.endpointInterface());
             } catch(java.lang.ClassNotFoundException cfne) {
                 throw new AnnotationProcessorException(
-                        rb.getString("enterprise.deployment.annotation.handlers.classnotfound"),
-                             annInfo);
+                        localStrings.getLocalString("enterprise.deployment.annotation.handlers.classnotfound",
+                            "class {0} referenced from annotation symbol cannot be loaded",
+                            new Object[] { ann.endpointInterface() }), annInfo);
             }
             annElem = endpointIntf;
 
@@ -272,7 +272,6 @@ public class WebServiceHandler extends AbstractHandler {
                     ,((Class) annElem).getName()  ));
 
             }
-            sibAnnotationOverriden = true;
 
             // SEI cannot have @BindingType
             if(annElem.getAnnotation(javax.xml.ws.BindingType.class) != null) {
