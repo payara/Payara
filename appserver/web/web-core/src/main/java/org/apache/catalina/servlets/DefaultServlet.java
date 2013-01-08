@@ -2527,6 +2527,9 @@ public class DefaultServlet
     /**
      * Comparator which sorts directory listings by their creation
      * or lastModified date
+     *
+     * This comparator class cannot be used with TreeSet and TreeMap
+     * as it is not Serializable.
      */
     private static class LastModifiedComparator
             implements Comparator<NameClassPair> {
@@ -2560,6 +2563,9 @@ public class DefaultServlet
 
     /**
      * Comparator which sorts directory listings by their file size
+     *
+     * This comparator class cannot be used with TreeSet and TreeMap
+     * as it is not Serializable.
      */
     private static class SizeComparator
             implements Comparator<NameClassPair> {
