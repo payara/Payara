@@ -166,26 +166,35 @@ public class ZipWriter {
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     private void init(String outFileName, String dirName) throws ZipFileException {
-        OutputStream os = null;
-        try {
-            os = new FileOutputStream(outFileName);
-            init(os, dirName);
-        }
+       try {
+            init(new FileOutputStream(outFileName), dirName);
+       }
         catch (Exception e) {
             throw new ZipFileException(e);
         }
-        finally {
-            try {
-                if (os != null)
-                    os.close();
-            }
-            catch (Exception e) {
-                // nothing can be done about it.
-            }
-        }
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
 
+        // this is here in case write or safewrite was never called...
+        close();
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    private void close() {
+        // close the stream in ALL cases -- even if the caller sent in the already-made stream
+        try {
+            if (zipStream != null)
+                zipStream.close();
+        }
+        catch (Exception e) {
+            // nothing can be done about it.
+        }
+        zipStream = null;
+    }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     private void init(OutputStream outStream, String dirName) throws ZipFileException {
@@ -245,14 +254,15 @@ public class ZipWriter {
                     // ignore - duplicate zip entry
                 }
             }
-
-            zipStream.close();
         }
         catch (ZipFileException z) {
             throw z;
         }
         catch (Exception e) {
             throw new ZipFileException(e);
+        }
+        finally {
+            close();
         }
     }
 
@@ -262,14 +272,15 @@ public class ZipWriter {
             for (int i = 0; i < items.length; i++) {
                 addEntry(items[i]);
             }
-
-            zipStream.close();
         }
         catch (ZipFileException z) {
             throw z;
         }
         catch (Exception e) {
             throw new ZipFileException(e);
+        }
+        finally {
+            close();
         }
     }
 
