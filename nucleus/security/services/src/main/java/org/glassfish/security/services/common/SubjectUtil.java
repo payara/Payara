@@ -57,20 +57,20 @@ public class SubjectUtil {
      * represented by {@link org.glassfish.security.common.PrincipalImpl PrincipalImpl } inside the Subject's principal set.
      * @param subject the subject from which to find the user name
      * @return a list of strings representing the user name. The list may have more than one entry if the subject's principal set
-     * contains more than one PrincipalImpl instances, or empty entry (i.e., anonymous user) if the subject's principal set contains no PrincipalImpl instances. 
+     * contains more than one PrincipalImpl instances, or empty entry (i.e., anonymous user) if the subject's principal set contains no PrincipalImpl instances.
      */
     public static List<String> getUsernamesFromSubject(Subject subject) {
-        
-        List<String> userList = new ArrayList<String>(); 
-        
+
+        List<String> userList = new ArrayList<String>();
+
         Set<Principal> princSet = null;
-        
+
         if (subject != null) {
-            
+
             princSet = subject.getPrincipals();
             for (Principal p : princSet) {
                 if ((p != null) && (
-                  p.getClass().isAssignableFrom(PrincipalImpl.class)  || 
+                  p.getClass().isAssignableFrom(PrincipalImpl.class)  ||
                   "weblogic.security.principal.WLSUserImpl".equals(p.getClass().getCanonicalName())
                 		)) {
                     String uName = p.getName();
@@ -78,34 +78,34 @@ public class SubjectUtil {
                 }
             }
         }
-        
+
         return userList;
     }
-    
-    
+
+
     /**
      * Utility method to find the group names from a subject. The method assumes the group name is
      * represented by {@link org.glassfish.security.common.Group Group } inside the Subject's principal set.
      * @param subject the subject from which to find the username
      * @return a list of strings representing the group names. The list may have more than one entry if the subject's principal set
-     * contains more than one Group instances, or empty entry if the subject's principal set contains no Group instances. 
-     */    
+     * contains more than one Group instances, or empty entry if the subject's principal set contains no Group instances.
+     */
     public static List<String> getGroupnamesFromSubject(Subject subject) {
-        
-        List<String> groupList = new ArrayList<String>(); 
+
+        List<String> groupList = new ArrayList<String>();
 
         Set<Group> princSet = null;
-        
+
         if (subject != null) {
-            
+
             princSet = subject.getPrincipals(Group.class);
-            for (Principal g : princSet) {
+            for (PrincipalImpl g : princSet) {
                 String gName = g.getName();
                 groupList.add(gName);
             }
         }
-        
+
         return groupList;
     }
-    
+
 }
