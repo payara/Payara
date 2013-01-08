@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -343,7 +343,7 @@ public class WarHandler extends AbstractArchiveHandler {
     }
 
     protected void configureContextXmlAttribute(WebappClassLoader cloader,
-            File base, DeploymentContext dc) throws XMLStreamException, FileNotFoundException {
+            File base, DeploymentContext dc) throws XMLStreamException, IOException {
 
         boolean consistent = true;
         Boolean value = null;
@@ -437,13 +437,6 @@ public class WarHandler extends AbstractArchiveHandler {
                         // ignore
                     }
                 }
-                if (input != null) {
-                    try {
-                        input.close();
-                    } catch(Exception ex) {
-                        // ignore
-                    }
-                }
             }
         }
 
@@ -488,7 +481,9 @@ public class WarHandler extends AbstractArchiveHandler {
                 throws XMLStreamException, IOException {
 
             if (archive.exists(getXmlFileName())) {
-                init(archive.getEntry(getXmlFileName()));
+                try (InputStream is = archive.getEntry(getXmlFileName())) {
+                    init(is);
+                }
             }
         }
 
@@ -691,10 +686,12 @@ public class WarHandler extends AbstractArchiveHandler {
         protected Boolean clearReferencesStatic = null;
 
         ContextXmlParser(File contextXmlFile)
-                throws XMLStreamException, FileNotFoundException {
+                throws XMLStreamException, IOException {
 
             if (contextXmlFile.exists()) {
-                init(new FileInputStream(contextXmlFile));
+                try (InputStream is = new FileInputStream(contextXmlFile)) {
+                    init(is);
+                }
             }
         }
 
