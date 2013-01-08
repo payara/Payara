@@ -483,6 +483,14 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         public void setJndiName(String value) throws PropertyVetoException {
             this.jndiName = value;
         }
+
+        public String getDeploymentOrder() {
+            return null;
+        }
+
+        public void setDeploymentOrder(String value) {
+            //do nothing
+        }
     }
 
     class MyJdbcConnectionPool extends FakeConfigBean implements JdbcConnectionPool {
@@ -643,13 +651,13 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             //do nothing
         }
 
-	public String getValidationClassname() {
-	    return null;
-	}
+        public String getValidationClassname() {
+            return null;
+        }
 
-	public void setValidationClassname(String value) throws PropertyVetoException {
-  	    //do nothing
-	}
+        public void setValidationClassname(String value) throws PropertyVetoException {
+            //do nothing
+        }
 
         public String getFailAllConnections() {
             return String.valueOf("false");
@@ -947,12 +955,20 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             //do nothing
         }
 	
-	public String getStatementCacheType() {
-            return null;
-	}
+        public String getStatementCacheType() {
+                return null;
+        }
 
-	public void setStatementCacheType(String value) throws PropertyVetoException {
-	    //do nothing
-	}
+        public void setStatementCacheType(String value) throws PropertyVetoException {
+            //do nothing
+        }
+
+        public String getDeploymentOrder() {
+            return null;
+        }
+
+        public void setDeploymentOrder(String value) {
+            //do nothing
+        }
     }
 }

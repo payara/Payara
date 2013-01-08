@@ -48,6 +48,8 @@ import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.quality.ToDo;
 import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
+import org.glassfish.resourcebase.resources.ResourceTypeOrder;
+import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
@@ -65,6 +67,7 @@ import java.util.List;
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-admin-object"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-admin-object")
 })
+@ResourceTypeOrder(deploymentOrder=ResourceDeploymentOrder.ADMIN_OBJECT_RESOURCE)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=AdminObjectResource.class)
 /**
  * The admin-object-resource element describes a administered object

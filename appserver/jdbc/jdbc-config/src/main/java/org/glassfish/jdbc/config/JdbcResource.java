@@ -53,6 +53,8 @@ import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
+import org.glassfish.resourcebase.resources.ResourceTypeOrder;
+import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
 
 import javax.validation.Payload;
 import javax.validation.constraints.NotNull;
@@ -74,6 +76,7 @@ import java.util.List;
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-jdbc-resource"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-jdbc-resource")
 })
+@ResourceTypeOrder(deploymentOrder=ResourceDeploymentOrder.JDBC_RESOURCE)
 @ReferenceConstraint(skipDuringCreation=true, payload=JdbcResource.class)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=JdbcResource.class)
 public interface JdbcResource extends ConfigBeanProxy, Resource,

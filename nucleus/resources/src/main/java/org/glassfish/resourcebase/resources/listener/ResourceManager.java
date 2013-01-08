@@ -53,6 +53,7 @@ import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.resourcebase.resources.api.*;
 import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
 import org.glassfish.resourcebase.resources.util.ResourceUtil;
+import org.glassfish.resourcebase.resources.ResourceTypeOrderProcessor;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
@@ -105,9 +106,12 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
     @Inject
     private ClassLoaderHierarchy clh;
 
+    @Inject
+    private ResourceTypeOrderProcessor resourceTypeOrderProcessor;
+
     public void postConstruct() {
         notifyListeners(ResourceManagerLifecycleListener.EVENT.STARTUP);
-        deployResources(domain.getResources().getResources());
+        deployResources(resourceTypeOrderProcessor.getOrderedResources(domain.getResources().getResources()));
         addListenerToResources();
         addListenerToResourceRefs();
         addListenerToServer();

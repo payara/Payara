@@ -41,6 +41,8 @@
 package org.glassfish.connectors.config;
 
 import com.sun.enterprise.config.serverbeans.Resource;
+import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
+import org.glassfish.resourcebase.resources.ResourceTypeOrder;
 import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyVetoException;
@@ -75,6 +77,7 @@ import javax.validation.constraints.Pattern;
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-resource-adapter-config"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-resource-adapter-config")
 })
+@ResourceTypeOrder(deploymentOrder= ResourceDeploymentOrder.RESOURCEADAPTERCONFIG_RESOURCE)
 public interface ResourceAdapterConfig extends ConfigBeanProxy, Resource, PropertyBag {
 
     /**

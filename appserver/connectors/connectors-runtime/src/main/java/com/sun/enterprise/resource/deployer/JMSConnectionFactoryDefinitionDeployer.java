@@ -327,6 +327,14 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
         public void setJndiName(String value) throws PropertyVetoException {
             this.jndiName = value;
         }
+
+        public String getDeploymentOrder() {
+            return null;
+        }
+
+        public void setDeploymentOrder(String value) {
+            //do nothing
+        }
     }
 
     class MyJMSConnectionFactoryConnectionPool extends FakeConfigBean implements ConnectorConnectionPool {
@@ -712,6 +720,13 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
             return new ArrayList<SecurityMap>(0);
         }
 
+        public String getDeploymentOrder() {
+            return null;
+        }
+
+        public void setDeploymentOrder(String value) {
+            //do nothing
+        }
     }
 }
 

@@ -49,6 +49,7 @@ import org.glassfish.internal.api.PostStartup;
 import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.glassfish.resourcebase.resources.api.ResourcesBinder;
+import org.glassfish.resourcebase.resources.ResourceTypeOrderProcessor;
 import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
 import org.glassfish.resourcebase.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Service;
@@ -86,20 +87,23 @@ public class ApplicationScopedResourcesManager implements PostStartup, PostConst
     @Inject
     private Applications applications;
 
+    @Inject
+    private ResourceTypeOrderProcessor resourceTypeOrderProcessor;
+
     public void postConstruct() {
         Collection<Application> apps = applications.getApplications();
         if(apps != null){
             for(Application app : apps){
                 Resources resources = app.getResources();
                 if(resources != null){
-                    deployResources(resources.getResources());
+                    deployResources(resourceTypeOrderProcessor.getOrderedResources(resources.getResources()));
                 }
                 List<Module> modules = app.getModule();
                 if(modules != null){
                     for(Module module : modules){
                         Resources moduleResources = module.getResources();
                         if(moduleResources != null){
-                            deployResources(moduleResources.getResources());
+                            deployResources(new ResourceTypeOrderProcessor().getOrderedResources(moduleResources.getResources()));
                         }
                     }
                 }

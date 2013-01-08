@@ -49,6 +49,8 @@ import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.quality.ToDo;
 import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
+import org.glassfish.resourcebase.resources.ResourceTypeOrder;
+import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
@@ -73,6 +75,7 @@ import java.util.List;
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-connector-resource"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-connector-resource")
 })
+@ResourceTypeOrder(deploymentOrder=ResourceDeploymentOrder.CONNECTOR_RESOURCE)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ConnectorResource.class)
 @ReferenceConstraint(skipDuringCreation=true, payload=ConnectorResource.class)
 public interface ConnectorResource extends ConfigBeanProxy, Resource,

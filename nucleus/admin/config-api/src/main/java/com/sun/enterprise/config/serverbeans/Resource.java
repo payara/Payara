@@ -84,6 +84,21 @@ public interface Resource extends ConfigBeanProxy {
      */
     void setObjectType(String value) throws PropertyVetoException;
 
+    /**
+     * Gets the value of deployment-order.
+     * @return
+     */
+    @Attribute (defaultValue = "100",dataType = Integer.class)
+    String getDeploymentOrder();
+
+    /**
+     * Sets the value of the deployment order.
+     * @param value
+     * @throws PropertyVetoException
+     */
+    void setDeploymentOrder(String value) throws PropertyVetoException;
+
+
     @DuckTyped
     String getIdentity();
     

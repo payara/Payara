@@ -324,6 +324,14 @@ public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
         public void setJndiName(String value) throws PropertyVetoException {
             this.jndiName = value;
         }
+
+        public String getDeploymentOrder() {
+            return null;
+        }
+
+        public void setDeploymentOrder(String value) {
+            //do nothing
+        }
     }
     class MyConnectorConnectionPool extends FakeConfigBean implements ConnectorConnectionPool {
 
@@ -688,6 +696,14 @@ public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
 
         public List<SecurityMap> getSecurityMap() {
             return new ArrayList<SecurityMap>(0);
+        }
+
+        public String getDeploymentOrder() {
+            return null;
+        }
+
+        public void setDeploymentOrder(String value) {
+            //do nothing
         }
 
     }

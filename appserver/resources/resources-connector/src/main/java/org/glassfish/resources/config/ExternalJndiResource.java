@@ -46,6 +46,8 @@ import org.glassfish.admin.cli.resources.ResourceConfigCreator;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.quality.ToDo;
 import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
+import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
+import org.glassfish.resourcebase.resources.ResourceTypeOrder;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
@@ -66,6 +68,7 @@ import java.util.List;
 @Configured
 @ResourceConfigCreator(commandName="create-jndi-resource")
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ExternalJndiResource.class)
+@ResourceTypeOrder(deploymentOrder= ResourceDeploymentOrder.EXTERNALJNDI_RESOURCE)
 public interface ExternalJndiResource extends ConfigBeanProxy, Resource,
         PropertyBag, BindableResource {
 

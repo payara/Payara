@@ -44,6 +44,8 @@ import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
 import org.glassfish.admin.cli.resources.ResourceConfigCreator;
 import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
+import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
+import org.glassfish.resourcebase.resources.ResourceTypeOrder;
 import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyVetoException;
@@ -73,6 +75,7 @@ import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
  @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-javamail-resource"),
  @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-javamail-resource")
 })
+@ResourceTypeOrder(deploymentOrder= ResourceDeploymentOrder.MAIL_RESOURCE)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=MailResource.class)
 /**
  * The mail-resource element describes a javax.mail.Session resource 

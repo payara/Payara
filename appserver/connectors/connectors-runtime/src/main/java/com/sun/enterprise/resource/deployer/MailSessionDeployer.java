@@ -490,5 +490,16 @@ public class MailSessionDeployer implements ResourceDeployer {
         public String getIdentity() {
             return name;
         }
+
+        @Override
+        public String getDeploymentOrder() {
+            return null;
+        }
+
+        @Override
+        public void setDeploymentOrder(String value) {
+            //do nothing
+        }
+
     }
 }

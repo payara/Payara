@@ -42,6 +42,8 @@ package org.glassfish.connectors.config;
 
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
+import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
+import org.glassfish.resourcebase.resources.ResourceTypeOrder;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
@@ -63,6 +65,7 @@ import org.glassfish.quality.ToDo;
     "property"
 }) */
 @Configured
+@ResourceTypeOrder(deploymentOrder= ResourceDeploymentOrder.PERSISTENCE_RESOURCE)
 public interface PersistenceManagerFactoryResource extends ConfigBeanProxy, Resource, PropertyBag, BindableResource {
 
     /**

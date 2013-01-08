@@ -359,5 +359,13 @@ public class AdministeredObjectDefinitionDeployer implements ResourceDeployer {
             //do nothing
         }
 
+        public String getDeploymentOrder() {
+            return null;
+        }
+
+        public void setDeploymentOrder(String value) {
+            //do nothing
+        }
+
     }
 }

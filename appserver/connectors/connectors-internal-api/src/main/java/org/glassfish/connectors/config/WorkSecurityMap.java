@@ -41,6 +41,8 @@
 package org.glassfish.connectors.config;
 
 import com.sun.enterprise.config.serverbeans.*;
+import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
+import org.glassfish.resourcebase.resources.ResourceTypeOrder;
 import org.jvnet.hk2.config.*;
 
 import javax.validation.constraints.NotNull;
@@ -49,6 +51,7 @@ import java.beans.PropertyVetoException;
 import java.util.List;
 
 @Configured
+@ResourceTypeOrder(deploymentOrder= ResourceDeploymentOrder.WORKSECURITYMAP_RESOURCE)
 public interface WorkSecurityMap  extends /*Named,*/ ConfigBeanProxy, Resource {
 
     /**
