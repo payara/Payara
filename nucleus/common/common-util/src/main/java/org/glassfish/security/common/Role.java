@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,63 +40,40 @@
 
 package org.glassfish.security.common;
 
-import java.security.Principal;
-
 /**
  * In EJBs, ACL checking is done using the Roles. Roles are an abstraction
  * of an application specific Logical Principals. These Principals do not
  * have any properties of Principals within a Security Domain (or Realm).
  * They merely serve as abstraction to application specific entities.
  * @author Harish Prabandham
- * @author Byron Nevins -- fixed issues with the implementation of equals and hashCode
- *
  */
-public class Role implements Principal, java.io.Serializable   {
+public class Role extends PrincipalImpl {
 
     private String description;
-    private PrincipalImpl principalImpl;
 
     /** Creates a new Role with a given name */
     public Role(String name) {
-        principalImpl = new PrincipalImpl(name);
+	super(name);
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if(this == obj)
-                return true;
-
-        if(! (obj instanceof Role))
-            return false;
-
-        Role other = (Role) obj;
-
-        if(!principalImpl.equals(other.principalImpl))
-            return false;
-        // one final check...
-        if(description != null)
-            return description.equals(other.description);
-        else
-            return other.description == null;
+    
+    public boolean equals(Object other) {
+	boolean ret = false;
+	if(other instanceof Role) {
+	    ret =  getName().equals(((Role)other).getName());
+	}
+	
+	return ret;
     }
-
-    @Override
-    public int hashCode() {
-        return principalImpl.hashCode();
-    }
-
-    @Override
-    public String getName() {
-        return principalImpl.getName();
-    }
-
+    
+    
     public String getDescription() {
 	if (this.description == null) {
 	    this.description = "";
 	}
 	return this.description;
     }
-
+    
     public void setDescription(String description) {
 	this.description = description;
     }

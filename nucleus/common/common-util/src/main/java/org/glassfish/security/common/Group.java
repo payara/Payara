@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,37 +40,24 @@
 
 package org.glassfish.security.common;
 
-import java.security.Principal;
-
 /**
  * This class implements the EJB concept of a Group. A Group is
  * a privilege attribute that several Principals share. Or, in
  * in other words, several Principals belong to a same group.
- *
+ * 
  * @author Harish Prabandham
- * @author Byron Nevins -- cleaned up the handling of equals/hashValue
- *
  */
-public class Group implements Principal, java.io.Serializable  {
+public class Group extends PrincipalImpl {
     /** Creates a new Group attribute */
-
-    private PrincipalImpl principalImpl;
     public Group(String name) {
-        principalImpl = new PrincipalImpl(name);
+	super(name);
     }
 
-    @Override
     public boolean equals(Object other) {
-	    return (other instanceof Group) && principalImpl.equals(((Group)other).principalImpl);
-    }
-
-    @Override
-    public int hashCode() {
-        return principalImpl.hashCode();
-    }
-
-    @Override
-    public String getName() {
-        return principalImpl.getName();
+	if(other instanceof Group) {
+	    return getName().equals(((Group)other).getName());
+	} else {
+	    return false;
+	}
     }
 }
