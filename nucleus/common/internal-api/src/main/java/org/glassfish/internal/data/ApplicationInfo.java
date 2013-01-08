@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,6 +54,8 @@ import org.glassfish.api.event.*;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventListener.Event;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
@@ -66,6 +68,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  * @author Jerome Dochez
  */
 public class ApplicationInfo extends ModuleInfo {
+    private final static String APP_SERVICE_LOCATOR_PREFIX = "JavaEEApp.";
 
     final private Collection<ModuleInfo> modules = new ArrayList<ModuleInfo>();
 
@@ -82,6 +85,8 @@ public class ApplicationInfo extends ModuleInfo {
     private boolean isJavaEEApp = false;
     private ClassLoader appClassLoader;
     private boolean isLoaded = false;
+    
+    private final ServiceLocator appServiceLocator;
 
 
     /**
@@ -95,6 +100,8 @@ public class ApplicationInfo extends ModuleInfo {
                            String name) {
         super(events, name, new LinkedHashSet<EngineRef>(), null);
         this.source = source;
+        appServiceLocator = ServiceLocatorFactory.getInstance().create(
+                APP_SERVICE_LOCATOR_PREFIX + name);
     }
 
     public void add(EngineRef ref) {
@@ -146,6 +153,15 @@ public class ApplicationInfo extends ModuleInfo {
      */
     public void setAppClassLoader(ClassLoader cLoader) {
         appClassLoader = cLoader;
+    }
+    
+    /**
+     * Returns the application scoped ServiceLocator
+     * 
+     * @return The application scoped ServiceLocator
+     */
+    public ServiceLocator getAppServiceLocator() {
+        return appServiceLocator;
     }
 
     /**
@@ -392,10 +408,10 @@ public class ApplicationInfo extends ModuleInfo {
         // clean up the app level classloader
         if (appClassLoader != null) {
             try {
-                PreDestroy.class.cast(appClassLoader).preDestroy();
-            } catch (Exception e) {
-                // ignore, the class loader does not need to be
-                // explicitely stopped or already stopped
+                appServiceLocator.preDestroy(appClassLoader);
+            }
+            catch (Exception e) {
+                // Ignore, some failure in preDestroy
             }
             appClassLoader = null;
         }
@@ -415,6 +431,9 @@ public class ApplicationInfo extends ModuleInfo {
                 module.cleanClassLoaders();
             }
         }
+        
+        // Will destroy all underlying services
+        ServiceLocatorFactory.getInstance().destroy(appServiceLocator);
 
         if (events!=null) {
             events.send(new EventListener.Event<DeploymentContext>(Deployment.APPLICATION_CLEANED, context), false);

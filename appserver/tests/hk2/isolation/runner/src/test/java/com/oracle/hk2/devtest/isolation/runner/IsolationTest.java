@@ -146,7 +146,7 @@ public class IsolationTest extends NucleusStartStopTest {
     /**
      * Ensures that the application service locators in two web-apps are different
      */
-    @Test(enabled=false)
+    @Test
     public void testWebAppsApplicationServiceLocatorsAreIsolated() {
         String fromURL1 = NucleusTestUtils.getURL(ISO1_URL);
         String fromURL2 = NucleusTestUtils.getURL(ISO2_URL);

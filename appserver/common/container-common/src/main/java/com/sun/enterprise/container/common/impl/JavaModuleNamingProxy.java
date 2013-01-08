@@ -43,6 +43,8 @@ package com.sun.enterprise.container.common.impl;
 
 import org.glassfish.api.naming.NamespacePrefixes;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 
 import com.sun.enterprise.deployment.*;
 
@@ -70,7 +72,8 @@ import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
 @NamespacePrefixes({JavaModuleNamingProxy.JAVA_APP_CONTEXT,
         JavaModuleNamingProxy.JAVA_APP_NAME,
         JavaModuleNamingProxy.JAVA_MODULE_CONTEXT,
-        JavaModuleNamingProxy.JAVA_MODULE_NAME})
+        JavaModuleNamingProxy.JAVA_MODULE_NAME,
+        JavaModuleNamingProxy.JAVA_APP_SERVICE_LOCATOR})
 public class JavaModuleNamingProxy
         implements NamedNamingObjectProxy, PostConstruct {
 
@@ -79,6 +82,9 @@ public class JavaModuleNamingProxy
 
     @Inject
     private ProcessEnvironment processEnv;
+    
+    @Inject
+    private ApplicationRegistry applicationRegistry;
 
     private ProcessEnvironment.ProcessType processType;
 
@@ -109,6 +115,9 @@ public class JavaModuleNamingProxy
 
     static final String JAVA_MODULE_NAME
             = "java:module/ModuleName";
+    
+    static final String JAVA_APP_SERVICE_LOCATOR
+            = "java:app/hk2/ServiceLocator";
 
     public Object handle(String name) throws NamingException {
 
@@ -122,6 +131,10 @@ public class JavaModuleNamingProxy
         } else if( name.equals(JAVA_MODULE_NAME) ) {
 
             returnValue = getModuleName();
+            
+        } else if( name.equals(JAVA_APP_SERVICE_LOCATOR) ) {
+            
+            returnValue = getAppServiceLocator();
 
         } else if (name.startsWith(JAVA_MODULE_CONTEXT) || name.startsWith(JAVA_APP_CONTEXT)) {
 
@@ -151,7 +164,7 @@ public class JavaModuleNamingProxy
             BundleDescriptor bd = null;
 
             if( env instanceof EjbDescriptor ) {
-                bd = (BundleDescriptor) ((EjbDescriptor)env).getEjbBundleDescriptor();
+                bd = ((EjbDescriptor)env).getEjbBundleDescriptor();
             } else if( env instanceof BundleDescriptor ) {
                 bd = (BundleDescriptor) env;
             }
@@ -185,7 +198,7 @@ public class JavaModuleNamingProxy
             BundleDescriptor bd = null;
 
             if( env instanceof EjbDescriptor ) {
-                bd = (BundleDescriptor) ((EjbDescriptor)env).getEjbBundleDescriptor();
+                bd = ((EjbDescriptor)env).getEjbBundleDescriptor();
             } else if( env instanceof BundleDescriptor ) {
                 bd = (BundleDescriptor) env;
             }
@@ -200,6 +213,20 @@ public class JavaModuleNamingProxy
         }
 
         return moduleName;
+
+    }
+    
+    private ServiceLocator getAppServiceLocator() throws NamingException {
+        
+        String appName = getAppName();
+
+        ApplicationInfo info = applicationRegistry.get(appName);
+        
+        if (info == null) {
+            throw new NamingException("Could not resolve " + JAVA_APP_SERVICE_LOCATOR);
+        }
+        
+        return info.getAppServiceLocator();
 
     }
 
@@ -220,7 +247,7 @@ public class JavaModuleNamingProxy
                 BundleDescriptor bd = null;
 
                 if( env instanceof EjbDescriptor ) {
-                    bd = (BundleDescriptor) ((EjbDescriptor)env).getEjbBundleDescriptor();
+                    bd = ((EjbDescriptor)env).getEjbBundleDescriptor();
                 } else if( env instanceof BundleDescriptor ) {
                     bd = (BundleDescriptor) env;
                 }

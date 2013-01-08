@@ -2412,7 +2412,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         return adminServiceProvider.get();
     }
 
-    private Servers getServers(){
+    private Servers getServers(double foo) {
         return serversProvider.get();
     }
 
