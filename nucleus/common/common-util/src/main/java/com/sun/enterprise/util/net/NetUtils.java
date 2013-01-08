@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -709,7 +709,7 @@ public class NetUtils {
             count++;
         }
         byte[] input = new byte[istream.available()];
-        istream.read(input);
+        int read = istream.read(input);
 
         // Close the socket
         socket.close();
@@ -719,7 +719,7 @@ public class NetUtils {
         // default & try to detect an http response.
         String response = new String(input).toLowerCase(Locale.ENGLISH);
         boolean isSecure = true;
-        if (response.length() == 0) {
+        if (read <= 0 || response.length() == 0) {
             isSecure = false;
         }
         else if (response.startsWith("http/1.")) {
@@ -824,7 +824,7 @@ public class NetUtils {
         long start = System.currentTimeMillis();
         boolean b = isRunning(h, p);
         long duration = System.currentTimeMillis() - start;
-        System.out.printf("isRunning says: %b for %s, %d, %d\n", b, h, p, duration);
+        System.out.printf("isRunning says: %b for %s, %d, %d%n", b, h, p, duration);
     }
     /**
      *	This is the test query used to ping the server in an attempt to

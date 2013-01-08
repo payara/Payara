@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -515,13 +515,13 @@ public class StringUtils {
      * @return String with specified characters removed
      */
     public static String removeChar(String strOrig, char c) {
-        String strNew = "";
+        StringBuilder strNew = new StringBuilder();
         for (int i = 0; i < strOrig.length(); i++) {
             if (strOrig.charAt(i) != c) {
-                strNew += strOrig.charAt(i);
+                strNew.append(strOrig.charAt(i));
             }
         }
-        return strNew;
+        return strNew.toString();
     }
 
     public static String getStackTrace(Throwable t) {
@@ -623,7 +623,7 @@ public class StringUtils {
     private static boolean isSingleQuoted(String s) {
         return s.startsWith("'") && s.endsWith("'") && s.length() > 1;
     }
-    
+
     /** Escape characters to use result in html.
      * <table border='1' cellpadding='3' cellspacing='0'>
      * <tr><th> Chars </th><th>Escape sequence</th></tr>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,7 +61,7 @@ public class Jps {
             System.out.printf("%d %s%n", e.getKey(), e.getValue());
         }
         if(args.length > 0) {
-            System.out.printf("Jps.isPid(%s) ==> %b\n", args[0], Jps.isPid(Integer.parseInt(args[0])));
+            System.out.printf("Jps.isPid(%s) ==> %b%n", args[0], Jps.isPid(Integer.parseInt(args[0])));
         }
     }
 
@@ -71,7 +71,7 @@ public class Jps {
 
     /**
      * return the platform-specific process-id of a JVM
-     * @param mainClassName The main class - this is how we identify the right JVM.  
+     * @param mainClassName The main class - this is how we identify the right JVM.
      * You can pass in a fully-qualified name or just the classname.
      * E.g. com.sun.enterprise.glassfish.bootstrap.ASMain and ASMain work the same.
      * @return the process id if possible otherwise 0

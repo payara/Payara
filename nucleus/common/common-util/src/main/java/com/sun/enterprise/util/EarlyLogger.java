@@ -54,23 +54,32 @@ public class EarlyLogger {
         // no instances allowed...
     }
 
-    public final static void add(Level level, String message) {
+    public static void add(Level level, String message) {
         messages.add(new LevelAndMessage(level, prepend + message));
         // also log to the console...
         logger.log(level, message);
     }
 
-    public final static List<LevelAndMessage> getEarlyMessages() {
+    public static List<LevelAndMessage> getEarlyMessages() {
         return messages;
     }
 
     public final static class LevelAndMessage {
-        public String msg;
-        public Level level;
+
+        private final String msg;
+        private final Level level;
 
         LevelAndMessage(Level l, String m) {
             msg = m;
             level = l;
+        }
+
+        public final String getMessage() {
+            return msg;
+        }
+
+        public final Level getLevel() {
+            return level;
         }
     }
     private final static List<LevelAndMessage> messages =

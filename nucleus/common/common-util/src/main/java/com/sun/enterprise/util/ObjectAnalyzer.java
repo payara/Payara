@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -237,8 +237,10 @@ public class ObjectAnalyzer {
             throw new ObjectAnalyzerException("got a SecurityException when calling getDeclaredFields() on " + cl.getName());//NOI18N
         }
 
-        if (fields == null)
-            throw new ObjectAnalyzerException("calling getDeclaredFields() on " + cl.getName() + " returned null");//NOI18N
+        // FindBugs says this is a redundant null check.  We are now depending
+        // on (assuming) that getDeclaredFields() will never return null;
+        //if (fields == null)
+            //throw new ObjectAnalyzerException("calling getDeclaredFields() on " + cl.getName() + " returned null");//NOI18N
 
         setAccessible(fields);
 

@@ -47,7 +47,7 @@ package com.sun.enterprise.util;
 
 import java.util.*;
 
-/** Simple class for profiling code.  beginItem/endItem pairs start and stop the timing for an item.  
+/** Simple class for profiling code.  beginItem/endItem pairs start and stop the timing for an item.
  *
  * @author  bnevins
  */
@@ -100,10 +100,11 @@ public class ProfilerImpl {
 
     /** Return a formatted String with the timing information
      **/
+    @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("\nBegins: " + numBegins + ", Ends: " + numEnds +
-                ", Actual Ends: " + numActualEnds + "\n");
+        StringBuilder sb = new StringBuilder();
+        sb.append("\nBegins: ").append(numBegins).append(", Ends: ").append(numEnds)
+                .append(", Actual Ends: ").append(numActualEnds).append("\n");
 
         sb.append(Item.getHeader());
         sb.append("\n");
@@ -138,10 +139,7 @@ public class ProfilerImpl {
             title = desc;
             startTime = System.currentTimeMillis();
             endTime = startTime;
-
-            if (title.length() > longestTitle) {
-                longestTitle = title.length();
-            }
+            setLongestTitle(title.length());
         }
 
         boolean hasEnded() {
@@ -154,6 +152,7 @@ public class ProfilerImpl {
             ended = true;
         }
 
+        @Override
         public String toString() {
             long finish = hasEnded() ? endTime : System.currentTimeMillis();
 
@@ -176,10 +175,19 @@ public class ProfilerImpl {
         public static String getHeader() {
             return "\n" + StringUtils.padRight("Description", longestTitle + 1) + StringUtils.padLeft("msec", 8);
         }
+
+        private static void setLongestTitle(int len) {
+            synchronized (lock) {
+                if (len > longestTitle) {
+                    longestTitle = len;
+                }
+            }
+        }
         String title;
         long startTime;
         long endTime;
         static int longestTitle = 12;
+        private final static Object lock = new Object();
         boolean ended = false;
     }
     ////////////////////////////////////////////////////////////////////////////

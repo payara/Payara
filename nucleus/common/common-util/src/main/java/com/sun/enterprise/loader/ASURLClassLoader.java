@@ -1,5 +1,5 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR copyFrom HEADER.
  *
  * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
@@ -414,7 +414,14 @@ public class ASURLClassLoader
      *  as this class loader
      */
     public ClassLoader copy() {
-        return new DelegatingClassLoader(this);
+        final ASURLClassLoader copyFrom = this;
+        DelegatingClassLoader newCl = (DelegatingClassLoader)AccessController.doPrivileged(new PrivilegedAction() {
+            public Object run() {
+                // privileged code goes here, for example:
+                return new DelegatingClassLoader(copyFrom);
+            }
+        });
+        return newCl;
     }
 
     /**
@@ -684,7 +691,7 @@ public class ASURLClassLoader
         if (PreprocessorUtil.isPreprocessorEnabled()) {
             // search thru the JARs for a file of the form java/lang/Object.class
             final String entryName = name.replace('.', '/') + ".class";
-            classData.classBytes = PreprocessorUtil.processClass(entryName, classData.classBytes);
+            classData.setClassBytes(PreprocessorUtil.processClass(entryName, classData.getClassBytes()));
         }
 
         // Define package information if necessary
@@ -726,10 +733,10 @@ public class ASURLClassLoader
                 // as opposed to java.lang.Object
                 final String internalClassName = name.replace('.','/');
                 final byte[] transformedBytes = transformer.transform(this, internalClassName, null,
-                        classData.pd, classData.classBytes);
+                        classData.pd, classData.getClassBytes());
                 if(transformedBytes!=null){ // null indicates no transformation
                     _logger.log(Level.INFO, CULoggerInfo.actuallyTransformed, name);
-                    classData.classBytes = transformedBytes;
+                    classData.setClassBytes(transformedBytes);
                 }
             }
         } catch (IllegalClassFormatException icfEx) {
@@ -737,7 +744,8 @@ public class ASURLClassLoader
         }
         Class clazz = null;
         try {
-            clazz = defineClass(name, classData.classBytes, 0, classData.classBytes.length, classData.pd);
+            byte[] bytes = classData.getClassBytes();
+            clazz = defineClass(name, bytes, 0, bytes.length, classData.pd);
             return clazz;
         } catch (UnsupportedClassVersionError ucve) {
  	    throw new UnsupportedClassVersionError(
@@ -910,6 +918,7 @@ public class ASURLClassLoader
          * @see java.lang.Object#finalize()
          */
         protected void finalize() throws IOException {
+            super.finalize();
             reallyClose();
         }
     }
@@ -960,22 +969,6 @@ public class ASURLClassLoader
                 IOException ioe= new IOException();
                 ioe.initCause(use);
                 throw ioe;
-            }
-        }
-
-        private void cacheItems() throws IOException {
-            if (isJar) {
-                // cache entry names from jar file
-                for (Enumeration e = zip.entries(); e.hasMoreElements(); ) {
-                    ZipEntry curEntry = (ZipEntry) e.nextElement();
-                    table.put(curEntry.getName(), curEntry.getName());
-                }
-
-            } else {
-                // cache entry names from directory
-                if (file.exists()) {
-                    fillTable(file, table, "");
-                }
             }
         }
 
@@ -1330,7 +1323,6 @@ public class ASURLClassLoader
         /** must be 'volatile' for thread visibility */
         private volatile URL   mURL;
         private final URLEntry mRes;
-        private final String mName;
 
         /**
          * Constructor
@@ -1340,7 +1332,6 @@ public class ASURLClassLoader
          */
         public InternalURLStreamHandler(URLEntry res, String name) {
             mRes = res;
-            mName = name;
         }
 
         /**
@@ -1389,16 +1380,30 @@ public class ASURLClassLoader
      * both class bytes and protection domain.
      */
     private static final class ClassData {
-        /** must be 'volatile' to ensure thread visibility */
-        private volatile byte[] classBytes;
+        // Byron Sez: making classBytes volatile is pointless.  That just makes
+        // the reference to the array volatile.  The byte contents are NOT volatile
+        // I solved this low-level FB issue by:
+        // 1. don't use the field directly outside of this inner class
+        // 2. add a getter/setter
+        // 3. make both the setter and getter synchronized.
+        
+        private byte[] classBytes;
 
         /** must be 'final' to ensure thread visibility */
         private final ProtectionDomain pd;
 
-        ClassData(byte[] classData, ProtectionDomain pd) {
-            this.classBytes = classData;
+        ClassData(byte[] classBytes, ProtectionDomain pd) {
+            this.classBytes = classBytes;
             this.pd = pd;
         }
+        private synchronized byte[] getClassBytes() {
+            return classBytes;
+        }
+
+        private synchronized void setClassBytes(byte[] newBytes) {
+            classBytes = newBytes;
+        }
+
     }
 
     /**
@@ -1466,7 +1471,8 @@ public class ASURLClassLoader
             }
             Class clazz = null;
             try {
-                clazz = defineClass(name, classData.classBytes, 0, classData.classBytes.length, classData.pd);
+                final byte[] bytes = classData.getClassBytes();
+                clazz = defineClass(name, bytes, 0, bytes.length, classData.pd);
                 return clazz;
             } catch (UnsupportedClassVersionError ucve) {
  	        throw new UnsupportedClassVersionError(

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,25 +63,40 @@ public class PrincipalImpl implements Principal, java.io.Serializable {
     }
 
     /**
-     * This function returns true if the object passed matches 
+     * This function returns true if the object passed matches
      * the principal represented in this implementation
-     * @param another the Principal to compare with.
-     * @return true if the Principal passed is the same as that 
+     * @param obj the Principal to compare with.
+     * @return true if the Principal passed is the same as that
      * encapsulated in this object, false otherwise
      */
-    public boolean equals(Object another) {
+    @Override
+    public boolean equals(Object obj) {
+        // Byron sez -- this seems like an odd solution.
+        // ref: item #8, Effective Java second ed. J. Bloch
+        // I fixed this by making the subclasses contain an instance of
+        // this class.  The subclasses do NOT extend from this one.  But
+        // they DO implement the Principal interface
+
+        // old obsolete comment below...
         // XXX for bug 4889642: if groupA and userA have
         // the same name, then groupA.equals(userA) return false
         // BUT userA.equals(groupA) return "true"
-        if (another instanceof Group) {
+
+        if(this == obj)
+            return true;
+
+        if(! (obj instanceof PrincipalImpl))
             return false;
-        } else if (another instanceof PrincipalImpl) {
-	    Principal p = (Principal) another;
-	    return getName().equals(p.getName());
-	} else
-	    return false;
+
+        PrincipalImpl other = (PrincipalImpl) obj;
+
+        // both null is a match!
+        if(name != null)
+            return name.equals(other.name);
+        else
+            return other.name == null;
     }
-    
+
     /**
      * Prints a stringified version of the principal.
      * @return A java.lang.String object returned by the method getName()
@@ -104,6 +119,7 @@ public class PrincipalImpl implements Principal, java.io.Serializable {
      * Gets the name of the Principal as a java.lang.String
      * @return the name of the principal.
      */
+    @Override
     public String getName() {
 	return name;
     }

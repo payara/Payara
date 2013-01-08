@@ -1,7 +1,7 @@
   /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -120,7 +120,7 @@ public class MiniXmlParser {
         }
         return javaConfig;
     }
-    
+
 
 
     public List<String> getJvmOptions() throws MiniXmlParserException {
@@ -176,12 +176,12 @@ public class MiniXmlParser {
     public void setupConfigDir(File configDir, File installDir) {
         loggingConfig.setupConfigDir(configDir, installDir);
     }
-    
+
     public boolean getSecureAdminEnabled() {
         return secureAdminEnabled;
     }
 
-    /** 
+    /**
      * loggingConfig will return an IOException if there is no
      * logging properties file.
      *
@@ -191,13 +191,13 @@ public class MiniXmlParser {
         String logFilename = null;
         try {
             Map<String, String> map = loggingConfig.getLoggingProperties();
-            String logFileContains = new String("${com.sun.aas.instanceName}");
+            String logFileContains = "${com.sun.aas.instanceName}";
             if (map != null) {
                 logFilename = map.get(LoggingPropertyNames.file);
             }
             if (logFilename != null && logFilename.contains(logFileContains)) {
                 logFilename = replaceOld(logFilename,logFileContains,this.serverName);
-            }  
+            }
         }
         catch (Exception e) {
             // just return null
@@ -272,7 +272,7 @@ public class MiniXmlParser {
     private void createParser() throws FileNotFoundException, XMLStreamException {
         reader = new InputStreamReader(new FileInputStream(domainXml));
         XMLInputFactory xif = getXmlInputFactory();
-        // Set the resolver so that any external entity references, such 
+        // Set the resolver so that any external entity references, such
         // as a reference to a DTD, return an empty file.  The domain.xml
         // file doesn't support entity references.
         xif.setXMLResolver(new XMLResolver() {
@@ -295,7 +295,7 @@ public class MiniXmlParser {
     // XMLInputFactory to load the factory, otherwise by default StAX uses
     // Thread's context class loader to locate the factory. See:
     // https://glassfish.dev.java.net/issues/show_bug.cgi?id=6428
-    // 
+    //
 
     private XMLInputFactory getXmlInputFactory() {
         Class clazz = XMLInputFactory.class;
@@ -412,7 +412,7 @@ public class MiniXmlParser {
                     parseMonitoringService();
                 }
                 else if("admin-service".equals(name)) {
-                    parseAdminService();                    
+                    parseAdminService();
                 }
                 else if("security-service".equals(name)) {
                     populateAdminRealmProperties();
@@ -423,16 +423,16 @@ public class MiniXmlParser {
             }
         }
     }
-    
+
     private void parseSecureAdmin() {
         Map<String,String> secureAdminProperties = parseAttributes();
-        
+
         if (secureAdminProperties.containsKey("enabled")) {
             String value = secureAdminProperties.get("enabled");
             if("true".equals(value)) {
                 secureAdminEnabled =  true;
             }
-        }         
+        }
     }
 
     private void parseNetworkConfig()
@@ -509,7 +509,7 @@ public class MiniXmlParser {
         // cursor --> START_ELEMENT of profiler
         // it has attributes and <jvm-options>'s and <property>'s
         profilerConfig = parseAttributes();
-       
+
         // the default is true
         if (!profilerConfig.containsKey("enabled"))
             profilerConfig.put("enabled", "true");
@@ -658,7 +658,7 @@ public class MiniXmlParser {
                     parseSystemProperty(SysPropsHandler.Type.DOMAIN);
                 else if ("property".equals(name))
                     parseDomainProperty(); // property found -- maybe it is the domain name?
-                else if("secure-admin".equals(name)) 
+                else if("secure-admin".equals(name))
                     parseSecureAdmin();
             }
             if (domainName == null) {
@@ -685,7 +685,7 @@ public class MiniXmlParser {
         if (name == null || value == null) {
             return;
         }
-        
+
         if ("administrative.domain.name".equals(name)) {
             domainName = value;
         }
@@ -706,7 +706,7 @@ public class MiniXmlParser {
             monitoringEnabled = true;  // case 3
         }
     }
-    
+
     private void parseAdminService() throws XMLStreamException, EndDocumentException {
         Map<String, String> attributes = null;
 
@@ -780,7 +780,7 @@ public class MiniXmlParser {
         }
         addPortsForListeners(listenerNames);
     }
-    
+
     private void parseListeners() throws XMLStreamException, EndDocumentException {
         // cursor --> START_ELEMENT of network-listeners
         while (true) {
@@ -1014,6 +1014,6 @@ public class MiniXmlParser {
     private SysPropsHandler sysProps = new SysPropsHandler();
     private List<ParsedCluster> clusters = null;
     private boolean secureAdminEnabled = false;
-    
+
 
 }

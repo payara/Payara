@@ -76,10 +76,6 @@ public final class PasswordAdapter {
         return _masterPassword;
     }
 
-    private void setMasterPassword(char[] smp) {
-        _masterPassword = smp;
-    }
-
 /*
     private static final boolean DEBUG = true;
     private void //debug( final Object o )

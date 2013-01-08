@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -166,13 +166,26 @@ public class ZipWriter {
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     private void init(String outFileName, String dirName) throws ZipFileException {
+        OutputStream os = null;
         try {
-            init(new FileOutputStream(outFileName), dirName);
+            os = new FileOutputStream(outFileName);
+            init(os, dirName);
         }
         catch (Exception e) {
             throw new ZipFileException(e);
         }
+        finally {
+            try {
+                if (os != null)
+                    os.close();
+            }
+            catch (Exception e) {
+                // nothing can be done about it.
+            }
+        }
     }
+
+
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     private void init(OutputStream outStream, String dirName) throws ZipFileException {
@@ -325,20 +338,21 @@ public class ZipWriter {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     private static void usage() {
         System.out.println("usage: java com.elf.util.zip.ZipWriter zip-filename directory-name");
-        System.exit(1);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public static void main(String[] args) {
-        if (args == null || args.length != 2)
+        if (args == null || args.length != 2) {
             usage();
+            return;
+        }
 
         try {
             ZipWriter zw = new ZipWriter(args[0], args[1]);
             zw.write();
         }
         catch (ZipFileException e) {
-            System.exit(0);
+            // nothing to do.
         }
     }
     /////////////////////////////////////////////////////////////////////////////////////////

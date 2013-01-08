@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,6 +50,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.logging.*;
 import javax.naming.*;
@@ -62,7 +63,7 @@ public final class Utility {
 
     static final Logger _logger = CULoggerInfo.getLogger();
 
-    private static LocalStringManagerImpl localStrings = 
+    private static LocalStringManagerImpl localStrings =
     new LocalStringManagerImpl(Utility.class);
 
     public static void checkJVMVersion()
@@ -71,21 +72,33 @@ public final class Utility {
     }
 
 
-    public static Properties getPropertiesFromFile(String file) 
-	throws IOException
-    {
-	InputStream is = ClassLoader.getSystemResourceAsStream(file);
-	if (is != null) {
-	    Properties config = new Properties();
-	    config.load(is);
-	    return config;
-	} else {
-	    String remoteclient = "/" + file;
-	    InputStream is2 = Utility.class.getResourceAsStream(remoteclient);
-	    Properties config = new Properties();
-	    config.load(is2);
-	    return config;
-	}
+    public static Properties getPropertiesFromFile(String file)
+            throws IOException {
+        InputStream is = ClassLoader.getSystemResourceAsStream(file);
+        InputStream is2 = null;
+        try {
+            if (is != null) {
+                Properties config = new Properties();
+                config.load(is);
+                return config;
+            }
+            else {
+                String remoteclient = "/" + file;
+                is2 = Utility.class.getResourceAsStream(remoteclient);
+                Properties config = new Properties();
+                config.load(is2);
+                return config;
+            }
+        }
+        finally {
+            try {
+                if (is2 != null)
+                    is2.close();
+            }
+            catch (Exception e) {
+                // nothing can be done about it.
+            }
+        }
     }
 
 
@@ -120,21 +133,21 @@ public final class Utility {
     /**
      * This is a convenience method to lookup a remote object by name within
      * the naming context.
-     * @exception javax.naming.NamingException if the object with that 
+     * @exception javax.naming.NamingException if the object with that
      * name could not be found.
      */
-    public static java.rmi.Remote lookupObject(String publishedName, 
-					       java.lang.Class anInterface) 
+    public static java.rmi.Remote lookupObject(String publishedName,
+					       java.lang.Class anInterface)
 	    throws javax.naming.NamingException {
 
 	Context ic = new InitialContext();
 	java.lang.Object objRef = ic.lookup(publishedName);
-	return (java.rmi.Remote) 
+	return (java.rmi.Remote)
 	    PortableRemoteObject.narrow(objRef, anInterface);
     }
 
 
-    /** Unmarshal a byte array to an integer. 
+    /** Unmarshal a byte array to an integer.
 	Assume the bytes are in BIGENDIAN order.
 	i.e. array[offset] is the most-significant-byte
 	and  array[offset+3] is the least-significant-byte.
@@ -153,7 +166,7 @@ public final class Utility {
 	return (b1 | b2 | b3 | b4);
     }
 
-    /** Marshal an integer to a byte array. 
+    /** Marshal an integer to a byte array.
 	The bytes are in BIGENDIAN order.
 	i.e. array[offset] is the most-significant-byte
 	and  array[offset+3] is the least-significant-byte.
@@ -166,9 +179,9 @@ public final class Utility {
         array[offset++] = (byte)((value >>> 16) & 0xFF);
         array[offset++] = (byte)((value >>> 8) & 0xFF);
         array[offset++] = (byte)((value >>> 0) & 0xFF);
-    }   
+    }
 
-    /** Unmarshal a byte array to an long. 
+    /** Unmarshal a byte array to an long.
 	Assume the bytes are in BIGENDIAN order.
 	i.e. array[offset] is the most-significant-byte
 	and  array[offset+7] is the least-significant-byte.
@@ -185,7 +198,7 @@ public final class Utility {
 	return (l1 | l2);
     }
 
-    /** Marshal an long to a byte array. 
+    /** Marshal an long to a byte array.
 	The bytes are in BIGENDIAN order.
 	i.e. array[offset] is the most-significant-byte
 	and  array[offset+7] is the least-significant-byte.
@@ -208,7 +221,7 @@ public final class Utility {
      * Verify and invoke main if present in the specified class.
      */
     public static void invokeApplicationMain(Class mainClass, String[] args)
-	throws InvocationTargetException, IllegalAccessException, 
+	throws InvocationTargetException, IllegalAccessException,
 		ClassNotFoundException
     {
 	    String err = localStrings.getLocalString ("utility.no.main", "",
@@ -219,7 +232,7 @@ public final class Utility {
 	    // String[] as the only argument
 	    Method mainMethod = null;
 	    try {
-	        mainMethod = mainClass.getMethod("main", 
+	        mainMethod = mainClass.getMethod("main",
 		    new Class[] { String[].class } );
 	    } catch(NoSuchMethodException msme) {
 		_logger.log(Level.SEVERE, CULoggerInfo.exceptionInUtility, msme);
@@ -229,11 +242,11 @@ public final class Utility {
 	    // check modifiers: public static
             // check return type and exceptions
 	    int modifiers = mainMethod.getModifiers ();
-	    if (!Modifier.isPublic (modifiers) || 
+	    if (!Modifier.isPublic (modifiers) ||
 		!Modifier.isStatic (modifiers) ||
                 !mainMethod.getReturnType().equals (Void.TYPE))  {
 		    err = localStrings.getLocalString(
-			"utility.main.invalid", 
+			"utility.main.invalid",
 			"The main method signature is invalid");
 		    _logger.log(Level.SEVERE, CULoggerInfo.mainNotValid);
 	    	    throw new ClassNotFoundException(err);
@@ -246,13 +259,13 @@ public final class Utility {
 
     }
 
-    public static void invokeSetMethod(Object obj, String prop, String value) 
+    public static void invokeSetMethod(Object obj, String prop, String value)
         throws NoSuchMethodException, InvocationTargetException,
         IllegalAccessException
     {
         Class cl = obj.getClass();
         // change first letter to uppercase
-        String setMeth = "set" + prop.substring(0,1).toUpperCase() +
+        String setMeth = "set" + prop.substring(0,1).toUpperCase(Locale.US) +
             prop.substring(1);
 
         // try string method
@@ -263,7 +276,7 @@ public final class Utility {
             meth.invoke(obj, params);
             return;
         } catch (NoSuchMethodException ex) {
-            try { 
+            try {
                 // try int method
                 Class[] cldef = {Integer.TYPE};
                 Method meth = cl.getMethod(setMeth, cldef);
@@ -307,10 +320,10 @@ public final class Utility {
                            methodFound = true;
                            break;
                        }
-                       else 
+                       else
                            alternateMethodName = methodsList[i].getName();
                    }
-                  
+
                 }
             }
             if(methodFound == true)
@@ -319,9 +332,9 @@ public final class Utility {
                 methodsList[i].invoke(obj, params);
                 return;
             }
-            if(alternateMethodName != null) 
+            if(alternateMethodName != null)
             {
-                 try 
+                 try
                  {
                 // try int method
                     Class[] cldef = {Integer.TYPE};
@@ -329,8 +342,8 @@ public final class Utility {
                     Object[] params = {Integer.valueOf(value)};
                     meth.invoke(obj, params);
                     return;
-                 } 
-                 catch(NoSuchMethodException nsmex) 
+                 }
+                 catch(NoSuchMethodException nsmex)
                  {
                     // try boolean method
                     Class[] cldef = {Boolean.TYPE};
@@ -352,7 +365,7 @@ public final class Utility {
     // ints throught this code, except that marshalling requires a
     // scaling conversion.  intToShort and shortToInt are provided
     // for this purpose.
-    
+
     public static short intToShort(int value)
     {
 	if (value > 32767)

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -121,7 +121,7 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
         String installRoot = startupContext.getArguments().getProperty(INSTALL_ROOT_PROP_NAME);
         if (installRoot == null) {
             // During unit testing, we find an empty StartupContext.
-            // Let's first see if the installRoot system property is set 
+            // Let's first see if the installRoot system property is set
             // in the client VM, if not
             // To be consistent with earlier code (i.e., code that relied on StartupContext.getRootDirectory()),
             // I am setting user.dir as installRoot.
@@ -424,6 +424,14 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
     @Override
     public boolean isDas() {
         return serverType == RuntimeType.DAS;
+    }
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
     }
 
     private boolean ok(String s) {

@@ -349,14 +349,14 @@ public class LogDomains {
 
         if (cLogger == null) {
             //first time through for this logger.  create it and find the resource bundle
+            // Byron Sez:  warning: super-long complex anonymous class -- very hard to understand.
             cLogger = new Logger(loggerName, null) {
 
                 // cache it to avoid having to use the class loader later. see GLASSFISH-17256
                 final ResourceBundle rb = initResourceBundle();
 
                 /* override this method to set the the thread id so all handlers get the same info*/
-                private final int offValue = Level.OFF.intValue();
-
+                @Override
                 public void log(LogRecord record) {
                     record.getSourceMethodName();
                     if(record.getResourceBundle()==null) {
@@ -381,6 +381,7 @@ public class LogDomains {
                  * @return localization bundle (may be null)
                  *
                  */
+                @Override
                 public ResourceBundle getResourceBundle() {
                     return rb;
                 }
@@ -426,7 +427,7 @@ public class LogDomains {
                         if(!vectorClazz.contains(clazz.getName())) {
                             Logger l = LogManager.getLogManager().getLogger(name);
                             if(l!=null) {
-                                l.log(Level.FINE, "Can not find resource bundle for this logger. " + " class name that failed: " + clazz.getName());
+                                l.log(Level.FINE, "Can not find resource bundle for this logger. " + " class name that failed: {0}", clazz.getName());
                             }
                             vectorClazz.add(clazz.getName());
                         }
@@ -436,8 +437,6 @@ public class LogDomains {
                         return null;
                     }
                 }
-
-                ;
             };
 
             // let's make sure we are the only

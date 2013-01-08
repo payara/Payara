@@ -112,7 +112,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     Domain domain;
 
     final Map<String, Handler> gfHandlers = new HashMap<String, Handler>();
-    
+
     private static final Logger LOGGER = LogFacade.LOGGING_LOGGER;
 
     PrintStream oStdOutBackup = System.out;
@@ -155,7 +155,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private final String FILEHANDLER_PATTERN_PROPERTY = "java.util.logging.FileHandler.pattern";
     private final String FILEHANDLER_FORMATTER_PROPERTY = "java.util.logging.FileHandler.formatter";
     private final String LOGFORMAT_DATEFORMAT_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat";
-    
+
     final static String EXCLUDE_FIELDS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.excludeFields";
     final static String MULTI_LINE_MODE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode";
 
@@ -382,7 +382,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             rotationOnDateChangeDetail = props.get(ROTATIONONDATECHANGE_PROPERTY);
             fileHandlerPatternDetail = props.get(FILEHANDLER_PATTERN_PROPERTY);
             fileHandlerFormatterDetail = props.get(FILEHANDLER_FORMATTER_PROPERTY);
-            logFormatDateFormatDetail = props.get(LOGFORMAT_DATEFORMAT_PROPERTY);            
+            logFormatDateFormatDetail = props.get(LOGFORMAT_DATEFORMAT_PROPERTY);
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
@@ -605,7 +605,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
         if (!catchUp.isEmpty()) {
             for (EarlyLogger.LevelAndMessage levelAndMessage : catchUp) {
-                LOGGER.log(levelAndMessage.level, levelAndMessage.msg);
+                LOGGER.log(levelAndMessage.getLevel(), levelAndMessage.getMessage());
             }
             catchUp.clear();
         }

@@ -55,7 +55,7 @@ import java.security.SecureRandom;
 /**
  * Class UuidUtil
  *
- * 
+ *
  */
 public class UuidUtil
 {
@@ -71,17 +71,17 @@ public class UuidUtil
     public static String generateUuid() {
         return generateUuid(new Object());
     }
-    
+
     //this method can take in the session object
     //and insure better uniqueness guarantees
     public static String generateUuid(Object obj) {
-        
+
         //low order time bits
         long presentTime = System.currentTimeMillis();
-        int presentTimeLow = (int) presentTime & 0xFFFFFFFF;
+        int presentTimeLow = (int) presentTime;
         String presentTimeStringLow = formatHexString(presentTimeLow);
-        
-        StringBuffer sb = new StringBuffer(50);
+
+        StringBuilder sb = new StringBuilder(50);
         sb.append(presentTimeStringLow);
         //sb.append(":");
         sb.append(getIdentityHashCode(obj));
@@ -92,7 +92,7 @@ public class UuidUtil
         sb.append(getNextRandomString());
         return sb.toString();
     }
-    
+
     /**
      * Method initInetAddr
      *
@@ -105,11 +105,10 @@ public class UuidUtil
 
         try {
             byte[] bytes = InetAddress.getLocalHost().getAddress();
-            StringBuffer b = new StringBuffer();
-            String s = null;
+            StringBuilder b = new StringBuilder();
 
             for (int i = 0; i < bytes.length; i++) {
-                s = Integer.toHexString(bytes[i]);
+                String s = Integer.toHexString(bytes[i]);
 
                 if (bytes[i] < 0) {
                     b.append(s.substring(s.length() - 2));
@@ -125,14 +124,14 @@ public class UuidUtil
             //return null;
         }
     }
-        
+
     private static String addRandomTo(String hexString)
     {
         long hexAsLong = convertToLong(hexString);
         int nextRandom = getNextInt();
         long resultInt = hexAsLong + nextRandom;
         String result = Long.toHexString(resultInt);
-        // START PWC 6425338 
+        // START PWC 6425338
         // Always return a length of 7
         int len = result.length();
         if (len < 7) {
@@ -140,10 +139,10 @@ public class UuidUtil
         } else {
             result = result.substring(len - 7, len);
         }
-        //  END PWC 6425338 
+        //  END PWC 6425338
         return result;
     }
-    
+
     /**
      * Method getIdentityHashCode
      *
@@ -153,24 +152,24 @@ public class UuidUtil
      * @audience
      */
     private static String getIdentityHashCode(Object obj) {
-        
+
         String result = null;
         try {
             int hc = System.identityHashCode(obj);
             return formatHexString(hc);
-                
+
         } catch (Exception ex) {
             //must return a value
             //return null;
             return "8AF5182";
         }
     }
-    
+
     private static String formatHexString(int inputInt)
     {
-        String result = null;
+        String result;
         String s = Integer.toHexString(inputInt);
-        /* PWC 6425338 
+        /* PWC 6425338
         if(s.length() < 8)
         {
             result = s;
@@ -178,7 +177,7 @@ public class UuidUtil
             result = s.substring(0, 7);
         }
         */
-        // START PWC 6425338 
+        // START PWC 6425338
         // Always return a length of 7
         int len = s.length();
         if (len < 7) {
@@ -186,19 +185,19 @@ public class UuidUtil
         } else {
             result = s.substring(len - 7, len);
         }
-        //  END PWC 6425338 
+        //  END PWC 6425338
         return result;
     }
-    
+
     private static synchronized int getNextInt() {
         return _seeder.nextInt();
     }
-    
+
     private static String getNextRandomString() {
         int nextInt = getNextInt();
         return formatHexString(nextInt);
     }
-        
+
     private static long convertToLong(String hexString)
     {
         long result = 0;
@@ -225,7 +224,7 @@ public class UuidUtil
         System.out.println(UuidUtil.generateUuid());
         System.out.println(UuidUtil.generateUuid(new Object()));
     }
-    // START PWC 6425338 
+    // START PWC 6425338
     /*
     * Pads the given string to a length of 7.
     */
@@ -242,8 +241,8 @@ public class UuidUtil
            chars[i++] = '0';
        }
        return new String(chars);
-   } 
-    // END PWC 6425338 
+   }
+    // END PWC 6425338
 }
 
 

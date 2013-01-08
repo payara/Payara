@@ -94,7 +94,7 @@ public class RestSessionManager {
         }
         return result;
     }
-    
+
     /**
      * Deletes Session corresponding to given <code> sessionId </code>
      * @param sessionId
@@ -127,7 +127,7 @@ public class RestSessionManager {
         return activeSessions.containsKey(sessionId);
     }
 
-    private class SessionData{
+    private static class SessionData{
         /** IP address of client as obtained from Grizzly request */
         private String clientAddress;
         private long lastAccessedTime = System.currentTimeMillis();
@@ -163,7 +163,7 @@ public class RestSessionManager {
         public boolean authenticate(final String remoteAddress) {
             return isSessionActive() && (clientAddress.equals(remoteAddress) || disableRemoteAddressValidation );
         }
-        
+
         /**
          * Returns the Subject associated with the session.
          * @return the Subject

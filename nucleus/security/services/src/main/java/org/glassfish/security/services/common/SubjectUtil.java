@@ -99,7 +99,7 @@ public class SubjectUtil {
         if (subject != null) {
             
             princSet = subject.getPrincipals(Group.class);
-            for (PrincipalImpl g : princSet) {
+            for (Principal g : princSet) {
                 String gName = g.getName();
                 groupList.add(gName);
             }
