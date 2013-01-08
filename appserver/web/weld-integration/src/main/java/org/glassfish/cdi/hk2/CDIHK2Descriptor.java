@@ -67,7 +67,7 @@ import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
 @SuppressWarnings("serial")
 public class CDIHK2Descriptor<T> extends AbstractActiveDescriptor<T> {
     private transient BeanManager manager;
-    private Bean<T> bean;
+    private transient Bean<T> bean;
     
     public CDIHK2Descriptor() {
         super();

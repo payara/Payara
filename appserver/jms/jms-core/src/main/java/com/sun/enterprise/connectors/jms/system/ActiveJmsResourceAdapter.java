@@ -2412,10 +2412,6 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         return adminServiceProvider.get();
     }
 
-    private Servers getServers(double foo) {
-        return serversProvider.get();
-    }
-
     private JmsService getJmsService(){
         Config c = habitat.getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
                 return c.getExtensionByType(JmsService.class);
