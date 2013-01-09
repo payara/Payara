@@ -60,10 +60,19 @@ import java.lang.annotation.Retention;
  * The <code>Local</code> annotation applies only to session beans and 
  * their interfaces.
  * <p>
- * Use of the <code>Local</code> annotation is only required when the bean class 
- * does not implement only a single interface other than any of the following: 
- * <code>java.io.Serializable</code>; <code>java.io.Externalizable</code>;
- * any of the interfaces defined in <code>javax.ejb</code>.
+ * Use of the <code>Local</code> annotation is required when the bean class 
+ * exposes one or more local business interface and any of the following is true:
+ * <ul>
+ * <li>the bean class does not implement its business interfaces
+ * <li>the bean exposes a no-interface view
+ * <li>the bean class implements more than one interface and at least one of the interfaces 
+ * is explicitly designated as a business interface by using the <code>Local</code> 
+ * or <code>Remote</code> annotation on the interface, or in the deployment descriptor
+ * </ul>
+ * <p>
+ * The following interfaces are excluded when determining whether the bean class 
+ * has business interfaces: <code>java.io.Serializable</code>; 
+ * <code>java.io.Externalizable</code>; any of the interfaces defined in <code>javax.ejb</code>.
  *
  * @since EJB 3.0
  */
@@ -75,10 +84,16 @@ public @interface Local {
     /**
      * Specifies the local business interface(s) of the bean.  The <code>value</code>
      * element is specified only when the annotation is applied to the bean class. 
-     * It is only required to be specified if the bean class implements more 
-     * than one interface (excluding <code>java.io.Serializable</code>, 
+     * It is required to be specified if any of the following is true:
+     * <ul>
+     * <li>the bean class does not implement its local business interface
+     * <li>any of the implemented interfaces is designated as a remote interface
+     * <li>some of the implemented interfaces are designated
+     * as local business interfaces using <code>Local</code> annotation on the interface,
+     * while others (excluding <code>java.io.Serializable</code>, 
      * <code>java.io.Externalizable</code>, and any of the interfaces 
-     * defined by the <code>javax.ejb</code> package).
+     * defined by the <code>javax.ejb</code> package) are not designated as such.
+     * </ul>
      */
     Class[] value() default {};
 } 
