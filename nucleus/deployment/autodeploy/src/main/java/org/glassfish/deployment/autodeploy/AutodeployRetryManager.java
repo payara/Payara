@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -141,13 +141,13 @@ public class AutodeployRetryManager implements PostConstruct {
     public static final Logger deplLogger =
         org.glassfish.deployment.autodeploy.AutoDeployer.deplLogger;
 
-    @LogMessageInfo(message = "Configured timeout value of {0} second{0,choice,0#s|1#|1<s} will be used but seems very large", level="WARNING")
+    @LogMessageInfo(message = "Configured timeout value of {0} second{0,choice,0#seconds|1#second|1<seconds} will be used but seems very large")
     private static final String LARGE_TIMEOUT = "NCLS-DEPLOYMENT-00031";
 
-    @LogMessageInfo(message = "Configured timeout value of {0} second{0,choice,0#s|1#|1<s} is too small; using previous value of {1} second{1,choice,0#s|1#|1<s}", level="WARNING")
+    @LogMessageInfo(message = "Configured timeout value of {0} second{0,choice,0#seconds|1#second|1<seconds} is too small; using previous value of {1}second {1,choice,0#seconds|1#second|1<seconds}", level="WARNING")
     private static final String SMALL_TIMEOUT = "NCLS-DEPLOYMENT-00032";
 
-    @LogMessageInfo(message = "Could not convert configured timeout value of \"{0}\" to a number; using previous value of {1} second{1,choice,0#s|1#|1<s}", level="WARNING")
+    @LogMessageInfo(message = "Could not convert configured timeout value of \"{0}\" to a number; using previous value of {1} second{1,choice,0#seconds|1#second|1<seconds", level="WARNING")
     private static final String INVALID_TIMEOUT = "NCLS-DEPLOYMENT-00033";
 
     public void postConstruct() {
