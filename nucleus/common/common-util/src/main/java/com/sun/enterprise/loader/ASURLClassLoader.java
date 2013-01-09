@@ -899,10 +899,23 @@ public class ASURLClassLoader
          * Do nothing
          *
          * @see java.util.zip.ZipFile#close()
+         *
+         * Byron sez:  I wonder what's going on here?!?  This looks quite weird.
+         * Why not just get rid of both reallyClose() and close() and finalize()
+         * -- and just rely on the superclass?
+         * At any rate I am not messing with it today, 1/9/2013.  Mainly because
+         * maybe close() is called outside and we do NOT want it to really close?
+         * Here is what happens at finalize time:
+         * 1. ASURLClassLoader$ProtectedJarFile.finalize()
+         * 2. java.util.zip.ZipFile.finalize()
+         * 3. ASURLClassLoader$ProtectedJarFile.close()
+         * 4. dumps a WARNING log message
+         * 5. reallyClose()
+         * 6. java.util.zip.ZipFile.close()
+         * I
          */
         public void close() {
-            // nothing
-            _logger.log(Level.WARNING, CULoggerInfo.illegalCloseCall, new Throwable());
+            // do nothing
         }
 
         /**
@@ -1386,7 +1399,7 @@ public class ASURLClassLoader
         // 1. don't use the field directly outside of this inner class
         // 2. add a getter/setter
         // 3. make both the setter and getter synchronized.
-        
+
         private byte[] classBytes;
 
         /** must be 'final' to ensure thread visibility */
