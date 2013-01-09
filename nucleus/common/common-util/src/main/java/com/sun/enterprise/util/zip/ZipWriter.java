@@ -43,13 +43,14 @@
  */
 package com.sun.enterprise.util.zip;
 
+import com.sun.enterprise.util.io.FileListerRelative;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.*;
-import java.util.zip.*;
-
-import com.sun.enterprise.util.io.FileListerRelative;
+import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipOutputStream;
 
 public class ZipWriter {
     public ZipWriter(String zipFilename, String dirName) throws ZipFileException {
@@ -166,21 +167,14 @@ public class ZipWriter {
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     private void init(String outFileName, String dirName) throws ZipFileException {
-       try {
-            init(new FileOutputStream(outFileName), dirName);
-       }
+        try {
+            // ambiguous overload of the 2 init methods if the first arg is plain null.
+            init((OutputStream)null, dirName);
+            userOutFile = new File(outFileName);
+        }
         catch (Exception e) {
             throw new ZipFileException(e);
         }
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-
-        // this is here in case write or safewrite was never called...
-        close();
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -199,6 +193,8 @@ public class ZipWriter {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     private void init(OutputStream outStream, String dirName) throws ZipFileException {
         try {
+            userStream = outStream; // might be null
+
             if (dirName == null)
                 throw new IllegalArgumentException("null dirName");
 
@@ -226,9 +222,7 @@ public class ZipWriter {
             if (!dirName.endsWith("/"))
                 dirName += "/";
 
-
             this.dirName = dirName;
-            zipStream = new ZipOutputStream(outStream);
         }
         catch (ZipFileException zfe) {
             throw zfe;
@@ -246,6 +240,7 @@ public class ZipWriter {
      */
     public void safeWrite() throws ZipFileException {
         try {
+            setupZipStream();
             for (int i = 0; i < items.length; i++) {
                 try {
                     addEntry(items[i]);
@@ -269,6 +264,7 @@ public class ZipWriter {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public void write() throws ZipFileException {
         try {
+            setupZipStream();
             for (int i = 0; i < items.length; i++) {
                 addEntry(items[i]);
             }
@@ -366,10 +362,22 @@ public class ZipWriter {
             // nothing to do.
         }
     }
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    private void setupZipStream() throws FileNotFoundException {
+        // 2 cases, either user supplied an output filename or an output stream
+        if(userStream != null)
+            zipStream = new ZipOutputStream(userStream);
+        else
+            zipStream = new ZipOutputStream(new FileOutputStream(userOutFile));
+    }
     /////////////////////////////////////////////////////////////////////////////////////////
     //private                    String            zipFilename        = null;
     private String dirName = null;
-    private ZipOutputStream zipStream = null;
+    private OutputStream userStream;
+    private File userOutFile;
+    private ZipOutputStream zipStream;
     private byte[] buffer = new byte[16384];
     private ZipItem[] items = null;
+
 }

@@ -44,7 +44,7 @@ package org.glassfish.security.common;
  * This class implements the EJB concept of a Group. A Group is
  * a privilege attribute that several Principals share. Or, in
  * in other words, several Principals belong to a same group.
- * 
+ *
  * @author Harish Prabandham
  */
 public class Group extends PrincipalImpl {
@@ -59,5 +59,8 @@ public class Group extends PrincipalImpl {
 	} else {
 	    return false;
 	}
+    }
+    public int hashCode() {
+	return getName().hashCode();
     }
 }

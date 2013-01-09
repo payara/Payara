@@ -56,24 +56,26 @@ public class Role extends PrincipalImpl {
 	super(name);
     }
 
-    
+
     public boolean equals(Object other) {
 	boolean ret = false;
 	if(other instanceof Role) {
 	    ret =  getName().equals(((Role)other).getName());
 	}
-	
+
 	return ret;
     }
-    
-    
+    public int hashCode() {
+	return getName().hashCode();
+    }
+
     public String getDescription() {
 	if (this.description == null) {
 	    this.description = "";
 	}
 	return this.description;
     }
-    
+
     public void setDescription(String description) {
 	this.description = description;
     }
