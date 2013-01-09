@@ -356,6 +356,10 @@
         status-code element must be unique in the deployment descriptor
         up to the status code.
         
+        If an error-page element in the deployment descriptor does not
+        contain an exception-type or an error-code element, the error
+        page is a default error page. 
+        
         Used in: web-app
         
       </xsd:documentation>
