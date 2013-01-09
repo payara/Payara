@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -65,6 +65,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.admin.rest.JavadocWadlGeneratorConfig;
+import org.glassfish.jersey.server.ServerProperties;
 
 
 /**
@@ -89,10 +91,11 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
     @Override
     public ResourceConfig getResourceConfig(Set<Class<?>> classes,
                                             final ServerContext sc,
-                                            final ServiceLocator habitat,
+                                            final ServiceLocator serviceLocator,
                                             final Set<? extends Binder> additionalBinders)
             throws EndpointRegistrationException {
-        ResourceConfig rc = super.getResourceConfig(classes, sc, habitat, additionalBinders);
+        ResourceConfig rc = super.getResourceConfig(classes, sc, serviceLocator, additionalBinders);
+        registerExtendedWadlConfig(classes, rc, serviceLocator);
         rc.register(ExceptionFilter.class);
         return rc;
     }
@@ -167,6 +170,22 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
         r.add(org.glassfish.admin.rest.provider.ProgressStatusEventJsonProvider.class);
 
         return r;
+    }
+
+    private void registerExtendedWadlConfig(Set<Class<?>> classes,
+            ResourceConfig rc,
+            ServiceLocator serviceLocator) {
+        List<ServiceHandle<JavadocWadlGeneratorConfig>> handles = serviceLocator.getAllServiceHandles(JavadocWadlGeneratorConfig.class);
+        for (ServiceHandle<JavadocWadlGeneratorConfig> handle : handles) {
+            ActiveDescriptor<JavadocWadlGeneratorConfig> ad = handle.getActiveDescriptor();
+            if (!ad.isReified()) {
+                ad = (ActiveDescriptor<JavadocWadlGeneratorConfig>) serviceLocator.reifyDescriptor(ad);
+            }
+            final Class<?> implementationClass = ad.getImplementationClass();
+            rc.setProperty(ServerProperties.PROPERTY_WADL_GENERATOR_CONFIG, implementationClass.getName());
+            classes.add(implementationClass);
+        }
+
     }
 
     private void generateASM(ServiceLocator habitat) {
