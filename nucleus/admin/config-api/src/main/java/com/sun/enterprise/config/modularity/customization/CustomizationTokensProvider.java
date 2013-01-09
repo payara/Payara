@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,22 +40,26 @@
 
 package com.sun.enterprise.config.modularity.customization;
 
-import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
+import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.modularity.annotation.HasCustomizationTokens;
-import com.sun.enterprise.config.modularity.parser.ModuleXMLConfigurationFileParser;
+import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.module.single.StaticModulesRegistry;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.jvnet.hk2.config.ConfigBeanProxy;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import org.glassfish.hk2.api.ServiceLocator;
 
-import javax.xml.stream.XMLStreamException;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Vector;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -65,31 +69,25 @@ import java.util.logging.Logger;
 
 public class CustomizationTokensProvider {
     private static final Logger LOG = Logger.getLogger(CustomizationTokensProvider.class.getName());
-    private static Field classesField;
-
-    static {
-        try {
-            classesField = ClassLoader.class.getDeclaredField("classes");
-        } catch (NoSuchFieldException e) {
-            LOG.log(Level.INFO, "Failed on getting the classes", e);
-        }
-    }
+    private static final LocalStringManager strings =
+            new LocalStringManagerImpl(CustomizationTokensProvider.class);
+    private ServiceLocator locator;
+    ConfigModularityUtils mu;
 
     //TODO requires getting the right classloader or all classloaders present to search all modules
-    public List<ConfigCustomizationToken> getPresentConfigCustomizationTokens(String runtimeType) throws NoSuchFieldException, IllegalAccessException {
+    public List<ConfigCustomizationToken> getPresentConfigCustomizationTokens() throws
+            NoSuchFieldException, IllegalAccessException {
+        String runtimeType = "admin";
+        initializeLocator();
+        mu = locator.getService(ConfigModularityUtils.class);
+        List<Class> l = mu.getAnnotatedConfigBeans(HasCustomizationTokens.class);
         List<ConfigCustomizationToken> ctk = new ArrayList<ConfigCustomizationToken>();
-        ClassLoader cl = this.getClass().getClassLoader();
-        classesField.setAccessible(true);
-        final Vector<Class> clzs = (Vector<Class>) classesField.get(cl);
-        Class[] clzss = new Class[clzs.size()];
-        synchronized (clzs) {
-            clzs.toArray(clzss);
-        }
-        for (Class clz : clzss) {
-            if (clz != null) {
-                if (clz.isAnnotationPresent(HasCustomizationTokens.class)) {
-                    ctk.addAll(getTokens(clz, runtimeType));
-                }
+        //Todo remove the double checking
+        Set s = new HashSet();
+        for (Class cls : l) {
+            if (!s.contains(cls)) {
+                ctk.addAll(getTokens(cls, runtimeType));
+                s.add(cls);
             }
         }
         return ctk;
@@ -97,73 +95,53 @@ public class CustomizationTokensProvider {
 
     private List<ConfigCustomizationToken> getTokens(Class configBean, String runtimeType) {
         List<ConfigCustomizationToken> ctk = new ArrayList<ConfigCustomizationToken>();
-        List<ConfigBeanDefaultValue> defaultValues = getDefaultConfigurations(configBean, runtimeType);
+        List<ConfigBeanDefaultValue> defaultValues = mu.getDefaultConfigurations(configBean, runtimeType);
         for (ConfigBeanDefaultValue def : defaultValues) {
             ctk.addAll(def.getCustomizationTokens());
         }
         return ctk;
     }
 
-    private List<ConfigBeanDefaultValue> getDefaultConfigurations(Class configBeanClass, String runtimeType) {
-
-        CustomConfiguration c = (CustomConfiguration) configBeanClass.getAnnotation(CustomConfiguration.class);
-        List<ConfigBeanDefaultValue> defaults = Collections.emptyList();
-        if (c.usesOnTheFlyConfigGeneration()) {
-            Method m = getGetDefaultValuesMethod(configBeanClass);
-            if (m != null) {
-                try {
-                    defaults = (List<ConfigBeanDefaultValue>) m.invoke(null, runtimeType);
-                } catch (Exception e) {
-                    LOG.log(Level.INFO, "cannot get default configuration for: " + configBeanClass.getName(), e);
-                }
-            }
+    protected void initializeLocator() {
+        final ClassLoader ecl = CustomizationTokensProvider.class.getClassLoader();
+        File inst = new File(System.getProperty(
+                SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
+        final File ext = new File(inst, "modules");
+        LOG.log(Level.FINE, "asadmin modules directory: {0}", ext);
+        if (ext.isDirectory()) {
+            AccessController.doPrivileged(
+                    new PrivilegedAction() {
+                        @Override
+                        public Object run() {
+                            try {
+                                URLClassLoader pl = new URLClassLoader(getJars(ext));
+                                ModulesRegistry registry = new StaticModulesRegistry(pl);
+                                locator = registry.createServiceLocator("default");
+                                return pl;
+                            } catch (IOException ex) {
+                                // any failure here is fatal
+                                LOG.log(Level.SEVERE, strings.getLocalString("modules.class.loader.failed", "Failed to create a classloader for modules directory"), ex);
+                            }
+                            return ecl;
+                        }
+                    });
         } else {
-            LocalStringManager localStrings =
-                    new LocalStringManagerImpl(configBeanClass);
-            ModuleXMLConfigurationFileParser parser = new ModuleXMLConfigurationFileParser(localStrings);
-            try {
-                defaults = parser.parseServiceConfiguration(getConfigurationFileUrl(configBeanClass, c.baseConfigurationFileName(), runtimeType).openStream());
-            } catch (XMLStreamException e) {
-                LOG.log(Level.SEVERE, "Cannot parse default module configuration", e);
-            } catch (IOException e) {
-                LOG.log(Level.SEVERE, "Cannot parse default module configuration", e);
+            LOG.log(Level.FINER, "Modules directory does not exist");
+        }
+    }
+
+    private static URL[] getJars(File dir) throws IOException {
+        File[] fjars = dir.listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".jar");
             }
-        }
-        return defaults;
-    }
-
-    private Class getDuckClass(Class configBeanType) {
-        Class duck;
-        final Class[] clz = configBeanType.getDeclaredClasses();
-        for (Class aClz : clz) {
-            duck = aClz;
-            if (duck.getSimpleName().equals("Duck")) {
-                return duck;
-            }
-        }
-        return null;
-    }
-
-    private Method getGetDefaultValuesMethod(Class configBeanType) {
-        Class duck = getDuckClass(configBeanType);
-        if (duck == null) {
-            return null;
-        }
-        Method m;
-        try {
-            m = duck.getMethod("getDefaultValues", String.class);
-        } catch (Exception ex) {
-            return null;
-        }
-        return m;
-    }
-
-    private <U extends ConfigBeanProxy> URL getConfigurationFileUrl(Class<U> configBeanClass, String baseFileName, String runtimeType) {
-        String fileName = runtimeType + "-" + baseFileName;
-        URL fileUrl = configBeanClass.getClassLoader().getResource("META-INF/configuration/" + fileName);
-        if (fileUrl == null) {
-            fileUrl = configBeanClass.getClassLoader().getResource("META-INF/configuration/" + baseFileName);
-        }
-        return fileUrl;
+        });
+        if (fjars == null)
+            throw new IOException("No Jar Files in the Modules Directory!");
+        URL[] jars = new URL[fjars.length];
+        for (int i = 0; i < fjars.length; i++)
+            jars[i] = fjars[i].toURI().toURL();
+        return jars;
     }
 }
+
