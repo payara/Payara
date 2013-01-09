@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -283,19 +283,16 @@ public class RestartInstanceCommand implements AdminCommand {
 
             // Perhaps a NPE or something **after** the report was set to success???
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setFailureCause(e);
         }
 
         // save start-instance's message
         String messageFromStartCommand = report.getMessage();
-        String exceptionMessage = "";
-
-        if (exception != null)
-            exceptionMessage = Strings.get("restart.instance.exception", exception);
-
-        if (isError())
-            setError(Strings.get("restart.instance.startFailed", exceptionMessage, messageFromStartCommand));
-        else
+        if (isError()) {
+            setError(Strings.get("restart.instance.startFailed", messageFromStartCommand));
+        } else {
             setSuccess(Strings.get("restart.instance.startSucceeded", messageFromStartCommand));
+        }
     }
 
     private static class InstanceNotRunningException extends Exception {
