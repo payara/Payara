@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -484,6 +484,8 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
      * name1=value1:name2=value2:name3=value3:...
      * The Properties object contains elements:
      * {name1=value1, name2=value2, name3=value3, ...}
+     * 
+     * Whitespace around names is ignored.
      *
      * @param propsString the String to convert
      * @param sep the separator character
@@ -499,7 +501,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
                 final ParamTokenizer nameTok = new ParamTokenizer(token, '=');
                 String name = null, value = null;
                 if (nameTok.hasMoreTokens())
-                    name = nameTok.nextToken();
+                    name = nameTok.nextToken().trim();
                 if (nameTok.hasMoreTokens())
                     value = nameTok.nextToken();
                 if (name == null)       // probably "::"
