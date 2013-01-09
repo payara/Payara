@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.enterprise.admin.servermgmt.stringsubs.Substitutable;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
  * Abstract class initialize the input file for the string substitution.
@@ -58,6 +59,7 @@ public abstract class FileSubstitutionHandler implements Substitutable {
 
     protected static final Logger _logger = 
             Logger.getLogger(FileSubstitutionHandler.class.getPackage().getName());
+    protected static final LocalStringsImpl _strings = new LocalStringsImpl(FileLister.class);
 
     /** A {@link Reader} to read the character stream from input file. */
     protected Reader _reader;
@@ -72,7 +74,7 @@ public abstract class FileSubstitutionHandler implements Substitutable {
         if (file.exists()) {
             _inputFile = file;
         } else {
-            throw new FileNotFoundException("Not able to locate input file : " + file.getAbsolutePath());
+            throw new FileNotFoundException(_strings.get("invalidFileLocation", file.getAbsolutePath()));
         }
     }
 
@@ -87,14 +89,14 @@ public abstract class FileSubstitutionHandler implements Substitutable {
             try {
                 _reader.close();
             } catch (Exception e) {
-                _logger.log(Level.INFO, "Error occured while closing the stream for substitution file: ", e);
+                _logger.log(Level.FINER, _strings.get("errorInClosingStream", _inputFile.getAbsolutePath() ), e);
             }
         }
         if (_writer != null) {
             try {
                 _writer.close();
             } catch (Exception e) {
-                _logger.log(Level.INFO, "Error occured while closing the stream for substitution file: ", e);
+                _logger.log(Level.FINER, _strings.get("errorInClosingStream"), e);
             }
         }
     }

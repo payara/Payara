@@ -48,6 +48,8 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+
 /**
  * Class to retrieve the all the matching files for a given input path.
  * It also handles the processing of wild-card in the given path.
@@ -55,6 +57,7 @@ import java.util.logging.Logger;
 final class FileLister {
     private static final Logger _log = 
             Logger.getLogger(FileLister.class.getPackage().getName());
+    private static final LocalStringsImpl _strings = new LocalStringsImpl(FileLister.class);
 
     final static String ASTERISK = "*";
 
@@ -84,7 +87,7 @@ final class FileLister {
             // get parent file of the head, add "temp" to handle input like /path/to/parent/* 
             File parent = (new File(head + "temp")).getParentFile();
             if (parent == null) {
-                _log.log(Level.FINE, "parent is not specified in the head, get parent of the head's absolute file");
+                _log.log(Level.FINEST, _strings.get("parentFileNotSpecified"));
                 parent = (new File(head + "temp").getAbsoluteFile()).getParentFile();
             }
 
@@ -147,7 +150,7 @@ final class FileLister {
             }
             else if (File.separator.equals("\\") && pathPattern.contains("/")) {
                 pathPattern = pathPattern.replace("/", File.separator);
-                _log.log(Level.FINE, "detected \"/\" in pathWithPattern on Windows, replace with \"\\\"");
+                _log.log(Level.FINEST, "detected \"/\" in pathWithPattern on Windows, replace with \"\\\"");
                 numTries++;
             } else {
                 break;
@@ -166,7 +169,7 @@ final class FileLister {
         List<File> retFiles = new LinkedList<File>();
         if (!rootfile.exists()) {
             // No operation, return empty list
-            _log.log(Level.INFO, "Invalid file location :" + rootfile.getAbsolutePath());
+            _log.log(Level.INFO, _strings.get("invalidFileLocation", rootfile.getAbsolutePath()));
         }
         else if (!rootfile.isDirectory()) {
             retFiles.add(rootfile);
@@ -183,7 +186,7 @@ final class FileLister {
     /**
      * Custom filename filter to deal with wild-card character
      */
-    class WildCardFilenameFilter implements FilenameFilter {
+   private static class WildCardFilenameFilter implements FilenameFilter {
         private String _pattern;
         private boolean _endsWithWc;
 

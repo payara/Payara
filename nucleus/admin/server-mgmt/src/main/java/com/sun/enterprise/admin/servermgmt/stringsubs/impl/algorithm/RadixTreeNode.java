@@ -48,12 +48,15 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+
 /**
  * Node for {@link RadixTree}.
  */
 class RadixTreeNode {
     private static final Logger _logger = 
             Logger.getLogger(RadixTreeNode.class.getPackage().getName());
+    private static final LocalStringsImpl _strings = new LocalStringsImpl(RadixTreeNode.class);
 
     // Node key.
     private String _key;
@@ -142,7 +145,7 @@ class RadixTreeNode {
      */
     void addChildNode(RadixTreeNode node) {
         if (node == null || node._key == null || node._key.isEmpty()) {
-            throw new IllegalArgumentException("Invalid key, Can not insert empty or null key.");
+            throw new IllegalArgumentException(_strings.get("errorInEmptyNullKeyInstertion"));
         }
         char c = node._key.charAt(0);
         if (_childNodes == null) {
@@ -164,7 +167,7 @@ class RadixTreeNode {
      */
     void removeChildNode(RadixTreeNode node) {
         if (node == null || node._key == null || node._key.isEmpty()) {
-            throw new IllegalArgumentException("Invalid key, key of give node : " + node + " is invalid.");
+            throw new IllegalArgumentException(_strings.get("invalidNodeKey"));
         }
         char c = node._key.charAt(0);
         if (_childNodes != null) {
@@ -173,8 +176,8 @@ class RadixTreeNode {
                 node = _childNodes.remove(c);
                 node._parentNode = null;
             } else {
-                _logger.log(Level.WARNING, "Removal of node (" + node + ") failed as node is not a child of Node (" + this + ")");
-                throw new IllegalArgumentException("The given node (" + node + ") is not a child of the node (" + this + ")");
+                _logger.log(Level.WARNING, _strings.get("errorInChildNodeDeletion", node, this));
+                throw new IllegalArgumentException(_strings.get("invalidChildNode", node, this));
             }
         }
     }

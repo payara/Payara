@@ -43,6 +43,8 @@ package com.sun.enterprise.admin.servermgmt.stringsubs.impl.algorithm;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+
 /**
  * This class implements the operation of a radix tree. A radix tree
  * is a specialized set data structure based on the tree/trie that is
@@ -54,6 +56,7 @@ class RadixTree {
 
     private static final Logger _logger = 
             Logger.getLogger(RadixTree.class.getPackage().getName());
+    private static final LocalStringsImpl _strings = new LocalStringsImpl(RadixTree.class);
     // Reference to root node.
     private RadixTreeNode _rootNode;
 
@@ -86,8 +89,7 @@ class RadixTree {
      */
     public void insert(String key, String value) {
         if (key == null || key.isEmpty()) {
-            _logger.log(Level.FINE, "Insertion of empty or null key is not allowed in tree.");
-            throw new IllegalArgumentException("Can not insert empty or null key.") ;
+            throw new IllegalArgumentException(_strings.get("errorInEmptyNullKeyInstertion"));
         }
         char[] inputChars = key.toCharArray();
         int noOfMatchedChars = 0;
@@ -143,8 +145,7 @@ class RadixTree {
 
             if (noOfMatchedChars == keyLength) {
                 if (node.getValue() != null && !node.getValue().isEmpty()) {
-                    _logger.log(Level.WARNING, "Key already exist in tree, Current Value:"
-                            + node.getValue() + " New Value:" + value);
+                    _logger.log(Level.INFO, _strings.get("changeInValue", node.getValue(), value));
                 }
                 node.setValue(value);
                 break;

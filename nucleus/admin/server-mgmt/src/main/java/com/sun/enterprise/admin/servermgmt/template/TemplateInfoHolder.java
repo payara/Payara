@@ -56,9 +56,11 @@ import org.xml.sax.InputSource;
 
 import com.sun.enterprise.admin.servermgmt.DomainException;
 import com.sun.enterprise.admin.servermgmt.xml.templateinfo.TemplateInfo;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 public class TemplateInfoHolder {
 
+    private static final LocalStringsImpl _strings = new LocalStringsImpl(TemplateInfoHolder.class);
     //Path where schema resides. 
     private final static String TEMPLATE_INFO_SCHEMA_PATH = "xsd/schema/template-info.xsd";
     private TemplateInfo _templateInfo;
@@ -69,7 +71,7 @@ public class TemplateInfoHolder {
         try {
             _templateInfo = parse(inputSteam);
         } catch (Exception e) {
-            throw new DomainException("parsingError");
+            throw new DomainException(_strings.get("failedToParse", TEMPLATE_INFO_SCHEMA_PATH));
         }
         _location = location;
     }
@@ -108,13 +110,11 @@ public class TemplateInfoHolder {
             return obj instanceof JAXBElement ? (TemplateInfo)(((JAXBElement) obj).getValue()) : (TemplateInfo) obj;
         }
         finally {
-            if (configStream != null) {
-                try {
-                    configStream.close();
-                    configStream = null;
-                } catch(IOException e)
-                { /** Ignore */ }
-            }
+            try {
+                configStream.close();
+                configStream = null;
+            } catch(IOException e)
+            { /** Ignore */ }
         }
     }
 }

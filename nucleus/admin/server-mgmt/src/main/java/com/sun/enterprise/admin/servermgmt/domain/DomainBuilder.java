@@ -143,9 +143,13 @@ public class DomainBuilder {
             if (je != null) {
                 keystoreBytes = new byte[(int)je.getSize()];
                 InputStream in = null;
+                int count = 0;
                 try {
                     in = _templateJar.getInputStream(je);
-                    in.read(keystoreBytes);
+                    count = in.read(keystoreBytes);
+                    if (count < keystoreBytes.length) {
+                        throw new DomainException(_strings.get("loadingFailure", je.getName()));
+                    }
                 } finally {
                     if (in != null) {
                         in.close();
@@ -211,7 +215,9 @@ public class DomainBuilder {
                 if (jarEntry.isDirectory()) {
                     File dir = new File(domainDir, jarEntry.getName());
                     if (!dir.exists()) {
-                        dir.mkdir();
+                        if (!dir.mkdir()) {
+                            _logger.log(Level.WARNING, _strings.get("directoryCreationError", dir.getName())); 
+                        }
                     }
                     continue;
                 }

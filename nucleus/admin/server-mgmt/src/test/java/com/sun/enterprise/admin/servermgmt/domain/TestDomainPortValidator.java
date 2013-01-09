@@ -41,12 +41,10 @@ package com.sun.enterprise.admin.servermgmt.domain;
 
 import java.util.Properties;
 
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
 import com.sun.enterprise.admin.servermgmt.DomainException;
-import com.sun.enterprise.admin.servermgmt.pe.SubstitutableTokens;
 
 public class TestDomainPortValidator {
 
@@ -94,73 +92,5 @@ public class TestDomainPortValidator {
         domainConfig.add(DomainConfig.K_ADMIN_PORT, String.valueOf((DomainPortValidator.PORT_MAX_VAL + 1)));
         _portValidator = new DomainPortValidator(domainConfig, new Properties());
         _portValidator.validateAndSetPorts();
-    }
-
-    @Test
-    public void testOnlyWithDefaultPorts() throws Exception {
-        Properties defautProps = new Properties();
-        defautProps.put(SubstitutableTokens.ADMIN_PORT_TOKEN_NAME, "4848");
-        defautProps.put(SubstitutableTokens.HTTP_SSL_PORT_TOKEN_NAME, "8181");
-        defautProps.put(SubstitutableTokens.ORB_SSL_PORT_TOKEN_NAME, "3820");
-        defautProps.put(SubstitutableTokens.ORB_MUTUALAUTH_PORT_TOKEN_NAME, "3920");
-        defautProps.put(SubstitutableTokens.HTTP_PORT_TOKEN_NAME, "8080");
-        defautProps.put(SubstitutableTokens.JMS_PROVIDER_PORT_TOKEN_NAME, "7676");
-        defautProps.put(SubstitutableTokens.ORB_LISTENER_PORT_TOKEN_NAME, "3700");
-        defautProps.put(SubstitutableTokens.JMX_SYSTEM_CONNECTOR_PORT_TOKEN_NAME, "8686");
-        defautProps.put(SubstitutableTokens.OSGI_SHELL_TELNET_PORT_TOKEN_NAME, "6666");
-        defautProps.put(SubstitutableTokens.JAVA_DEBUGGER_PORT_TOKEN_NAME, "9009");
-        DomainConfig domainConfig = new DomainConfig("test", null);
-        domainConfig.add(DomainConfig.K_VALIDATE_PORTS, Boolean.TRUE);
-        _portValidator = new DomainPortValidator(domainConfig, defautProps);
-        _portValidator.validateAndSetPorts();
-
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_ADMIN_PORT).toString(), "4848");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_HTTP_SSL_PORT).toString(), "8181");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_IIOP_SSL_PORT).toString(), "3820");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_IIOP_MUTUALAUTH_PORT).toString(), "3920");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_INSTANCE_PORT).toString(), "8080");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_JMS_PORT).toString(), "7676");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_ORB_LISTENER_PORT).toString(), "3700");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_JMX_PORT).toString(), "8686");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_OSGI_SHELL_TELNET_PORT).toString(), "6666");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_JAVA_DEBUGGER_PORT).toString(), "9009");
-    }
-
-    @Test
-    public void testWithBothDefaultPortsAndDomainParams() throws Exception {
-        // default
-        Properties defautProps = new Properties();
-        defautProps.put(SubstitutableTokens.ADMIN_PORT_TOKEN_NAME, "4848");
-        defautProps.put(SubstitutableTokens.HTTP_SSL_PORT_TOKEN_NAME, "8181");
-        defautProps.put(SubstitutableTokens.ORB_SSL_PORT_TOKEN_NAME, "3820");
-        defautProps.put(SubstitutableTokens.ORB_MUTUALAUTH_PORT_TOKEN_NAME, "3920");
-        defautProps.put(SubstitutableTokens.HTTP_PORT_TOKEN_NAME, "8080");
-        defautProps.put(SubstitutableTokens.JMS_PROVIDER_PORT_TOKEN_NAME, "7676");
-        defautProps.put(SubstitutableTokens.ORB_LISTENER_PORT_TOKEN_NAME, "3700");
-        defautProps.put(SubstitutableTokens.JMX_SYSTEM_CONNECTOR_PORT_TOKEN_NAME, "8686");
-        defautProps.put(SubstitutableTokens.OSGI_SHELL_TELNET_PORT_TOKEN_NAME, "6666");
-        defautProps.put(SubstitutableTokens.JAVA_DEBUGGER_PORT_TOKEN_NAME, "9009");
-
-        DomainConfig domainConfig = new DomainConfig("test", null);
-        domainConfig.add(DomainConfig.K_VALIDATE_PORTS, Boolean.TRUE);
-        domainConfig.add(DomainConfig.K_ADMIN_PORT, "4849");
-        Properties domainProps = domainConfig.getDomainProperties();
-        // Params
-        domainProps.put(DomainConfig.K_HTTP_SSL_PORT, "8182");
-        domainProps.put(DomainConfig.K_IIOP_SSL_PORT, "3822");
-
-        _portValidator = new DomainPortValidator(domainConfig, defautProps);
-        _portValidator.validateAndSetPorts();
-
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_ADMIN_PORT).toString(), "4849");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_HTTP_SSL_PORT).toString(), "8182");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_IIOP_SSL_PORT).toString(), "3822");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_IIOP_MUTUALAUTH_PORT).toString(), "3920");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_INSTANCE_PORT).toString(), "8080");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_JMS_PORT).toString(), "7676");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_ORB_LISTENER_PORT).toString(), "3700");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_JMX_PORT).toString(), "8686");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_OSGI_SHELL_TELNET_PORT).toString(), "6666");
-        Assert.assertEquals(domainConfig.get(DomainConfig.K_JAVA_DEBUGGER_PORT).toString(), "9009");
     }
 }

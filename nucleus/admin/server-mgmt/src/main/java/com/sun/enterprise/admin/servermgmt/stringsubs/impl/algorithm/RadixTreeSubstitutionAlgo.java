@@ -48,6 +48,7 @@ import java.util.Map;
 import com.sun.enterprise.admin.servermgmt.stringsubs.StringSubstitutionException;
 import com.sun.enterprise.admin.servermgmt.stringsubs.Substitutable;
 import com.sun.enterprise.admin.servermgmt.stringsubs.SubstitutionAlgorithm;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
  * Perform's string substitution by constructing the {@link RadixTree} of change-value
@@ -58,6 +59,7 @@ import com.sun.enterprise.admin.servermgmt.stringsubs.SubstitutionAlgorithm;
 public class RadixTreeSubstitutionAlgo implements SubstitutionAlgorithm {
 
     private RadixTree _tree;
+    private static final LocalStringsImpl _strings = new LocalStringsImpl(RadixTreeSubstitutionAlgo.class);
 
     /**
      * Construct {@link RadixTreeSubstitutionAlgo} for the given substitutable key/value
@@ -67,9 +69,8 @@ public class RadixTreeSubstitutionAlgo implements SubstitutionAlgorithm {
      */
     public RadixTreeSubstitutionAlgo(Map<String, String> substitutionMap) {
         if (substitutionMap == null || substitutionMap.isEmpty()) {
-            throw new IllegalArgumentException("Can not construct algorithm for null or empty map.");
+            throw new IllegalArgumentException(_strings.get("noKeyValuePairForSubstitution"));
         }
-
         _tree = new RadixTree();
         for (Map.Entry<String, String> entry : substitutionMap.entrySet()) {
             _tree.insert(entry.getKey(), entry.getValue());
@@ -100,8 +101,7 @@ public class RadixTreeSubstitutionAlgo implements SubstitutionAlgorithm {
             }
             writer.flush();
         } catch (IOException e) {
-            throw new StringSubstitutionException("Error occurred while performing the String substitution" +
-                    " for : " + substitutable.getName(), e);
+            throw new StringSubstitutionException(_strings.get("errorInStringSubstitution", substitutable.getName()), e);
         }
     }
 }

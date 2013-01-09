@@ -46,6 +46,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+
 /**
  * Load and retrieves the string substitution properties.
  */
@@ -53,6 +55,7 @@ public class StringSubstitutionProperties {
 
     private static final Logger _logger = 
             Logger.getLogger(StringSubstitutionProperties.class.getPackage().getName());
+    private static final LocalStringsImpl _strings = new LocalStringsImpl(StringSubstitutionProperties.class);
 
     private static final String STRINGSUBS_PROPERTIES = "/com/sun/enterprise/admin/servermgmt/stringsubs/stringsubs.properties";
     private static Properties _properties = null;
@@ -61,12 +64,20 @@ public class StringSubstitutionProperties {
      * Loads the string substitution properties i.e {@link StringSubstitutionProperties#STRINGSUBS_PROPERTIES} file
      */
     private static void load() {
-        InputStream in = StringSubstitutionProperties.class.getResourceAsStream(STRINGSUBS_PROPERTIES);
-        _properties = new Properties();
+        InputStream in = null;
         try {
+            in = StringSubstitutionProperties.class.getResourceAsStream(STRINGSUBS_PROPERTIES);
+            _properties = new Properties();
             _properties.load(in);
         } catch (IOException e) {
-            _logger.log(Level.SEVERE, "Not able to locate stringsubs.properties file.");
+            _logger.log(Level.INFO, _strings.get("invalidFileLocation", STRINGSUBS_PROPERTIES));
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (Exception io)
+                { /** ignore*/ }
+            }
         }
     }
 

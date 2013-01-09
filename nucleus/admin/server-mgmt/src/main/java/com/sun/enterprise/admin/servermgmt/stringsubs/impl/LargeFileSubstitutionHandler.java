@@ -76,8 +76,8 @@ public class LargeFileSubstitutionHandler extends FileSubstitutionHandler {
         try {
             _reader = new BufferedReader(new InputStreamReader(new FileInputStream(_inputFile)));
         } catch (FileNotFoundException e) {
-            _logger.log(Level.WARNING, "Not able to locate the input file (" + _inputFile.getAbsolutePath() 
-                    + ") for string substitution", e);
+            _logger.log(Level.INFO, _strings.get("invalidFileLocation", _inputFile.getAbsolutePath()) 
+                    , e);
         }
         return _reader;
     }
@@ -87,11 +87,14 @@ public class LargeFileSubstitutionHandler extends FileSubstitutionHandler {
         _outputFile = new File(_inputFile.getAbsolutePath() + TEMP_FILE_PREFIX);
         try {
             if (!_outputFile.exists()) {
-                _outputFile.createNewFile();
+                if (!_outputFile.createNewFile()) {
+                    throw new IOException();
+                }
             }
             _writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(_outputFile)));
         } catch (IOException e) {
-            _logger.log(Level.WARNING, "Not able to create the temp file : " + _outputFile.getAbsolutePath(), e);
+            _logger.log(Level.INFO, _strings.get("failureTempFileCreation",
+                    _outputFile.getAbsolutePath(), e));
         }
         return _writer;
     }
@@ -103,14 +106,17 @@ public class LargeFileSubstitutionHandler extends FileSubstitutionHandler {
         File inputBackUpfile = new File(_inputFile.getAbsolutePath() + BACKUP_FILE_PREFIX);
         if (_inputFile.renameTo(inputBackUpfile)) {
             if (_outputFile.renameTo(new File(_inputFile.getAbsolutePath()))) {
-                inputBackUpfile.delete();
+                if (!inputBackUpfile.delete()) {
+                    _logger.log(Level.INFO, _strings.get("failureInBackUpFileDeletion", 
+                            inputBackUpfile.getAbsolutePath()));
+                }
             } else {
-                _logger.log(Level.WARNING, "Not able to rename the temporary file :" + _outputFile.getAbsolutePath()
-                        + " to : " + inputFileName);
+                _logger.log(Level.INFO, _strings.get("failureInFileRename", _outputFile.getAbsolutePath(),
+                        inputFileName));
             }
         } else {
-            _logger.log(Level.WARNING, "Failed string substitution for file :" + _inputFile.getAbsolutePath()
-                    + ", Not able to rename it to :" + inputBackUpfile.getName());
+            _logger.log(Level.WARNING,  _strings.get("failureInFileRename", _inputFile.getAbsolutePath(),
+                   inputBackUpfile.getName()));
         }
     }
 }

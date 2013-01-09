@@ -45,6 +45,8 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+
 /**
  * Utility class for the substitutable files.
  */
@@ -52,6 +54,7 @@ public class SubstitutionFileUtil
 {
     private static final Logger _logger = 
             Logger.getLogger(SubstitutionFileUtil.class.getPackage().getName());
+    private static final LocalStringsImpl _strings = new LocalStringsImpl(SubstitutionFileUtil.class);
 
     private static final String INMEMORY_SUBSTITUTION_FILE_SIZE_IN_KB = "inmemory.substitution.file.size.in.kb";
     private static final int DEFAULT_INMEMORY_SUBSTITUTION_FILE_SIZE_IN_KB = 10240;
@@ -75,7 +78,7 @@ public class SubstitutionFileUtil
             PROVIDED_INMEMORY_SUBSTITUTION_FILE_SIZE_IN_BYTES = Integer.parseInt(
                     StringSubstitutionProperties.getProperty(INMEMORY_SUBSTITUTION_FILE_SIZE_IN_KB)) * 1024;
         } catch (Exception e) {
-            _logger.log(Level.INFO, "In-memory substitution file size is not defined.", e);
+            _logger.log(Level.INFO, _strings.get("missingInMemorySubstitutionFileSize"));
             PROVIDED_INMEMORY_SUBSTITUTION_FILE_SIZE_IN_BYTES = DEFAULT_INMEMORY_SUBSTITUTION_FILE_SIZE_IN_KB;
         }
         return PROVIDED_INMEMORY_SUBSTITUTION_FILE_SIZE_IN_BYTES > 0 ?
@@ -92,11 +95,18 @@ public class SubstitutionFileUtil
         String extractBase = System.getProperty("user.dir");
         File extractDir = null;
         File extractBaseFile = new File(extractBase);
-        extractBaseFile.mkdirs();
+        if (!extractBaseFile.mkdirs()) {
+            _logger.log(Level.WARNING, _strings.get("directoryCreationError",
+                    extractBaseFile.getAbsolutePath()));
+        }
         extractDir = File.createTempFile(prefix, null, extractBaseFile);
         // ensure it's a directory
-        extractDir.delete();
-        extractDir.mkdirs();
+        if (extractDir.delete()) {
+            _logger.log(Level.FINE, _strings.get("recreateDirectories", extractDir.getAbsolutePath()));
+        }
+        if (!extractDir.mkdirs()) {
+            _logger.log(Level.WARNING, _strings.get("directoryCreationError", extractDir.getAbsolutePath()));
+        }
         return extractDir;
     }
 
@@ -110,12 +120,14 @@ public class SubstitutionFileUtil
         if (file == null) {
             return;
         }
-        if(file.isDirectory()) {
+        if (file.isDirectory()) {
             File[] files = file.listFiles();
             for(File f : files) {
                 removeDir(f);
             }
         }
-        file.delete();
+        if (!file.delete()) {
+            _logger.log(Level.FINE, _strings.get("failureInFileDeletion", file.getAbsolutePath()));
+        }
     }
 }

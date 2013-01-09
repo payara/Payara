@@ -69,6 +69,7 @@ import com.sun.enterprise.admin.servermgmt.xml.stringsubs.ModeType;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.Property;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.PropertyType;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.StringsubsDefinition;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
  * A class to encapsulate string-subs definition. Parse, validate and performs
@@ -77,6 +78,7 @@ import com.sun.enterprise.admin.servermgmt.xml.stringsubs.StringsubsDefinition;
 public class StringSubstitutionEngine implements StringSubstitutor {
     private static final Logger _logger = 
             Logger.getLogger(StringSubstitutionEngine.class.getPackage().getName());
+    private static final LocalStringsImpl _strings = new LocalStringsImpl(StringSubstitutionEngine.class);
     private InputStream _configInputStream = null;
 
     //Root of JAXB parsed string-subs configuration
@@ -152,12 +154,12 @@ public class StringSubstitutionEngine implements StringSubstitutor {
     public void substituteComponents(List<String> components)
             throws StringSubstitutionException {
         if (!isValid(components)) {
-            throw new StringSubstitutionException("No Component identifiers for substitution.");
+            throw new StringSubstitutionException(_strings.get("missingComponentIdentifiers"));
         }
         for (String componentId : components) {
             Component component = findComponentById(componentId);
             if (component == null) {
-                _logger.log(Level.WARNING, "Not able to locate Component having id=" + componentId);
+                _logger.log(Level.INFO, _strings.get("missingComponent", componentId));
                 continue;
             }
             doSubstitution(component);
@@ -168,12 +170,12 @@ public class StringSubstitutionEngine implements StringSubstitutor {
     public void substituteGroups(List<String> groups)
             throws StringSubstitutionException {
         if (!isValid(groups)) {
-            throw new StringSubstitutionException("No Group identifiers for substitution.");
+            throw new StringSubstitutionException(_strings.get("missingGroupIdentifiers"));
         }
         for (String groupId : groups) {
             Group group = findGroupById(groupId);
             if (group == null) {
-                _logger.log(Level.WARNING, "Not able to locate Group having id=" + groupId);
+                _logger.log(Level.WARNING, _strings.get("missingGroup", groupId));
                 continue;
             }
             doSubstitution(group);
@@ -214,14 +216,12 @@ public class StringSubstitutionEngine implements StringSubstitutor {
         List<? extends FileEntry> fileList = group.getFileEntry();
         List<? extends Archive> archiveList = group.getArchive();
         if (!isValid(fileList) && !isValid(archiveList)) {
-            _logger.log(Level.FINE, "No <file-entry> or <archive> elements for group-id : " + group.getId()
-                    + "... skipping stringsubs for this group");
+            _logger.log(Level.FINER, _strings.get("noSubstitutableGroupEntry", group.getId()));
             return;
         }
         List<? extends ChangePairRef> refList = group.getChangePairRef();
         if (!isValid(refList)) {
-            _logger.log(Level.FINE, "No <change-pair-ref> elements for group-id : " + group.getId()
-                    + " ... skipping stringsubs for this group");
+            _logger.log(Level.FINE, _strings.get("noChangePairForGroup", group.getId()));
             return;
         }
 
@@ -243,20 +243,20 @@ public class StringSubstitutionEngine implements StringSubstitutor {
 
             Pair pair = _changePairsMap.get(name);
             if (pair == null) {
-                _logger.log(Level.WARNING, "change-pair " + name + " referred by group " + group.getId() + " is not defined");
+                _logger.log(Level.INFO, _strings.get("missingChangePair", name, group.getId()));
                 continue;
             }
             String beforeString = pair.getBefore();
             String afterString = pair.getAfter();
 
             if (localMode == null || localMode.length() == 0) {
-                _logger.log(Level.FINEST, "No Mode value defined for group-id:" + group.getId());
+                _logger.log(Level.FINEST, _strings.get("noModeValue", group.getId()));
             }
             else {
                 try {
                     afterString = ModeProcessor.processModeType(ModeType.fromValue(localMode), afterString);
                 } catch (Exception e) {
-                    _logger.log(Level.WARNING, "Invalid Mode Type : " + localMode, e);
+                    _logger.log(Level.WARNING, _strings.get("invalidModeType", localMode));
                 }
             }
             substitutionMap.put(beforeString, afterString);
@@ -286,7 +286,7 @@ public class StringSubstitutionEngine implements StringSubstitutor {
                     substituable.finish();
                 }
             } catch (Exception e) {
-                _logger.log(Level.SEVERE, "Error occured while performing subsitution for an archive:" + archive.getName(), e);
+                _logger.log(Level.WARNING, _strings.get("errorInArchiveSubstitution", archive.getName()), e);
             }
         }
     }
@@ -316,7 +316,7 @@ public class StringSubstitutionEngine implements StringSubstitutor {
                 String beforeValue = pair.getBefore();
                 String afterValue = pair.getAfter();
                 if (id == null || beforeValue == null || afterValue == null) {
-                    _logger.log(Level.WARNING, "Found an empty <change-pair/>.");
+                    _logger.log(Level.INFO,  _strings.get("emptyChangePair"));
                     continue;
                 }
 
@@ -408,7 +408,7 @@ public class StringSubstitutionEngine implements StringSubstitutor {
      * A class to store the before, after tuple.
      * Use to store before and after value of change-pair.
      */
-    private class Pair {
+    private static class Pair {
         String _before, _after;
 
         Pair (String before, String after) {

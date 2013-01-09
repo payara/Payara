@@ -70,13 +70,15 @@ public class AttributePreprocessorImpl implements AttributePreprocessor
 
     @Override
     public String substitutePath(String path) {
-        if (path != null || _lookUpMap != null) {
+        if (path != null && _lookUpMap != null) {
             String[] pathTokens = path.split("\\" + DELIMITER);
-            StringBuffer buffer = new StringBuffer();
-            for (int i = 0; i < pathTokens.length; i++) {
-                buffer.append(i % 2 == 0 ? pathTokens[i] : _lookUpMap.get(pathTokens[i]));
+            if (pathTokens != null && pathTokens.length > 0) {
+                StringBuffer buffer = new StringBuffer();
+                for (int i = 0; i < pathTokens.length; i++) {
+                    buffer.append(i % 2 == 0 ? pathTokens[i] : _lookUpMap.get(pathTokens[i]));
+                }
+                path = buffer.toString();
             }
-            path = buffer.toString();
         }
         return path;
     }

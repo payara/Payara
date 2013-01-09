@@ -62,6 +62,7 @@ import java.util.logging.Logger;
 
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.Archive;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.MemberEntry;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
  * Handles the operation related with an archive string substitution process.
@@ -71,6 +72,7 @@ import com.sun.enterprise.admin.servermgmt.xml.stringsubs.MemberEntry;
 public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
     private static final Logger _logger = 
             Logger.getLogger(ArchiveEntryWrapperImpl.class.getPackage().getName());
+    private static final LocalStringsImpl _strings = new LocalStringsImpl(ArchiveEntryWrapperImpl.class);
 
     // Prefix for the extraction directory.
     private static final String EXTRACTION_DIR_PREFIX  = "ext";
@@ -138,7 +140,7 @@ public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
             }
             catch (IOException e) {
                 SubstitutionFileUtil.removeDir(_extractDir);
-                _logger.log(Level.WARNING, "Failed to update the jar : " + _archive.getName() + " with the substitutable files.", e);
+                _logger.log(Level.WARNING, _strings.get("errorInArchiveSubstitution", _archive.getName()), e);
             }
         }
     }
@@ -158,7 +160,7 @@ public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
                 File file = new File(extratFilePath + archive.getName());
                 try {
                     extractEntry(archive.getName(), file);
-                } catch (InvalidJarEntryException e) {
+                } catch (IllegalArgumentException e) {
                     continue;
                 }
                 _extractedEntries.put(archive.getName(), file);
@@ -169,14 +171,14 @@ public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
                 File file = new File(extratFilePath + entry.getName());
                 try {
                     extractEntry(entry.getName(), file);
-                } catch (InvalidJarEntryException e) {
+                } catch (IllegalArgumentException e) {
                     continue;
                 }
                 _extractedEntries.put(entry.getName(), file);
                 getAllArchiveMemberList().add(new ArchiveMemberHandler(file, this));
                 _noOfExtractedEntries.incrementAndGet();
             } else {
-                _logger.log(Level.WARNING, "Invalid archive entry, Entry : " + object + ", Archive Name : "+ _archive.getName());
+                _logger.log(Level.WARNING, _strings.get("invalidArchiveEntry", object, _archive.getName()));
             }
         }
     }
@@ -203,23 +205,24 @@ public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
      * @param jarEntry The jar entry to be extracted.
      * @param file The File to extract the jar entry into.
      * @throws IOException if problem occurred in accessing the jar.
-     * @throws InvalidJarEntryException If entry is not present in the jar.
+     * @throws IllegalArgumentException If entry is not present in the jar.
      */
     private void extractEntry(String name, File file)
-            throws IOException, InvalidJarEntryException {
+            throws IOException, IllegalArgumentException {
         if (_jar == null) {
             throw new JarException("Jar file is closed.");
         }
 
         JarEntry jarEntry = _jar.getJarEntry(name);
         if (jarEntry == null) {
-            _logger.log(Level.FINE, "Jar entry " + name + " is not in jar file " +
-                    _jar.getName() + " ... skipping");
-            throw new InvalidJarEntryException();
+            _logger.log(Level.FINE, _strings.get("invalidArchiveEntry", name, _jar.getName()));
+            throw new IllegalArgumentException();
         }
 
         if (jarEntry.isDirectory() && !file.exists()) {
-            file.mkdirs();
+            if (!file.mkdirs()) {
+                _logger.log(Level.INFO, _strings.get("directoryCreationError", file.getAbsolutePath()));
+            }
             return;
         }
 
@@ -237,14 +240,14 @@ public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
                 try {
                     in.close();
                 } catch (Exception e) {
-                    _logger.log(Level.INFO, "Error occurred while closing the input stream of jar :" + _jar.getName(), e);
+                    _logger.log(Level.FINER, _strings.get("errorInClosingStream", _jar.getName()), e);
                 }
             }
             if (outputStream != null) {
                 try {
                     outputStream.close();
                 } catch (Exception e) {
-                    _logger.log(Level.INFO, "Error occured while closing the stream for file: " + file.getPath(), e);
+                    _logger.log(Level.FINER, _strings.get("errorInClosingStream", file.getPath()), e);
                 }
             }
         }
@@ -257,7 +260,7 @@ public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
      */
     void updateArchive() throws IOException {
         if (_extractedEntries.isEmpty()) {
-            _logger.log(Level.INFO, "No files to update in a jar."); 
+            _logger.log(Level.FINER, _strings.get("noArchiveEntryToUpdate", _archive.getName())); 
             return;
         }
         if (_jar == null) {
@@ -294,39 +297,42 @@ public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
             success = true;
         }
         catch (Exception e) {
-            _logger.log(Level.SEVERE, "Problem occured while performing the substitution for an archive : "
-                    + _archive.getName(), e);
+            _logger.log(Level.SEVERE, _strings.get("errorInClosingStream",
+                    _archive.getName()), e);
         } finally {
             if (jos != null) {
                 try {
                     jos.close();
                 } catch(IOException e) {
-                    _logger.log(Level.WARNING, "Problem occurred while closing the jar stream " + jarFile.getPath()  + " output stream", e);
+                    _logger.log(Level.FINER, _strings.get("errorInClosingStream", jarFile.getPath()), e);
                 }
             }
             if (fos != null) {
                 try {
                     fos.close();
                 } catch(IOException e) {
-                    _logger.log(Level.WARNING, "Problem occurred while closing the stream : " + jarFile.getPath(), e);
+                    _logger.log(Level.FINER, _strings.get("errorInClosingStream", jarFile.getPath()), e);
                 }
             }
-            if(_jar != null) {
-                try {
-                    _jar.close();
-                } catch(IOException e) {
-                    _logger.log(Level.WARNING, "Problem occurred while closing the jar file : " + jarFile.getPath(), e);
-                }
+            try {
+                _jar.close();
+            } catch(IOException e) {
+                _logger.log(Level.FINER, "Problem occurred while closing the jar file : " + jarFile.getPath(), e);
             }
 
-            if(!jarFile.delete()) {
-                tempJarFile.delete();
+            if(jarFile != null && !jarFile.delete()) {
+                if (tempJarFile != null && !tempJarFile.delete()) {
+                    _logger.log(Level.INFO, _strings.get("errorInClosingStream", tempJarFile.getAbsolutePath()));
+                }
                 throw new IOException(jarFile.getPath() + " did not get updated. Unable to delete.");
             } else if(!success) {
-                tempJarFile.delete();
+                if (tempJarFile != null && !tempJarFile.delete()) {
+                    _logger.log(Level.INFO, _strings.get("errorInClosingStream", tempJarFile.getAbsolutePath()));
+                }
             }
-            else if (!tempJarFile.renameTo(jarFile)) {
-                _logger.log(Level.SEVERE, "Not able to rename temp jar to, " + jarFile.getPath());
+            else if (tempJarFile != null && !tempJarFile.renameTo(jarFile)) {
+                _logger.log(Level.SEVERE, _strings.get("errorInRenamingJar",
+                        tempJarFile.getName(),  jarFile.getName()));
             }
         }
     }
@@ -351,11 +357,4 @@ public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
         }
         jos.closeEntry();
     }
-
-    /**
-     * Exception when the entry is not available inside the jar.
-     */
-    @SuppressWarnings("serial")
-    private class InvalidJarEntryException extends Exception
-    {  }
 }

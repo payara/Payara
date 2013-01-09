@@ -52,6 +52,7 @@ import java.util.regex.Pattern;
 
 import com.sun.enterprise.admin.servermgmt.stringsubs.Substitutable;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.FileEntry;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
  * Factory class to get the files that has to undergo string substitution.
@@ -60,6 +61,7 @@ class FileEntryFactory {
 
     private static final Logger _logger = 
             Logger.getLogger(FileEntryFactory.class.getPackage().getName());
+    private static final LocalStringsImpl _strings = new LocalStringsImpl(FileEntryFactory.class);
 
     /**
      * Create the {@link List} of {@link FileSubstitutionHandler} by processing the file path.
@@ -95,8 +97,7 @@ class FileEntryFactory {
                         if(matchingFile.exists() && matchingFile.canRead() && matchingFile.canWrite()) {
                             retrievedFiles.add(matchingFile);
                         } else {
-                            _logger.log(Level.FINE, "File " + matchingFile.getAbsolutePath()
-                                    + " is skipped by string substitution because it does not exist or has insufficient read or write permission");
+                            _logger.log(Level.FINER, _strings.get("skipFileFromSubstitution", matchingFile.getAbsolutePath()));
                         }
                     }
                 }
@@ -106,7 +107,7 @@ class FileEntryFactory {
                 retrievedFiles = fileLocator.getFiles(fileEntry.getName());
             }
             if (retrievedFiles == null || retrievedFiles.isEmpty()) {
-                _logger.log(Level.FINE, "No matching files found :: " + pathEntry);
+                _logger.log(Level.FINER, _strings.get("noMatchedFile", pathEntry));
                 continue;
             }
             if (substituables == null) {
@@ -119,7 +120,7 @@ class FileEntryFactory {
                                 new LargeFileSubstitutionHandler(retrievedFile) : new SmallFileSubstitutionHandler(retrievedFile);
                                 substituables.add(substituable);
                     } catch (FileNotFoundException e) {
-                        _logger.log(Level.WARNING, "Not able to locate file", e );
+                        _logger.log(Level.WARNING, _strings.get("invalidFileLocation", retrievedFile), e );
                     }
                 }
             }

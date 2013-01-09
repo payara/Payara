@@ -52,13 +52,15 @@ import com.sun.enterprise.admin.servermgmt.xml.domaininfo.DomainInfo;
 import com.sun.enterprise.admin.servermgmt.xml.domaininfo.ObjectFactory;
 import com.sun.enterprise.admin.servermgmt.xml.domaininfo.TemplateRef;
 import com.sun.enterprise.admin.servermgmt.xml.templateinfo.TemplateInfo;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.logging.LogDomains;
 
 public class DomainInfoManager {
 
-    private static final Logger logger = LogDomains.getLogger(DomainInfoManager.class,
+    private static final Logger _logger = LogDomains.getLogger(DomainInfoManager.class,
             LogDomains.ADMIN_LOGGER);
+    private static final LocalStringsImpl _strings = new LocalStringsImpl(DomainInfoManager.class);
 
     private static final String JAVA_HOME = "JAVA_HOME";
 
@@ -71,8 +73,9 @@ public class DomainInfoManager {
         try {
             TemplateInfo templateInfo = domainTemplate.getInfo();
             File infoDir = new File(repoDir, DomainConstants.INFO_DIRECTORY);
-            if(!infoDir.exists()) {
-                infoDir.mkdirs();
+            if(!infoDir.exists() && !infoDir.mkdirs()) {
+                _logger.log(Level.INFO, _strings.get("directoryCreationError", infoDir.getAbsolutePath()));
+                return;
             }
             File domainXML = new File(infoDir, DomainConstants.DOMAIN_INFO_XML);
             outputStream = new FileOutputStream(domainXML);
@@ -96,12 +99,10 @@ public class DomainInfoManager {
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             marshaller.marshal(objFactory.createDomainInfo(domainInfo), outputStream);
         } catch (Exception e) {
-            //TODO: localized error message
-            logger.log(Level.WARNING, "");
+            _logger.log(Level.WARNING, _strings.get("directoryCreationError", DomainConstants.DOMAIN_INFO_XML), e);
         } finally {
             if (outputStream != null) {
                 try {
-                    outputStream.flush();
                     outputStream.close();
                 } catch (Exception io)
                 { /** ignore*/ }

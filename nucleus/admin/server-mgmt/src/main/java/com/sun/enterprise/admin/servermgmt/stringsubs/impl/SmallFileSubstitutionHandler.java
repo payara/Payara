@@ -74,16 +74,17 @@ public class SmallFileSubstitutionHandler extends FileSubstitutionHandler {
         try {
             if (_reader == null) {
                 char[] buffer = new char[(int)_inputFile.length()];
+                int count = 0;
                 try {
                     _reader = new InputStreamReader(new FileInputStream(_inputFile));
-                    _reader.read(buffer);
+                    count = _reader.read(buffer);
                 } finally {
                     _reader.close();
                 }
-                _reader = new CharArrayReader(buffer);
+                _reader = new CharArrayReader(buffer, 0, count);
             }
         } catch (IOException e) {
-            _logger.log(Level.WARNING, "Not able to find the input file for string substitution.", e);
+            _logger.log(Level.WARNING, _strings.get("invalidFileLocation", _inputFile.getAbsolutePath()), e);
         }
         return _reader;
     }
@@ -93,7 +94,7 @@ public class SmallFileSubstitutionHandler extends FileSubstitutionHandler {
         try {
             _writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(_inputFile)));
         } catch (FileNotFoundException e) {
-            _logger.log(Level.WARNING, "Not able to find the input file for string substitution.", e);
+            _logger.log(Level.WARNING, _strings.get("invalidFileLocation", _inputFile.getAbsolutePath()), e);
         }
         return _writer;
     }

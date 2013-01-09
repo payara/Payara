@@ -60,6 +60,7 @@ import org.xml.sax.SAXException;
 
 import com.sun.enterprise.admin.servermgmt.stringsubs.StringSubstitutionException;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.StringsubsDefinition;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
  * This class parses the string substitution XML.
@@ -68,6 +69,7 @@ public class StringSubstitutionParser {
 
     private static final Logger _logger = 
             Logger.getLogger(StringSubstitutionParser.class.getPackage().getName());
+    private static final LocalStringsImpl _strings = new LocalStringsImpl(StringSubstitutionParser.class);
     // Path where schema resides i.e Parent directory for schema. 
     private final static String DEFAULT_SCHEMA = "xsd/schema/stringsubs.xsd";
 
@@ -83,7 +85,7 @@ public class StringSubstitutionParser {
             throws StringSubstitutionException {
         // If schema information is missing
         if(configStream == null) {
-            throw new StringSubstitutionException("Invalid stream");
+            throw new StringSubstitutionException(_strings.get("invalidStream"));
         }
         try {
             URL schemaUrl = StringSubstitutionParser.class.getClassLoader().getResource(DEFAULT_SCHEMA);
@@ -97,16 +99,16 @@ public class StringSubstitutionParser {
             Object obj = unmarshaller.unmarshal(source);
             return obj instanceof JAXBElement ? (StringsubsDefinition) ((JAXBElement) obj).getValue() : (StringsubsDefinition) obj;
         } catch(SAXException se) {
-            throw new StringSubstitutionException("Parsing failed for stringsubs specification for the given schema", se);      
+            throw new StringSubstitutionException(_strings.get("failedToParse", DEFAULT_SCHEMA), se);      
         } catch(JAXBException jaxbe) {
-            throw new StringSubstitutionException("Parsing failed for stringsubs specification for the given schema", jaxbe);
+            throw new StringSubstitutionException(_strings.get("failedToParse", DEFAULT_SCHEMA), jaxbe);
         } finally {
             if(configStream != null) {
                 try {
                     configStream.close();
                     configStream = null;
                 } catch(IOException e) {
-                    _logger.log(Level.FINE, "Failed to close the stream from stringsubs schema file ", e);
+                    _logger.log(Level.FINER, _strings.get("errorInClosingStream"));
                 }
             }
         }

@@ -42,8 +42,6 @@ package com.sun.enterprise.admin.servermgmt.domain;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import org.glassfish.api.admin.CommandValidationException;
-
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
 import com.sun.enterprise.admin.servermgmt.DomainException;
 import com.sun.enterprise.admin.servermgmt.pe.SubstitutableTokens;
@@ -158,13 +156,13 @@ public class DomainPortValidator {
      * @param portStr the port as a string, or null to get from properties
      * @param defaultPort default port to use
      * @param name name of port
-     * @throws CommandValidationException if error in retrieve port
+     * @throws DomainException if error in retrieving port value.
      */
     private Integer getPort(Properties properties,
             String key,
             String portStr,
             String defaultPort,
-            String name) throws InvalidPortException {
+            String name) throws DomainException {
         int port = 0;
         boolean portNotSpecified = false;
         boolean invalidPortSpecified = false;
@@ -234,15 +232,15 @@ public class DomainPortValidator {
      *
      * @param port the port number
      * @return the port number as an int
-     * @throws CommandValidationException if port string is not numeric
+     * @throws DomainException if port string is not numeric
      */
     private int convertPortStr(final String port)
-            throws InvalidPortException {
+            throws DomainException {
         try {
             return Integer.parseInt(port);
         }
         catch (Exception e) {
-            throw new InvalidPortException(
+            throw new DomainException(
                     _strings.get("InvalidPortNumber", port));
         }
     }
@@ -260,13 +258,6 @@ public class DomainPortValidator {
                 // so break once this message is displayed.
                 break;
             }
-        }
-    }
-
-    @SuppressWarnings("serial")
-    class InvalidPortException extends Exception {
-        InvalidPortException(String message) {
-            super(message);
         }
     }
 }
