@@ -181,11 +181,7 @@ public class ListJMSResources implements AdminCommand {
                     break;
             }
       }
-        if (list.isEmpty()) {
-            final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-            part.setMessage(localStrings.getLocalString("nothingToList", "Nothing to list."));
-            extraProperties.put("jmsResources", list);
-        } else {
+        if (!list.isEmpty()) {
             List<Map<String,String>> resourceList = 
                 CommandTarget.DOMAIN.isValid(habitat, target) ? list : filterListForTarget(list);
 
