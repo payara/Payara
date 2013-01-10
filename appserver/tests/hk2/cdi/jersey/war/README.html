@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    http://glassfish.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+<html><head><title>JCDI Beans WebApp Sample</title></head>
+
+
+    <body>
+        <h1>Jersey CDI Sample</h1>
+
+        <p>This example demonstrates how to develop RESTful web service with
+            JCDI managed beans and a Servlet 3.0 Web container.</p>
+              
+        <h2>Running the Example</h2>
+
+        <p>This example currently works only with a standalone GlassFish 3.1.x instance. 
+        The easiest way to get the application running is to use the GlassFish Update Center client, 
+        install "Jersey examples and documentation" IPS module from there
+        and follow instructions at the module README file in order to deploy the example.
+        If you have already installed from the Update Center, the module readme file should be
+        accessible <a href="../../README.html">here</a>
+
+        <p>After you successfully deploy the application, visit the following URLs:</p>
+        <blockquote>
+            <table border="1">
+                <tr>
+                    <th>Description</th>
+                    <th>URL</th>
+                    <th>Expected Results</th>
+                </tr>
+                <tr>
+                    <td>A managed bean with no use of injection whatsoever</td>
+                    <td><code><a href="http://localhost:8080/jersey-cdi/helloworld">http://localhost:8080/jersey-cdi/helloworld</a></code></td>
+                    <td><code>Hello World</code></td>
+                </tr>
+                <tr>
+                    <td>Shows injection of context objects into the fields of a managed bean.</td>
+                    <td><code><a href="http://localhost:8080/jersey-cdi/simple">http://localhost:8080/jersey-cdi/simple</a></code></td>
+                    <td><code>OK GET http://localhost:8080/jersey-cdi/simple</code></td>
+                </tr>
+                <tr>
+                    <td>Shows injection of context objects and path parameters into the fields of a managed bean.</td>
+                    <td><code><a href="http://localhost:8080/jersey-cdi/other/c/d">http://localhost:8080/jersey-cdi/other/c/d</a></code></td>
+                    <td><code>OTHER c d</code></td>
+                </tr>
+                <tr>
+                    <td>Shows constructor injection of a path parameter in a managed bean.</td>
+                    <td><code><a href="http://localhost:8080/jersey-cdi/echoconstructor/a">http://localhost:8080/jersey-cdi/echoconstructor/a</a></code></td>
+                    <td><code>ECHO a</code></td>
+                </tr>
+                <tr>
+                    <td>Shows injection of path and query parameters into the fields of a managed bean.</td>
+                    <td><code><a href="http://localhost:8080/jersey-cdi/echofield/b">http://localhost:8080/jersey-cdi/echofield/b</a></code></td>
+                    <td><code>ECHO null b</code></td>
+                </tr>
+                <tr>
+                    <td>A managed bean that uses (but does not inject) a path parameter.</td>
+                    <td><code><a href="http://localhost:8080/jersey-cdi/echo/a">http://localhost:8080/jersey-cdi/echo/a</a></code></td>
+                    <td><code>ECHO a</code></td>
+                </tr>
+                <tr>
+                    <td>Shows injection of context objects into the fields of a EJB Stateless Session bean.</td>
+                    <td><code><a href="http://localhost:8080/jersey-cdi/ejb/stateless">http://localhost:8080/jersey-cdi/ejb/stateless</a></code></td>
+                    <td><code>1</code></td>
+                </tr>
+                <tr>
+                    <td>Shows injection of query parameters into the fields of a managed bean.</td>
+                    <td><code><a href="http://localhost:8080/jersey-cdi/jcdibean/per-request">http://localhost:8080/jersey-cdi/jcdibean/per-request</a></code></td>
+                    <td><code>null1</code></td>
+                </tr>
+                <tr>
+                    <td>Shows injection of context objects into the fields of a managed bean.</td>
+                    <td><code><a href="http://localhost:8080/jersey-cdi/jcdibean/singleton">http://localhost:8080/jersey-cdi/jcdibean/singleton</a></code></td>
+                    <td><code>1</code></td>
+                </tr>
+                <tr>
+                    <td>Shows injection of context objects and query parameters into the fields of a managed bean.</td>
+                    <td><code><a href="http://localhost:8080/jersey-cdi/jcdibean/dependent/per-request">http://localhost:8080/jersey-cdi/jcdibean/dependent/per-request</a></code></td>
+                    <td><code>null1</code></td>
+                </tr><tr>
+                    <td>Shows injection of context objects into the fields of a managed bean.</td>
+                    <td><code><a href="http://localhost:8080/jersey-cdi/jcdibean/dependent/singleton">http://localhost:8080/jersey-cdi/jcdibean/dependent/singleton</a></code></td>
+                    <td><code>1</code></td>
+                </tr>
+            </table>
+        </blockquote>
+    </body>
+</html>
