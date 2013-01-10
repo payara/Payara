@@ -556,7 +556,7 @@ public class Initializer {
                 + "\n\n" + // NOI18N
                 (smh.getLocalString
                 (getClass().getName() + ".usageLine2", // NOI18N
-                        "where : [optional_params]: Must be:")) // NOI18N
+                        "[optional_params]: can be:")) // NOI18N
                 + "\n\n" + // NOI18N
                 (smh.getLocalString
                 (getClass().getName() + ".usageLine5", // NOI18N
