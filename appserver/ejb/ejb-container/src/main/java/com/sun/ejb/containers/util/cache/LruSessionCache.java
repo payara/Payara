@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -335,7 +335,9 @@ public class LruSessionCache
             //  remove it from BackingStore outside sync block
 	    if (removeFromStore) {
 		try {
-		    backingStore.remove((Serializable) sessionKey);
+            if (backingStore != null) {
+		        backingStore.remove((Serializable) sessionKey);
+            }
 		} catch (BackingStoreException sfsbEx) {
 		    _logger.log(Level.WARNING, "[" + cacheName + "]: Exception in "
 			+ "backingStore.remove(" + sessionKey + ")", sfsbEx);
@@ -454,7 +456,10 @@ public class LruSessionCache
         Object object = null;
 
         try {
-            SimpleMetadata beanState = backingStore.load(sessionKey, null);
+            SimpleMetadata beanState = null;
+            if (backingStore != null) {
+                beanState = backingStore.load(sessionKey, null);
+            }
             byte[] data = (beanState != null)
                 ? beanState.getState()
                 : null;
@@ -497,9 +502,11 @@ public class LruSessionCache
         //  already has the correct version
         beanState.setVersion(ctx.getVersion());
 	    try {
-		backingStore.save(sessionKey, beanState, !ctx.existsInStore());
-		// sfsbStoreMonitor.setPassivationSize(data.length);
-		status = true;
+            if(backingStore != null) {
+                backingStore.save(sessionKey, beanState, !ctx.existsInStore());
+                // sfsbStoreMonitor.setPassivationSize(data.length);
+                status = true;
+            }
 	    } catch (BackingStoreException sfsbEx) {
 		_logger.log(Level.WARNING, "[" + cacheName + "]: Exception during "
 		    + "backingStore.passivateSave(" + sessionKey + ")", sfsbEx);
