@@ -114,9 +114,14 @@ public class DomainBuilder {
     private void initialize() throws DomainException {
         String templateJarPath = (String)_domainConfig.get(DomainConfig.K_TEMPLATE_NAME);
         try {
-            // Loads template-info.xml
             _templateJar = new JarFile(new File(templateJarPath));
-            JarEntry je = _templateJar.getJarEntry(TEMPLATE_INFO_XML);
+            JarEntry je = _templateJar.getJarEntry("config/" + DomainConstants.DOMAIN_XML_FILE);
+            if (je == null) {
+                throw new DomainException(_strings.get("missingMandatoryFile", DomainConstants.DOMAIN_XML_FILE));
+            }
+            
+            // Loads template-info.xml
+            je = _templateJar.getJarEntry(TEMPLATE_INFO_XML);
             if (je == null) {
                 throw new DomainException(_strings.get("missingMandatoryFile", TEMPLATE_INFO_XML));
             }

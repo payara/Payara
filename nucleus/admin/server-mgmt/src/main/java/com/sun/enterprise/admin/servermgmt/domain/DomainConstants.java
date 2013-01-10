@@ -68,4 +68,7 @@ public class DomainConstants {
 
     /** Filename contains the trusted certificates, including public keys. */
     public static final String TRUSTSTORE_FILE = "cacerts.jks";
+
+    /** Filename contains most of the domain configuration. */
+    public static final String DOMAIN_XML_FILE = "domain.xml";
 }
