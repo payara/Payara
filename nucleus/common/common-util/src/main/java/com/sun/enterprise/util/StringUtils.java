@@ -593,11 +593,20 @@ public class StringUtils {
 
     /**
      * Nightmares can result from using a path with a space in it!
-     * This method will enclose in quotes if needed.
+     * This method will enclose in double-quotes if needed.
      * @param path
      * @return
      */
     public static String quotePathIfNecessary(String path) {
+        return quotePathIfNecessary(path, '"');
+    }
+    /**
+     * Nightmares can result from using a path with a space in it!
+     * This method will enclose in the specified quote characters if needed.
+     * @param path
+     * @return
+     */
+    public static String quotePathIfNecessary(String path, char quoteChar) {
         if (!ok(path)
                 || !needsQuoting(path)
                 || isDoubleQuoted(path)
@@ -605,9 +614,9 @@ public class StringUtils {
             return path;
         // needs quoting!
         StringBuilder sb = new StringBuilder();
-        sb.append('"');
+        sb.append(quoteChar);
         sb.append(path);
-        sb.append('"');
+        sb.append(quoteChar);
         return sb.toString();
     }
 
