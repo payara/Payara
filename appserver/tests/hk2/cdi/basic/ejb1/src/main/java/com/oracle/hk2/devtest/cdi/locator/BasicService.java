@@ -44,6 +44,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
+ * This service will be created with HK2 but will
+ * have the CDI BeanManager injected into it
+ * 
  * @author jwells
  *
  */
@@ -52,6 +55,13 @@ public class BasicService {
     @Inject
     private BeanManager beanManager;
     
+    /**
+     * This method returns true if the BeanManager was injected.  This service
+     * is created with HK2 but still has the CDI created object injected into
+     * it
+     * 
+     * @return true if this HK2 created service was injected with a CDI bean
+     */
     public boolean gotInjectedWithBeanManager() {
         return (beanManager != null);
     }

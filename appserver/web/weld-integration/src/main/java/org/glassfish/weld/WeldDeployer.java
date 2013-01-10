@@ -62,6 +62,8 @@ import org.glassfish.api.deployment.MetaData;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
+import org.glassfish.api.invocation.ApplicationEnvironment;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.common.SimpleDeployer;
@@ -121,6 +123,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
     @Inject
     private ApplicationRegistry applicationRegistry;
+    
+    @Inject
+    private InvocationManager invocationManager;
 
     private Map<Application, WeldBootstrap> appToBootstrap =
             new HashMap<Application, WeldBootstrap>();
@@ -170,8 +175,19 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 if (_logger.isLoggable(Level.FINE)) {
                     _logger.fine(deploymentImpl.toString());
                 }
+                
                 //get Current TCL
                 ClassLoader oldTCL = Thread.currentThread().getContextClassLoader();
+                
+                final String fAppName = appInfo.getName();
+                invocationManager.pushAppEnvironment(new ApplicationEnvironment() {
+
+                    @Override
+                    public String getName() {
+                        return fAppName;
+                    }
+                    
+                });
                 try {
                     bootstrap.startContainer(Environments.SERVLET, deploymentImpl/*, new ConcurrentHashMapBeanStore()*/);
                     bootstrap.startInitialization();
@@ -182,6 +198,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     de.initCause(t);
                     throw(de);
                 } finally {
+                    invocationManager.popAppEnvironment();
+                    
                     //The TCL is originally the EAR classloader
                     //and is reset during Bean deployment to the 
                     //corresponding module classloader in BeanDeploymentArchiveImpl.getBeans
@@ -195,6 +213,16 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             WeldBootstrap bootstrap = appInfo.getTransientAppMetaData(WELD_BOOTSTRAP, 
                 WeldBootstrap.class);
             if( bootstrap != null ) {
+                final String fAppName = appInfo.getName();
+                invocationManager.pushAppEnvironment(new ApplicationEnvironment() {
+
+                    @Override
+                    public String getName() {
+                        return fAppName;
+                    }
+                    
+                });
+                
                 try {
                     bootstrap.validateBeans();
                     bootstrap.endInitialization();
@@ -202,6 +230,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     DeploymentException de = new DeploymentException(t.getMessage());
                     de.initCause(t);
                     throw(de);
+                }
+                finally {
+                    invocationManager.popAppEnvironment();
                 }
             }
         } else if ( event.is(org.glassfish.internal.deployment.Deployment.APPLICATION_STOPPED) ||
@@ -228,10 +259,22 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             WeldBootstrap bootstrap = appInfo.getTransientAppMetaData(WELD_BOOTSTRAP, 
                 WeldBootstrap.class);
             if (bootstrap != null) {
+                final String fAppName = appInfo.getName();
+                invocationManager.pushAppEnvironment(new ApplicationEnvironment() {
+
+                    @Override
+                    public String getName() {
+                        return fAppName;
+                    }
+                    
+                });
                 try {
                     bootstrap.shutdown();  
                 } catch(Exception e) {
                     _logger.log(Level.WARNING, "JCDI shutdown error", e);
+                }
+                finally {
+                    invocationManager.popAppEnvironment();
                 }
                 appInfo.addTransientAppMetaData(WELD_SHUTDOWN, "true");
             }

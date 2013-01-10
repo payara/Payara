@@ -43,6 +43,8 @@ package com.sun.enterprise.container.common.spi.util;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.EnvironmentProperty;
 import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
+
+import org.glassfish.api.invocation.ApplicationEnvironment;
 import org.glassfish.api.naming.JNDIBinding;
 import org.jvnet.hk2.annotations.Contract;
 
@@ -70,5 +72,14 @@ public interface ComponentEnvManager {
 
     public void unbindFromComponentNamespace(JndiNameEnvironment env)
         throws NamingException;
+    
+    /**
+     * Returns the current application environment if not running in a specified
+     * container
+     * 
+     * @return The current application environment or null if we are not currently
+     * running as a specific application
+     */
+    public ApplicationEnvironment getCurrentApplicationEnvironment();
     
 }

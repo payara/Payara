@@ -43,6 +43,7 @@ package org.glassfish.api.invocation;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,6 +67,15 @@ public class InvocationManagerImpl
     // the stack of invocations on this thread. Accesses to the ArrayList
     // dont need to be synchronized because each thread has its own ArrayList.
     private InheritableThreadLocal<InvocationArray<ComponentInvocation>> frames;
+    
+    private final ThreadLocal<Stack<ApplicationEnvironment>> applicationEnvironments =
+            new ThreadLocal<Stack<ApplicationEnvironment>>() {
+        @Override
+        protected Stack<ApplicationEnvironment> initialValue() {
+            return new Stack<ApplicationEnvironment>();
+        }
+        
+    };
     
     private Map<ComponentInvocationType,List<RegisteredComponentInvocationHandler>>  regCompInvHandlerMap
             = new HashMap<ComponentInvocationType, List<RegisteredComponentInvocationHandler>>();
@@ -314,6 +324,29 @@ public class InvocationManagerImpl
         if (setRegCompInvHandlers.size() == 0) {
             setRegCompInvHandlers.add(handler);
         }
+    }
+
+    @Override
+    public void pushAppEnvironment(ApplicationEnvironment env) {
+        Stack<ApplicationEnvironment> stack = applicationEnvironments.get();
+        
+        stack.push(env);
+    }
+    
+    @Override
+    public ApplicationEnvironment peekAppEnvironment() {
+        Stack<ApplicationEnvironment> stack = applicationEnvironments.get();
+        
+        if (stack.isEmpty()) return null;
+        
+        return stack.peek();
+    }
+
+    @Override
+    public void popAppEnvironment() {
+        Stack<ApplicationEnvironment> stack = applicationEnvironments.get();
+        
+        if (!stack.isEmpty()) stack.pop();
     }
 }
 

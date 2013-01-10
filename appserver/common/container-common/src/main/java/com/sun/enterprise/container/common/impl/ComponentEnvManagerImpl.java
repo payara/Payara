@@ -48,6 +48,7 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.naming.spi.NamingObjectFactory;
 import com.sun.enterprise.naming.spi.NamingUtils;
 import org.glassfish.api.admin.ProcessEnvironment;
+import org.glassfish.api.invocation.ApplicationEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.ComponentNamingUtil;
@@ -854,6 +855,11 @@ public class ComponentEnvManagerImpl
                 + "Component Id: " + id);
         }
         return id;
+    }
+    
+    @Override
+    public ApplicationEnvironment getCurrentApplicationEnvironment() {
+        return invMgr.peekAppEnvironment();
     }
 
     private Application getApplicationFromEnv(JndiNameEnvironment env) {

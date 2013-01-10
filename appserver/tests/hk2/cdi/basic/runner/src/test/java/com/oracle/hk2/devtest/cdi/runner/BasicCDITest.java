@@ -39,6 +39,8 @@
  */
 package com.oracle.hk2.devtest.cdi.runner;
 
+import java.io.File;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -64,6 +66,8 @@ public class BasicCDITest extends NucleusStartStopTest {
       BasicEjb.class.getName();
     private final static String SOURCE_HOME = System.getProperty("source.home", "$");
     private final static String SOURCE_HOME_EJB = "/appserver/tests/hk2/" + EJB1_JAR;
+    private final static String GLASSFISH_HOME = System.getProperty("glassfish.home");
+    private final static String RELATIVE_FILE_PATH = "domains/domain1/config/destroyed-ejb1.txt";
     
     private boolean deployed1;
     private Context context;
@@ -78,6 +82,14 @@ public class BasicCDITest extends NucleusStartStopTest {
         }
         
         deployed1 = NucleusTestUtils.nadmin("deploy", ejb1Jar);
+        Assert.assertTrue(deployed1);
+        
+        File destroyedFile = new File(GLASSFISH_HOME);
+        destroyedFile = new File(destroyedFile, RELATIVE_FILE_PATH);
+        
+        if (destroyedFile.exists()) {
+            Assert.assertTrue(destroyedFile.delete());
+        }
     }
     
     @AfterTest
@@ -91,6 +103,12 @@ public class BasicCDITest extends NucleusStartStopTest {
             context.close();
             context = null;
         }
+        
+        // After the undeployment the file indicating the proper destruction should be there
+        File destroyedFile = new File(GLASSFISH_HOME);
+        destroyedFile = new File(destroyedFile, RELATIVE_FILE_PATH);
+        
+        Assert.assertTrue(destroyedFile.exists());
     }
     
     /**
@@ -110,7 +128,16 @@ public class BasicCDITest extends NucleusStartStopTest {
         Assert.assertTrue(basic.hk2ServiceInjectedWithEjb());
     }
     
+    /**
+     * Ensures that the ServiceLocator is available in all CDI events
+     * 
+     * @throws NamingException
+     */
     @Test
-    public void testCustomScopes() {
+    public void testCDIExtensionHasAccessToServiceLocatorViaJNDI() throws NamingException {
+        BasicEjb basic = (BasicEjb) context.lookup(BASIC_EJB_JNDI_NAME);
+        Assert.assertNotNull(basic);
+        
+        basic.isServiceLocatorAvailableInAllCDIExtensionEvents();
     }
 }

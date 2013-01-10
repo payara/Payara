@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,65 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.hk2.devtest.cdi.ejb1;
+package com.oracle.hk2.devtest.cdi.extension;
 
-import org.jvnet.hk2.annotations.Contract;
+import javax.enterprise.inject.Produces;
 
 /**
- * This is a simple EJB interface that has methods used by the client
- * to ensure that each test has passed
+ * This produces a service with a field
  * 
  * @author jwells
  *
  */
-@Contract
-public interface BasicEjb {
-    /**
-     * Returns true if the CDI manager was properly injected
-     * into the EJB that implements this interface
-     * 
-     * @return true if the CDI bean manager was injected into this EJB
-     */
-    public boolean cdiManagerInjected();
-    
-    /**
-     * Returns true if an HK2 serviceLocator was properly injected
-     * into the EJB that implements this interface
-     * <p>
-     * This demonstrates that HK2 services are being injected into
-     * CDI created beans
-     * 
-     * @return true if the EJB was injected with an HK2 service locator
-     */
-    public boolean serviceLocatorInjected();
-    
-    /**
-     * This uses the HK2 ServiceLocator to install the
-     * BasicService descriptor into the injected HK2
-     * ServiceLocator
-     */
-    public void installHK2Service();
-    
-    /**
-     * This method ensures that the HK2 service installed with
-     * {@link #installHK2Service()} can be injected with
-     * CDI bean instances
-     * <p>
-     * This demonstrates that services created with HK2 can be
-     * injected with beans created with CDI
-     * 
-     * @return true if the BasicService HK2 service was injected
-     * with a CDI bean instance
-     */
-    public boolean hk2ServiceInjectedWithEjb();
-    
-    /**
-     * Returns without throwing an error if all of the CDI extension
-     * events had proper access to the ServiceLocator in JNDI
-     * 
-     * @throws AssertionError if any of the extension points did not have
-     * access to the ServiceLocator
-     */
-    public void isServiceLocatorAvailableInAllCDIExtensionEvents();
+public class FieldProducer {
+    @Produces
+    public ProducedServiceB produceMe = new ProducedServiceB() {};
 
 }

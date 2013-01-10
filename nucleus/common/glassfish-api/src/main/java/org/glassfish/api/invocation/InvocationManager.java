@@ -97,6 +97,42 @@ public interface InvocationManager {
     public void registerComponentInvocationHandler(ComponentInvocationType type, 
             RegisteredComponentInvocationHandler handler);
     
+    
+    /**
+     * To be called by the infrastructure to indicate that some user code
+     * not associated with any Java EE specification may be called.  In
+     * particular must be called by the Weld integration layer to indicate
+     * the application environment in which the portable extensions are
+     * running
+     * <p>
+     * The pushAppEnvironment and popAppEnvironment must be called in pairs
+     * and well-nested.
+     *
+     * @param env may not be null.  Information about the application environment
+     */
+    public void pushAppEnvironment(ApplicationEnvironment env);
+    
+    /**
+     * Gets the current application environment on the current thread
+     *
+     * @return The current ApplicationEnvironment, or null if there is none
+     */
+    public ApplicationEnvironment peekAppEnvironment();
+    
+    /**
+     * To be called by the infrastructure to indicate that some user code
+     * not associated with any Java EE specification is finished being called.
+     * In particular must be called by the Weld integration layer to indicate
+     * the application environment in which the portable extensions are
+     * running
+     * <p>
+     * The pushAppEnvironment and popAppEnvironment must be called in pairs
+     * and well-nested.
+     *
+     * @param env may not be null.  Information about the application environment
+     */
+    public void popAppEnvironment();
+    
 
 
 }

@@ -39,6 +39,10 @@
  */
 package org.glassfish.cdi.hk2;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.internal.api.Globals;
@@ -51,6 +55,7 @@ import org.glassfish.internal.api.Globals;
  */
 public class HK2IntegrationUtilities {
     private final static ServiceLocatorFactory FACTORY = ServiceLocatorFactory.getInstance();
+    private final static String APP_SL_NAME = "java:app/hk2/ServiceLocator";
     
     /**
      * TODO: This code will be implemented differently when we
@@ -59,20 +64,14 @@ public class HK2IntegrationUtilities {
      * @return
      */
     public ServiceLocator getApplicationServiceLocator() {
-        ClassLoader loader = getClass().getClassLoader();
-        
-        String loaderName;
-        if (loader == null) {
-            loaderName = "system";
+        try {
+            Context ic = new InitialContext();
+            
+            return (ServiceLocator) ic.lookup(APP_SL_NAME);
         }
-        else {
-            loaderName = loader.toString();
+        catch (NamingException ne) {
+            throw new AssertionError(ne);
         }
-        
-        ServiceLocator retVal = FACTORY.find(loaderName);
-        if (retVal != null) return retVal;
-        
-        return FACTORY.create(loaderName);
     }
 
 }

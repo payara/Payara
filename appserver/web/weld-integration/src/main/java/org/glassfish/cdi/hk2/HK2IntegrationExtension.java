@@ -53,7 +53,6 @@ import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.InjectionTarget;
 import javax.enterprise.inject.spi.ProcessInjectionTarget;
-import javax.naming.InitialContext;
 
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceHandle;
@@ -91,7 +90,7 @@ public class HK2IntegrationExtension implements Extension {
      * @param pit The injection target even from CDI
      */
     @SuppressWarnings("unused")
-    private void injectionTargetObserver(@Observes ProcessInjectionTarget<?> pit) {
+    private <T> void injectionTargetObserver(@Observes ProcessInjectionTarget<T> pit) {
         InjectionTarget<?> injectionTarget = pit.getInjectionTarget();
         Set<InjectionPoint> injectionPoints = injectionTarget.getInjectionPoints();
         

@@ -43,17 +43,17 @@ import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
-import javax.naming.InitialContext;
 
 import org.glassfish.hk2.api.DynamicConfiguration;
 import org.glassfish.hk2.api.DynamicConfigurationService;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import com.oracle.hk2.devtest.cdi.ejb1.scoped.CustomScopedEjb;
+import com.oracle.hk2.devtest.cdi.extension.HK2ExtensionVerifier;
 import com.oracle.hk2.devtest.cdi.locator.BasicService;
 
 /**
- * Simple EJB that injects a ServiceHandle!
+ * Simple EJB created by CDI that injects a HK2 ServiceLocator!
  * 
  * @author jwells
  */
@@ -98,5 +98,12 @@ public class EjbInjectedWithServiceLocator implements BasicEjb {
         
         boolean retVal = bs.gotInjectedWithBeanManager();
         return retVal;
+    }
+
+    @Override
+    public void isServiceLocatorAvailableInAllCDIExtensionEvents() {
+        HK2ExtensionVerifier verifier = locator.getService(HK2ExtensionVerifier.class);
+        
+        verifier.validate();
     }    
 }

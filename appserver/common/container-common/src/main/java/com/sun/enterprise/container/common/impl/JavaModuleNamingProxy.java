@@ -41,6 +41,7 @@
 package com.sun.enterprise.container.common.impl;
 
 
+import org.glassfish.api.invocation.ApplicationEnvironment;
 import org.glassfish.api.naming.NamespacePrefixes;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -174,6 +175,13 @@ public class JavaModuleNamingProxy
                 Application app = bd.getApplication();
 
                 appName = app.getAppName();               
+            }
+            else {
+                ApplicationEnvironment applicationEnvironment = namingMgr.getCurrentApplicationEnvironment();
+                
+                if (applicationEnvironment != null) {
+                    appName = applicationEnvironment.getName();
+                }
             }
         }
 
