@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -111,4 +111,24 @@ public class ResourceAdapterConfigParserImpl implements ConnectorConfigParser {
         return mergedVals;
     }
 
+    public List<String> getConfidentialProperties(ConnectorDescriptor desc, String rarName, String... keyFields)
+            throws ConnectorRuntimeException {
+
+        if (desc == null || rarName == null) {
+            throw new ConnectorRuntimeException("Invalid arguments");
+        }
+
+        List<String> confidentialProperties = new ArrayList<String>();
+        Set configProperties = desc.getConfigProperties();
+        if(configProperties != null){
+            Iterator iterator = configProperties.iterator();
+            while(iterator.hasNext()){
+                ConnectorConfigProperty ccp = (ConnectorConfigProperty)iterator.next();
+                if(ccp.isConfidential()){
+                    confidentialProperties.add(ccp.getName());
+                }
+            }
+        }
+        return confidentialProperties;
+    }
 }

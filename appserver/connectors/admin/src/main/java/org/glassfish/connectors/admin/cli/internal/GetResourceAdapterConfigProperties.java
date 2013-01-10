@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package org.glassfish.connectors.admin.cli.internal;
 
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.enterprise.config.serverbeans.Resources;
 import org.glassfish.api.ActionReport;
@@ -51,6 +52,7 @@ import org.glassfish.api.admin.CommandLock;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.glassfish.api.admin.RestEndpoint;
@@ -89,6 +91,9 @@ public class GetResourceAdapterConfigProperties implements AdminCommand {
                     connectorRuntime.getResourceAdapterConfigProps(rarName);
             Properties extraProperties = new Properties();
             extraProperties.put("configProps",configProps);
+            List<String> confidentialProperties = connectorRuntime.getConfidentialProperties(
+                    ConnectorConstants.RA, rarName);
+            extraProperties.put("confidentialConfigProps", confidentialProperties);
             report.setExtraProperties(extraProperties);
         } catch (Exception e) {
             report.setMessage("_get-resource-adapter-config-properties failed : " + e.getMessage());

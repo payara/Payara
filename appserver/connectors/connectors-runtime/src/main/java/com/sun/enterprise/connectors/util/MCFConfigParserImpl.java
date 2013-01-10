@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,6 @@
 package com.sun.enterprise.connectors.util;
 
 import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.connectors.*;
 import com.sun.logging.LogDomains;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 
@@ -135,10 +134,26 @@ public class MCFConfigParserImpl implements MCFConfigParser {
                String connectionDefName, String rarName) throws ConnectorRuntimeException 
     {
 
+        ConnectionDefDescriptor cdd = getConnectionDefinition(desc, connectionDefName);
+        if (cdd == null) return null;
+
+        Properties mergedVals = null;
+        Set ddVals = cdd.getConfigProperties();
+        String className = cdd.getManagedConnectionFactoryImpl();
+        if(className != null && className.length() != 0) {
+            Properties introspectedVals = configParserUtil.introspectJavaBean(
+                               className,ddVals, true, rarName);
+            mergedVals = configParserUtil.mergeProps(ddVals,introspectedVals);
+        }
+        return mergedVals;
+    }
+
+    private ConnectionDefDescriptor getConnectionDefinition(ConnectorDescriptor desc, String connectionDefName)
+            throws ConnectorRuntimeException {
         if(desc == null || connectionDefName == null) {
             throw new ConnectorRuntimeException("Invalid arguments");
         }
-        OutboundResourceAdapter ora = 
+        OutboundResourceAdapter ora =
                       desc.getOutboundResourceAdapter();
         if(ora == null || ora.getConnectionDefs().size() == 0) {
             return null;
@@ -158,14 +173,14 @@ public class MCFConfigParserImpl implements MCFConfigParser {
             }
         }
 
-        if(connectionDefFound == false) {
+        if(!connectionDefFound) {
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE,
                         "No such connectiondefinition found in ra.xml",
                         connectionDefName);
             }
             throw new ConnectorRuntimeException(
-                  "No such connectiondefinition found in ra.xml : " + 
+                  "No such connectiondefinition found in ra.xml : " +
                   connectionDefName);
         }
 
@@ -176,16 +191,29 @@ public class MCFConfigParserImpl implements MCFConfigParser {
         *  mergedVals       -> merged props of raConfigPros and
         *                      allraConfigPropsWithDefVals
         */
-
-        Properties mergedVals = null;
-        Set ddVals = cdd.getConfigProperties();
-        String className = cdd.getManagedConnectionFactoryImpl();
-        if(className != null && className.length() != 0) {
-            Properties introspectedVals = configParserUtil.introspectJavaBean(
-                               className,ddVals, true, rarName);
-            mergedVals = configParserUtil.mergeProps(ddVals,introspectedVals);
-        }
-        return mergedVals;
+        return cdd;
     }
 
+
+    public List<String> getConfidentialProperties(ConnectorDescriptor desc, String rarName, String... keyFields)
+            throws ConnectorRuntimeException {
+        if(keyFields == null || keyFields.length == 0 || keyFields[0] == null){
+            throw new ConnectorRuntimeException("ConnectionDefinitionName must be specified");
+        }
+        ConnectionDefDescriptor cdd = getConnectionDefinition(desc, keyFields[0]);
+        List<String> confidentialProperties = new ArrayList<String>();
+        if(cdd != null){
+            Set configProperties = cdd.getConfigProperties();
+            if(configProperties != null){
+                Iterator iterator = configProperties.iterator();
+                while(iterator.hasNext()){
+                    ConnectorConfigProperty ccp = (ConnectorConfigProperty)iterator.next();
+                    if(ccp.isConfidential()){
+                        confidentialProperties.add(ccp.getName());
+                    }
+                }
+            }
+        }
+        return confidentialProperties;
+    }
 }

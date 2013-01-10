@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -96,7 +96,7 @@ public class AdminObject extends Descriptor {
     /** 
      * Add a configProperty to the set
      */
-    public void addConfigProperty(EnvironmentProperty configProperty) 
+    public void addConfigProperty(ConnectorConfigProperty configProperty)
     {
 	configProperties.add(configProperty);
     }
@@ -104,7 +104,7 @@ public class AdminObject extends Descriptor {
     /** 
      * Add a configProperty to the set
      */ 
-    public void removeConfigProperty(EnvironmentProperty configProperty) 
+    public void removeConfigProperty(ConnectorConfigProperty configProperty)
     {
 	configProperties.remove(configProperty);
     }

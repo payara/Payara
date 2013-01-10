@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -372,5 +372,25 @@ public interface ConnectorConstants extends ResourceConstants {
 
     //flag to enable dynamic-reconfiguration feature for connection pool
     public static final String DYNAMIC_RECONFIGURATION_FLAG = "dynamic-reconfiguration-wait-timeout-in-seconds";
+
+    /**
+     * Admin object type.
+     */
+    public static final String AO = "AdminObject";
+
+    /**
+     * Managed connection factory type.
+     */
+    public static final String MCF = "ManagedConnectionFactory";
+
+    /**
+     * Resource adapter type.
+     */
+    public static final String RAR = "ResourceAdapter";
+
+    /**
+     * Message listener type.
+     */
+    public static final String MSL = "MessageListener";
 
 }

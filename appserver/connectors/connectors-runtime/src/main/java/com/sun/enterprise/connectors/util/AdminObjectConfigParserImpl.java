@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -130,6 +130,17 @@ public class AdminObjectConfigParserImpl implements AdminObjectConfigParser {
                                        String adminObjectInterface, String adminObjectClass, String rarName)
             throws ConnectorRuntimeException {
 
+        AdminObject adminObject = getAdminObject(desc, adminObjectInterface, adminObjectClass);
+        Properties mergedVals;
+        if (adminObject == null) return null;
+        mergedVals = getMergedValues(adminObject, rarName);
+
+
+        return mergedVals;
+    }
+
+    private AdminObject getAdminObject(ConnectorDescriptor desc, String adminObjectInterface, String adminObjectClass)
+            throws ConnectorRuntimeException {
         if (desc == null || adminObjectInterface == null ) {
             throw new ConnectorRuntimeException("Invalid arguments");
         }
@@ -161,10 +172,7 @@ public class AdminObjectConfigParserImpl implements AdminObjectConfigParser {
             }
             throw new ConnectorRuntimeException(msg);
         }
-        mergedVals = getMergedValues(adminObject, rarName);
-
-
-        return mergedVals;
+        return adminObject;
     }
 
     private Properties getMergedValues(AdminObject adminObject, String raName) throws ConnectorRuntimeException {
@@ -276,4 +284,32 @@ public class AdminObjectConfigParserImpl implements AdminObjectConfigParser {
         return false;
     }
 
+    public List<String> getConfidentialProperties(ConnectorDescriptor desc, String rarName, String... keyFields)
+            throws ConnectorRuntimeException {
+        if(keyFields == null || keyFields.length == 0 || keyFields[0] == null){
+            throw new ConnectorRuntimeException("adminObjectInterface must be specified");
+        }
+        String interfaceName = keyFields[0];
+        String className = null;
+
+        if(keyFields.length > 1){
+           className = keyFields[1];
+        }
+
+        AdminObject adminObject = getAdminObject(desc, interfaceName, className );
+        List<String> confidentialProperties = new ArrayList<String>();
+        if(adminObject != null){
+            Set configProperties = adminObject.getConfigProperties();
+            if(configProperties != null){
+                Iterator iterator = configProperties.iterator();
+                while(iterator.hasNext()){
+                    ConnectorConfigProperty ccp = (ConnectorConfigProperty)iterator.next();
+                    if(ccp.isConfidential()){
+                        confidentialProperties.add(ccp.getName());
+                    }
+                }
+            }
+        }
+        return confidentialProperties;
+    }
 }

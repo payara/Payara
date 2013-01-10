@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@ package com.sun.enterprise.connectors.util;
 
 import java.util.*;
 
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.enterprise.connectors.*;
 import com.sun.enterprise.deployment.*;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
@@ -57,22 +58,22 @@ public interface ConnectorConfigParser {
     /**
      * Admin object type.
      */
-    String AOR = "AdminObject";
+    String AOR = ConnectorConstants.AO;
 
     /**
      * Managed connection factory type.
      */
-    String MCF = "ManagedConnectionFactory";
+    String MCF = ConnectorConstants.MCF;
 
     /**
      * Resource adapter type.
      */
-    String RA = "ResourceAdapter";
+    String RA = ConnectorConstants.RAR;
 
     /**
      * Message listener type.
      */
-    String MSL = "MessageListener";
+    String MSL = ConnectorConstants.MSL;
 
     /**
      * Instances of util classes. Used as composition pattern.
@@ -92,4 +93,15 @@ public interface ConnectorConfigParser {
      */
     Properties getJavaBeanProps(ConnectorDescriptor desc,
                                 String connectionDefName, String rarName) throws ConnectorRuntimeException;
+
+    /**
+     * Gi
+     * @param desc
+     * @param rarName
+     * @param keyFields
+     * @return
+     * @throws ConnectorRuntimeException
+     */
+    List<String> getConfidentialProperties(ConnectorDescriptor desc, String rarName,
+                                           String... keyFields) throws ConnectorRuntimeException ;
 }

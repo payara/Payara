@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -687,5 +687,18 @@ public interface ConnectorRuntime extends ConnectorConstants{
      * @return long shutdown timeout (in milli-seconds)
      */
     public long getShutdownTimeout() ;
+
+
+    /**
+     * Retrieve the "confidential" config properties of specified artifact from a resource-adapter</br>
+     * @param rarName resource-adapter name
+     * @param type indicates the artifact type. Valid values are : ConnectorConstants.AOR, RA, MCF, MSL
+     * @param keyFields var-args list of key fields.
+     *                  eg: connection-definition-name when
+     * @return list of confidential properties
+     * @throws ConnectorRuntimeException
+     */
+    public List<String> getConfidentialProperties(String rarName,
+                                           String type, String... keyFields) throws ConnectorRuntimeException ;
 
 }

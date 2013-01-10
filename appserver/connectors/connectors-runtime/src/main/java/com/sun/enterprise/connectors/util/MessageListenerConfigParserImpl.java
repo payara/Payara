@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -165,31 +165,7 @@ public class MessageListenerConfigParserImpl implements
                String messageListenerType, String rarName) throws ConnectorRuntimeException 
     {
 
-        if(desc == null || messageListenerType == null) {
-            throw new ConnectorRuntimeException("Invalid arguments");
-        }
-       
-        MessageListener allMessageListeners[] = 
-               ddTransformUtil.getMessageListeners(desc);
-
-        MessageListener messageListener = null;
-        for(int i=0;i<allMessageListeners.length;++i) {
-            if(messageListenerType.equals(
-                    allMessageListeners[i].getMessageListenerType())) {
-                messageListener = allMessageListeners[i];
-            }
-        }
-
-        if(messageListener == null) {
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE,
-                        "No such MessageListener found in ra.xml",
-                        messageListenerType);
-            }
-            throw new ConnectorRuntimeException(
-                  "No such MessageListener found in ra.xml : " + 
-                  messageListenerType);
-        }
+        MessageListener messageListener = getMessageListener(desc, messageListenerType);
 
         /* ddVals           -> Properties present in ra.xml
         *  introspectedVals -> All properties with values
@@ -210,26 +186,13 @@ public class MessageListenerConfigParserImpl implements
         return mergedVals;
     }
 
-    /** Returns the Properties object consisting of propertyname as the
-     *  key and datatype as the value.
-     *  @param  messageListenerType message listener type.It is uniqie
-     *          across all <messagelistener> sub-elements in <messageadapter> 
-     *          element in a given rar.
-     *  @return Properties object with the property names(key) and datatype
-     *          of property(as value). 
-     *  @throws  ConnectorRuntimeException if either of the parameters are null.
-     *           If corresponding rar is not deployed i.e moduleDir is invalid. 
-     *           If messagelistener type is not found in ra.xml
-     */
-    public Properties getJavaBeanReturnTypes(ConnectorDescriptor desc, 
-               String messageListenerType, String rarName) throws ConnectorRuntimeException
-    {
-
+    private MessageListener getMessageListener(ConnectorDescriptor desc, String messageListenerType)
+            throws ConnectorRuntimeException {
         if(desc == null || messageListenerType == null) {
             throw new ConnectorRuntimeException("Invalid arguments");
         }
 
-        MessageListener allMessageListeners[] = 
+        MessageListener allMessageListeners[] =
                ddTransformUtil.getMessageListeners(desc);
 
         MessageListener messageListener = null;
@@ -247,9 +210,48 @@ public class MessageListenerConfigParserImpl implements
                         messageListenerType);
             }
             throw new ConnectorRuntimeException(
-                  "No such MessageListener found in ra.xml : " + 
+                  "No such MessageListener found in ra.xml : " +
                   messageListenerType);
         }
+        return messageListener;
+    }
+
+    public List<String> getConfidentialProperties(ConnectorDescriptor desc, String rarName, String... keyFields)
+            throws ConnectorRuntimeException {
+        if(keyFields == null || keyFields.length == 0 || keyFields[0] == null){
+            throw new ConnectorRuntimeException("MessageListenerType must be specified");
+        }
+        MessageListener messageListener = getMessageListener(desc, keyFields[0]);
+        List<String> confidentialProperties = new ArrayList<String>();
+        Set configProperties = messageListener.getConfigProperties();
+        if(configProperties != null){
+            Iterator iterator = configProperties.iterator();
+            while(iterator.hasNext()){
+                ConnectorConfigProperty ccp = (ConnectorConfigProperty)iterator.next();
+                if(ccp.isConfidential()){
+                    confidentialProperties.add(ccp.getName());
+                }
+            }
+        }
+        return confidentialProperties;
+    }
+
+    /** Returns the Properties object consisting of propertyname as the
+     *  key and datatype as the value.
+     *  @param  messageListenerType message listener type.It is uniqie
+     *          across all <messagelistener> sub-elements in <messageadapter> 
+     *          element in a given rar.
+     *  @return Properties object with the property names(key) and datatype
+     *          of property(as value). 
+     *  @throws  ConnectorRuntimeException if either of the parameters are null.
+     *           If corresponding rar is not deployed i.e moduleDir is invalid. 
+     *           If messagelistener type is not found in ra.xml
+     */
+    public Properties getJavaBeanReturnTypes(ConnectorDescriptor desc, 
+               String messageListenerType, String rarName) throws ConnectorRuntimeException
+    {
+
+        MessageListener messageListener = getMessageListener(desc, messageListenerType);
 
         /* ddVals           -> Properties present in ra.xml
         *  introspectedVals -> All properties with values
@@ -263,7 +265,7 @@ public class MessageListenerConfigParserImpl implements
         Set ddVals = messageListener.getConfigProperties();
         String className = messageListener.getActivationSpecClass();
         if(className != null && className.length() != 0) {
-            Properties introspectedVals = 
+            Properties introspectedVals =
                configParserUtil.introspectJavaBeanReturnTypes(className,ddVals, rarName);
             mergedVals = configParserUtil.mergePropsReturnTypes(
                                               ddVals,introspectedVals);

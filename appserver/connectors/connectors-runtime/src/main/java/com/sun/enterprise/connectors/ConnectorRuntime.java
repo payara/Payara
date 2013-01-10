@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1572,5 +1572,18 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
 
     public org.glassfish.resourcebase.resources.listener.ResourceManager getGlobalResourceManager(){
         return resourceManagerProvider.get();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public List<String> getConfidentialProperties(String rarName,
+                                           String type, String... keyFields) throws ConnectorRuntimeException {
+        ConnectorConfigParser configParser = ConnectorConfigParserFactory.getParser(type);
+        if(configParser == null){
+            throw new ConnectorRuntimeException("Invalid type : " + type);
+        }
+        return configParser.getConfidentialProperties(
+                getConnectorDescriptor(rarName), rarName, keyFields);
     }
 }
