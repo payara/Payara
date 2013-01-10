@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -106,6 +106,7 @@ import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.ejb.LogFacade;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbRemovalInfo;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
@@ -115,6 +116,7 @@ import org.glassfish.flashlight.provider.ProbeProviderFactory;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.util.SimpleMetadata;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import static com.sun.ejb.containers.EJBContextImpl.BeanState;
 import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
@@ -139,8 +141,126 @@ public final class StatefulSessionContainer
         extends BaseContainer
         implements CacheListener, SFSBContainerCallback {
 
-    private static final Logger _logger =
-            LogDomains.getLogger(StatefulSessionContainer.class, LogDomains.EJB_LOGGER);
+    private static final Logger _logger  = LogFacade.getLogger();
+
+    @LogMessageInfo(
+        message = "[SFSBContainer] Exception while  initializing SessionSynchronization methods",
+        level = "WARNING")
+    private static final String EXCEPTION_WHILE_INITIALIZING_SESSION_SYNCHRONIZATION = "AS-EJB00012";
+
+    @LogMessageInfo(
+        message = "[SFSBContainer] Exception while  loading checkpoint info",
+        level = "WARNING")
+    private static final String EXCEPTION_WHILE_LOADING_CHECKPOINT = "AS-EJB00013";
+
+    @LogMessageInfo(
+        message = "Exception creating ejb object : [{0}]",
+        level = "WARNING")
+    private static final String CREATE_EJBOBJECT_EXCEPTION = "AS-EJB00014";
+
+    @LogMessageInfo(
+        message = "Exception creating ejb local object [{0}]",
+        level = "WARNING")
+    private static final String CREATE_EJBLOCALOBJECT_EXCEPTION = "AS-EJB00015";
+
+    @LogMessageInfo(
+        message = "Couldn't update timestamp for: [{0}]; Exception: [{1}]",
+        level = "WARNING")
+    private static final String COULDNT_UPDATE_TIMESTAMP_FOR_EXCEPTION = "AS-EJB00016";
+
+    @LogMessageInfo(
+        message = "Cannot register bean for checkpointing",
+        level = "WARNING")
+    private static final String CANNOT_REGISTER_BEAN_FOR_CHECKPOINTING = "AS-EJB00017";
+
+    @LogMessageInfo(
+        message = "Error  during checkpoint ([{0}]. Key: [{1}]) [{2}]",
+        level = "WARNING")
+    private static final String ERROR_DURING_CHECKPOINT_3PARAMs = "AS-EJB00018";
+
+    @LogMessageInfo(
+        message = "sfsb checkpoint error. Name: [{0}]",
+        level = "WARNING")
+    private static final String SFSB_CHECKPOINT_ERROR_NAME = "AS-EJB00019";
+
+    @LogMessageInfo(
+        message = "sfsb checkpoint error. Key: [{0}]",
+        level = "WARNING")
+    private static final String SFSB_CHECKPOINT_ERROR_KEY = "AS-EJB00020";
+
+    @LogMessageInfo(
+        message = "Exception in afterCompletion : [{0}]",
+        level = "INFO")
+    private static final String AFTER_COMPLETION_EXCEPTION = "AS-EJB00021";
+
+    @LogMessageInfo(
+        message = "1. passivateEJB() returning because containerState: [{0}]",
+        level = "WARNING")
+    private static final String PASSIVATE_EJB_RETURNING_BECAUSE_CONTAINER_STATE = "AS-EJB00022";
+
+    @LogMessageInfo(
+        message = "Extended EM not serializable. Exception: [{0}]",
+        level = "WARNING")
+    private static final String EXTENDED_EM_NOT_SERIALIZABLE = "AS-EJB00023";
+
+    @LogMessageInfo(
+        message = "Error during passivation: [{0}]; [{1}]",
+        level = "WARNING")
+    private static final String ERROR_DURING_PASSIVATION = "AS-EJB00024";
+
+    @LogMessageInfo(
+        message = "Error during passivation of [{0}]",
+        level = "WARNING")
+    private static final String PASSIVATION_ERROR_1PARAM = "AS-EJB00025";
+
+    @LogMessageInfo(
+        message = "sfsb passivation error. Key: [{0}]",
+        level = "WARNING")
+    private static final String SFSB_PASSIVATION_ERROR_1PARAM = "AS-EJB00026";
+
+    @LogMessageInfo(
+        message = "Error during Stateful Session Bean activation for key [{0}]",
+        level = "SEVERE",
+        cause = "A problem occurred while the container was activating a stateful session bean.  " +
+                "One possible cause is that the bean code threw a system exception from its ejbActivate method.",
+        action = "Check the stack trace to see whether the exception was thrown from the ejbActivate method " +
+                "and if so double-check the application code to determine what caused the exception.")
+    private static final String SFSB_ACTIVATION_ERROR = "AS-EJB00028";
+
+    @LogMessageInfo(
+        message = "[{0}]: Error during backingStore.shutdown()",
+        level = "WARNING")
+    private static final String ERROR_DURING_BACKING_STORE_SHUTDOWN = "AS-EJB00029";
+
+    @LogMessageInfo(
+        message = "[{0}]: Error during  onShutdown()",
+        level = "WARNING")
+    private static final String ERROR_DURING_ON_SHUTDOWN = "AS-EJB00030";
+
+    @LogMessageInfo(
+        message = "[{0}]: Error while  undeploying ctx. Key: [{1}]",
+        level = "WARNING")
+    private static final String ERROR_WHILE_UNDEPLOYING_CTX_KEY = "AS-EJB00031";
+
+    @LogMessageInfo(
+        message = "Cannot add idle bean cleanup task",
+        level = "WARNING")
+    private static final String ADD_CLEANUP_TASK_ERROR = "AS-EJB00032";
+
+    @LogMessageInfo(
+        message = "Got exception during removeExpiredSessions (but the reaper thread is still alive)",
+        level = "WARNING")
+    private static final String GOT_EXCEPTION_DURING_REMOVE_EXPIRED_SESSIONS = "AS-EJB00033";
+
+    @LogMessageInfo(
+        message = "Error during checkpoint(, but session not destroyed)",
+        level = "WARNING")
+    private static final String ERROR_DURING_CHECKPOINT_SESSION_ALIVE = "AS-EJB00034";
+
+    @LogMessageInfo(
+        message = "Error during checkpoint",
+        level = "WARNING")
+    private static final String ERROR_DURING_CHECKPOINT = "AS-EJB00035";
 
     // We do not want too many ORB task for passivation
     public static final int MIN_PASSIVATION_BATCH_COUNT = 8;
@@ -261,8 +381,7 @@ public final class StatefulSessionContainer
 		        beforeCompletionMethod = ejbClass.getMethod("beforeCompletion", null);
 		        afterCompletionMethod = ejbClass.getMethod("afterCompletion", Boolean.TYPE);
 	        } catch(Exception e) {
-		        _logger.log(Level.WARNING, "[SFSBContainer] Exception while "
-                    + " initializing SessionSynchronization methods ", e);
+		        _logger.log(Level.WARNING, EXCEPTION_WHILE_INITIALIZING_SESSION_SYNCHRONIZATION, e);
 	        }
 	    } else {
 
@@ -329,7 +448,7 @@ public final class StatefulSessionContainer
                     "Bean is associated with a different unfinished transaction");
             }
         } catch (SystemException ex) {
-            _logger.log(Level.FINE, "ejb.checkUnfinishedTx_exception", ex);
+            _logger.log(Level.FINE, "Exception in checkUnfinishedTx", ex);
             throw new EJBException(ex);
         }
     }
@@ -364,8 +483,7 @@ public final class StatefulSessionContainer
                 }
             }
         } catch (Exception ex) {
-            _logger.log(Level.WARNING, "[SFSBContainer] Exception while "
-                    + " loading checkpoint info", ex);
+            _logger.log(Level.WARNING, EXCEPTION_WHILE_LOADING_CHECKPOINT, ex);
         }
     }
 
@@ -485,9 +603,7 @@ public final class StatefulSessionContainer
         }
         catch (Exception ex) {
 
-            _logger.log(Level.WARNING, "ejb.create_ejbobject_exception",
-                    ejbDescriptor.getName());
-            _logger.log(Level.WARNING, "create object exception", ex);
+            _logger.log(Level.WARNING, CREATE_EJBOBJECT_EXCEPTION, new Object[]{ejbDescriptor.getName(), ex});
 
             if (ex instanceof EJBException)
                 throw (EJBException) ex;
@@ -511,9 +627,7 @@ public final class StatefulSessionContainer
         }
         catch (Exception ex) {
 
-            _logger.log(Level.WARNING, "ejb.create_ejbobject_exception",
-                    ejbDescriptor.getName());
-            _logger.log(Level.WARNING, "create object exception", ex);
+            _logger.log(Level.WARNING, CREATE_EJBOBJECT_EXCEPTION, new Object[]{ejbDescriptor.getName(), ex});
 
             if (ex instanceof EJBException)
                 throw (EJBException) ex;
@@ -548,9 +662,7 @@ public final class StatefulSessionContainer
         }
         catch (Exception ex) {
 
-            _logger.log(Level.WARNING, "ejb.create_ejblocalobject_exception",
-                    ejbDescriptor.getName());
-            _logger.log(Level.WARNING, "create ejblocal object exception", ex);
+            _logger.log(Level.WARNING, CREATE_EJBLOCALOBJECT_EXCEPTION, new Object[]{ejbDescriptor.getName(), ex});
 
             if (ex instanceof EJBException)
                 throw (EJBException) ex;
@@ -583,9 +695,7 @@ public final class StatefulSessionContainer
         }
         catch (Exception ex) {
 
-            _logger.log(Level.WARNING, "ejb.create_ejblocalobject_exception",
-                    ejbDescriptor.getName());
-            _logger.log(Level.WARNING, "create ejblocal object exception", ex);
+            _logger.log(Level.WARNING, CREATE_EJBLOCALOBJECT_EXCEPTION, new Object[]{ejbDescriptor.getName(), ex});
 
             if (ex instanceof EJBException)
                 throw (EJBException) ex;
@@ -1043,7 +1153,7 @@ public final class StatefulSessionContainer
             preInvoke(ejbInv);
             removeBean(ejbInv);
         } catch (Exception e) {
-            _logger.log(Level.FINE, "ejb.preinvoke_exception", e);
+            _logger.log(Level.FINE, "Exception while running pre-invoke : ejbName = [{0}]", e);
             ejbInv.exception = e;
         } finally {
             /*TODO
@@ -1581,9 +1691,8 @@ public final class StatefulSessionContainer
                         backingStore.updateTimestamp(sessionKey, now);
                         context.setLastPersistedAt(System.currentTimeMillis());
                     } catch (BackingStoreException sfsbEx) {
-                        _logger.log(Level.WARNING,
-                                "Couldn't update timestamp for: " + sessionKey
-                                    + "; Exception: " + sfsbEx);
+                        _logger.log(Level.WARNING, COULDNT_UPDATE_TIMESTAMP_FOR_EXCEPTION,
+                                new Object[]{sessionKey, sfsbEx});
                         _logger.log(Level.FINE,
                                 "Couldn't update timestamp for: " + sessionKey, sfsbEx);
                     }
@@ -1866,11 +1975,9 @@ public final class StatefulSessionContainer
                 cSync.registerForTxCheckpoint(
                         (SessionContextImpl) context);
             } catch (javax.transaction.RollbackException rollEx) {
-                _logger.log(Level.WARNING, "Cannot register bean for "
-                        + "checkpointing", rollEx);
+                _logger.log(Level.WARNING, CANNOT_REGISTER_BEAN_FOR_CHECKPOINTING, rollEx);
             } catch (javax.transaction.SystemException sysEx) {
-                _logger.log(Level.WARNING, "Cannot register bean for "
-                        + "checkpointing", sysEx);
+                _logger.log(Level.WARNING, CANNOT_REGISTER_BEAN_FOR_CHECKPOINTING, sysEx);
             }
         }
     }
@@ -2013,17 +2120,14 @@ public final class StatefulSessionContainer
                             postActivateInvInfo, CallbackType.POST_ACTIVATE);
                     //Do not set sc.setExistsInStore() here
                 } catch (java.io.NotSerializableException serEx) {
-                    _logger.log(Level.WARNING, "Error  during checkpoint ("
-                            + ejbDescriptor.getName() + ". Key: "
-                            + sc.getInstanceKey() + ") " + serEx);
+                    _logger.log(Level.WARNING, ERROR_DURING_CHECKPOINT_3PARAMs,
+                            new Object[]{ejbDescriptor.getName(), sc.getInstanceKey(), serEx});
                     _logger.log(Level.FINE, "sfsb checkpoint error. Key: "
                             + sc.getInstanceKey(), serEx);
                     destroyBean = true;
                 } catch (Throwable ex) {
-                    _logger.log(Level.WARNING, "ejb.sfsb_checkpoint_error",
-                            new Object[]{ejbDescriptor.getName()});
-                    _logger.log(Level.WARNING, "sfsb checkpoint error. key: "
-                            + sc.getInstanceKey(), ex);
+                    _logger.log(Level.WARNING, SFSB_CHECKPOINT_ERROR_NAME, new Object[]{ejbDescriptor.getName()});
+                    _logger.log(Level.WARNING, SFSB_CHECKPOINT_ERROR_KEY, new Object[]{sc.getInstanceKey(), ex});
                     destroyBean = true;
                 } finally {
                     invocationManager.postInvoke(ejbInv);
@@ -2039,9 +2143,7 @@ public final class StatefulSessionContainer
             } //synchronized
 
         } catch (Throwable th) {
-            _logger.log(Level.WARNING, "ejb.sfsb_checkpoint_error",
-                    new Object[]{ejbDescriptor.getName()});
-            _logger.log(Level.WARNING, "sfsb checkpoint error", th);
+            _logger.log(Level.WARNING, SFSB_CHECKPOINT_ERROR_NAME, new Object[]{ejbDescriptor.getName(), th});
         }
 
         return simpleMetadata;
@@ -2082,7 +2184,7 @@ public final class StatefulSessionContainer
                     _logger.log(Level.FINE, "error destroying bean", e);
                 }
 		
-		_logger.log(Level.INFO, "ejb.aftercompletion_exception", realException);
+		_logger.log(Level.INFO, AFTER_COMPLETION_EXCEPTION, realException);
 		
 		// No use throwing an exception here, since the tx has already
 		// completed, and afterCompletion may be called asynchronously
@@ -2111,8 +2213,7 @@ public final class StatefulSessionContainer
 
             if (ejbDescriptor.getApplication().getKeepStateResolved() == false) {
                 if ((containerState != CONTAINER_STARTED) && (containerState != CONTAINER_STOPPED)) {
-                    _logger.log(Level.WARNING, "1. passivateEJB() returning because "
-                            + "containerState: " + containerState);
+                    _logger.log(Level.WARNING, PASSIVATE_EJB_RETURNING_BECAUSE_CONTAINER_STATE, containerState);
                     return false;
                 }
             }
@@ -2170,8 +2271,7 @@ public final class StatefulSessionContainer
                         try {
                             saved = sessionBeanCache.passivateEJB(sc, instanceKey);
                         } catch (EMNotSerializableException emNotSerEx) {
-                            _logger.log(Level.WARNING, "Extended EM not serializable. "
-                                    + "Exception: " + emNotSerEx);
+                            _logger.log(Level.WARNING, EXTENDED_EM_NOT_SERIALIZABLE, emNotSerEx);
                             _logger.log(Level.FINE, "Extended EM not serializable", emNotSerEx);
                             saved = false;
                         }
@@ -2261,8 +2361,7 @@ public final class StatefulSessionContainer
                     cacheProbeNotifier.ejbBeanPassivatedEvent(getContainerId(),
                             containerInfo.appName, containerInfo.modName,
                             containerInfo.ejbName, false);
-                    _logger.log(Level.WARNING, "Error during passivation: "
-                            + sc + "; " + nsEx);
+                    _logger.log(Level.WARNING, ERROR_DURING_PASSIVATION, new Object[]{sc, nsEx});
                     _logger.log(Level.FINE, "sfsb passivation error", nsEx);
                     // Error during passivate, so discard bean: EJB2.0 18.3.3
                     destroyBean = true;
@@ -2271,10 +2370,9 @@ public final class StatefulSessionContainer
                     cacheProbeNotifier.ejbBeanPassivatedEvent(getContainerId(),
                             containerInfo.appName, containerInfo.modName,
                             containerInfo.ejbName, false);
-                    _logger.log(Level.WARNING, "ejb.sfsb_passivation_error",
+                    _logger.log(Level.WARNING, PASSIVATION_ERROR_1PARAM,
                             new Object[]{ejbDescriptor.getName() + " <==> " + sc});
-                    _logger.log(Level.WARNING, "sfsb passivation error. Key: "
-                            + sc.getInstanceKey(), ex);
+                    _logger.log(Level.WARNING, SFSB_PASSIVATION_ERROR_1PARAM, new Object[]{sc.getInstanceKey(), ex});
                     // Error during passivate, so discard bean: EJB2.0 18.3.3
                     destroyBean = true;
                 } finally {
@@ -2296,9 +2394,7 @@ public final class StatefulSessionContainer
             } //synchronized
 
         } catch (Exception ex) {
-            _logger.log(Level.WARNING, "ejb.sfsb_passivation_error",
-                    new Object[]{ejbDescriptor.getName()});
-            _logger.log(Level.WARNING, "sfsb passivation error", ex);
+            _logger.log(Level.WARNING, PASSIVATION_ERROR_1PARAM, new Object[]{ejbDescriptor.getName(), ex});
         }
         return success;
 
@@ -2479,9 +2575,7 @@ public final class StatefulSessionContainer
                 backingStore.updateTimestamp((Serializable) sessionKey, now);
                 context.setLastPersistedAt(now);
             } catch (BackingStoreException sfsbEx) {
-                _logger.log(Level.WARNING,
-                        "Couldn't update timestamp for: " + sessionKey
-                                + ";Exception: " + sfsbEx);
+                _logger.log(Level.WARNING, COULDNT_UPDATE_TIMESTAMP_FOR_EXCEPTION, new Object[]{sessionKey, sfsbEx});
                 _logger.log(Level.FINE,
                         "Couldn't update timestamp for: " + sessionKey, sfsbEx);
             }
@@ -2496,9 +2590,7 @@ public final class StatefulSessionContainer
             if (_logger.isLoggable(TRACE_LEVEL)) {
                 logTraceInfo(context, "Failed to activate");
             }
-            _logger.log(Level.SEVERE, "ejb.sfsb_activation_error",
-                    new Object[]{sessionKey});
-            _logger.log(Level.SEVERE, "", ex);
+            _logger.log(Level.SEVERE, SFSB_ACTIVATION_ERROR, new Object[]{sessionKey, ex});
 
             throw new EJBException("Unable to activate EJB for key: "
                     + sessionKey, ex);
@@ -2756,12 +2848,10 @@ public final class StatefulSessionContainer
             try {
                 backingStore.close();
             } catch (BackingStoreException sfsbEx) {
-                _logger.log(Level.WARNING, "[" + ejbName + "]: Error during "
-                        + "backingStore.shutdown()", sfsbEx);
+                _logger.log(Level.WARNING, ERROR_DURING_BACKING_STORE_SHUTDOWN, new Object[]{ejbName, sfsbEx});
             }
         } catch (Throwable th) {
-            _logger.log(Level.WARNING, "[" + ejbName + "]: Error during "
-                    + " onShutdown()", th);
+            _logger.log(Level.WARNING, ERROR_DURING_ON_SHUTDOWN, new Object[]{ejbName, th});
         } finally {
             Utility.setContextClassLoader(origLoader);
         }
@@ -2806,8 +2896,7 @@ public final class StatefulSessionContainer
             try {
                 backingStore.destroy();
             } catch (BackingStoreException sfsbEx) {
-                _logger.log(Level.WARNING, "[" + ejbName + "]: Error during "
-                        + "backingStore.shutdown()", sfsbEx);
+                _logger.log(Level.WARNING, ERROR_DURING_BACKING_STORE_SHUTDOWN, new Object[]{ejbName, sfsbEx});
             }
         } finally {
 
@@ -2836,9 +2925,7 @@ public final class StatefulSessionContainer
         try {
             this.undeploy(ctx);
         } catch (Exception ex) {
-            _logger.log(Level.WARNING, "[" + ejbName
-                    + "]: Error while " + " undeploying ctx. Key: "
-                    + ctx.getInstanceKey());
+            _logger.log(Level.WARNING, ERROR_WHILE_UNDEPLOYING_CTX_KEY, new Object[]{ejbName, ctx.getInstanceKey()});
             _logger.log(Level.FINE, "[" + ejbName + "]: Error while "
                     + " undeploying ctx. Key: " + ctx.getInstanceKey(),
                     ex);
@@ -2981,7 +3068,7 @@ public final class StatefulSessionContainer
             synchronized (asyncTaskSemaphore) {
                 asyncTaskCount--;
             }
-            _logger.log(Level.WARNING, "ejb.add_cleanup_task_error", ex);
+            _logger.log(Level.WARNING, ADD_CLEANUP_TASK_ERROR, ex);
         }
 
     }
@@ -3081,8 +3168,7 @@ public final class StatefulSessionContainer
             _logger.log(Level.FINE, "StatefulContainer Removed " + val + " sessions....");
 
         } catch (Exception sfsbEx) {
-            _logger.log(Level.WARNING, "Got exception during removeExpiredSessions (but the reaper thread is still alive)",
-                    sfsbEx);
+            _logger.log(Level.WARNING, GOT_EXCEPTION_DURING_REMOVE_EXPIRED_SESSIONS, sfsbEx);
         }
     }
 
@@ -3218,13 +3304,11 @@ public final class StatefulSessionContainer
                         sc.setExistsInStore(true);
                         checkpointed = true;
                     } catch (EMNotSerializableException emNotSerEx) {
-                        _logger.log(Level.WARNING,
-                                "Error during checkpoint(, but session not destroyed)", emNotSerEx);
+                        _logger.log(Level.WARNING, ERROR_DURING_CHECKPOINT_SESSION_ALIVE, emNotSerEx);
                     } catch (NotSerializableException notSerEx) {
                         throw notSerEx;
                     } catch (Exception ignorableEx) {
-                        _logger.log(Level.WARNING,
-                                "Error during checkpoint", ignorableEx);
+                        _logger.log(Level.WARNING, ERROR_DURING_CHECKPOINT, ignorableEx);
                     }
 
                     // TODO - add a flag to reactivate in the same tx
@@ -3243,10 +3327,8 @@ public final class StatefulSessionContainer
                     if( sfsbStoreMonitor != null ) {
                         sfsbStoreMonitor.incrementCheckpointCount(false);
                     }
-                    _logger.log(Level.WARNING, "ejb.sfsb_checkpoint_error",
-                            new Object[]{ejbDescriptor.getName()});
-                    _logger.log(Level.WARNING, "sfsb checkpoint error. Key: "
-                            + sc.getInstanceKey(), ex);
+                    _logger.log(Level.WARNING, SFSB_CHECKPOINT_ERROR_NAME, new Object[]{ejbDescriptor.getName()});
+                    _logger.log(Level.WARNING, SFSB_CHECKPOINT_ERROR_KEY, new Object[]{sc.getInstanceKey(), ex});
                     destroyBean = true;
                 } finally {
                     invocationManager.postInvoke(ejbInv);
@@ -3269,9 +3351,7 @@ public final class StatefulSessionContainer
             } //synchronized
 
         } catch (Exception ex) {
-            _logger.log(Level.WARNING, "ejb.sfsb_passivation_error",
-                    new Object[]{ejbDescriptor.getName()});
-            _logger.log(Level.WARNING, "sfsb passivation error", ex);
+            _logger.log(Level.WARNING, PASSIVATION_ERROR_1PARAM, new Object[]{ejbDescriptor.getName(), ex});
         }
 
         return checkpointed;

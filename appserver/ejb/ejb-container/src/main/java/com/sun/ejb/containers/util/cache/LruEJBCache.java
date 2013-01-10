@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,6 +51,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.*;
+import org.glassfish.ejb.LogFacade;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * LRUCache
@@ -58,8 +60,12 @@ import java.util.logging.*;
  */
 public class LruEJBCache extends LruCache {
 
-    protected static final Logger _logger =
-        LogDomains.getLogger(LruEJBCache.class, LogDomains.EJB_LOGGER);
+    protected static final Logger _logger  = LogFacade.getLogger();
+
+    @LogMessageInfo(
+        message = "[{0}]: trimLru(), resetting head and tail",
+        level = "WARNING")
+    private static final String TRIM_LRU_RESETTING_HEAD_AND_TAIL = "AS-EJB00001";
 
     protected String cacheName;
 
@@ -76,8 +82,7 @@ public class LruEJBCache extends LruCache {
         if (tail != head) {
             tail = trimItem.getLPrev();
             if (tail == null) {
-                _logger.log(Level.WARNING, 
-                    "[" + cacheName + "]: trimLru(), resetting head and tail");
+                _logger.log(Level.WARNING, TRIM_LRU_RESETTING_HEAD_AND_TAIL, cacheName);
                 // do not let the tail go past the head
                 tail = head = null;
             } else {

@@ -51,6 +51,7 @@ import com.sun.ejb.monitoring.stats.EjbCacheStatsProviderDelegate;
 
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.util.SimpleMetadata;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.ha.store.api.BackingStoreException;
 
 import java.io.Serializable;
@@ -62,6 +63,63 @@ public class LruSessionCache
     extends LruEJBCache
     implements EjbCacheStatsProviderDelegate
 {
+
+    @LogMessageInfo(
+        message = "[{0}]: Exception in backingStore.remove([{1}])",
+        level = "WARNING")
+    private static final String EXCEPTION_BACKING_STORE_REMOVE = "AS-EJB00002";
+
+    @LogMessageInfo(
+        message = "[{0}]: passivateEJB(), Exception caught ->",
+        level = "WARNING")
+    private static final String PASSIVATE_EJB_EXCEPTION_CAUGHT = "AS-EJB00003";
+
+    @LogMessageInfo(
+        message = "[{0}]: Cannot load from  BACKUPSTORE FOR Key: <[{1}]>",
+        level = "SEVERE",
+        cause = "Didn't find the data related with the given session key.",
+        action = "Check if the session bean already timed out.")
+    private static final String CANNOT_LOAD_FROM_BACKUP_STORE = "AS-EJB00004";
+
+    @LogMessageInfo(
+        message = "[{0}]: Exception while  loading from backup session: <[{1}]>",
+        level = "SEVERE",
+        cause = "Session store exception or deserialization exception happened.",
+        action = "Check error message and exception stack.")
+    private static final String EXCEPTION_LOADING_BACKUP_SESSION = "AS-EJB00005";
+
+    @LogMessageInfo(
+        message = "[{0}]: Error while  loading from backup session: <[{1}]>",
+        level = "SEVERE",
+        cause = "Session store error or deserialization error happened.",
+        action = "Check error message and exception stack.")
+    private static final String ERROR_LOADING_BACKUP_SESSION = "AS-EJB00006";
+
+    @LogMessageInfo(
+        message = "[{0}]: Exception during backingStore.passivateSave([{1}])",
+        level = "WARNING")
+    private static final String EXCEPTION_DURING_PASSIVATE_SAVE = "AS-EJB00007";
+
+    @LogMessageInfo(
+        message = "[{0}]: Iterator(), resetting head.lPrev",
+        level = "WARNING")
+    private static final String ITERATOR_RESETTING_HEAD_LPREV = "AS-EJB00008";
+
+    @LogMessageInfo(
+        message = "[{0}]: Exiting TrimTimedoutBeans() because current cache state: [{1}]",
+        level = "WARNING")
+    private static final String EXITING_TRIM_TIMEDOUT_BEANS = "AS-EJB00009";
+
+    @LogMessageInfo(
+        message = "[{0}]: TrimTimedoutBeans(), resetting head.lPrev",
+        level = "WARNING")
+    private static final String TRIM_TIMEDOUT_BEANS_RESETTING_HEAD_LPREV = "AS-EJB00010";
+
+    @LogMessageInfo(
+        message = "[{0}]: Exiting TrimUnSortedTimedoutBeans() because current cache state: [{1}]",
+        level = "WARNING")
+    private static final String EXITING_TRIM_UNSORTED_TIMEDOUT_BEANS = "AS-EJB00011";
+
     protected int		    cacheIdleTimeoutInSeconds;
     protected int		    removalTimeoutInSeconds;
     
@@ -339,8 +397,7 @@ public class LruSessionCache
 		        backingStore.remove((Serializable) sessionKey);
             }
 		} catch (BackingStoreException sfsbEx) {
-		    _logger.log(Level.WARNING, "[" + cacheName + "]: Exception in "
-			+ "backingStore.remove(" + sessionKey + ")", sfsbEx);
+		    _logger.log(Level.WARNING, EXCEPTION_BACKING_STORE_REMOVE, new Object[]{cacheName, sessionKey, sfsbEx});
 		}
 	    }
 	}
@@ -445,8 +502,7 @@ public class LruSessionCache
         } catch (java.io.NotSerializableException notSerEx) {
 	    throw notSerEx;
         } catch (Exception ex) {
-            _logger.log(Level.WARNING, 
-               "[" + cacheName + "]: passivateEJB(), Exception caught -> ",ex);
+            _logger.log(Level.WARNING, PASSIVATE_EJB_EXCEPTION_CAUGHT, new Object[]{cacheName, ex});
         }
         return false;
     } //passivateEJB
@@ -465,8 +521,7 @@ public class LruSessionCache
                 : null;
             if ( data == null ) {
                 if(_logger.isLoggable(Level.SEVERE)) {
-                    _logger.log(Level.SEVERE, cacheName + ": Cannot load from "
-                                + " BACKUPSTORE FOR Key: <" + sessionKey + ">");
+                    _logger.log(Level.SEVERE, CANNOT_LOAD_FROM_BACKUP_STORE, new Object[]{cacheName, sessionKey});
                 }
             }  else {
 		//sfsbStoreMonitor.setActivationSize(data.length);
@@ -475,11 +530,9 @@ public class LruSessionCache
                         container.getClassLoader());
             }
         } catch ( Exception ex ) {
-            _logger.log(Level.SEVERE, cacheName + ": Exception while "
-                        + " loading from backup session: <" + sessionKey + ">", ex);
+            _logger.log(Level.SEVERE, EXCEPTION_LOADING_BACKUP_SESSION, new Object[]{cacheName, sessionKey, ex});
         } catch ( Error ex ) {
-            _logger.log(Level.SEVERE, cacheName + ": Error while "
-                        + " loading from backup session: <" + sessionKey + ">", ex);
+            _logger.log(Level.SEVERE, ERROR_LOADING_BACKUP_SESSION, new Object[]{cacheName, sessionKey, ex});
         }
 
         return object;
@@ -508,8 +561,7 @@ public class LruSessionCache
                 status = true;
             }
 	    } catch (BackingStoreException sfsbEx) {
-		_logger.log(Level.WARNING, "[" + cacheName + "]: Exception during "
-		    + "backingStore.passivateSave(" + sessionKey + ")", sfsbEx);
+		_logger.log(Level.WARNING, EXCEPTION_DURING_PASSIVATE_SAVE, new Object[]{cacheName, sessionKey, sfsbEx});
 	    }
 	}
 
@@ -554,8 +606,7 @@ public class LruSessionCache
 
                 //Ensure that for head the lPrev is null
                 if( (item == head) && (item.getLPrev() != null) ) {
-                    _logger.log(Level.WARNING, 
-                        "[" + cacheName + "]: Iterator(), resetting head.lPrev");
+                    _logger.log(Level.WARNING, ITERATOR_RESETTING_HEAD_LPREV, cacheName);
                     item.setLPrev(null);
                 }
                 // traverse to the previous one
@@ -580,8 +631,7 @@ public class LruSessionCache
 
                 // Ensure that for head the lPrev is null
                 if ((item == head) && (item.getLPrev() != null)) {
-                    _logger.log(Level.WARNING, "[" + cacheName
-                            + "]: Iterator(), resetting head.lPrev");
+                    _logger.log(Level.WARNING, ITERATOR_RESETTING_HEAD_LPREV, cacheName);
                     item.setLPrev(null);
                 }
                 // traverse to the previous one
@@ -628,9 +678,7 @@ public class LruSessionCache
             item = tail;
             while (true) {
 		if (currentCacheState != STATE_RUNNING) {
-                    _logger.log(Level.WARNING, 
-                        "[" + cacheName + "]: Exiting TrimTimedoutBeans() because "
-			+ "current cache state: " + currentCacheState);
+                    _logger.log(Level.WARNING, EXITING_TRIM_TIMEDOUT_BEANS, new Object[]{cacheName, currentCacheState});
 		    break;
 		}
 
@@ -647,8 +695,7 @@ public class LruSessionCache
                 }
                 //Ensure that for head the lPrev is null
                 if( (item == head) && (item.getLPrev() != null) ) {
-                    _logger.log(Level.WARNING, 
-                        "[" + cacheName + "]: TrimTimedoutBeans(), resetting head.lPrev");
+                    _logger.log(Level.WARNING, TRIM_TIMEDOUT_BEANS_RESETTING_HEAD_LPREV, cacheName);
                     item.setLPrev(null);
                 }
                 // traverse to the previous one
@@ -729,9 +776,8 @@ public class LruSessionCache
                             LruCacheItem litem = (LruCacheItem)item;
                             synchronized (this) {
 				if (currentCacheState != STATE_RUNNING) {
-				    _logger.log(Level.WARNING, 
-					"[" + cacheName + "]: Exiting TrimUnSortedTimedoutBeans() "
-					+ "because current cache state: " + currentCacheState);
+				    _logger.log(Level.WARNING, EXITING_TRIM_UNSORTED_TIMEDOUT_BEANS,
+                            new Object[]{cacheName, currentCacheState});
 				    break;
 				}
                                 if (!litem.isTrimmed()) {
