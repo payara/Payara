@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.v3.server.ExecutorServiceFactory;
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -91,7 +92,7 @@ public class JobManagerService implements JobManager,PostConstruct {
     
     private static final int MAX_SIZE = 65535;
     
-    private HashMap<String, Job> jobRegistry = new HashMap<String, Job>();
+    private ConcurrentHashMap<String, Job> jobRegistry = new ConcurrentHashMap<String, Job>();
 
     private AtomicInteger lastId = new AtomicInteger(0);
 
@@ -112,14 +113,14 @@ public class JobManagerService implements JobManager,PostConstruct {
 
     private JAXBContext jaxbContext;
 
-    private File jobsFile;
+    protected File jobsFile;
 
 
     /**
      * This will return a new id which is unused
      * @return
      */
-    protected synchronized String getNewId() {
+    public synchronized String getNewId() {
         int nextId = lastId.incrementAndGet();
         if (nextId > MAX_SIZE) {
             reset();
@@ -167,22 +168,7 @@ public class JobManagerService implements JobManager,PostConstruct {
         return false;
     }
 
-    /**
-     * This will create a new job with the name of command and a new unused id for the job
-     *
-     *
-     * @param scope
-     * @param name  The name of the command
-     * @return   a newly created job
-     */
-    @Override
-    public Job createJob(String scope, String name, Subject subject,boolean isManagedJob) {
-        if (isManagedJob) {
-            return new AdminCommandInstanceImpl(getNewId(),name,scope,subject,true);
-        } else {
-            return new AdminCommandInstanceImpl(name,scope,subject,false);
-        }
-    }
+
 
     /**
      * This adds the jobs

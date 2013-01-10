@@ -54,6 +54,7 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.security.services.common.SubjectUtil;
 
 import javax.security.auth.Subject;
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -80,6 +81,8 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
     private final String scope;
 
     private boolean isManagedJob;
+
+    private File jobsFile;
 
 
 
@@ -115,6 +118,15 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
     }
 
     @Override
+    public File getJobsFile() {
+        return jobsFile;
+    }
+
+    @Override
+    public void setJobsFile(File jobsFile) {
+        this.jobsFile = jobsFile;
+    }
+    @Override
     public Subject getSubject() {
         return subject;
     }
@@ -145,10 +157,16 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
             commandProgress.complete();
         }
         this.payload = outbound;
+        JobPersistence jobPersistenceService = null;
         if (isManagedJob) {
-            JobPersistence jobPersistenceService = Globals.getDefaultHabitat().getService(JobPersistenceService.class);
+            if (scope != null)   {
+                jobPersistenceService = Globals.getDefaultHabitat().getService(JobPersistence.class,scope+"job-persistence");
+            }  else  {
+                jobPersistenceService = Globals.getDefaultHabitat().getService(JobPersistenceService.class);
+            }
+
             List<String> userList =  SubjectUtil.getUsernamesFromSubject(subject);
-            jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,State.COMPLETED.name(),userList.get(0),report.getMessage()));
+            jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,State.COMPLETED.name(),userList.get(0),report.getMessage(),getJobsFile()));
         }
         complete(report);
     }

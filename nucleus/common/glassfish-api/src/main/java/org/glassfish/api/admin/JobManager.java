@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,22 +64,64 @@ import javax.xml.bind.JAXBContext;
 @Contract
 public interface JobManager {
 
-    public Job createJob(String scope , String name, Subject subject, boolean isManagedJob);
-    
+    /**
+     * This method is used to generate a unique id for a managed job
+     * @return returns a new id for the job
+     */
+    public String getNewId() ;
+
+    /**
+     * This method will register the job in the job registry
+     * @param instance job to be registered
+     * @throws IllegalArgumentException
+     */
     public void registerJob(Job instance) throws IllegalArgumentException;
-    
+
+    /**
+     * This method will return the list of jobs in the job registry
+     * @return list of jobs
+     */
     public Iterator<Job> getJobs();
-    
+
+    /**
+     * This method is used to get a job by its id
+     * @param id  The id to look up the job in the job registry
+     * @return  the Job
+     */
     public Job get(String id);
 
+    /**
+     * This will purge the job associated with the id from the registry
+     * @param id  the id of the Job which needs to be purged
+     */
     public void purgeJob(String id);
 
+
+    /**
+     * This will get the list of jobs from the job registry which have completed
+     * @return the details of all completed jobs using JobInfos
+     */
     public JobInfos getCompletedJobs();
 
+    /**
+     * This is a convenience method to get a completed job with an id
+     * @param id  the completed Job whose id needs to be looked up
+     * @return the completed Job
+     */
     public Object getCompletedJobForId(String id);
 
+
+    /**
+     * This is used to purge a completed job whose id is provided
+     * @param id  the id of the Job which needs to be purged
+     * @return the new list of completed jobs
+     */
     public Object purgeCompletedJobForId(String id);
 
+    /**
+     * This is used to get the jobs file for a job
+     * @return the location of the job file
+     */
     public File getJobsFile();
 
 }

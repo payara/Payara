@@ -954,7 +954,7 @@ public class CommandRunnerImpl implements CommandRunner {
      *
      * @param model command model
      * @param parameters parameters from URL
-     * @throws ComponentException if option is invalid
+     *
      */
     static void validateParameters(final CommandModel model,
             final ParameterMap parameters) throws MultiException {
@@ -1735,11 +1735,25 @@ public class CommandRunnerImpl implements CommandRunner {
             if(!isManagedJob) {
                 isManagedJob = AnnotationUtil.presentTransitive(ManagedJob.class, command.getClass());
             }
-            Job commandInstance = jobRegistry.createJob(scope(),name(), subject,isManagedJob);
+            JobCreator jobCreator = null;
+            if (scope() != null)   {
+                jobCreator = habitat.getService(JobCreator.class,scope+"job-creator");
+            }  else  {
+                jobCreator = habitat.getService(JobCreatorService.class);
+            }
 
+            Job commandInstance = null;
+            if (isManagedJob) {
+                commandInstance = jobCreator.createJob(jobRegistry.getNewId(),scope(),name(), subject,isManagedJob);
+            }  else {
+                commandInstance = jobCreator.createJob(null,scope(),name(), subject,isManagedJob);
+            }
+
+            //Register the brokers  else the detach functionality will not work
             for (NameListerPair nameListerPair : nameListerPairs) {
                 commandInstance.getEventBroker().registerListener(nameListerPair.nameRegexp, nameListerPair.listener);
             }
+
             if (isManagedJob)  {
                 jobRegistry.registerJob(commandInstance);
             }

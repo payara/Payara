@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,10 @@
 package org.glassfish.api.admin.progress;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * This class contains information related to a job which will be persisted to jobs.xml
@@ -61,18 +64,30 @@ public class JobInfo  {
     public String exitCode;
     @XmlElement
     public String user;
+    @XmlTransient
+    public File jobFile;
 
 
-    public JobInfo(String jobId,String jobName,long commandStartDate,String exitCode,String user,String message) {
+    public JobInfo(String jobId,String jobName,long commandStartDate,String exitCode,String user,String message, File jobsFileLoc) {
         this.jobId = jobId;
         this.jobName = jobName;
         this.commandExecutionDate = commandStartDate;
         this.exitCode = exitCode;
         this.user = user;
         this.message=message;
+        this.jobFile = jobsFileLoc;
     }
 
-      public JobInfo() {}
+    public JobInfo() {}
+
+    public File getJobsFile() {
+        return jobFile;
+    }
+
+    public void setJobsFile(File jobsFile) {
+        this.jobFile = jobsFile;
+    }
+
 
 }
 

@@ -102,7 +102,7 @@ public class SseCommandHelper implements Runnable, AdminCommandEventBroker.Admin
         } catch (Throwable thr) {
             logger.log(Level.WARNING, strings.getLocalString("sse.commandexecution.unexpectedexception",
                     "Unexpected exception during command execution. {0}",
-                    thr.toString()));
+                    thr.toString()),thr);
             ActionReport actionReport = new PropsFileActionReporter(); //new RestActionReporter();
             actionReport.setFailureCause(thr);
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);

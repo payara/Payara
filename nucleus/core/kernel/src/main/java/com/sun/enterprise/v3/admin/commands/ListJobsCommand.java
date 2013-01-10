@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -120,7 +120,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
             if (oneJob != null) {
                 List<String> userList =  SubjectUtil.getUsernamesFromSubject(oneJob.getSubject());
                 String message = oneJob.getActionReport() == null ? "" : oneJob.getActionReport().getMessage();
-                info = new JobInfo(oneJob.getId(),oneJob.getName(),oneJob.getCommandExecutionDate(),oneJob.getState().name(),"admin",message);
+                info = new JobInfo(oneJob.getId(),oneJob.getName(),oneJob.getCommandExecutionDate(),oneJob.getState().name(),"admin",message,oneJob.getJobsFile());
 
             }  else {
                 if (jobManagerService.getCompletedJobs() != null) {
@@ -139,7 +139,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
                 if (!skipJob(job.getName())) {
                     List<String> userList =  SubjectUtil.getUsernamesFromSubject(job.getSubject());
                     String message = job.getActionReport() == null ? "" : job.getActionReport().getMessage();
-                    jobInfoList.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),job.getState().name(),userList.get(0),message));
+                    jobInfoList.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),job.getState().name(),userList.get(0),message,job.getJobsFile()));
                 }
             }
 
