@@ -140,4 +140,17 @@ public class BasicCDITest extends NucleusStartStopTest {
         
         basic.isServiceLocatorAvailableInAllCDIExtensionEvents();
     }
+    
+    /**
+     * Tests that an HK2 service with its own scope works properly
+     * 
+     * @throws NamingException
+     */
+    @Test(enabled=false)
+    public void testCustomScopedHK2ServiceWorks() throws NamingException {
+        BasicEjb basic = (BasicEjb) context.lookup(BASIC_EJB_JNDI_NAME);
+        Assert.assertNotNull(basic);
+        
+        basic.isEJBWithCustomHK2ScopeProperlyInjected();
+    }
 }

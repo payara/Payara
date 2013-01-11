@@ -105,5 +105,11 @@ public class EjbInjectedWithServiceLocator implements BasicEjb {
         HK2ExtensionVerifier verifier = locator.getService(HK2ExtensionVerifier.class);
         
         verifier.validate();
+    }
+
+    @Override
+    public void isEJBWithCustomHK2ScopeProperlyInjected() {
+        customScopedEjb.checkMe();
+        
     }    
 }

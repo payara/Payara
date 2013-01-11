@@ -51,6 +51,15 @@ import org.glassfish.hk2.api.ServiceLocator;
 @RequestScoped
 public class CustomScopedEjb {
     @Inject
-    private ServiceLocator locator;
+    private HK2Service hk2Service;
+    
+    public void checkMe() {
+        int jobValue = hk2Service.doAJob();
+        
+        if (jobValue != HK2Service.RETURN_VALUE) {
+            throw new AssertionError("The doAJob method should have returned " + HK2Service.RETURN_VALUE +
+                    " but returned " + jobValue);
+        }
+    }
 
 }

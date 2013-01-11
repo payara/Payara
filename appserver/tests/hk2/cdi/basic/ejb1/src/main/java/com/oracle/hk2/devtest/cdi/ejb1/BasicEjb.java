@@ -97,5 +97,11 @@ public interface BasicEjb {
      * access to the ServiceLocator
      */
     public void isServiceLocatorAvailableInAllCDIExtensionEvents();
+    
+    /**
+     * This method ensures that the CustomScopedEJB gets properly injected
+     * with the HK2 service
+     */
+    public void isEJBWithCustomHK2ScopeProperlyInjected();
 
 }

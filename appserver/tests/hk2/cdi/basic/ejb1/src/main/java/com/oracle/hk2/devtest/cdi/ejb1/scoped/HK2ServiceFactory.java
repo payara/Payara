@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,24 +39,27 @@
  */
 package com.oracle.hk2.devtest.cdi.ejb1.scoped;
 
-import org.jvnet.hk2.annotations.Contract;
+import javax.inject.Singleton;
+
+import org.glassfish.hk2.api.Factory;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * This service is created by hk2 and the implemetation
- * will be in a customized scope
- * 
  * @author jwells
  *
  */
-@Contract
-public interface HK2Service {
-    public static final int RETURN_VALUE = 381;
-    
-    /**
-     * This method should always return RETURN_VALUE
-     * 
-     * @return This method will always return RETURN_VALUE
-     */
-    public int doAJob();
+@Service @Singleton
+public class HK2ServiceFactory implements Factory<HK2Service> {
+
+    @Override
+    @CustomScope
+    public HK2Service provide() {
+        return new HK2ServiceImpl(HK2Service.RETURN_VALUE);
+    }
+
+    @Override
+    public void dispose(HK2Service instance) {
+        
+    }
 
 }

@@ -43,12 +43,31 @@ package com.oracle.hk2.devtest.cdi.ejb1.scoped;
  * @author jwells
  *
  */
+@CustomScope  // TODO:  Having this here rather than on the produce method needs to be removed when zero-arg constructor is removed
 public class HK2ServiceImpl implements HK2Service {
+    private final int jobValue;
+    
+    /**
+     * TODO:  This is a temporary workaround to allow the application to
+     * be deployed.  This should be removed once the HK2 service locator
+     * is populated with services
+     */
+    public HK2ServiceImpl() {
+        this(HK2Service.RETURN_VALUE);
+    }
+    
+    /**
+     * Doing THIS makes this NOT a CDI service!
+     * 
+     * @param jobValue
+     */
+    public HK2ServiceImpl(int jobValue) {
+        this.jobValue = jobValue;
+    }
 
     @Override
     public int doAJob() {
-        // TODO Auto-generated method stub
-        return 0;
+        return jobValue;
     }
 
 }
