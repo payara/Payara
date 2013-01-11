@@ -46,12 +46,12 @@ import java.util.logging.*;
 import javax.transaction.*;
 import javax.transaction.xa.*;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityManager;
 
 import com.sun.enterprise.util.Utility;
 import com.sun.enterprise.util.i18n.StringManager;
 
 import com.sun.enterprise.transaction.api.JavaEETransaction;
+import com.sun.enterprise.transaction.api.SimpleResource;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 
 import com.sun.enterprise.transaction.spi.TransactionalResource;
@@ -72,7 +72,7 @@ import com.sun.logging.LogDomains;
  * and rollback time, task will be cancelled.  If the transaction is timedout, run() method
  * will be called and transaction will be marked for rollback.
  */
-public final class JavaEETransactionImpl extends TimerTask implements 
+public final class JavaEETransactionImpl extends TimerTask implements
         JavaEETransaction {
 
     static Logger _logger = LogDomains.getLogger(JavaEETransactionImpl.class, LogDomains.JTA_LOGGER);
@@ -117,11 +117,11 @@ public final class JavaEETransactionImpl extends TimerTask implements
     //This cache contains the EntityContexts in this Tx
     private Object activeTxCache;
 
-    // EntityManager mapping for EMs with TX persistent context type 
-    private Map<EntityManagerFactory, EntityManager> txEntityManagerMap;
+    // SimpleResource mapping for EMs with TX persistent context type
+    private Map<EntityManagerFactory, SimpleResource> txEntityManagerMap;
 
-    // EntityManager mapping for EMs with EXTENDED persistence context type
-    private Map<EntityManagerFactory, EntityManager> extendedEntityManagerMap;
+    // SimpleResource mapping for EMs with EXTENDED persistence context type
+    private Map<EntityManagerFactory, SimpleResource> extendedEntityManagerMap;
     private String componentName = null;
     private ArrayList<String> resourceNames = null;
 
@@ -296,19 +296,19 @@ public final class JavaEETransactionImpl extends TimerTask implements
 
 
     public void addTxEntityManagerMapping(EntityManagerFactory emf,
-                                          EntityManager em) {
+                                          SimpleResource em) {
         getTxEntityManagerMap().put(emf, em);
     }
 
-    public EntityManager getTxEntityManager(EntityManagerFactory emf) {
+    public SimpleResource getTxEntityManagerResource(EntityManagerFactory emf) {
         return getTxEntityManagerMap().get(emf);
     }
 
-    private Map<EntityManagerFactory, EntityManager> 
+    private Map<EntityManagerFactory, SimpleResource>
         getTxEntityManagerMap() {
         if( txEntityManagerMap == null ) {
-            txEntityManagerMap = 
-                new HashMap<EntityManagerFactory, EntityManager>();
+            txEntityManagerMap =
+                new HashMap<EntityManagerFactory, SimpleResource>();
         }
         return txEntityManagerMap;
     }
@@ -318,10 +318,10 @@ public final class JavaEETransactionImpl extends TimerTask implements
             return;
         }
 
-        for (Map.Entry<EntityManagerFactory, EntityManager> entry : 
+        for (Map.Entry<EntityManagerFactory, SimpleResource> entry :
             getTxEntityManagerMap().entrySet()) {
             
-            EntityManager em = entry.getValue();
+            SimpleResource em = entry.getValue();
             if (em.isOpen()) {
                 try {
                     em.close();
@@ -335,7 +335,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
     }
 
     public void addExtendedEntityManagerMapping(EntityManagerFactory emf,
-                                                EntityManager em) {
+                                                SimpleResource em) {
         getExtendedEntityManagerMap().put(emf, em);
     }
 
@@ -343,15 +343,15 @@ public final class JavaEETransactionImpl extends TimerTask implements
         getExtendedEntityManagerMap().remove(emf);
     }
 
-    public EntityManager getExtendedEntityManager(EntityManagerFactory emf) {
+    public SimpleResource getExtendedEntityManagerResource(EntityManagerFactory emf) {
         return getExtendedEntityManagerMap().get(emf);
     }
 
-    private Map<EntityManagerFactory, EntityManager> 
+    private Map<EntityManagerFactory, SimpleResource>
         getExtendedEntityManagerMap() {
         if( extendedEntityManagerMap == null ) {
             extendedEntityManagerMap = 
-                new HashMap<EntityManagerFactory, EntityManager>();
+                new HashMap<EntityManagerFactory, SimpleResource>();
         }
         return extendedEntityManagerMap;
     }

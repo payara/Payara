@@ -42,7 +42,6 @@ package com.sun.enterprise.transaction.api;
 
 import org.jvnet.hk2.annotations.Contract;
 
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.transaction.Transaction;
 import java.util.Set;
@@ -53,13 +52,13 @@ import com.sun.enterprise.transaction.spi.TransactionalResource;
 public interface JavaEETransaction
     extends Transaction {
 
-    public EntityManager getExtendedEntityManager(EntityManagerFactory factory);
+    public  SimpleResource getExtendedEntityManagerResource(EntityManagerFactory factory);
 
-    public EntityManager getTxEntityManager(EntityManagerFactory factory);
+    public SimpleResource getTxEntityManagerResource(EntityManagerFactory factory);
 
-    public void addTxEntityManagerMapping(EntityManagerFactory factory, EntityManager em);
+    public void addTxEntityManagerMapping(EntityManagerFactory factory, SimpleResource em);
 
-    public void addExtendedEntityManagerMapping(EntityManagerFactory factory, EntityManager em);
+    public void addExtendedEntityManagerMapping(EntityManagerFactory factory, SimpleResource em);
 
     public void removeExtendedEntityManagerMapping(EntityManagerFactory factory);
 

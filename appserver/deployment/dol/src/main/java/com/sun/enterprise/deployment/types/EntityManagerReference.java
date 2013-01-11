@@ -44,6 +44,7 @@ import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.InjectionCapable;
 
 import javax.persistence.PersistenceContextType;
+import javax.persistence.SynchronizationType;
 import java.util.Map;
 
 /** 
@@ -69,6 +70,9 @@ public interface EntityManagerReference extends NamedInformation,
     
     public void setPersistenceContextType(PersistenceContextType type);
     public PersistenceContextType getPersistenceContextType();
+
+    public SynchronizationType getSynchronizationType();
+    public void setSynchronizationType(SynchronizationType type);
 
     public Map<String,String> getProperties();
 

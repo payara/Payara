@@ -948,6 +948,7 @@ public class ComponentEnvManagerImpl
             EntityManagerWrapper emWrapper = new EntityManagerWrapper(txManager, invMgr, compEnvMgr, callFlowAgent);
             emWrapper.initializeEMWrapper(refDesc.getUnitName(),
                     refDesc.getPersistenceContextType(),
+                    refDesc.getSynchronizationType(),
                     refDesc.getProperties());
 
             return emWrapper;

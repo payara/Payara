@@ -42,22 +42,18 @@ package com.sun.ejb.containers;
 
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.spi.container.StatefulEJBContext;
-import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.container.common.impl.PhysicalEntityManagerWrapper;
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
 import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
 
-import javax.ejb.EJBException;
 import javax.ejb.SessionContext;
 import javax.ejb.TimerService;
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import java.util.*;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static com.sun.ejb.containers.StatefulSessionContainer.EEMRefInfo;
-import static com.sun.ejb.containers.StatefulSessionContainer.EEMRefInfoKey;
 
 /**
  * Implementation of EJBContext for SessionBeans
@@ -91,7 +87,7 @@ public final class SessionContextImpl
 
     // Map of entity managers with extended persistence context 
     // for this stateful session bean.
-    private transient Map<EntityManagerFactory, EntityManager> extendedEntityManagerMap;
+    private transient Map<EntityManagerFactory, PhysicalEntityManagerWrapper> extendedEntityManagerMap;
 
     private transient Set<EntityManagerFactory> emfsRegisteredWithTx;
 
@@ -113,10 +109,9 @@ public final class SessionContextImpl
         }
     }
 
-    public Map<EntityManagerFactory, EntityManager> getExtendedEntityManagerMap() {
+    public Map<EntityManagerFactory, PhysicalEntityManagerWrapper> getExtendedEntityManagerMap() {
         if( extendedEntityManagerMap == null ) {
-            extendedEntityManagerMap = 
-                new HashMap<EntityManagerFactory, EntityManager>();
+            extendedEntityManagerMap = new HashMap<>();
         }
         return extendedEntityManagerMap;
     }
@@ -134,15 +129,16 @@ public final class SessionContextImpl
 
     public void addExtendedEntityManagerMapping(EntityManagerFactory emf,
 		    EEMRefInfo refInfo) {
-        getExtendedEntityManagerMap().put(emf, refInfo.getEntityManager());
+        getExtendedEntityManagerMap().put(emf, new PhysicalEntityManagerWrapper(refInfo.getEntityManager(),
+                refInfo.getSynchronizationType()) );
     }
 
 
-    public EntityManager getExtendedEntityManager(EntityManagerFactory emf) {
+    public PhysicalEntityManagerWrapper getExtendedEntityManager(EntityManagerFactory emf) {
         return getExtendedEntityManagerMap().get(emf);
     }
 
-    public Collection<EntityManager> getExtendedEntityManagers() {
+    public Collection<PhysicalEntityManagerWrapper> getExtendedEntityManagers() {
         return getExtendedEntityManagerMap().values();
     }
 

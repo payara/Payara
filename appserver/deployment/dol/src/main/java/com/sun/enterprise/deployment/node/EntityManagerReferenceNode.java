@@ -46,6 +46,7 @@ import com.sun.enterprise.deployment.xml.TagNames;
 import org.w3c.dom.Node;
 
 import javax.persistence.PersistenceContextType;
+import javax.persistence.SynchronizationType;
 import java.util.Map;
 
 /**
@@ -57,6 +58,8 @@ import java.util.Map;
 public class EntityManagerReferenceNode extends DeploymentDescriptorNode {
     private static final String TRANSACTION = "Transaction";
     private static final String EXTENDED = "Extended";
+    private static final String SYNCHRONIZED = "Synchronized";
+    private static final String UNSYNCHRONIZED = "Unsynchronized";
 
     // Holds property name during name/value processing.
     private String propertyName = null;
@@ -108,6 +111,22 @@ public class EntityManagerReferenceNode extends DeploymentDescriptorNode {
 
             entityMgrReferenceDescriptor.setPersistenceContextType(contextType);
 
+        } else if (TagNames.PERSISTENCE_CONTEXT_SYNCHRONIZATION_TYPE.equals(element.getQName() ) ) {
+            EntityManagerReferenceDescriptor entityMgrReferenceDescriptor =
+                    (EntityManagerReferenceDescriptor)getDescriptor();
+            SynchronizationType synchronizationType;
+            if (SYNCHRONIZED.equals(value)) {
+                synchronizationType = SynchronizationType.SYNCHRONIZED;
+            } else if (UNSYNCHRONIZED.equals(value)) {
+                synchronizationType = SynchronizationType.UNSYNCHRONIZED;
+            } else {
+                throw new IllegalArgumentException(localStrings.getLocalString(
+                        "enterprise.deployment.node.invalidvalue",
+                        "Invalid value for a tag under {0} : {1}",
+                        new Object[] {TagNames.PERSISTENCE_CONTEXT_SYNCHRONIZATION_TYPE, value}));
+            }
+            entityMgrReferenceDescriptor.setSynchronizationType(synchronizationType);
+
         } else if (TagNames.NAME_VALUE_PAIR_NAME.equals(element.getQName())) {
             propertyName = value;
         } else if (TagNames.NAME_VALUE_PAIR_VALUE.equals(element.getQName())) {
@@ -124,8 +143,8 @@ public class EntityManagerReferenceNode extends DeploymentDescriptorNode {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
+     * @param nodeName name for the root element of this xml fragment
+     * @param descriptor descriptor to write
      * @return the DOM tree top node
      */
     public Node writeDescriptor(Node parent, String nodeName, EntityManagerReferenceDescriptor descriptor) {    

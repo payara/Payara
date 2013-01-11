@@ -232,6 +232,7 @@ public class EntityManagerReferenceHandler
         }
 
         emRef.setPersistenceContextType(annotation.type());
+        emRef.setSynchronizationType(annotation.synchronization());
 
         // Add each property from annotation to descriptor, unless
         // it has been overridden within the .xml.

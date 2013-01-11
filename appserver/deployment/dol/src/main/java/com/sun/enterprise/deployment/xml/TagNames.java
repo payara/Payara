@@ -166,6 +166,7 @@ public interface TagNames {
 
     public static final String PERSISTENCE_UNIT_NAME = "persistence-unit-name";
     public static final String PERSISTENCE_CONTEXT_TYPE = "persistence-context-type";
+    public static final String PERSISTENCE_CONTEXT_SYNCHRONIZATION_TYPE = "persistence-context-synchronizationType";
     public static final String PERSISTENCE_UNIT_REF = "persistence-unit-ref";
     public static final String PERSISTENCE_UNIT_REF_NAME = "persistence-unit-ref-name";
 

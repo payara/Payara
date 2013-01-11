@@ -41,17 +41,13 @@
 package com.sun.enterprise.container.common.impl;
 
 import com.sun.enterprise.container.common.spi.util.CallFlowAgent;
-import com.sun.enterprise.container.common.spi.JavaEEContainer;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.ContainerUtil;
-import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PreDestroy;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import java.util.Timer;
 
 @Service
@@ -89,21 +85,6 @@ public class ContainerUtilImpl
 
     public ComponentEnvManager getComponentEnvManager() {
         return compEnvMgr;
-    }
-
-    public EntityManager lookupExtendedEntityManager(EntityManagerFactory emf) {
-        EntityManager em = null;
-
-        ComponentInvocation inv = invMgr.getCurrentInvocation();
-        if( (inv != null) &&
-            (inv.getInvocationType() == ComponentInvocation.ComponentInvocationType.EJB_INVOCATION )) {
-            Object obj = inv.getContainer();
-            if (obj instanceof JavaEEContainer) {
-                em = ((JavaEEContainer) obj).lookupExtendedEntityManager(emf);
-            }
-        }
-
-        return em;
     }
 
     public CallFlowAgent getCallFlowAgent() {

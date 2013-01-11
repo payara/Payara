@@ -44,6 +44,7 @@ import com.sun.enterprise.deployment.types.EntityManagerReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
 
 import javax.persistence.PersistenceContextType;
+import javax.persistence.SynchronizationType;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,6 +58,7 @@ public class EntityManagerReferenceDescriptor extends
 
     private String unitName = null;
     private PersistenceContextType contextType = PersistenceContextType.TRANSACTION;
+    private SynchronizationType synchronizationType = SynchronizationType.SYNCHRONIZED;
     private BundleDescriptor referringBundle;
 
     private Map<String, String> properties = new HashMap<String,String>();
@@ -100,6 +102,16 @@ public class EntityManagerReferenceDescriptor extends
 
         return contextType;
 
+    }
+
+
+    public SynchronizationType getSynchronizationType() {
+        return synchronizationType;
+    }
+
+
+    public void setSynchronizationType(SynchronizationType synchronizationType) {
+        this.synchronizationType = synchronizationType;
     }
 
     public void addProperty(String name, String value) {

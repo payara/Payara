@@ -51,9 +51,11 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
+import javax.ejb.EJBException;
+import static javax.persistence.SynchronizationType.SYNCHRONIZED;
+import static javax.persistence.SynchronizationType.UNSYNCHRONIZED;
 import javax.persistence.criteria.*;
 import javax.persistence.*;
-import javax.persistence.EntityGraph;
 import javax.persistence.metamodel.Metamodel;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
@@ -85,6 +87,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     private String unitName;
     private PersistenceContextType contextType;
     private Map emProperties;
+    private SynchronizationType synchronizationType;
 
     // transient state
 
@@ -113,9 +116,10 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     }
 
     public void initializeEMWrapper(String unitName,
-        PersistenceContextType contextType, Map emProperties) {
+        PersistenceContextType contextType, SynchronizationType synchronizationType, Map emProperties) {
         this.unitName = unitName;
         this.contextType = contextType;
+        this.synchronizationType = synchronizationType;
         this.emProperties = emProperties;
         if(contextType == PersistenceContextType.EXTENDED) {
             // We are initializing an extended EM. The physical em is already created and stored in SessionContext to
@@ -194,31 +198,36 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
 
                 // If there is an active extended persistence context
                 // for the same entity manager factory and the same tx,
-                // it takes precendence.
-                delegate = tx.getExtendedEntityManager(entityManagerFactory);
+                // it takes precedence.
+                PhysicalEntityManagerWrapper propagatedPersistenceContext = getExtendedEntityManager(tx, entityManagerFactory);
+                if(propagatedPersistenceContext == null) {
 
-                if( delegate == null ) {
+                    propagatedPersistenceContext = getTxEntityManager(tx, entityManagerFactory);
 
-                    delegate = tx.getTxEntityManager(entityManagerFactory);
 
-                    if( delegate == null ) {
+                    if( propagatedPersistenceContext == null ) {
 
                         // If there is a transaction and this is the first
                         // access of the wrapped entity manager, create an
                         // actual entity manager and associate it with the
                         // entity manager factory.
-                        delegate = entityManagerFactory.
-                            createEntityManager(emProperties);
+                        EntityManager em = entityManagerFactory.createEntityManager(synchronizationType, emProperties);
+                        propagatedPersistenceContext = new PhysicalEntityManagerWrapper(em, synchronizationType);
+                        tx.addTxEntityManagerMapping(entityManagerFactory, propagatedPersistenceContext);
+                    } else {
 
-                        tx.addTxEntityManagerMapping(entityManagerFactory, 
-                                                     delegate);
+                        //Check if sync type of current persistence context is compatible with persistence context being propagated
+                        if(synchronizationType == SYNCHRONIZED && propagatedPersistenceContext.getSynchronizationType() == UNSYNCHRONIZED) {
+                            throw new EJBException("Detected an UNSYNCHRONIZED  persistence context being propagated to SYNCHRONIZED persistence context.");
+                        }
+
                     }
                 }
+                delegate = propagatedPersistenceContext.getEM();
 
             } else {
 
-                nonTxEntityManager = entityManagerFactory.createEntityManager
-                    (emProperties);
+                nonTxEntityManager = entityManagerFactory.createEntityManager(synchronizationType, emProperties);
 
                 // Return a new non-transactional entity manager.
                 delegate = nonTxEntityManager;
@@ -1147,5 +1156,14 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         // TODO: implement
         return null;
      }
+
+    public static PhysicalEntityManagerWrapper getExtendedEntityManager(JavaEETransaction transaction, EntityManagerFactory factory) {
+        return (PhysicalEntityManagerWrapper)transaction.getExtendedEntityManagerResource(factory);
+    }
+
+    public static PhysicalEntityManagerWrapper  getTxEntityManager(JavaEETransaction transaction, EntityManagerFactory factory) {
+        return (PhysicalEntityManagerWrapper) transaction.getTxEntityManagerResource(factory);
+
+    }
 
 }

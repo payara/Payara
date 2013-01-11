@@ -73,6 +73,7 @@ import javax.ejb.SessionSynchronization;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContextType;
+import javax.persistence.SynchronizationType;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
@@ -97,6 +98,8 @@ import com.sun.ejb.spi.sfsb.util.SFSBUUIDUtil;
 import com.sun.ejb.spi.sfsb.util.SFSBVersionManager;
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
 import com.sun.enterprise.container.common.impl.EntityManagerFactoryWrapper;
+import com.sun.enterprise.container.common.impl.EntityManagerWrapper;
+import com.sun.enterprise.container.common.impl.PhysicalEntityManagerWrapper;
 import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
 import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
@@ -120,6 +123,7 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 
 import static com.sun.ejb.containers.EJBContextImpl.BeanState;
 import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
+import static javax.persistence.SynchronizationType.*;
 
 /**
  * This class provides container functionality specific to stateful
@@ -316,10 +320,10 @@ public final class StatefulSessionContainer
      * The key in this map is the physical entity manager
      */
 
-    private static Map<EntityManager, EEMRefInfo> extendedEMReferenceCountMap
+    private static final Map<EntityManager, EEMRefInfo> extendedEMReferenceCountMap
             = new HashMap<EntityManager, EEMRefInfo>();
 
-    private static Map<EEMRefInfoKey, EntityManager> eemKey2EEMMap
+    private static final Map<EEMRefInfoKey, EntityManager> eemKey2EEMMap
             = new HashMap<EEMRefInfoKey, EntityManager>();
 
     /**
@@ -812,18 +816,13 @@ public final class StatefulSessionContainer
                                 ComponentInvocation.ComponentInvocationType.EJB_INVOCATION,
                                 unitName, ejbDescriptor);
                 if (emf != null) {
-                    EntityManager em = findExtendedEMFromInvList(emf);
+                    PhysicalEntityManagerWrapper physicalEntityManagerWrapper = findExtendedEMFromInvList(emf);
 
-                    if (em == null) {
+                    if (physicalEntityManagerWrapper == null) {
+                        // We did not find an extended EM that we can inherit from. Create one
                         try {
-                            Map properties = refDesc.getProperties();
-                            em = emf.createEntityManager(properties);
-                            if (em == null) {
-                                throw new EJBException
-                                        ("EM is null. Couldn't create EntityManager for"
-                                                + " refName: " + refDesc.getName()
-                                                + "; unitname: " + unitName);
-                            }
+                            EntityManager em = emf.createEntityManager(refDesc.getSynchronizationType(), refDesc.getProperties());
+                            physicalEntityManagerWrapper = new PhysicalEntityManagerWrapper(em, refDesc.getSynchronizationType());
                         } catch (Throwable th) {
                             EJBException ejbEx = new EJBException
                                     ("Couldn't create EntityManager for"
@@ -832,20 +831,27 @@ public final class StatefulSessionContainer
                             ejbEx.initCause(th);
                             throw ejbEx;
                         }
+                    } else {
+                        // We found an extended EM we can inherit from. Validate that sync type matches
+                        if(physicalEntityManagerWrapper.getSynchronizationType() != refDesc.getSynchronizationType()) {
+                            throw new EJBException("The current invocation inherits a persistence context of synchronization type '" + physicalEntityManagerWrapper.getSynchronizationType() +
+                                    "' where as it references a persistence context of synchronization type '" + refDesc.getSynchronizationType() +
+                                    "' refName: " + refDesc.getName() +
+                                    " unitName: " + unitName );
+                        }
                     }
-
                     String emRefName = refDesc.getName();
                     long containerID = this.getContainerId();
                     EEMRefInfo refInfo = null;
                     synchronized (extendedEMReferenceCountMap) {
-                        refInfo = extendedEMReferenceCountMap.get(em);
+                        refInfo = extendedEMReferenceCountMap.get(physicalEntityManagerWrapper.getEM());
                         if (refInfo != null) {
                             refInfo.refCount++;
                         } else {
-                            refInfo = new EEMRefInfo(emRefName, refDesc.getUnitName(), containerID,
-                                    sessionKey, em, emf);
+                            refInfo = new EEMRefInfo(emRefName, refDesc.getUnitName(), refDesc.getSynchronizationType(), containerID,
+                                    sessionKey, physicalEntityManagerWrapper.getEM(), emf);
                             refInfo.refCount = 1;
-                            extendedEMReferenceCountMap.put(em, refInfo);
+                            extendedEMReferenceCountMap.put(physicalEntityManagerWrapper.getEM(), refInfo);
                             eemKey2EEMMap.put(refInfo.getKey(), refInfo.getEntityManager());
                         }
                     }
@@ -864,8 +870,8 @@ public final class StatefulSessionContainer
         }
     }
 
-    private EntityManager findExtendedEMFromInvList(EntityManagerFactory emf) {
-        EntityManager em = null;
+    private PhysicalEntityManagerWrapper findExtendedEMFromInvList(EntityManagerFactory emf) {
+        PhysicalEntityManagerWrapper em = null;
 
         ComponentInvocation compInv = (ComponentInvocation)
                 invocationManager.getCurrentInvocation();
@@ -885,7 +891,8 @@ public final class StatefulSessionContainer
     }
 
     public EntityManager lookupExtendedEntityManager(EntityManagerFactory emf) {
-        return findExtendedEMFromInvList(emf);
+        PhysicalEntityManagerWrapper physicalEntityManagerWrapper = findExtendedEMFromInvList(emf);
+        return physicalEntityManagerWrapper == null ? null : physicalEntityManagerWrapper.getEM();
     }
 
     private void afterInstanceCreation(SessionContextImpl context)
@@ -1344,8 +1351,9 @@ public final class StatefulSessionContainer
     }
 
     private void destroyExtendedEMsForContext(SessionContextImpl sc) {
-        for (EntityManager em : sc.getExtendedEntityManagers()) {
+        for (PhysicalEntityManagerWrapper emWrapper : sc.getExtendedEntityManagers()) {
             synchronized (extendedEMReferenceCountMap) {
+                EntityManager em = emWrapper.getEM();
                 if (extendedEMReferenceCountMap.containsKey(em)) {
                     EEMRefInfo refInfo = extendedEMReferenceCountMap.get(em);
                     if (refInfo.refCount > 1) {
@@ -2649,7 +2657,7 @@ public final class StatefulSessionContainer
                             bis = new ByteArrayInputStream(refInfo.serializedEEM);
                             ois = new ObjectInputStream(bis);
                             eMgr = (EntityManager) ois.readObject();
-                            newRefInfo = new EEMRefInfo(emRefName, unitName, super.getContainerId(),
+                            newRefInfo = new EEMRefInfo(emRefName, unitName, refInfo.getSynchronizationType(), super.getContainerId(),
                                     sessionKey, eMgr, emf);
                             newRefInfo.refCount = 1;
                             extendedEMReferenceCountMap.put(eMgr, newRefInfo);
@@ -2691,25 +2699,25 @@ public final class StatefulSessionContainer
     protected void validateEMForClientTx(EjbInvocation inv, JavaEETransaction clientJ2EETx) 
             throws EJBException {
         SessionContextImpl sessionCtx = (SessionContextImpl) inv.context;
-        Map<EntityManagerFactory, EntityManager> entityManagerMap =
+        Map<EntityManagerFactory, PhysicalEntityManagerWrapper> entityManagerMap =
         sessionCtx.getExtendedEntityManagerMap();
 
-        for (Map.Entry<EntityManagerFactory, EntityManager> entry :
+        for (Map.Entry<EntityManagerFactory, PhysicalEntityManagerWrapper> entry :
                 entityManagerMap.entrySet()) {
             EntityManagerFactory emf = entry.getKey();
 
             // Make sure there is no Transactional persistence context
             // for the same EntityManagerFactory as this SFSB's
             // Extended persistence context for the propagated transaction.
-            if( clientJ2EETx.getTxEntityManager(emf) != null ) {
+            if( clientJ2EETx.getTxEntityManagerResource(emf) != null ) {
                 throw new EJBException("There is an active transactional persistence context for the same EntityManagerFactory as the current stateful session bean's extended persistence context");
             }
 
             // Now see if there's already a *different* extended
             // persistence context within this transaction for the
             // same EntityManagerFactory.
-            EntityManager em = clientJ2EETx.getExtendedEntityManager(emf);
-            if( (em != null) && entry.getValue() != em ) {
+            PhysicalEntityManagerWrapper physicalEM = (PhysicalEntityManagerWrapper) clientJ2EETx.getExtendedEntityManagerResource(emf);
+            if( (physicalEM != null) && entry.getValue().getEM() != physicalEM.getEM() ) {
                 throw new EJBException("Detected two different extended persistence contexts for the same EntityManagerFactory within a transaction");
             }
 
@@ -2722,29 +2730,27 @@ public final class StatefulSessionContainer
         if (ctx.getTransaction() != null) {
             JavaEETransaction j2eeTx = (JavaEETransaction) ctx.getTransaction();
             SessionContextImpl sessionCtx = (SessionContextImpl) ctx;
-            Map<EntityManagerFactory, EntityManager> entityManagerMap =
+            Map<EntityManagerFactory, PhysicalEntityManagerWrapper> entityManagerMap =
                 sessionCtx.getExtendedEntityManagerMap();
 
-            for (Map.Entry<EntityManagerFactory, EntityManager> entry :
+            for (Map.Entry<EntityManagerFactory, PhysicalEntityManagerWrapper> entry :
                      entityManagerMap.entrySet()) {
                 EntityManagerFactory emf = entry.getKey();
-                EntityManager extendedEm = entry.getValue();
+                PhysicalEntityManagerWrapper extendedEm = entry.getValue();
 
-                EntityManager extendedEmAssociatedWithTx =
-                    j2eeTx.getExtendedEntityManager(emf);
+                PhysicalEntityManagerWrapper extendedEmAssociatedWithTx = EntityManagerWrapper.getExtendedEntityManager(j2eeTx, emf);
 
                 // If there's not already an EntityManager registered for
                 // this extended EntityManagerFactory within the current tx
                 if (extendedEmAssociatedWithTx == null) {
-                    j2eeTx.addExtendedEntityManagerMapping(emf,
-                                                           extendedEm);
+                    j2eeTx.addExtendedEntityManagerMapping(emf, extendedEm);
                     sessionCtx.setEmfRegisteredWithTx(emf, true);
 
                     // Tell persistence provider to associate the extended
                     // entity manager with the transaction.
-                    // @@@ Comment this out when joinTransaction supported on
-                    // EntityManager API.
-                    extendedEm.joinTransaction();
+                    if(extendedEm.getSynchronizationType() == SYNCHRONIZED) {
+                        extendedEm.getEM().joinTransaction();
+                    }
                 }
             }
         }
@@ -2752,13 +2758,13 @@ public final class StatefulSessionContainer
 
     @Override
     protected void delistExtendedEntityManagers(ComponentContext ctx) {
-        if ( ((EJBContextImpl)ctx).getTransaction() != null ) {
+        if ( ctx.getTransaction() != null ) {
             SessionContextImpl sessionCtx = (SessionContextImpl) ctx;
             JavaEETransaction j2eeTx = (JavaEETransaction) sessionCtx.getTransaction();
 
-            Map<EntityManagerFactory, EntityManager> entityManagerMap = sessionCtx
+            Map<EntityManagerFactory, PhysicalEntityManagerWrapper> entityManagerMap = sessionCtx
                     .getExtendedEntityManagerMap();
-            for (Map.Entry<EntityManagerFactory, EntityManager> entry :
+            for (Map.Entry<EntityManagerFactory, PhysicalEntityManagerWrapper> entry :
                     entityManagerMap.entrySet()) {
                 EntityManagerFactory emf = entry.getKey();
 
@@ -3420,6 +3426,8 @@ public final class StatefulSessionContainer
 
         private String unitName;
 
+        private SynchronizationType synchronizationType;
+
         private EEMRefInfoKey eemRefInfoKey;
 
         private byte[] serializedEEM;
@@ -3430,7 +3438,7 @@ public final class StatefulSessionContainer
 
         private int hc;
 
-        EEMRefInfo(String emRefName, String uName, long containerID,
+        EEMRefInfo(String emRefName, String uName, SynchronizationType synchronizationType, long containerID,
                    Object instanceKey, EntityManager eem,
                    EntityManagerFactory emf) {
             this.eemRefInfoKey = new EEMRefInfoKey(emRefName,
@@ -3438,6 +3446,7 @@ public final class StatefulSessionContainer
             this.eem = eem;
             this.emf = emf;
             this.unitName = uName;
+            this.synchronizationType = synchronizationType;
         }
 
         EntityManager getEntityManager() {
@@ -3458,6 +3467,10 @@ public final class StatefulSessionContainer
 
         String getUnitName() {
             return unitName;
+        }
+
+        SynchronizationType getSynchronizationType() {
+            return synchronizationType;
         }
 
         //Method of IndirectlySerializable
