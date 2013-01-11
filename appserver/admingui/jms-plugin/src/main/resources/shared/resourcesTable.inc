@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -55,15 +55,14 @@
     <sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}" data={"$pageSession{listOfRows}"} sourceVar="td">
         <!beforeCreate
             if (#{pageSession.isConnPage}) {
-                gf.getChildrenNamesList(endpoint="#{pageSession.parentUrl}/#{pageSession.childType2}" result=>$attribute{connectorResList});
-                gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", includeList="#{connectorResList}", result="#{pageSession.tmpRows}");
-                gf.filterTable(table="#{pageSession.tmpRows}", key="resourceAdapterName", value="jmsra")
+                gfr.getJmsConnectionFactories();
+                getJmsResourcesInfo( resourcesList="#{requestScope.children}" isConnectionFactory="#{true}" result="#{pageSession.tmpRows}");
                 gfr.getResourcesTableData();
             }
             if (!#{pageSession.isConnPage}) {
-                gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", result="#{pageSession.tmpRows}", id="jndiName");
+                gfr.getJmsDestResources();
+                getJmsResourcesInfo( resourcesList="#{requestScope.children}" isConnectionFactory="#{false}" result="#{pageSession.tmpRows}");
                 gfr.getResourcesTableData();
-                gf.filterTable(table="#{pageSession.listOfRows}", key="resAdapter", value="jmsra")
             }
         />
         <!afterCreate
@@ -77,60 +76,27 @@
                           onClick="setTimeout('admingui.table.toggleButtons(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.tableId}\\\\\');', 0);"/>
         </sun:tableColumn>
 
-        <sun:tableColumn id="colName" headerText="$resource{i18njms.resourcesTable.colJndiName}" rendered="#{!isConnPage}" sort="name" rowHeader="$boolean{true}">
-            <sun:hyperlink id="link" text="#{td.value.name}" url="#{pageSession.editLink}?name=#{td.value.name}" />
+        <sun:tableColumn id="colName" headerText="$resource{i18njms.resourcesTable.colJndiName}"  sort="name" rowHeader="$boolean{true}">
+            <sun:hyperlink id="link" text="#{td.value.name}" url="#{pageSession.editLink}?name=#{td.value.encodedName}" />
+        </sun:tableColumn>
+        
+        <sun:tableColumn id="colLogicalName" headerText="$resource{i18njms.resourcesTable.colLogicalJndiName}"  sort="logicalJndiName" rendered="#{isConnPage}" rowHeader="$boolean{true}">
+            <h:outputText id="lname" value="#{td.value.logicalJndiName}"/>
         </sun:tableColumn>
 
-        <sun:tableColumn id="colPoolName" headerText="$resource{i18njms.resourcesTable.colPoolName}" rendered="#{isConnPage}" sort="name" rowHeader="$boolean{false}">
-            <sun:hyperlink id="link" text="#{td.value.name}" url="#{pageSession.editLink}?name=#{td.value.name}&jndiName=#{td.value.name}" />
+        <sun:tableColumn rendered="#{!pageSession.onlyDASExist}" headerText="$resource{i18n.deployTable.colStatus}" sort="enabled" rowHeader="$boolean{false}" id="col22">
+            <sun:hyperlink rendered="#{!pageSession.onlyDASExist}" id="targetLink" text="#{td.value.enableURL}" url="#{targetPage}?name=#{td.value.encodedName}&generalPage=#{pageSession.generalPage}" />
         </sun:tableColumn>
 
-        <sun:tableColumn id="jndiName" headerText="$resource{i18njms.resourcesTable.colJndiName}" rendered="#{isConnPage}" sort="name" rowHeader="$boolean{false}">
-            <sun:staticText id="jndi" text="#{td.value.name}"  />
-        </sun:tableColumn>
-
-        <!--
-        <sun:tableColumn id="colEnabled1" headerText="$resource{i18njms.resourcesTable.colEnabled}" rendered="#{isConnPage}" sort="enabled" rowHeader="$boolean{true}">
-            <staticText id="enabled" value="#{td.value.enabled}">
-                <!event type="beforeEncode">
-                        urlencode(value="#{td.value.name}" encoding="UTF-8" result="#{pageSession.encodedName}");
-                        gf.getEntityAttrs(endpoint="#{pageSession.parentUrl}/connector-resource/#{pageSession.encodedName}", valueMap="#{requestScope.connResMap}");
-                        setAttribute(key="connRes" value="#{requestScope.connResMap['enabled']}");
-                        gf.getEntityAttrs(endpoint="#{sessionScope.REST_URL}/servers/server/server/resource-ref/#{pageSession.encodedName}", valueMap="#{requestScope.resourceRefMap}");
-                        setAttribute(key="resourceRef" value="#{requestScope.resourceRefMap['enabled']}");
-                
-                </event>
-            </staticText>
-        </sun:tableColumn>
-        -->
-
-        <!--<sun:tableColumn id="colEnabled2" headerText="$resource{i18njms.resourcesTable.colEnabled}" rendered="#{!isConnPage}" sort="enabled" rowHeader="$boolean{true}">
-            <staticText id="enabled" value="#{td.value.enabled}">
-                <!event type="beforeEncode">
-                       urlencode(value="#{td.value.name}" encoding="UTF-8" result="#{pageSession.encodedName}");
-                       gf.getEntityAttrs(endpoint="#{sessionScope.REST_URL}/servers/server/server/resource-ref/#{pageSession.encodedName}", valueMap="#{requestScope.resourceRefMap}");
-                       setAttribute(key="resourceRef" value="#{requestScope.resourceRefMap['enabled']}");                
-                </event>
-            </staticText>
-        </sun:tableColumn>-->
-
-        <sun:tableColumn rendered="#{!pageSession.onlyDASExist and !isConnPage}" headerText="$resource{i18n.deployTable.colStatus}" sort="enabled" rowHeader="$boolean{false}" id="col22">
-            <sun:hyperlink rendered="#{!pageSession.onlyDASExist}" id="targetLink" text="#{td.value.enableURL}" url="#{targetPage}?name=#{td.value.encodedName}&generalPage=#{pageSession.generalPage}?name=#{td.value.encodedName}" />
-        </sun:tableColumn>
-
-        <sun:tableColumn  rendered="#{pageSession.onlyDASExist and !isConnPage}" headerText="$resource{i18n.deployTable.colEnabled}" sort="enabled" rowHeader="$boolean{false}" id="col222">
+        <sun:tableColumn  rendered="#{pageSession.onlyDASExist}" headerText="$resource{i18n.deployTable.colEnabled}" sort="enabled" rowHeader="$boolean{false}" id="col222">
             <sun:image rendered="#{pageSession.onlyDASExist}" id="enCol" value="#{td.value.enableURL}" />
         </sun:tableColumn>
 
-        <sun:tableColumn id="colConnDefName" headerText="$resource{i18njms.resourcesTable.colResType}" sort="connectionDefinitionName" rendered="#{isConnPage}" rowHeader="$boolean{false}">
-            <h:outputText id="connDefName" value="#{td.value.connectionDefinitionName}" />
-        </sun:tableColumn>
-
-        <sun:tableColumn id="colResType" headerText="$resource{i18njms.resourcesTable.colResType}" sort="resType" rendered="#{!isConnPage}" rowHeader="$boolean{false}">
+        <sun:tableColumn id="colResType" headerText="$resource{i18njms.resourcesTable.colResType}" sort="resType"  rowHeader="$boolean{false}">
             <h:outputText id="resType" value="#{td.value.resType}"/>
         </sun:tableColumn>
 
-        <sun:tableColumn id="colTypeDesc" headerText="$resource{i18njms.resourcesTable.colDesc}" sort="description" rendered="#{!isConnPage}" rowHeader="$boolean{false}">
+        <sun:tableColumn id="colTypeDesc" headerText="$resource{i18njms.resourcesTable.colDesc}" sort="description" rowHeader="$boolean{false}">
             <h:outputText id="typeDesc" value="#{td.value.description}" />
         </sun:tableColumn>
 

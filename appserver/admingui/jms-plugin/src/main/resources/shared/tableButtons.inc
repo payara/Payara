@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -54,21 +54,34 @@
             <!command
                 getUIComponent(clientId="$pageSession{tableRowGroupId}", component=>$attribute{tableRowGroup});
                 getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows=>$attribute{selectedRows});
+                gf.onlyDASExist(onlyDAS="#{pageSession.onlyDASExist}");
+                setPageSessionAttribute(key="target", value="server");
                 foreach (var="row" list="#{requestScope.selectedRows}") {
                     urlencode(value="#{row['name']}" result="#{requestScope.encodedResName}");
-                    setAttribute(key="targetUrlsList" value="#{row['targetUrls']}");
-                    foreach (var="targetUrl" list="#{requestScope.targetUrlsList}") {
-                        createMap(result="#{requestScope.attrMap}");
-                        mapGet(Map="#{row['targetsMap']}" Key="#{requestScope.targetUrl}" Value="#{requestScope.targetVal}");
-                        mapPut(map="#{requestScope.attrMap}" key="target" value="#{targetVal}");
-                        gf.restRequest(
-                            endpoint="#{requestScope.targetUrl}/resource-ref/#{requestScope.encodedResName}"
-                            attrs="#{requestScope.attrMap}"
-                            method="DELETE"
-                            result="#{requestScope.foo}");
+                    if (!#{pageSession.onlyDASExist}){
+                        setAttribute(key="targetUrlsList" value="#{row['targetUrls']}");
+                        foreach (var="targetUrl" list="#{requestScope.targetUrlsList}") {
+                            createMap(result="#{requestScope.attrMap}");
+                            mapGet(Map="#{row['targetsMap']}" Key="#{requestScope.targetUrl}" Value="#{requestScope.targetVal}");
+                            mapPut(map="#{requestScope.attrMap}" key="target" value="#{targetVal}");
+                            gf.restRequest(
+                                endpoint="#{requestScope.targetUrl}/resource-ref/#{requestScope.encodedResName}"
+                                attrs="#{requestScope.attrMap}"
+                                method="DELETE"
+                                result="#{requestScope.foo}");
+                        }
+                        setPageSessionAttribute(key="target", value="domain");
                     }
+                    createMap(result="#{requestScope.delMap}");
+                    mapPut(map="#{requestScope.delMap}" key="id" value="#{row['name']}");
+                    mapPut(map="#{requestScope.delMap}" key="target" value="#{pageSession.target}");
+                    gf.restRequest(
+                        endpoint="#{sessionScope.REST_URL}/resources/delete-jms-resource"
+                        attrs="#{requestScope.delMap}"
+                        method="DELETE"
+                        result="#{requestScope.foo}");
+                    
                 }
-                gf.deleteCascade(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}", selectedRows="${selectedRows}", cascade="true");
                 setAttribute(key="selectedRows" value="${selectedRows}");
                 gf.redirect(page="#{pageSession.listLink}");
             />

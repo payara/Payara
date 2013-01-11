@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -176,16 +176,20 @@
 <handler id="gfr.deleteSelectedResources">
     foreach (var="row" list="#{pageSession.selectedRows}") {
         urlencode(value="#{row['name']}" result="#{requestScope.encodedResName}");
-        setAttribute(key="targetUrlsList" value="#{row['targetUrls']}");
-        foreach (var="targetUrl" list="#{requestScope.targetUrlsList}") {
-            createMap(result="#{requestScope.attrMap}");
-            mapGet(Map="#{row['targetsMap']}" Key="#{requestScope.targetUrl}" Value="#{requestScope.targetVal}");
-            mapPut(map="#{requestScope.attrMap}" key="target" value="#{targetVal}");
-            gf.restRequest(
-                endpoint="#{requestScope.targetUrl}/resource-ref/#{requestScope.encodedResName}"
-                attrs="#{requestScope.attrMap}"
-                method="DELETE"
-                result="#{requestScope.foo}");
+        gf.onlyDASExist(onlyDAS="#{pageSession.onlyDASExist}");
+
+        if (#{!onlyDASExist}){
+            setAttribute(key="targetUrlsList" value="#{row['targetUrls']}");
+            foreach (var="targetUrl" list="#{requestScope.targetUrlsList}") {
+                createMap(result="#{requestScope.attrMap}");
+                mapGet(Map="#{row['targetsMap']}" Key="#{requestScope.targetUrl}" Value="#{requestScope.targetVal}");
+                mapPut(map="#{requestScope.attrMap}" key="target" value="#{targetVal}");
+                gf.restRequest(
+                    endpoint="#{requestScope.targetUrl}/resource-ref/#{requestScope.encodedResName}"
+                    attrs="#{requestScope.attrMap}"
+                    method="DELETE"
+                    result="#{requestScope.foo}");
+            }
         }
         createMap(result="#{requestScope.attrMap}");
         if ("#{pageSession.childType}=admin-object-resource") {
@@ -194,6 +198,7 @@
         if ("!(#{pageSession.childType}=admin-object-resource)") {
             mapPut(map="#{requestScope.attrMap}" key="target" value="domain");
         }
+            
         gf.restRequest(
             endpoint="#{pageSession.parentUrl}/#{pageSession.childType}/#{requestScope.encodedResName}"
             attrs="#{requestScope.attrMap}"
@@ -201,3 +206,29 @@
             result="#{requestScope.foo}");
     }
 </handler>
+
+
+<handler id="gfr.getJmsDestResources" >
+        createMap(result="#{requestScope.resMap}");
+        mapPut(map="#{requestScope.resMap}"  key="resType" value="javax.jms.Queue");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/list-jms-resources" attrs="#{requestScope.resMap}" method="get" result="#{requestScope.queue}");
+        mapPut(map="#{requestScope.resMap}"  key="resType" value="javax.jms.Topic");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/list-jms-resources" attrs="#{requestScope.resMap}" method="get" result="#{requestScope.topic}");
+        gf.listCombine(list="#{requestScope.queue.data.extraProperties.jmsResources}" list2="#{requestScope.topic.data.extraProperties.jmsResources}" result="#{requestScope.children}");
+</handler>   
+
+<handler id="gfr.getJmsConnectionFactories" >
+        createMap(result="#{requestScope.rMap}");
+        mapPut(map="#{requestScope.rMap}"  key="resType" value="javax.jms.ConnectionFactory");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/list-jms-resources" attrs="#{requestScope.rMap}" method="get" result="#{requestScope.c1}");
+
+        mapPut(map="#{requestScope.rMap}"  key="resType" value="javax.jms.TopicConnectionFactory");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/list-jms-resources" attrs="#{requestScope.rMap}" method="get" result="#{requestScope.c2}");
+
+        mapPut(map="#{requestScope.rMap}"  key="resType" value="javax.jms.QueueConnectionFactory");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/list-jms-resources" attrs="#{requestScope.rMap}" method="get" result="#{requestScope.c3}");
+
+        gf.listCombine(list="#{requestScope.c1.data.extraProperties.jmsResources}" list2="#{requestScope.c2.data.extraProperties.jmsResources}" result="#{requestScope.tmplist}");
+        gf.listCombine(list="#{requestScope.tmplist}" list2="#{requestScope.c3.data.extraProperties.jmsResources}" result="#{requestScope.children}");
+ 
+</handler>   

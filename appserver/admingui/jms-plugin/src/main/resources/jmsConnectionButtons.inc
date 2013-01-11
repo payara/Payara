@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,7 @@
 
 -->
 
-<sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
+<sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}" 
         onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
     <!command
         gf.updateEntity(endpoint="#{pageSession.selfUrl}", attrs="#{pageSession.valueMap}", skipAttrs="#{pageSession.skipAttrsList}",
@@ -63,11 +63,13 @@
     <!command
         // Create connector-resource
         // Update the connector-resource with the Name specified on the connector-connection-pool
-        mapPut(map="#{pageSession.valueMap2}", key="poolName", value="#{pageSession.valueMap['name']}");
-        mapPut(map="#{pageSession.valueMap2}", key="name", value="#{pageSession.valueMap['name']}");
         
+        mapPut(map="#{pageSession.valueMap2}", key="poolName", value="#{pageSession.valueMap['name']}-Connection-Pool");
+        mapPut(map="#{pageSession.valueMap2}", key="name", value="#{pageSession.valueMap['name']}");
+        mapPut(map="#{pageSession.valueMap}", key="name", value="#{pageSession.valueMap['name']}-Connection-Pool");
+
         // Create connector-connection-pool
-        gf.createEntity(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}",
+        gf.createEntity(endpoint="#{pageSession.parentUrl}/connector-connection-pool",
             attrs="#{pageSession.valueMap}", convertToFalse="#{pageSession.convertToFalseList}", result => $attribute{resultEndPoint});
         // Create connector-resource
         mapPut(map="#{pageSession.valueMap2}" key="target" value="domain");
@@ -97,15 +99,13 @@
             gf.createEntity(endpoint="#{requestScope.endp}" attrs="#{requestScope.refsMap}" convertToFalse={"enabled"});
         }
 
-        if (#{pageSession.hasPropertyTable}){
-            getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
-            getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});
-            removeEmptyProps(props="#{newList}" modifiedProps="#{newList}");
-            javaToJSON(obj="$attribute{newList}" json="#{requestScope.tmpJSON}");
-            urlencode(value="#{pageSession.valueMap.name}" encoding="UTF-8" result="#{pageSession.encodedName}");
-            gf.restRequest(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}/#{pageSession.encodedName}/property.json",
-                method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
-        }
+        getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
+        getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});
+        removeEmptyProps(props="#{newList}" modifiedProps="#{newList}");
+        javaToJSON(obj="$attribute{newList}" json="#{requestScope.tmpJSON}");
+        urlencode(value="#{pageSession.valueMap.name}" encoding="UTF-8" result="#{pageSession.encodedName}");
+        gf.restRequest(endpoint="#{pageSession.parentUrl}/connector-connection-pool/#{pageSession.encodedName}/property.json",
+            method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
         gf.redirect(page="#{parentPage}")
     />
 </sun:button>

@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,12 +39,13 @@
     holder.
 
 -->
+#include "/common/resourceNode/resourceHandlers.inc"
 
 <gf:navNode id="jmsResources"
 	    label="$resource{i18n.tree.jmsResources}"
 	    icon="#{request.contextPath}/resource/images/jms.gif"
             url="#{request.contextPath}/jms/jmsResources.jsf">
-    <dynamicTreeNode id="jmsConnectionFactories"  childNameKey="message"
+    <dynamicTreeNode id="jmsConnectionFactories"  
 	    treeAdaptorClass="org.glassfish.admingui.common.tree.ListTreeAdaptor"
 	    children="#{requestScope.children}"
 	    childImageURL="/resource/jms/images/canister.gif"
@@ -54,27 +55,14 @@
 	    url="#{request.contextPath}/jms/jmsConnections.jsf">
 	<ui:event type="beforeCreate">
             setSessionAttribute(key="_jms_exist" value="true");
-
-            createMap(result="#{requestScope.rMap}");
-            mapPut(map="#{requestScope.rMap}"  key="resType" value="javax.jms.ConnectionFactory");
-            gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/list-jms-resources.json" attrs="#{requestScope.rMap}" method="get" result="#{requestScope.c1}");
-
-            mapPut(map="#{requestScope.rMap}"  key="resType" value="javax.jms.TopicConnectionFactory");
-            gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/list-jms-resources.json" attrs="#{requestScope.rMap}" method="get" result="#{requestScope.c2}");
-
-            mapPut(map="#{requestScope.rMap}"  key="resType" value="javax.jms.QueueConnectionFactory");
-            gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/list-jms-resources.json" attrs="#{requestScope.rMap}" method="get" result="#{requestScope.c3}");
-
-            gf.listCombine(list="#{requestScope.c1.data.children}" list2="#{requestScope.c2.data.children}" result="#{requestScope.tmplist}");
-            gf.listCombine(list="#{requestScope.tmplist}" list2="#{requestScope.c3.data.children}" result="#{requestScope.children}");
-
+            gfr.getJmsConnectionFactories();
 	</ui:event>
         <!facet image>
             <sun:iconHyperlink id="treeIcon" icon="TREE_FOLDER" url="/jms/jmsConnections.jsf"  border="0" immediate="true" alt="$resource{i18n.tree.connectionFactories}" />
         </facet>
     </dynamicTreeNode>
 
-        <dynamicTreeNode id="jmsDestinationResources"  childNameKey="message"
+        <dynamicTreeNode id="jmsDestinationResources"
             treeAdaptorClass="org.glassfish.admingui.common.tree.ListTreeAdaptor"
             children="#{requestScope.children}"
             childImageURL="/resource/jms/images/canister.gif"
@@ -83,12 +71,7 @@
             text="$resource{i18n.tree.destinationResources}"
             url="#{request.contextPath}/jms/jmsDestinations.jsf">
         <ui:event type="beforeCreate">
-            createMap(result="#{requestScope.resMap}");
-            mapPut(map="#{requestScope.resMap}"  key="resType" value="javax.jms.Queue");
-            gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/list-jms-resources.json" attrs="#{requestScope.resMap}" method="get" result="#{requestScope.queue}");
-            mapPut(map="#{requestScope.resMap}"  key="resType" value="javax.jms.Topic");
-            gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/list-jms-resources.json" attrs="#{requestScope.resMap}" method="get" result="#{requestScope.topic}");
-            gf.listCombine(list="#{requestScope.queue.data.children}" list2="#{requestScope.topic.data.children}" result="#{requestScope.children}");
+            gfr.getJmsDestResources();
         </ui:event>
         <!facet image>
             <sun:iconHyperlink id="treeIcon" icon="TREE_FOLDER" url="/jms/jmsDestinations.jsf"  border="0" immediate="true" alt="$resource{i18n.tree.destinationResources}"/>

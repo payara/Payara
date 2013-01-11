@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,7 @@
 
 -->
 
-<!-- resourceNode/jmsConnectionEdit.jsf -->
+<!-- jmsConnectionEdit.jsf -->
 
 <!initPage
     setResourceBundle(key="i18njms" bundle="org.glassfish.jms.admingui.Strings");
@@ -53,25 +53,38 @@
         <!beforeCreate
             getRequestValue(key="name" value="#{pageSession.Name}");
             urlencode(value="#{pageSession.Name}" encoding="UTF-8" result="#{pageSession.encodedName}");
+            
+            gf.getEntityAttrs(endpoint="#{sessionScope.REST_URL}/resources/connector-resource/#{pageSession.encodedName}", valueMap="#{pageSession.resValueMap}");
 
-            //if we come here from the table, we have the JndiName which we should use since that is the correct one for sure.
-            //if from the tree, may need to calculate it. For now, we just use the same pool name.
-            //Actually the tree just shows all connector Connection pool which is not correct. For now, we leave as is.
-            getRequestValue(key="jndiName" value="#{pageSession.JndiName}", default="#{pageSession.Name}");
+            setPageSessionAttribute(key="poolName", value="#{pageSession.resValueMap['poolName']}" );
+            urlencode(value="#{pageSession.poolName}" encoding="UTF-8" result="#{pageSession.encodedPoolName}");
 
             setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/jms/jmsConnectionEdit.jsf?name=#{pageSession.encodedName}");
             setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/jms/jmsConnections.jsf");
 
             setPageSessionAttribute(key="childType" value="connector-connection-pool");
             setPageSessionAttribute(key="resChildType" value="connector-resource");
+            
             setPageSessionAttribute(key="convertToFalseList" value={"failAllConnections", "isConnectionValidationRequired"});
             setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
-            setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}/#{pageSession.encodedName}");
+            setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}/#{pageSession.encodedPoolName}");
             
             gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
             gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="GET", result="#{requestScope.propTable}");
             setPageSessionAttribute(key="tableList", value="#{requestScope.propTable.data.extraProperties.properties}");
 
+            //Get LogicalJndiName
+            createMap(result="#{requestScope.rMap}");
+            mapPut(map="#{requestScope.rMap}"  key="resType" value="#{pageSession.valueMap['connectionDefinitionName']}");
+            gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/list-jms-resources" attrs="#{requestScope.rMap}" method="get" result="#{requestScope.c1}");
+            
+            setPageSessionAttribute(key="renderLogic" value="#{false}");
+            foreach (var="oneR" list="#{requestScope.c1.data.extraProperties.jmsResources}") {
+                if("#{oneR['name']} = #{pageSession.Name}" ){
+                    setPageSessionAttribute(key="logicalJndiName" value="#{oneR['logical-jndi-name']}" );
+                    setPageSessionAttribute(key="renderLogic" value="#{true}");
+                }
+             }
             //set the following for including buttons.inc
             setPageSessionAttribute(key="edit" value="#{true}" );
             setPageSessionAttribute(key="showDefaultButton" value="#{false}" );

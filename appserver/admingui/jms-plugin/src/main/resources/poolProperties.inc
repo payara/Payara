@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -42,30 +42,32 @@
 
 <sun:propertySheet id="propertySheet">
     <sun:propertySheetSection id="generalPropertySheet" label="$resource{i18n.common.GeneralSettings}">
-        <sun:property id="jndiProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.poolName}">
+        <sun:property id="jndiProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.jndiName}">
             <sun:textField id="jndiProp" styleClass="required" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.poolName']}" text="#{pageSession.valueMap['name']}" required="#{true}" rendered="#{!edit}" >
                 <!afterCreate
                     getClientId(component="$this{component}" clientId=>$page{resCompId});
                 />
             </sun:textField>
-            <sun:staticText text="#{pageSession.valueMap['name']}" required="#{true}" rendered="#{edit}"/>
+            <sun:staticText text="#{pageSession.Name}"  rendered="#{edit}"/>
         </sun:property>
-        <sun:property id="nameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.jndiName}" rendered="#{edit}">
-            <sun:staticText text="#{pageSession.JndiName}"/>
+                
+                
+        <sun:property id="logic"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.connectionFactory.logicalJndiName}"  rendered="#{edit and renderLogic}">
+            <sun:staticText  id="logic" text="#{pageSession.logicalJndiName}" />
         </sun:property>
+                
+                
         <sun:property id="resType"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.resType}">
             <sun:dropDown id="resType" selected="#{pageSession.valueMap['connectionDefinitionName']}" rendered="#{!edit}"
-                labels={"","javax.jms.TopicConnectionFactory","javax.jms.QueueConnectionFactory","javax.jms.ConnectionFactory"} required="#{true}"/>
-            <sun:staticText text="#{pageSession.valueMap['connectionDefinitionName']}" required="#{true}" rendered="#{edit}"/>
+                labels={"javax.jms.TopicConnectionFactory","javax.jms.QueueConnectionFactory","javax.jms.ConnectionFactory"} required="#{true}"/>
+            <sun:staticText text="#{pageSession.valueMap['connectionDefinitionName']}" rendered="#{edit}"/>
         </sun:property>
         <sun:property id="descProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.description}">
             <sun:textField id="descProp" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['description']}" />
         </sun:property>
-"<hr/>
         <sun:property id="statusProp" rendered="#{useCheckBox}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.status}">
             <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.resourceRef['enabled']}" selectedValue="true"/>
         </sun:property>
-"<hr/>
         <sun:property id="statusProp2" rendered="#{useString}"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
             label="$resource{i18n.common.status}" helpText="$resource{i18n.application.EnableTargetHelp}">
             <sun:staticText  id="enabledStr" text="#{requestScope.enabledString}" >
@@ -73,7 +75,6 @@
                     gf.getTargetEnableInfo(appName="#{pageSession.encodedName}" isApp="#{false}" status="#{requestScope.enabledString}");
                 />
            </sun:staticText>
-"<hr/>
        </sun:property>
 
         "<br /><br />
