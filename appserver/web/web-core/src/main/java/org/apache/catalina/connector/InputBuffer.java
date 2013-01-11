@@ -119,7 +119,6 @@ public class InputBuffer extends Reader
 
 
     public static final int DEFAULT_BUFFER_SIZE = 8*1024;
-    static final int debug = 0;
 
 
     // ----------------------------------------------------- Instance Variables
@@ -173,7 +172,7 @@ public class InputBuffer extends Reader
      * @param grizzlyRequest Associated Grizzly request
      */
     public void setRequest(Request grizzlyRequest) {
-	this.grizzlyRequest = grizzlyRequest;
+        this.grizzlyRequest = grizzlyRequest;
         this.grizzlyInputBuffer = grizzlyRequest.getInputBuffer();
     }
 
@@ -450,6 +449,10 @@ public class InputBuffer extends Reader
         private void processDataAvailable() {
             synchronized(lk) {
                 prevIsReady = true;
+                if (request.getContext() != null) {
+                    Thread.currentThread().setContextClassLoader(
+                            ((StandardContext)request.getContext()).getClassLoader());
+                }
                 readListener.onDataAvailable();
             }
         }
@@ -471,6 +474,10 @@ public class InputBuffer extends Reader
         private void processAllDataRead() {
             synchronized(lk) {
                 prevIsReady = true;
+                if (request.getContext() != null) {
+                    Thread.currentThread().setContextClassLoader(
+                            ((StandardContext)request.getContext()).getClassLoader());
+                }
                 readListener.onAllDataRead();
             }
         }
