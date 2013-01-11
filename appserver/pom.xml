@@ -91,9 +91,9 @@
         <woodstox.version>4.1.2</woodstox.version>
         <jaxb-api.version>2.2.7</jaxb-api.version>
 
-        <javax-persistence-api.version>2.0.102.v201209201404</javax-persistence-api.version>
+        <javax-persistence-api.version>2.0.105.v201212201717</javax-persistence-api.version>
         <!-- Versions for EclipseLink artifacts -->
-        <eclipselink.version>2.5.0-M5</eclipselink.version>
+        <eclipselink.version>2.5.0-M6</eclipselink.version>
         <eclipselink.asm.version>3.3.1.v201206041142</eclipselink.asm.version>
         <eclipselink.antlr.version>3.2.0.v201206041011</eclipselink.antlr.version>
         <!-- End versions for EclipseLink artifacts -->

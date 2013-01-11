@@ -53,6 +53,7 @@ import org.glassfish.internal.api.Globals;
 
 import javax.persistence.criteria.*;
 import javax.persistence.*;
+import javax.persistence.EntityGraph;
 import javax.persistence.metamodel.Metamodel;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
@@ -60,6 +61,7 @@ import javax.transaction.TransactionManager;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1125,5 +1127,25 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         // TODO: implement
         throw new RuntimeException("Not implemented ... WIP ...");
     }
+
+    public <T> EntityGraph<T> createEntityGraph(Class<T> rootType) {
+        // TODO: implement
+        return null;
+    }
+
+    public EntityGraph<?> createEntityGraph(String graphName) {
+        // TODO: implement
+        return null;
+    }
+
+    public <T> EntityGraph<T> getEntityGraph(String graphName) {
+        // TODO: implement
+        return null;
+    }
+
+    public <T> List<EntityGraph<? super T>> getEntityGraphs(Class<T> entityClass) {
+        // TODO: implement
+        return null;
+     }
 
 }

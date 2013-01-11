@@ -49,6 +49,7 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
+import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Cache;
@@ -172,6 +173,12 @@ public class EntityManagerFactoryWrapper
     public PersistenceUnitUtil getPersistenceUnitUtil() {
         return getDelegate().getPersistenceUnitUtil();
     }
+
+    @Override
+    public <T> void addNamedEntityGraph(String graphName, EntityGraph<T> entityGraph) {
+
+    }
+
 
     /**
      * Lookup physical EntityManagerFactory based on current component
