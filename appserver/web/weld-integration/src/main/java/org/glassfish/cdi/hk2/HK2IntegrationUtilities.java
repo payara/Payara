@@ -39,13 +39,24 @@
  */
 package org.glassfish.cdi.hk2;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Member;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.spi.Annotated;
+import javax.enterprise.inject.spi.AnnotatedField;
+import javax.enterprise.inject.spi.AnnotatedParameter;
+import javax.enterprise.inject.spi.InjectionPoint;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.glassfish.hk2.api.Injectee;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.api.ServiceLocatorFactory;
-import org.glassfish.internal.api.Globals;
+import org.glassfish.hk2.utilities.InjecteeImpl;
 
 /**
  * Integration utilities
@@ -54,16 +65,16 @@ import org.glassfish.internal.api.Globals;
  *
  */
 public class HK2IntegrationUtilities {
-    private final static ServiceLocatorFactory FACTORY = ServiceLocatorFactory.getInstance();
     private final static String APP_SL_NAME = "java:app/hk2/ServiceLocator";
     
     /**
-     * TODO: This code will be implemented differently when we
-     * have a real concept of an application service locator
+     * This method returns the proper ApplicationServiceLocator
+     * to use for CDI integration
      * 
-     * @return
+     * @return The application service loctor (will not return null)
+     * @throws AssertionError if no ServiceLocator can be found
      */
-    public ServiceLocator getApplicationServiceLocator() {
+    public static ServiceLocator getApplicationServiceLocator() {
         try {
             Context ic = new InitialContext();
             
@@ -72,6 +83,38 @@ public class HK2IntegrationUtilities {
         catch (NamingException ne) {
             throw new AssertionError(ne);
         }
+    }
+    
+    private static Set<Annotation> getHK2Qualifiers(InjectionPoint injectionPoint) {
+        Set<Annotation> setQualifiers = injectionPoint.getQualifiers();
+        
+        Set<Annotation> retVal = new HashSet<Annotation>();
+        
+        for (Annotation anno : setQualifiers) {
+            if (anno.annotationType().equals(Default.class)) continue;
+            
+            retVal.add(anno);
+        }
+        
+        return retVal;
+    }
+    
+    public static Injectee convertInjectionPointToInjectee(InjectionPoint injectionPoint) {
+        InjecteeImpl retVal = new InjecteeImpl(injectionPoint.getType());
+        
+        retVal.setRequiredQualifiers(getHK2Qualifiers(injectionPoint));
+        retVal.setParent((AnnotatedElement) injectionPoint.getMember());  // Also sets InjecteeClass
+        
+        Annotated annotated = injectionPoint.getAnnotated();
+        if (annotated instanceof AnnotatedField) {
+            retVal.setPosition(-1);  
+        }
+        else {
+            AnnotatedParameter<?> annotatedParameter = (AnnotatedParameter<?>) annotated;
+            retVal.setPosition(annotatedParameter.getPosition());
+        }
+        
+        return retVal;
     }
 
 }

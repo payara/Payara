@@ -39,13 +39,10 @@
  */
 package org.glassfish.cdi.hk2;
 
-import java.lang.annotation.Annotation;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Default;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.AfterDeploymentValidation;
 import javax.enterprise.inject.spi.BeanManager;
@@ -55,7 +52,7 @@ import javax.enterprise.inject.spi.InjectionTarget;
 import javax.enterprise.inject.spi.ProcessInjectionTarget;
 
 import org.glassfish.hk2.api.ActiveDescriptor;
-import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.Injectee;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 
@@ -66,23 +63,8 @@ import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
  *
  */
 public class HK2IntegrationExtension implements Extension {
-    private final HK2IntegrationUtilities utilities = new HK2IntegrationUtilities();
     private final HashMap<Long, ActiveDescriptor<?>> foundWithHK2 = new HashMap<Long, ActiveDescriptor<?>>();
-    private final ServiceLocator locator = utilities.getApplicationServiceLocator();
-    
-    private static Annotation[] getHK2Qualifiers(InjectionPoint injectionPoint) {
-        Set<Annotation> setQualifiers = injectionPoint.getQualifiers();
-        
-        Set<Annotation> retVal = new HashSet<Annotation>();
-        
-        for (Annotation anno : setQualifiers) {
-            if (anno.annotationType().equals(Default.class)) continue;
-            
-            retVal.add(anno);
-        }
-        
-        return retVal.toArray(new Annotation[retVal.size()]);
-    }
+    private final ServiceLocator locator = HK2IntegrationUtilities.getApplicationServiceLocator();
     
     /**
      * Called by CDI, gathers up all of the injection points known to hk2
@@ -95,12 +77,10 @@ public class HK2IntegrationExtension implements Extension {
         Set<InjectionPoint> injectionPoints = injectionTarget.getInjectionPoints();
         
         for (InjectionPoint injectionPoint : injectionPoints) {
-            Annotation qualifiers[] = getHK2Qualifiers(injectionPoint);
+            Injectee injectee = HK2IntegrationUtilities.convertInjectionPointToInjectee(injectionPoint);
             
-            ServiceHandle<?> handle = locator.getServiceHandle(injectionPoint.getType(), qualifiers);
-            if (handle == null) continue;
-            
-            ActiveDescriptor<?> descriptor = handle.getActiveDescriptor();
+            ActiveDescriptor<?> descriptor = locator.getInjecteeDescriptor(injectee);
+            if (descriptor == null) continue;
             
             // using a map removes duplicates
             foundWithHK2.put(descriptor.getServiceId(), descriptor);
