@@ -56,6 +56,11 @@
                 getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows=>$attribute{selectedRows});
                 gf.onlyDASExist(onlyDAS="#{pageSession.onlyDASExist}");
                 setPageSessionAttribute(key="target", value="server");
+                foreach (var="row1" list="#{requestScope.selectedRows}") {
+                    if ("#{row1['objectType']}=system-all-req") {
+                        gf.handleError( detail="$resource{i18njms.msg.jms.cannotDeleteDefault, #{row1['name']}}");
+                    }
+                }
                 foreach (var="row" list="#{requestScope.selectedRows}") {
                     urlencode(value="#{row['name']}" result="#{requestScope.encodedResName}");
                     if (!#{pageSession.onlyDASExist}){
