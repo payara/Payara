@@ -97,6 +97,7 @@ public class JmsResourceHandler {
                     String lname = (String) one.get("logical-jndi-name");
                     one.put("logicalJndiName", (lname==null)? "" : lname);
                     one.put("encodedPoolName", poolName);
+                    one.put("objectType", (String) attrs.get("objectType"));
                 }else{
                     one.put("resType", (String) attrs.get("resType"));
                 }
