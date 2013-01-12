@@ -210,6 +210,7 @@
 
 <handler id="gfr.getJmsDestResources" >
         createMap(result="#{requestScope.resMap}");
+        mapPut(map="#{requestScope.resMap}"  key="target" value="domain");
         mapPut(map="#{requestScope.resMap}"  key="resType" value="javax.jms.Queue");
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/list-jms-resources" attrs="#{requestScope.resMap}" method="get" result="#{requestScope.queue}");
         mapPut(map="#{requestScope.resMap}"  key="resType" value="javax.jms.Topic");
@@ -219,6 +220,7 @@
 
 <handler id="gfr.getJmsConnectionFactories" >
         createMap(result="#{requestScope.rMap}");
+        mapPut(map="#{requestScope.rMap}"  key="target" value="domain");
         mapPut(map="#{requestScope.rMap}"  key="resType" value="javax.jms.ConnectionFactory");
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/list-jms-resources" attrs="#{requestScope.rMap}" method="get" result="#{requestScope.c1}");
 
