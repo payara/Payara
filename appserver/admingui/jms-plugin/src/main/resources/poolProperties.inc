@@ -41,13 +41,16 @@
 -->
 
 <sun:propertySheet id="propertySheet">
-    <sun:propertySheetSection id="generalPropertySheet" label="$resource{i18n.common.GeneralSettings}">
-        <sun:property id="jndiProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.jndiName}">
+    <sun:propertySheetSection id="generalPropertySheet" label="$resource{i18n.common.GeneralSettings}"   >
+        <sun:property id="jndiProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.jndiName}"  rendered="#{!edit}">
             <sun:textField id="jndiProp" styleClass="required" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.poolName']}" text="#{pageSession.valueMap['name']}" required="#{true}" rendered="#{!edit}" >
                 <!afterCreate
                     getClientId(component="$this{component}" clientId=>$page{resCompId});
                 />
             </sun:textField>
+        </sun:property>
+                
+        <sun:property id="jndiProp2"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.jndiName}" rendered="#{edit}">
             <sun:staticText text="#{pageSession.Name}"  rendered="#{edit}"/>
         </sun:property>
                 
@@ -57,11 +60,13 @@
         </sun:property>
                 
                 
-        <sun:property id="resType"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.resType}">
+        <sun:property id="resTyped"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.resType}">
             <sun:dropDown id="resType" selected="#{pageSession.valueMap['connectionDefinitionName']}" rendered="#{!edit}"
-                labels={"javax.jms.TopicConnectionFactory","javax.jms.QueueConnectionFactory","javax.jms.ConnectionFactory"} required="#{true}"/>
+                labels={"javax.jms.TopicConnectionFactory","javax.jms.QueueConnectionFactory","javax.jms.ConnectionFactory"} />
             <sun:staticText text="#{pageSession.valueMap['connectionDefinitionName']}" rendered="#{edit}"/>
         </sun:property>
+                
+                
         <sun:property id="descProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.description}">
             <sun:textField id="descProp" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['description']}" />
         </sun:property>
