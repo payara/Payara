@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -111,15 +111,18 @@ public class ApplicationHandlers {
         List<String> keys = new ArrayList(appPropsMap.keySet());
         Collections.sort(keys);
 
+        String prefix = GuiUtil.getSessionValue("REST_URL") + "/applications/application/";
         for(String oneAppName : keys){
           try{
             String engines = appPropsMap.get(oneAppName);
             HashMap oneRow = new HashMap();
             oneRow.put("name", oneAppName);
-            oneRow.put("encodedName", URLEncoder.encode(oneAppName, "UTF-8"));
+            final String encodedName = URLEncoder.encode(oneAppName, "UTF-8");
+            oneRow.put("encodedName", encodedName);
             oneRow.put("selected", false);
             oneRow.put("enableURL", DeployUtil.getTargetEnableInfo(oneAppName, true, true));
             oneRow.put("sniffers", engines);
+            oneRow.put("deploymentOrder", RestUtil.getAttributesMap(prefix+encodedName).get("deploymentOrder"));
 
             List sniffersList = GuiUtil.parseStringList(engines, ",");
             oneRow.put("sniffersList", sniffersList);

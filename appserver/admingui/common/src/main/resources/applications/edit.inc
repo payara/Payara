@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -106,17 +106,23 @@
             />
         </sun:property>
 
-        <sun:property id="descProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.description}">
-            <sun:textField id="desc" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['description']}" />
-        </sun:property>
-
+        
         <sun:property id="locationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.location}">
             <sun:staticText id="location" text="#{pageSession.valueMap['location']}"/>
+        </sun:property>
+            
+        <sun:property id="deploymentOrderProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.deploymentOrder}" helpText="$resource{i18n.deploy.deploymentOrderHelp}">
+            <sun:textField id="deploymentOrder" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.deploy.deploymentOrder']}" text="#{pageSession.valueMap['deploymentOrder']}" />
         </sun:property>
 
         <sun:property id="librariesProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.Libraries}">
             <sun:staticText id="libraries" text="#{pageSession.valueMap['libraries']}"/>
-            "<br /><br />
+            
+        </sun:property>
+            
+        <sun:property id="descProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.description}">
+            <sun:textField id="desc" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['description']}" />
+           "<br /><br />
         </sun:property>
     </sun:propertySheetSection>
 </sun:propertySheet>

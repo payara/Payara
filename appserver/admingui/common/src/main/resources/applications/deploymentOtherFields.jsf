@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -98,6 +98,11 @@
 <sun:property id="keepState" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.redeploy.keepState}" helpText="$resource{i18n.redeploy.keepStateHelp}">
         <sun:checkbox id="keepState"  label=" " selected="#{pageSession.other['keepState']}" selectedValue="true" />
 </sun:property>
+        
+<sun:property id="deploymentOrder" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.deploymentOrder}" helpText="$resource{i18n.deploy.deploymentOrderHelp}" >
+	<sun:textField id="deploymentOrder" styleClass="integer" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.deploy.deploymentOrder']}" text="#{pageSession.other['deploymentOrder']}" />
+</sun:property>
+
 
 <sun:property id="librariesProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.Libraries}" helpText="$resource{i18n.deploy.libraryHelp}" >
 	<sun:textField id="library" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.Libraries']}" text="#{pageSession.other['libraries']}" />
