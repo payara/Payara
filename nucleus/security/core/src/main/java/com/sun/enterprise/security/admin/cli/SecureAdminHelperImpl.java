@@ -199,6 +199,14 @@ public class SecureAdminHelperImpl implements SecureAdminHelper {
     @Override
     public boolean isAnyAdminUserWithoutPassword() throws Exception {
         final FileRealm adminRealm = adminRealm();
+        /*
+         * If the user has configured the admin realm to use a realm other than 
+         * the default file realm bypass the check that makes sure no admin users have
+         * an empty password.
+         */
+        if (adminRealm == null) {
+            return true;
+        }
         for (final Enumeration<String> e = adminRealm.getUserNames(); e.hasMoreElements(); ) {
             final String username = e.nextElement();
             /*
