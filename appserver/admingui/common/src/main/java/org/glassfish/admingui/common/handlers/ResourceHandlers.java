@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -103,4 +103,97 @@ public class ResourceHandlers {
         }
         handlerCtx.setOutputValue("result", rows);
     }
+    
+    
+    /**
+     *	<p> This handler looks into the config properties, and confidential list, and returns a List of Map for populating the properties table. </p>
+     *
+     */
+    @Handler(id="gf.getConfigPropsInfo",
+    	input={
+        @HandlerInput(name="extraProps", type=java.util.Map.class),
+        @HandlerInput(name="key", type=String.class),
+        @HandlerInput(name="confidentialKey", type=String.class, defaultValue="confidentialConfigProps")},
+        output={
+        @HandlerOutput(name="result", type=java.util.List.class),
+        @HandlerOutput(name="hasConfidentialProps", type=java.lang.Boolean.class)})
+    public static void getConfigPropsInfo(HandlerContext handlerCtx) {
+        
+        Map<String,Object> extraProps = (Map) handlerCtx.getInputValue("extraProps");
+        String key = (String) handlerCtx.getInputValue("key");
+        String confidentialKey = (String) handlerCtx.getInputValue("confidentialKey");
+        Boolean hasConfidential = true;
+        Map<String, String> allProps = (Map<String, String>) extraProps.get(key);
+        List<String> confidentialPropsNames = (List<String>) extraProps.get(confidentialKey);
+        if (confidentialPropsNames == null || confidentialPropsNames.isEmpty()){
+            hasConfidential = false;
+        }
+        List<Map> result = new ArrayList();
+        
+        for(Map.Entry<String, String> e : allProps.entrySet()){
+            Map<String, Object> oneRow = new HashMap();
+            String name = e.getKey();
+            String value = (e.getValue() == null) ? "" : e.getValue();
+            oneRow.put("selected", false);
+            oneRow.put("name", name);
+            if ( hasConfidential && confidentialPropsNames.contains(name)){
+                oneRow.put("value", "");
+                oneRow.put("confValue", value);
+                oneRow.put("confValue2", value);
+                oneRow.put("isConfidential", true);
+            }else{
+                oneRow.put("value", value);
+                oneRow.put("confValue", "");
+                oneRow.put("confValue2", "");
+                oneRow.put("isConfidential", false);
+            }
+            result.add(oneRow);
+        }
+        handlerCtx.setOutputValue("result", result);
+        handlerCtx.setOutputValue("hasConfidentialProps", hasConfidential);
+    }
+    
+   /* This method goes through the table list,  if there is confidential properties, will ensure that the masked value1 and value2 is the same.
+    * And will copy this to the property value column to continue processing.
+    */
+    @Handler(id="gf.combineProperties",
+    	input={
+        @HandlerInput(name="tableList", type=java.util.List.class)},
+        output={
+        @HandlerOutput(name="combined", type=java.util.List.class)})
+    public static void combineProperties(HandlerContext handlerCtx) {
+        
+        List<Map> tableList = (List) handlerCtx.getInputValue("tableList");
+        List<Map> combined = new ArrayList();
+        for(Map oneRow: tableList){
+            Map newRow = new HashMap();
+            boolean isC = (boolean) oneRow.get("isConfidential");
+            String name = (String)oneRow.get("name");
+            newRow.put("name", name);
+            if (GuiUtil.isEmpty(name)){
+                continue;
+            }
+            if(isC){
+                String v1 = (String) oneRow.get("confValue");
+                String v2 = (String) oneRow.get("confValue2");
+                if(v1 == null){
+                    if (v2 != null){
+                        GuiUtil.handleError(handlerCtx, "Confidential property '" + name + "' does not match.");
+                        return;
+                    }
+                    continue;
+                }
+                if(! v1.equals(v2)){
+                    GuiUtil.handleError(handlerCtx, "Confidential property '" + name + "' does not match.");
+                    return;
+                }
+                newRow.put("value",v1);
+            }else{
+                newRow.put("value", oneRow.get("value"));
+            }
+            combined.add(newRow);
+        }
+        handlerCtx.setOutputValue("combined", combined);
+    }
+    
 }
