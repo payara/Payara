@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1365,7 +1365,8 @@ public class RemoteAdminCommand {
 			alias);
                 if (getAttr(attributes, "type").equals("PASSWORD")) {
                     opt.param._password = true;
-                    opt.description = getAttr(attributes, "description");
+                    opt.prompt = getAttr(attributes, "prompt");
+                    opt.promptAgain = getAttr(attributes, "promptAgain");
                 }
                 cm.add(opt);
                 if (opt.getType() == File.class)

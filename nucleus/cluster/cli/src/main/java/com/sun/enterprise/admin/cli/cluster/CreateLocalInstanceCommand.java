@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -250,7 +250,8 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     private void saveMasterPassword() throws CommandException {
         masterPasswordOption = new ParamModelData(CLIConstants.MASTER_PASSWORD,
                 String.class, false, null);
-        masterPasswordOption.description = Strings.get("MasterPassword");
+        masterPasswordOption.prompt = Strings.get("MasterPassword");
+        masterPasswordOption.promptAgain = Strings.get("MasterPasswordAgain");
         masterPasswordOption.param._password = true;
         if (saveMasterPassword)
             useMasterPassword = true;

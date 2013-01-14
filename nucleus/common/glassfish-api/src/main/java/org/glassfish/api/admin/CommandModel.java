@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -190,6 +190,21 @@ public abstract class CommandModel {
          * @return a localized String
          */
         public abstract String getLocalizedDescription();
+        
+        /**
+         * Returns a localized prompt for this parameter
+         * 
+         * @return a localized String
+         */
+        public abstract String getLocalizedPrompt();
+ 
+        /**
+         * Returns a localized confirmation prompt for this parameter. This is
+         * only used for passwords.
+         * 
+         * @return a localized String
+         */
+        public abstract String getLocalizedPromptAgain();
 
         /**
          * Returns the parameter type.

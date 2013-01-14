@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1037,10 +1037,11 @@ public abstract class CLICommand implements PostConstruct {
         }
     }
 
-    protected String getPassword(String paramname, String localizedDesc, 
-            boolean create) throws CommandValidationException {
+    protected String getPassword(String paramname, String localizedPrompt, 
+            String localizedPromptConfirm, boolean create) throws CommandValidationException {
         ParamModelData po = new ParamModelData(paramname, String.class, false, null);
-        po.description = localizedDesc;
+        po.prompt = localizedPrompt;
+        po.promptAgain = localizedPromptConfirm;
         po.param._password = true;
         return getPassword(po, null, create);
     }
@@ -1069,23 +1070,26 @@ public abstract class CLICommand implements PostConstruct {
         if (!programOpts.isInteractive())
             return null;        // can't prompt for it
 
-        String description = null;
-        if (opt instanceof ParamModelData)
-            description = ((ParamModelData)opt).getDescription();
+        String prompt = null;
+        String promptAgain = null;
+        if (opt instanceof ParamModelData) {
+            prompt = ((ParamModelData)opt).getPrompt();
+            promptAgain = ((ParamModelData)opt).getPromptAgain();
+        }
         String newprompt;
-        if (ok(description)) {
+        if (ok(prompt)) {
             if (defaultPassword != null) {
                 if (defaultPassword.length() == 0)
                     newprompt =
                         strings.get("NewPasswordDescriptionDefaultEmptyPrompt",
-                                            description);
+                                            prompt);
                 else
                     newprompt =
                         strings.get("NewPasswordDescriptionDefaultPrompt",
-                                            description, defaultPassword);
+                                            prompt, defaultPassword);
             } else
                 newprompt =
-                    strings.get("NewPasswordDescriptionPrompt", description);
+                    strings.get("NewPasswordDescriptionPrompt", prompt);
         } else {
             if (defaultPassword != null) {
                 if (defaultPassword.length() == 0)
@@ -1129,10 +1133,9 @@ public abstract class CLICommand implements PostConstruct {
         }
 
         String confirmationPrompt;
-        if (ok(description)) {
+        if (ok(promptAgain)) {
             confirmationPrompt =
-                strings.get("NewPasswordDescriptionConfirmationPrompt",
-                            description);
+                strings.get("NewPasswordDescriptionPrompt", promptAgain);
         } else {
             confirmationPrompt =
                 strings.get("NewPasswordConfirmationPrompt", passwordName);
@@ -1141,7 +1144,7 @@ public abstract class CLICommand implements PostConstruct {
         if (!newpassword.equals(newpasswordAgain)) {
             throw new CommandValidationException(
                 strings.get("OptionsDoNotMatch",
-                            ok(description) ? description : passwordName));
+                            ok(prompt) ? prompt : passwordName));
         }
         passwords.put(passwordName, newpassword);
         return newpassword;

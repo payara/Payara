@@ -1,7 +1,7 @@
     /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,25 +43,23 @@ package org.glassfish.common.util.admin;
 import com.sun.enterprise.util.AnnotationUtil;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.api.Param;
-import org.glassfish.api.UnknownOptionsAreOperands;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.glassfish.api.I18n;
-import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.Param;
+import org.glassfish.api.ParamDefaultCalculator;
+import org.glassfish.api.UnknownOptionsAreOperands;
 import org.glassfish.api.admin.CommandModel;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.ManagedJob;
 import org.glassfish.api.admin.config.ModelBinding;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.Attribute;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.AnnotatedElement;
-import java.util.Map;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import org.glassfish.api.ParamDefaultCalculator;
-import org.glassfish.api.admin.ManagedJob;
-import org.glassfish.api.admin.Progress;
 
 /**
  * Model for an administrative command
@@ -94,8 +92,9 @@ public class CommandModelImpl extends CommandModel {
         Class currentClazz = commandType;
         boolean found = false;
         while (currentClazz != null) {
-            if (currentClazz.isAnnotationPresent(UnknownOptionsAreOperands.class))
+            if (currentClazz.isAnnotationPresent(UnknownOptionsAreOperands.class)) {
                 found = true;
+            }
             currentClazz = currentClazz.getSuperclass();
         }
         dashOk = found;
@@ -317,27 +316,42 @@ public class CommandModelImpl extends CommandModel {
             };
         }
 
-        @Override
-        public String getLocalizedDescription() {
+        private String getLocalizedString(String type) {
             String paramDesc=null;
             if (i18n!=null) {
-                paramDesc = localStrings.getLocalString(i18n.value(), "");
+                paramDesc = localStrings.getLocalString(i18n.value() + type, "");
             } else {
-                if (parentI18n!=null)
-                    paramDesc = localStrings.getLocalString(parentI18n.value() + "." + name, "");
+                if (parentI18n!=null) {
+                     paramDesc = localStrings.getLocalString(parentI18n.value() + "." + name + type, "");
+                }
             }
             if (paramDesc==null) {
                 paramDesc="";
             }
             return paramDesc;
         }
+        @Override
+        public String getLocalizedDescription() {
+            return getLocalizedString("");
+        }
+        
+        @Override
+        public String getLocalizedPrompt() {
+            return getLocalizedString(".prompt");
+        }
+
+        @Override
+        public String getLocalizedPromptAgain() {
+            return getLocalizedString(".promptAgain");
+        }
 
         public I18n getI18n() {
             return i18n;
         }
 
+        @Override
         public Class getType() {
             return type;
-        }
+        }      
     }
 }

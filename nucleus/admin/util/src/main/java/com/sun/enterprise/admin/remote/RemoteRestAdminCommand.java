@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1460,7 +1460,8 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     opt.param._acceptableValues = jsOpt.optString("@acceptable-values");
                     if ("PASSWORD".equals(type)) {
                         opt.param._password = true;
-                        opt.description = jsOpt.optString("$");
+                        opt.prompt = jsOpt.optString("@prompt");
+                        opt.promptAgain = jsOpt.optString("@prompt-again");
                     } else if ("FILE".equals(type)) {
                         sawFile = true;
                     }

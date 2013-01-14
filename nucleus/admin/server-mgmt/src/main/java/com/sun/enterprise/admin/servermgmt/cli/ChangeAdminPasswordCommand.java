@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -135,7 +135,8 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
         
         if (password == null) {
             // prompt for it (if interactive)
-            password = getPassword("password", strings.get("change.admin.password.password"), false);
+            password = getPassword("password", strings.get("AdminPassword"), 
+                    null, false);
             if (password == null) {
                 throw new CommandValidationException(strings.get("AdminPwRequired"));
             }
@@ -144,7 +145,8 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
 
         if (newpassword == null) {
             // prompt for it (if interactive)
-            newpassword = getPassword("newpassword", strings.get("change.admin.password.newpassword"), true);
+            newpassword = getPassword("newpassword", strings.get("change.admin.password.newpassword"), 
+                    strings.get("change.admin.password.newpassword.again"), true);
             if (newpassword == null) {
                 throw new CommandValidationException(strings.get("AdminNewPwRequired"));
             }

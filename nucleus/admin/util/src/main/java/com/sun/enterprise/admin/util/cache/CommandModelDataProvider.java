@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,7 +64,8 @@ public class CommandModelDataProvider implements DataProvider {
     private static final String ALIAS_ELEMENT = "alias";
     private static final String CLASS_ELEMENT = "class";
     private static final String DEFAULT_VALUE_ELEMENT = "default-value";
-    private static final String DESCRIPTION_ELEMENT = "description";
+    private static final String PROMPT_ELEMENT = "prompt";
+    private static final String PROMPT_AGAIN_ELEMENT = "prompt-again";
     private static final String ETAG_ELEMENT = "e-tag";
     private static final String NAME_ELEMENT = "name";
     private static final String OBSOLETE_ELEMENT = "obsolete";
@@ -229,11 +230,18 @@ public class CommandModelDataProvider implements DataProvider {
                     bw.write(": true");
                     bw.newLine();
                 }
-                //parameter / description
+                //parameter / prompt
                 if (paramModel instanceof ParamModelData) {
-                    str = ((ParamModelData) paramModel).getDescription();
+                    str = ((ParamModelData) paramModel).getPrompt();
                     if (str != null && !str.isEmpty()) {
-                        bw.write(DESCRIPTION_ELEMENT);
+                        bw.write(PROMPT_ELEMENT);
+                        bw.write(": ");
+                        bw.write(escapeEndLines(str));
+                        bw.newLine();
+                    }
+                    str = ((ParamModelData) paramModel).getPromptAgain();
+                    if (str != null && !str.isEmpty()) {
+                        bw.write(PROMPT_AGAIN_ELEMENT);
                         bw.write(": ");
                         bw.write(escapeEndLines(str));
                         bw.newLine();
@@ -285,7 +293,8 @@ public class CommandModelDataProvider implements DataProvider {
         boolean pPrimary = false;
         boolean pMultiple = false;
         boolean pPassword = false;
-        String pDescription = null;
+        String pPrompt = null;
+        String pPromptAgain = null;
         try {
             isr = new InputStreamReader(stream, charset);
             r = new BufferedReader(isr);
@@ -308,7 +317,8 @@ public class CommandModelDataProvider implements DataProvider {
                         pmd.param._primary = pPrimary;
                         pmd.param._multiple = pMultiple;
                         pmd.param._password = pPassword;
-                        pmd.description = pDescription;
+                        pmd.prompt = pPrompt;
+                        pmd.promptAgain = pPromptAgain;
                         result.add(pmd);
                         //Reset values
                         pCls = null;
@@ -320,7 +330,8 @@ public class CommandModelDataProvider implements DataProvider {
                         pPrimary = false;
                         pMultiple = false;
                         pPassword = false;
-                        pDescription = null;
+                        pPrompt = null;
+                        pPromptAgain = null;
                         //New param
                         pName = value;
                     } else if (CLASS_ELEMENT.equals(key)) {
@@ -346,8 +357,10 @@ public class CommandModelDataProvider implements DataProvider {
                         pMultiple = value.startsWith("t");
                     } else if (PASSWORD_ELEMENT.equals(key)) {
                         pPassword = value.startsWith("t");
-                    } else if (DESCRIPTION_ELEMENT.equals(key)) {
-                        pAlias = resolveEndLines(value);
+                    } else if (PROMPT_ELEMENT.equals(key)) {
+                        pPrompt = resolveEndLines(value);
+                    } else if (PROMPT_AGAIN_ELEMENT.equals(key)) {
+                        pPromptAgain = resolveEndLines(value);
                     }
                 } else {
                     if (ROOT_ELEMENT.equals(key)) {
@@ -381,7 +394,8 @@ public class CommandModelDataProvider implements DataProvider {
                 pmd.param._primary = pPrimary;
                 pmd.param._multiple = pMultiple;
                 pmd.param._password = pPassword;
-                pmd.description = pDescription;
+                pmd.prompt = pPrompt;
+                pmd.promptAgain = pPromptAgain;
                 result.add(pmd);
             } else if (result == null && name != null && !name.isEmpty()) {
                 result = new CachedCommandModel(name, eTag);

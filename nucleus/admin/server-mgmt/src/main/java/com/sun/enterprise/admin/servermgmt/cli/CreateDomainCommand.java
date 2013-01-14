@@ -353,7 +353,8 @@ public final class CreateDomainCommand extends CLICommand {
     private String getAdminPassword() throws CommandValidationException {
         // create a required ParamModel for the password
         ParamModelData po = new ParamModelData(ADMIN_PASSWORD, String.class, false, null);
-        po.description = strings.get("AdminPassword");
+        po.prompt = strings.get("AdminPassword");
+        po.promptAgain = strings.get("AdminPasswordAgain");
         po.param._password = true;
         return getPassword(po, SystemPropertyConstants.DEFAULT_ADMIN_PASSWORD, true);
     }

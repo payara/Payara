@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -324,7 +324,8 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
                     }
                     String auser = names.iterator().next();
                     ParamModelData npwo = new ParamModelData(newpwName, String.class, false, null);
-                    npwo.description = strings.get("new.adminpw", auser);
+                    npwo.prompt = strings.get("new.adminpw", auser);
+                    npwo.promptAgain = strings.get("new.adminpw.again", auser);
                     npwo.param._password = true;
                     logger.info(strings.get("new.adminpw.prompt"));
                     String npw = super.getPassword(npwo, null, true);

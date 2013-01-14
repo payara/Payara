@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -138,7 +138,8 @@ public class CommandModelData extends CommandModel {
         public ParamData param;
         public Class     type;
         // from the server, for password fields
-        public String    description;
+        public String    prompt;
+        public String    promptAgain;
 
         public ParamModelData(String name, Class type, boolean optional,
                                 String def) {
@@ -184,6 +185,16 @@ public class CommandModelData extends CommandModel {
         }
 
         @Override
+        public String getLocalizedPrompt() {
+            return getPrompt();
+        }
+
+        @Override
+        public String getLocalizedPromptAgain() {
+            return getPromptAgain();
+        }
+        
+        @Override
         public Param getParam() {
             return param;
         }
@@ -195,8 +206,12 @@ public class CommandModelData extends CommandModel {
         }
 
         // unique to ParamModelData
-        public String getDescription() {
-            return description;
+        public String getPrompt() {
+            return prompt;
+        }
+        
+        public String getPromptAgain() {
+            return promptAgain;
         }
 
         @Override

@@ -287,8 +287,9 @@ public class ListManager extends BackupRestoreManager
                 new LocalStringsImpl(ListManager.class);
 
     File[] zips;
-    private static final String BACKUP = strings.get("backup-list.backup-config");
-    private static final String USER = strings.get("backup-list.user-name");
-    private static final String DATE = strings.get("backup-list.date");
-    private static final String FILENAME = strings.get("backup-list.filename");
+    // These are column headings so they are not localized
+    private static final String BACKUP = "CONFIG";
+    private static final String USER = "USER";
+    private static final String DATE = "BACKUP-DATE";
+    private static final String FILENAME = "FILENAME";
 }
