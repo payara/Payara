@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -71,6 +71,7 @@ import java.util.logging.Level;
  */
 public final class BootstrapContextImpl implements BootstrapContext, Serializable {
 
+    public static final int MAX_INSTANCE_LENGTH=24;
     private static final long serialVersionUID = -8449694716854376406L;
     private String poolId;
     private transient WorkManager wm;
@@ -219,6 +220,17 @@ public final class BootstrapContextImpl implements BootstrapContext, Serializabl
           
           Cluster cluster = server.getCluster();
           if(cluster!=null){
+            // if the instance name is longer than 24 characters, compact it to 
+            // 24 characters. This must be consistent with the implementation of
+            // the method ConnectorMessageBeanClient.getActivationName().
+            if(instance.length() > MAX_INSTANCE_LENGTH){
+                // hashcode has 8 characters
+                String hashcode = Integer.toHexString(instance.hashCode());
+                String truncation = instance.substring(instance.length()-16);
+                String compactedInstance = truncation+hashcode;
+                logger.log(Level.INFO, "The original instance name is: "+instance
+                        +", because it is too long, compact it to: "+compactedInstance);
+            }
             instanceName = instance;
           }
         }
