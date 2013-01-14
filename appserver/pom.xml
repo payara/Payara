@@ -61,10 +61,9 @@
     
     <properties>
         <jms-api.version>2.0-b09</jms-api.version>
-        <jsp-api.version>2.2.1</jsp-api.version>
-        <jsp-impl.version>2.2.6</jsp-impl.version>
-        <el-api.version>2.2.4</el-api.version>
-        <el-impl.version>2.2.3</el-impl.version>
+        <jsp-api.version>2.3.0</jsp-api.version>
+        <jsp-impl.version>2.3.0</jsp-impl.version>
+        <javax.el.version>3.0-b02</javax.el.version>
         <jstl-impl.version>1.2.2</jstl-impl.version>
         <jstl-api.version>1.2.1</jstl-api.version>
         <mojarra.version>2.2.0-m08</mojarra.version>
@@ -285,9 +284,9 @@
                 <version>${jsp-impl.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.web</groupId>
+                <groupId>org.glassfish</groupId>
                 <artifactId>javax.el</artifactId>
-                <version>${el-impl.version}</version>
+                <version>${javax.el.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.faces.extensions</groupId>
@@ -364,11 +363,6 @@
                 <groupId>javax.servlet.jsp</groupId>
                 <artifactId>javax.servlet.jsp-api</artifactId>
                 <version>${jsp-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.el</groupId>
-                <artifactId>javax.el-api</artifactId>
-                <version>${el-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.servlet.jsp.jstl</groupId>

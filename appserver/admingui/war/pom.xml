@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -71,7 +71,7 @@
                             <archive>
                                 <manifestEntries>
                                     <Glassfish-require-services>org.glassfish.api.admingui.ConsoleProvider</Glassfish-require-services>
-                                    <HK2-Import-Bundles>org.glassfish.main.admingui.console-common,org.glassfish.hk2.hk2,org.glassfish.main.admingui.console-plugin-service, org.glassfish.main.deployment.deployment-client,org.glassfish.main.registration.registration-api,org.glassfish.main.registration.registration-impl, javax.servlet-api, javax.servlet.jsp-api, javax.el-api, com.sun.jsftemplating, org.glassfish.main.admingui.dataprovider, com.sun.pkg.client  </HK2-Import-Bundles>
+                                    <HK2-Import-Bundles>org.glassfish.main.admingui.console-common,org.glassfish.hk2.hk2,org.glassfish.main.admingui.console-plugin-service, org.glassfish.main.deployment.deployment-client,org.glassfish.main.registration.registration-api,org.glassfish.main.registration.registration-impl, javax.servlet-api, javax.servlet.jsp-api, org.glassfish.javax.el, com.sun.jsftemplating, org.glassfish.main.admingui.dataprovider, com.sun.pkg.client  </HK2-Import-Bundles>
                                 </manifestEntries>
                             </archive>
                         </configuration>
@@ -98,7 +98,7 @@
                                <jar jarfile="target/admingui.war" basedir="target/temp">
                                     <manifest>
                                       <attribute name="Glassfish-require-services" value="org.glassfish.api.admingui.ConsoleProvider" />
-                                      <attribute name="HK2-Import-Bundles" value="org.glassfish.main.admingui.console-common,org.glassfish.hk2.hk2,org.glassfish.main.admingui.console-plugin-service, org.glassfish.main.deployment.deployment-client,org.glassfish.main.registration.registration-api,org.glassfish.main.registration.registration-impl, javax.servlet-api, javax.servlet.jsp-api, javax.el-api, com.sun.jsftemplating, org.glassfish.main.admingui.dataprovider, com.sun.pkg.client " />
+                                      <attribute name="HK2-Import-Bundles" value="org.glassfish.main.admingui.console-common,org.glassfish.hk2.hk2,org.glassfish.main.admingui.console-plugin-service, org.glassfish.main.deployment.deployment-client,org.glassfish.main.registration.registration-api,org.glassfish.main.registration.registration-impl, javax.servlet-api, javax.servlet.jsp-api, org.glassfish.javax.el, com.sun.jsftemplating, org.glassfish.main.admingui.dataprovider, com.sun.pkg.client " />
                                     </manifest>
                                 </jar>
                                 <delete dir="target/temp" />

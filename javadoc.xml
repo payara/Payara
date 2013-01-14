@@ -463,7 +463,7 @@ fileset refid of artifact:dependencies does not work in unjar
 
   <target name="uel.download" description="Download UEL-API" depends="initialize.maven" >
       <artifact:dependencies sourcesFilesetId="sources.dependency.uel" >
-          <dependency groupId="javax.el" artifactId="el-api" version="2.2.1-b03" classifier="sources" />
+          <dependency groupId="org.glassfish" artifactId="javax.el" version="3.0-b02" classifier="sources" />
           <remoteRepository refid="nexus.repository" />
           <localRepository path="${maven.repo.local}"/>
       </artifact:dependencies>
@@ -474,7 +474,7 @@ fileset refid of artifact:dependencies does not work in unjar
       </copy>
       <unjar dest="${external.dir}/uel"  >
           <fileset dir="${external.dir}/uel">
-              <include name="**/el-api*sources.jar"/>
+              <include name="**/javax.el*sources.jar"/>
           </fileset>
       </unjar>
   </target>
