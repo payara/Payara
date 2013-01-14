@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -104,6 +104,19 @@ public class TargetUtil {
             }
         }
         return clusters;
+    }
+
+    public static List getConfig(){
+        List config = new ArrayList();
+        try{
+            config.addAll(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/configs/config").keySet());
+        }catch (Exception ex){
+            GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.getClusters") + ex.getLocalizedMessage());
+            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
+                ex.printStackTrace();
+            }
+        }
+        return config;
     }
 
     public static List getClusteredInstances(String cluster) {

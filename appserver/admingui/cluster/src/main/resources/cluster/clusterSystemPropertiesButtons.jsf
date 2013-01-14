@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@
 -->
 <sun:button id="saveButton" text="$resource{i18n.button.Save}" onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
     <!command
+        gf.isClusterName(clusterName="#{pageSession.clusterName}" );
         createMap(result="#{requestScope.data}");
         foreach (var="row" list="#{pageSession.tableList}") {
             mapPut(map="#{requestScope.data}", key="#{row.name}", value="#{row.value}");
@@ -48,11 +49,12 @@
         gf.restRequest(endpoint="#{pageSession.selfUrl}", method="POST", data="#{requestScope.data}", contentType="application/x-www-form-urlencoded", result="#{requestScope.restResponse}");
         prepareSuccessfulMsg();
         gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
-    />
+        />
 </sun:button>
 
 <sun:button id="cancelButton" immediate="#{true}" primary="#{false}" rendered="#{pageSession.showCancelButton}" text="$resource{i18n.button.Cancel}" >
     <!command
+        gf.isClusterName(clusterName="#{pageSession.clusterName}" );
         gf.redirect(page="#{pageSession.parentPage}");
     />
 </sun:button>

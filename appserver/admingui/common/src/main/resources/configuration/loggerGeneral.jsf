@@ -68,7 +68,7 @@
         if ("#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.multiLineMode']}=#{null}") {
             mapPut(map="#{pageSession.logAttributes}", key="com.sun.enterprise.server.logging.GFFileHandler.multiLineMode" value="false" );
         }
-        
+        gf.isConfigName(configName="#{pageSession.configName}" );
         //println("---------------------------- logAttributes = #{pageSession.logAttributes}");
 
     />
@@ -83,6 +83,7 @@
             <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
                 onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
                 <!command
+                    gf.isConfigName(configName="#{pageSession.configName}" );
                     prepareSuccessfulMsg();
                     saveLoggingAttributes(attrs="#{pageSession.logAttributes}" config="#{pageSession.configName}");
                     gf.redirect(page="#{request.contextPath}/common/configuration/loggerGeneral.jsf?configName=#{pageSession.configName}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");

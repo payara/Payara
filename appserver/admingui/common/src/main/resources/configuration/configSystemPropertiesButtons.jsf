@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -54,11 +54,13 @@
         gf.restRequest(endpoint="#{pageSession.selfUrl}", method="POST", attrs="#{requestScope.data}", contentType="application/x-www-form-urlencoded", result="#{requestScope.restResponse}");
         prepareSuccessfulMsg();
         gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+		gf.isConfigName(configName="#{pageSession.configName}" );
     />
 </sun:button>
 
 <sun:button id="cancelButton" immediate="#{true}" primary="#{false}" rendered="#{pageSession.showCancelButton}" text="$resource{i18n.button.Cancel}" >
     <!command
         gf.redirect(page="#{parentPage}");
+		gf.isConfigName(configName="#{pageSession.configName}" );
     />
 </sun:button>

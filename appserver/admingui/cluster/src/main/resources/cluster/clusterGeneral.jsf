@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -65,6 +65,7 @@
         gf.getClusterStatusSummary(statusMap ="#{requestScope.statusMap}" ,
             numRunning="#{pageSession.numRunning}"  numNotRunning="#{pageSession.numNotRunning}" numRequireRestart="#{pageSession.numRequireRestart}"
             disableStart="#{pageSession.disableStart}"  disableStop="#{pageSession.disableStop}" disableEjb="#{pageSession.disableEjb}");
+        gf.isClusterName(clusterName="#{pageSession.clusterName}" );
         setPageSessionAttribute(key="convertToFalseList" value={ "gmsEnabled"} );
         //set the following for including buttons.inc
         setPageSessionAttribute(key="edit" value="#{true}" );
@@ -89,6 +90,7 @@
                 <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
                         onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
                     <!command
+                        gf.isClusterName(clusterName="#{pageSession.clusterName}" );
                         gf.updateEntity(endpoint="#{pageSession.resourceUrl}" attrs="#{pageSession.valueMap}"  convertToFalse="#{pageSession.convertToFalseList}");
                         prepareSuccessfulMsg();
                         gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");

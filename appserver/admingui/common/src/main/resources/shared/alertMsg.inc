@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@
 
 <event>
         <!beforeEncode
+            gf.isConfigName(configName="#{pageSession.configName}" );
           if ($attribute{alertSummary}){
             decodeString(str="$attribute{alertSummary}", output=>$attribute{alertSummary});
             decodeString(str="$attribute{alertDetail}", output=>$attribute{alertDetail});
@@ -60,7 +61,6 @@
               setAttribute(key="alertSummary" value="#{alertSummary}");
               setAttribute(key="alertDetail" value="#{alertDetail}");
           }
-
         />
 </event>
 
@@ -69,7 +69,6 @@
             summary="#{alertSummary}"
             detail="#{alertDetail}" >
     <!beforeCreate
-
         if ($attribute{alertSummary}){
             decodeString(str="$attribute{alertSummary}", output=>$attribute{alertSummary});
             decodeString(str="$attribute{alertDetail}", output=>$attribute{alertDetail});
@@ -79,8 +78,7 @@
             getRequestValue(key="alertSummary" value="#{requestScope.alertSummary}");
             getRequestValue(key="alertDetail" value="#{requestScope.alertDetail}");
           }
-          
-      />
-      
+          gf.isConfigName(configName="#{pageSession.configName}" );
+       />
 </sun:alert>
 

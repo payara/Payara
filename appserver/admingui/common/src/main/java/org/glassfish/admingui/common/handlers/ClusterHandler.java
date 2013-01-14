@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,6 +68,7 @@ import java.util.Map;
 import java.util.List;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
+import org.glassfish.admingui.common.util.TargetUtil;
 import org.glassfish.api.admin.InstanceState;
 
 public class ClusterHandler {
@@ -142,6 +143,32 @@ public class ClusterHandler {
          }
      }
 
+
+    @Handler(id = "gf.isClusterName",
+            input = {
+            @HandlerInput(name = "clusterName", type = String.class, required = true)
+            })
+    public static void isClusterName(HandlerContext handlerCtx) {
+        String clusterName = (String) handlerCtx.getInputValue("clusterName");
+        List cluster = TargetUtil.getClusters();
+        if(!cluster.contains(clusterName)){
+            GuiUtil.handleError(handlerCtx, GuiUtil.getMessage("msg.NoSuchCluster"));
+            return;
+        }
+    }
+
+    @Handler(id = "gf.isConfigName",
+            input = {
+            @HandlerInput(name = "configName", type = String.class, required = true)
+            })
+    public static void isConfigName(HandlerContext handlerCtx) {
+        String configName = (String) handlerCtx.getInputValue("configName");
+        List config = TargetUtil.getConfig();
+        if(!config.contains(configName)){
+            GuiUtil.handleError(handlerCtx, GuiUtil.getMessage("msg.NoSuchConfig"));
+            return;
+        }
+    }
 
     @Handler(id = "gf.saveInstanceWeight",
         input = {
