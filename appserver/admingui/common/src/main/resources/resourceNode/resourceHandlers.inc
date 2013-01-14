@@ -177,19 +177,16 @@
     foreach (var="row" list="#{pageSession.selectedRows}") {
         urlencode(value="#{row['name']}" result="#{requestScope.encodedResName}");
         gf.onlyDASExist(onlyDAS="#{pageSession.onlyDASExist}");
-
-        if (#{!onlyDASExist}){
-            setAttribute(key="targetUrlsList" value="#{row['targetUrls']}");
-            foreach (var="targetUrl" list="#{requestScope.targetUrlsList}") {
-                createMap(result="#{requestScope.attrMap}");
-                mapGet(Map="#{row['targetsMap']}" Key="#{requestScope.targetUrl}" Value="#{requestScope.targetVal}");
-                mapPut(map="#{requestScope.attrMap}" key="target" value="#{targetVal}");
-                gf.restRequest(
-                    endpoint="#{requestScope.targetUrl}/resource-ref/#{requestScope.encodedResName}"
-                    attrs="#{requestScope.attrMap}"
-                    method="DELETE"
-                    result="#{requestScope.foo}");
-            }
+        setAttribute(key="targetUrlsList" value="#{row['targetUrls']}");
+        foreach (var="targetUrl" list="#{requestScope.targetUrlsList}") {
+            createMap(result="#{requestScope.attrMap}");
+            mapGet(Map="#{row['targetsMap']}" Key="#{requestScope.targetUrl}" Value="#{requestScope.targetVal}");
+            mapPut(map="#{requestScope.attrMap}" key="target" value="#{targetVal}");
+            gf.restRequest(
+                endpoint="#{requestScope.targetUrl}/resource-ref/#{requestScope.encodedResName}"
+                attrs="#{requestScope.attrMap}"
+                method="DELETE"
+                result="#{requestScope.foo}");
         }
         createMap(result="#{requestScope.attrMap}");
         if ("#{pageSession.childType}=admin-object-resource") {
