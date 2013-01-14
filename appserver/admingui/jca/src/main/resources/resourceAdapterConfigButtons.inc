@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -45,7 +45,6 @@
             <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
                     onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
                 <!command                   
-                    
                     gf.createEntity(endpoint="#{pageSession.selfUrl}"
                         attrs="#{pageSession.valueMap}"
                         skipAttrs="#{pageSession.skipAttrsList}"
@@ -53,10 +52,10 @@
                         onlyUseAttrs="#{pageSession.onlyUseAttrs}"
                     );
 
-                    removeEmptyProps(props="#{pageSession.tableList}" modifiedProps="#{pageSession.tableList}");
-                    javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
+                    gf.combineProperties(tableList="#{pageSession.tableList}" combined="#{requestScope.combined}");
+                    removeEmptyProps(props="#{requestScope.combined}" modifiedProps="#{requestScope.combined}");
+                    javaToJSON(obj="#{requestScope.combined}" json="#{requestScope.tmpJSON}");
                     gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
-                    
                     prepareSuccessfulMsg();
                     gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                 />
@@ -73,37 +72,22 @@
                     if ("#{pageSession.myOption}=text") {
                         setValueExpression(expression="#{pageSession.valueMap['name']}", value="#{pageSession.nameText}");
                     }
-                    removeEmptyProps(props="#{pageSession.tableList}" modifiedProps="#{pageSession.tableList}");
-                    gf.createPropertyString(properties="#{pageSession.tableList}", string="#{requestScope.props}");
+                    gf.combineProperties(tableList="#{pageSession.tableList}" combined="#{requestScope.combined}");
+                    removeEmptyProps(props="#{requestScope.combined}" modifiedProps="#{requestScope.combined}");
+                    gf.createPropertyString(properties="#{requestScope.combined}", string="#{requestScope.props}");
                     mapPut(map="#{pageSession.valueMap}", key="property", value="#{requestScope.props}");
-
                     gf.createEntity(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}"
                         attrs="#{pageSession.valueMap}"
                         skipAttrs="#{pageSession.skipAttrsList}"
                         convertToFalse="#{pageSession.convertToFalseList}"
                         result => $attribute{objStr});
-
-
-                    /*
-                    javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
-                    urlencode(value="#{pageSession.valueMap['name']}" encoding="UTF-8" result="#{pageSession.encodeName}");
-                    gf.restRequest(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}/#{pageSession.encodeName}/property.json"
-                                   method="POST"
-                                   data="#{requestScope.tmpJSON}"
-                                   result="#{requestScope.restResponse}");
-                    */  
-                    if (#{pageSession.showSuccessfulMsg}){
-                        prepareSuccessfulMsg();
-                        gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
-                    }
-                    gf.redirect(page="#{pageSession.parentPage}?configName=#{configName}")
+                    gf.redirect(page="#{pageSession.parentPage}")
                 />
             </sun:button>
 
-
-            <sun:button id="cancelButton" immediate="#{true}" primary="#{false}" rendered="#{pageSession.showCancelButton}" text="$resource{i18n.button.Cancel}" >
+            <sun:button id="cancelButton" immediate="#{true}" primary="#{false}"  text="$resource{i18n.button.Cancel}" >
                 <!command
-                    gf.redirect(page="#{parentPage}?configName=#{configName}");
+                    gf.redirect(page="#{parentPage}");
                 />
             </sun:button>
         </sun:panelGroup>

@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -76,16 +76,17 @@
     setPageSessionAttribute(key="rest-api" value="true");
 
     gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
-    gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="GET" result="#{requestScope.propTable}");
-    setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
     
-    //set the following for including buttons.inc
+    createMap(result="#{pageSession.argMap}");
+    mapPut(map="#{pageSession.argMap}" key="rarName" value="#{pageSession.Name}");
+    gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/get-resource-adapter-config-properties"
+            attrs="#{pageSession.argMap}"
+            method="GET"
+            result="#{requestScope.result}");
+    gf.getConfigPropsInfo(extraProps="#{requestScope.result.data.extraProperties}", key="configProps",  result="#{pageSession.tableList}" hasConfidentialProps="#{pageSession.hasConfidential}");
+        
     setPageSessionAttribute(key="edit" value="#{true}" );
-    setPageSessionAttribute(key="showCancelButton" value="#{true}" );
-    setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
-    setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
     setPageSessionAttribute(key="skipAttrsList", value={"resourceAdapterName"});
-    setPageSessionAttribute(key="showDescCol" value="false" );
     />
 </event>
 <sun:form id="propertyForm">
@@ -93,11 +94,11 @@
     
     <!-- Page Title -->
     <sun:title id="propertyContentPage" title="$resource{i18njca.resourceAdapterConfig.editPageTitle}" helpText="$resource{i18njca.resourceAdapterConfig.editPageTitleHelp}" >
-#include "/common/shared/editPageButtons_2.inc"
+#include "/jca/resourceAdapterConfigButtons.inc"
     </sun:title>
     
 #include "/jca/resourceAdapterConfigAttr.inc"
-#include "/common/shared/propertyDescTable.inc"
+#include "/common/resourceNode/confidentialPropsTable.inc"
     
     <sun:hidden id="helpKey" value="$resource{help_jca.resourceAdapterConfigEdit}" />
 </sun:form>
