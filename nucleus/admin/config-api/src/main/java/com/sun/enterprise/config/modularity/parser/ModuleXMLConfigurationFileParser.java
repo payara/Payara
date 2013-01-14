@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,7 +74,7 @@ public class ModuleXMLConfigurationFileParser {
     private static final String CUSTOMIZATION_TOKEN = "customization-token";
     private static final String TITLE = "title";
     private static final String CONFIG_BEAN_CLASS_NAME = "config-bean-class-name";
-    private static final String SHOULD_EXIST = "should-exist";
+    private static final String MUST_EXIST = "must-exist";
     private static final String BASE_OFFSET = "base-offset";
     private static final String FILE = "file";
     private static final String PORT = "port";
@@ -149,8 +149,14 @@ public class ModuleXMLConfigurationFileParser {
                         // If we have a item element we create a new item
                         if (startElement.getName().getLocalPart().equalsIgnoreCase(FILE)) {
                             type = ConfigCustomizationToken.CustomizationType.FILE;
-                            tokenTypeDetails = new FileTypeDetails(Boolean.parseBoolean(startElement.getAttributeByName(QName.valueOf(SHOULD_EXIST)).getValue()));
-
+                            String tokVal = startElement.getAttributeByName(QName.valueOf(MUST_EXIST)).getValue();
+                            FileTypeDetails.FileExistCondition cond = FileTypeDetails.FileExistCondition.NO_OP;
+                            if (tokVal.equalsIgnoreCase("true")) {
+                                cond = FileTypeDetails.FileExistCondition.MUST_EXIST;
+                            } else if (tokVal.equalsIgnoreCase("false")) {
+                                cond = FileTypeDetails.FileExistCondition.MUST_NOT_EXIST;
+                            }
+                            tokenTypeDetails = new FileTypeDetails(cond);
                         } else if (startElement.getName().getLocalPart().equalsIgnoreCase(PORT)) {
                             type = ConfigCustomizationToken.CustomizationType.PORT;
                             tokenTypeDetails = new PortTypeDetails(startElement.getAttributeByName(QName.valueOf(BASE_OFFSET)).getValue());

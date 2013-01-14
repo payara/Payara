@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,7 +55,6 @@ import org.junit.Test;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.types.Property;
 
-import javax.inject.Inject;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -69,7 +68,7 @@ public class BasicModularityTest extends ConfigApiTest {
 
     private ServiceLocator habitat = Utils.instance.getHabitat(this);
 
-   ConfigModularityUtils configModularityUtils=habitat.getService(ConfigModularityUtils.class);
+    ConfigModularityUtils configModularityUtils = habitat.getService(ConfigModularityUtils.class);
 
     @Override
     public String getFileName() {
@@ -180,7 +179,7 @@ public class BasicModularityTest extends ConfigApiTest {
     public void testLoadingAdminFile() throws Exception {
         List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = configModularityUtils.getDefaultConfigurations(ConfigExtensionTwo.class, "admin");
         assertEquals("Incorrect customization type loaded ", ConfigCustomizationToken.CustomizationType.FILE, values.get(0).getCustomizationTokens().get(0).getCustomizationType());
-        assertEquals("Incorrect customization details value ", true, ((FileTypeDetails) values.get(0).getCustomizationTokens().get(0).getTokenTypeDetails()).isShouldExist());
+        assertEquals("Incorrect customization details value ", FileTypeDetails.FileExistCondition.MUST_EXIST, ((FileTypeDetails) values.get(0).getCustomizationTokens().get(0).getTokenTypeDetails()).getMustExist());
     }
 
     @Test
