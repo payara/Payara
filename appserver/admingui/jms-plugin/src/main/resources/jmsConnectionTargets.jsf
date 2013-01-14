@@ -62,7 +62,7 @@
         <sun:body id="body3">
             <sun:form id="propertyForm">
   //#include "resourceNode/resourcesTabs.inc"
-#include "/common/shared/alertMsg.inc"                <!-- Page Title -->
+#include "/common/shared/alertMsg_1.inc"                <!-- Page Title -->
                  <sun:title id="propertyContentPage" title="#{pageTitle}" helpText="#{pageTitleHelp}"/>
                  "<br />
 #include "resourceNode/resourcesTargetTable.inc"

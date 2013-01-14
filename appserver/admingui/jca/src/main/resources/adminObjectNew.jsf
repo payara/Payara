@@ -138,7 +138,7 @@
     />
     </event>
             <sun:form id="form">
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
 
                 <!-- Page Title #include "/jca/buttons.inc" -->
                 <sun:title id="propertyContentPage" title="$resource{i18njca.adminObject.NewPageTitle}" helpText="$resource{i18njca.adminObject.NewPageTitleHelp}">

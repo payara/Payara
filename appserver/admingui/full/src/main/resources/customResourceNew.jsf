@@ -94,7 +94,7 @@
     />
     </event>
             <sun:form id="form">
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
 
                 <!-- Page Title -->
                 <sun:title id="propertyContentPage" title="$resource{i18njmail.customResource.newPageTitle}" helpText="$resource{i18njmail.customResource.newPageTitleHelp}">

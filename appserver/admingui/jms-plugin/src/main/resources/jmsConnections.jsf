@@ -74,7 +74,7 @@
     </event>
 "    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":resources:jmsResources:jmsConnectionFactories");</script>
     <sun:form id="propertyForm">
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
         <sun:title id="propertyContentPage" title="$resource{i18njms.connectionFactories.pageTitle}" helpText="$resource{i18njms.connectionFactories.pageTitleHelp}"/>
         "<br /> <br />
 #include "/jms/shared/resourcesTable.inc"

@@ -87,7 +87,7 @@
     </event>
             <sun:form id="propertyForm">
 #include "jdbcConnectionPoolTabs.inc"
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
                 <!-- Page Title -->
             <sun:title id="propertyContentPage" title="$resource{i18njdbc.jdbcConnectionPool.propertyPageTitle}"
             helpText="$resource{i18njdbc.jdbcConnectionPool.propertyPageTitleHelp}">

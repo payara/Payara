@@ -115,7 +115,7 @@
 </event>
 <sun:form id="form1">
 #include "/common/resourceNode/resourceEditTabs.inc"
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
 
     <!-- Page Title -->
     <sun:title id="propertyContentPage" title="$resource{i18njmail.customResource.editPageTitle}" helpText="$resource{i18njmail.customResource.editPageTitleHelp}" >

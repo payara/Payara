@@ -92,7 +92,7 @@
     />
     </event>
             <sun:form id="propertyForm">
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
 
     <sun:title id="propertyContentPage" title="$resource{i18njca.resourceAdapterConfig.newPageTitle}" helpText="$resource{i18njca.resourceAdapterConfig.newPageTitleHelp}">
 #include "/jca/resourceAdapterConfigButtons.inc"

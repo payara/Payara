@@ -77,7 +77,7 @@
     />
     </event>
             <sun:form id="propertyForm">
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
 
                 <!-- Page Title -->
                 <sun:title id="propertyContentPage" title="$resource{i18njca.connectorConnectionPool.step2PageTitle}" helpText="$resource{i18njca.connectorConnectionPool.step2PageTitleHelp}">

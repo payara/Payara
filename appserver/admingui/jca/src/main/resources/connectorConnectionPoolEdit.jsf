@@ -110,7 +110,7 @@
 <sun:form id="propertyForm">
 #include "/common/applications/applicationHandlers.inc"
 #include "/jca/connectorConnectionPoolTabs.inc"    
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
     
     <!-- Page Title -->
     <sun:title id="propertyContentPage" title="$resource{i18njca.connectorConnectionPool.editPageTitle}" helpText="$resource{i18njca.connectorConnectionPool.editPageTitleHelp}" >

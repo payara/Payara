@@ -73,7 +73,7 @@
     </event>
 "    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":resources:JDBC:connectionPoolResources");</script>
             <sun:form id="propertyForm">
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
                  <sun:title id="propertyContentPage" title="$resource{i18njdbc.jdbcConnectionPools.pageTitle}"
                  helpText="$resource{i18njdbc.jdbcConnectionPools.pageTitleHelp}"/>
 		 "<br /><br />

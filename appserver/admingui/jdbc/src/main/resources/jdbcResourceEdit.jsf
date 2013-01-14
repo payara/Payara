@@ -97,7 +97,7 @@
 </event>
 <sun:form id="propertyForm">
 #include "/common/resourceNode/resourceEditTabs.inc"
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
     
     <!-- Page Title -->
     <sun:title id="propertyContentPage" title="$resource{i18njdbc.jdbcResource.editPageTitle}" helpText="$resource{i18njdbc.jdbcResource.editPageTitleHelp}" >        

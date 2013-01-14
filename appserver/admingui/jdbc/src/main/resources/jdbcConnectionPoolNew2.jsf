@@ -83,7 +83,7 @@
     </event>
 
             <sun:form id="form2">
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
             <sun:hidden id="validate"  value="TRUE" />
                 <!-- Page Title -->
                 <sun:title id="propertyContentPage" title="$resource{i18njdbc.jdbcConnectionPool.Step2PageTitle}"
