@@ -270,7 +270,14 @@ public class TableHandlers {
 		    while (ni.hasNext() && dv.hasNext()) {
 			String name = (String) ni.next();
 			String value = (String) dv.next();
-			map.put(name, value);
+                        if ( "#{true}".equals(value)){
+                            map.put(name, true);
+                        }else
+                        if ( "#{false}".equals(value)){
+                            map.put(name, false);
+                        }else{
+                            map.put(name, value);
+                        }
 		    }
 		} else {
 		    ListIterator ni = names.listIterator();
