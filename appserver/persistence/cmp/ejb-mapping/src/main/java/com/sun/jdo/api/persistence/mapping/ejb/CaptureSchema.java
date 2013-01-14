@@ -131,17 +131,7 @@ public class CaptureSchema {
         }
         
         if (help < 1 || null == outfile) {
-            System.err.println(bundle.getString("HELP_USAGE_LABEL")); //NOI18N
             System.err.println(bundle.getString("HELP_USAGE")); //NOI18N
-            System.err.println(bundle.getString("HELP_WHERE")); //NOI18N
-            System.err.println(bundle.getString("HELP_USERNAME_ARG")); //NOI18N
-            System.err.println(bundle.getString("HELP_PASSWORD_ARG")); //NOI18N
-            System.err.println(bundle.getString("HELP_URL_ARG")); //NOI18N
-            System.err.println(bundle.getString("HELP_DRIVER_ARG")); //NOI18N
-            System.err.println(bundle.getString("HELP_OUTPUT_ARG")); //NOI18N
-            System.err.println(bundle.getString("HELP_SCHEMA_ARG")); //NOI18N
-            System.err.println(bundle.getString("HELP_TABLE_ARG")); //NOI18N
-            System.err.println(bundle.getString("HELP_OPTIONAL_INFO")); //NOI18N
             System.exit(1);
         }
 
