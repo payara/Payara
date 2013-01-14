@@ -103,7 +103,7 @@ public class GetAdminObjectConfigProps implements AdminCommand {
             }
             extraProperties.put("adminObjectConfigProps", adminObjectConfigProps);
             List<String> confidentialProperties = connectorRuntime.getConfidentialProperties(
-                    rarName, ConnectorConstants.AOR,
+                    rarName, ConnectorConstants.AO,
                     adminObjectInterface, adminObjectClass);
             extraProperties.put("confidentialConfigProps", confidentialProperties);
             report.setExtraProperties(extraProperties);

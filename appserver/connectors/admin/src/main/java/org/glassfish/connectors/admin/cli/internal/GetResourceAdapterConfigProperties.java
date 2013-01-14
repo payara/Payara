@@ -92,7 +92,7 @@ public class GetResourceAdapterConfigProperties implements AdminCommand {
             Properties extraProperties = new Properties();
             extraProperties.put("configProps",configProps);
             List<String> confidentialProperties = connectorRuntime.getConfidentialProperties(
-                    ConnectorConstants.RA, rarName);
+                    rarName, ConnectorConstants.RAR);
             extraProperties.put("confidentialConfigProps", confidentialProperties);
             report.setExtraProperties(extraProperties);
         } catch (Exception e) {
