@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -206,8 +206,8 @@ public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCo
                String msg = " " + detailMessage;
                if (BrokerStatusCode.BAD_REQUEST.getCode() == statusCode || BrokerStatusCode.NOT_ALLOWED.getCode() == statusCode ||
                    BrokerStatusCode.UNAVAILABLE.getCode() == statusCode || BrokerStatusCode.PRECONDITION_FAILED.getCode() == statusCode) {
-                   msg = msg + ", " + localStrings.getLocalString("change.master.broker.errorMsg",
-                                                                  "but it didn't affect current master broker configuration.");
+                   msg = localStrings.getLocalString("change.master.broker.errorMsg",
+                                                     "{0}. But it didn't affect current master broker configuration.", msg);
                } else {
                    msg = msg + ". " + localStrings.getLocalString("change.master.broker.otherErrorMsg",
                                                                   "The cluster should be shutdown and configured with the new master broker then restarts.");
