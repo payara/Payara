@@ -77,7 +77,7 @@
         getClientId(component="$this{component}" clientId=>$attribute{formId})
     />
 
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
 <sun:title id="propertyContentPage" title="$resource{i18n.manageResourceTargets.PageTitle}" helpText="$resource{i18n.manageResourceTargets.PageTitleHelp}">
     <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">

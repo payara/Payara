@@ -55,7 +55,7 @@
                 title="$resource{i18n.resourcesPageTitle}" 
                 helpText="$resource{i18n.resourcesPageTitleHelp}"
                 />
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
                 "<br />
                 <sun:panelGroup id="topButtons">
                     <sun:button id="addResources" text="$resource{i18nc.resources.addResources}">

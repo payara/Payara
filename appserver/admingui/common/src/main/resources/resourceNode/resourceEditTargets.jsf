@@ -66,7 +66,7 @@
 
 #include "/common/resourceNode/resourceEditTabs.inc"
 
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
  <sun:title id="propertyContentPage" title="$resource{i18n.resourceTargetListing.PageTitle}" helpText="$resource{i18n.resourceTargetListing.PageTitleHelp}"/>
  "<br />
 #include "/common/resourceNode/resourceNameSection.inc"
