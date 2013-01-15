@@ -75,7 +75,7 @@
                                 disableAllButtons();
                                 return submitAndDisable(this, '$resource{i18n.button.Processing}', '_self');
                             } else {
-                                showAlert(getLabel(comp) + ' $resource{i18nc.resources.addResources.xmlFileMsg}');
+                                showAlert('$resource{i18nc.msg.JS.resources.addResources.xmlFileMsg}');
                                 comp.select();
                                 comp.focus();
                             }

@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -107,8 +107,8 @@
             <sun:textField id="transPClass" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.javaMail.transProtocolClass']}" text="#{pageSession.valueMap['transportProtocolClass']}" />      
         </sun:property>
 
-        <sun:property id="debugProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmail.javaMail.Debug}">
-            <sun:checkbox selected="#{pageSession.valueMap['debug']}" helpText="$resource{i18njmail.javaMail.DebugHelp}" label="$resource{i18n.common.Enabled}" selectedValue="true" />
+        <sun:property id="debugProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmail.javaMail.Debug}"  helpText="$resource{i18njmail.javaMail.DebugHelp}">
+            <sun:checkbox selected="#{pageSession.valueMap['debug']}"  label="$resource{i18n.common.Enabled}" selectedValue="true" />
        </sun:property>   
         "<br /><br />
     </sun:propertySheetSection>

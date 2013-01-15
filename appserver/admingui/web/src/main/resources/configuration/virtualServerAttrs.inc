@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -62,7 +62,7 @@
         </sun:property>
 
         <sun:property id="enableLog"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.vs.sso}">
-            <sun:dropDown id="state"  selected="#{pageSession.valueMap['ssoEnabled']}" labels={"$resource{i18n_web.vs.controlByHS} <b>$resource{i18n_web.vs.httpLink}</b>","$resource{i18n_web.vs.alwaysEnable}","$resource{i18n_web.vs.alwaysDisable}"} values={"inherit","true","false"} />
+            <sun:dropDown id="state"  selected="#{pageSession.valueMap['ssoEnabled']}" labels={"$resource{i18n_web.vs.controlByHS","$resource{i18n_web.vs.alwaysEnable}","$resource{i18n_web.vs.alwaysDisable}"} values={"inherit","true","false"} />
         </sun:property>
 
         <sun:property id="ssoCookieHttpOnly"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.vs.ssoCookieHttpOnly}" helpText="$resource{i18n_web.vs.ssoCookieHttpOnlyHelp}">
@@ -108,7 +108,7 @@
     <sun:propertySheetSection id="al" label="$resource{i18n_web.vs.accessLog}">
 
         <sun:property id="enableLog"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.vs.accessLogging}">
-             <sun:dropDown id="log"  selected="#{pageSession.valueMap['accessLoggingEnabled']}" labels={"$resource{i18n_web.vs.controlByHS} <b>$resource{i18n_web.vs.httpLink}</b>","$resource{i18n_web.vs.alwaysEnable}","$resource{i18n_web.vs.alwaysDisable}"} values={"inherit","true","false"} />
+             <sun:dropDown id="log"  selected="#{pageSession.valueMap['accessLoggingEnabled']}" labels={"$resource{i18n_web.vs.controlByHS}","$resource{i18n_web.vs.alwaysEnable}","$resource{i18n_web.vs.alwaysDisable}"} values={"inherit","true","false"} />
          </sun:property>
 
         <sun:property id="accesslog"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.vs.path}" helpText="$resource{i18n_web.vs.pathHelp}">

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -552,7 +552,7 @@ public class UpdateCenterHandlers {
             return;
         }
         GuiUtil.setSessionValue("_hideUpdateMsg", Boolean.FALSE);
-        GuiUtil.setSessionValue("_updateCountMsg", "");  //GuiUtil.getMessage(BUNDLE,"checkingUpdate") );
+        GuiUtil.setSessionValue("_updateCountMsg", ""); 
         UcThread thread = new UcThread((HttpSession)FacesContext.getCurrentInstance().getExternalContext().getSession(false));
         thread.start();
     }
