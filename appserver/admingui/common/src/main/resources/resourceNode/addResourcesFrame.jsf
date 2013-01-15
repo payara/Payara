@@ -57,7 +57,7 @@
         id="addResourcesPageTitle"
         title="$resource{i18nc.resources.addResources}"
         helpText="$resource{i18nc.resources.addResourcesPageTitleHelp}">
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
         "<br />
         <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
