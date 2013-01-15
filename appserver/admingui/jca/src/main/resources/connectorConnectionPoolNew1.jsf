@@ -90,8 +90,9 @@
                                                        attrs="#{requestScope.mcfAttrs}"
                                                        method="GET"
                                                        result="#{requestScope.result}");
-                                        setAttribute(key="mcfProps" value="#{requestScope.result.data.extraProperties.mcfConfigProps}");
-                                        gf.updateConnectorConnectionPoolWizard(props="#{mcfProps}" currentAdapter="#{currentAdapter}" currentDef="#{currentConnDef}");
+                                                       
+                                        gf.getConfigPropsInfo(extraProps="#{requestScope.result.data.extraProperties}", key="mcfConfigProps",  result="#{requestScope.mcfProps}" hasConfidentialProps="#{pageSession.hasConfidential}");
+                                        gf.updateConnectorConnectionPoolWizard(props="#{requestScope.mcfProps}" currentAdapter="#{currentAdapter}" currentDef="#{currentConnDef}", hasConfidential="#{pageSession.hasConfidential}");
                                     }
                                 }
                                 gf.redirect(page="#{request.contextPath}/jca/connectorConnectionPoolNew2.jsf")

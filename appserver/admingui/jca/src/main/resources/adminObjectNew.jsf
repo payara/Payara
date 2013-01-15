@@ -123,16 +123,8 @@
                                attrs="#{pageSession.attrsMap}"
                                method="GET"
                                result="#{requestScope.result}");
-            gf.getMapKeys(Map="#{requestScope.result.data.extraProperties.adminObjectConfigProps}" Keys=>$attribute{propsKeys});
-            setPageSessionAttribute(key="tableList" value={});
-            foreach (var="prop" list="#{propsKeys}") {
-                mapGet(Map="#{requestScope.result.data.extraProperties.adminObjectConfigProps}" Key="#{prop}" Value="#{requestScope.val}");
-                gf.createAttributeMap(
-                    keys={"name", "value"},
-                    values={"$attribute{prop}", "$attribute{val}"},
-                    map="#{requestScope.oneRowMap}");
-                listAdd(list="#{pageSession.tableList}" value="#{requestScope.oneRowMap}");
-            }
+
+            gf.getConfigPropsInfo(extraProps="#{requestScope.result.data.extraProperties}", key="adminObjectConfigProps",  result="#{pageSession.tableList}" hasConfidentialProps="#{pageSession.hasConfidential}");
           }
         }
     />
@@ -146,7 +138,7 @@
                     </sun:title>
                     "<br><br>
 #include "/jca/adminObjectAttr.inc"
-#include "/common/shared/propertyDescTable.inc"
+#include "/common/resourceNode/confidentialPropsTable.inc"
 <event>
 <!afterCreate
     setPageSessionAttribute(key="setDefaultTarget" value="true");

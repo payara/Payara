@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -124,16 +124,19 @@ public class ConnectorsHandlers {
      */
     @Handler(id = "gf.updateConnectorConnectionPoolWizard",
         input = {
-            @HandlerInput(name = "props", type = Map.class),
+            @HandlerInput(name = "props", type = List.class),
             @HandlerInput(name = "currentAdapter", type = String.class),
-            @HandlerInput(name = "currentDef", type = String.class)})
+            @HandlerInput(name = "currentDef", type = String.class),
+            @HandlerInput(name = "hasConfidential", type = Boolean.class)})
     public static void updateConnectorConnectionPoolWizard(HandlerContext handlerCtx) {
-        Map<String, String> props = (Map<String, String>) handlerCtx.getInputValue("props");
+        List<Map> props = (List<Map>) handlerCtx.getInputValue("props");
+        Boolean hasConfidential =  (Boolean) handlerCtx.getInputValue("hasConfidential");
         if (props != null) {
-            handlerCtx.getFacesContext().getExternalContext().getSessionMap().put("wizardPoolProperties", GuiUtil.convertMapToListOfMap(props));
+            handlerCtx.getFacesContext().getExternalContext().getSessionMap().put("wizardPoolProperties", props);
         } else {
             handlerCtx.getFacesContext().getExternalContext().getSessionMap().put("wizardPoolProperties", new ArrayList());
         }
+        handlerCtx.getFacesContext().getExternalContext().getSessionMap().put("hasConfidential", hasConfidential);
         Map extra = (Map) handlerCtx.getFacesContext().getExternalContext().getSessionMap().get("wizardPoolExtra");
         extra.put("previousDefinition", (String) handlerCtx.getInputValue("currentDef"));
         extra.put("previousResAdapter", (String) handlerCtx.getInputValue("currentAdapter"));

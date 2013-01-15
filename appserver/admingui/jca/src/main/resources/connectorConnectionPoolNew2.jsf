@@ -64,7 +64,10 @@
         gf.restRequest(method="get", endpoint="#{pageSession.parentUrl}/#{pageSession.childType}", result="#{pageSession.foo}");
         gf.getDefaultValues(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}", valueMap="#{sessionScope.wizardMap}");
 
+        
         setPageSessionAttribute(key="tableList" value="#{wizardPoolProperties}");
+        setPageSessionAttribute(key="hasConfidential" value="#{hasConfidential}");
+        
         setPageSessionAttribute(key="convertToFalseList" value={"ping" "failAllConnections" "isConnectionValidationRequired" });
         //set the following for including buttons.inc
         setPageSessionAttribute(key="edit" value="#{false}" );
@@ -84,7 +87,7 @@
 #include "/jca/editPageWizardButtons.inc"
                     </sun:title>
 #include "/jca/connectorConnectionPoolAttr.inc"
-#include "/common/shared/propertyDescTable.inc"
+#include "/common/resourceNode/confidentialPropsTable.inc"
 
 
 	<sun:hidden id="helpKey" value="$resource{help_jca.connectorConnectionPoolNew2}" />

@@ -77,14 +77,15 @@
 
     gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
     
+    gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="GET", result="#{requestScope.propTable}");
     createMap(result="#{pageSession.argMap}");
     mapPut(map="#{pageSession.argMap}" key="rarName" value="#{pageSession.Name}");
     gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/get-resource-adapter-config-properties"
             attrs="#{pageSession.argMap}"
             method="GET"
             result="#{requestScope.result}");
-    gf.getConfigPropsInfo(extraProps="#{requestScope.result.data.extraProperties}", key="configProps",  result="#{pageSession.tableList}" hasConfidentialProps="#{pageSession.hasConfidential}");
-        
+            
+    gf.buildConfidentialPropsTable(propsMaps="#{requestScope.propTable.data.extraProperties.properties}", confidentialList="#{requestScope.result.data.extraProperties.confidentialConfigProps}",   result="#{pageSession.tableList}" hasConfidentialProps="#{pageSession.hasConfidential}");
     setPageSessionAttribute(key="edit" value="#{true}" );
     setPageSessionAttribute(key="skipAttrsList", value={"resourceAdapterName"});
     />

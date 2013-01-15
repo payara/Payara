@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -46,8 +46,6 @@
         <sun:panelGroup id="topButtons">
             <sun:button id="previousButton" immediate="#{false}" primary="#{false}" text="$resource{i18n.button.Previous}" >
                 <!command
-                    getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
-                    getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});
                     setSessionAttribute(key="wizardPoolProperties", value="$attribute{newList}");
                     setAttribute(key="fromStep2" value="#{true}")
                     gf.navigate(page="#{request.contextPath}/jca/connectorConnectionPoolNew1.jsf")
@@ -64,8 +62,15 @@
                         convertToFalse="#{pageSession.convertToFalseList}"
                         result => $attribute{resultEndPoint});
                     if (#{pageSession.hasPropertyTable}){
-                        getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
-                        getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});
+                    
+                        if (#{pageSession.hasConfidential}){
+                            gf.combineProperties(tableList="#{pageSession.tableList}" combined="#{requestScope.newList}");
+                        }
+
+                        if (!#{pageSession.hasConfidential}){
+                            getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
+                            getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});
+                        }
                         removeEmptyProps(props="#{newList}" modifiedProps="#{newList}");
                         javaToJSON(obj="#{newList}" json="#{requestScope.tmpJSON}");
                         urlencode(value="#{sessionScope.wizardMap['name']}" encoding="UTF-8" result="#{pageSession.encodeName}");
@@ -91,11 +96,13 @@
                         setSessionAttribute(key="wizardMap" value="#{null}")
                         setSessionAttribute(key="wizardPoolExtra" value="#{null}")
                         setSessionAttribute(key="wizardPoolProperties" value="#{null}")
+                        setSessionAttribute(key="hasConfidential" value="#{null}")
                         gf.redirect(page="#{parentPage}?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                     }
                     setSessionAttribute(key="wizardMap" value="#{null}")
                     setSessionAttribute(key="wizardPoolExtra" value="#{null}")
                     setSessionAttribute(key="wizardPoolProperties" value="#{null}")
+                    setSessionAttribute(key="hasConfidential" value="#{null}")
                     gf.redirect(page="#{parentPage}")
                 />
             </sun:button>
@@ -104,6 +111,7 @@
                     setSessionAttribute(key="wizardMap" value="#{null}")
                     setSessionAttribute(key="wizardPoolExtra" value="#{null}")
                     setSessionAttribute(key="wizardPoolProperties" value="#{null}")
+                    setSessionAttribute(key="hasConfidential" value="#{null}")
                     gf.redirect(page="#{parentPage}");
                 />
             </sun:button>
