@@ -270,6 +270,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         }
     }
 
+    @Override
     public void persist(Object entity) {
         doTransactionScopedTxCheck();
 
@@ -287,6 +288,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         // tx is required so there's no need to do any non-tx cleanup
     }
 
+    @Override
     public <T> T merge(T entity) {
         doTransactionScopedTxCheck();
 
@@ -304,6 +306,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         // tx is required so there's no need to do any non-tx cleanup
     }
 
+    @Override
     public void remove(Object entity) {
         doTransactionScopedTxCheck();
 
@@ -321,6 +324,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         // tx is required so there's no need to do any non-tx cleanup
     }
 
+    @Override
     public <T> T find(Class<T> entityClass, Object primaryKey) {
         T returnValue = null;
 
@@ -340,6 +344,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         return returnValue;
     }
 
+    @Override
     public <T> T find(Class<T> entityClass, Object primaryKey, Map<String, Object> properties) {
         T returnValue = null;
 
@@ -360,6 +365,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     }
 
 
+    @Override
     public <T> T find(Class<T> entityClass, Object primaryKey, LockModeType lockMode) {
         T returnValue = null;
 
@@ -379,6 +385,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         return returnValue;
     }
 
+    @Override
     public <T> T find(Class<T> entityClass, Object primaryKey, LockModeType lockMode, Map<String, Object> properties) {
         T returnValue = null;
 
@@ -398,6 +405,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         return returnValue;
     }
 
+    @Override
     public <T> T getReference(Class<T> entityClass, Object primaryKey) {
         T returnValue = null;
 
@@ -417,6 +425,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         return returnValue;
     }
 
+    @Override
     public void flush() {
         // tx is ALWAYS required, regardless of persistence context type.
         doTxRequiredCheck();
@@ -436,6 +445,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         // tx is required so there's no need to do any non-tx cleanup
     }
 
+    @Override
     public Query createQuery(String ejbqlString) {
         Query returnValue = null;
 
@@ -468,6 +478,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         return returnValue;
     }
 
+    @Override
     public <T> TypedQuery<T> createQuery(String ejbqlString, Class<T> resultClass) {
         TypedQuery<T> returnValue = null;
 
@@ -500,6 +511,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         return returnValue;
     }
 
+    @Override
     public <T> TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery) {
         TypedQuery<T> returnValue = null;
 
@@ -533,6 +545,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         return returnValue;
     }
 
+    @Override
     public Query createNamedQuery(String name) {
         Query returnValue = null;
 
@@ -566,6 +579,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         return returnValue;
     }
 
+    @Override
     public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
         TypedQuery<T> returnValue = null;
 
@@ -599,6 +613,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         return returnValue;
     }
 
+    @Override
     public Query createNativeQuery(String sqlString) {
         Query returnValue = null;
 
@@ -631,6 +646,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         return returnValue;
     }
 
+    @Override
     public Query createNativeQuery(String sqlString, Class resultClass) {
         Query returnValue = null;
 
@@ -663,6 +679,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         return returnValue;
     }
 
+    @Override
     public Query createNativeQuery(String sqlString, String resultSetMapping) {
         Query returnValue = null;
 
@@ -696,6 +713,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         return returnValue;
     }
 
+    @Override
     public void refresh(Object entity) {
         doTransactionScopedTxCheck();
 
@@ -714,6 +732,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         // tx is required so there's no need to do any non-tx cleanup
     }
 
+    @Override
     public void refresh(Object entity, Map<String, Object> properties) {
         doTransactionScopedTxCheck();
 
@@ -732,6 +751,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         // tx is required so there's no need to do any non-tx cleanup
     }
 
+    @Override
     public void refresh(Object entity, LockModeType lockMode) {
         doTransactionScopedTxCheck();
 
@@ -749,6 +769,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         // tx is required so there's no need to do any non-tx cleanup
     }
 
+    @Override
     public void refresh(Object entity, LockModeType lockMode, Map<String, Object> properties) {
         doTransactionScopedTxCheck();
 
@@ -766,6 +787,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         // tx is required so there's no need to do any non-tx cleanup
     }
 
+    @Override
     public boolean contains(Object entity) {
 
         try {
@@ -784,6 +806,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         }
     }
 
+    @Override
     public LockModeType getLockMode(Object o) {
 
         doTxRequiredCheck();
@@ -802,6 +825,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         // tx is required so there's no need to do any non-tx cleanup
     }
 
+    @Override
     public void setProperty(String propertyName, Object value) {
 
         try {
@@ -822,6 +846,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     }
 
 
+    @Override
     public Map<String, Object> getProperties() {
 
         try {
@@ -839,6 +864,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         }
     }
 
+    @Override
     public void close() {
 
         if(callFlowAgent.isEnabled()) {
@@ -849,6 +875,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         throw new IllegalStateException();
     }
 
+    @Override
     public boolean isOpen() {
 
         if(callFlowAgent.isEnabled()) {
@@ -859,6 +886,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         return true;
     }
 
+    @Override
     public EntityTransaction getTransaction() {
 
         try {
@@ -876,6 +904,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         }
     }
 
+    @Override
     public EntityManagerFactory getEntityManagerFactory() {
 
         try {
@@ -897,6 +926,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         }
     }
 
+    @Override
     public CriteriaBuilder getCriteriaBuilder() {
 
         try {
@@ -915,6 +945,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
 
     }
 
+    @Override
     public Metamodel getMetamodel() {
 
         try {
@@ -933,6 +964,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
 
     }
 
+    @Override
     public void lock(Object entity, LockModeType lockMode) {
 
         try {
@@ -950,6 +982,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         }
     }
 
+    @Override
     public void lock(Object entity, LockModeType lockMode, Map<String, Object> properties) {
 
         try {
@@ -967,6 +1000,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         }
     }
 
+    @Override
     public void clear() {
 
         try {
@@ -984,6 +1018,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         }
     }
 
+    @Override
     public void detach(Object o) {
 
         //TODO revisit this check once Linda confirms whether it is required or not.
@@ -1003,6 +1038,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         // tx is required so there's no need to do any non-tx cleanup
     }
 
+    @Override
     public Object getDelegate() {
 
         try {
@@ -1024,6 +1060,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
 
     }
 
+    @Override
     public FlushModeType getFlushMode() {
 
         try {
@@ -1041,6 +1078,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         }
     }
 
+    @Override
     public void setFlushMode(FlushModeType flushMode) {
 
         try {
@@ -1058,6 +1096,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         }
     }
 
+    @Override
     public void joinTransaction() {
         // Doesn't apply to the container-managed case, but all the
         // spec says is that an exception should be thrown if called
@@ -1074,6 +1113,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         // correctly associated with a tx already.
     }
 
+    @Override
     public <T> T unwrap(Class<T> tClass) {
 
         try {
@@ -1091,6 +1131,69 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         }
     }
 
+    @Override
+    public StoredProcedureQuery createNamedStoredProcedureQuery(String name)  {
+        return null;
+    }
+
+
+    public Query createQuery(CriteriaUpdate updateQuery) {
+        // TODO: implement
+        throw new RuntimeException("Not implemented ... WIP ...");
+    }
+
+    @Override
+    public Query createQuery(CriteriaDelete deleteQuery) {
+        // TODO: implement
+        throw new RuntimeException("Not implemented ... WIP ...");
+    }
+
+    @Override
+    public StoredProcedureQuery createStoredProcedureQuery(String procedureName) {
+        // TODO: implement
+        throw new RuntimeException("Not implemented ... WIP ...");
+    }
+
+    @Override
+    public StoredProcedureQuery createStoredProcedureQuery(String procedureName, Class... resultClasses) {
+        // TODO: implement
+        throw new RuntimeException("Not implemented ... WIP ...");
+    }
+
+    @Override
+    public StoredProcedureQuery createStoredProcedureQuery(String procedureName, String... resultSetMappings) {
+        // TODO: implement
+        throw new RuntimeException("Not implemented ... WIP ...");
+    }
+
+    @Override
+    public boolean isJoinedToTransaction() {
+        // TODO: implement
+        throw new RuntimeException("Not implemented ... WIP ...");
+    }
+
+    @Override
+    public <T> EntityGraph<T> createEntityGraph(Class<T> rootType) {
+        return null;
+    }
+
+    @Override
+    public EntityGraph<?> createEntityGraph(String graphName) {
+        return null;
+    }
+
+    @Override
+    public <T> EntityGraph<T> getEntityGraph(String graphName) {
+        // TODO: implement
+        return null;
+    }
+
+    @Override
+    public <T> List<EntityGraph<? super T>> getEntityGraphs(Class<T> entityClass) {
+        // TODO: implement
+        return null;
+     }
+
     private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
 
@@ -1101,61 +1204,6 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         compEnvMgr    = defaultServiceLocator.getService(ComponentEnvManager.class);
         callFlowAgent = defaultServiceLocator.getService(CallFlowAgent.class);
     }
-
-    public StoredProcedureQuery createNamedStoredProcedureQuery(String name)  {
-            // TODO: implement
-        throw new RuntimeException("Not implemented ... WIP ...");
-        }
-
-    public Query createQuery(CriteriaUpdate updateQuery) {
-        // TODO: implement
-        throw new RuntimeException("Not implemented ... WIP ...");
-    }
-
-    public Query createQuery(CriteriaDelete deleteQuery) {
-        // TODO: implement
-        throw new RuntimeException("Not implemented ... WIP ...");
-    }
-
-    public StoredProcedureQuery createStoredProcedureQuery(String procedureName) {
-        // TODO: implement
-        throw new RuntimeException("Not implemented ... WIP ...");
-    }
-
-    public StoredProcedureQuery createStoredProcedureQuery(String procedureName, Class... resultClasses) {
-        // TODO: implement
-        throw new RuntimeException("Not implemented ... WIP ...");
-    }
-
-    public StoredProcedureQuery createStoredProcedureQuery(String procedureName, String... resultSetMappings) {
-        // TODO: implement
-        throw new RuntimeException("Not implemented ... WIP ...");
-    }
-
-    public boolean isJoinedToTransaction() {
-        // TODO: implement
-        throw new RuntimeException("Not implemented ... WIP ...");
-    }
-
-    public <T> EntityGraph<T> createEntityGraph(Class<T> rootType) {
-        // TODO: implement
-        return null;
-    }
-
-    public EntityGraph<?> createEntityGraph(String graphName) {
-        // TODO: implement
-        return null;
-    }
-
-    public <T> EntityGraph<T> getEntityGraph(String graphName) {
-        // TODO: implement
-        return null;
-    }
-
-    public <T> List<EntityGraph<? super T>> getEntityGraphs(Class<T> entityClass) {
-        // TODO: implement
-        return null;
-     }
 
     public static PhysicalEntityManagerWrapper getExtendedEntityManager(JavaEETransaction transaction, EntityManagerFactory factory) {
         return (PhysicalEntityManagerWrapper)transaction.getExtendedEntityManagerResource(factory);
