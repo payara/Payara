@@ -107,7 +107,7 @@ public class ResourceHandlers {
     
     /**
      *	<p> This handler looks into the config properties, and confidential list, and returns a List of Map for populating the properties table. </p>
-     *
+     *   This is called for creating new objects.
      */
     @Handler(id="gf.getConfigPropsInfo",
     	input={
@@ -155,6 +155,7 @@ public class ResourceHandlers {
     
    /* This method goes through the table list,  if there is confidential properties, will ensure that the masked value1 and value2 is the same.
     * And will copy this to the property value column to continue processing.
+    * This method is called just before saving the properties.
     */
     @Handler(id="gf.combineProperties",
     	input={
@@ -196,4 +197,47 @@ public class ResourceHandlers {
         handlerCtx.setOutputValue("combined", combined);
     }
     
+    
+    @Handler(id="gf.buildConfidentialPropsTable",
+    	input={
+        @HandlerInput(name="propsMaps", type=List.class),
+        @HandlerInput(name="confidentialList", type=java.util.List.class)},
+        output={
+        @HandlerOutput(name="result", type=java.util.List.class),
+        @HandlerOutput(name="hasConfidentialProps", type=Boolean.class) })
+    public static void buildConfidentialPropsTable(HandlerContext handlerCtx) {
+        
+        List<String> confidentialList = (List<String>) handlerCtx.getInputValue("confidentialList");
+        List<Map<String, String>> propsMaps = (List<Map<String, String>>) handlerCtx.getInputValue("propsMaps");
+        Boolean hasConfidential = true;
+        if (confidentialList == null || confidentialList.isEmpty()){
+            hasConfidential = false;
+        }
+        Boolean hasConf = false;
+        List<Map> result = new ArrayList();
+        for( Map<String, String> oneProp : propsMaps){
+            Map<String, Object> oneRow = new HashMap();
+            String name = oneProp.get("name");
+            String value = oneProp.get("value");
+            if (value == null) value="";
+            oneRow.put("selected", false);
+            oneRow.put("name", name);
+            if ( hasConfidential && confidentialList.contains(name)){
+                oneRow.put("value", "");
+                oneRow.put("confValue", value);
+                oneRow.put("confValue2", value);
+                oneRow.put("isConfidential", true);
+                hasConf = true;
+            }else{
+                oneRow.put("value", value);
+                oneRow.put("confValue", "");
+                oneRow.put("confValue2", "");
+                oneRow.put("isConfidential", false);
+            }
+            result.add(oneRow);
+        }
+        handlerCtx.setOutputValue("result", result);
+        handlerCtx.setOutputValue("hasConfidentialProps", hasConf);
+    }
+        
 }
