@@ -57,6 +57,7 @@
     <description>Java EE API modules repackaged as OSGi bundles in GlassFish</description>
 
     <properties>
+        <javaee.version>7.0-${build.id}</javaee.version>
         <findbugs.skip>true</findbugs.skip>
     </properties>
 
@@ -180,7 +181,7 @@
                                     <goal>lazy-deploy</goal>
                                 </goals>
                                 <configuration>
-                                    <skip>true</skip>
+                                   <!-- <skip>true</skip> -->
                                 </configuration>
                             </execution>
                             <execution>

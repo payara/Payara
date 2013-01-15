@@ -92,6 +92,7 @@
                 <configuration>
                     <supportedProjectTypes>
                         <supportedProjectType>jar</supportedProjectType>
+                        <supportedProjectType>bundle</supportedProjectType>
                     </supportedProjectTypes>
                     <instructions>
                         <!-- embed all compile and runtime scope dependencies -->
