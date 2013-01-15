@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,16 +40,13 @@
 
 package org.glassfish.webservices;
 
-import java.lang.UnsupportedOperationException;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
-import com.sun.logging.LogDomains;
 
 /**
  * InvocationHandler used to delegate calls to JAXRPC servlet impls
@@ -59,8 +56,8 @@ import com.sun.logging.LogDomains;
  */
 public class ServletImplInvocationHandler implements InvocationHandler {
 
-    private static Logger logger =
-            LogDomains.getLogger(ServletImplInvocationHandler.class, LogDomains.WEBSERVICES_LOGGER);
+    private static final Logger logger = LogUtils.getLogger();
+
     private Object servletImplDelegate;
     private Class servletImplClass;
     
@@ -89,10 +86,12 @@ public class ServletImplInvocationHandler implements InvocationHandler {
                 (method.getName(), method.getParameterTypes());
             returnValue = implMethod.invoke(servletImplDelegate, args);
         } catch(InvocationTargetException ite) {
-            logger.log(Level.FINE, "", ite);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, LogUtils.EXCEPTION_THROWN, ite);
+            }
             throw ite.getCause();
         } catch(Throwable t) {
-            logger.log(Level.INFO, "Error invoking servlet impl", t);
+            logger.log(Level.INFO, LogUtils.ERROR_INVOKING_SERVLETIMPL, t);
             throw t;
         }
 

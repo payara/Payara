@@ -41,7 +41,6 @@
 package org.glassfish.webservices.connector.annotation.handlers;
 
 import java.util.StringTokenizer;
-import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 import java.lang.reflect.AnnotatedElement;
@@ -59,7 +58,8 @@ import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
-import com.sun.logging.LogDomains;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.logging.Level;
 
 import javax.xml.namespace.QName;
 import javax.ejb.Stateless;
@@ -67,6 +67,7 @@ import javax.ejb.Singleton;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.web.deployment.descriptor.WebComponentDescriptorImpl;
+import org.glassfish.webservices.connector.LogUtils;
 import org.glassfish.webservices.node.WebServicesDescriptorNode;
 import org.jvnet.hk2.annotations.Service;
 
@@ -80,9 +81,9 @@ import org.jvnet.hk2.annotations.Service;
 @AnnotationHandlerFor(javax.jws.WebService.class)
 public class WebServiceHandler extends AbstractHandler {
 
-    private Logger logger = LogDomains.getLogger(this.getClass(),LogDomains.WEBSERVICES_LOGGER);
+    private static final Logger conLogger = LogUtils.getLogger();
 
-    private ResourceBundle rb = logger.getResourceBundle()   ;
+    private static final LocalStringManagerImpl wsLocalStrings = new LocalStringManagerImpl(WebServiceHandler.class);
 
     /** Creates a new instance of WebServiceHandler */
     public WebServiceHandler() {
@@ -119,8 +120,10 @@ public class WebServiceHandler extends AbstractHandler {
         // sanity check
         if (!(annElem instanceof Class)) {
             AnnotationProcessorException ape = new AnnotationProcessorException(
-                    rb.getString("enterprise.deployment.annotation.handlers.wrongannotationlocation")
-                    ,annInfo);
+                    wsLocalStrings.getLocalString(
+                        "enterprise.deployment.annotation.handlers.wrongannotationlocation",
+                        "WS00022: symbol annotation can only be specified on TYPE"),
+                    annInfo);
             annInfo.getProcessingContext().getErrorHandler().error(ape);
             return HandlerProcessingResultImpl.getDefaultResult(getAnnotationType(), ResultType.FAILED);
         }
@@ -133,8 +136,8 @@ public class WebServiceHandler extends AbstractHandler {
 
         if(isJaxwsRIDeployment(annInfo)) {
             // Looks like JAX-WS RI specific deployment, do not process Web Service annotations otherwise would end up as two web service endpoints
-            logger.info(format(rb.getString("enterprise.webservice.deployment.disabled"),
-                    annInfo.getProcessingContext().getArchive().getName(),"WEB-INF/sun-jaxws.xml"));
+            conLogger.log(Level.INFO, LogUtils.DEPLOYMENT_DISABLED,
+                    new Object[] {annInfo.getProcessingContext().getArchive().getName(), "WEB-INF/sun-jaxws.xml"});
             return HandlerProcessingResultImpl.getDefaultResult(getAnnotationType(), ResultType.PROCESSED);
         }
 
@@ -205,7 +208,10 @@ public class WebServiceHandler extends AbstractHandler {
                 bundleDesc.setSpecVersion("2.5");
             }
         }catch (Exception e) {
-            throw new AnnotationProcessorException(rb.getString("webservice.annotation.exception")+ e.getMessage());
+            throw new AnnotationProcessorException(
+                    wsLocalStrings.getLocalString("webservice.annotation.exception",
+                        "WS00023: Exception in processing @Webservice : {0}",
+                        e.getMessage()));
         }
         //WebService.name in the impl class identifies port-component-name
         // If this is specified in impl class, then that takes precedence
@@ -267,16 +273,19 @@ public class WebServiceHandler extends AbstractHandler {
 
             ann = annElem.getAnnotation(javax.jws.WebService.class);
             if (ann==null) {
-                throw new AnnotationProcessorException(format(rb.getString("no.webservice.annotation"),
-                     ((javax.jws.WebService) annInfo.getAnnotation()).endpointInterface()
-                    ,((Class) annElem).getName()  ));
-
+                throw new AnnotationProcessorException(
+                        wsLocalStrings.getLocalString("no.webservice.annotation",
+                            "WS00025: SEI {0} referenced from the @WebService annotation on {1}  does not contain a @WebService annotation",
+                            ((javax.jws.WebService) annInfo.getAnnotation()).endpointInterface(),
+                            ((Class) annElem).getName()));
             }
 
             // SEI cannot have @BindingType
             if(annElem.getAnnotation(javax.xml.ws.BindingType.class) != null) {
-                throw new AnnotationProcessorException(format(rb.getString("cannot.have.bindingtype"),
-                        ((javax.jws.WebService) annInfo.getAnnotation()).endpointInterface()
+                throw new AnnotationProcessorException(
+                        wsLocalStrings.getLocalString("cannot.have.bindingtype",
+                            "WS00026: SEI {0} cannot have @BindingType",
+                            ((javax.jws.WebService) annInfo.getAnnotation()).endpointInterface()
                     ));
             }
         }
@@ -346,7 +355,8 @@ public class WebServiceHandler extends AbstractHandler {
             if( (targetNameSpace != null) && (targetNameSpace.length() != 0 ) &&
                 (!endpoint.getWsdlService().getNamespaceURI().equals(targetNameSpace)) ) {
                 AnnotationProcessorException ape = new AnnotationProcessorException(
-                        rb.getString("mismatch.targetnamespace"),
+                        wsLocalStrings.getLocalString("mismatch.targetnamespace",
+                            "WS00027: Target Namespace in wsdl-service element does not match @WebService.targetNamespace"),
                         annInfo);
                 annInfo.getProcessingContext().getErrorHandler().error(ape);
                 return HandlerProcessingResultImpl.getDefaultResult(getAnnotationType(), ResultType.FAILED);
@@ -360,7 +370,8 @@ public class WebServiceHandler extends AbstractHandler {
             if(!endpoint.getWsdlService().getNamespaceURI().equals(
                                     endpoint.getWsdlPort().getNamespaceURI())) {
                 AnnotationProcessorException ape = new AnnotationProcessorException(
-                        rb.getString("mismatch.port.targetnamespace"),
+                        wsLocalStrings.getLocalString("mismatch.port.targetnamespace",
+                            "WS00028: Target Namespace for wsdl-service and wsdl-port should be the same"),
                         annInfo);
                 annInfo.getProcessingContext().getErrorHandler().error(ape);
                 return HandlerProcessingResultImpl.getDefaultResult(getAnnotationType(), ResultType.FAILED);
@@ -438,7 +449,7 @@ public class WebServiceHandler extends AbstractHandler {
             } catch (Exception e) {
                 //This can happen in the web.zip installation where there is no ejb
                 //Just logging the error
-                logger.fine(rb.getString("exception.thrown") + e.getMessage() );
+                conLogger.log(Level.FINE, LogUtils.EXCEPTION_THROWN, e);
             }
             Singleton singleton = null;
             try {
@@ -446,7 +457,7 @@ public class WebServiceHandler extends AbstractHandler {
             } catch (Exception e) {
                 //This can happen in the web.zip installation where there is no ejb
                 //Just logging the error
-                logger.fine(rb.getString("exception.thrown") + e.getMessage() );
+                conLogger.log(Level.FINE, LogUtils.EXCEPTION_THROWN, e);
             }
             String name;
 
@@ -493,7 +504,9 @@ public class WebServiceHandler extends AbstractHandler {
                         targetNameSpace = ((Class) annElem).getPackage().getName();
                     }
                 } else {
-                    throw new AnnotationProcessorException(rb.getString("missing.targetnamespace"));
+                    throw new AnnotationProcessorException(
+                            wsLocalStrings.getLocalString("missing.targetnamespace",
+                            "WS00029: The javax.jws.WebService annotation targetNamespace MUST be used for classes or interfaces in no package"));
                 }
                 targetNameSpace = "http://" + (targetNameSpace==null?"":targetNameSpace+"/");
             }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,16 +49,11 @@ import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
 import javax.xml.bind.JAXBContext;
-import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.MessageContext.Scope;
 
 import com.sun.xml.ws.api.message.Messages;
 import com.sun.xml.ws.api.message.Message;
 import com.sun.xml.ws.api.message.Packet;
-import com.sun.xml.ws.message.saaj.SAAJMessage;
-import com.sun.logging.LogDomains;
-
-import java.util.jar.Pack200;
 
 import javax.xml.soap.SOAPMessage;
 
@@ -69,7 +64,7 @@ public class SOAPMessageContextImpl implements SOAPMessageContext {
 
     private Packet packet = null;
     private SOAPMessage message = null;
-    private static Logger logger = LogDomains.getLogger(SOAPMessageContextImpl.class,LogDomains.WEBSERVICES_LOGGER);
+    private static final Logger logger = LogUtils.getLogger();
 
     public SOAPMessageContextImpl(Packet pkt) {
         this.packet = pkt;
@@ -96,7 +91,7 @@ public class SOAPMessageContextImpl implements SOAPMessageContext {
             }
 
         } catch (Exception e) {
-            logger.log(Level.SEVERE,"Error occured", e);
+            logger.log(Level.SEVERE, LogUtils.ERROR_OCCURED, e);
         }
 
         //store the message so we don't have to convert again

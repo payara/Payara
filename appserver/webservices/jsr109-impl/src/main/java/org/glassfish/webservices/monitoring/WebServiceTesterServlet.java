@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,7 +48,6 @@ package org.glassfish.webservices.monitoring;
 
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import com.sun.tools.ws.spi.WSToolsObjectFactory;
 import com.sun.xml.bind.api.JAXBRIContext;
 
@@ -76,6 +75,7 @@ import java.util.logging.Logger;
 
 import org.glassfish.webservices.WebServiceContractImpl;
 import com.sun.enterprise.module.*;
+import org.glassfish.webservices.LogUtils;
 
 /**
  * This servlet is responsible for testing web-services.
@@ -85,7 +85,7 @@ import com.sun.enterprise.module.*;
 public class WebServiceTesterServlet extends HttpServlet implements MessageListener {
 
     private WebServiceEndpoint svcEP;
-    private static Logger logger = LogDomains.getLogger(WebServiceTesterServlet.class,LogDomains.WEBSERVICES_LOGGER);
+    private static final Logger logger = LogUtils.getLogger();
 
     private static Hashtable<String, Class> gsiClasses = new Hashtable<String, Class>();
     private static Hashtable<String, Object> ports = new Hashtable<String, Object>();
@@ -330,7 +330,7 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
         
         } catch(Throwable e) {
             out.print(localStrings.getLocalString(
-                       "enterprise.webservice.serviceExceptionError",
+                       "enterprise.webservice.monitoring.serviceExceptionError",
                        "<H2>Service invocation threw an exception with message : {0}; Refer to the server log for more details</H2><BR><HR>", 
                        new Object[] {e.getMessage()}));
             throw new ServletException(e);
@@ -622,10 +622,10 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
         // create a dumy file to have a unique temporary name for a directory
         classesDir = File.createTempFile("jax-ws", "tester", classesDir);
         if (!classesDir.delete()) {
-            logger.log(Level.WARNING, "deleting directory failed : " + classesDir);
+            logger.log(Level.WARNING, LogUtils.DELETE_DIR_FAILED, classesDir);
         }
         if (!classesDir.mkdirs()) {
-            logger.log(Level.SEVERE, "creating directory failed : " + classesDir);
+            logger.log(Level.SEVERE, LogUtils.CREATE_DIR_FAILED, classesDir);
         }
 
         String[] wsimportArgs = new String[7];
@@ -637,19 +637,13 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
         wsimportArgs[5]="-target";
         wsimportArgs[6]="2.1";
         WSToolsObjectFactory tools = WSToolsObjectFactory.newInstance();
+        logger.log(Level.INFO, LogUtils.WSIMPORT_INVOKE, wsdlLocation);
         boolean success = tools.wsimport(System.out, wsimportArgs);
-        if (logger!=null) {
-            logger.log(Level.INFO, "Invoking wsimport with " + wsdlLocation);
-        } else {
-            System.out.println("Invoking wsimport with " + wsdlLocation);
-        }
 
         if (success) {
-            if (logger!=null)
-                logger.log(Level.INFO, "wsimport successful");
+            logger.log(Level.INFO, LogUtils.WSIMPORT_OK);
         } else {
-            if (logger!=null)
-                logger.log(Level.SEVERE, "wsimport failed");
+            logger.log(Level.SEVERE, LogUtils.WSIMPORT_FAILED);
             return null;
         }
         return classesDir.getAbsolutePath();

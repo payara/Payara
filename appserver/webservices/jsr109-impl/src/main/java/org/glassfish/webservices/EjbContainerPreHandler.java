@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,20 +40,15 @@
 
 package org.glassfish.webservices;
 
-import java.rmi.UnmarshalException;
-
 import javax.xml.namespace.QName;
 
 import javax.xml.rpc.handler.GenericHandler;
 import javax.xml.rpc.handler.MessageContext;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.ResourceBundle;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
 
-import com.sun.logging.LogDomains;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.ejb.api.EJBInvocation;
 
@@ -67,8 +62,7 @@ import org.glassfish.ejb.api.EJBInvocation;
  */
 public class EjbContainerPreHandler extends GenericHandler {
 
-    private Logger logger = LogDomains.getLogger(EjbContainerPreHandler.class, LogDomains.WEBSERVICES_LOGGER);
-    private ResourceBundle rb = logger.getResourceBundle();
+    private static final Logger logger = LogUtils.getLogger();
     private WsUtil wsUtil = new WsUtil();
 
     public EjbContainerPreHandler() {}
@@ -88,8 +82,8 @@ public class EjbContainerPreHandler extends GenericHandler {
                     (com.sun.xml.rpc.spi.runtime.Tie)inv.getWebServiceTie(), context);
             inv.setWebServiceMethod(method);
             if ( !inv.authorizeWebService(method)  ) {
-                throw new Exception(  format( rb.getString ("client.unauthorized")
-                        , method.toString()));
+                throw new Exception(format(logger.getResourceBundle().getString(LogUtils.CLIENT_UNAUTHORIZED),
+                        method.toString()));
             }
 
         } catch(Exception e) {

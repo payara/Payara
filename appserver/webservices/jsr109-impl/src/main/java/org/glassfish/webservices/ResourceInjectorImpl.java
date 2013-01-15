@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,10 +49,9 @@ import com.sun.enterprise.deployment.InjectionTarget;
 
 import com.sun.enterprise.container.common.spi.util.InjectionException;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
-import com.sun.logging.LogDomains;
 
 import java.util.Iterator;
-import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.ws.WebServiceException;
@@ -70,8 +69,7 @@ public class ResourceInjectorImpl extends ResourceInjector {
     private WebServiceEndpoint endpoint;
     private ComponentInvocation inv;
     private InvocationManager invMgr;
-    private Logger logger = LogDomains.getLogger(this.getClass(),LogDomains.WEBSERVICES_LOGGER);
-    private ResourceBundle rb = logger.getResourceBundle();
+    private static final Logger logger = LogUtils.getLogger();
 
     public ResourceInjectorImpl(WebServiceEndpoint ep) {
 
@@ -118,7 +116,9 @@ public class ResourceInjectorImpl extends ResourceInjector {
                         wsc = (WebServiceContextImpl) ic.lookup("java:comp/env/" + r.getName());
                     } catch (Throwable t) {
                         // Do something here
-                        logger.fine(rb.getString("exception.thrown") + t);
+                        if (logger.isLoggable(Level.FINE)) {
+                            logger.log(Level.FINE, LogUtils.EXCEPTION_THROWN, t);
+                        }
                     }
                     if(wsc != null) {
                         wsc.setContextDelegate(context);

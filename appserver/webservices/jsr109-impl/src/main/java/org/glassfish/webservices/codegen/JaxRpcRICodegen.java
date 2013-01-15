@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -117,7 +117,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
 
     private JaxRpcObjectFactory rpcFactory;
 
-    private Logger logger = WsUtil.getDefaultLogger();
+    private static final Logger logger = WsUtil.getDefaultLogger();
 
     // total number of times wscompile is invoked for the .ear or the
     // standalone module.
@@ -745,7 +745,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
             if (logger.isLoggable(Level.FINE)) {
                 debug("---> ARGS = ");
                 for (int i = 0; i < args.length; i++) {
-                    System.err.print(args[i] + "; ");
+                    logger.fine(args[i] + "; ");
                 }
             }
             boolean compiled = wsCompile.getCompileTool().run(args);
@@ -806,7 +806,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
 
     private void debug(String msg) {
         if (logger.isLoggable(Level.FINE) ) {
-            System.out.println("[JaxRpcRICodegen] --> " + msg);
+            logger.fine("[JaxRpcRICodegen] --> " + msg);
         }
     }
 

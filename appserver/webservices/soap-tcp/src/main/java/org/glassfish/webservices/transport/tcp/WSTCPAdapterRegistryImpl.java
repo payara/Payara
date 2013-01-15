@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -94,7 +94,9 @@ public final class WSTCPAdapterRegistryImpl implements WSTCPAdapterRegistry {
                 try {
                     record.adapter = createWSAdapter(requestURI.path,
                             record.wsEndpointDescriptor);
-                    logger.log(Level.FINE, "WSTCPAdapterRegistryImpl. Register adapter. Path: {0}", requestURI.path);
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE, LogUtils.ADAPTER_REGISTERED, requestURI.path);
+                    }
                 } catch (Exception e) {
                     // This common exception is thrown from ejbEndPtInfo.prepareInvocation(true)
                     logger.log(Level.SEVERE, "WSTCPAdapterRegistryImpl. " +
@@ -115,7 +117,9 @@ public final class WSTCPAdapterRegistryImpl implements WSTCPAdapterRegistry {
     }
 
     public void deregisterEndpoint(@NotNull final String path) {
-        logger.log(Level.FINE, "WSTCPAdapterRegistryImpl. DeRegister adapter for {0}", path);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, LogUtils.ADAPTER_DEREGISTERED, path);
+        }
         registry.remove(path);
     }
 

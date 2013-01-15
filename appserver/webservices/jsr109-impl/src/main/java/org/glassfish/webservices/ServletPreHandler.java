@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,6 @@
 
 package org.glassfish.webservices;
 
-import java.lang.reflect.Method;
 import javax.xml.namespace.QName;
 
 import javax.xml.rpc.handler.GenericHandler;
@@ -48,10 +47,6 @@ import javax.xml.rpc.handler.MessageContext;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.util.ResourceBundle;
-import java.text.MessageFormat;
-
-import com.sun.logging.LogDomains;
 import org.glassfish.api.invocation.InvocationManager;
 
 import com.sun.enterprise.web.WebComponentInvocation;
@@ -67,10 +62,8 @@ import com.sun.xml.rpc.server.http.MessageContextProperties;
  */
 public class ServletPreHandler extends GenericHandler {
 
-    private static Logger logger = 
-        LogDomains.getLogger(ServletPreHandler.class, LogDomains.WEBSERVICES_LOGGER);
+    private static Logger logger = LogUtils.getLogger();
     private WsUtil wsUtil = new WsUtil();
-    private ResourceBundle rb = logger.getResourceBundle();
 
     public ServletPreHandler() {}
 
@@ -96,13 +89,9 @@ public class ServletPreHandler extends GenericHandler {
             inv.setWebServiceMethod(wsUtil.getInvMethod(tie, context));
 
         } catch(Exception e) {
-            logger.log(Level.WARNING, format(rb.getString("preWebHandlerError"), e.toString()));
+            logger.log(Level.WARNING, LogUtils.PRE_WEBHANDLER_ERROR, e.toString());
             wsUtil.throwSOAPFaultException(e.getMessage(), context);
         }
         return true;
-    }
-
-    private String format(String key, String ... values){
-        return MessageFormat.format(key, (Object [])values);
     }
 }

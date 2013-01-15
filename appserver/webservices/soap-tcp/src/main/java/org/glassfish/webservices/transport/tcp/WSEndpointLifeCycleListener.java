@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,6 @@
 
 package org.glassfish.webservices.transport.tcp;
 
-import com.sun.logging.LogDomains;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.webservices.monitoring.Endpoint;
@@ -50,18 +49,22 @@ import org.glassfish.webservices.monitoring.EndpointLifecycleListener;
  * @author Alexey Stashok
  */
 public final class WSEndpointLifeCycleListener implements EndpointLifecycleListener {
-    private static final Logger LOGGER = LogDomains.getLogger(
-            WSEndpointLifeCycleListener.class, LogDomains.WEBSERVICES_LOGGER);
-    
+
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     @Override
     public void endpointAdded(final Endpoint endpoint) {
-        LOGGER.log(Level.FINE, "SOAP/TCP endpoint added: {0}", endpoint);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, LogUtils.SOAPTCP_ENDPOINT_ADDED, endpoint);
+        }
         AppServRegistry.getInstance().registerEndpoint(endpoint);
     }
 
     @Override
     public void endpointRemoved(final Endpoint endpoint) {
-        LOGGER.log(Level.FINE, "SOAP/TCP endpoint removed: {0}", endpoint);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, LogUtils.SOAPTCP_ENDPOINT_REMOVED, endpoint);
+        }
         AppServRegistry.getInstance().deregisterEndpoint(endpoint);
     }
 }

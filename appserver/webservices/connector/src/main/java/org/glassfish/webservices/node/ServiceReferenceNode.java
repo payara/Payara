@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,20 +53,19 @@ import com.sun.enterprise.deployment.node.DisplayableComponentNode;
 import com.sun.enterprise.deployment.node.JndiEnvRefNode;
 import com.sun.enterprise.deployment.node.InjectionTargetNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import org.w3c.dom.Node;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import org.glassfish.internal.api.Globals;
 
 import javax.xml.namespace.QName;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.glassfish.webservices.connector.LogUtils;
 
 /** 
  * This node is responsible for loading web services
@@ -79,7 +78,8 @@ import java.util.logging.Level;
 @PerLookup
 public class ServiceReferenceNode extends DisplayableComponentNode implements JndiEnvRefNode<ServiceReferenceDescriptor> {
 
-    
+    private static final Logger logger = LogUtils.getLogger();
+
     private ServiceRefPortInfo  portInfo = null;
 
     /** Creates a new instance of ServiceReferenceNode */
@@ -146,7 +146,7 @@ public class ServiceReferenceNode extends DisplayableComponentNode implements Jn
             String localPart = getLocalPartFromQName(value);
             String namespaceUri = resolvePrefix(element, prefix);
             if( namespaceUri == null) {
-                DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.invalidDescriptorMappingFailure",
+                logger.log(Level.SEVERE, LogUtils.INVALID_DESC_MAPPING_FAILURE,
                     new Object[] { prefix , getServiceReferenceDescriptor().getName()});
             } else {
                 QName serviceName = new QName(namespaceUri, localPart);

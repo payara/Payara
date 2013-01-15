@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,6 @@ import com.sun.enterprise.deployment.NameValuePairDescriptor;
 import com.sun.enterprise.deployment.WebServiceHandler;
 import com.sun.enterprise.deployment.node.DisplayableComponentNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import org.w3c.dom.Node;
@@ -54,6 +53,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.glassfish.webservices.connector.LogUtils;
 
 /**
  * This node does xml marshalling to/from web service handlers.
@@ -61,6 +62,8 @@ import java.util.logging.Level;
  * @author Kenneth Saks
  */
 public class WebServiceHandlerNode extends DisplayableComponentNode {
+
+    private static final Logger logger = LogUtils.getLogger();
 
     private final static XMLElement tag =
         new XMLElement(WebServicesTagNames.HANDLER);
@@ -127,7 +130,7 @@ public class WebServiceHandlerNode extends DisplayableComponentNode {
             String namespaceUri = resolvePrefix(element, prefix);
 
             if( namespaceUri == null) {
-                DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.invalidDescriptorMappingFailure",
+                logger.log(Level.SEVERE, LogUtils.INVALID_DESC_MAPPING_FAILURE,
                     new Object[] {prefix , handler.getHandlerName()});
             } else {
                 QName soapHeader = new QName(namespaceUri, localPart);

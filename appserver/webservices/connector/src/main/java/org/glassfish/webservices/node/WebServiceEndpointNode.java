@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,13 +49,14 @@ package org.glassfish.webservices.node;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.node.DisplayableComponentNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import org.w3c.dom.Node;
 
 import javax.xml.namespace.QName;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.glassfish.webservices.connector.LogUtils;
 
 /**
  * This node handles the web service endpoint definition
@@ -63,6 +64,8 @@ import java.util.logging.Level;
  * @author Jerome Dochez
  */
 public class WebServiceEndpointNode extends DisplayableComponentNode {
+
+    private static final Logger logger = LogUtils.getLogger();
 
     private final static XMLElement tag =
         new XMLElement(WebServicesTagNames.PORT_COMPONENT);
@@ -131,7 +134,7 @@ public class WebServiceEndpointNode extends DisplayableComponentNode {
             String localPart = getLocalPartFromQName(value);
             String namespaceUri = resolvePrefix(element, prefix);
             if( namespaceUri == null) {
-                DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.invalidDescriptorMappingFailure",
+                logger.log(Level.SEVERE, LogUtils.INVALID_DESC_MAPPING_FAILURE,
                     new Object[] {prefix , value });
             } else {
                 QName wsdlPort = new QName(namespaceUri, localPart);
@@ -142,7 +145,7 @@ public class WebServiceEndpointNode extends DisplayableComponentNode {
             String localPart = getLocalPartFromQName(value);
             String namespaceUri = resolvePrefix(element, prefix);
             if( namespaceUri == null) {
-                DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.invalidDescriptorMappingFailure",
+                logger.log(Level.SEVERE, LogUtils.INVALID_DESC_MAPPING_FAILURE,
                     new Object[] {prefix , value });
             } else {
                 QName wsdlSvc = new QName(namespaceUri, localPart);
@@ -214,9 +217,8 @@ public class WebServiceEndpointNode extends DisplayableComponentNode {
             appendTextChild(linkNode, WebServicesTagNames.EJB_LINK,
                             descriptor.getEjbLink());
         } else {
-            DOLUtils.getDefaultLogger().log
-                (Level.INFO, "Warning : Web service endpoint " +
-                 descriptor.getEndpointName() + " is not tied to a component");
+            logger.log(Level.INFO, LogUtils.WS_NOT_TIED_TO_COMPONENT,
+                    descriptor.getEndpointName());
         }
 
         WebServiceHandlerNode handlerNode = new WebServiceHandlerNode();

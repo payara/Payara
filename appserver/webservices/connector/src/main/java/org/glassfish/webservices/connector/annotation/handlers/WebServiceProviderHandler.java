@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,13 +41,11 @@
 package org.glassfish.webservices.connector.annotation.handlers;
 
 import java.text.MessageFormat;
-import java.util.ResourceBundle;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.annotation.Annotation;
 import java.util.logging.Logger;
 
-import com.sun.logging.LogDomains;
 import org.glassfish.apf.*;
 
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
@@ -66,11 +64,14 @@ import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.logging.Level;
 
 import javax.xml.namespace.QName;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.web.deployment.descriptor.WebComponentDescriptorImpl;
+import org.glassfish.webservices.connector.LogUtils;
 import org.glassfish.webservices.node.WebServicesDescriptorNode;
 import org.jvnet.hk2.annotations.Service;
 
@@ -84,9 +85,9 @@ import org.jvnet.hk2.annotations.Service;
 @AnnotationHandlerFor(javax.xml.ws.WebServiceProvider.class)
 public class WebServiceProviderHandler extends AbstractHandler {
     
-    private Logger logger = LogDomains.getLogger(this.getClass(),LogDomains.WEBSERVICES_LOGGER);
+    private static final Logger conLogger = LogUtils.getLogger();
 
-    private ResourceBundle rb = logger.getResourceBundle();
+    private static final LocalStringManagerImpl wsLocalStrings = new LocalStringManagerImpl(WebServiceProviderHandler.class);
     
     /** Creates a new instance of WebServiceHandler */
     public WebServiceProviderHandler() {
@@ -130,8 +131,8 @@ public class WebServiceProviderHandler extends AbstractHandler {
 
         if(isJaxwsRIDeployment(annInfo)) {
             // Looks like JAX-WS RI specific deployment, do not process Web Service annotations otherwise would end up as two web service endpoints
-            logger.info(format(rb.getString("enterprise.webservice.deployment.disabled"),
-                    annInfo.getProcessingContext().getArchive().getName(),"WEB-INF/sun-jaxws.xml"));
+            conLogger.log(Level.INFO, LogUtils.DEPLOYMENT_DISABLED,
+                    new Object[] {annInfo.getProcessingContext().getArchive().getName(), "WEB-INF/sun-jaxws.xml"});
             return HandlerProcessingResultImpl.getDefaultResult(getAnnotationType(), ResultType.PROCESSED);
         }
         
@@ -166,7 +167,10 @@ public class WebServiceProviderHandler extends AbstractHandler {
                 bundleDesc.setSpecVersion("2.5");
             }
         } catch (Exception e) {
-            throw new AnnotationProcessorException(rb.getString("webservice.annotation.exception") + e.getMessage());
+            throw new AnnotationProcessorException(
+                    wsLocalStrings.getLocalString("webservice.annotation.exception",
+                    "WS00023: Exception in processing @Webservice : {0}",
+                    e.getMessage()));
         }
 
         // For WSProvider, portComponentName is the fully qualified class name

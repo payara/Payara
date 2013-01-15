@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,13 +44,13 @@ import java.io.IOException;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import com.sun.logging.LogDomains;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletContext;
 
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
+import java.text.MessageFormat;
 
 /**
  * Implementation of the Ejb Message Dispatcher for EJB3 endpoints.
@@ -59,7 +59,7 @@ import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
  */
 public class Ejb3MessageDispatcher implements EjbMessageDispatcher {
     
-    protected Logger logger = LogDomains.getLogger(this.getClass(),LogDomains.WEBSERVICES_LOGGER);
+    private static final Logger logger = LogUtils.getLogger();
     
     private static WsUtil wsUtil = new WsUtil();
     
@@ -70,8 +70,8 @@ public class Ejb3MessageDispatcher implements EjbMessageDispatcher {
                        EjbRuntimeEndpointInfo endpointInfo) {
         
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "JAXWS WebServiceDispatcher {0} entering for {1} and query string {2}", 
-                    new Object[]{req.getMethod(), req.getRequestURI(), req.getQueryString()});
+            logger.log(Level.FINE, LogUtils.WEBSERVICE_DISPATCHER_INFO,
+                    new Object[] {req.getMethod(), req.getRequestURI(), req.getQueryString()});
         }       
         String method = req.getMethod();
         try {
@@ -80,15 +80,15 @@ public class Ejb3MessageDispatcher implements EjbMessageDispatcher {
             } else if( method.equals("GET") ) {
                 handleGet(req, resp, ctxt, endpointInfo);
             } else {
-                String errorMessage =  "Unsupported method request = [" 
-                    + method + "] for endpoint " + 
-                    endpointInfo.getEndpoint().getEndpointName() + " at " + 
-                    endpointInfo.getEndpointAddressUri();
-                logger.warning(errorMessage);
+                String errorMessage = MessageFormat.format(
+                        logger.getResourceBundle().getString(LogUtils.UNSUPPORTED_METHOD_REQUEST),
+                        new Object[] {method, endpointInfo.getEndpoint().getEndpointName(),
+                            endpointInfo.getEndpointAddressUri()});
+                logger.log(Level.WARNING, errorMessage);
                 wsUtil.writeInvalidMethodType(resp, errorMessage);
             }
         } catch(Exception e) {
-            logger.log(Level.WARNING, "ejb endpoint exception", e);
+            logger.log(Level.WARNING, LogUtils.EJB_ENDPOINT_EXCEPTION, e);
         }
     } 
     
@@ -105,7 +105,7 @@ public class Ejb3MessageDispatcher implements EjbMessageDispatcher {
                 if (adapter != null) {                    
                     adapter.handle(null, req, resp);
                 } else {
-                    logger.log(Level.SEVERE, "Unable to find adpater for endpoint {0}", endpointInfo.getEndpoint().getName());
+                    logger.log(Level.SEVERE, LogUtils.UNABLE_FIND_ADAPTER, endpointInfo.getEndpoint().getName());
                 }
             } finally {
                 // Always call release, even if an error happened
@@ -115,9 +115,10 @@ public class Ejb3MessageDispatcher implements EjbMessageDispatcher {
                 endpointInfo.releaseImplementor((adapterInfo == null) ? null : adapterInfo.getInv());
             }    
         } catch (Throwable e) {
-            String errorMessage = "invocation error on ejb endpoint " +
-            endpointInfo.getEndpoint().getEndpointName() + " at " +
-            endpointInfo.getEndpointAddressUri() + " : " + e.getMessage();
+            String errorMessage = MessageFormat.format(
+                    logger.getResourceBundle().getString(LogUtils.ERROR_ON_EJB),
+                    new Object[] {endpointInfo.getEndpoint().getEndpointName(),
+                        endpointInfo.getEndpointAddressUri(), e.getMessage()});
             logger.log(Level.WARNING, errorMessage, e);
             String binding = endpointInfo.getEndpoint().getProtocolBinding();
             WsUtil.raiseException(resp, binding, errorMessage);
@@ -141,9 +142,10 @@ public class Ejb3MessageDispatcher implements EjbMessageDispatcher {
                 (new WsUtil()).writeInvalidMethodType(resp, message);
             }
         } catch (Throwable e) {
-            String errorMessage = "invocation error on ejb endpoint " +
-            endpointInfo.getEndpoint().getEndpointName() + " at " +
-            endpointInfo.getEndpointAddressUri() + " : " + e.getMessage();
+            String errorMessage = MessageFormat.format(
+                    logger.getResourceBundle().getString(LogUtils.ERROR_ON_EJB),
+                    new Object[] {endpointInfo.getEndpoint().getEndpointName(),
+                        endpointInfo.getEndpointAddressUri(), e.getMessage()});
             logger.log(Level.WARNING, errorMessage, e);
             String binding = endpointInfo.getEndpoint().getProtocolBinding();
             WsUtil.raiseException(resp, binding, errorMessage);

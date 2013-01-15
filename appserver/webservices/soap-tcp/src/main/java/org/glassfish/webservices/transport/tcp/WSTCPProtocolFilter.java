@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,6 @@ package org.glassfish.webservices.transport.tcp;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
-import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -60,7 +59,8 @@ import org.glassfish.grizzly.nio.NIOConnection;
  * @author Alexey Stashok
  */
 public class WSTCPProtocolFilter extends BaseFilter {
-    private static final Logger LOGGER = LogDomains.getLogger(WSTCPProtocolFilter.class, LogDomains.WEBSERVICES_LOGGER);
+
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     private volatile Connector connector;
     
@@ -80,7 +80,7 @@ public class WSTCPProtocolFilter extends BaseFilter {
                     final String host = socketAddress.getHostName();
                     final int port = socketAddress.getPort();
 
-                    LOGGER.log(Level.INFO, "Initialize SOAP/TCP protocol for port: {0}", port);
+                    LOGGER.log(Level.INFO, LogUtils.SOAPTCP_PROTOCOL_INITIALIZED, port);
 
                     connector = new Connector(host, port, module.getDelegate());
                 }

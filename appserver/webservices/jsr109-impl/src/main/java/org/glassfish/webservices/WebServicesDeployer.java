@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,11 +46,9 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import com.sun.enterprise.deployment.web.AppListenerDescriptor;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
-import com.sun.logging.LogDomains;
 import com.sun.tools.ws.util.xml.XmlUtil;
 import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.loader.util.ASClassLoaderUtil;
@@ -104,7 +102,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
         return deploymentNotifier;
     }
 
-    private static final Logger logger = LogDomains.getLogger(WebServicesDeployer.class, LogDomains.WEBSERVICES_LOGGER);
+    private static final Logger logger = LogUtils.getLogger();
 
     private ResourceBundle rb = logger.getResourceBundle();
 
@@ -114,9 +112,6 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
     @Inject
     private ArchiveFactory archiveFactory;
 
-    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(WebServicesDeployer.class);
-
-        
     /**
      * Constructor
      */
@@ -149,7 +144,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
             Application app = dc.getModuleMetaData(Application.class);
             if (app==null) {
                 // hopefully the DOL gave a good message of the failure...
-                logger.severe(format(rb.getString("failed.loading.dd")));
+                logger.log(Level.SEVERE, LogUtils.FAILED_LOADING_DD);
                 return false;
             }
             BundleDescriptor bundle = DOLUtils.getCurrentBundleForContext(dc);
@@ -175,7 +170,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
                     if (facade != null) {
                         facade.run(habitat, dc, moduleCP, false);
                     }  else {
-                        throw new DeploymentException(rb.getString("jaxrpc.codegen.fail")) ;
+                        throw new DeploymentException(rb.getString(LogUtils.JAXRPC_CODEGEN_FAIL)) ;
                     }
                 }
             }
@@ -187,10 +182,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
             bean.deploy(wsDesc,notifier);
             return true;
         } catch (Exception ex) {
-            // re-throw all the exceptions as runtime exceptions
-            RuntimeException re = new RuntimeException(ex.getMessage());
-            re.initCause(ex);
-            throw re;
+            throw new RuntimeException(ex);
         }
     }
 
@@ -231,7 +223,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
         try {
             checkCatalog(bundle, ws, moduleDir);
         } catch (DeploymentException e) {
-            logger.log(Level.SEVERE,"Error in resolving the catalog");
+            logger.log(Level.SEVERE, LogUtils.ERROR_RESOLVING_CATALOG);
         }
         if (ws.hasWsdlFile()) {
             // If wsdl file is an http URL, download that WSDL and all embedded relative wsdls, schemas
@@ -249,9 +241,9 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
             }
 
             if (!wsdlFile.exists()) {
-                String errorMessage = format(rb.getString("wsdl.notfound"),
+                String errorMessage = format(logger.getResourceBundle().getString(LogUtils.WSDL_NOT_FOUND),
                         ws.getWsdlFileUri(), bundle.getModuleDescriptor().getArchiveUri());
-                logger.severe(errorMessage);
+                logger.log(Level.SEVERE, errorMessage);
                 throw new DeploymentException(errorMessage);
             }
         }
@@ -365,7 +357,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
                 if(mappedEntry.startsWith("file:")) {
                     File f = new File(mappedEntry.substring(mappedEntry.indexOf(":")+1));
                     if(!f.exists()) {
-                        throw new DeploymentException(format(rb.getString("catalog.resolver.error"),mappedEntry));
+                        throw new DeploymentException(format(rb.getString(LogUtils.CATALOG_RESOLVER_ERROR), mappedEntry));
                     }
                     retVal = f.toURI().toURL();
                     if(ws != null) {
@@ -382,8 +374,8 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
             return retVal;
 
         } catch (Throwable t) {
-            throw new DeploymentException(format(rb.getString("catalog.error"),
-                     t.getMessage(),catalogFile.getAbsolutePath()));
+            throw new DeploymentException(format(rb.getString(LogUtils.CATALOG_ERROR),
+                     catalogFile.getAbsolutePath(), t.getMessage()));
         }
       
     }
@@ -423,8 +415,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
         FileOutputStream os = null;
         try {
             if(!toFile.createNewFile()) {
-                throw new Exception(localStrings.getLocalString("filecreation.error",
-                        "Unable to create new File", toFile.getAbsolutePath()));
+                throw new Exception(format(rb.getString(LogUtils.FILECREATION_ERROR), toFile.getAbsolutePath()));
             }
             is = httpUrl.openStream();
 
@@ -488,23 +479,25 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
             procesWsdlIncludes(document, wsdlIncludes);
         } catch (SAXParseException spe) {
             // Error generated by the parser
-            logger.severe(format(rb.getString("parsing.error"),
-                   "" + spe.getLineNumber() ,spe.getSystemId()));
+            logger.log(Level.SEVERE, LogUtils.PARSING_ERROR,
+                    new Object[] {spe.getLineNumber() ,spe.getSystemId()});
             // Use the contained exception, if any
             Exception x = spe;
             if (spe.getException() != null) {
                 x = spe.getException();
             }
-            logger.log(Level.SEVERE,"Error occured", x);
+            logger.log(Level.SEVERE, LogUtils.ERROR_OCCURED, x);
         } catch (Exception sxe) {
-            logger.severe(format(rb.getString("wsdl.parsing.error"), sxe.getMessage()));
+            logger.log(Level.SEVERE, LogUtils.WSDL_PARSING_ERROR, sxe.getMessage());
         } finally {
             try {
                 if(is != null) {
                     is.close();
                 }
             } catch (IOException io) {
-                logger.fine( io.getMessage());
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, LogUtils.EXCEPTION_THROWN, io.getMessage());
+                }
             }
         }
     }
@@ -587,11 +580,8 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
         WebServicesDescriptor wsDesc = dc.getModuleMetaData(WebServicesDescriptor.class);
         if (wsDesc != null && wsDesc.getWebServices().size() > 0) {
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine("In doWebServicesDeployment: using local web " +
-                    "services. There are " +
-                    wsDesc.getWebServices().size() +
-                    ". The app has total of " +
-                    getWebServiceDescriptors(app).size());
+                logger.log(Level.FINE, LogUtils.WS_LOCAL,
+                        new Object[] {wsDesc.getWebServices().size(), getWebServiceDescriptors(app).size()});
             }
             webServices.addAll(wsDesc.getWebServices());
         }
@@ -603,7 +593,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
                 Collection wsInExtnDesc = ejbBundleDescriptor.getWebServices().getWebServices();
                 webServices.addAll(wsInExtnDesc);
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("In doWebServicesDeployment: using web services via extension" + wsInExtnDesc);
+                    logger.log(Level.FINE, LogUtils.WS_VIA_EXT, wsInExtnDesc);
                 }
             }
         }
@@ -689,7 +679,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
 
             if( !nextEndpoint.hasServletImplClass() ) {
                 throw new DeploymentException( format(rb.getString(
-                        "enterprise.deployment.backend.cannot_find_servlet"),
+                        LogUtils.DEPLOYMENT_BACKEND_CANNOT_FIND_SERVLET),
                         nextEndpoint.getEndpointName()));
             }
             String servletImplClass = nextEndpoint.getServletImplClass();
@@ -716,7 +706,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
 
             } catch(ClassNotFoundException cex) {
                 throw new DeploymentException( format(rb.getString(
-                        "enterprise.deployment.backend.cannot_find_servlet"),
+                        LogUtils.DEPLOYMENT_BACKEND_CANNOT_FIND_SERVLET),
                         nextEndpoint.getEndpointName()));
             }
 
@@ -734,9 +724,10 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
             URL rootURL = wsi.getWebServerRootURL(nextEndpoint.isSecure());
             String contextRoot = webBunDesc.getContextRoot();
             URL actualAddress = nextEndpoint.composeEndpointAddress(rootURL, contextRoot);
-            if (wsi.getHttpVS() != null && wsi.getHttpVS().getPort()!=0)
-               logger.info(format(rb.getString("enterprise.deployment.endpoint.registration"),
-            nextEndpoint.getEndpointName(), actualAddress.toString() ));
+            if (wsi.getHttpVS() != null && wsi.getHttpVS().getPort()!=0) {
+               logger.log(Level.INFO, LogUtils.ENDPOINT_REGISTRATION,
+                       new Object[] {nextEndpoint.getEndpointName(), actualAddress});
+            }
         }
     }
 
@@ -839,7 +830,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
                     parent =  new File(webService.getClientPublishUrl().getPath());
                 }
             } catch (URISyntaxException e) {
-                logger.warning(rb.getString("exception.thrown") + e);
+                logger.log(Level.WARNING, LogUtils.EXCEPTION_THROWN, e);
                 parent = new File(webService.getClientPublishUrl().getPath());
             }
 
@@ -924,13 +915,13 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
 
     private static void mkDirs(File f) {
         if (!f.mkdirs() && logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Directory already exists {0}", f);
+            logger.log(Level.FINE, LogUtils.DIR_EXISTS, f);
         }
     }
 
     private static void mkFile(File f) throws IOException {
         if (!f.createNewFile() && logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "File already exists {0}", f);
+            logger.log(Level.FINE, LogUtils.FILE_EXISTS, f);
         }
     }
 }

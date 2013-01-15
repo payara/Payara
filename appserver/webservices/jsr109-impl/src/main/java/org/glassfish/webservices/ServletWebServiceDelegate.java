@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,12 +43,10 @@ package org.glassfish.webservices;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.WebServicesDescriptor;
-import com.sun.enterprise.deployment.WebService;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 
-import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
 import org.glassfish.webservices.monitoring.JAXRPCEndpointImpl;
 
 //TBD
@@ -57,13 +55,13 @@ import org.glassfish.webservices.monitoring.JAXRPCEndpointImpl;
 
 // JAX-RPC SPI
 import com.sun.xml.rpc.spi.JaxRpcObjectFactory;
-import com.sun.xml.rpc.spi.runtime.Implementor;
 import com.sun.xml.rpc.spi.runtime.ImplementorCache;
 import com.sun.xml.rpc.spi.runtime.ImplementorCacheDelegate;
 import com.sun.xml.rpc.spi.runtime.RuntimeEndpointInfo;
 import com.sun.xml.rpc.spi.runtime.ServletDelegate;
 import com.sun.xml.rpc.spi.runtime.ServletSecondDelegate;
 import com.sun.xml.rpc.spi.runtime.SystemHandlerDelegate;
+import java.text.MessageFormat;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -71,12 +69,6 @@ import javax.xml.ws.WebServiceException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.IOException;
-import java.io.EOFException;
-
-import com.sun.logging.LogDomains;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
 
@@ -88,7 +80,7 @@ import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
  */
 public class ServletWebServiceDelegate extends ServletSecondDelegate {
 
-    private Logger logger = LogDomains.getLogger(ServletWebServiceDelegate.class,LogDomains.WEBSERVICES_LOGGER);
+    private static final Logger logger = LogUtils.getLogger();
     private WebServiceEndpoint endpoint_;
 
     private ServletConfig servletConfig_;
@@ -157,11 +149,11 @@ public class ServletWebServiceDelegate extends ServletSecondDelegate {
                 throw new ServletException(servletName + " not found");
             }
         } catch(Throwable t) {
-            logger.log(Level.WARNING, "Servlet web service endpoint '" +
-                    servletName + "' failure", t);
-            ServletException se = new ServletException();
-            se.initCause(t);
-            throw se;
+            String msg = MessageFormat.format(
+                    logger.getResourceBundle().getString(LogUtils.SERVLET_ENDPOINT_FAILURE),
+                    servletName);
+            logger.log(Level.WARNING, msg, t);
+            throw new ServletException(t);
         }
     }
 
@@ -177,8 +169,10 @@ public class ServletWebServiceDelegate extends ServletSecondDelegate {
         try {
             wsUtil.handleGet(request, response, endpoint_);
         } catch(Exception e) {
-            logger.log(Level.WARNING, "Servlet web service endpoint '" +
-                    endpoint_.getEndpointName() + "' HTTP GET error", e);
+            String msg = MessageFormat.format(
+                    logger.getResourceBundle().getString(LogUtils.SERVLET_ENDPOINT_GET_ERROR),
+                    endpoint_.getEndpointName());
+            logger.log(Level.WARNING, msg, e);
         }
     }
 

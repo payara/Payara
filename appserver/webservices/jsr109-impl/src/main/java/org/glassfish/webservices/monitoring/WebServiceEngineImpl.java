@@ -50,12 +50,12 @@ import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.archive.ArchiveType;
 
-import com.sun.logging.LogDomains;
 import org.glassfish.webservices.SOAPMessageContext;
 
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.glassfish.webservices.LogUtils;
 
 /**
  * This class acts as a factory to create TracingSystemHandler 
@@ -75,7 +75,7 @@ public final class WebServiceEngineImpl implements WebServiceEngine {
     private volatile GlobalMessageListener globalMessageListener = null;
            
     static final ThreadLocal servletThreadLocal = new ThreadLocal();
-    public static final Logger sLogger = LogDomains.getLogger(WebServiceEngineImpl.class,LogDomains.WEBSERVICES_LOGGER);
+    public static final Logger sLogger = LogUtils.getLogger();
     
     
     /** Creates a new instance of TracingSystemHandlerFactory */
@@ -202,7 +202,7 @@ public final class WebServiceEngineImpl implements WebServiceEngine {
             return newEndpoint;
         
         } catch(Exception e) {
-            sLogger.log(Level.SEVERE,"Exception in creating endpoint", e);
+            sLogger.log(Level.SEVERE, LogUtils.EXCEPTION_CREATING_ENDPOINT, e);
         }                         
         return null;
     }    

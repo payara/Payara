@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,13 +42,11 @@ package org.glassfish.webservices;
 
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Singleton;
 import com.sun.enterprise.container.common.spi.WebServiceReferenceManager;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.InjectionTarget;
 import com.sun.enterprise.deployment.ServiceRefPortInfo;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
-import com.sun.logging.LogDomains;
 import com.sun.xml.ws.api.FeatureConstructor;
 import com.sun.xml.ws.resources.ModelerMessages;
 
@@ -71,12 +69,10 @@ import java.lang.annotation.Annotation;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.security.PrivilegedActionException;
 import java.net.URL;
-import java.io.File;
 
 
 /**
@@ -92,9 +88,7 @@ import java.io.File;
 @Service
 public class WebServiceReferenceManagerImpl implements WebServiceReferenceManager {
 
-    protected Logger logger = LogDomains.getLogger(this.getClass(),LogDomains.WEBSERVICES_LOGGER);
-
-
+    protected Logger logger = LogUtils.getLogger();
 
     public Object getWSContextObject() {
         return new WebServiceContextImpl();
@@ -268,12 +262,12 @@ public class WebServiceReferenceManagerImpl implements WebServiceReferenceManage
                 returnObj = injValue;
             }
         } catch(PrivilegedActionException pae) {
-            logger.log(Level.WARNING, "", pae);
+            logger.log(Level.WARNING, LogUtils.EXCEPTION_THROWN, pae);
             NamingException ne = new NamingException();
             ne.initCause(pae.getCause());
             throw ne;
         } catch(Exception e) {
-            logger.log(Level.WARNING, "", e);
+            logger.log(Level.WARNING, LogUtils.EXCEPTION_THROWN, e);
             NamingException ne = new NamingException();
             ne.initCause(e);
             throw ne;

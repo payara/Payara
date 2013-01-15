@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,19 +41,10 @@
 package org.glassfish.webservices.node;
 
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
-import com.sun.enterprise.deployment.xml.TagNames;
-import com.sun.enterprise.deployment.NameValuePairDescriptor;
-import com.sun.enterprise.deployment.WebServiceHandler;
 import com.sun.enterprise.deployment.Addressing;
 import com.sun.enterprise.deployment.node.DisplayableComponentNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.util.DOLUtils;
-
-import javax.xml.namespace.QName;
 import java.util.Map;
-import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Level;
 
 import org.w3c.dom.Node;
 
@@ -147,5 +138,5 @@ public class AddressingNode extends DisplayableComponentNode {
         return wshNode;
     }
 
-    
+
 }

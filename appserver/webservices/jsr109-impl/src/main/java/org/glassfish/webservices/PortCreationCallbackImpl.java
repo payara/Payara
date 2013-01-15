@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,8 +45,6 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Dispatch;
 import javax.xml.ws.Binding;
 import javax.xml.ws.soap.SOAPBinding;
 
@@ -56,7 +54,6 @@ import com.sun.xml.ws.developer.WSBindingProvider;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.ServiceRefPortInfo;
 import com.sun.enterprise.deployment.NameValuePairDescriptor;
-import com.sun.logging.LogDomains;
 
 /**
  * This is way port creation calls are going to be intercepted in JAXWS2.1
@@ -65,7 +62,7 @@ public class PortCreationCallbackImpl extends ServiceInterceptor {
 
     private ServiceReferenceDescriptor ref;
 
-    private static Logger logger = LogDomains.getLogger(PortCreationCallbackImpl.class,LogDomains.WEBSERVICES_LOGGER);
+    private static Logger logger = LogUtils.getLogger();
     
     public PortCreationCallbackImpl(ServiceReferenceDescriptor svcRef) {
         ref = svcRef;
@@ -87,8 +84,7 @@ public class PortCreationCallbackImpl extends ServiceInterceptor {
                 if(SOAPBinding.class.isAssignableFrom(bType.getClass())) {
                     ((SOAPBinding)bType).setMTOMEnabled(true);
                 } else {
-                    logger.log(Level.SEVERE,
-                            "serviceref.invalidmtom");
+                    logger.log(Level.SEVERE, LogUtils.INVALID_MTOM, portInfo.getName());
                 }
             }
             

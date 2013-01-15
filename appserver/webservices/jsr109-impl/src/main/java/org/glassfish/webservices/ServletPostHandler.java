@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,13 +55,9 @@ import com.sun.enterprise.InvocationManager;*/
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.util.ResourceBundle;
-import java.text.MessageFormat;
 
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.web.WebComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.ejb.api.EJBInvocation;
 
 /**
  * This handler is inserted last in the handler chain for an
@@ -71,11 +67,8 @@ import org.glassfish.ejb.api.EJBInvocation;
  */
 public class ServletPostHandler extends GenericHandler {
 
-    private static Logger logger = 
-        LogDomains.getLogger(ServletPostHandler.class, LogDomains.WEBSERVICES_LOGGER);
+    private static final Logger logger = LogUtils.getLogger();
     private WsUtil wsUtil = new WsUtil();
-    private ResourceBundle rb = logger.getResourceBundle();
-
 
     public ServletPostHandler() {}
 
@@ -105,14 +98,9 @@ public class ServletPostHandler extends GenericHandler {
                 }
             }
         } catch(Exception e) {
-            logger.log(Level.WARNING, format(rb.getString("postWebHandlerError"), e.toString()));
+            logger.log(Level.WARNING, LogUtils.POST_WEBHANDLER_ERROR, e.toString());
             wsUtil.throwSOAPFaultException(e.getMessage(), context);
         }
         return true;
-    }
-
-
-    private String format(String key, String ... values){
-        return MessageFormat.format(key, (Object [])values);
     }
 }

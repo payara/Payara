@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,6 @@ import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.runtime.ws.ReliabilityConfig;
-import com.sun.logging.LogDomains;
 import com.sun.xml.ws.api.BindingID;
 import com.sun.xml.ws.api.WSBinding;
 import com.sun.xml.ws.api.server.*;
@@ -78,7 +77,7 @@ import java.util.logging.Logger;
  * @author Rama Pulavarthi
  */
 public class WSServletContextListener implements ServletContextListener {
-    private static Logger logger = LogDomains.getLogger(JAXWSServlet.class, LogDomains.WEBSERVICES_LOGGER);
+    private static final Logger logger = LogUtils.getLogger();
     private String contextRoot;
 
     @Override
@@ -101,7 +100,7 @@ public class WSServletContextListener implements ServletContextListener {
                 registerEndpoint(endpoint, sce.getServletContext());
             }
         } catch (Throwable t) {
-            logger.log(Level.WARNING, "Deployment failed", t);//TODO Fix Rama
+            logger.log(Level.WARNING, LogUtils.DEPLOYMENT_FAILED, t);//TODO Fix Rama
             sce.getServletContext().removeAttribute("ADAPTER_LIST");
             throw new RuntimeException("Servlet web service endpoint '" +
                     "' failure", t);
@@ -131,7 +130,7 @@ public class WSServletContextListener implements ServletContextListener {
             try {
                 pkgedWsdl = servletContext.getResource('/' + endpoint.getWebService().getWsdlFileUri());
             } catch (MalformedURLException e) {
-                logger.severe("Cannot load the wsdl from the aplication : " + e.getMessage());
+                logger.log(Level.SEVERE, LogUtils.CANNOT_LOAD_WSDL_FROM_APPLICATION, e.getMessage());
             }
             if (pkgedWsdl == null) {
                 pkgedWsdl = endpoint.getWebService().getWsdlFileUrl();
@@ -142,9 +141,9 @@ public class WSServletContextListener implements ServletContextListener {
                 docs = wsu.getWsdlsAndSchemas(pkgedWsdl);
 
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.INFO, "Creating endpoint with packaged WSDL " +
-                            primaryWsdl.getSystemId().toString());
-                    logger.log(Level.FINE, "Metadata documents:");
+                    logger.log(Level.FINE, LogUtils.CREATING_ENDPOINT_FROM_PACKAGED_WSDL,
+                        primaryWsdl.getSystemId().toString());
+                    logger.log(Level.FINE, LogUtils.METADATA_DOCS);
                     for (Object source : docs) {
                         logger.log(Level.FINE, ((SDDocumentSource) source).getSystemId().toString());
                     }
@@ -222,19 +221,22 @@ public class WSServletContextListener implements ServletContextListener {
                 rmbuilder.acknowledgementTransmissionInterval(Long.parseLong(rxConfig.getAcknowledgementInterval().trim()));
             }
             if (rxConfig.getSequenceExpiration() != null) {
-                logger.info("For endpoint" + endpoint.getEndpointName() + ", Ignoring configuration <sequence-expiration> in weblogic-webservices.xml");
+                logger.log(Level.INFO, LogUtils.CONFIGURATION_IGNORE_IN_WLSWS,
+                        new Object[] {endpoint.getEndpointName(), "<sequence-expiration>"});
             }
             if (rxConfig.getBufferRetryCount() != null) {
                 rmbuilder.maxMessageRetransmissionCount(Long.parseLong(rxConfig.getBufferRetryCount().trim()));
             }
             if (rxConfig.getBufferRetryDelay() != null) {
-                logger.info("For endpoint" + endpoint.getEndpointName() + ", Ignoring configuration <buffer-retry-delay> in weblogic-webservices.xml");
+                logger.log(Level.INFO, LogUtils.CONFIGURATION_IGNORE_IN_WLSWS,
+                        new Object[] {endpoint.getEndpointName(), "<buffer-retry-delay>"});
             }
 
             wsFeatures.add(rmbuilder.build());
         } else {
             if (endpoint.getHttpResponseBufferSize() != null) {
-                logger.warning("For endpoint" + endpoint.getEndpointName() + ", Unsupported configuration <http-response-buffersize> in weblogic-webservices.xml");
+                logger.log(Level.WARNING, LogUtils.CONFIGURATION_UNSUPPORTED_IN_WLSWS,
+                        new Object[] {endpoint.getEndpointName(), "<http-response-buffersize>"});
             }
         }
 

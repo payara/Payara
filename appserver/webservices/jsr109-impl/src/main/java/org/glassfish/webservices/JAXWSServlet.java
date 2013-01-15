@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,25 +44,11 @@ package org.glassfish.webservices;
 
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.runtime.ws.ReliabilityConfig;
-import com.sun.logging.LogDomains;
-import com.sun.xml.ws.api.BindingID;
-import com.sun.xml.ws.api.WSBinding;
 import com.sun.xml.ws.api.server.Adapter;
-import com.sun.xml.ws.api.server.Invoker;
-import com.sun.xml.ws.api.server.SDDocumentSource;
-import com.sun.xml.ws.api.server.WSEndpoint;
-import com.sun.xml.ws.developer.SchemaValidationFeature;
-import com.sun.xml.ws.developer.StreamingAttachmentFeature;
-import com.sun.xml.ws.rx.rm.api.ReliableMessagingFeature;
-import com.sun.xml.ws.rx.rm.api.ReliableMessagingFeatureBuilder;
-import com.sun.xml.ws.rx.rm.api.RmProtocolVersion;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
-import com.sun.xml.ws.transport.http.servlet.ServletAdapterList;
 import org.glassfish.webservices.monitoring.Endpoint;
 import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
 import org.glassfish.webservices.monitoring.WebServiceTesterServlet;
-import org.glassfish.api.admin.ServerEnvironment;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -70,24 +56,16 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.ws.WebServiceException;
-import javax.xml.ws.WebServiceFeature;
-import javax.xml.ws.RespectBindingFeature;
 import javax.xml.ws.http.HTTPBinding;
-import javax.xml.ws.soap.MTOMFeature;
-import javax.xml.ws.soap.AddressingFeature;
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.glassfish.external.probe.provider.annotations.Probe;
 import org.glassfish.external.probe.provider.annotations.ProbeParam;
 import org.glassfish.external.probe.provider.annotations.ProbeProvider;
-import com.sun.xml.ws.api.server.InstanceResolver;
 
 /**
  * The JAX-WS dispatcher servlet.
@@ -98,7 +76,7 @@ import com.sun.xml.ws.api.server.InstanceResolver;
 @ProbeProvider(moduleProviderName = "glassfish", moduleName = "webservices", probeProviderName = "servlet-109")
 public class JAXWSServlet extends HttpServlet {
 
-    private static Logger logger = LogDomains.getLogger(JAXWSServlet.class, LogDomains.WEBSERVICES_LOGGER);
+    private static final Logger logger = LogUtils.getLogger();
     private WebServiceEndpoint endpoint;
     private String contextRoot;
     private transient WebServiceEngineImpl wsEngine_;
@@ -154,11 +132,11 @@ public class JAXWSServlet extends HttpServlet {
             urlPattern = uri.startsWith("/") ? uri : "/" + uri;
 
         } catch (Throwable t) {
-            logger.log(Level.WARNING, "Servlet web service endpoint '" +
-                    servletName + "' failure", t);
-            ServletException se = new ServletException();
-            se.initCause(t);
-            throw se;
+            String msg = MessageFormat.format(
+                    logger.getResourceBundle().getString(LogUtils.SERVLET_ENDPOINT_FAILURE),
+                    servletName);
+            logger.log(Level.WARNING, msg, t);
+            throw new ServletException(t);
         }
     }
 

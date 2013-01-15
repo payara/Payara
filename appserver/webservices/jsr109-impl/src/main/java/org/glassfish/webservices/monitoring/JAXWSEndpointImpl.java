@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,23 +40,17 @@
 
 package org.glassfish.webservices.monitoring;
 
+import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.ws.handler.MessageContext;
 
 import org.glassfish.webservices.SOAPMessageContext;
 
-import java.util.logging.Logger;
-import java.util.ResourceBundle;
-
-import com.sun.logging.LogDomains;
+import org.glassfish.webservices.LogUtils;
 
 
 public class JAXWSEndpointImpl extends EndpointImpl {
 
-    protected Logger logger = LogDomains.getLogger(this.getClass(),LogDomains.WEBSERVICES_LOGGER);
-
-    private ResourceBundle rb = logger.getResourceBundle()   ;
-        
     JAXWSEndpointImpl(String endpointSelector, EndpointType type) {
         super(endpointSelector, type);
     }
@@ -92,7 +86,7 @@ public class JAXWSEndpointImpl extends EndpointImpl {
                 }
             }
         } catch(Exception e) {
-            wsEngine.sLogger.warning(rb.getString("exception.tracing.request") + e.getMessage());
+            WebServiceEngineImpl.sLogger.log(Level.WARNING, LogUtils.EXCEPTION_TRACING_REQUEST, e.getMessage());
 	    throw e;
         }
         return status;
@@ -124,7 +118,7 @@ public class JAXWSEndpointImpl extends EndpointImpl {
                 }
             }
         } catch(Exception e) {
-            wsEngine.sLogger.warning(rb.getString("exception.tracing.response") + e.getMessage());
+            WebServiceEngineImpl.sLogger.log(Level.WARNING, LogUtils.EXCEPTION_TRACING_RESPONSE, e.getMessage());
 	    throw e;
         } 
     }

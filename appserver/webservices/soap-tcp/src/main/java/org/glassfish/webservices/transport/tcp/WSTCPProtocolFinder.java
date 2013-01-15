@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,6 @@
 
 package org.glassfish.webservices.transport.tcp;
 
-import com.sun.logging.LogDomains;
 import com.sun.xml.ws.transport.tcp.util.TCPConstants;
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
@@ -56,7 +55,8 @@ import org.glassfish.grizzly.portunif.ProtocolFinder;
  */
 public class WSTCPProtocolFinder implements ProtocolFinder {
 
-    private static final Logger LOGGER = LogDomains.getLogger(WSTCPProtocolFinder.class, LogDomains.WEBSERVICES_LOGGER);
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     private final static byte[] PROTOCOL_SCHEMA_BYTES;
 
     static {
@@ -64,7 +64,7 @@ public class WSTCPProtocolFinder implements ProtocolFinder {
         try {
             bytes = TCPConstants.PROTOCOL_SCHEMA.getBytes("US-ASCII");
         } catch (UnsupportedEncodingException e) {
-            LOGGER.log(Level.WARNING, "Can not convert SOAP/TCP protocol id to byte array", e);
+            LOGGER.log(Level.WARNING, LogUtils.CANNOT_CONVERT_PROTOCOL_ID, e);
             bytes = TCPConstants.PROTOCOL_SCHEMA.getBytes();
         }
 

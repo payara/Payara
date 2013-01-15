@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,7 +58,6 @@ import com.sun.enterprise.transaction.spi.RecoveryEventListener;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.grizzly.config.dom.NetworkListener;
-import com.sun.logging.LogDomains;
 import com.sun.xml.ws.api.ha.HighAvailabilityProvider;
 import com.sun.xml.ws.tx.dev.WSATRuntimeConfig;
 import com.sun.xml.wss.impl.config.SecurityConfigProvider;
@@ -97,7 +96,7 @@ import org.jvnet.hk2.config.types.Property;
 @Singleton
 public class MetroContainer implements PostConstruct, Container, WebServiceDeploymentListener {
 
-    private static final Logger logger = LogDomains.getLogger(MetroContainer.class, LogDomains.WEBSERVICES_LOGGER);
+    private static final Logger logger = LogUtils.getLogger();
     private static final ResourceBundle rb = logger.getResourceBundle();
     //
     private static final String WSTX_SERVICES_APP_NAME = "wstx-services";
@@ -126,14 +125,14 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
     @Override
     public void postConstruct() {
         WebServicesDeployer.getDeploymentNotifier().addListener(this);
-        logger.info("endpoint.event.listener.registered");
+        logger.info(LogUtils.ENDPOINT_EVENT_LISTENER_REGISTERED);
 
         if (isCluster() && isHaEnabled()) {
             final String clusterName = gmsAdapterService.getGMSAdapter().getClusterName();
             final String instanceName = gmsAdapterService.getGMSAdapter().getModule().getInstanceName();
 
             HighAvailabilityProvider.INSTANCE.initHaEnvironment(clusterName, instanceName);
-            logger.info("metro.ha.environemt.initialized");
+            logger.info(LogUtils.METRO_HA_ENVIRONEMT_INITIALIZED);
         }
 
         Property prop = secService.getProperty("MAX_NONCE_AGE");
@@ -156,7 +155,9 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
 
     @Override
     public void onDeployed(WebServiceEndpoint endpoint) {
-        logger.finest("endpoint.event.deployed");
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest(LogUtils.ENDPOINT_EVENT_DEPLOYED);
+        }
         if (!wstxServicesDeployed.get() && !wstxServicesDeploying.get()) {
             deployWsTxServices();
             initializeWsTxRuntime();
@@ -166,7 +167,9 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
 
     @Override
     public void onUndeployed(WebServiceEndpoint endpoint) {
-        logger.finest("endpoint.event.undeployed");
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest(LogUtils.ENDPOINT_EVENT_UNDEPLOYED);
+        }
         // noop
     }
 
@@ -184,20 +187,21 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
             boolean isRegistered = deployment.isRegistered(WSTX_SERVICES_APP_NAME);
 
             if (isRegistered) {
-                logger.log(Level.WARNING, "wstx.service.deployed.explicitly");
+                logger.log(Level.WARNING, LogUtils.WSTX_SERVICE_DEPLOYED_EXPLICITLY);
             } else {
-                logger.log(Level.INFO, "wstx.service.loading");
+                logger.log(Level.INFO, LogUtils.WSTX_SERVICE_LOADING);
 
                 File root = serverContext.getInstallRoot();
                 File app = null;
                 try {
                     app = FileUtils.getManagedFile(WSTX_SERVICES_APP_NAME + ".war", new File(root, METRO_APPS_INSTALL_ROOT));
                 } catch (Exception e) {
-                    logger.log(Level.WARNING, "wstx.service.unexpected.exception", e);
+                    logger.log(Level.WARNING, LogUtils.WSTX_SERVICE_UNEXPECTED_EXCEPTION, e);
                 }
 
                 if (app == null || !app.exists()) {
-                    logger.log(Level.WARNING, format("wstx.service.cannot.deploy", "Required WAR file (" + WSTX_SERVICES_APP_NAME + ".war) is not installed"));
+                    //TODO
+                    logger.log(Level.WARNING, format(LogUtils.WSTX_SERVICE_CANNOT_DEPLOY, "Required WAR file (" + WSTX_SERVICES_APP_NAME + ".war) is not installed"));
                 } else {
                     ActionReport report = habitat.getService(ActionReport.class, "plain");
                     DeployCommandParameters params = new DeployCommandParameters(app);
@@ -225,13 +229,13 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
                         deployment.deploy(dc);
 
                         if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
-                            logger.log(Level.WARNING, format("wstx.service.cannot.deploy", report.getMessage()), report.getFailureCause());
+                            logger.log(Level.WARNING, format(LogUtils.WSTX_SERVICE_CANNOT_DEPLOY, report.getMessage()), report.getFailureCause());
                         }
 
-                        logger.log(Level.INFO, "wstx.service.started");
+                        logger.log(Level.INFO, LogUtils.WSTX_SERVICE_STARTED);
 
                     } catch (Exception ex) {
-                        logger.log(Level.WARNING, format("wstx.service.cannot.deploy", ex.getLocalizedMessage()), ex);
+                        logger.log(Level.WARNING, format(LogUtils.WSTX_SERVICE_CANNOT_DEPLOY, ex.getLocalizedMessage()), ex);
                     }
                 }
             }
@@ -354,7 +358,9 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
             }
         } catch (Throwable t) {
             // error condition handled in wsit code
-            logger.log(Level.FINEST, "Exception occurred retrieving port configuration for WSTX service", t);
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.log(Level.FINEST, LogUtils.WSTX_SERVICE_PORT_CONFIGURATION_EXCEPTION, t);
+            }
         }
 
         return null;

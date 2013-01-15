@@ -46,6 +46,8 @@ package org.glassfish.webservices.monitoring;
 
 import com.sun.xml.rpc.spi.runtime.SOAPMessageContext;
 import com.sun.xml.rpc.spi.runtime.SystemHandlerDelegate;
+import java.util.logging.Level;
+import org.glassfish.webservices.LogUtils;
 
 /**
  * Implementation of the JAXRPC endpoint interface and JAXRPC System Handler Delegate
@@ -102,7 +104,7 @@ public class JAXRPCEndpointImpl extends EndpointImpl implements SystemHandlerDel
                 
             }
 	    } catch(Throwable t) {
-            wsEngine.sLogger.warning("Exception while tracing request : " + t.getMessage());
+                WebServiceEngineImpl.sLogger.log(Level.WARNING, LogUtils.EXCEPTION_TRACING_REQUEST, t.getMessage());
 	        RuntimeException re;
             if (t instanceof RuntimeException) {
 		        re = (RuntimeException) t;
@@ -152,7 +154,7 @@ public class JAXRPCEndpointImpl extends EndpointImpl implements SystemHandlerDel
 	            }
         
         } catch(Throwable t) {
-            wsEngine.sLogger.warning("Exception while tracing response : " + t.getMessage());
+            WebServiceEngineImpl.sLogger.log(Level.WARNING, LogUtils.EXCEPTION_TRACING_RESPONSE, t.getMessage());
 	        RuntimeException re;
 	        if (t instanceof RuntimeException) {
 		        re = (RuntimeException) t;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,6 @@
 package org.glassfish.webservices;
 
 import com.sun.xml.ws.api.server.Adapter;
-import com.sun.logging.LogDomains;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -56,8 +55,8 @@ public class JAXWSAdapterRegistry {
     private static JAXWSAdapterRegistry registry = null;
     private final Map<String, ContextAdapter> store;
 
-    final Logger logger = LogDomains.getLogger(JAXWSAdapterRegistry.class,LogDomains.WEBSERVICES_LOGGER);
-    private  ResourceBundle rb = logger.getResourceBundle();
+    private static final Logger logger = LogUtils.getLogger();
+    
     /** Creates a new instance of JAXWSServletUtil */
     private JAXWSAdapterRegistry() {
         store = Collections.synchronizedMap(new HashMap<String, ContextAdapter>());
@@ -118,16 +117,13 @@ public class JAXWSAdapterRegistry {
         void addAdapter(String urlPattern, Adapter info) {
             if (urlPattern.indexOf("*.") != -1) {
                 // cannot deal with implicit mapping right now
-                logger.log(Level.SEVERE, 
-                        rb.getString("enterprise.webservice.implicitMappingNotSupported"));
+                logger.log(Level.SEVERE, LogUtils.ENTERPRISE_WEBSERVICE_IMPLICIT_MAPPING_NOT_SUPPORTED);
             } else if (urlPattern.endsWith("/*")) {
                 pathUrlPatternEndpoints.add(info);
             } else {
                 synchronized (fixedUrlPatternEndpoints) {
                     if (fixedUrlPatternEndpoints.containsKey(urlPattern)) {
-                        logger.log(Level.SEVERE,
-                           format( rb.getString("enterprise.webservice.duplicateService"),
-                            urlPattern));
+                        logger.log(Level.SEVERE, LogUtils.ENTERPRISE_WEBSERVICE_DUPLICATE_SERVICE, urlPattern);
                     }
                     fixedUrlPatternEndpoints.put(urlPattern, info);
                 }
@@ -160,9 +156,5 @@ public class JAXWSAdapterRegistry {
                 return s;
             }
         }
-    }
-
-    private String format(String key, String ... values){
-        return MessageFormat.format(key, (Object [])values);
     }
 }

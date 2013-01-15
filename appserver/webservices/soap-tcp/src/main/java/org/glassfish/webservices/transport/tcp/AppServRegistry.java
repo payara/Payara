@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -155,10 +155,14 @@ public final class AppServRegistry {
                     getWebBundleDescriptor().getContextRoot();
             String urlPattern = wsServiceDescriptor.getEndpointAddressUri();
             wsPath = contextRoot + ensureSlash(urlPattern);
-            logger.log(Level.FINE, MessagesMessages.WSTCP_1116_APP_SERV_REG_GET_WS_ENDP_PATH_NON_EJB(wsPath));
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, MessagesMessages.WSTCP_1116_APP_SERV_REG_GET_WS_ENDP_PATH_NON_EJB(wsPath));
+            }
         } else {
             wsPath = wsServiceDescriptor.getEndpointAddressUri();
-            logger.log(Level.FINE, MessagesMessages.WSTCP_1117_APP_SERV_REG_GET_WS_ENDP_PATH_EJB(wsPath));
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, MessagesMessages.WSTCP_1117_APP_SERV_REG_GET_WS_ENDP_PATH_EJB(wsPath));
+            }
         }
 
         return ensureSlash(wsPath);
@@ -169,11 +173,15 @@ public final class AppServRegistry {
         if(!wsServiceDescriptor.implementedByEjbComponent()) {
             contextRoot = wsServiceDescriptor.getWebComponentImpl().
                     getWebBundleDescriptor().getContextRoot();
-            logger.log(Level.FINE, MessagesMessages.WSTCP_1112_APP_SERV_REG_GET_ENDP_CR_NON_EJB(contextRoot));
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, MessagesMessages.WSTCP_1112_APP_SERV_REG_GET_ENDP_CR_NON_EJB(contextRoot));
+            }
         } else {
             final String[] path = wsServiceDescriptor.getEndpointAddressUri().split("/");
             contextRoot = "/" + path[1];
-            logger.log(Level.FINE, MessagesMessages.WSTCP_1113_APP_SERV_REG_GET_ENDP_CR_EJB(contextRoot));
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, MessagesMessages.WSTCP_1113_APP_SERV_REG_GET_ENDP_CR_EJB(contextRoot));
+            }
         }
 
         return contextRoot;
@@ -183,7 +191,9 @@ public final class AppServRegistry {
         String urlPattern;
         if(!wsServiceDescriptor.implementedByEjbComponent()) {
             urlPattern = wsServiceDescriptor.getEndpointAddressUri();
-            logger.log(Level.FINE, MessagesMessages.WSTCP_1114_APP_SERV_REG_GET_ENDP_URL_PATTERN_NON_EJB(urlPattern));
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, MessagesMessages.WSTCP_1114_APP_SERV_REG_GET_ENDP_URL_PATTERN_NON_EJB(urlPattern));
+            }
         } else {
             final String[] path = wsServiceDescriptor.getEndpointAddressUri().split("/");
             if (path.length < 3) {
@@ -191,7 +201,9 @@ public final class AppServRegistry {
             }
 
             urlPattern = "/" + path[2];
-            logger.log(Level.FINE, MessagesMessages.WSTCP_1115_APP_SERV_REG_GET_ENDP_URL_PATTERN_EJB(urlPattern));
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, MessagesMessages.WSTCP_1115_APP_SERV_REG_GET_ENDP_URL_PATTERN_EJB(urlPattern));
+            }
         }
 
         return urlPattern;

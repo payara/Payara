@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,6 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.node.AbstractBundleNode;
 import com.sun.enterprise.deployment.node.SaxParserHandler;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import java.util.Map;
@@ -57,6 +56,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.glassfish.webservices.connector.LogUtils;
 
 /**
  * Root node for web services deployment descriptor
@@ -72,6 +73,7 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
     public final static String SCHEMA_ID_12 = "javaee_web_services_1_2.xsd";
     public final static String SPEC_VERSION = "1.3";
     private final static List<String> systemIDs = initSystemIDs();
+    private static final Logger logger = LogUtils.getLogger();
 
     private static List<String> initSystemIDs() {
         List<String> sysIDs = new ArrayList<String>();
@@ -176,7 +178,8 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
             iter.hasNext();) {
             WebServiceEndpoint next = (WebServiceEndpoint) iter.next();
             if( !next.resolveComponentLink() ) {
-                DOLUtils.getDefaultLogger().log(Level.INFO, "Warning: Web service endpoint {0} component link {1} is not valid", new Object[]{next.getEndpointName(), next.getLinkName()});                
+                logger.log(Level.INFO, LogUtils.WS_COMP_LINK_NOT_VALID,
+                        new Object[]{next.getEndpointName(), next.getLinkName()});
             }
         }
         

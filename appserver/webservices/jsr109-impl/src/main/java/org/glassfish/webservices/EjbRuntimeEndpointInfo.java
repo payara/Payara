@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,6 @@ package org.glassfish.webservices;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.logging.LogDomains;
 import com.sun.xml.ws.api.BindingID;
 import com.sun.xml.ws.api.WSBinding;
 import com.sun.xml.ws.api.server.Invoker;
@@ -64,10 +63,10 @@ import javax.xml.ws.soap.MTOMFeature;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -82,9 +81,7 @@ import java.util.logging.Logger;
  */
 public class EjbRuntimeEndpointInfo {
 
-    protected Logger logger = LogDomains.getLogger(this.getClass(), LogDomains.WEBSERVICES_LOGGER);
-
-    private ResourceBundle rb = logger.getResourceBundle()   ;
+    private static final Logger logger = LogUtils.getLogger();
 
     protected final WebServiceEndpoint endpoint;
 
@@ -164,7 +161,9 @@ public class EjbRuntimeEndpointInfo {
                                     javax.naming.InitialContext ic = new javax.naming.InitialContext();
                                     wsCtxt = (WebServiceContextImpl) ic.lookup("java:comp/env/" + r.getName());
                                 } catch (Throwable t) {
-                                    logger.fine("Error In EjbRuntimeEndpointInfo" + t.getCause());
+                                    if (logger.isLoggable(Level.FINE)) {
+                                        logger.log(Level.FINE, LogUtils.ERROR_EREI, t.getCause());
+                                    }
                                 }
                             }
                         }
@@ -172,8 +171,10 @@ public class EjbRuntimeEndpointInfo {
                             wsCtxt = new WebServiceContextImpl();
                         }
                     } catch (Throwable t) {
-                        t.printStackTrace();
-                        logger.severe("Cannot initialize endpoint " + endpoint.getName() + " : error is : " + t.getMessage());
+                        String msg = MessageFormat.format(
+                                logger.getResourceBundle().getString(LogUtils.CANNOT_INITIALIZE),
+                                endpoint.getName());
+                        logger.log(Level.SEVERE, msg, t);
                         return null;
                     }
                 }
@@ -289,7 +290,10 @@ public class EjbRuntimeEndpointInfo {
                     adapter = adapterList.createAdapter(endpoint.getName(), urlPattern, wsep);
                     handlersConfigured=true;
                 } catch (Throwable t) {
-                    logger.log(Level.SEVERE,"Cannot initialize endpoint " + endpoint.getName() + " : error is : " , t);
+                        String msg = MessageFormat.format(
+                                logger.getResourceBundle().getString(LogUtils.CANNOT_INITIALIZE),
+                                endpoint.getName());
+                        logger.log(Level.SEVERE, msg, t);
                     adapter = null;
                 }
             }
@@ -322,7 +326,7 @@ public class EjbRuntimeEndpointInfo {
                     javax.naming.InitialContext ic = new javax.naming.InitialContext();
                     wsc = (WebServiceContextImpl) ic.lookup("java:comp/env/" + r.getName());
                 } catch (Throwable t) {
-                    logger.severe(rb.getString("exception.thrown") + t);
+                    logger.log(Level.SEVERE, LogUtils.EXCEPTION_THROWN, t);
                 }
                 if(wsc != null) {
                     wsc.setContextDelegate(wsCtxt.getContextDelegate());

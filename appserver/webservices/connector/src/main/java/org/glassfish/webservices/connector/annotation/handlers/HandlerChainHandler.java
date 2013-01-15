@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -76,9 +76,11 @@ import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import com.sun.enterprise.deployment.types.HandlerChainContainer;
 import com.sun.enterprise.deployment.annotation.context.HandlerContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.glassfish.webservices.connector.LogUtils;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -95,6 +97,8 @@ import org.jvnet.hk2.annotations.Service;
 @Service
 @AnnotationHandlerFor(HandlerChain.class)
 public class HandlerChainHandler extends AbstractHandler {
+
+    private static final Logger conLogger = LogUtils.getLogger();
     
     /** Creates a new instance of HandlerChainHandler */
     public HandlerChainHandler() {
@@ -284,15 +288,10 @@ public class HandlerChainHandler extends AbstractHandler {
                             handlerClasses.add(clo.loadClass(className));
                         } catch(ClassNotFoundException e) {
                             if (fromDD) {
-                                logger.log(Level.WARNING, localStrings.getLocalString(
-                                    "enterprise.deployment.annotation.handlers.ddhandlernotfound",
-                                    "handler class {0} specified in deployment descriptors",
-                                    new Object[] {className}));                                                               
+                                conLogger.log(Level.WARNING, LogUtils.DDHANDLER_NOT_FOUND, className);
                             } else {
-                                logger.log(Level.WARNING, localStrings.getLocalString(
-                                    "enterprise.deployment.annotation.handlers.handlerfilehandlernotfound",
-                                    "handler class {0} specified in handler file {1} cannot be loaded",
-                                    new Object[] {className, handlerFile}));                                   
+                                conLogger.log(Level.WARNING, LogUtils.HANDLER_FILE_HANDLER_NOT_FOUND,
+                                    new Object[] {className, handlerFile});                                   
                             }
                         }
                     }

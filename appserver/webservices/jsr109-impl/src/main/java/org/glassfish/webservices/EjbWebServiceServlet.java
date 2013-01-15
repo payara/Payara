@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,16 +43,13 @@ package org.glassfish.webservices;
 
 import com.sun.enterprise.deployment.Application;
 
-import com.sun.logging.LogDomains;
-
-import org.apache.catalina.util.Base64;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ResourceBundle;
+import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.webservices.monitoring.Endpoint;
@@ -73,8 +70,7 @@ import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
  */
 public class EjbWebServiceServlet extends HttpServlet {
 
-    private  static Logger logger = LogDomains.getLogger(EjbWebServiceServlet.class,LogDomains.WEBSERVICES_LOGGER);
-
+    private static final Logger logger = LogUtils.getLogger();
 
     private SecurityService secServ;
 
@@ -141,9 +137,9 @@ public class EjbWebServiceServlet extends HttpServlet {
                 "https" : "http";
 
         if( !expectedScheme.equalsIgnoreCase(scheme) ) {
-            logger.log(Level.WARNING, "Invalid request scheme for Endpoint " +
-                    ejbEndpoint.getEndpoint().getEndpointName() + ". " +
-                    "Expected " + expectedScheme + " . Received " + scheme);
+            logger.log(Level.WARNING, LogUtils.INVALID_REQUEST_SCHEME,
+                    new Object[] {ejbEndpoint.getEndpoint().getEndpointName(),
+                        expectedScheme, scheme});
             return;
         }
 
@@ -180,9 +176,10 @@ public class EjbWebServiceServlet extends HttpServlet {
 
             } catch(Exception e) {
                 //sendAuthenticationEvents(false, hreq.getRequestURI(), null);
-                logger.log(Level.WARNING, "authentication failed for " +
-                        ejbEndpoint.getEndpoint().getEndpointName(),
-                        e);
+                String msg = MessageFormat.format(
+                        logger.getResourceBundle().getString(LogUtils.AUTH_FAILED),
+                        ejbEndpoint.getEndpoint().getEndpointName());
+                logger.log(Level.WARNING, msg, e);
             }
 
             if (!authenticated) {
@@ -198,7 +195,7 @@ public class EjbWebServiceServlet extends HttpServlet {
             msgDispatcher.invoke(hreq, hresp, getServletContext(), ejbEndpoint);
 
         } catch(Throwable t) {
-            logger.log(Level.WARNING, "", t);
+            logger.log(Level.WARNING, LogUtils.EXCEPTION_THROWN, t);
         } finally {
             // remove any security context from the thread local before returning
             if (secServ != null) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,13 +43,10 @@ package org.glassfish.webservices;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.text.MessageFormat;
 
-import com.sun.logging.LogDomains;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapterList;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
-import com.sun.xml.rpc.spi.runtime.SystemHandlerDelegate;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
 
@@ -58,8 +55,6 @@ import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
 import org.glassfish.ejb.api.EjbEndpointFacade;
 
 import javax.xml.ws.WebServiceException;
-import org.glassfish.internal.api.Globals;
-
 
 /**
  * This class acts as a registry of all the webservice EJB end points
@@ -72,10 +67,7 @@ import org.glassfish.internal.api.Globals;
 public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
     
     
-    private Logger logger = LogDomains.getLogger(this.getClass(),LogDomains.WEBSERVICES_LOGGER);
-
-    private ResourceBundle rb = logger.getResourceBundle()   ;
-
+    private static final Logger logger = LogUtils.getLogger();
 
     // Ejb service endpoint info.  
     private Hashtable webServiceEjbEndpoints = new Hashtable();
@@ -103,9 +95,7 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
             if (uriRaw != null ) {
                 uri = (uriRaw.charAt(0)=='/') ? uriRaw.substring(1) : uriRaw;
                 if (webServiceEjbEndpoints.containsKey(uri)) {
-                    logger.log(Level.SEVERE,
-                            format(rb.getString("enterprise.webservice.duplicateService"),
-                                    uri));
+                    logger.log(Level.SEVERE, LogUtils.ENTERPRISE_WEBSERVICE_DUPLICATE_SERVICE, uri);
                 }
                 webServiceEjbEndpoints.put(uri, endpoint);
                 regenerateEjbContextRoots();
@@ -113,7 +103,7 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
                     ServletAdapterList list = new ServletAdapterList();
                     adapterListMap.put(uri, list);
                 }
-            } else throw new WebServiceException(rb.getString("ejb.endpointuri.error"));
+            } else throw new WebServiceException(logger.getResourceBundle().getString(LogUtils.EJB_ENDPOINTURI_ERROR));
         }
 
 
@@ -126,8 +116,7 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
             try {
                 endpoint.initRuntimeInfo((ServletAdapterList)adapterListMap.get(uri));
             } catch (Exception e) {
-                logger.log(Level.WARNING,
-                       "Unexpected error in EJB WebService endpoint post processing", e);
+                logger.log(Level.WARNING,LogUtils.EJB_POSTPROCESSING_ERROR, e);
             }
         }
     }
@@ -258,9 +247,4 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
             ejbContextRoots = contextRoots;
         }
     }
-
-    private String format(String key, String ... values){
-        return MessageFormat.format(key,values);
-    }
-    
 }

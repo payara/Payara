@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,15 +41,12 @@
 package org.glassfish.webservices;
 
 import java.net.URL;
-import java.text.MessageFormat;
-import java.util.ResourceBundle;
 
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 
-import org.glassfish.api.admin.ServerEnvironment;
 
 import org.glassfish.api.container.RequestDispatcher;
 import org.glassfish.api.container.EndpointRegistrationException;
@@ -63,9 +60,7 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.deployment.*;
-import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.servlet.ServletHandler;
 
 /**
@@ -87,9 +82,7 @@ public class WebServicesApplication implements ApplicationContainer {
 
     private DeploymentContext deploymentCtx;
 
-    protected Logger logger = LogDomains.getLogger(this.getClass(),LogDomains.WEBSERVICES_LOGGER);
-
-    private ResourceBundle rb = logger.getResourceBundle();
+    private static final Logger logger = LogUtils.getLogger();
 
     private ClassLoader cl;
     private Application app;
@@ -125,16 +118,14 @@ public class WebServicesApplication implements ApplicationContainer {
                 URL rootURL = wsi.getWebServerRootURL(ejbendpoint.isSecure);
                 dispatcher.registerEndpoint(contextRoot, httpHandler, this, virtualServers);
                 //Fix for issue 13107490 and 17648
-                if (wsi.getHttpVS() != null && wsi.getHttpVS().getPort()!=0)
-                    logger.info(format(rb.getString("enterprise.deployment.ejbendpoint.registration"),
-                        app.getAppName(),
-
-                         rootURL + contextRoot)
-                );
+                if (wsi.getHttpVS() != null && wsi.getHttpVS().getPort()!=0) {
+                    logger.log(Level.INFO, LogUtils.EJB_ENDPOINT_REGISTRATION,
+                            new Object[] {app.getAppName(), rootURL + contextRoot});
+                }
             }
 
         } catch (EndpointRegistrationException e) {
-            logger.log(Level.SEVERE,  format(rb.getString("error.registering.endpoint"),e.toString()));
+            logger.log(Level.SEVERE,  LogUtils.ENDPOINT_REGISTRATION_ERROR, e.toString());
         }
         return true;
     }
@@ -184,7 +175,7 @@ public class WebServicesApplication implements ApplicationContainer {
                 dispatcher.unregisterEndpoint(contextRoot);
             }
         } catch (EndpointRegistrationException e) {
-            logger.log(Level.SEVERE,  format(rb.getString("error.unregistering.endpoint"),e.toString()));
+            logger.log(Level.SEVERE,  LogUtils.ENDPOINT_UNREGISTRATION_ERROR ,e.toString());
             return false;
         }
         return true;
@@ -204,12 +195,6 @@ public class WebServicesApplication implements ApplicationContainer {
 
     Application getApplication() {
         return app;
-    }
-
-   
-
-    private String format(String key, String ... values){
-        return MessageFormat.format(key, (Object[]) values);
     }
 
     static class EjbEndpoint {

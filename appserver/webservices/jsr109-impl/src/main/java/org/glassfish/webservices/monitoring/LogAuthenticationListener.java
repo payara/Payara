@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,9 +44,9 @@ import java.security.Principal;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
+import org.glassfish.webservices.LogUtils;
 
 /**
  * Log all authentication successes and failures.
@@ -55,10 +55,7 @@ import com.sun.enterprise.deployment.util.DOLUtils;
  */
 public class LogAuthenticationListener implements AuthenticationListener {
     
-    private static Logger ejbLogger
-        = LogDomains.getLogger(LogAuthenticationListener.class,LogDomains.EJB_LOGGER);
-    private static Logger webLogger
-        = LogDomains.getLogger(LogAuthenticationListener.class,LogDomains.WEBSERVICES_LOGGER);
+    private static final Logger logger = LogUtils.getLogger();
     
     
     /** Creates a new instance of LogAuthenticationListener */
@@ -71,14 +68,16 @@ public class LogAuthenticationListener implements AuthenticationListener {
      */
     public void authSucess(BundleDescriptor bundleDesc, Endpoint endpoint, Principal principal) {
         if (DOLUtils.ejbType().equals(bundleDesc.getModuleType())) {
-            if (ejbLogger.isLoggable(Level.FINER)) {
-                ejbLogger.finer("LOG LISTENER : authentication succeeded for " 
-                        +  endpoint.getEndpointSelector());                
+            if (logger.isLoggable(Level.FINER)) {
+                logger.log(Level.FINER, LogUtils.AUTHENTICATION_SUCCESS,
+                        new Object[] {endpoint.getEndpointSelector(),
+                            bundleDesc.getModuleID(), "ejb module"});
             }
         } else {
-            if (webLogger.isLoggable(Level.FINER)) {
-                webLogger.finer("authentication succeeded for endpoint in " +
-                        bundleDesc.getModuleID() + " web app");
+            if (logger.isLoggable(Level.FINER)) {
+                logger.log(Level.FINER, LogUtils.AUTHENTICATION_SUCCESS,
+                        new Object[] {endpoint.getEndpointSelector(),
+                            bundleDesc.getModuleID(), "web app"});
             }
         }
     }
@@ -90,14 +89,16 @@ public class LogAuthenticationListener implements AuthenticationListener {
      */
     public void authFailure(BundleDescriptor bundleDesc, Endpoint endpoint, Principal principal) {
         if (DOLUtils.ejbType().equals(bundleDesc.getModuleType())) {
-            if (ejbLogger.isLoggable(Level.FINE)) {
-                ejbLogger.fine("authentication failure for " 
-                        +  endpoint.getEndpointSelector());                
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, LogUtils.AUTHENTICATION_FAILURE,
+                        new Object[] {endpoint.getEndpointSelector(),
+                            bundleDesc.getModuleID(), "ejb module"});
             }
         } else {
-            if (webLogger.isLoggable(Level.FINE)) {
-                webLogger.fine("authentication failure for endpoint in " +
-                        bundleDesc.getModuleID() + " web app");
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, LogUtils.AUTHENTICATION_FAILURE,
+                        new Object[] {endpoint.getEndpointSelector(),
+                            bundleDesc.getModuleID(), "web app"});
             }
         }
     }

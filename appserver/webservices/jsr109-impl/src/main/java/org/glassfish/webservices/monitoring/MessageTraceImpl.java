@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,12 +48,12 @@ package org.glassfish.webservices.monitoring;
 
 import org.glassfish.webservices.SOAPMessageContext;
 
-import java.util.Date;
 import java.util.logging.Level;
 import java.io.ByteArrayOutputStream;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.glassfish.webservices.LogUtils;
 
 /**
  * An invocation trace contains the timestamp os a particular
@@ -109,7 +109,7 @@ public class MessageTraceImpl implements MessageTrace {
         try {
             soapMessageCtx.getMessage().writeTo(baos);
         } catch(Exception e) {
-            WebServiceEngineImpl.sLogger.log(Level.WARNING, "Cannot log SOAP Message " + e.getMessage());
+            WebServiceEngineImpl.sLogger.log(Level.WARNING, LogUtils.CANNOT_LOG_SOAPMSG, e.getMessage());
         }
 
         soapMessage = baos.toString();
@@ -120,7 +120,7 @@ public class MessageTraceImpl implements MessageTrace {
         try {
             soapMessageCtx.getMessage().writeTo(baos);       
         } catch(Exception e) {
-            WebServiceEngineImpl.sLogger.log(Level.WARNING, "Cannot log SOAP Message " + e.getMessage());
+            WebServiceEngineImpl.sLogger.log(Level.WARNING, LogUtils.CANNOT_LOG_SOAPMSG, e.getMessage());
         }    
 
         soapMessage = baos.toString();          

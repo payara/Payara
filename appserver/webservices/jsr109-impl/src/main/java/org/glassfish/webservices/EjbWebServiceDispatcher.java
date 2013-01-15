@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,21 +40,14 @@
 
 package org.glassfish.webservices;
 
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Date;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.OutputStreamWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletContext;
 import javax.xml.soap.MimeHeaders;
-import javax.xml.soap.MimeHeader;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.soap.SOAPException;
 
@@ -62,22 +55,15 @@ import javax.xml.namespace.QName;
 import com.sun.xml.messaging.saaj.util.ByteInputStream;
 import com.sun.xml.rpc.spi.JaxRpcObjectFactory;
 import com.sun.xml.rpc.spi.runtime.SOAPMessageContext;
-import com.sun.xml.rpc.spi.runtime.Handler;
 import com.sun.xml.rpc.spi.runtime.SOAPConstants;
 import com.sun.xml.rpc.spi.runtime.StreamingHandler;
+import java.text.MessageFormat;
 
-import com.sun.enterprise.deployment.WebServiceEndpoint;
-
-//import com.sun.enterprise.security.jauth.ServerAuthConfig;
-//import com.sun.enterprise.security.wss.WebServiceSecurity;
-//import javax.security.auth.Subject;
-import com.sun.enterprise.security.jauth.ServerAuthContext;
 
 import org.glassfish.webservices.monitoring.*;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import com.sun.logging.LogDomains;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.ejb.api.EJBInvocation;
 
@@ -88,8 +74,7 @@ import org.glassfish.ejb.api.EJBInvocation;
  */
 public class EjbWebServiceDispatcher implements EjbMessageDispatcher {
 
-    private static Logger logger = 
-        LogDomains.getLogger(EjbWebServiceDispatcher.class, LogDomains.WEBSERVICES_LOGGER);
+    private static final Logger logger = LogUtils.getLogger();
 
     private JaxRpcObjectFactory rpcFactory;
     private WsUtil wsUtil = new WsUtil();
@@ -124,8 +109,8 @@ public class EjbWebServiceDispatcher implements EjbMessageDispatcher {
 
         String method = req.getMethod();
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "WebServiceDispatcher " + req.getMethod() + 
-                   " entering for " + req.getRequestURI() + " and query string " + req.getQueryString());
+            logger.log(Level.FINE, LogUtils.WEBSERVICE_DISPATCHER_INFO,
+                    new Object[] {req.getMethod(), req.getRequestURI(), req.getQueryString()});
         }
         try {
             if( method.equals("POST") ) {
@@ -133,15 +118,15 @@ public class EjbWebServiceDispatcher implements EjbMessageDispatcher {
             } else if( method.equals("GET") ) {
                 handleGet(req, resp, ctxt, endpointInfo);
             } else {
-                String errorMessage =  "Unsupported method request = [" 
-                    + method + "] for endpoint " + 
-                    endpointInfo.getEndpoint().getEndpointName() + " at " + 
-                    endpointInfo.getEndpointAddressUri();
-                logger.warning(errorMessage);
+                String errorMessage = MessageFormat.format(
+                        logger.getResourceBundle().getString(LogUtils.UNSUPPORTED_METHOD_REQUEST),
+                        new Object[] {method, endpointInfo.getEndpoint().getEndpointName(),
+                            endpointInfo.getEndpointAddressUri()});
+                logger.log(Level.WARNING, errorMessage);
                 wsUtil.writeInvalidMethodType(resp, errorMessage);
             }
         } catch(Exception e) {
-            logger.log(Level.WARNING, "ejb endpoint exception", e);
+            logger.log(Level.WARNING, LogUtils.EJB_ENDPOINT_EXCEPTION, e);
         }
     }
 
@@ -180,7 +165,9 @@ public class EjbWebServiceDispatcher implements EjbMessageDispatcher {
                         messageID = wsEngine.preProcessRequest(endpoint);
                     }
                 } else {
-                    logger.fine("Missing internal monitoring info to trace " + req.getRequestURI());
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE, LogUtils.MISSING_MONITORING_INFO, req.getRequestURI());
+                    }
                 }                                   
                 
                 AdapterInvocationInfo aInfo = null;
@@ -230,10 +217,12 @@ public class EjbWebServiceDispatcher implements EjbMessageDispatcher {
                     }
                 }
             } else {
-                String errorMsg = "null message POSTed to ejb endpoint " +
-                    endpointInfo.getEndpoint().getEndpointName() +
-                    " at " + endpointInfo.getEndpointAddressUri();
-                    logger.fine(errorMsg);
+                String errorMsg = MessageFormat.format(
+                        logger.getResourceBundle().getString(LogUtils.NULL_MESSAGE),
+                        endpointInfo.getEndpoint().getEndpointName(), endpointInfo.getEndpointAddressUri());
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.fine(errorMsg);
+                    }
                     msgContext.writeSimpleErrorResponse
                     (FAULT_CODE_CLIENT, errorMsg);
             }
@@ -255,10 +244,11 @@ public class EjbWebServiceDispatcher implements EjbMessageDispatcher {
             }
             wsUtil.writeReply(resp, msgContext);
         } catch (Throwable e) {
-            String errorMessage = "invocation error on ejb endpoint " +
-                endpointInfo.getEndpoint().getEndpointName() + " at " +
-                endpointInfo.getEndpointAddressUri();
-                logger.log(Level.WARNING, errorMessage, e);
+            String errorMessage = MessageFormat.format(
+                    logger.getResourceBundle().getString(LogUtils.ERROR_ON_EJB),
+                    new Object[] {endpointInfo.getEndpoint().getEndpointName(),
+                        endpointInfo.getEndpointAddressUri(), e.getMessage()});
+            logger.log(Level.WARNING, errorMessage, e);
             SOAPMessageContext errorMsgContext =
                 rpcFactory.createSOAPMessageContext();
             errorMsgContext.writeSimpleErrorResponse
