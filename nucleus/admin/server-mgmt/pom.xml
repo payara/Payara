@@ -76,7 +76,7 @@
                             <schemaFiles>template-info.xsd</schemaFiles>
                             <packageName>com.sun.enterprise.admin.servermgmt.xml.templateinfo</packageName>
                             <clearOutputDir>false</clearOutputDir>
-                            <staleFile>${build.directory}/generated-sources/.jaxb-staleFlag-config</staleFile>
+                            <staleFile>${project.build.directory}/generated-sources/.jaxb-staleFlag-config</staleFile>
                         </configuration>
                     </execution>
                     <execution>
