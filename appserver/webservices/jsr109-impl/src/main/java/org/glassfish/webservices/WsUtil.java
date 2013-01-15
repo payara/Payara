@@ -738,6 +738,13 @@ public class WsUtil {
                 implClassName = endpoint.getEjbComponentImpl().getEjbClassName();
             } else {
                 implClassName = endpoint.getWebComponentImpl().getWebComponentImplementation();
+                if (implClassName == null || "".equals(implClassName.trim())) {
+                    String msg = MessageFormat.format(
+                        logger.getResourceBundle().getString(LogUtils.MISSING_SERVLET_CLASS),
+                        endpoint.getWebComponentImpl().getCanonicalName());
+                    logger.log(Level.SEVERE, msg);
+                    throw new RuntimeException(msg);
+                }
             }
             Class implClass;
             try {
@@ -746,8 +753,8 @@ public class WsUtil {
                 String msg = MessageFormat.format(
                         logger.getResourceBundle().getString(LogUtils.CANNOT_LOAD_IMPLCLASS),
                         implClassName);
-                logger.log(Level.SEVERE, msg, e);
-                continue;
+                logger.log(Level.SEVERE, msg);
+                throw new RuntimeException(msg);
             }
             if (implClass!=null) {
                 if(implClass.getAnnotation(javax.xml.ws.WebServiceProvider.class) != null) {

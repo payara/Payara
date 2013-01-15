@@ -532,4 +532,12 @@ public final class LogUtils {
             level = "FINE")
     public static final String AUTHENTICATION_FAILURE = LOGMSG_PREFIX + "-00115";
 
+    @LogMessageInfo(
+            message = "missing <servlet-class> element definition for {0}",
+            comment = "{0} - servlet name",
+            level = "SEVERE",
+            cause = "No <servlet-class> defined in web.xml",
+            action = "add <servlet-class> definition to web.xml")
+    public static final String MISSING_SERVLET_CLASS = LOGMSG_PREFIX + "-00116";
+
 }

@@ -182,7 +182,9 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
             bean.deploy(wsDesc,notifier);
             return true;
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            RuntimeException re = new RuntimeException(ex.getMessage());
+            re.initCause(ex);
+            throw re;
         }
     }
 
