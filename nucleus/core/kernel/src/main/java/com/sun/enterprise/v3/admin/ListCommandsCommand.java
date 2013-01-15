@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,16 +40,17 @@
 
 package com.sun.enterprise.v3.admin;
 
-import com.sun.enterprise.admin.util.CommandSecurityChecker;
 import com.sun.enterprise.config.serverbeans.Domain;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
@@ -71,8 +72,9 @@ import org.jvnet.hk2.annotations.Service;
 })
 @AccessRequired(resource="domain", action="read")
 public class ListCommandsCommand implements AdminCommand {
+    private static final String MODE = "mode";
+    private static final String DEBUG = "debug";
 
-    private static final String DEBUG_PAIR = "mode=debug";
     @Inject
     ServiceLocator habitat;
     
@@ -133,7 +135,17 @@ public class ListCommandsCommand implements AdminCommand {
     }
     
     private static boolean debugCommand(ServiceHandle<?> command) {
-        return false;//;!Inhabitants.getNamesFor(command, "mode").isEmpty();
+        ActiveDescriptor<?> ad = command.getActiveDescriptor();
+        Map<String, List<String>> metadata = ad.getMetadata();
+        
+        List<String> modes = metadata.get(MODE);
+        if (modes == null) return false;
+        
+        for (String mode : modes) {
+            if (DEBUG.equals(mode)) return true;
+        }
+        
+        return false;
     }
     
     private static boolean debugSet() { //TODO take into a/c debug-enabled?
