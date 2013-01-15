@@ -90,6 +90,7 @@
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
         <woodstox.version>4.1.2</woodstox.version>
         <jaxb-api.version>2.2.7</jaxb-api.version>
+        <jaxb.version>2.2.7-b41</jaxb.version>
 
         <javax-persistence-api.version>2.0.105.v201212201717</javax-persistence-api.version>
         <!-- Versions for EclipseLink artifacts -->
@@ -238,7 +239,7 @@
                 <groupId>javax.xml</groupId>
                 <artifactId>jaxrpc-api-osgi</artifactId>
                 <version>${jaxrpc.api.version}</version>
-            </dependency>
+            </dependency>          
             <dependency>
                 <groupId>com.sun.xml.bind</groupId>
                 <artifactId>jaxb-osgi</artifactId>

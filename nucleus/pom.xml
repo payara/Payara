@@ -113,7 +113,6 @@
         <pfl.version>3.2.0-b001</pfl.version>
         <gmbal.version>3.2.0-b003</gmbal.version>
         <woodstox.version>4.1.2</woodstox.version>
-        <jaxb.version>2.2.7-b41</jaxb.version>
         <antlr.version>2.7.6</antlr.version>
         <jersey.version>2.0-m11</jersey.version>
         <jax-rs-api.version>2.0-m15</jax-rs-api.version>
@@ -789,11 +788,6 @@
                 <groupId>antlr</groupId>
                 <artifactId>antlr</artifactId>
                 <version>${antlr.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-osgi</artifactId>
-                <version>${jaxb.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.jbi</groupId>
