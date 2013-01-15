@@ -447,17 +447,21 @@ public class WebServiceHandler extends AbstractHandler {
             try {
                 stateless = annElem.getAnnotation(javax.ejb.Stateless.class);
             } catch (Exception e) {
-                //This can happen in the web.zip installation where there is no ejb
-                //Just logging the error
-                conLogger.log(Level.FINE, LogUtils.EXCEPTION_THROWN, e);
+                if (logger.isLoggable(Level.FINE)) {
+                    //This can happen in the web.zip installation where there is no ejb
+                    //Just logging the error
+                    conLogger.log(Level.FINE, LogUtils.EXCEPTION_THROWN, e);
+                }
             }
             Singleton singleton = null;
             try {
                 singleton = annElem.getAnnotation(javax.ejb.Singleton.class);
             } catch (Exception e) {
-                //This can happen in the web.zip installation where there is no ejb
-                //Just logging the error
-                conLogger.log(Level.FINE, LogUtils.EXCEPTION_THROWN, e);
+                if (logger.isLoggable(Level.FINE)) {
+                    //This can happen in the web.zip installation where there is no ejb
+                    //Just logging the error
+                    conLogger.log(Level.FINE, LogUtils.EXCEPTION_THROWN, e);
+                }
             }
             String name;
 
