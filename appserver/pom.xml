@@ -86,11 +86,11 @@
 
         <uc-pkg-client.version>1.122-54.2834</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-54.2834</uc-pkg-bootstrap.version>
-        <webservices.version>2.3-b189</webservices.version>
+        <webservices.version>2.3-b100</webservices.version>
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
         <woodstox.version>4.1.2</woodstox.version>
         <jaxb-api.version>2.2.7</jaxb-api.version>
-        <jaxb.version>2.2.7-b52</jaxb.version>
+        <jaxb.version>2.2.7-b41</jaxb.version>
 
         <javax-persistence-api.version>2.0.105.v201212201717</javax-persistence-api.version>
         <!-- Versions for EclipseLink artifacts -->

@@ -82,17 +82,7 @@ public class JaxbOsgiTestNG {
             e.printStackTrace();
             throw new Exception(e);
         }
+
     }
 
-    @Test(groups = {"pulse"}) // test method
-    public void jaxb1Exist() throws Exception { // tests if JAXB 1 jars are available
-        try {
-            Class jaxbObject = Class.forName("com.sun.xml.bind.JAXBObject");
-            Assert.assertNotNull(jaxbObject, "jaxbObject is null. No JAXB1 is found.");
-        } catch (Exception e) {
-            Assert.fail("JAXB1 is not found.");
-            e.printStackTrace();
-            throw e;
-        }
-    }
 }
