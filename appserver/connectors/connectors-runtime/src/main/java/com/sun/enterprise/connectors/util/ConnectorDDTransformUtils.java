@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -142,16 +142,19 @@ public class ConnectorDDTransformUtils {
                 while (iter.hasNext()) {
                     ConnectorConfigProperty  envProp =
                             (ConnectorConfigProperty ) iter.next();
+                    if (envProp.equals(ep)) {
                     //and if they are equal, set ep's type to envProp's type
-
                     //This set is important because envProp has the ra.xml
                     //specified property-Type. When the ra-bean-class does
                     //not have any getter method for a property, the property
                     //Type specified in ra.xml should be used.
-                    if (envProp.equals(ep)) {
+
                         if (envProp.getType() != null) {
                             ep.setType(envProp.getType());
                         }
+                        //Make sure that the new environment property inherits
+                        //confidential flag from the DD's property.
+                        ep.setConfidential(envProp.isConfidential());
                     }
                 }
 
