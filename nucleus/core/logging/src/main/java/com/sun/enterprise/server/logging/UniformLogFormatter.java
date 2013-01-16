@@ -487,19 +487,7 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
     }
     
     static Throwable getThrowable(LogRecord record) {
-        Throwable throwable = record.getThrown();
-        if (throwable == null) {
-            // GLASSFISH-19156
-            // Try
-            Object[] params = record.getParameters();            
-            if (params != null) {
-                Object lastParam = params[params.length-1];
-                if (lastParam != null && lastParam instanceof Throwable) {
-                    throwable = (Throwable) params[params.length-1];
-                }
-            }
-        }
-        return throwable;
+        return record.getThrown();
     }
 
     private synchronized ResourceBundle getResourceBundle(String loggerName) {

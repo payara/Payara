@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import org.glassfish.api.logging.LogHelper;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.logging.annotation.LoggerInfo;
@@ -131,8 +132,8 @@ public class LoggingAnnotationsTest {
     
     @Test
     public void testLogMessageWithExceptionArgument() throws IOException {
-        LOGGER.log(Level.SEVERE, ERROR_READING_TEST_CONF_FILE_ID, 
-                new Object[] {TEST_CONF_FILE, new Exception(TEST_EXCEPTION_MESSAGE)});
+        LogHelper.log(LOGGER, Level.SEVERE, ERROR_READING_TEST_CONF_FILE_ID, 
+                new Exception(TEST_EXCEPTION_MESSAGE), TEST_CONF_FILE);
         String[] expectedContents = new String[] {
                 CANNOT_READ_TEST_CONFIGURATION_FILE_MSG + TEST_CONF_FILE,
                 TEST_EXCEPTION_MESSAGE
