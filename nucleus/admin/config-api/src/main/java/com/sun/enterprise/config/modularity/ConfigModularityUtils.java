@@ -518,11 +518,11 @@ public final class ConfigModularityUtils {
     public void addSystemPropertyForToken(List<ConfigCustomizationToken> tokens, SystemPropertyBag bag)
             throws TransactionFailure, PropertyVetoException {
         for (ConfigCustomizationToken token : tokens) {
-            if (!bag.containsProperty(token.getKey())) {
+            if (!bag.containsProperty(token.getName())) {
                 SystemProperty prop = bag.createChild(SystemProperty.class);
-                prop.setName(token.getKey());
+                prop.setName(token.getName());
                 prop.setDescription(token.getDescription());
-                prop.setValue(token.getDefaultValue());
+                prop.setValue(token.getValue());
                 bag.getSystemProperty().add(prop);
             }
         }
@@ -839,7 +839,7 @@ public final class ConfigModularityUtils {
 
     public String replacePropertiesWithCurrentValue(String xmlConfiguration, ConfigBeanDefaultValue value) throws InvocationTargetException, IllegalAccessException {
         for (ConfigCustomizationToken token : value.getCustomizationTokens()) {
-            String toReplace = "${" + token.getKey() + "}";
+            String toReplace = "${" + token.getName() + "}";
             ConfigBeanProxy current = getCurrentConfigBeanForDefaultValue(value);
             String propertyValue = getPropertyValue(token, current);
             if (propertyValue != null) {
@@ -857,11 +857,11 @@ public final class ConfigModularityUtils {
                 parent = parent.getParent();
                 if (parent == null) return null;
             }
-            if (((SystemPropertyBag) parent).getSystemProperty(token.getKey()) != null) {
-                return ((SystemPropertyBag) parent).getSystemProperty(token.getKey()).getValue();
+            if (((SystemPropertyBag) parent).getSystemProperty(token.getName()) != null) {
+                return ((SystemPropertyBag) parent).getSystemProperty(token.getName()).getValue();
             }
             return null;
-        } else return token.getDefaultValue();
+        } else return token.getValue();
     }
 
 

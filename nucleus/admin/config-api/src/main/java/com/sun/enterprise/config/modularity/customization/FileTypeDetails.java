@@ -51,7 +51,7 @@ public class FileTypeDetails implements TokenTypeDetails {
         this.mustExist = mustExist;
     }
 
-    public FileExistCondition getMustExist() {
+    public FileExistCondition getExistCondition() {
         return mustExist;
     }
 }

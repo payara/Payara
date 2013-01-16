@@ -110,8 +110,8 @@ public class BasicModularityTest extends ConfigApiTest {
         List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = configModularityUtils.getDefaultConfigurations(SimpleExtensionTypeOne.class, "admin-");
         assertEquals("Incorrect number of config bean configuration read ", 2, values.size());
         ConfigCustomizationToken token = configModularityUtils.getDefaultConfigurations(SimpleExtensionTypeOne.class, "embedded-").get(0).getCustomizationTokens().get(0);
-        assertEquals("Customization Token reading broken ", "CUSTOM_TOKEN", token.getKey());
-        assertEquals("Customization Token reading broken ", "token-default-value", token.getDefaultValue());
+        assertEquals("Customization Token reading broken ", "CUSTOM_TOKEN", token.getName());
+        assertEquals("Customization Token reading broken ", "token-default-value", token.getValue());
     }
 
 
@@ -179,7 +179,7 @@ public class BasicModularityTest extends ConfigApiTest {
     public void testLoadingAdminFile() throws Exception {
         List<com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue> values = configModularityUtils.getDefaultConfigurations(ConfigExtensionTwo.class, "admin");
         assertEquals("Incorrect customization type loaded ", ConfigCustomizationToken.CustomizationType.FILE, values.get(0).getCustomizationTokens().get(0).getCustomizationType());
-        assertEquals("Incorrect customization details value ", FileTypeDetails.FileExistCondition.MUST_EXIST, ((FileTypeDetails) values.get(0).getCustomizationTokens().get(0).getTokenTypeDetails()).getMustExist());
+        assertEquals("Incorrect customization details value ", FileTypeDetails.FileExistCondition.MUST_EXIST, ((FileTypeDetails) values.get(0).getCustomizationTokens().get(0).getTokenTypeDetails()).getExistCondition());
     }
 
     @Test
