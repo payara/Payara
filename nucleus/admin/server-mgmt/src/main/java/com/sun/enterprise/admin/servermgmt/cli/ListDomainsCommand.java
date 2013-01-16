@@ -137,6 +137,7 @@ public final class ListDomainsCommand extends LocalDomainCommand {
         di.status = isThisDAS(getDomainRootDir());
         
         if (di.status) {
+            di.statusMsg = strings.get("list.domains.StatusRunning", dn);
             try {
                 RemoteCLICommand cmd =
                         new RemoteCLICommand("_get-restart-required",
@@ -150,7 +151,6 @@ public final class ListDomainsCommand extends LocalDomainCommand {
             }
             catch (Exception ex) {
             }
-            di.statusMsg = strings.get("list.domains.StatusRunning", dn);
         }
         else {
             di.statusMsg = strings.get("list.domains.StatusNotRunning", dn);
