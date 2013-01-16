@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,10 +38,6 @@
  * holder.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.glassfish.admin.rest.resources;
 
 import java.util.Map;
@@ -55,8 +51,10 @@ import org.glassfish.admin.rest.composite.RestModel;
 public interface CommandResult extends RestModel {
     String getMessage();
     void setMessage(String message);
+
     Properties getProperties();
     void setProperties(Properties props);
+
     Map<String, Object> getExtraProperties();
     void setExtraProperties(Map<String, Object> props);
 }
