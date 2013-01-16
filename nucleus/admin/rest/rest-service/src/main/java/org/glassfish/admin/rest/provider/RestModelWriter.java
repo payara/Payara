@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,11 +43,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.glassfish.admin.rest.composite.CompositeResource;
+import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.utils.JsonUtil;
 
@@ -55,10 +54,10 @@ import org.glassfish.admin.rest.utils.JsonUtil;
  * @author jdlee
  */
 @Provider
-@Produces({CompositeResource.MEDIA_TYPE_JSON})
+@Produces({Constants.MEDIA_TYPE_JSON})
 public class RestModelWriter extends BaseProvider<RestModel> {
     public RestModelWriter() {
-        super(RestModel.class, CompositeResource.MEDIA_TYPE_JSON_TYPE);
+        super(RestModel.class, Constants.MEDIA_TYPE_JSON_TYPE);
 
     }
 

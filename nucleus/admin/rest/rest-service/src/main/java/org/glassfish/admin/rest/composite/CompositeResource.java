@@ -51,12 +51,12 @@ import javax.security.auth.Subject;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilderException;
 import javax.ws.rs.core.UriInfo;
 import org.codehaus.jettison.json.JSONException;
+import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.OptionsCapable;
 import org.glassfish.admin.rest.RestResource;
 import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
@@ -81,18 +81,11 @@ import org.glassfish.jersey.media.sse.EventOutput;
  * required, though, in order for the resource to be located and configured properly.
  * @author jdlee
  */
-@Produces(CompositeResource.MEDIA_TYPE_JSON)
+@Produces(Constants.MEDIA_TYPE_JSON)
 public abstract class CompositeResource extends AbstractResource implements RestResource, DefaultsGenerator, OptionsCapable {
-    private static final String   MEDIA_TYPE = "application";
-    private static final String   MEDIA_SUB_TYPE = "vnd.oracle.glassfish";
-    public static final String    MEDIA_TYPE_BASE = MEDIA_TYPE + "/" + MEDIA_SUB_TYPE;
-    public static final String    MEDIA_TYPE_JSON = MEDIA_TYPE_BASE+"+json";
-    public static final MediaType MEDIA_TYPE_JSON_TYPE = new MediaType(MEDIA_TYPE, MEDIA_SUB_TYPE+"+json");
-    public static final String   MEDIA_TYPE_SSE = MEDIA_TYPE_BASE+"+sse";
-
     // All methods that expect a request body should include the annotation:
     // @Consumes(CONSUMES_TYPE)
-    protected static final String CONSUMES_TYPE = MEDIA_TYPE_JSON;
+    protected static final String CONSUMES_TYPE = Constants.MEDIA_TYPE_JSON;
     // TODO: These should be configurable
     protected static final int THREAD_POOL_CORE = 5;
     protected static final int THREAD_POOL_MAX = 10;

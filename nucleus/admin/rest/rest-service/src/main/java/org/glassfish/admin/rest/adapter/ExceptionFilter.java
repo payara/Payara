@@ -63,7 +63,7 @@ public class ExceptionFilter implements ContainerResponseFilter {
 
     @Override
     public void filter(ContainerRequestContext reqCtx, ContainerResponseContext resCtx) throws IOException {
-        if (!CompositeResource.MEDIA_TYPE_JSON.equals(reqCtx.getHeaderString("Accept"))) {
+        if (!Constants.MEDIA_TYPE_JSON.equals(reqCtx.getHeaderString("Accept"))) {
             // Don't wrap if using legacy mode
             return;
         }
@@ -82,6 +82,6 @@ public class ExceptionFilter implements ContainerResponseFilter {
 
         String errorMsg = (String)entity;
         Object wrappedEntity = Util.responseBody().addFailure(errorMsg);
-        resCtx.setEntity(wrappedEntity, resCtx.getEntityAnnotations(), CompositeResource.MEDIA_TYPE_JSON_TYPE);
+        resCtx.setEntity(wrappedEntity, resCtx.getEntityAnnotations(), Constants.MEDIA_TYPE_JSON_TYPE);
     }
 }

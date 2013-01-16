@@ -40,6 +40,8 @@
 
 package org.glassfish.admin.rest;
 
+import javax.ws.rs.core.MediaType;
+
 /**
  * REST Interface Constants
  * @author Rajeshwar Paitl
@@ -75,4 +77,11 @@ public interface Constants {
     public static final String REQ_ATTR_SUBJECT = "SUBJECT";
 
     public static final String HEADER_LEGACY_FORMAT = "X-GlassFish-3";
+
+    public static final String    MEDIA_TYPE = "application";
+    public static final String    MEDIA_SUB_TYPE = "vnd.oracle.glassfish";
+    public static final String    MEDIA_TYPE_BASE = MEDIA_TYPE + "/" + MEDIA_SUB_TYPE;
+    public static final String    MEDIA_TYPE_JSON = MEDIA_TYPE_BASE+"+json";
+    public static final MediaType MEDIA_TYPE_JSON_TYPE = new MediaType(MEDIA_TYPE, MEDIA_SUB_TYPE+"+json");
+    public static final String    MEDIA_TYPE_SSE = MEDIA_TYPE_BASE+"+sse";
 }
