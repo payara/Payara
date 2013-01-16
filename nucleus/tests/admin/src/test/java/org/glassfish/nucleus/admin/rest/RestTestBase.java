@@ -145,11 +145,9 @@ public class RestTestBase {
 //    @BeforeMethod
     protected Client getClient() {
         if (client == null) {
-            client = new ClientWrapper(new HashMap<String, String>() {{
-                put("X-GlassFish-3", "dummy"); // from Constants in rest-service
-            }}, adminUser, adminPass);
+            client = new ClientWrapper(new HashMap<String, String>(), adminUser, adminPass);
+            client.register(new LoggingFilter());
         }
-        client.register(new LoggingFilter());
         return client;
     }
 
