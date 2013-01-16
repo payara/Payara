@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,6 +54,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import org.codehaus.jettison.json.JSONException;
+import org.glassfish.admin.rest.Constants;
+import org.glassfish.admin.rest.results.ActionReportResult;
 
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
@@ -61,6 +65,8 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.sse.SseFeature;
+
+import static org.glassfish.admin.rest.resources.TemplateExecCommand.localStrings;
 
 /**
  *
@@ -80,7 +86,21 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
 
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-    public Response processPost(ParameterMap data) {
+    public ActionReportResult processPostLegacyFormat(ParameterMap data) {
+        if (data == null) {
+            data = new ParameterMap();
+        }
+        if (data.containsKey("error")) {
+            String errorMessage = localStrings.getLocalString("rest.request.parsing.error", "Unable to parse the input entity. Please check the syntax.");
+            throw new WebApplicationException(ResourceUtil.getResponse(400, /*parsing error*/ errorMessage, requestHeaders, uriInfo));
+        }
+        return super.executeCommandLegacyFormat(preprocessData(data));
+    }
+
+    @POST
+    @Consumes(Constants.MEDIA_TYPE_JSON)
+    @Produces(Constants.MEDIA_TYPE_JSON)
+    public CommandResult processPost(ParameterMap data) {
         if (data == null) {
             data = new ParameterMap();
         }
@@ -93,20 +113,20 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response post(FormDataMultiPart formData) {
+    public ActionReportResult post(FormDataMultiPart formData) {
         /* data passed to the generic command running
          *
          * */
-        return processPost(createDataBasedOnForm(formData));
+        return processPostLegacyFormat(createDataBasedOnForm(formData));
 
     }
 
     //Handle POST request without any entity(input).
     //Do not care what the Content-Type is.
     @POST
-    public Response processPost() {
+    public ActionReportResult processPost() {
         try {
-            return processPost(new ParameterMap());
+            return processPostLegacyFormat(new ParameterMap());
         } catch (Exception e) {
             throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
         }
@@ -148,8 +168,18 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
     // ---------------- GET
 
     @GET
-    public Object get() {
-        return options();
+    public ActionReportResult getLegacyFormat() {
+        return optionsLegacyFormat();
+    }
+
+    @GET
+    @Produces(Constants.MEDIA_TYPE_JSON)
+    public String get() {
+        try {
+            return options();
+        } catch (JSONException ex) {
+            throw new WebApplicationException(ex, Status.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private ParameterMap preprocessData(final ParameterMap data) {

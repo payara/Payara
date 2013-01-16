@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,7 @@ import javax.ws.rs.core.Response;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.glassfish.admin.rest.composite.CompositeResource;
+import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.resources.composite.Job;
 import static org.glassfish.tests.utils.NucleusTestUtils.nadminWithOutput;
@@ -86,6 +86,6 @@ public class JobsResourceTest extends RestTestBase {
 
     @Override
     protected String getResponseType() {
-        return CompositeResource.MEDIA_TYPE_JSON;
+        return Constants.MEDIA_TYPE_JSON;
     }
 }

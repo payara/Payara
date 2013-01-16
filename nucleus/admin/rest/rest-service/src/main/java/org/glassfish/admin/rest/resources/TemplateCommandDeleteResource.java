@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,11 +50,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.codehaus.jettison.json.JSONException;
+import org.glassfish.admin.rest.Constants;
+import org.glassfish.admin.rest.results.ActionReportResult;
 
 import org.glassfish.jersey.media.sse.SseFeature;
 
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.api.admin.ParameterMap;
+
+import static org.glassfish.admin.rest.resources.TemplateExecCommand.localStrings;
 
 /**
  *
@@ -75,7 +80,21 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
         MediaType.APPLICATION_JSON,
         MediaType.APPLICATION_XML,
         MediaType.APPLICATION_FORM_URLENCODED})
-    public Response processDelete(ParameterMap data) {
+    public ActionReportResult processDeleteLegacyFormat(ParameterMap data) {
+        if (data == null) {
+            data = new ParameterMap();
+        }
+        if (data.containsKey("error")) {
+            String errorMessage = localStrings.getLocalString("rest.request.parsing.error",
+                    "Unable to parse the input entity. Please check the syntax.");
+            throw new WebApplicationException(ResourceUtil.getResponse(400, /*parsing error*/ errorMessage, requestHeaders, uriInfo));
+        }
+        return executeCommandLegacyFormat(preprocessData(data));
+    }
+
+    @DELETE
+    @Produces(Constants.MEDIA_TYPE_JSON)
+    public CommandResult processDelete(ParameterMap data) {
         if (data == null) {
             data = new ParameterMap();
         }
@@ -133,7 +152,7 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
         MediaType.APPLICATION_JSON,
         MediaType.APPLICATION_XML,
         MediaType.APPLICATION_FORM_URLENCODED})
-    public Response hack(ParameterMap data) {
+    public ActionReportResult hack(ParameterMap data) {
         if (data.containsKey("operation")) {
             List<String> l = data.get("operation");
             if (l.contains("__deleteoperation")) {
@@ -141,11 +160,17 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
                 data.remove("operation");
             }
         }
-        return processDelete(data);
+        return processDeleteLegacyFormat(data);
     }
 
     @GET
-    public Object get() {
+    public ActionReportResult getLegacyFormat() {
+        return optionsLegacyFormat();
+    }
+
+    @GET
+    @Produces(Constants.MEDIA_TYPE_JSON)
+    public String get() throws JSONException {
         return options();
     }
 

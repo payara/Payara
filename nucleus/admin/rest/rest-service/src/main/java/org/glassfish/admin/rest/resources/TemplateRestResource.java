@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,7 +52,6 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.config.support.Delete;
 import org.glassfish.hk2.api.MultiException;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.jvnet.hk2.config.ConfigBean;
@@ -71,8 +70,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -89,16 +86,13 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.security.auth.Subject;
 import javax.ws.rs.core.Response.Status;
-import org.codehaus.jettison.json.JSONException;
+import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.OptionsCapable;
-import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
+import org.glassfish.api.ActionReport.ExitCode;
 
 import static org.glassfish.admin.rest.utils.Util.eleminateHypen;
-import org.glassfish.jersey.internal.util.collection.Ref;
 
 /**
  * @author Ludovic Champenois ludo@java.net
@@ -130,21 +124,48 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
     }
 
     @GET
-    public Object getEntity(@QueryParam("expandLevel") @DefaultValue("1") int expandLevel) {
+    public ActionReportResult getEntityLegacyFormat(@QueryParam("expandLevel") @DefaultValue("1") int expandLevel) {
         if (childModel == null) {//wrong entity name at this point
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
 
-        if (Util.useLegacyResponseFormat(requestHeaders)) {
-            return buildActionReportResult(true);
-        } else {
-            return getAttributes((ConfigBean) getEntity());
+        return buildActionReportResult(true);
+    }
+
+    @GET
+    @Produces(Constants.MEDIA_TYPE_JSON)
+    public Map<String,String> getEntity(@QueryParam("expandLevel") @DefaultValue("1") int expandLevel) {
+        if (childModel == null) {//wrong entity name at this point
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
+
+        return getAttributes((ConfigBean) getEntity());
     }
 
     @POST
     //create or update
-    public Response createEntity(HashMap<String, String> data) {
+    public Response createOrUpdateEntityLegacyFormat(HashMap<String, String> data) {
+        return Response.ok(ResourceUtil.getActionReportResult(doCreateOrUpdate(data),
+                localStrings.getLocalString("rest.resource.update.message",
+                "\"{0}\" updated successfully.", uriInfo.getAbsolutePath()),
+                requestHeaders, uriInfo)).build();
+    }
+
+    @POST
+    @Produces(Constants.MEDIA_TYPE_JSON)
+    public Response createOrUpdateEntity(HashMap<String, String> data) {
+        doCreateOrUpdate(data);
+        return Response.status(Status.CREATED).build();
+    }
+
+    /**
+     * This method performs the creation or updating of an entity, regardless of the
+     * request's mime type.  If an error occurs, a <code>WebApplicationException</code>
+     * is thrown, so if the method returns, the create/update was successful.
+     * @param data
+     * @return
+     */
+    protected RestActionReporter doCreateOrUpdate(HashMap<String, String> data) {
         if (data == null) {
             data = new HashMap<String, String>();
         }
@@ -152,10 +173,10 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
             //data.remove("submit");
             removeAttributesToBeSkipped(data);
             if (data.containsKey("error")) {
-                return Response.status(400)
+                throw new WebApplicationException(Response.status(400)
                         .entity(ResourceUtil.getActionReportResult(ActionReport.ExitCode.FAILURE,
                             localStrings.getLocalString("rest.request.parsing.error", "Unable to parse the input entity. Please check the syntax."),
-                            requestHeaders, uriInfo)).build();
+                            requestHeaders, uriInfo)).build());
             }
 
             ResourceUtil.purgeEmptyEntries(data);
@@ -166,22 +187,17 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
             //client POST request for delete operation to DELETE method.
             if ("__deleteoperation".equals(data.get("operation"))) {
                 data.remove("operation");
-                return delete(data);
+                delete(data);
+                return new RestActionReporter();
             }
             //just update it.
             data = ResourceUtil.translateCamelCasedNamesToXMLNames(data);
             RestActionReporter ar = Util.applyChanges(data, uriInfo, getSubject());
             if (ar.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
-                return handleError(Status.BAD_REQUEST, "Could not apply changes" + ar.getMessage()); // i18n
+                throwError(Status.BAD_REQUEST, "Could not apply changes" + ar.getMessage()); // i18n
             }
 
-            if (Util.useLegacyResponseFormat(requestHeaders)) {
-                String successMessage = localStrings.getLocalString("rest.resource.update.message",
-                        "\"{0}\" updated successfully.", uriInfo.getAbsolutePath());
-                return Response.ok(ResourceUtil.getActionReportResult(ar, successMessage, requestHeaders, uriInfo)).build();
-            } else {
-                return Response.status(Status.CREATED).build();
-            }
+            return ar;
         } catch (Exception ex) {
             throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
         }
@@ -199,25 +215,33 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Object post(FormDataMultiPart formData) {
         HashMap<String, String> data = createDataBasedOnForm(formData);
-        return createEntity(data); //execute the deploy command with a copy of the file locally
+        return doCreateOrUpdate(data); //execute the deploy command with a copy of the file locally
     }
 
     @DELETE
     public Response delete(HashMap<String, String> data) {
+        return Response.ok(ResourceUtil.getActionReportResult(doDelete(data),
+                localStrings.getLocalString("rest.resource.delete.message", "\"{0}\" deleted successfully.",
+                new Object[]{ uriInfo.getAbsolutePath() }),
+                requestHeaders,
+                uriInfo))
+                .build(); //200 - ok
+    }
+
+    protected ExitCode doDelete(HashMap<String, String> data) {
         if (data == null) {
             data = new HashMap<String, String>();
         }
         if (entity == null) {//wrong resource
 //            return Response.status(404).entity(ResourceUtil.getActionReportResult(ActionReport.ExitCode.FAILURE, errorMessage, requestHeaders, uriInfo)).build();
-            return handleError(Status.NOT_FOUND,
+            throwError(Status.NOT_FOUND,
                 localStrings.getLocalString("rest.resource.erromessage.noentity", "Resource not found."));
         }
 
         if (getDeleteCommand() == null) {
             String message = localStrings.getLocalString("rest.resource.delete.forbidden",
                     "DELETE on \"{0}\" is forbidden.", new Object[]{uriInfo.getAbsolutePath()});
-//            return Response.status(403).entity(ResourceUtil.getActionReportResult(ActionReport.ExitCode.FAILURE, message, requestHeaders, uriInfo)).build(); //403 - forbidden
-            return handleError(Status.FORBIDDEN, message);
+            throwError(Status.FORBIDDEN, message);
         }
 
         if (getDeleteCommand().equals("GENERIC-DELETE")) {
@@ -227,75 +251,59 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
                     p = (ConfigBean) entity.parent();
                 }
                 ConfigSupport.deleteChild(p, (ConfigBean) entity);
-                return Response.ok(ResourceUtil.getActionReportResult(ActionReport.ExitCode.SUCCESS,
-                        localStrings.getLocalString("rest.resource.delete.message", "\"{0}\" deleted successfully.", new Object[]{uriInfo.getAbsolutePath()}),
-                        requestHeaders, uriInfo)).build(); //200 - ok
+                return ExitCode.SUCCESS;
             } catch (TransactionFailure ex) {
-                throw new WebApplicationException(ex,
-                        Response.Status.INTERNAL_SERVER_ERROR);
+                throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
             }
         }
 
         //do the delete via the command:
-        try {
-            if (data.containsKey("error")) {
-                return handleError(Status.BAD_REQUEST,
+        if (data.containsKey("error")) {
+            throwError(Status.BAD_REQUEST,
                     localStrings.getLocalString("rest.request.parsing.error",
-                        "Unable to parse the input entity. Please check the syntax."));
-            }
-
-            ResourceUtil.addQueryString(uriInfo.getQueryParameters(), data);
-            ResourceUtil.purgeEmptyEntries(data);
-            ResourceUtil.adjustParameters(data);
-
-            if (data.get("DEFAULT") == null) {
-                addDefaultParameter(data);
-            } else {
-                String resourceName = getResourceName(uriInfo.getAbsolutePath().getPath(), "/");
-                if (!data.get("DEFAULT").equals(resourceName)) {
-                    return handleError(Status.FORBIDDEN,
-                        localStrings.getLocalString("rest.resource.not.deleted",
-                            "Resource not deleted. Value of \"name\" should be the name of this resource."));
-                }
-            }
-
-            RestActionReporter actionReport = runCommand(getDeleteCommand(), data);
-
-            if (actionReport != null) {
-                ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
-                if (exitCode != ActionReport.ExitCode.FAILURE) {
-                    return Response.ok(ResourceUtil.getActionReportResult(actionReport,
-                            localStrings.getLocalString("rest.resource.delete.message", "\"{0}\" deleted successfully.", new Object[]{uriInfo.getAbsolutePath()}),
-                            requestHeaders, uriInfo)).build(); //200 - ok
-                }
-
-                return handleError(Status.BAD_REQUEST, actionReport.getMessage());
-            }
-
-            return handleError(Status.BAD_REQUEST,
-                localStrings.getLocalString("rest.resource.delete.forbidden",
-                    "DELETE on \"{0}\" is forbidden.", new Object[]{uriInfo.getAbsolutePath()}));
-        } catch (Exception e) {
-            throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
+                    "Unable to parse the input entity. Please check the syntax."));
         }
+
+        ResourceUtil.addQueryString(uriInfo.getQueryParameters(), data);
+        ResourceUtil.purgeEmptyEntries(data);
+        ResourceUtil.adjustParameters(data);
+
+        if (data.get("DEFAULT") == null) {
+            addDefaultParameter(data);
+        } else {
+            String resourceName = getResourceName(uriInfo.getAbsolutePath().getPath(), "/");
+            if (!data.get("DEFAULT").equals(resourceName)) {
+                throwError(Status.FORBIDDEN,
+                        localStrings.getLocalString("rest.resource.not.deleted",
+                        "Resource not deleted. Value of \"name\" should be the name of this resource."));
+            }
+        }
+
+        RestActionReporter actionReport = runCommand(getDeleteCommand(), data);
+
+        if (actionReport != null) {
+            ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
+            if (exitCode != ActionReport.ExitCode.FAILURE) {
+                return exitCode;
+            }
+
+            throwError(Status.BAD_REQUEST, actionReport.getMessage());
+        }
+
+        throw new WebApplicationException(handleError(Status.BAD_REQUEST,
+                localStrings.getLocalString("rest.resource.delete.forbidden",
+                "DELETE on \"{0}\" is forbidden.", new Object[]{uriInfo.getAbsolutePath()})));
     }
 
     @OPTIONS
-    public Response options() {
-        if (Util.useLegacyResponseFormat(requestHeaders)) {
-            return Response.ok(buildActionReportResult(false)).build();
-        } else {
-            RestResourceMetadata rrmd = new RestResourceMetadata(this);
-            String json = "";
+    public ActionReportResult optionsLegacyFormat() {
+        return buildActionReportResult(false);
+    }
 
-            try {
-                json = rrmd.toJson().toString(Util.getFormattingIndentLevel());
-            } catch (JSONException e) {
-
-            }
-
-            return Response.ok(json).build();
-        }
+    @OPTIONS
+    @Produces(Constants.MEDIA_TYPE_JSON)
+    public RestResourceMetadata options() {
+        return new RestResourceMetadata(this);
     }
 
     @Override
@@ -423,8 +431,8 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
 
     }
 
-    /* this method is called by the ASM generated code
-     *  change very carefully
+    /*
+     * This method is called by the ASM generated code change very carefully
      */
     public void setBeanByKey(List<Dom> parentList, String id, String tag) {
         this.tagName = tag;
@@ -606,6 +614,10 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
             map.put("DELETE", deleteMethodMetaData);
         }
         return map;
+    }
+
+    protected void throwError(final Status error, final String message) throws WebApplicationException {
+        throw new WebApplicationException(handleError(error, message));
     }
 
     protected Response handleError(final Status error, final String message) throws WebApplicationException {

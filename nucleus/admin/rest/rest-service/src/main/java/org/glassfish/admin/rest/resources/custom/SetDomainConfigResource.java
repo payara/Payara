@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,6 +50,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.admin.rest.resources.TemplateCommandPostResource;
+import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.api.admin.ParameterMap;
 import org.jvnet.hk2.config.Dom;
 
@@ -69,7 +70,7 @@ public class SetDomainConfigResource extends TemplateCommandPostResource {
     @POST
     @Produces({"text/html;qs=2",MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-    public Response setDomainConfig(HashMap<String, String> data) {
+    public ActionReportResult setDomainConfig(HashMap<String, String> data) {
 
         final Iterator<Entry<String, String>> iterator = data.entrySet().iterator();
         if (iterator.hasNext()) {
@@ -77,7 +78,7 @@ public class SetDomainConfigResource extends TemplateCommandPostResource {
             Map.Entry entry = iterator.next();
             fixed.add("DEFAULT", entry.getKey()+"="+entry.getValue());
 
-            return super.executeCommand(fixed);
+            return super.executeCommandLegacyFormat(fixed);
         }
 
         throw new RuntimeException("You must supply exactly one configuration option."); //i18n

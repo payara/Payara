@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,19 +61,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.security.auth.Subject;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response.Status;
 
 import org.glassfish.jersey.media.sse.EventOutput;
 
 import org.codehaus.jettison.json.JSONException;
+import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.OptionsCapable;
-import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.utils.Util;
-import org.glassfish.jersey.internal.util.collection.Ref;
 
 /**
  * @author ludo
@@ -117,30 +116,32 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
             MediaType.APPLICATION_JSON,
             "text/html;qs=2",
             MediaType.APPLICATION_XML})
-    public Object options() {
-        if (Util.useLegacyResponseFormat(requestHeaders)) {
-            RestActionReporter ar = new RestActionReporter();
-            ar.setExtraProperties(new Properties());
-            ar.setActionDescription(commandDisplayName);
+    public ActionReportResult optionsLegacyFormat() {
+        RestActionReporter ar = new RestActionReporter();
+        ar.setExtraProperties(new Properties());
+        ar.setActionDescription(commandDisplayName);
 
-            OptionsResult optionsResult = new OptionsResult(resourceName);
-            Map<String, MethodMetaData> mmd = new HashMap<String, MethodMetaData>();
-            MethodMetaData methodMetaData = ResourceUtil.getMethodMetaData(commandName, getCommandParams(),
-                    locatorBridge.getRemoteLocator(), RestService.logger);
+        OptionsResult optionsResult = new OptionsResult(resourceName);
+        Map<String, MethodMetaData> mmd = new HashMap<String, MethodMetaData>();
+        MethodMetaData methodMetaData = ResourceUtil.getMethodMetaData(commandName, getCommandParams(),
+                locatorBridge.getRemoteLocator(), RestService.logger);
 
-            optionsResult.putMethodMetaData(commandMethod, methodMetaData);
-            mmd.put(commandMethod, methodMetaData);
-            ResourceUtil.addMethodMetaData(ar, mmd);
+        optionsResult.putMethodMetaData(commandMethod, methodMetaData);
+        mmd.put(commandMethod, methodMetaData);
+        ResourceUtil.addMethodMetaData(ar, mmd);
 
-            ActionReportResult ret = new ActionReportResult(ar, null, optionsResult);
-            ret.setCommandDisplayName(commandDisplayName);
-            return ret;
-        } else {
-            try {
-                return new RestResourceMetadata(this).toJson().toString(Util.getFormattingIndentLevel());
-            } catch (JSONException ex) {
-                throw new RuntimeException(ex);
-            }
+        ActionReportResult ret = new ActionReportResult(ar, null, optionsResult);
+        ret.setCommandDisplayName(commandDisplayName);
+        return ret;
+    }
+
+    @OPTIONS
+    @Consumes(Constants.MEDIA_TYPE_JSON)
+    public String options() throws JSONException {
+        try {
+            return new RestResourceMetadata(this).toJson().toString(Util.getFormattingIndentLevel());
+        } catch (JSONException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
@@ -149,31 +150,44 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
         return Response.status(HttpURLConnection.HTTP_OK).entity(ec).build();
     }
 
-    protected Response executeCommand(ParameterMap data) {
+    protected ActionReportResult executeCommandLegacyFormat(ParameterMap data) {
         RestActionReporter actionReport =
                 ResourceUtil.runCommand(commandName, data, locatorBridge.getRemoteLocator(),
                 ResourceUtil.getResultType(requestHeaders), getSubject());
         ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
-        int status = (exitCode == ActionReport.ExitCode.FAILURE) ?
-                     HttpURLConnection.HTTP_INTERNAL_ERROR : HttpURLConnection.HTTP_OK;
-
-        if (Util.useLegacyResponseFormat(requestHeaders)) {
-            ActionReportResult option = (ActionReportResult) options();
-            ActionReportResult results = new ActionReportResult(commandName, actionReport, option.getMetaData());
-            results.getActionReport().getExtraProperties().putAll(option.getActionReport().getExtraProperties());
-            results.setCommandDisplayName(commandDisplayName);
-
-            if (exitCode == ActionReport.ExitCode.FAILURE) {
-                results.setErrorMessage(actionReport.getCombinedMessage());
-            }
-            return Response.status(status).entity(results).build();
-        } else {
-            CommandResult cr = CompositeUtil.instance().getModel(CommandResult.class);
-            cr.setMessage(actionReport.getMessage());
-            cr.setProperties(actionReport.getTopMessagePart().getProps());
-            cr.setExtraProperties(getExtraProperties(actionReport));
-            return Response.status(status).entity(cr).build();
+        if (exitCode == ActionReport.ExitCode.FAILURE) {
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR)
+                    .entity(actionReport.getMessage())
+                    .build());
         }
+
+        ActionReportResult option = (ActionReportResult) optionsLegacyFormat();
+        ActionReportResult results = new ActionReportResult(commandName, actionReport, option.getMetaData());
+        results.getActionReport().getExtraProperties().putAll(option.getActionReport().getExtraProperties());
+        results.setCommandDisplayName(commandDisplayName);
+
+        if (exitCode == ActionReport.ExitCode.FAILURE) {
+            results.setErrorMessage(actionReport.getCombinedMessage());
+        }
+        return results;
+    }
+
+    protected CommandResult executeCommand(ParameterMap data) {
+        RestActionReporter actionReport =
+                ResourceUtil.runCommand(commandName, data, locatorBridge.getRemoteLocator(),
+                ResourceUtil.getResultType(requestHeaders), getSubject());
+        ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
+        if (exitCode == ActionReport.ExitCode.FAILURE) {
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR)
+                    .entity(actionReport.getMessage())
+                    .build());
+        }
+
+        CommandResult cr = CompositeUtil.instance().getModel(CommandResult.class);
+        cr.setMessage(actionReport.getMessage());
+        cr.setProperties(actionReport.getTopMessagePart().getProps());
+        cr.setExtraProperties(getExtraProperties(actionReport));
+        return cr;
     }
 
     private Map<String, Object> getExtraProperties(RestActionReporter actionReport) {
