@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,27 +37,46 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.hk2.devtest.cdi.ejb1.scoped;
+package org.glassfish.internal.data;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.glassfish.hk2.bootstrap.DescriptorFileFinder;
 
 /**
+ * This DescriptorFileFinder is used to find all of the META-INF/hk2-locator/application files
+ * in the application
+ * 
  * @author jwells
  *
  */
-public class HK2ServiceImpl implements HK2Service {
-    private final int jobValue;
+public class ApplicationDescriptorFileFinder implements DescriptorFileFinder {
+    private final static String APPLICATION_LOADER_FILES = DescriptorFileFinder.RESOURCE_BASE + "application";
+    private final ClassLoader loaderToUse;
     
-    /**
-     * Doing THIS makes this NOT a CDI service!
-     * 
-     * @param jobValue
-     */
-    public HK2ServiceImpl(int jobValue) {
-        this.jobValue = jobValue;
+    /* package */
+    ApplicationDescriptorFileFinder(ClassLoader loaderToUse) {
+        this.loaderToUse = loaderToUse;
     }
 
     @Override
-    public int doAJob() {
-        return jobValue;
+    public List<InputStream> findDescriptorFiles() throws IOException {
+        Enumeration<URL> urls = loaderToUse.getResources(APPLICATION_LOADER_FILES);
+        
+        LinkedList<InputStream> retVal = new LinkedList<InputStream>();
+        
+        while (urls.hasMoreElements()) {
+            URL url = urls.nextElement();
+            
+            retVal.add(url.openStream());
+        }
+                
+        return retVal;
     }
 
 }

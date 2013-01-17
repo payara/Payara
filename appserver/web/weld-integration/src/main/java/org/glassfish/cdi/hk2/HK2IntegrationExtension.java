@@ -39,7 +39,10 @@
  */
 package org.glassfish.cdi.hk2;
 
+import java.lang.annotation.Annotation;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.enterprise.event.Observes;
@@ -50,9 +53,11 @@ import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.InjectionTarget;
 import javax.enterprise.inject.spi.ProcessInjectionTarget;
+import javax.inject.Singleton;
 
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.Injectee;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 
@@ -95,9 +100,28 @@ public class HK2IntegrationExtension implements Extension {
      */
     @SuppressWarnings({ "unused", "unchecked", "rawtypes" })
     private void afterDiscoveryObserver(@Observes AfterBeanDiscovery abd) {
+        HashSet<Class<? extends Annotation>> customScopes = new HashSet<Class<? extends Annotation>>();
+        
         for (ActiveDescriptor<?> descriptor : foundWithHK2.values()) {
             abd.addBean(new HK2CDIBean(locator, descriptor));
+            
+            customScopes.add(descriptor.getScopeAnnotation());
         }
+        
+        customScopes.remove(PerLookup.class);
+        customScopes.remove(Singleton.class);
+        
+        List<org.glassfish.hk2.api.Context> hk2Contexts = locator.getAllServices(org.glassfish.hk2.api.Context.class);
+        
+        for (org.glassfish.hk2.api.Context hk2Context : hk2Contexts) {
+            if (!customScopes.contains(hk2Context.getScope())) {
+                continue;
+            }
+            
+            abd.addContext(new HK2ContextBridge(hk2Context));
+        }
+        
+        foundWithHK2.clear();  // No need to keep these references around
     }
     
     /**

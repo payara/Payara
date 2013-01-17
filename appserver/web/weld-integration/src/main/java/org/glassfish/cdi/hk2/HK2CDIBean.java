@@ -141,6 +141,10 @@ public class HK2CDIBean<T> implements Bean<T> {
         return false;
     }
     
+    public ActiveDescriptor<T> getHK2Descriptor() {
+        return descriptor;
+    }
+    
     @Override
     public String toString() {
         return "HK2CDIBean(" + descriptor + "," + System.identityHashCode(this) + ")";

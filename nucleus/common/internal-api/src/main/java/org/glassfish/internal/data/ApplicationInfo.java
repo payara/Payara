@@ -44,6 +44,7 @@ import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Engine;
 import com.sun.enterprise.config.serverbeans.Module;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 import org.glassfish.api.container.Container;
@@ -56,6 +57,8 @@ import org.glassfish.api.event.EventListener.Event;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
+import org.glassfish.hk2.bootstrap.HK2Populator;
+import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
@@ -474,6 +477,30 @@ public class ApplicationInfo extends ModuleInfo {
 
     public boolean isLoaded() {
         return isLoaded;
+    }
+    
+    /**
+     * Populates the ApplicationServiceLocator with services using the current
+     * appClassLoader.  Services must be described in files named
+     * META-INF/hk2-locator/application.  {@link PopulationPostProcessor} may be defined
+     * in the META-INF/services standard way
+     * 
+     * @throws IOException On failure to read the service files
+     */
+    public void populateApplicationServiceLocator() throws IOException {
+        ServiceLoader<PopulatorPostProcessor> postProcessors =
+                ServiceLoader.load(PopulatorPostProcessor.class, appClassLoader);
+        
+        LinkedList<PopulatorPostProcessor> allProcessors = new LinkedList<PopulatorPostProcessor>();
+        for (PopulatorPostProcessor postProcessor : postProcessors) {
+            allProcessors.add(postProcessor);
+        }
+        
+        // Add this one AFTER all the other processors
+        allProcessors.addLast(new ApplicationClassLoadingPostProcessor(appClassLoader));
+        
+        HK2Populator.populate(appServiceLocator, new ApplicationDescriptorFileFinder(appClassLoader),
+            allProcessors);
     }
 
 }

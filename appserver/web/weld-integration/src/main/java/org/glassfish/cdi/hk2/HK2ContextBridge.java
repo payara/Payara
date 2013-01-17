@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,27 +37,53 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.hk2.devtest.cdi.ejb1.scoped;
+package org.glassfish.cdi.hk2;
+
+import java.lang.annotation.Annotation;
+
+import javax.enterprise.context.spi.Context;
+import javax.enterprise.context.spi.Contextual;
+import javax.enterprise.context.spi.CreationalContext;
+
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * @author jwells
  *
  */
-public class HK2ServiceImpl implements HK2Service {
-    private final int jobValue;
+public class HK2ContextBridge implements Context {
+    private final org.glassfish.hk2.api.Context<?> hk2Context;
     
-    /**
-     * Doing THIS makes this NOT a CDI service!
-     * 
-     * @param jobValue
-     */
-    public HK2ServiceImpl(int jobValue) {
-        this.jobValue = jobValue;
+    /* package */ HK2ContextBridge(org.glassfish.hk2.api.Context<?> hk2Context) {
+        this.hk2Context = hk2Context;
     }
 
     @Override
-    public int doAJob() {
-        return jobValue;
+    public <T> T get(Contextual<T> arg0) {
+        if (!(arg0 instanceof HK2CDIBean)) return null;
+        HK2CDIBean<T> hk2CdiBean = (HK2CDIBean<T>) arg0;
+        
+        ActiveDescriptor<T> descriptor = hk2CdiBean.getHK2Descriptor();
+        
+        if (!hk2Context.containsKey(descriptor)) return null;
+        
+        return hk2CdiBean.create(null);
+    }
+
+    @Override
+    public <T> T get(Contextual<T> arg0, CreationalContext<T> arg1) {
+        return arg0.create(arg1);
+    }
+
+    @Override
+    public Class<? extends Annotation> getScope() {
+        return hk2Context.getScope();
+    }
+
+    @Override
+    public boolean isActive() {
+        return hk2Context.isActive();
     }
 
 }

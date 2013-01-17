@@ -146,7 +146,7 @@ public class BasicCDITest extends NucleusStartStopTest {
      * 
      * @throws NamingException
      */
-    @Test(enabled=false)
+    @Test
     public void testCustomScopedHK2ServiceWorks() throws NamingException {
         BasicEjb basic = (BasicEjb) context.lookup(BASIC_EJB_JNDI_NAME);
         Assert.assertNotNull(basic);

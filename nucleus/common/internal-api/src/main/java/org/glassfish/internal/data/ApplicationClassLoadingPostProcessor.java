@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,27 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.hk2.devtest.cdi.ejb1.scoped;
+package org.glassfish.internal.data;
+
+import org.glassfish.hk2.api.HK2Loader;
+import org.glassfish.hk2.api.MultiException;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
+import org.glassfish.hk2.utilities.DescriptorImpl;
 
 /**
+ * If there has been no other PopulatorPostProcessor that has set the descriptors
+ * HK2Loader then this one will set it to an appropriate loader for the application,
+ * using the application classloader
  * @author jwells
  *
  */
-public class HK2ServiceImpl implements HK2Service {
-    private final int jobValue;
+public class ApplicationClassLoadingPostProcessor implements
+        PopulatorPostProcessor {
+    private final HK2Loader applicationLoader;
     
-    /**
-     * Doing THIS makes this NOT a CDI service!
-     * 
-     * @param jobValue
-     */
-    public HK2ServiceImpl(int jobValue) {
-        this.jobValue = jobValue;
+    /* package */
+    ApplicationClassLoadingPostProcessor(final ClassLoader appClassLoader) {
+        applicationLoader = new HK2Loader() {
+
+            @Override
+            public Class<?> loadClass(String className) throws MultiException {
+                try {
+                    return appClassLoader.loadClass(className);
+                }
+                catch (Throwable th) {
+                    throw new MultiException(th);
+                }
+            }
+            
+        };
     }
 
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.bootstrap.PopulatorPostProcessor#process(org.glassfish.hk2.api.ServiceLocator, org.glassfish.hk2.utilities.DescriptorImpl)
+     */
     @Override
-    public int doAJob() {
-        return jobValue;
+    public DescriptorImpl process(ServiceLocator serviceLocator,
+            DescriptorImpl descriptorImpl) {
+        if (descriptorImpl.getLoader() != null) return descriptorImpl;
+        
+        descriptorImpl.setLoader(applicationLoader);
+        return descriptorImpl;
     }
 
 }
