@@ -176,7 +176,7 @@ public class EntityManagerFactoryWrapper
 
     @Override
     public <T> void addNamedEntityGraph(String graphName, EntityGraph<T> entityGraph) {
-
+        getDelegate().addNamedEntityGraph(graphName, entityGraph);
     }
 
 
