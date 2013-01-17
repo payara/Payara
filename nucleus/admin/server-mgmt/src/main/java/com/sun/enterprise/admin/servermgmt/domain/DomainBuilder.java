@@ -78,14 +78,14 @@ import com.sun.enterprise.util.io.FileUtils;
  */
 public class DomainBuilder {
 
-    /* These properties are public interfaces, handle with care */
-    private static final Logger _logger = Logger.getLogger(DomainPortValidator.class.getPackage().getName());
+    private static final Logger _logger = Logger.getLogger(DomainBuilder.class.getPackage().getName());
     private static final LocalStringsImpl _strings = new LocalStringsImpl(DomainBuilder.class);
 
     /** The default stringsubs configuration file name. */
     private final static String STRINGSUBS_FILE = "stringsubs.xml";
     /** The filename contains basic template information. */
     private final static String TEMPLATE_INFO_XML = "template-info.xml";
+    private final static String META_DIR_NAME = "META-INF";
 
     private DomainConfig _domainConfig;
     private JarFile _templateJar;
@@ -214,6 +214,10 @@ public class DomainBuilder {
             for (Enumeration<JarEntry> entry = _templateJar.entries(); entry.hasMoreElements();) {
                 JarEntry jarEntry = (JarEntry)entry.nextElement();
                 String entryName = jarEntry.getName();
+                if (entryName.startsWith(META_DIR_NAME)) {
+                    // Skipping the extraction of jar meta data.
+                    continue;
+                }
                 if (extractedEntries.contains(entryName)) {
                     continue;
                 }
@@ -282,10 +286,15 @@ public class DomainBuilder {
                     saveMasterPassword);
             domainSecurity.createPasswordAliasKeystore(new File(configDir, DomainConstants.DOMAIN_PASSWORD_FILE), masterPassword);
 
+            // Add customized tokens in domain.xml.
+           CustomTokenClient tokenClient = new CustomTokenClient(_domainConfig, configDir);
+           Map<String, String> generatedTokens = tokenClient.getSubstitutableTokens();
+         
             // Perform string substitution.
             if (_domainTempalte.hasStringsubs()) {
                 StringSubstitutor substitutor = _domainTempalte.getStringSubs();
                 Map<String, String> lookUpMap = SubstitutableTokens.getSubstitutableTokens(_domainConfig);
+                lookUpMap.putAll(generatedTokens);
                 substitutor.setLookUpMap(lookUpMap);
                 substitutor.setAttributePreprocessor(new AttributePreprocessorImpl(lookUpMap));
                 substitutor.substituteAll();

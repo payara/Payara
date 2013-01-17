@@ -478,6 +478,7 @@ public final class CreateDomainCommand extends CLICommand {
                     Boolean.valueOf(checkPorts));
             domainConfig.put(DomainConfig.KEYTOOLOPTIONS, keytoolOptions);
             domainConfig.put(DomainConfig.K_TEMPLATE_NAME, template);
+            domainConfig.put(DomainConfig.K_PORTBASE, portBase);
             initSecureAdminSettings(domainConfig);
             try {
                 DomainBuilder domainBuilder = new DomainBuilder(domainConfig);

@@ -82,6 +82,7 @@ public class DomainConfig extends RepositoryConfig {
     public static final String K_DEBUG = "domain.debug";
     public static final String K_VERBOSE = "domain.verbose";
     public static final String K_VALIDATE_PORTS = "domain.validatePorts";
+    public static final String K_PORTBASE = "portbase";
     //This token is used for SE/EE only now, but it is likely that we will want to expose it
     //in PE (i.e. to access the exposed Mbeans). Remember that the http jmx port (used by
     //asadmin) will not be exposed pubically.
