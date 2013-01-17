@@ -44,7 +44,6 @@ package com.sun.enterprise.container.common.impl;
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaQuery;
 import java.util.List;
-import java.util.Map;
 import java.util.Date;
 import java.util.Calendar;
 
@@ -57,74 +56,20 @@ import java.util.Calendar;
  */
 public class TypedQueryWrapper<X> extends QueryWrapper implements TypedQuery<X> {
 
-    private CriteriaQuery<X> queryCriteria;
-    private Class<X> queryresultClassType;
 
-    public static <X> TypedQuery<X> createQueryWrapper(EntityManagerFactory emf, Map emProperties,
-                                                       EntityManager emDelegate,TypedQuery<X> queryDelegate,
-                                                       CriteriaQuery<X> criteriaQuery) {
-        return new TypedQueryWrapper<X>(emf, emProperties, emDelegate, queryDelegate, criteriaQuery);
+    public static <X> TypedQuery<X> createQueryWrapper(TypedQuery<X> queryDelegate, EntityManager emDelegate) {
+        return new TypedQueryWrapper<X>(queryDelegate, emDelegate);
     }
 
-    public static <X> TypedQuery<X> createQueryWrapper(EntityManagerFactory emf, Map emProperties,
-                                                       EntityManager emDelegate, TypedQuery<X> queryDelegate,
-                                                       String ejbqlString, Class<X> resultClassType) {
-
-        return new TypedQueryWrapper<X>(emf, emProperties, emDelegate, queryDelegate,
-                QueryType.TYPED_EJBQL, ejbqlString, resultClassType);
+    private TypedQueryWrapper(TypedQuery<X> qDelegate, EntityManager emDelegate) {
+        super(qDelegate, emDelegate);
     }
 
-
-    public static <X> TypedQuery<X> createNamedQueryWrapper(EntityManagerFactory emf, Map emProperties,
-                                                            EntityManager emDelegate, TypedQuery<X> queryDelegate,
-                                                            String name, Class<X> resultClassType) {
-
-        return new TypedQueryWrapper<X>(emf, emProperties, emDelegate, queryDelegate,
-                QueryType.TYPED_NAMED, name, resultClassType);
-    }
-
-    private TypedQueryWrapper(EntityManagerFactory emf, Map emProperties, EntityManager emDelegate,
-                              TypedQuery<X> qDelegate, CriteriaQuery<X> criteriaQuery) {
-        super(emf, emProperties, emDelegate, qDelegate, QueryType.TYPED_CRITERIA, null, null, null);
-        this.queryCriteria = criteriaQuery;
-    }
-
-    private TypedQueryWrapper(EntityManagerFactory emf, Map emProperties, EntityManager emDelegate,
-                              TypedQuery<X> qDelegate, QueryType queryType, String queryString, Class<X> resultClass) {
-
-        super(emf, emProperties, emDelegate, qDelegate, queryType, queryString, null, null);
-        this.queryresultClassType = resultClass;
-    }
-
-    @Override
-    protected TypedQuery<X> createQueryDelegate(QueryType queryType, EntityManager entityManager, String queryString) {
-        TypedQuery<X> retVal;
-
-        switch (queryType) {
-            case TYPED_CRITERIA:
-                retVal = entityManager.createQuery(queryCriteria);
-                break;
-
-            case TYPED_EJBQL:
-                retVal = entityManager.createQuery(queryString, queryresultClassType);
-                break;
-
-            case TYPED_NAMED:
-                retVal = entityManager.createNamedQuery(queryString, queryresultClassType);
-                break;
-
-            default:
-                assert false : "The method is called with unexpected queryType.";
-                retVal = null;
-
-        }
-        return retVal;
-    }
 
     @SuppressWarnings("unchecked")
     @Override
     public List<X> getResultList() {
-        // If this method is called, the current instance is guranted to be of type TypedQuery<X>
+        // If this method is called, the current instance is guarantied to be of type TypedQuery<X>
         // It is safe to cast here.
         return (List<X>) super.getResultList();
     }
@@ -132,7 +77,7 @@ public class TypedQueryWrapper<X> extends QueryWrapper implements TypedQuery<X> 
     @SuppressWarnings("unchecked")
     @Override
     public X getSingleResult() {
-        // If this method is called, the current instance is guranted to be of type TypedQuery<X>
+        // If this method is called, the current instance is guarantied to be of type TypedQuery<X>
         // It is safe to cast here.
         return (X) super.getSingleResult();
     }
@@ -209,10 +154,14 @@ public class TypedQueryWrapper<X> extends QueryWrapper implements TypedQuery<X> 
        return this;
    }
 
+    @SuppressWarnings("unchecked")
+    @Override
     public <T> Parameter<T> getParameter(String name, Class<T> type) {
        return (Parameter<T>) super.getParameter(name);
    }
 
+    @SuppressWarnings("unchecked")
+    @Override
     public <T> Parameter<T> getParameter(int position, Class<T> type) {
        return (Parameter<T>) super.getParameter(position);
    }

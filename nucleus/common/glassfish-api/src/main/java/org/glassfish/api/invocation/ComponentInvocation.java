@@ -44,6 +44,9 @@ package org.glassfish.api.invocation;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @PerLookup
 @Service
 public class ComponentInvocation
@@ -95,6 +98,11 @@ public class ComponentInvocation
     private Object resourceTableKey;
 
     private ResourceHandler resourceHandler;
+
+    /**
+     * Registry to be carried with this invocation
+     */
+    private Map<Class, Object> registry;
     
     protected String appName;
     
@@ -208,6 +216,27 @@ public class ComponentInvocation
 
     public ResourceHandler getResourceHandler() {
         return resourceHandler;
+    }
+
+    /**
+     * @return Registry associated with this invocation for the given <code>key</code>
+     */
+    public Object getRegistryFor(Class key) {
+        if(registry == null) {
+            return null;
+        } else {
+            return registry.get(key);
+        }
+    }
+
+    /**
+     * Associate given <code></code>registry</code> with given <code>key</code> for this invocation
+     */
+    public void setRegistryFor(Class key, Object payLoad) {
+        if(registry == null) {
+            registry = new HashMap<Class, Object>();
+        }
+        registry.put(key, payLoad);
     }
 
     public boolean isPreInvokeDone() {

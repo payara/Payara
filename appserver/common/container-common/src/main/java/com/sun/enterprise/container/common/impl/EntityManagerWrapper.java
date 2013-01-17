@@ -47,9 +47,12 @@ import com.sun.enterprise.container.common.spi.util.EntityManagerMethod;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.ComponentInvocationHandler;
+import org.glassfish.api.invocation.InvocationException;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
+import org.jvnet.hk2.annotations.Service;
 
 import javax.ejb.EJBException;
 import static javax.persistence.SynchronizationType.SYNCHRONIZED;
@@ -57,24 +60,24 @@ import static javax.persistence.SynchronizationType.UNSYNCHRONIZED;
 import javax.persistence.criteria.*;
 import javax.persistence.*;
 import javax.persistence.metamodel.Metamodel;
-import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Implementation of a container-managed entity manager.  
+ * Implementation of a container-managed entity manager.
  * A new instance of this class will be created for each injected
  * EntityManager reference or each lookup of an EntityManager
- * reference within the component jndi environment. 
+ * reference within the component jndi environment.
  * The underlying EntityManager object does not support concurrent access.
- * Likewise, this wrapper does not support concurrent access.  
+ * Likewise, this wrapper does not support concurrent access.
  *
  * @author Kenneth Saks
  */
@@ -96,12 +99,9 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     transient private TransactionManager txManager;
 
     transient private InvocationManager invMgr;
-    
+
     // Only used to cache entity manager with EXTENDED persistence context
     transient private EntityManager extendedEntityManager;
-
-    // set and cleared after each non-tx, non EXTENDED call to _getDelegate()
-    transient private EntityManager nonTxEntityManager;
 
     transient private ComponentEnvManager compEnvMgr;
 
@@ -133,7 +133,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
 
         entityManagerFactory = EntityManagerFactoryWrapper.
             lookupEntityManagerFactory(invMgr, compEnvMgr, unitName);
-        
+
         if( entityManagerFactory == null ) {
             throw new IllegalStateException
                 ("Unable to retrieve EntityManagerFactory for unitName "
@@ -143,11 +143,11 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     }
 
     private void doTransactionScopedTxCheck() {
-        
+
         if( contextType != PersistenceContextType.TRANSACTION) {
             return;
         }
-        
+
         doTxRequiredCheck();
 
     }
@@ -157,43 +157,26 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         if( entityManagerFactory == null ) {
             init();
         }
-
-        Transaction tx = null;
-        try {
-            tx = txManager.getTransaction();
-        } catch(Exception e) {
-            throw new IllegalStateException("exception retrieving tx", e);
-        }
-            
-        if( tx == null ) {
+        if( getCurrentTransaction() == null ) {
             throw new TransactionRequiredException();
         }
 
     }
     private EntityManager _getDelegate() {
 
-        // Populate any transient objects the first time 
+        // Populate any transient objects the first time
         // this method is called.
 
         if( entityManagerFactory == null ) {
             init();
         }
 
-        EntityManager delegate = null;
-
-        if( nonTxEntityManager != null ) {
-            cleanupNonTxEntityManager();
-        }
+        EntityManager delegate;
 
         if( contextType == PersistenceContextType.TRANSACTION ) {
 
-            JavaEETransaction tx = null;
-            try {
-                tx = (JavaEETransaction) txManager.getTransaction();
-            } catch(Exception e) {
-                throw new IllegalStateException("exception retrieving tx", e);
-            }
-            
+            JavaEETransaction tx = getCurrentTransaction();
+
             if( tx != null ) {
 
                 // If there is an active extended persistence context
@@ -226,12 +209,8 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
                 delegate = propagatedPersistenceContext.getEM();
 
             } else {
-
-                nonTxEntityManager = entityManagerFactory.createEntityManager(synchronizationType, emProperties);
-
-                // Return a new non-transactional entity manager.
-                delegate = nonTxEntityManager;
-                    
+                //Get non transactional entity manager corresponding to this wrapper from current invocation
+                delegate  = getNonTxEMFromCurrentInvocation();
             }
 
         } else {
@@ -246,13 +225,13 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
                         extendedEntityManager = ((JavaEEContainer) cc).lookupExtendedEntityManager(
                                 entityManagerFactory);
                     }
-                }   
-            }          
-      
+                }
+            }
+
             delegate = extendedEntityManager;
 
         }
-        
+
         if( _logger.isLoggable(Level.FINE) ) {
             _logger.fine("In EntityManagerWrapper::_getDelegate(). " +
                          "Logical entity manager  = " + this);
@@ -262,12 +241,39 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         return delegate;
 
     }
-    
-    private void cleanupNonTxEntityManager() {
-        if( nonTxEntityManager != null ) {
-            nonTxEntityManager.close();
-            nonTxEntityManager = null;
+
+    private JavaEETransaction getCurrentTransaction() {
+        try {
+            return (JavaEETransaction) txManager.getTransaction();
+        } catch(Exception e) {
+            throw new IllegalStateException("exception retrieving tx", e);
         }
+    }
+
+    private static final Class INVOCATION_PAYLOAD_KEY = EntityManagerWrapper.class; //Key used to look up payload from current invocation
+
+    private EntityManager getNonTxEMFromCurrentInvocation() {
+        // We store nonTxEM as a payload in a map from EMF to EM inside current invocation.
+        // It will be closed during  NonTxEntityManagerCleaner.beforePostInvoke() below
+        
+        ComponentInvocation currentInvocation = invMgr.getCurrentInvocation();
+        Map<EntityManagerFactory, EntityManager> nonTxEMs = getNonTxEMsFromCurrentInvocation(currentInvocation);
+        if(nonTxEMs == null) {
+            nonTxEMs = new HashMap<>();
+            currentInvocation.setRegistryFor(INVOCATION_PAYLOAD_KEY, nonTxEMs);
+        }
+        EntityManager nonTxEM = nonTxEMs.get(entityManagerFactory);
+        if(nonTxEM == null) {
+            // Could not find one, create new one and store it within current invocation for cleanup
+            nonTxEM = entityManagerFactory.createEntityManager(synchronizationType, emProperties);
+            nonTxEMs.put(entityManagerFactory, nonTxEM);
+        }
+        return nonTxEM;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<EntityManagerFactory, EntityManager> getNonTxEMsFromCurrentInvocation(ComponentInvocation currentInvocation) {
+        return (Map<EntityManagerFactory, EntityManager>)currentInvocation.getRegistryFor(INVOCATION_PAYLOAD_KEY);
     }
 
     @Override
@@ -320,7 +326,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
                 callFlowAgent.entityManagerMethodEnd();
             }
         }
-        
+
         // tx is required so there's no need to do any non-tx cleanup
     }
 
@@ -332,11 +338,10 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.FIND);
             }
-            returnValue = _getDelegate().find(entityClass, primaryKey);
+            EntityManager delegate = _getDelegate();
+            returnValue = delegate.find(entityClass, primaryKey);
+            clearPersistenceContextIfNotInTransaction(delegate);
         } finally {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -352,11 +357,10 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.FIND);
             }
+            EntityManager delegate = _getDelegate();
             returnValue = _getDelegate().find(entityClass, primaryKey, properties);
+            clearPersistenceContextIfNotInTransaction(delegate);
         } finally {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -373,11 +377,10 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.FIND_CLASS_OBJECT_LOCKMODETYPE);
             }
+            EntityManager delegate = _getDelegate();
             returnValue = _getDelegate().find(entityClass, primaryKey, lockMode);
+            clearPersistenceContextIfNotInTransaction(delegate);
         } finally {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -393,11 +396,10 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.FIND_CLASS_OBJECT_LOCKMODETYPE_PROPERTIES);
             }
+            EntityManager delegate = _getDelegate();
             returnValue = _getDelegate().find(entityClass, primaryKey, lockMode, properties);
+            clearPersistenceContextIfNotInTransaction(delegate);
         } finally {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -415,9 +417,6 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             }
             returnValue = _getDelegate().getReference(entityClass, primaryKey);
         } finally {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -429,7 +428,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     public void flush() {
         // tx is ALWAYS required, regardless of persistence context type.
         doTxRequiredCheck();
-        
+
 
         try {
             if(callFlowAgent.isEnabled()) {
@@ -441,7 +440,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
                 callFlowAgent.entityManagerMethodEnd();
             }
         }
-        
+
         // tx is required so there's no need to do any non-tx cleanup
     }
 
@@ -456,20 +455,9 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             EntityManager delegate = _getDelegate();
             returnValue = delegate.createQuery(ejbqlString);
 
-            if( nonTxEntityManager != null ) {
-                Query queryDelegate = returnValue;
-                returnValue = QueryWrapper.createQueryWrapper
-                    (entityManagerFactory, emProperties, delegate,
-                     queryDelegate, ejbqlString);
-                // It's now the responsibility of the QueryWrapper to 
-                // close the non-tx EM delegate
-                nonTxEntityManager = null;
+            if( getCurrentTransaction() == null ) {
+                returnValue = QueryWrapper.createQueryWrapper(returnValue, delegate);
             }
-        } catch(RuntimeException re) {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
-            throw re;
         } finally {
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
@@ -489,20 +477,9 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             EntityManager delegate = _getDelegate();
             returnValue = delegate.createQuery(ejbqlString, resultClass);
 
-            if( nonTxEntityManager != null ) {
-                TypedQuery<T> queryDelegate = returnValue;
-                returnValue = TypedQueryWrapper.createQueryWrapper
-                    (entityManagerFactory, emProperties, delegate,
-                     queryDelegate, ejbqlString, resultClass);
-                // It's now the responsibility of the QueryWrapper to
-                // close the non-tx EM delegate
-                nonTxEntityManager = null;
+            if( getCurrentTransaction() == null ) {
+                returnValue = TypedQueryWrapper.createQueryWrapper(returnValue, delegate);
             }
-        } catch(RuntimeException re) {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
-            throw re;
         } finally {
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
@@ -522,22 +499,10 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             EntityManager delegate = _getDelegate();
             returnValue = delegate.createQuery(criteriaQuery);
 
-            if( nonTxEntityManager != null ) {
-                TypedQuery<T> queryDelegate = returnValue;
-
-                returnValue = TypedQueryWrapper.createQueryWrapper
-                    (entityManagerFactory, emProperties, delegate,
-                     queryDelegate, criteriaQuery);
-                // It's now the responsibility of the QueryWrapper to
-                // close the non-tx EM delegate
-                nonTxEntityManager = null;
+            if( getCurrentTransaction() == null) {
+                returnValue = TypedQueryWrapper.createQueryWrapper(returnValue, delegate);
             }
-        } catch(RuntimeException re) {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
-            throw re;
-        } finally {
+        }finally {
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -556,21 +521,10 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             EntityManager delegate = _getDelegate();
             returnValue = delegate.createNamedQuery(name);
 
-            if( nonTxEntityManager != null ) {
-                Query queryDelegate = returnValue;
-                returnValue = QueryWrapper.createNamedQueryWrapper
-                    (entityManagerFactory, emProperties, delegate,
-                     queryDelegate, name);
-                // It's now the responsibility of the QueryWrapper to 
-                // close the non-tx EM delegate
-                nonTxEntityManager = null;
+            if( getCurrentTransaction() == null) {
+                returnValue = QueryWrapper.createQueryWrapper(returnValue, delegate);
             }
-        } catch(RuntimeException re) {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
-            throw re;
-        } finally {
+        }finally {
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -590,21 +544,10 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             EntityManager delegate = _getDelegate();
             returnValue = delegate.createNamedQuery(name, resultClass);
 
-            if( nonTxEntityManager != null ) {
-                TypedQuery<T> queryDelegate = returnValue;
-                returnValue = TypedQueryWrapper.createNamedQueryWrapper
-                    (entityManagerFactory, emProperties, delegate,
-                     queryDelegate, name, resultClass);
-                // It's now the responsibility of the QueryWrapper to
-                // close the non-tx EM delegate
-                nonTxEntityManager = null;
+            if( getCurrentTransaction() == null) {
+                returnValue = TypedQueryWrapper.createQueryWrapper(returnValue, delegate);
             }
-        } catch(RuntimeException re) {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
-            throw re;
-        } finally {
+        }finally {
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -624,21 +567,10 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             EntityManager delegate = _getDelegate();
             returnValue = delegate.createNativeQuery(sqlString);
 
-            if( nonTxEntityManager != null ) {
-                Query queryDelegate = returnValue;
-                returnValue = QueryWrapper.createNativeQueryWrapper
-                    (entityManagerFactory, emProperties, delegate,
-                     queryDelegate, sqlString);
-                // It's now the responsibility of the QueryWrapper to 
-                // close the non-tx EM delegate
-                nonTxEntityManager = null;
+            if( getCurrentTransaction() == null) {
+                returnValue = QueryWrapper.createQueryWrapper(returnValue, delegate);
             }
-        } catch(RuntimeException re) {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
-            throw re;
-        } finally {
+        }finally {
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -657,21 +589,10 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             EntityManager delegate = _getDelegate();
             returnValue = delegate.createNativeQuery(sqlString, resultClass);
 
-            if( nonTxEntityManager != null ) {
-                Query queryDelegate = returnValue;
-                returnValue = QueryWrapper.createNativeQueryWrapper
-                    (entityManagerFactory, emProperties, delegate,
-                     queryDelegate, sqlString, resultClass);
-                // It's now the responsibility of the QueryWrapper to 
-                // close the non-tx EM delegate
-                nonTxEntityManager = null;
+            if( getCurrentTransaction() == null) {
+                returnValue = QueryWrapper.createQueryWrapper(returnValue, delegate);
             }
-        } catch(RuntimeException re) {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
-            throw re;
-        } finally {
+        }finally {
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -691,21 +612,10 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             returnValue = delegate.createNativeQuery
                 (sqlString, resultSetMapping);
 
-            if( nonTxEntityManager != null ) {
-                Query queryDelegate = returnValue;
-                returnValue = QueryWrapper.createNativeQueryWrapper
-                    (entityManagerFactory, emProperties, delegate,
-                     queryDelegate, sqlString, resultSetMapping);
-                // It's now the responsibility of the QueryWrapper to 
-                // close the non-tx EM delegate
-                nonTxEntityManager = null;
+            if( getCurrentTransaction() == null) {
+                returnValue = QueryWrapper.createQueryWrapper(returnValue, delegate);
             }
-        } catch(RuntimeException re) {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
-            throw re;
-        } finally {
+        }finally {
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -728,7 +638,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
                 callFlowAgent.entityManagerMethodEnd();
             }
         }
-        
+
         // tx is required so there's no need to do any non-tx cleanup
     }
 
@@ -797,9 +707,6 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             EntityManager delegate = _getDelegate();
             return delegate.contains(entity);
         } finally {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -834,9 +741,6 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             }
             _getDelegate().setProperty(propertyName, value);
         } finally {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -855,9 +759,6 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             }
             return _getDelegate().getProperties();
         } finally {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -895,9 +796,6 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             }
             return _getDelegate().getTransaction();
         } finally {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -917,7 +815,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
 
             // Spec requires to throw IllegalStateException if this em has been closed.
             // No need to perform the check here as this can not happen for managed em.
-            // No need to go to delegate for this. 
+            // No need to go to delegate for this.
             return entityManagerFactory;
         } finally {
             if(callFlowAgent.isEnabled()) {
@@ -935,9 +833,6 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             }
             return _getDelegate().getCriteriaBuilder();
         } finally {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -954,9 +849,6 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             }
             return _getDelegate().getMetamodel();
         } finally {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -973,9 +865,6 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             }
             _getDelegate().lock(entity, lockMode);
         } finally {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -991,9 +880,6 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             }
             _getDelegate().lock(entity, lockMode, properties);
         } finally {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -1009,9 +895,6 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             }
             _getDelegate().clear();
         } finally {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -1047,12 +930,6 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             }
             return _getDelegate();
         } finally {
-            if( nonTxEntityManager != null ) {
-                // In this case we can't close the physical EntityManager
-                // before returning it to the application, so we just clear
-                // the EM wrapper's reference to it.  
-                nonTxEntityManager = null;
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -1069,9 +946,6 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             }
             return _getDelegate().getFlushMode();
         } finally {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -1087,9 +961,6 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             }
             _getDelegate().setFlushMode(flushMode);
         } finally {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -1108,7 +979,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             callFlowAgent.entityManagerMethodEnd();
         }
 
-        // There's no point in calling anything on the physical 
+        // There's no point in calling anything on the physical
         // entity manager since in all tx cases it will be
         // correctly associated with a tx already.
     }
@@ -1122,9 +993,6 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             }
             return _getDelegate().unwrap(tClass);
         } finally {
-            if( nonTxEntityManager != null ) {
-                cleanupNonTxEntityManager();
-            }
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
             }
@@ -1205,6 +1073,13 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         callFlowAgent = defaultServiceLocator.getService(CallFlowAgent.class);
     }
 
+    private void clearPersistenceContextIfNotInTransaction(EntityManager em) {
+        if(getCurrentTransaction() == null) {
+            em.clear();
+        }
+    }
+
+
     public static PhysicalEntityManagerWrapper getExtendedEntityManager(JavaEETransaction transaction, EntityManagerFactory factory) {
         return (PhysicalEntityManagerWrapper)transaction.getExtendedEntityManagerResource(factory);
     }
@@ -1212,6 +1087,34 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     public static PhysicalEntityManagerWrapper  getTxEntityManager(JavaEETransaction transaction, EntityManagerFactory factory) {
         return (PhysicalEntityManagerWrapper) transaction.getTxEntityManagerResource(factory);
 
+    }
+
+    @Service
+    /**
+     * NonTxEMs are saved as payload in current invocation. Clean them up at end of any component invocation
+     */
+    public static class NonTxEMCleaner implements ComponentInvocationHandler {
+
+        @Override
+        public void beforePreInvoke(ComponentInvocation.ComponentInvocationType invType, ComponentInvocation prevInv, ComponentInvocation newInv) throws InvocationException { }
+
+        @Override
+        public void afterPreInvoke(ComponentInvocation.ComponentInvocationType invType, ComponentInvocation prevInv, ComponentInvocation curInv) throws InvocationException { }
+
+        @Override
+        public void beforePostInvoke(ComponentInvocation.ComponentInvocationType invType, ComponentInvocation prevInv, ComponentInvocation curInv) throws InvocationException {
+            // Close all the NonTxEMs for current invocation
+            Map<EntityManagerFactory, EntityManager> nonTxEMs = getNonTxEMsFromCurrentInvocation(curInv);
+
+            if(nonTxEMs != null) {
+                for (EntityManager nonTxEM : nonTxEMs.values()) {
+                    nonTxEM.close();
+                }
+            }
+        }
+
+        @Override
+        public void afterPostInvoke(ComponentInvocation.ComponentInvocationType invType, ComponentInvocation prevInv, ComponentInvocation curInv) throws InvocationException { }
     }
 
 }
