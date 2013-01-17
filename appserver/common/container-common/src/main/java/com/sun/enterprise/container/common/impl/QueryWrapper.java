@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,21 +54,21 @@ import java.util.*;
  * context after execution to allow for returned objects to be detached
  *
  */
-public class QueryWrapper implements Query {
+public class QueryWrapper <T extends Query> implements Query {
 
     private transient CallFlowAgent callFlowAgent;
 
     // Holds current query/em delegates.
-    private Query queryDelegate;
+    protected T queryDelegate;
     private EntityManager entityManagerDelegate;
 
 
     public static Query createQueryWrapper(Query queryDelegate, EntityManager emDelegate) {
-        return new QueryWrapper(queryDelegate, emDelegate);
+        return new QueryWrapper<Query>(queryDelegate, emDelegate);
     }
 
 
-    protected QueryWrapper(Query qDelegate, EntityManager emDelegate)
+    protected QueryWrapper(T qDelegate, EntityManager emDelegate)
     {
         queryDelegate = qDelegate;
         entityManagerDelegate = emDelegate;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,6 @@ package com.sun.enterprise.container.common.impl;
 
 
 import javax.persistence.*;
-import javax.persistence.criteria.CriteriaQuery;
 import java.util.List;
 import java.util.Date;
 import java.util.Calendar;
@@ -54,7 +53,7 @@ import java.util.Calendar;
  *
  * @see QueryWrapper for more details about why the wrapper is needed
  */
-public class TypedQueryWrapper<X> extends QueryWrapper implements TypedQuery<X> {
+public class TypedQueryWrapper<X> extends QueryWrapper<TypedQuery <X> > implements TypedQuery<X> {
 
 
     public static <X> TypedQuery<X> createQueryWrapper(TypedQuery<X> queryDelegate, EntityManager emDelegate) {

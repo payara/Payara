@@ -1001,65 +1001,190 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
 
     @Override
     public StoredProcedureQuery createNamedStoredProcedureQuery(String name)  {
-        return null;
-    }
+        StoredProcedureQuery returnValue = null;
 
+        try {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.CREATE_NAMED_STORED_PROCEDURE_QUERY);
+            }
+            EntityManager delegate = _getDelegate();
+            returnValue = delegate.createNamedStoredProcedureQuery(name);
 
-    public Query createQuery(CriteriaUpdate updateQuery) {
-        // TODO: implement
-        throw new RuntimeException("Not implemented ... WIP ...");
-    }
-
-    @Override
-    public Query createQuery(CriteriaDelete deleteQuery) {
-        // TODO: implement
-        throw new RuntimeException("Not implemented ... WIP ...");
+            if( getCurrentTransaction() == null ) {
+                returnValue = StoreProcedureQueryWrapper.createQueryWrapper(returnValue, delegate);
+            }
+        } finally {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+        return returnValue;
     }
 
     @Override
     public StoredProcedureQuery createStoredProcedureQuery(String procedureName) {
-        // TODO: implement
-        throw new RuntimeException("Not implemented ... WIP ...");
+        StoredProcedureQuery returnValue = null;
+
+        try {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.CREATE_STORED_PROCEDURE_QUERY);
+            }
+            EntityManager delegate = _getDelegate();
+            returnValue = delegate.createStoredProcedureQuery(procedureName);
+
+            if( getCurrentTransaction() == null ) {
+                returnValue = StoreProcedureQueryWrapper.createQueryWrapper(returnValue, delegate);
+            }
+        } finally {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+        return returnValue;
     }
 
     @Override
     public StoredProcedureQuery createStoredProcedureQuery(String procedureName, Class... resultClasses) {
-        // TODO: implement
-        throw new RuntimeException("Not implemented ... WIP ...");
+        StoredProcedureQuery returnValue = null;
+
+        try {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.CREATE_STORED_PROCEDURE_QUERY_STRING_CLASS);
+            }
+            EntityManager delegate = _getDelegate();
+            returnValue = delegate.createStoredProcedureQuery(procedureName, resultClasses);
+
+            if( getCurrentTransaction() == null ) {
+                returnValue = StoreProcedureQueryWrapper.createQueryWrapper(returnValue, delegate);
+            }
+        } finally {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+        return returnValue;
     }
 
     @Override
     public StoredProcedureQuery createStoredProcedureQuery(String procedureName, String... resultSetMappings) {
-        // TODO: implement
-        throw new RuntimeException("Not implemented ... WIP ...");
+        StoredProcedureQuery returnValue = null;
+
+        try {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.CREATE_STORED_PROCEDURE_QUERY_STRING_STRING);
+            }
+            EntityManager delegate = _getDelegate();
+            returnValue = delegate.createStoredProcedureQuery(procedureName, resultSetMappings);
+
+            if( getCurrentTransaction() == null ) {
+                returnValue = StoreProcedureQueryWrapper.createQueryWrapper(returnValue, delegate);
+            }
+        } finally {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+        return returnValue;
+    }
+
+    public Query createQuery(CriteriaUpdate updateQuery) {
+        // Unlike other create*Query() methods, there is not need to create a QueryWrapper for non trnsactional case here.
+        // QueryWrappers are created to ensure that entities returned by query are detatched. This is an update query and thus will not return any entities.
+        try {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.CREATE_QUERY_CRITERIA_UPDATE);
+            }
+            return _getDelegate().createQuery(updateQuery);
+        } finally {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+    }
+
+    @Override
+    public Query createQuery(CriteriaDelete deleteQuery) {
+        // Please refer to comments in method createQuery(CriteriaUpdate) for the reason we do not create a QueryWrapper here.
+        try {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.CREATE_QUERY_CRITERIA_DELETE);
+            }
+            return _getDelegate().createQuery(deleteQuery);
+        } finally {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
     }
 
     @Override
     public boolean isJoinedToTransaction() {
-        // TODO: implement
-        throw new RuntimeException("Not implemented ... WIP ...");
+        try {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.IS_JOINED_TO_TRANSACTION);
+            }
+            return _getDelegate().isJoinedToTransaction();
+        } finally {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
     }
 
     @Override
     public <T> EntityGraph<T> createEntityGraph(Class<T> rootType) {
-        return null;
+        try {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.CREATE_ENTITY_GRAPH_CLASS);
+            }
+            return _getDelegate().createEntityGraph(rootType);
+        } finally {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
     }
 
     @Override
     public EntityGraph<?> createEntityGraph(String graphName) {
-        return null;
+        try {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.CREATE_ENTITY_GRAPH_STRING);
+            }
+            return _getDelegate().createEntityGraph(graphName);
+        } finally {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
     }
 
     @Override
     public <T> EntityGraph<T> getEntityGraph(String graphName) {
-        // TODO: implement
-        return null;
+        try {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.GET_ENTITY_GRAPH);
+            }
+            return _getDelegate().getEntityGraph(graphName);
+        } finally {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
     }
 
     @Override
     public <T> List<EntityGraph<? super T>> getEntityGraphs(Class<T> entityClass) {
-        // TODO: implement
-        return null;
+        try {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.GET_ENTITY_GRAPHS);
+            }
+            return _getDelegate().getEntityGraphs(entityClass);
+        } finally {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
      }
 
     private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {

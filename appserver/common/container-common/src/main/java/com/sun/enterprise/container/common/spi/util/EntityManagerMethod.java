@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -286,6 +286,72 @@ public enum EntityManagerMethod {
     UNWRAP {
         public String toString() {
             return "unwrap()";
+        }
+    },
+
+    CREATE_NAMED_STORED_PROCEDURE_QUERY  {
+        public String toString() {
+            return "createNamedStoredProcedureQuery(String name)";
+        }
+    },
+
+    CREATE_STORED_PROCEDURE_QUERY  {
+        public String toString() {
+            return "createStoredProcedureQuery(String procedureName)";
+        }
+    },
+
+    CREATE_STORED_PROCEDURE_QUERY_STRING_CLASS  {
+        public String toString() {
+            return "createStoredProcedureQuery(String procedureName, Class... resultClasses)";
+        }
+    },
+
+    CREATE_STORED_PROCEDURE_QUERY_STRING_STRING  {
+        public String toString() {
+            return "createStoredProcedureQuery(String procedureName, String... resultSetMappings)";
+        }
+    },
+
+    CREATE_QUERY_CRITERIA_UPDATE {
+        public String toString() {
+            return "createQuery(CriteriaUpdate updateQuery)";
+        }
+    },
+
+    CREATE_QUERY_CRITERIA_DELETE {
+        public String toString() {
+            return "createQuery(CriteriaDelete deleteQuery)";
+        }
+    },
+
+    IS_JOINED_TO_TRANSACTION  {
+        public String toString() {
+            return "isJoinedToTransaction()";
+        }
+    },
+
+    CREATE_ENTITY_GRAPH_CLASS  {
+        public String toString() {
+            return "createEntityGraph(Class<T> rootType)";
+        }
+    },
+
+    CREATE_ENTITY_GRAPH_STRING  {
+        public String toString() {
+            return "createEntityGraph(String graphName)";
+        }
+    },
+
+    GET_ENTITY_GRAPH  {
+        public String toString() {
+            return "getEntityGraph(String graphName)";
+        }
+    },
+
+    GET_ENTITY_GRAPHS  {
+        public String toString() {
+            return "getEntityGraphs(Class<T> entityClass)";
         }
     }
 }
