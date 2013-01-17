@@ -39,16 +39,23 @@
  */
 package com.oracle.hk2.devtest.cdi.ejb1;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 
+import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.DynamicConfiguration;
 import org.glassfish.hk2.api.DynamicConfigurationService;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.BuilderHelper;
 
+import com.oracle.hk2.devtest.cdi.ejb1.ppp.ApplicationPopulatorPostProcessor;
 import com.oracle.hk2.devtest.cdi.ejb1.scoped.CustomScopedEjb;
+import com.oracle.hk2.devtest.cdi.ejb1.scoped.HK2Service;
 import com.oracle.hk2.devtest.cdi.extension.HK2ExtensionVerifier;
 import com.oracle.hk2.devtest.cdi.locator.BasicService;
 
@@ -111,5 +118,16 @@ public class EjbInjectedWithServiceLocator implements BasicEjb {
     public void isEJBWithCustomHK2ScopeProperlyInjected() {
         customScopedEjb.checkMe();
         
+    }
+
+    @Override
+    public void doesApplicationDefinedPopulatorPostProcessorRun() {
+        ActiveDescriptor<?> descriptor = locator.getBestDescriptor(BuilderHelper.createContractFilter(HK2Service.class.getName()));
+        Map<String, List<String>> metadata = descriptor.getMetadata();  // An NPE means we don't have the descriptor
+        
+        List<String> values = metadata.get(ApplicationPopulatorPostProcessor.KEY);
+        if (!values.get(0).equals(ApplicationPopulatorPostProcessor.VALUE)) {
+            throw new AssertionError("Incorrect value 0: " + values.get(0));
+        }
     }    
 }

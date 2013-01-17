@@ -153,4 +153,17 @@ public class BasicCDITest extends NucleusStartStopTest {
         
         basic.isEJBWithCustomHK2ScopeProperlyInjected();
     }
+    
+    /**
+     * Tests that an application created post processor works
+     * 
+     * @throws NamingException
+     */
+    @Test
+    public void testApplicationDefinedPostProcessorRuns() throws NamingException {
+        BasicEjb basic = (BasicEjb) context.lookup(BASIC_EJB_JNDI_NAME);
+        Assert.assertNotNull(basic);
+        
+        basic.doesApplicationDefinedPopulatorPostProcessorRun();
+    }
 }

@@ -40,6 +40,10 @@
 package com.oracle.hk2.devtest.cdi.ejb1.scoped;
 
 /**
+ * Since this service does NOT have a constructor marked
+ * with {@link Inject} and does NOT have a zero-arg constructor
+ * CDI will NOT consider this to be one of its own beans
+ * 
  * @author jwells
  *
  */

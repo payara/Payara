@@ -103,5 +103,12 @@ public interface BasicEjb {
      * with the HK2 service
      */
     public void isEJBWithCustomHK2ScopeProperlyInjected();
+    
+    /**
+     * Tests that an implementation of PopulatorPostProcessor put into
+     * META-INF/services runs properly
+     */
+    public void doesApplicationDefinedPopulatorPostProcessorRun();
+    
 
 }

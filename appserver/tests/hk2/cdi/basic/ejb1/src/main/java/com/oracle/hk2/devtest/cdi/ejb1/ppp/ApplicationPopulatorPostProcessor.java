@@ -37,33 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.hk2.devtest.cdi.ejb1.scoped;
+package com.oracle.hk2.devtest.cdi.ejb1.ppp;
 
-import javax.inject.Singleton;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
+import org.glassfish.hk2.utilities.DescriptorImpl;
 
-import org.glassfish.hk2.api.Factory;
-import org.jvnet.hk2.annotations.Service;
+import com.oracle.hk2.devtest.cdi.ejb1.scoped.HK2Service;
 
 /**
- * This is an HK2 factory for an HK2Service.  A Factory is used
- * for the HK2Service so that we can FORCE HK2Service to NOT
- * be a recognizable bean to CDI
+ * This post-processor will be placed into the META-INF/services
+ * of the application.  The test will ensure that it has
+ * been properly run
  * 
  * @author jwells
  *
  */
-@Service @Singleton
-public class HK2ServiceFactory implements Factory<HK2Service> {
+public class ApplicationPopulatorPostProcessor implements
+        PopulatorPostProcessor {
+    public static final String KEY = "key";
+    public static final String VALUE = "value";
 
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.bootstrap.PopulatorPostProcessor#process(org.glassfish.hk2.api.ServiceLocator, org.glassfish.hk2.utilities.DescriptorImpl)
+     */
     @Override
-    @CustomScope
-    public HK2Service provide() {
-        return new HK2ServiceImpl(HK2Service.RETURN_VALUE);
-    }
-
-    @Override
-    public void dispose(HK2Service instance) {
+    public DescriptorImpl process(ServiceLocator serviceLocator,
+            DescriptorImpl descriptorImpl) {
+        if (!descriptorImpl.getAdvertisedContracts().contains(HK2Service.class.getName())) return descriptorImpl;
         
+        descriptorImpl.addMetadata(KEY, VALUE);
+        return descriptorImpl;
     }
 
 }
