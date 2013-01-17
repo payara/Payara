@@ -275,28 +275,20 @@ class AsyncContextImpl implements AsyncContext {
 
     @Override
     public void addListener(AsyncListener listener) {
-        if (listener == null) {
-            throw new IllegalArgumentException("Null listener");
-        }
-
-        if (!isOkToConfigure.get()) {
-            throw new IllegalStateException(
-                STRING_MANAGER.getString("async.addListenerIllegalState"));
-        }
-
-        synchronized(asyncListenerContexts) {
-            asyncListenerContexts.add(new AsyncListenerContext(listener));
-        }
+        addListener(listener, this.servletRequest, this.servletResponse);
     }
 
     @Override
     public void addListener(AsyncListener listener,
                             ServletRequest servletRequest,
                             ServletResponse servletResponse) {
-        if (listener == null || servletRequest == null ||
-                servletResponse == null) {
+        if (listener == null) {
+            throw new IllegalArgumentException("Null listener");
+        }
+
+        if (servletRequest == null || servletResponse == null) {
             throw new IllegalArgumentException(
-                "Null listener, request, or response");
+                "Null request, or response");
         }
 
         if (!isOkToConfigure.get()) {
@@ -568,10 +560,6 @@ class AsyncContextImpl implements AsyncContext {
         private AsyncListener listener;
         private ServletRequest request;
         private ServletResponse response;
-
-        public AsyncListenerContext(AsyncListener listener) {
-            this(listener, null, null);
-        }
 
         public AsyncListenerContext(AsyncListener listener,
                                     ServletRequest request,
