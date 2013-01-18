@@ -1028,9 +1028,9 @@ public abstract class CLICommand implements PostConstruct {
                 // if not terse, provide more advice about what to do
                 String msg;
                 if (programOpts.isTerse())
-                    msg = strings.get("missingPassword", name, pwdname);
+                    msg = strings.get("missingPassword", name, passwordName(opt));
                 else
-                    msg = strings.get("missingPasswordAdvice", name, pwdname);
+                    msg = strings.get("missingPasswordAdvice", name, passwordName(opt));
                 throw new CommandValidationException(msg);
             }
             options.set(pwdname, pwd);
@@ -1059,7 +1059,7 @@ public abstract class CLICommand implements PostConstruct {
     protected String getPassword(ParamModel opt, String defaultPassword,
             boolean create) throws CommandValidationException {
 
-        String passwordName = Environment.getPrefix() + opt.getName().toUpperCase(Locale.ENGLISH);
+        String passwordName = passwordName(opt);
         String password = passwords.get(passwordName);
         if (password != null)
             return password;
@@ -1148,6 +1148,10 @@ public abstract class CLICommand implements PostConstruct {
         }
         passwords.put(passwordName, newpassword);
         return newpassword;
+    }
+
+    private String passwordName(ParamModel opt) {
+        return Environment.getPrefix() + opt.getName().toUpperCase(Locale.ENGLISH);
     }
 
     /**
