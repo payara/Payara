@@ -111,8 +111,8 @@
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <weld.version>1.1.10.Final</weld.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
-        <websocket-api.version>1.0-b08</websocket-api.version>
-        <tyrus.version>1.0-b08</tyrus.version>
+        <websocket-api.version>1.0-b11</websocket-api.version>
+        <tyrus.version>1.0-b09</tyrus.version>
         <json.version>1.0-b02</json.version>
     </properties>
 
@@ -469,11 +469,6 @@
                 <version>${ha-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.websocket</groupId>
-                <artifactId>websocket-osgi</artifactId>
-                <version>${websocket.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>javax.websocket</groupId>
                 <artifactId>javax.websocket-api</artifactId>
                 <version>${websocket-api.version}</version>
@@ -500,18 +495,13 @@
             </dependency>
             <dependency>
                 <groupId>org.glassfish.tyrus</groupId>
-                <artifactId>tyrus-container-grizzly</artifactId>
-                <version>${tyrus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.tyrus</groupId>
-                <artifactId>tyrus-container-oldservlet</artifactId>
+                <artifactId>tyrus-container-servlet</artifactId>
                 <version>${tyrus.version}</version> 
             </dependency>
             <dependency>
                 <groupId>org.glassfish.tyrus</groupId>
-                <artifactId>tyrus-gf-ejb</artifactId>
-                <version>${tyrus.version}</version>
+                <artifactId>tyrus-container-grizzly</artifactId>
+                <version>${tyrus.version}</version> 
             </dependency>
             <dependency>
                 <groupId>org.glassfish.external</groupId>

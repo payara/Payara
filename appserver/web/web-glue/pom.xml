@@ -252,10 +252,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.websocket</groupId>
-            <artifactId>websocket-osgi</artifactId>
-        </dependency>
-        <dependency>
             <groupId>javax.websocket</groupId>
             <artifactId>javax.websocket-api</artifactId>
         </dependency>
@@ -277,15 +273,11 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-container-servlet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-container-grizzly</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-container-oldservlet</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-gf-ejb</artifactId>
         </dependency>
         <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>
