@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -101,16 +101,16 @@ public interface Sniffer {
     public Class<? extends Annotation>[] getAnnotationTypes();
     
     /**
-     * Returns the list of annotations types that this sniffer is interested in.
+     * Returns the list of annotation names that this sniffer is interested in.
      * If an application bundle contains at least one class annotated with
      * one of the returned annotations, the deployment process will not
      * call the handles method but will invoke the containers deployers as if
      * the handles method had been called and returned true.
      *
      * @param context deployment context
-     * @return list of annotations this sniffer is interested in or an empty array
+     * @return list of annotation names this sniffer is interested in or an empty array
      */
-    public Class<? extends Annotation>[] getAnnotationTypes(DeploymentContext context);
+    public String[] getAnnotationNames(DeploymentContext context);
 
     /**
      * Returns the container type associated with this sniffer
