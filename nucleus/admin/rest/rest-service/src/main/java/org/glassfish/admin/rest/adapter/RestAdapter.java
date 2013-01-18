@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -209,8 +209,8 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
         } catch (Exception e) {
             String msg = localStrings.getLocalString("rest.adapter.server.exception",
                     "An error occurred while processing the request. Please see the server logs for details.");
-            reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg); //service unavailable
             logger.log(Level.INFO, msg, e);
+            reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg); //service unavailable
         }
     }
 
