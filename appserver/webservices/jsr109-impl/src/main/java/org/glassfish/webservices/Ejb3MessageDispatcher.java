@@ -75,17 +75,21 @@ public class Ejb3MessageDispatcher implements EjbMessageDispatcher {
         }       
         String method = req.getMethod();
         try {
-            if( method.equals("POST") ) {
-                handlePost(req, resp, endpointInfo);
-            } else if( method.equals("GET") ) {
-                handleGet(req, resp, ctxt, endpointInfo);
-            } else {
-                String errorMessage = MessageFormat.format(
-                        logger.getResourceBundle().getString(LogUtils.UNSUPPORTED_METHOD_REQUEST),
-                        new Object[] {method, endpointInfo.getEndpoint().getEndpointName(),
-                            endpointInfo.getEndpointAddressUri()});
-                logger.log(Level.WARNING, errorMessage);
-                wsUtil.writeInvalidMethodType(resp, errorMessage);
+            switch (method) {
+                case "POST":
+                    handlePost(req, resp, endpointInfo);
+                    break;
+                case "GET":
+                    handleGet(req, resp, ctxt, endpointInfo);
+                    break;
+                default:
+                    String errorMessage = MessageFormat.format(
+                            logger.getResourceBundle().getString(LogUtils.UNSUPPORTED_METHOD_REQUEST),
+                            new Object[] {method, endpointInfo.getEndpoint().getEndpointName(),
+                                endpointInfo.getEndpointAddressUri()});
+                    logger.log(Level.WARNING, errorMessage);
+                    wsUtil.writeInvalidMethodType(resp, errorMessage);
+                    break;
             }
         } catch(Exception e) {
             logger.log(Level.WARNING, LogUtils.EJB_ENDPOINT_EXCEPTION, e);
@@ -130,7 +134,7 @@ public class Ejb3MessageDispatcher implements EjbMessageDispatcher {
                            ServletContext ctxt,
                            EjbRuntimeEndpointInfo endpointInfo)
                             throws IOException    {
-        AdapterInvocationInfo adapterInfo;
+        AdapterInvocationInfo adapterInfo = null;
         ServletAdapter adapter;
         try {
              adapterInfo = (AdapterInvocationInfo) endpointInfo.prepareInvocation(true);
@@ -149,6 +153,8 @@ public class Ejb3MessageDispatcher implements EjbMessageDispatcher {
             logger.log(Level.WARNING, errorMessage, e);
             String binding = endpointInfo.getEndpoint().getProtocolBinding();
             WsUtil.raiseException(resp, binding, errorMessage);
+        } finally {
+            endpointInfo.releaseImplementor((adapterInfo == null) ? null : adapterInfo.getInv());        
         }
     }      
 }
