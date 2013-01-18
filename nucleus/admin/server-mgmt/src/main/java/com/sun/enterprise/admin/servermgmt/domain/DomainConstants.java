@@ -45,9 +45,6 @@ public class DomainConstants {
     /** Filename contains encrypted admin credentials. */
     public static final String ADMIN_KEY_FILE = "admin-keyfile";
 
-    /** Name of directory store binaries. */
-    public static final String BIN_DIR = "bin";
-
     /** Name of configuration directory. */
     public static final String CONFIG_DIR = "config";
 

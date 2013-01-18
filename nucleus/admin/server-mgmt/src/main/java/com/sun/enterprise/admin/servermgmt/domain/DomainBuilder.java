@@ -303,9 +303,7 @@ public class DomainBuilder {
             // Change the permission for bin & config directories.
             try {
                 //4958533
-                domainSecurity.changeMode("-R u+x ", new File(domainDir, DomainConstants.BIN_DIR));
                 domainSecurity.changeMode("-R g-rwx,o-rwx ", configDir);
-                //4958533
             } catch (Exception e) {
                 throw new DomainException(_strings.get("setPermissionError"), e);
             }
