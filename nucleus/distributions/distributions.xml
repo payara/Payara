@@ -56,9 +56,8 @@
     description="Create default domain domain1">
     <echo message="Directory to run command from: ${exec.dir}"/>
     <echo message="Command to run: ${exec.executable}"/>
-	<chmod file="${basedir}/target/stage/${install.dir.name}/common/templates/gf/nucleus-domain.jar" perm="ugo+rx"/>
-    <exec dir="${exec.dir}" executable="${exec.executable}" failonerror="true" >
-        <arg line="--user admin create-domain --nopassword --template=${basedir}/target/stage/${install.dir.name}/common/templates/gf/nucleus-domain.jar --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1"/>
+	<exec dir="${exec.dir}" executable="${exec.executable}" failonerror="true" >
+        <arg line="--user admin create-domain --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1"/>
     </exec>
 </target>
 
