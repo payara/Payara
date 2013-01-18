@@ -260,6 +260,7 @@
     description="Create default domain- domain1">
     <echo message="Directory to run command from: ${exec.dir}"/>
     <echo message="Command to run: ${exec.executable}"/>
+	<chmod file="${basedir}/target/stage/${install.dir.name}/glassfish/common/templates/gf/appserver-domain.jar" perm="ugo+rx"/>
 	<exec dir="${exec.dir}" executable="${exec.executable}" failonerror="true" >
 	
         <arg line="--user admin create-domain --template=${basedir}/target/stage/${install.dir.name}/glassfish/common/templates/gf/appserver-domain.jar --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1"/>
