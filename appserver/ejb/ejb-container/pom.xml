@@ -132,9 +132,8 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.ejb</artifactId>
-            <version>${project.version}</version>
+            <groupId>javax.ejb</groupId>
+            <artifactId>javax.ejb-api</artifactId>
         </dependency>
         <!-- these 2 dependencies are for compilation only  -->
         <dependency>

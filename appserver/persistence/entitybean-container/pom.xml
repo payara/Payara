@@ -83,9 +83,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.ejb</artifactId>
-            <version>${project.version}</version>
+            <groupId>javax.ejb</groupId>
+            <artifactId>javax.ejb-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.deployment</groupId>

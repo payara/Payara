@@ -55,9 +55,8 @@
 	<name>EJB static simple test</name>
     <dependencies>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.ejb</artifactId>
-            <version>4.0-SNAPSHOT</version>
+            <groupId>javax.ejb</groupId>
+            <artifactId>javax.ejb-api</artifactId>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

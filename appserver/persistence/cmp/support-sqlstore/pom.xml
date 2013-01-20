@@ -129,14 +129,12 @@
             <optional>true</optional> <!-- This ensures that antlr:antlr does not get packaged -->
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.transaction</artifactId>
-            <version>${project.version}</version>
+            <groupId>javax.transaction</groupId>
+            <artifactId>javax.transaction-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.ejb</artifactId>
-            <version>${project.version}</version>
+            <groupId>javax.ejb</groupId>
+            <artifactId>javax.ejb-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.deployment</groupId>

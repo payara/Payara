@@ -75,9 +75,8 @@
         </dependency>
         
         <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.ejb</artifactId>
-            <version>${project.version}</version>
+            <groupId>javax.ejb</groupId>
+            <artifactId>javax.ejb-api</artifactId>
             <!-- Don't set scope as provided. See issue #5992 -->
         </dependency>
         

@@ -106,32 +106,20 @@
             <version>1.0</version>
             <optional>true</optional>
         </dependency>
-        <!-- 
-            - using glassfish coordinates as javax.ejb:ejb-api:3.1 is not available
-        -->
         <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.ejb</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
+            <groupId>javax.ejb</groupId>
+            <artifactId>javax.ejb-api</artifactId>
+	    <optional>true</optional>
         </dependency>
-        <!-- 
-            - using glassfish coordinates as javax.transaction:transaction-api:1.2 is not available
-        -->        
         <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.transaction</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
+            <groupId>javax.transaction</groupId>
+            <artifactId>javax.transaction-api</artifactId>
+	    <optional>true</optional>
         </dependency>
-        <!-- 
-            - using glassfish coordinates as javax.transaction:transaction-cdi-api:1.2 is not available
-        -->          
         <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.transaction.cdi</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
+            <groupId>javax.transaction</groupId>
+            <artifactId>javax.transaction-api</artifactId>
+	    <optional>true</optional>
         </dependency>
         <!-- 
             - using hibernate coordinate as there is no javax.persistence:persistence-api:2.0

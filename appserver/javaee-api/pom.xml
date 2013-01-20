@@ -63,10 +63,9 @@
 
     <modules>
         <module>api-pom</module>
-        <module>javax.annotation</module>
         <module>javax.jws</module>
-        <module>javax.xml.rpc</module>
         <module>javax.xml.soap</module>
+	<module>javax.annotation</module>
     </modules>
     
     <build>

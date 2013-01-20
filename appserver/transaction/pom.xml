@@ -58,8 +58,6 @@
         <module>internal-api</module>
         <module>jta</module>
         <module>jts</module>
-        <module>javax.transaction</module>
-        <module>javax.transaction.cdi</module>
         <module>jts-l10n</module>
         <module>jta-l10n</module>
         <module>internal-api-l10n</module>

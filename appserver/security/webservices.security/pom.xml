@@ -138,11 +138,6 @@
            <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api-osgi</artifactId>
         </dependency>
-        <!--<dependency>
-           <groupId>org.glassfish</groupId>
-            <artifactId>javax.ejb</artifactId>
-            <version>${project.version}</version>
-        </dependency> -->
         <dependency>
             <groupId>org.glassfish.main.security</groupId>
             <artifactId>security-ee</artifactId>

@@ -139,10 +139,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.ejb</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
+            <groupId>javax.ejb</groupId>
+            <artifactId>javax.ejb-api</artifactId>
+	    <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
