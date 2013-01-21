@@ -45,7 +45,8 @@
     <property name="rootdir" value="target"/>
     <property name="zipdir" value="${rootdir}/packager_zips"/>
     <property name="jardir" value="${rootdir}/packager_jars"/>
-    <property name="modulesdir" value="${jardir}/glassfish3/glassfish/modules"/>
+    <property name="gfdir" value="${jardir}/glassfish3/glassfish"/>
+    <property name="modulesdir" value="${gfdir}/modules"/>
     <property name="filedir" value="${rootdir}/packager_files"/>
 
     <target name="get.distribution.type">
@@ -98,6 +99,9 @@
 	<delete verbose="true" failonerror="false">
 	  <fileset dir="${modulesdir}" includes="console-**-help.jar"/>
 	  <fileset dir="${modulesdir}" includes="console-**-plugin.jar"/>
+	  <!-- skip the domain creation template jar files viz., nucleus-domain.jar, appserver-domain.jar -->
+	  <fileset dir="${gfdir}" includes="**/appserver-domain.jar"/>
+	  <fileset dir="${gfdir}" includes="**/nucleus-domain.jar"/>
 	</delete>
 	<delete file="${modulesdir}/autostart/osgi-cdi.jar" failonerror="false"/>
      </target>
