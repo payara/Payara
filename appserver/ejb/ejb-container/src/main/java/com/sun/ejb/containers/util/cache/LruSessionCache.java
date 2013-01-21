@@ -67,58 +67,58 @@ public class LruSessionCache
     @LogMessageInfo(
         message = "[{0}]: Exception in backingStore.remove([{1}])",
         level = "WARNING")
-    private static final String EXCEPTION_BACKING_STORE_REMOVE = "AS-EJB00002";
+    private static final String EXCEPTION_BACKING_STORE_REMOVE = "AS-EJB-00002";
 
     @LogMessageInfo(
         message = "[{0}]: passivateEJB(), Exception caught ->",
         level = "WARNING")
-    private static final String PASSIVATE_EJB_EXCEPTION_CAUGHT = "AS-EJB00003";
+    private static final String PASSIVATE_EJB_EXCEPTION_CAUGHT = "AS-EJB-00003";
 
     @LogMessageInfo(
         message = "[{0}]: Cannot load from  BACKUPSTORE FOR Key: <[{1}]>",
         level = "SEVERE",
         cause = "Didn't find the data related with the given session key.",
         action = "Check if the session bean already timed out.")
-    private static final String CANNOT_LOAD_FROM_BACKUP_STORE = "AS-EJB00004";
+    private static final String CANNOT_LOAD_FROM_BACKUP_STORE = "AS-EJB-00004";
 
     @LogMessageInfo(
         message = "[{0}]: Exception while  loading from backup session: <[{1}]>",
         level = "SEVERE",
         cause = "Session store exception or deserialization exception happened.",
         action = "Check error message and exception stack.")
-    private static final String EXCEPTION_LOADING_BACKUP_SESSION = "AS-EJB00005";
+    private static final String EXCEPTION_LOADING_BACKUP_SESSION = "AS-EJB-00005";
 
     @LogMessageInfo(
         message = "[{0}]: Error while  loading from backup session: <[{1}]>",
         level = "SEVERE",
         cause = "Session store error or deserialization error happened.",
         action = "Check error message and exception stack.")
-    private static final String ERROR_LOADING_BACKUP_SESSION = "AS-EJB00006";
+    private static final String ERROR_LOADING_BACKUP_SESSION = "AS-EJB-00006";
 
     @LogMessageInfo(
         message = "[{0}]: Exception during backingStore.passivateSave([{1}])",
         level = "WARNING")
-    private static final String EXCEPTION_DURING_PASSIVATE_SAVE = "AS-EJB00007";
+    private static final String EXCEPTION_DURING_PASSIVATE_SAVE = "AS-EJB-00007";
 
     @LogMessageInfo(
         message = "[{0}]: Iterator(), resetting head.lPrev",
         level = "WARNING")
-    private static final String ITERATOR_RESETTING_HEAD_LPREV = "AS-EJB00008";
+    private static final String ITERATOR_RESETTING_HEAD_LPREV = "AS-EJB-00008";
 
     @LogMessageInfo(
         message = "[{0}]: Exiting TrimTimedoutBeans() because current cache state: [{1}]",
         level = "WARNING")
-    private static final String EXITING_TRIM_TIMEDOUT_BEANS = "AS-EJB00009";
+    private static final String EXITING_TRIM_TIMEDOUT_BEANS = "AS-EJB-00009";
 
     @LogMessageInfo(
         message = "[{0}]: TrimTimedoutBeans(), resetting head.lPrev",
         level = "WARNING")
-    private static final String TRIM_TIMEDOUT_BEANS_RESETTING_HEAD_LPREV = "AS-EJB00010";
+    private static final String TRIM_TIMEDOUT_BEANS_RESETTING_HEAD_LPREV = "AS-EJB-00010";
 
     @LogMessageInfo(
         message = "[{0}]: Exiting TrimUnSortedTimedoutBeans() because current cache state: [{1}]",
         level = "WARNING")
-    private static final String EXITING_TRIM_UNSORTED_TIMEDOUT_BEANS = "AS-EJB00011";
+    private static final String EXITING_TRIM_UNSORTED_TIMEDOUT_BEANS = "AS-EJB-00011";
 
     protected int		    cacheIdleTimeoutInSeconds;
     protected int		    removalTimeoutInSeconds;

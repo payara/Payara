@@ -150,77 +150,77 @@ public final class StatefulSessionContainer
     @LogMessageInfo(
         message = "[SFSBContainer] Exception while  initializing SessionSynchronization methods",
         level = "WARNING")
-    private static final String EXCEPTION_WHILE_INITIALIZING_SESSION_SYNCHRONIZATION = "AS-EJB00012";
+    private static final String EXCEPTION_WHILE_INITIALIZING_SESSION_SYNCHRONIZATION = "AS-EJB-00012";
 
     @LogMessageInfo(
         message = "[SFSBContainer] Exception while  loading checkpoint info",
         level = "WARNING")
-    private static final String EXCEPTION_WHILE_LOADING_CHECKPOINT = "AS-EJB00013";
+    private static final String EXCEPTION_WHILE_LOADING_CHECKPOINT = "AS-EJB-00013";
 
     @LogMessageInfo(
         message = "Exception creating ejb object : [{0}]",
         level = "WARNING")
-    private static final String CREATE_EJBOBJECT_EXCEPTION = "AS-EJB00014";
+    private static final String CREATE_EJBOBJECT_EXCEPTION = "AS-EJB-00014";
 
     @LogMessageInfo(
         message = "Exception creating ejb local object [{0}]",
         level = "WARNING")
-    private static final String CREATE_EJBLOCALOBJECT_EXCEPTION = "AS-EJB00015";
+    private static final String CREATE_EJBLOCALOBJECT_EXCEPTION = "AS-EJB-00015";
 
     @LogMessageInfo(
         message = "Couldn't update timestamp for: [{0}]; Exception: [{1}]",
         level = "WARNING")
-    private static final String COULDNT_UPDATE_TIMESTAMP_FOR_EXCEPTION = "AS-EJB00016";
+    private static final String COULDNT_UPDATE_TIMESTAMP_FOR_EXCEPTION = "AS-EJB-00016";
 
     @LogMessageInfo(
         message = "Cannot register bean for checkpointing",
         level = "WARNING")
-    private static final String CANNOT_REGISTER_BEAN_FOR_CHECKPOINTING = "AS-EJB00017";
+    private static final String CANNOT_REGISTER_BEAN_FOR_CHECKPOINTING = "AS-EJB-00017";
 
     @LogMessageInfo(
         message = "Error  during checkpoint ([{0}]. Key: [{1}]) [{2}]",
         level = "WARNING")
-    private static final String ERROR_DURING_CHECKPOINT_3PARAMs = "AS-EJB00018";
+    private static final String ERROR_DURING_CHECKPOINT_3PARAMs = "AS-EJB-00018";
 
     @LogMessageInfo(
         message = "sfsb checkpoint error. Name: [{0}]",
         level = "WARNING")
-    private static final String SFSB_CHECKPOINT_ERROR_NAME = "AS-EJB00019";
+    private static final String SFSB_CHECKPOINT_ERROR_NAME = "AS-EJB-00019";
 
     @LogMessageInfo(
         message = "sfsb checkpoint error. Key: [{0}]",
         level = "WARNING")
-    private static final String SFSB_CHECKPOINT_ERROR_KEY = "AS-EJB00020";
+    private static final String SFSB_CHECKPOINT_ERROR_KEY = "AS-EJB-00020";
 
     @LogMessageInfo(
         message = "Exception in afterCompletion : [{0}]",
         level = "INFO")
-    private static final String AFTER_COMPLETION_EXCEPTION = "AS-EJB00021";
+    private static final String AFTER_COMPLETION_EXCEPTION = "AS-EJB-00021";
 
     @LogMessageInfo(
         message = "1. passivateEJB() returning because containerState: [{0}]",
         level = "WARNING")
-    private static final String PASSIVATE_EJB_RETURNING_BECAUSE_CONTAINER_STATE = "AS-EJB00022";
+    private static final String PASSIVATE_EJB_RETURNING_BECAUSE_CONTAINER_STATE = "AS-EJB-00022";
 
     @LogMessageInfo(
         message = "Extended EM not serializable. Exception: [{0}]",
         level = "WARNING")
-    private static final String EXTENDED_EM_NOT_SERIALIZABLE = "AS-EJB00023";
+    private static final String EXTENDED_EM_NOT_SERIALIZABLE = "AS-EJB-00023";
 
     @LogMessageInfo(
         message = "Error during passivation: [{0}]; [{1}]",
         level = "WARNING")
-    private static final String ERROR_DURING_PASSIVATION = "AS-EJB00024";
+    private static final String ERROR_DURING_PASSIVATION = "AS-EJB-00024";
 
     @LogMessageInfo(
         message = "Error during passivation of [{0}]",
         level = "WARNING")
-    private static final String PASSIVATION_ERROR_1PARAM = "AS-EJB00025";
+    private static final String PASSIVATION_ERROR_1PARAM = "AS-EJB-00025";
 
     @LogMessageInfo(
         message = "sfsb passivation error. Key: [{0}]",
         level = "WARNING")
-    private static final String SFSB_PASSIVATION_ERROR_1PARAM = "AS-EJB00026";
+    private static final String SFSB_PASSIVATION_ERROR_1PARAM = "AS-EJB-00026";
 
     @LogMessageInfo(
         message = "Error during Stateful Session Bean activation for key [{0}]",
@@ -229,42 +229,42 @@ public final class StatefulSessionContainer
                 "One possible cause is that the bean code threw a system exception from its ejbActivate method.",
         action = "Check the stack trace to see whether the exception was thrown from the ejbActivate method " +
                 "and if so double-check the application code to determine what caused the exception.")
-    private static final String SFSB_ACTIVATION_ERROR = "AS-EJB00028";
+    private static final String SFSB_ACTIVATION_ERROR = "AS-EJB-00028";
 
     @LogMessageInfo(
         message = "[{0}]: Error during backingStore.shutdown()",
         level = "WARNING")
-    private static final String ERROR_DURING_BACKING_STORE_SHUTDOWN = "AS-EJB00029";
+    private static final String ERROR_DURING_BACKING_STORE_SHUTDOWN = "AS-EJB-00029";
 
     @LogMessageInfo(
         message = "[{0}]: Error during  onShutdown()",
         level = "WARNING")
-    private static final String ERROR_DURING_ON_SHUTDOWN = "AS-EJB00030";
+    private static final String ERROR_DURING_ON_SHUTDOWN = "AS-EJB-00030";
 
     @LogMessageInfo(
         message = "[{0}]: Error while  undeploying ctx. Key: [{1}]",
         level = "WARNING")
-    private static final String ERROR_WHILE_UNDEPLOYING_CTX_KEY = "AS-EJB00031";
+    private static final String ERROR_WHILE_UNDEPLOYING_CTX_KEY = "AS-EJB-00031";
 
     @LogMessageInfo(
         message = "Cannot add idle bean cleanup task",
         level = "WARNING")
-    private static final String ADD_CLEANUP_TASK_ERROR = "AS-EJB00032";
+    private static final String ADD_CLEANUP_TASK_ERROR = "AS-EJB-00032";
 
     @LogMessageInfo(
         message = "Got exception during removeExpiredSessions (but the reaper thread is still alive)",
         level = "WARNING")
-    private static final String GOT_EXCEPTION_DURING_REMOVE_EXPIRED_SESSIONS = "AS-EJB00033";
+    private static final String GOT_EXCEPTION_DURING_REMOVE_EXPIRED_SESSIONS = "AS-EJB-00033";
 
     @LogMessageInfo(
         message = "Error during checkpoint(, but session not destroyed)",
         level = "WARNING")
-    private static final String ERROR_DURING_CHECKPOINT_SESSION_ALIVE = "AS-EJB00034";
+    private static final String ERROR_DURING_CHECKPOINT_SESSION_ALIVE = "AS-EJB-00034";
 
     @LogMessageInfo(
         message = "Error during checkpoint",
         level = "WARNING")
-    private static final String ERROR_DURING_CHECKPOINT = "AS-EJB00035";
+    private static final String ERROR_DURING_CHECKPOINT = "AS-EJB-00035";
 
     // We do not want too many ORB task for passivation
     public static final int MIN_PASSIVATION_BATCH_COUNT = 8;

@@ -65,7 +65,7 @@ public class LruEJBCache extends LruCache {
     @LogMessageInfo(
         message = "[{0}]: trimLru(), resetting head and tail",
         level = "WARNING")
-    private static final String TRIM_LRU_RESETTING_HEAD_AND_TAIL = "AS-EJB00001";
+    private static final String TRIM_LRU_RESETTING_HEAD_AND_TAIL = "AS-EJB-00001";
 
     protected String cacheName;
 

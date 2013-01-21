@@ -108,63 +108,63 @@ public class StatefulContainerFactory extends BaseContainerFactory
     @LogMessageInfo(
         message = "TopLevel AvailabilityService.getAvailabilityEnabled: [{0}]",
         level = "INFO")
-    private static final String SFSB_BUILDER_TOP_LEVEL_AVAILABILITY_SERVICE_ENABLED = "AS-EJB00036";
+    private static final String SFSB_BUILDER_TOP_LEVEL_AVAILABILITY_SERVICE_ENABLED = "AS-EJB-00036";
 
     @LogMessageInfo(
         message = "TopLevel EjbAvailabilityService.getAvailabilityEnabled: [{0}]",
         level = "INFO")
-    private static final String SFSB_BUILDER_EJB_AVAILABILITY_SERVICE_ENABLED = "AS-EJB00037";
+    private static final String SFSB_BUILDER_EJB_AVAILABILITY_SERVICE_ENABLED = "AS-EJB-00037";
 
     @LogMessageInfo(
         message = "Global AvailabilityEnabled: [{0}], application AvailabilityEnabled: [{1}]",
         level = "INFO")
-    private static final String SFSB_BUILDER_GLOBAL_AND_APP_AVAILABILITY_ENABLED = "AS-EJB00038";
+    private static final String SFSB_BUILDER_GLOBAL_AND_APP_AVAILABILITY_ENABLED = "AS-EJB-00038";
 
     @LogMessageInfo(
         message = "Exception while trying to determine availability-enabled settings for this app",
         level = "WARNING")
-    private static final String SFSB_BUILDER_DETERMINE_AVAILABILITY_EXCEPTION = "AS-EJB00039";
+    private static final String SFSB_BUILDER_DETERMINE_AVAILABILITY_EXCEPTION = "AS-EJB-00039";
 
     @LogMessageInfo(
         message = "StatefulContainerBuilder AvailabilityEnabled [{0}] for this application",
         level = "INFO")
-    private static final String SFSB_BUILDER_RESOLVED_AVAILABILITY_ENABLED = "AS-EJB00040";
+    private static final String SFSB_BUILDER_RESOLVED_AVAILABILITY_ENABLED = "AS-EJB-00040";
 
     @LogMessageInfo(
         message = "StatefulContainerBuilder.buildStoreManager() storeName: [{0}]",
         level = "INFO")
-    private static final String SFSB_BUILDER_STORE_NAME = "AS-EJB00041";
+    private static final String SFSB_BUILDER_STORE_NAME = "AS-EJB-00041";
 
     @LogMessageInfo(
         message = "Could not instantiate backing store for type [{0}]",
         level = "WARNING")
-    private static final String SFSB_BUILDER_INSTANTIATE_BACKING_STORE_EXCEPTION = "AS-EJB00042";
+    private static final String SFSB_BUILDER_INSTANTIATE_BACKING_STORE_EXCEPTION = "AS-EJB-00042";
 
     @LogMessageInfo(
         message = "StatefulContainerbuilder instantiated store: {0}, " +
                 "with ha-enabled [{1}], and backing store configuration: {2}",
         level = "INFO")
-    private static final String SFSB_BUILDER_INSTANTIATED_BACKING_STORE = "AS-EJB00043";
+    private static final String SFSB_BUILDER_INSTANTIATED_BACKING_STORE = "AS-EJB-00043";
 
     @LogMessageInfo(
         message = "Error while adding idle bean passivator task",
         level = "WARNING")
-    private static final String SFSB_HELPER_ADD_IDLE_PASSIVATOR_TASK_FAILED = "AS-EJB00044";
+    private static final String SFSB_HELPER_ADD_IDLE_PASSIVATOR_TASK_FAILED = "AS-EJB-00044";
 
     @LogMessageInfo(
         message = "Error while adding idle bean removal task",
         level = "WARNING")
-    private static final String SFSB_HELPER_ADD_REMOVE_PASSIVATOR_TASK_FAILED = "AS-EJB00045";
+    private static final String SFSB_HELPER_ADD_REMOVE_PASSIVATOR_TASK_FAILED = "AS-EJB-00045";
 
     @LogMessageInfo(
         message = "Error while removing idle beans for [{0}]",
         level = "WARNING")
-    static final String SFSB_HELPER_REMOVE_IDLE_BEANS_FAILED = "AS-EJB00046";
+    static final String SFSB_HELPER_REMOVE_IDLE_BEANS_FAILED = "AS-EJB-00046";
 
     @LogMessageInfo(
         message = "Error while removing expired beans for [{0}]",
         level = "WARNING")
-    static final String SFSB_HELPER_REMOVE_EXPIRED_BEANS_FAILED = "AS-EJB00047";
+    static final String SFSB_HELPER_REMOVE_EXPIRED_BEANS_FAILED = "AS-EJB-00047";
 
     private static final Level TRACE_LEVEL = Level.FINE;
 
