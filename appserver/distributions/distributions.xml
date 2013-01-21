@@ -261,8 +261,7 @@
     <echo message="Directory to run command from: ${exec.dir}"/>
     <echo message="Command to run: ${exec.executable}"/>
 	<exec dir="${exec.dir}" executable="${exec.executable}" failonerror="true" >
-	
-        <arg line="--user admin create-domain --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1"/>
+        <arg line="--user admin create-domain --template=${basedir}/target/stage/${install.dir.name}/glassfish/common/templates/gf/appserver-domain.jar --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1"/>
     </exec>
 </target>
 
