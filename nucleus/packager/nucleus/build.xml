@@ -54,7 +54,7 @@
        <stage-distribution-fragments/>
 
 	   <!-- moving the jar template -->
-	   <move file="target/artifacts/jars/nucleus-domain.jar" todir="target/stage/${install.dir.name}/common/templates/gf" failonerror="false"/>
+	   <move file="target/stage/${install.dir.name}/modules/nucleus-domain.jar" todir="target/stage/${install.dir.name}/common/templates/gf" failonerror="false"/>
 
        <!-- explicitly moving flashlight-agent.jar to lib/monitor -->
        <move file="target/stage/${install.dir.name}/modules/flashlight-agent.jar" todir="target/stage/${install.dir.name}/lib/monitor" failonerror="false"/>
