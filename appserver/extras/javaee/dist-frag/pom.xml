@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -49,27 +49,31 @@
         <artifactId>javaee-pom</artifactId>
         <version>4.0-SNAPSHOT</version>
     </parent>
-
     <name>GlassFish javaee.jar distribution fragment</name>
     <artifactId>javaee-frag</artifactId>
     <packaging>distribution-fragment</packaging>
+    
     <build>
         <plugins>
             <plugin>
-                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                <artifactId>maven-antrun-extended-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <phase>generate-sources</phase>
-                        <configuration>
-                            <tasks>
-                                <resolveArtifact artifactId="javaee"
-                                   tofile="target/classes/glassfish/lib/javaee.jar"/>
-                            </tasks>
-                        </configuration>
+                        <phase>process-resources</phase>
                         <goals>
-                            <goal>run</goal>
+                            <goal>copy-dependencies</goal>
                         </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/lib</outputDirectory>
+                            <useSubDirectoryPerType>false</useSubDirectoryPerType>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <excludeTransitive>true</excludeTransitive>
+                            <includeGroupIds>org.glassfish.main.extras</includeGroupIds>
+                            <includeTypes>jar</includeTypes>
+                            <stripVersion>true</stripVersion>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

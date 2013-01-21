@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -51,21 +51,10 @@
     <artifactId>legal-fragment</artifactId>
     <name>Glassfish Legal content distribution fragment</name>
     <description>This pom describes how to assemble the Glassfish legal content distribution fragment</description>
-    <packaging>distribution-base-zip</packaging>
-
-     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                <artifactId>maven-antrun-extended-plugin</artifactId>
-                <configuration>
-                    <tasks>
-                        <ant dir="." antfile="build.xml" target="create.bundle" />
-                    </tasks>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-   
+    <packaging>distribution-fragment</packaging>
+    
+    <properties>
+        <temp.dir>${project.build.directory}/${stage.dir.name}/glassfish/legal</temp.dir>
+    </properties>
 </project>
 

@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,9 +41,6 @@
 
 -->
 
-<!--
-  modules used to build glassfish packages
--->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -63,18 +60,29 @@
                 <role>developer</role>
             </roles>
         </developer>
+        <developer>
+            <id>romain_grecourt</id>
+            <name>Romain Grecourt</name>
+            <organization>Oracle, Inc</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
     </developers>
-
 
     <packaging>pom</packaging>
     <groupId>org.glassfish.main.packager</groupId>
     <artifactId>packages</artifactId>
     <name>Glassfish packages</name>
-
+    
     <properties>
         <install.dir.name>glassfish3</install.dir.name>
+        <stage.dir.name>stage</stage.dir.name>
+        <stage.dir>${project.build.directory}/${stage.dir.name}/${install.dir.name}</stage.dir>
+        <temp.dir>${stage.dir}</temp.dir>        
+        <temp.modules.dir>${temp.dir}/glassfish/modules</temp.modules.dir>
         <findbugs.skip>true</findbugs.skip>
-        <packager.artifact.excludes>validation-api,stax-api,stax,junit,jtype,tiger-types,servlet-api,jstl-api,el-api,jsp-api,org.osgi.core,org.osgi.compendium,concurrent,grizzly-utils,grizzly-framework,grizzly-rcm,grizzly-portunif,grizzly-http,grizzly-http-server,grizzly-config,grizzly-comet,grizzly-websockets,grizzly-http-servlet,grizzly-http-ajp,glassfish-grizzly-container,grizzly-lzma,gmbal-api-only,jsf-api,jsf-impl,javax.servlet</packager.artifact.excludes>
+        <zip.excludes>**\/META-INF,META-INF\/*</zip.excludes>
     </properties>
 
     <modules>
@@ -93,7 +101,6 @@
 	<module>glassfish-registration</module>
 	<module>glassfish-management</module>
         <module>glassfish-grizzly-full</module>
-        <module>glassfish-common-web-tmp</module>
         <module>glassfish-ha</module>
 	<module>glassfish-jca</module>
 	<module>glassfish-jpa</module>
@@ -155,6 +162,7 @@
     </modules>
 
     <build>
+        <outputDirectory>${temp.dir}</outputDirectory>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -171,36 +179,132 @@
                 </configuration>
             </plugin>
             <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-                <!-- automatically invokes clean during initialize phase -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <includeEmptyDirs>true</includeEmptyDirs>                    
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>auto-clean</id>
-                        <phase>initialize</phase>
-                        <goals><goal>clean</goal></goals>
+                        <id>process-step1</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${temp.modules.dir}</outputDirectory>
+                            <useSubDirectoryPerType>false</useSubDirectoryPerType>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <includeScope>compile</includeScope>
+                            <includeScope>runtime</includeScope>
+                            <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
+                            <excludeGroupIds>${exclude.groupids}</excludeGroupIds>
+                            <excludeTransitive>true</excludeTransitive>
+                            <excludeTypes>zip,war</excludeTypes>
+                            <stripVersion>true</stripVersion>
+                            <silent>true</silent>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>process-step2</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>unpack-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${temp.dir}</outputDirectory>
+                            <includeTypes>zip</includeTypes>
+                            <excludes>${zip.excludes}</excludes>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <excludeTransitive>true</excludeTransitive>
+                            <silent>true</silent>
+                        </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>process-step3</id>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <descriptors>
+                        <descriptor>${basedir}/src/main/assembly/${project.artifactId}.xml</descriptor>
+                    </descriptors>
+                    <ignoreMissingDescriptor>true</ignoreMissingDescriptor>
+                    <finalName>${stage.dir.name}</finalName>
+                    <attach>false</attach>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <useProjectArtifact>false</useProjectArtifact>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>glassfishbuild-maven-plugin</artifactId>
+                <configuration>
+                    <dir>${project.build.directory}/${stage.dir.name}</dir>
+                    <excludes>**/pkg_proto.py</excludes>
+                </configuration>
             </plugin>
         </plugins>
     </build>
 
     <profiles>
         <profile>
-            <!--
-                Activate this profile with "mvn -Drepo.url=<ips-repository> -Dpython=<python> -P ips"
-             -->
             <id>ips</id>
-	    <activation>
-	     <activeByDefault>false</activeByDefault>  
-	    </activation>
-            <properties>
-                <install.dir.name>glassfish3</install.dir.name>
-                <!-- if profile is ips then set property to do pack200 compression -->
-                <do.compression>true</do.compression>
-            </properties>
-
+            <activation>
+                <activeByDefault>false</activeByDefault>  
+            </activation>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+                        <artifactId>maven-antrun-extended-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>process-step3</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <ant dir="." antfile="../common-targets.xml" target="pack.compression"/>          
+                                    </tasks>
+                                </configuration>                         
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jvnet.updatecenter2</groupId>
+                        <artifactId>maven-makepkgs-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <remoteRepository>${repo.url}</remoteRepository>
+                            <python>${python}</python>
+                            <proto>src/main/resources/pkg_proto.py</proto>
+                            <baseDirectory>target/stage/${install.dir.name}/</baseDirectory>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <artifactId>maven-resources-plugin</artifactId>
                         <executions>
@@ -219,20 +323,16 @@
                                             <filtering>true</filtering>
                                             <includes>
                                                 <include>pkg_conf.py</include>
-                                           </includes>
+                                            </includes>
                                         </resource>
                                     </resources>              
                                 </configuration>            
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-dependency-plugin</artifactId>
-                    </plugin>	
                 </plugins>
             </build>
         </profile>
-    </profiles>        
+    </profiles>
 </project>
 

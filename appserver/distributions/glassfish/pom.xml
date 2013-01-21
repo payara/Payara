@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -47,123 +47,46 @@
         <groupId>org.glassfish.main.distributions</groupId>
         <artifactId>distributions</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish</artifactId>
     <name>Glassfish Distribution</name>
-    <packaging>distribution-base-zip</packaging>
+    <packaging>glassfish-distribution</packaging>
     <description>This pom describes how to assemble the GlassFish Distribution</description>
-
-    <developers>
-        <developer>
-            <id>rajeshwar</id>
-            <name>Rajeshwar Patil</name>
-            <url>http://blogs.sun.com/aquatic</url>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>snjezana</id>
-            <name>Snjezana Sevo-Zenzerovic</name>
-            <url>http://blogs.sun.com/snjezana</url>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
 
     <build>
         <plugins>
-            <!-- Get hold of all the required artifacts -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>glassfishbuild-maven-plugin</artifactId>
+                <extensions>true</extensions>
                 <executions>
                     <execution>
-                        <id>copy-dependencies</id>
+                        <id>create-domain</id>
                         <goals>
-                            <goal>copy-dependencies</goal>
+                            <goal>exec</goal>
                         </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/stage</outputDirectory>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>
-                            <excludeTransitive>true</excludeTransitive>
-                            <includeScope>compile</includeScope>
-                            <includeScope>runtime</includeScope>
-                        </configuration>
-                   </execution>
+                        <phase>process-resources</phase>
+                    </execution>                    
                 </executions>
-            </plugin>
-
-            <!-- Create distribution artifact --> 
-            <plugin>
-                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                <artifactId>maven-antrun-extended-plugin</artifactId>
-                <configuration>
-                    <tasks>
-                        <ant dir="." antfile="build.xml" target="create.distribution"/>
-                    </tasks>
-                </configuration>
-             </plugin>
-        </plugins>
+            </plugin>          
+        </plugins>        
     </build>
-
-    <!--
-    Activate this profile with "mvn -P ips"
-    -->
-    <profiles>
-        <profile>
-            <id>ips</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-            <plugins>
-            <plugin>
-                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                <artifactId>maven-antrun-extended-plugin</artifactId>
-                <configuration>
-                    <tasks>
-                        <ant dir="." antfile="build.xml" target="create.distribution"/>
-                        <ant dir="." antfile="../distributions.xml" target="create-glassfish-distributions"/>
-                    </tasks>
-                </configuration>
-             </plugin>
-            </plugins>
-            </build>
-        </profile>
-   </profiles>
-
-
+    
     <dependencies>
-        <!-- Artifacts to be included in the distribution -->
-
-        <!-- All the dependencies are intentionally markes as optional so that one can
-             express dependency on a particular dependency and adding such a dependency
-             won't bring the transitive closure. A distribution is supposed to be
-             self sufficient. See GLASSFISH-17170 for more details.
-        -->
-
-        <!-- web distribution -->
+        <!-- pull web packages -->
         <dependency>
             <groupId>org.glassfish.main.distributions</groupId>
             <artifactId>web</artifactId>
             <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
+            <type>pom</type>
         </dependency>
 
-	<!-- commons full package -->       
+        <!-- commons full package -->       
         <dependency>
-           <groupId>org.glassfish.main.packager</groupId>
-           <artifactId>glassfish-common-full</artifactId>
-           <version>${project.version}</version>
-           <type>zip</type>
-            <optional>true</optional>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-common-full</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
         </dependency> 
     
 
@@ -173,25 +96,22 @@
             <artifactId>glassfish-ejb</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-            <optional>true</optional>
         </dependency>     
 	
-	<!-- CMP package -->
+        <!-- CMP package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-cmp</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-            <optional>true</optional>
         </dependency>    
         
-	<!-- EntityBeans Container package -->
+        <!-- EntityBeans Container package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-entitybeans-container</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-            <optional>true</optional>
         </dependency>     
 
         <!--corba package -->
@@ -200,7 +120,6 @@
             <artifactId>glassfish-corba</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-            <optional>true</optional>
         </dependency>    
 
         <!-- metro package -->
@@ -209,7 +128,6 @@
             <artifactId>metro</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-            <optional>true</optional>
         </dependency>
 
         <!-- json package -->
@@ -218,55 +136,30 @@
             <artifactId>json</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-            <optional>true</optional>
         </dependency>
 
-     <!-- appclient package -->
+        <!-- appclient package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-	    <artifactId>glassfish-appclient</artifactId>
+            <artifactId>glassfish-appclient</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-            <optional>true</optional>
         </dependency>
 
         <!-- jms package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-	    <artifactId>glassfish-jms</artifactId>
+            <artifactId>glassfish-jms</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-            <optional>true</optional>
         </dependency>
 
         <!-- mq package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-	    <artifactId>mq</artifactId>
+            <artifactId>mq</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-            <optional>true</optional>
         </dependency>
-
-        <!-- additional servicetag registry dependency -->
-        <dependency>
-            <groupId>org.glassfish.main.registration</groupId>
-            <artifactId>servicetag-registry</artifactId>
-            <version>${project.version}</version>
-            <type>distribution-fragment</type>
-            <optional>true</optional>
-        </dependency>
-        
-        <!-- additional legal content dependency -->
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>legal-fragment</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-
-</dependencies>
-
+    </dependencies>
 </project>
-

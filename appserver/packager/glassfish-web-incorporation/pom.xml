@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -47,70 +47,10 @@
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
 	<version>4.0-SNAPSHOT</version>
-	<relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-web-incorporation</artifactId>
     <name>Glassfish Web Profile Incorporation Package</name>
-    <packaging>distribution-base-zip</packaging>
+    <packaging>distribution-fragment</packaging>
     <description>This pom describes how to assemble the GlassFish Web Profile Incorporation package</description>
-
-    <build>
-	<plugins>
-            <plugin>
-                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                <artifactId>maven-antrun-extended-plugin</artifactId>
-                <configuration>
-                    <tasks>
-                        <if test="${do.compression}">
-			    <property name="compression" value="true" />
-			</if>
-                        <ant dir="." antfile="build.xml" target="create.package"/>
-                    </tasks>
-                </configuration>               
-             </plugin>
-        </plugins>
-    </build>
-
-
-    <dependencies>
-       <!--
-          no dependencies - this is consolidation package
-        -->      
-    </dependencies>
-
-    <profiles>
-        <profile>
-            <!--
-                Activate this profile with "mvn -Drepo.url=<ips-repository> -Dpython=<python> -P ips"
-             -->
-            <id>ips</id>
-	    <activation>
-	      <activeByDefault>false</activeByDefault>  
-	    </activation>
-	    <build>
-            <plugins>
-                <plugin>
-                    <groupId>org.jvnet.updatecenter2</groupId>
-                    <artifactId>maven-makepkgs-plugin</artifactId>
-                    <version>0.2</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>package</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <remoteRepository>${repo.url}</remoteRepository>
-                        <python>${python}</python>
-                        <proto>src/main/resources/pkg_proto.py</proto>
-                        <baseDirectory>target/stage/${install.dir.name}/</baseDirectory>
-                     </configuration>
-                </plugin>
-            </plugins>
-	    </build>
-        </profile>
-   </profiles>        
-
 </project>
 

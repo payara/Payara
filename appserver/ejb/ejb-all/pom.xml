@@ -81,10 +81,5 @@
             <artifactId>ejb-container</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.ejb</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 </project>

@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -47,128 +47,140 @@
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-web</artifactId>
     <name>Glassfish Web Container Package</name>
-    <packaging>distribution-base-zip</packaging>
+    <packaging>distribution-fragment</packaging>
     <description>This pom describes how to assemble the GlassFish Web Container  package</description>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                <artifactId>maven-antrun-extended-plugin</artifactId>
-                <configuration>
-                    <tasks>
-                        <if test="${do.compression}">
-			    <property name="compression" value="true" />
-			</if>
-                        <ant dir="." antfile="build.xml" target="create.package"/>
-                    </tasks>
-                </configuration>               
-             </plugin>
-
-             <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-dependency-plugin</artifactId>
-                 <executions>
-                     <execution>
-                         <id>copy-external-dependencies</id>
-                         <goals>
-                            <goal>copy-dependencies</goal>
-                         </goals>
-                         <configuration>
-                            <outputDirectory>${project.build.directory}/artifacts</outputDirectory>
-                            <useSubDirectoryPerType>true</useSubDirectoryPerType>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>                           
-                            <includeScope>compile</includeScope>
-                            <includeScope>runtime</includeScope>
-                            <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
-                            <excludeGroupIds>org.glassfish.main,org.jboss.weld</excludeGroupIds>
-                            <stripVersion>true</stripVersion>
-                         </configuration>
-                     </execution>
-                     <execution>
-                         <id>copy-dependencies</id>
-                         <goals>
-                             <goal>copy-dependencies</goal>
-                         </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/artifacts</outputDirectory>
-                            <useSubDirectoryPerType>true</useSubDirectoryPerType>
-                            <overWriteReleases>true</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>                            
-                             <includeScope>compile</includeScope>
-                            <includeScope>runtime</includeScope>
-                            <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
-                            <excludeGroupIds>org.jboss.weld</excludeGroupIds>
-                            <includeGroupIds>org.glassfish.main,org.glassfish.main.web</includeGroupIds>
-                            <stripVersion>true</stripVersion>
-                        </configuration>
-                     </execution>                           
-                 </executions>
-             </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
-        <!--
-          modules to be included in this bundle
-        -->       
 	<dependency>
             <groupId>org.glassfish.main.web</groupId>
-            <artifactId>webtier-all</artifactId>
+            <artifactId>gf-web-connector</artifactId>
 	    <version>${project.version}</version>
-	    <type>pom</type>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>jsf-connector</artifactId>
+	    <version>${project.version}</version>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>jspcaching-connector</artifactId>
+	    <version>${project.version}</version>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>jstl-connector</artifactId>
+	    <version>${project.version}</version>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>stats77</artifactId>
+	    <version>${project.version}</version>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>web-cli</artifactId>
+	    <version>${project.version}</version>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>web-core</artifactId>
+	    <version>${project.version}</version>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>web-embed-api</artifactId>
+	    <version>${project.version}</version>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>web-glue</artifactId>
+	    <version>${project.version}</version>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>web-gui-plugin-common</artifactId>
+	    <version>${project.version}</version>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>web-ha</artifactId>
+	    <version>${project.version}</version>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>web-naming</artifactId>
+	    <version>${project.version}</version>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>web-sse</artifactId>
+	    <version>${project.version}</version>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>war-util</artifactId>
+	    <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>javax.servlet.jsp-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>javax.servlet.jsp</artifactId>
         </dependency>        
-
-    	<!-- now, listing package dependencies so that their content
-             can be excluded during staging -->	
- 
-        <dependency>        
-           <groupId>org.glassfish.main.packager</groupId>
-           <artifactId>glassfish-jmx</artifactId>
-           <version>${project.version}</version>
-           <classifier>artifacts</classifier>
-	   <type>properties</type>
-           <scope>provided</scope>
-       </dependency>	
+        <dependency>
+            <groupId>javax.servlet.jsp.jstl</groupId>
+            <artifactId>javax.servlet.jsp.jstl-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>javax.servlet.jsp.jstl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.websocket</groupId>
+            <artifactId>javax.websocket-api</artifactId>
+        </dependency>       
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-core</artifactId>
+        </dependency>        
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-container-servlet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-container-grizzly</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-websocket-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.security</groupId>
+            <artifactId>websecurity</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <!--
-                Activate this profile with "mvn -Drepo.url=<ips-repository> -Dpython=<python> -P ips"
-             -->
-            <id>ips</id>
-	    <activation>
-	      <activeByDefault>false</activeByDefault>  
-	    </activation>
-	    <build>
-            <plugins>
-                <plugin>
-                    <groupId>org.jvnet.updatecenter2</groupId>
-                    <artifactId>maven-makepkgs-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>package</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <remoteRepository>${repo.url}</remoteRepository>
-                        <python>${python}</python>
-                        <proto>src/main/resources/pkg_proto.py</proto>
-                        <baseDirectory>target/stage/${install.dir.name}/</baseDirectory>
-                     </configuration>
-                </plugin>
-            </plugins>
-	    </build>
-        </profile>
-   </profiles>        
-
 </project>
 

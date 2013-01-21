@@ -47,159 +47,211 @@
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>nucleus</artifactId>
     <name>Nucleus Package</name>
-    <packaging>distribution-base-zip</packaging>
+    <packaging>distribution-fragment</packaging>
     <description>This pom describes how to assemble the Nucleus package</description>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                <artifactId>maven-antrun-extended-plugin</artifactId>
-                <configuration>
-                    <tasks>
-                        <if test="${do.compression}">
-			    <property name="compression" value="true" />
-			</if>
-                        <ant dir="." antfile="build.xml" target="create.package"/>
-                    </tasks>
-                </configuration>               
-             </plugin>
-             <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/artifacts</outputDirectory>
-                            <useSubDirectoryPerType>true</useSubDirectoryPerType>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>                            
-                            <includeScope>compile</includeScope>
-                            <includeScope>runtime</includeScope>
-                            <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
-                            <stripVersion>true</stripVersion>
-                        </configuration>
-                   </execution>                  
-               </executions>
-           </plugin>
-        </plugins>
-    </build>
-
-
+    <properties>
+        <temp.dir>${project.build.directory}/dependency</temp.dir>
+    </properties>
+    
     <dependencies>
-        <!--
-          modules to be included in this bundle
-        -->       
         <dependency>
-           <groupId>org.glassfish.hk2</groupId>
-           <artifactId>osgi-adapter</artifactId>
-       </dependency>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>osgi-adapter</artifactId>
+            <optional>true</optional>
+        </dependency>
         <dependency>
-           <groupId>org.glassfish.main.core</groupId>
-           <artifactId>glassfish-extra-jre-packages</artifactId>
-           <version>${project.version}</version>
-       </dependency>
+            <groupId>org.glassfish.main.core</groupId>
+            <artifactId>glassfish-extra-jre-packages</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
         <dependency>
-           <groupId>org.glassfish.main.core</groupId>
-           <artifactId>api-exporter</artifactId>
-           <version>${project.version}</version>
-       </dependency>
-       <dependency>
-           <groupId>org.glassfish.main.core</groupId>
-           <artifactId>glassfish</artifactId>
-           <version>${project.version}</version>
-       </dependency>
-       <dependency>
-           <groupId>org.glassfish.main.core</groupId>
-           <artifactId>kernel</artifactId>
-	   <version>${project.version}</version>
-	    <exclusions>
-                <exclusion>
-                    <groupId>stax</groupId>
-                    <artifactId>stax</artifactId>
-                </exclusion>
-            </exclusions>
-  	</dependency>  
-	<dependency>
-           <groupId>org.glassfish.main.admin</groupId>
-           <artifactId>admin-cli</artifactId>
-           <version>${project.version}</version>
+            <groupId>org.glassfish.main.core</groupId>
+            <artifactId>api-exporter</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.core</groupId>
+            <artifactId>glassfish</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.core</groupId>
+            <artifactId>kernel</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>  
+        <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>admin-cli</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>admin-util</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>common-util</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>config-api</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>config-types</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>deployment-admin</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>deployment-autodeploy</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.deployment</groupId>
+            <artifactId>deployment-common</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.gmbal</groupId>
+            <artifactId>gmbal</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
-            <artifactId>glassfish-api</artifactId>
-	    <version>${project.version}</version>
+            <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
         </dependency> 
-        
         <dependency>
-           <!-- base distribution image, move assembly here later -->
-           <groupId>org.glassfish.main.packager</groupId>
-           <artifactId>nucleus-base</artifactId>
-           <version>${project.version}</version>
-           <type>zip</type>
-       </dependency>
-       <dependency>
-           <groupId>org.glassfish.docs</groupId>
-           <artifactId>basedocs</artifactId>
-           <version>${v3-docs.version}</version>
-	   <type>distribution-fragment</type>
-       </dependency>
-       <dependency>
-	    <groupId>org.glassfish.external</groupId>
-	    <artifactId>management-api</artifactId>
-	 </dependency>
-       <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency> 
+        <dependency>
+            <groupId>org.glassfish.main.external</groupId>
+            <artifactId>j-interop-repackaged</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency> 
+        <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>launcher</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency> 
+        <dependency>
+            <groupId>org.glassfish.main.core</groupId>
+            <artifactId>logging</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency> 
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>scattered-archive-api</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency> 
+        <dependency>
+            <groupId>org.glassfish.main</groupId>
+            <artifactId>simple-glassfish-api</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.docs</groupId>
+            <artifactId>basedocs</artifactId>
+            <version>${v3-docs.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.external</groupId>
+            <artifactId>management-api</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.main.flashlight</groupId>
             <artifactId>flashlight-framework</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.flashlight</groupId>
             <artifactId>flashlight-agent</artifactId>
             <version>${project.version}</version>
-        </dependency>   	
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.flashlight</groupId>
             <artifactId>flashlight-extra-jdk-packages</artifactId>
             <version>${project.version}</version>
-        </dependency> 
-		<dependency>
+	    <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>nucleus-domain</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
+        </dependency>        
+        <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>server-mgmt</artifactId>
+            <version>${project.version}</version>
+	    <optional>true</optional>
         </dependency>
-   
-	<!-- now, listing package dependencies so that their content
-             can be excluded during staging -->	
-	<!-- package level dependency -->
-        <dependency>        
-           <groupId>org.glassfish.main.packager</groupId>
-           <artifactId>nucleus-grizzly</artifactId>
-           <version>${project.version}</version>
-           <classifier>artifacts</classifier>
-	   <type>properties</type>
-           <scope>provided</scope>
+        <dependency>
+            <groupId>org.glassfish.main.security</groupId>
+            <artifactId>security</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
-    </dependencies> 
-
+        <dependency>
+            <groupId>org.glassfish.main.security</groupId>
+            <artifactId>security-services</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.security</groupId>
+            <artifactId>ssl-impl</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.external</groupId>
+            <artifactId>ldapbp-repackaged</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jvnet.mimepull</groupId>
+            <artifactId>mimepull</artifactId>
+            <optional>true</optional>
+        </dependency>        
+    </dependencies>
 </project>
 

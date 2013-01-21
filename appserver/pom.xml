@@ -94,6 +94,8 @@
         <woodstox.version>4.1.2</woodstox.version>
         <jaxb-api.version>2.2.7</jaxb-api.version>
         <jaxb.version>2.2.7-b52</jaxb.version>
+        <stax2-api.version>3.1.1</stax2-api.version>
+        <jaxr-api.version>1.0-b01</jaxr-api.version>
 
         <javax-persistence-api.version>2.0.105.v201212201717</javax-persistence-api.version>
         <!-- Versions for EclipseLink artifacts -->
@@ -279,6 +281,16 @@
                 <artifactId>jaxb-api-osgi</artifactId>
                 <version>${jaxb-api.version}</version>
             </dependency>
+            <dependency>
+                <groupId>javax.xml</groupId>
+                <artifactId>jaxr-api-osgi</artifactId>
+                <version>${jaxr-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.woodstox</groupId>
+                <artifactId>stax2-api</artifactId>
+                <version>${stax2-api.version}</version>
+            </dependency>            
             <dependency>
                 <groupId>javax.jbi</groupId>
                 <artifactId>jbi</artifactId>
@@ -519,6 +531,11 @@
             <dependency>
                 <groupId>org.glassfish.tyrus</groupId>
                 <artifactId>tyrus-container-grizzly</artifactId>
+                <version>${tyrus.version}</version> 
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.tyrus</groupId>
+                <artifactId>tyrus-websocket-core</artifactId>
                 <version>${tyrus.version}</version> 
             </dependency>
             <dependency>

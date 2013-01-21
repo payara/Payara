@@ -63,29 +63,8 @@
                 <targetPath>${project.build.outputDirectory}</targetPath>
             </resource>
         </resources>
-        <plugins>
-            <plugin>
-                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                <artifactId>maven-antrun-extended-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <configuration>
-                            <tasks>
-                                <jar file="target/nucleus-dtds.jar">
-                                    <fileset dir="src/main/resources" excludes="**/.ade_path/**" />
-                                </jar>
-                                <attachArtifact file="target/nucleus-dtds.jar" type="jar" classifier="resources" />
-                            </tasks>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
     </build>
+    
     <developers>
         <developer>
             <id>hzhang_jn</id>

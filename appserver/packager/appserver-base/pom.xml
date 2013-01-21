@@ -54,6 +54,10 @@
     <description>This pom describes how to assemble the Appserver Base Bundle</description>
     <packaging>distribution-fragment</packaging>
 
+    <properties>
+        <temp.dir>${project.build.directory}/${stage.dir.name}</temp.dir>        
+    </properties>
+
     <build>
         <resources>
             <resource>

@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -47,57 +47,12 @@
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-gui-l10n</artifactId>
     <name>Glassfish Admin GUI Localization Package</name>
-    <packaging>distribution-base-zip</packaging>
+    <packaging>distribution-fragment</packaging>
  
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                <artifactId>maven-antrun-extended-plugin</artifactId>
-                <configuration>
-                    <tasks>
-                        <if test="${do.compression}">
-			    <property name="compression" value="true" />
-			</if>
-                        <ant dir="." antfile="build.xml" target="create.package"/>
-                    </tasks>
-                </configuration>               
-             </plugin>
-             <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/artifacts</outputDirectory>
-                            <useSubDirectoryPerType>true</useSubDirectoryPerType>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>                            
-                            <includeScope>compile</includeScope>
-                            <includeScope>runtime</includeScope>
-                            <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
-                            <stripVersion>true</stripVersion>
-                        </configuration>
-                   </execution>                  
-               </executions>
-           </plugin>
-        </plugins>
-    </build>
-
-
-
     <dependencies>
-        <!--
-          modules to be included in this bundle
-	  --> 
         <dependency>
             <groupId>org.glassfish.main.admingui</groupId>
             <artifactId>console-updatecenter-plugin-l10n</artifactId>
@@ -123,41 +78,6 @@
             <artifactId>console-cluster-plugin-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
-   
     </dependencies>
-
-    <profiles>
-        <profile>
-            <!--
-                Activate this profile with "mvn -Drepo.url=<ips-repository> -Dpython=<python> -P ips"
-             -->
-            <id>ips</id>
-	    <activation>
-	       <activeByDefault>false</activeByDefault> 
-	    </activation>
-	    <build>
-            <plugins>
-                <plugin>
-                    <groupId>org.jvnet.updatecenter2</groupId>
-                    <artifactId>maven-makepkgs-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>package</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <remoteRepository>${repo.url}</remoteRepository>
-                        <python>${python}</python>
-                        <proto>src/main/resources/pkg_proto.py</proto>
-                        <baseDirectory>target/stage/${install.dir.name}/</baseDirectory>
-                     </configuration>
-                </plugin>
-            </plugins>
-	    </build>
-        </profile>
-   </profiles>        
-
 </project>
 

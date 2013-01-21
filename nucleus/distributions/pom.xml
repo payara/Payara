@@ -52,6 +52,10 @@
         <artifactId>glassfish-nucleus-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
     </parent>
+    <packaging>pom</packaging>
+    <groupId>org.glassfish.main.distributions</groupId>
+    <artifactId>nucleus-distributions</artifactId>
+    <name>Nucleus distributions</name>
 
     <developers>
         <developer>
@@ -63,35 +67,103 @@
                 <role>developer</role>
             </roles>
         </developer>
+        <developer>
+            <id>romain_grecourt</id>
+            <name>Romain Grecourt</name>
+            <organization>Oracle, Inc</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
     </developers>
 
-    <packaging>pom</packaging>
-    <groupId>org.glassfish.main.distributions</groupId>
-    <artifactId>nucleus-distributions</artifactId>
-    <name>Nucleus distributions</name>
+    <properties>
+        <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
+        <glassfish.install.dir.name>glassfish3</glassfish.install.dir.name>
+        <stage.dir.name>stage</stage.dir.name>
+        <stage.dir>${project.build.directory}/${stage.dir.name}</stage.dir>
+        <temp.dir>${project.build.directory}/dependency</temp.dir>
+        <include.group.ids>org.glassfish.main.packager</include.group.ids>
+        <create-domain.args>--user admin create-domain --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1</create-domain.args>
+    </properties>
 
     <modules>
 	<module>atomic</module>
         <module>nucleus</module>
     </modules>
 
-     <build>
+    <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
+                <artifactId>maven-dependency-plugin</artifactId>
                 <configuration>
-                    <skip>true</skip>
+                    <outputDirectory>${temp.dir}</outputDirectory>
+                    <useSubDirectoryPerType>false</useSubDirectoryPerType>
+                    <overWriteReleases>false</overWriteReleases>
+                    <overWriteSnapshots>true</overWriteSnapshots>
+                    <includeScope>compile</includeScope>
+                    <includeScope>runtime</includeScope>
+                    <includeTypes>zip</includeTypes>
+                    <includeGroupIds>${include.group.ids}</includeGroupIds>
+                    <stripVersion>true</stripVersion>
+                    <silent>true</silent>
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/${project.artifactId}.xml</descriptor>
+                    </descriptors>
+                    <finalName>${stage.dir.name}</finalName>
+                    <attach>false</attach>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <useProjectArtifact>false</useProjectArtifact>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>glassfishbuild-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <!-- zip configuration -->
+                    <duplicate>preserve</duplicate>
+                    <filesets>
+                        <fileset>
+                            <dir>${stage.dir}</dir>
+                            <fileMode>755</fileMode>
+                            <includes>**/bin/*</includes>
+                            <includes>**/bin/*.bat</includes>
+                            <includes>**/lib/nadmin</includes>
+                        </fileset>
+                        <fileset>
+                            <dir>${stage.dir}</dir>
+                        </fileset>
+                    </filesets>
+                    <!-- exec configuration -->
+                    <executable>${stage.dir}/${nucleus.install.dir.name}/bin/asadmin</executable>
+                    <commandlineArgs>${create-domain.args}</commandlineArgs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <!-- automatically invokes clean during initialize phase -->
                 <executions>
                     <execution>
-                        <id>auto-clean</id>
+                        <!-- make sure domain is created each time -->
+                        <id>clean domain</id>
                         <phase>initialize</phase>
-                        <goals><goal>clean</goal></goals>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <configuration>
+                            <directory>${project.build.directory}</directory>
+                            <includes>
+                                <include>${stage.dir.name}/domains/**</include>
+                            </includes>                            
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

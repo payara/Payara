@@ -50,97 +50,26 @@
     </parent>
     <artifactId>glassfish-nucleus</artifactId>
     <name>Glassfish Nucleus Package</name>
-    <packaging>distribution-base-zip</packaging>
+    <packaging>distribution-fragment</packaging>
     <description>This pom describes how to assemble the GlassFish Nucleus package</description>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                             <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                     <groupId>org.glassfish.main.admin</groupId>
-                                     <artifactId>appserver-domain</artifactId>
-                                     <version>${project.version}</version>
-                                     <overWrite>true</overWrite>
-                                     <outputDirectory>${project.build.directory}/stage/${install.dir.name}/nucleus/common/templates/gf</outputDirectory>
-                                     <destFileName>appserver-domain.jar</destFileName>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                <artifactId>maven-antrun-extended-plugin</artifactId>
-                <configuration>
-                    <tasks>
-                        <if test="${do.compression}">
-			    <property name="compression" value="true" />
-			</if>
-                        <ant dir="." antfile="build.xml" target="create.package"/>
-                    </tasks>
-                </configuration>               
-             </plugin>
-        </plugins>
-    </build>
-
-
+    <properties>
+        <temp.dir>${project.build.directory}/dependency</temp.dir>
+        <temp.modules.dir>${temp.dir}/glassfish/common/templates/gf</temp.modules.dir>     
+    </properties>
+    
     <dependencies>
-        <!--
-          modules to be included in this bundle - reusing nucleus staged
-          content as-is
-        -->       
         <dependency>
            <groupId>org.glassfish.main.packager</groupId>
            <artifactId>nucleus</artifactId>
            <version>${project.version}</version>
            <type>zip</type>
        </dependency>
+        <dependency>
+           <groupId>org.glassfish.main.admin</groupId>
+           <artifactId>appserver-domain</artifactId>
+           <version>${project.version}</version>
+       </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <!--
-                Activate this profile with "mvn -Drepo.url=<ips-repository> -Dpython=<python> -P ips"
-             -->
-            <id>ips</id>
-	    <activation>
-	       <activeByDefault>false</activeByDefault>  
-	    </activation>
-	    <build>
-            <plugins>
-                <plugin>
-                    <groupId>org.jvnet.updatecenter2</groupId>
-                    <artifactId>maven-makepkgs-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>package</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <remoteRepository>${repo.url}</remoteRepository>
-                        <python>${python}</python>
-                        <proto>src/main/resources/pkg_proto.py</proto>
-                        <baseDirectory>target/stage/${install.dir.name}/</baseDirectory>
-                     </configuration>
-                </plugin>
-            </plugins>
-	    </build>
-        </profile>
-   </profiles>        
-
 </project>
 

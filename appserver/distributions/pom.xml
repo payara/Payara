@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,10 @@
         <artifactId>glassfish-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
     </parent>
+    <packaging>pom</packaging>
+    <groupId>org.glassfish.main.distributions</groupId>
+    <artifactId>distributions</artifactId>
+    <name>Glassfish distributions</name>
 
     <developers>
         <developer>
@@ -63,48 +67,138 @@
                 <role>developer</role>
             </roles>
         </developer>
+        <developer>
+            <id>romain_grecourt</id>
+            <name>Romain Grecourt</name>
+            <organization>Oracle, Inc</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>        
     </developers>
-
-    <packaging>pom</packaging>
-    <groupId>org.glassfish.main.distributions</groupId>
-    <artifactId>distributions</artifactId>
-    <name>Glassfish distributions</name>
+    
+    <properties>
+        <glassfish.install.dir.name>glassfish3</glassfish.install.dir.name>
+        <install.dir.name>${glassfish.install.dir.name}</install.dir.name>
+        <stage.dir.name>stage</stage.dir.name>
+        <stage.dir>${project.build.directory}/${stage.dir.name}</stage.dir>
+        <temp.dir>${project.build.directory}/dependency</temp.dir>
+        <include.group.ids>org.glassfish.main.packager,org.glassfish.main.registration</include.group.ids>
+        <template.jar>${stage.dir}/${install.dir.name}/glassfish/common/templates/gf/appserver-domain.jar</template.jar>
+        <create-domain.args>--user admin create-domain --template=${template.jar} --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1</create-domain.args>
+    </properties>    
 
     <modules>
-	<module>minnow</module>
-	<module>web</module>
-	<module>glassfish</module>
-<!-- disable appclient distribution build since we're not using it yet -->
-<!-- 	<module>appclient</module> -->
+        <module>minnow</module>
+        <module>web</module>
+        <module>glassfish</module>
+        <!-- disable appclient distribution build since we're not using it yet -->
+        <!-- 	<module>appclient</module> -->
     </modules>
 
-     <build>
+    <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
+                <artifactId>maven-dependency-plugin</artifactId>
                 <configuration>
-                    <skip>true</skip>
+                    <outputDirectory>${temp.dir}</outputDirectory>
+                    <useSubDirectoryPerType>false</useSubDirectoryPerType>
+                    <overWriteReleases>false</overWriteReleases>
+                    <overWriteSnapshots>true</overWriteSnapshots>
+                    <includeScope>compile</includeScope>
+                    <includeScope>runtime</includeScope>
+                    <includeTypes>zip</includeTypes>
+                    <includeGroupIds>${include.group.ids}</includeGroupIds>
+                    <stripVersion>true</stripVersion>
+                    <silent>true</silent>
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/${project.artifactId}.xml</descriptor>
+                    </descriptors>
+                    <finalName>${stage.dir.name}</finalName>
+                    <attach>false</attach>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <useProjectArtifact>false</useProjectArtifact>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>glassfishbuild-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <!-- zip configuration -->
+                    <duplicate>preserve</duplicate>
+                    <filesets>
+                        <fileset>
+                            <dir>${stage.dir}</dir>
+                            <fileMode>755</fileMode>
+                            <includes>**/bin/*</includes>
+                            <includes>**/bin/*.bat</includes>
+                            <includes>**/lib/nadmin</includes>
+                        </fileset>
+                        <fileset>
+                            <dir>${stage.dir}</dir>
+                        </fileset>
+                    </filesets>
+                    <!-- exec configuration -->
+                    <executable>${stage.dir}/${install.dir.name}/bin/asadmin</executable>
+                    <commandlineArgs>${create-domain.args}</commandlineArgs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <!-- automatically invokes clean during initialize phase -->
                 <executions>
                     <execution>
-                        <id>auto-clean</id>
+                        <!-- make sure domain is created each time -->
+                        <id>clean domain</id>
                         <phase>initialize</phase>
-                        <goals><goal>clean</goal></goals>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <configuration>
+                            <directory>${project.build.directory}</directory>
+                            <includes>
+                                <include>${stage.dir.name}/**/domains/**</include>
+                            </includes>                            
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
-        </plugins> 
+        </plugins>
     </build>
-    
     <profiles>
         <profile>
             <!-- make repo-setup happen before in the reactor -->
-            <id>release-phase2</id>
+            <id>ips</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+                        <artifactId>maven-antrun-extended-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>create-ips-distribution</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <tasks>
+                                <ant dir="." antfile="../distributions.xml" target="create-${project.artifactId}-distributions"/>
+                            </tasks>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>            
             <dependencies>
                 <dependency>
                     <groupId>org.glassfish.main</groupId>
@@ -116,6 +210,5 @@
                 </dependency>
             </dependencies>
         </profile>
-    </profiles>
+    </profiles>  
 </project>
-

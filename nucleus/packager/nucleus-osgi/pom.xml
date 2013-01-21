@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -47,58 +47,17 @@
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>nucleus-osgi</artifactId>
     <name>Glassfish OSGi Support Package</name>
-    <packaging>distribution-base-zip</packaging>
+    <packaging>distribution-fragment</packaging>
     <description>This pom describes how to assemble the GlassFish OSGi support package</description>
 
     <properties>
-        <temp.stagedir>${project.build.directory}/artifacts/jars/</temp.stagedir>
+        <temp.dir>${project.build.directory}/dependency</temp.dir>
     </properties>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                <artifactId>maven-antrun-extended-plugin</artifactId>
-                <configuration>
-                    <tasks>
-                        <if test="${do.compression}">
-			    <property name="compression" value="true" />
-			</if>
-                        <ant dir="." antfile="build.xml" target="create.package"/>
-                    </tasks>
-                </configuration>               
-             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                           <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <stripVersion>true</stripVersion>
-                            <excludeTransitive>true</excludeTransitive>
-                            <outputDirectory>${temp.stagedir}</outputDirectory>
-                            <includeScope>compile</includeScope>
-                            <includeScope>runtime</includeScope>
-                            <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
-                            <includeGroupIds>
-                                org.apache.felix,
-                                org.glassfish.main.osgi
-                            </includeGroupIds>
-                         </configuration>
-                    </execution>
-                </executions>
-            </plugin>         
-        </plugins>
-    </build>
+        
     <dependencies>
-
         <dependency>
            <groupId>org.apache.felix</groupId>
            <artifactId>org.apache.felix.gogo.runtime</artifactId>
@@ -143,8 +102,6 @@
             <artifactId>osgi-container</artifactId>
             <version>${project.version}</version>
         </dependency>
-
     </dependencies>
-
 </project>
 
