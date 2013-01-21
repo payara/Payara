@@ -53,8 +53,6 @@
     <!beforeCreate
         setSessionAttribute(key="loggingTabs" value="loggerGeneral");
         getRequestValue(key="configName" value="#{pageSession.configName}" );
-        setPageSessionAttribute(key="attrsInUI",
-            value="com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging,com.sun.enterprise.server.logging.GFFileHandler.logtoConsole,com.sun.enterprise.server.logging.GFFileHandler.file,handlers,com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes,com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes,com.sun.enterprise.server.logging.GFFileHandler.flushFrequency,com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles,com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange,com.sun.enterprise.server.logging.GFFileHandler.multiLineMode,com.sun.enterprise.server.logging.GFFileHandler.formatter,java.util.logging.ConsoleHandler.formatter");
         createMap(result="#{requestScope.attrsMap}");
         mapPut(map="#{requestScope.attrsMap}" key="target" value="#{pageSession.configName}");
         gf.restRequest(
@@ -63,14 +61,13 @@
                 method="GET"
                 result="#{pageSession.valueMap}");
         setPageSessionAttribute(key="logAttributes", value="#{pageSession.valueMap.data.extraProperties.logAttributes}");
+        setPageSessionAttribute(key="defaultLoggingProperties", value="#{pageSession.valueMap.data.extraProperties.defaultLoggingProperties}");
 
         //TODO: remove this when GLASSFISH-19494 is fixed
         if ("#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.multiLineMode']}=#{null}") {
             mapPut(map="#{pageSession.logAttributes}", key="com.sun.enterprise.server.logging.GFFileHandler.multiLineMode" value="false" );
         }
         gf.isConfigName(configName="#{pageSession.configName}" );
-        //println("---------------------------- logAttributes = #{pageSession.logAttributes}");
-
     />
 </event>
 
@@ -91,6 +88,20 @@
             </sun:button>
         </sun:panelGroup>
     </facet>
+        <sun:button id="loadDefaultsButton" style="margin-left: 8pt"  primary="#{false}" text="$resource{i18n.button.LoadDefaults}"
+            onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command
+                    gf.isConfigName(configName="#{pageSession.configName}" );
+                    gf.getMapKeys(Map="#{pageSession.logAttributes}" Keys="#{requestScope.attrKeys}");
+                    foreach(var="attrName" list="#{requestScope.attrKeys}") {
+                        mapGet(Map="#{pageSession.defaultLoggingProperties}" Key="#{attrName}"  Value="#{requestScope.temp}");
+                        if("!(#{requestScope.temp}=#{null})"){
+                            mapPut(map="#{pageSession.logAttributes}", key="#{attrName}", value="#{requestScope.temp}"); 
+                        }
+                    }
+                  />
+        </sun:button>
+      
 </sun:title>
 
 <sun:propertySheet id="general">
