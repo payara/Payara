@@ -277,12 +277,12 @@
                 <groupId>org.jvnet.updatecenter2</groupId>
                 <artifactId>maven-makepkgs-plugin</artifactId>
                 <executions>
-                    <execution>
-                        <id>makepkg</id>
-                        <goals>
-                            <goal>none</goal>
-                        </goals>
-                    </execution>
+                    <id>makepkg</id>
+                    <phase>none</phase>
+                    <goals>
+                        <goal>package</goal>
+                    </goals>
+                </execution>
                 </executions>
                 <inherited>false</inherited>
             </plugin>
