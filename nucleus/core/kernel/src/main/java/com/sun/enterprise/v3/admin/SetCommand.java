@@ -340,6 +340,13 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                 attributes.put("value", value);
                 attributes.put("name", attrName);
                 try {
+                    if ( ! (parentNode instanceof ConfigBean)) {
+                        final ClassCastException cce = new ClassCastException(parentNode.getClass().getName());
+                        fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", 
+                                "Could not change the attributes: {0}",
+                                cce.getMessage(), cce));
+                        return false;
+                    }
                     ConfigSupport.createAndSet((ConfigBean) parentNode, Property.class, attributes);
                     success(context, targetName, value);
                     runLegacyChecks(context);
