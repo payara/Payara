@@ -200,7 +200,7 @@
             <dependency>
                 <groupId>javax.xml.ws</groupId>
                 <artifactId>jaxws-api</artifactId>   
-                <version>${jaxws.version}</version>
+                <version>${jaxws-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.faces</groupId>
