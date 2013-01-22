@@ -66,19 +66,16 @@
         <dependency>
             <groupId>javax.el</groupId>
             <artifactId>javax.el-api</artifactId>
-            <version>${javax.el-api.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>javax.servlet.jsp.jstl</groupId>
-            <artifactId>jstl-api</artifactId>
-            <version>1.2-rev-1</version>
+            <artifactId>javax.servlet.jsp.jstl-api</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>javax.faces</groupId>
-            <artifactId>jsf-api</artifactId>
-            <version>2.1</version>
+            <artifactId>javax.faces-api</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -112,8 +109,8 @@
 	    <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>javax.transaction</groupId>
-            <artifactId>javax.transaction-api</artifactId>
+            <groupId>javax.transaction.cdi</groupId>
+            <artifactId>javax.transaction.cdi-api</artifactId>
 	    <optional>true</optional>
         </dependency>
         <!-- 
@@ -129,25 +126,21 @@
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
-            <version>1.1.0.Beta1</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>javax.interceptor</groupId>
             <artifactId>javax.interceptor-api</artifactId>
-            <version>3.1</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>javax.enterprise</groupId>
             <artifactId>cdi-api</artifactId>
-            <version>1.1-PRD</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
-            <version>1</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

@@ -76,6 +76,11 @@
         <javax.transaction-api.version>1.2-b01</javax.transaction-api.version>
         <javax.transaction.cdi-api.version>1.2-b01</javax.transaction.cdi-api.version>
 	<javax.annotation-api.version>1.2-b01</javax.annotation-api.version>
+        <jaxws-api.version>2.2.8</jaxws-api.version>
+        <javax.faces-api>2.1</javax.faces-api>
+        <cdi-api.version>1.1-PRD</cdi-api.version>
+        <validation-api.version>1.1.0.Beta1</validation-api.version>
+        <javax.inject.version>1</javax.inject.version>
         
         <product.name>GlassFish Server Open Source Edition</product.name>
         <brief_product_name>GlassFish Server</brief_product_name>
@@ -191,6 +196,36 @@
                 <groupId>javax.xml.rpc</groupId>
                 <artifactId>javax.xml.rpc-api</artifactId>
                 <version>${javax.xml.rpc-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.xml.ws</groupId>
+                <artifactId>jaxws-api</artifactId>   
+                <version>${jaxws.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.faces</groupId>
+                <artifactId>javax.faces-api</artifactId>
+                <version>${javax.faces-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.el</groupId>
+                <artifactId>javax.el-api</artifactId>
+                <version>${javax.el-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.enterprise</groupId>
+                <artifactId>cdi-api</artifactId>
+                <version>${cdi-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.validation</groupId>
+                <artifactId>validation-api</artifactId>
+                <version>${validation-api}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.inject</groupId>
+                <artifactId>javax.inject</artifactId>
+                <version>${javax.inject.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.jws</groupId>
