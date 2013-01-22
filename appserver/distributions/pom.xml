@@ -140,7 +140,7 @@
                             <fileMode>755</fileMode>
                             <includes>**/bin/*</includes>
                             <includes>**/bin/*.bat</includes>
-                            <includes>**/lib/nadmin</includes>
+                            <includes>**/lib/nadmin*</includes>
                         </fileset>
                         <fileset>
                             <dir>${stage.dir}</dir>

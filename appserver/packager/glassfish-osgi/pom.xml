@@ -63,8 +63,8 @@
            <groupId>org.glassfish.main.packager</groupId>
            <artifactId>nucleus-osgi</artifactId>
            <version>${project.version}</version>
-           <scope>provided</scope>
            <type>zip</type>
+           <optional>true</optional>
        </dependency>        
          <!-- Shared OSGi support for Java EE -->
         <dependency>

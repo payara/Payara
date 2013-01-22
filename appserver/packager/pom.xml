@@ -223,7 +223,7 @@
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
                             <excludeTransitive>true</excludeTransitive>
-                            <silent>true</silent>
+                            <!--<silent>true</silent>-->
                         </configuration>
                     </execution>
                 </executions>

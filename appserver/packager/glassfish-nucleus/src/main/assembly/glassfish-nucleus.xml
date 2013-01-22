@@ -56,7 +56,16 @@
             <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
             <excludes>
                 <exclude>bin/nadmin*</exclude>
+                <exclude>lib/nadmin*</exclude>
             </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>${temp.dir}/nucleus</directory>
+            <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
+            <fileMode>755</fileMode>
+            <includes>
+                <include>lib/nadmin*</include>
+            </includes>
         </fileSet>
         <fileSet>
             <directory>${temp.dir}</directory>

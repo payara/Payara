@@ -57,6 +57,7 @@
                 <exclude>domains/domain1/**</exclude>
                 <exclude>bin/*</exclude>
                 <exclude>glassfish/bin/*</exclude>
+                <exclude>glassfish/lib/nadmin*</exclude>
             </excludes>
             <outputDirectory>${install.dir.name}</outputDirectory>
         </fileSet>
@@ -73,6 +74,7 @@
             <includes>
                 <include>bin/*</include>
                 <include>glassfish/bin/*</include>
+                <include>glassfish/lib/nadmin*</include>
             </includes>
             <outputDirectory>${install.dir.name}</outputDirectory>
         </fileSet>
