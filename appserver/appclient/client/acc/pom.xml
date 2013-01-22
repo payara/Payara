@@ -379,9 +379,8 @@
 
      <!-- endorsed: javax.annotation.jar -->
      <dependency>
-         <groupId>org.glassfish.main</groupId>
-         <artifactId>javax.annotation</artifactId>
-         <version>${project.version}</version>
+         <groupId>javax.annotation</groupId>
+         <artifactId>javax.annotation-api</artifactId>
      </dependency>
 
      <!-- endorsed: jaxb-api-osgi.jar -->

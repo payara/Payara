@@ -75,13 +75,4 @@
         <system>IssueTracker</system>
         <url>http://java.net/jira/browse/GLASSFISH</url>
     </issueManagement>
-    
-    <dependencies>
-        <dependency>
-            <groupId>javax.json</groupId>
-            <artifactId>javax.json-api</artifactId>
-            <version>${json.version}</version>
-            <scope>compile</scope>
-        </dependency>
-    </dependencies>
 </project>

@@ -55,7 +55,7 @@
             <directory>${temp.dir}/glassfish</directory>
             <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
             <excludes>
-                <exclude>modules/javax.annotation.jar</exclude>
+                <exclude>modules/javax.annotation-api.jar</exclude>
                 <exclude>modules/cli-optional.jar</exclude>
             </excludes>
         </fileSet>
@@ -70,7 +70,7 @@
             <directory>${temp.dir}/glassfish/modules</directory>
             <outputDirectory>${install.dir.name}/glassfish/modules/endorsed</outputDirectory>
             <includes>
-                <include>javax.annotation.jar</include>
+                <include>javax.annotation-api.jar</include>
             </includes>
         </fileSet>
         <fileSet>

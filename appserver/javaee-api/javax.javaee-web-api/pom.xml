@@ -94,16 +94,11 @@
         <dependency>
             <groupId>javax.json</groupId>
             <artifactId>javax.json-api</artifactId>
-            <!--
-                - json-api has a hard dependency on org.glassfish.json
-                - we can't make it optional, otherwise javaee-api which depends on javee-web-api won't compile
-                <optional>true</optional>
-            -->
+	    <optional>true</optional>
         </dependency>        
         <dependency>
             <groupId>javax.annotation</groupId>
-            <artifactId>jsr250-api</artifactId>
-            <version>1.0</version>
+            <artifactId>javax.annotation-api</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -137,14 +132,12 @@
             <version>1.1.0.Beta1</version>
             <optional>true</optional>
         </dependency>
-        <!--
-            - javax.interceptor-api is currently bundled as part of javax.ejb
         <dependency>
             <groupId>javax.interceptor</groupId>
             <artifactId>javax.interceptor-api</artifactId>
-            <version>1.0</version>
+            <version>3.1</version>
             <optional>true</optional>
-        </dependency>-->
+        </dependency>
         <dependency>
             <groupId>javax.enterprise</groupId>
             <artifactId>cdi-api</artifactId>
