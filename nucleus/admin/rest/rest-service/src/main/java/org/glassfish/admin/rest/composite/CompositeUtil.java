@@ -900,23 +900,11 @@ public class CompositeUtil {
         if (beanValidator != null) {
             return;
         }
-        ClassLoader cl = System.getSecurityManager() == null
-                ? Thread.currentThread().getContextClassLoader()
-                : AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run() {
-                return Thread.currentThread().getContextClassLoader();
-            }
-        });
-        try {
-            Thread.currentThread().setContextClassLoader(null);
-            ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
-            ValidatorContext validatorContext = validatorFactory.usingContext();
-            validatorContext.messageInterpolator(new MessageInterpolatorImpl());
-            beanValidator = validatorContext.getValidator();
-        } finally {
-            Thread.currentThread().setContextClassLoader(cl);
-        }
+
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        ValidatorContext validatorContext = validatorFactory.usingContext();
+        validatorContext.messageInterpolator(new MessageInterpolatorImpl());
+        beanValidator = validatorContext.getValidator();
     }
 
 }
