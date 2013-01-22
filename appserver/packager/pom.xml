@@ -272,7 +272,20 @@
                     </execution>
                 </executions>
                 <inherited>false</inherited>
-            </plugin>            
+            </plugin>
+            <plugin>
+                <groupId>org.jvnet.updatecenter2</groupId>
+                <artifactId>maven-makepkgs-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>makepkg</id>
+                        <goals>
+                            <goal>none</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <inherited>false</inherited>
+            </plugin>
         </plugins>
     </build>
 
@@ -328,6 +341,7 @@
                         <artifactId>maven-makepkgs-plugin</artifactId>
                         <executions>
                             <execution>
+                                <id>makepkg</id>
                                 <goals>
                                     <goal>package</goal>
                                 </goals>
