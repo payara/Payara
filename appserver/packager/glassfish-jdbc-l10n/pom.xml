@@ -63,6 +63,16 @@
             <artifactId>jdbc-admin-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.jdbc</groupId>
+            <artifactId>jdbc-config-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.jdbc</groupId>
+            <artifactId>jdbc-runtime-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
 
