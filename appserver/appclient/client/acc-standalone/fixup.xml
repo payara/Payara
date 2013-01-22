@@ -77,7 +77,7 @@
             <!-- replace incorrect entries ../modules/x.jar for JARs that will actually reside in the
                  endorsed subdirectory with ../modules/endorsed/x.jar                -->
 
-            <replacefilter token="../modules/javax.annotation.jar" value="../modules/endorsed/javax.annotation.jar"/>
+            <replacefilter token="../modules/javax.annotation-api.jar" value="../modules/endorsed/javax.annotation-api.jar"/>
             <replacefilter token="../modules/jaxb-api-osgi.jar" value="../modules/endorsed/jaxb-api-osgi.jar"/>
             <replacefilter token="../modules/webservices-api-osgi.jar" value="../modules/endorsed/webservices-api-osgi.jar"/>
 
