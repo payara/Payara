@@ -533,11 +533,19 @@ public final class LogUtils {
     public static final String AUTHENTICATION_FAILURE = LOGMSG_PREFIX + "-00115";
 
     @LogMessageInfo(
-            message = "missing <servlet-class> element definition for {0}",
-            comment = "{0} - servlet name",
+            message = "missing implementation class for {0}",
+            comment = "{0} - endpoint name",
             level = "SEVERE",
-            cause = "No <servlet-class> defined in web.xml",
-            action = "add <servlet-class> definition to web.xml")
-    public static final String MISSING_SERVLET_CLASS = LOGMSG_PREFIX + "-00116";
+            cause = "No class defined in deployment descriptor",
+            action = "add implementation class definition to deployment descriptor")
+    public static final String MISSING_IMPLEMENTATION_CLASS = LOGMSG_PREFIX + "-00116";
+
+    @LogMessageInfo(
+            message = "Web service endpoint {0} component link {1} is not valid",
+            comment = "{0} - endpoint name, {1} - link name",
+            level = "WARNING",
+            cause = "Component link in webservices.xml is invalid",
+            action = "check port-component-name matches the name of service implementation bean and check component link in webservices.xml")
+    public static final String UNRESOLVED_LINK = LOGMSG_PREFIX + "-00117";
 
 }

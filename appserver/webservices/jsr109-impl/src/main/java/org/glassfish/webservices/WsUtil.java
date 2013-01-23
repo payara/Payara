@@ -733,18 +733,29 @@ public class WsUtil {
         }
         //Verify that all the endpoints are of the same type 
         for (WebServiceEndpoint endpoint : ws.getEndpoints()) {
-            String implClassName;
-            if (endpoint.implementedByEjbComponent()) {
-                implClassName = endpoint.getEjbComponentImpl().getEjbClassName();
-            } else {
-                implClassName = endpoint.getWebComponentImpl().getWebComponentImplementation();
-                if (implClassName == null || "".equals(implClassName.trim())) {
-                    String msg = MessageFormat.format(
-                        logger.getResourceBundle().getString(LogUtils.MISSING_SERVLET_CLASS),
-                        endpoint.getWebComponentImpl().getCanonicalName());
+            if (endpoint.getLinkName() == null) {
+                String msg = MessageFormat.format(
+                        logger.getResourceBundle().getString(LogUtils.UNRESOLVED_LINK),
+                        new Object[] {endpoint.getEndpointName(), endpoint.getLinkName()});
                     logger.log(Level.SEVERE, msg);
                     throw new RuntimeException(msg);
+            }
+            String implClassName = null;
+            if (endpoint.implementedByEjbComponent()) {
+                if (endpoint.getEjbComponentImpl() != null) {
+                    implClassName = endpoint.getEjbComponentImpl().getEjbClassName();
                 }
+            } else {
+                if (endpoint.getWebComponentImpl() != null) {
+                    implClassName = endpoint.getWebComponentImpl().getWebComponentImplementation();
+                }
+            }
+            if (implClassName == null || "".equals(implClassName.trim())) {
+                String msg = MessageFormat.format(
+                        logger.getResourceBundle().getString(LogUtils.MISSING_IMPLEMENTATION_CLASS),
+                        endpoint.getEndpointName());
+                logger.log(Level.SEVERE, msg);
+                throw new RuntimeException(msg);
             }
             Class implClass;
             try {
