@@ -271,13 +271,15 @@ public class ApplicationHandlers {
             moduleName = "-----------";
         }
         if( resources != null )
-        for (String resource : resources.keySet()) {
+        for (Map.Entry<String, String> e : resources.entrySet())  {
+            String resource = e.getKey();
+            String value = e.getValue();
             Map oneRow = new HashMap();
             oneRow.put("appName", appName);
             oneRow.put("moduleName", moduleName);
             oneRow.put("resName", resource);
-            oneRow.put("resType", AppUtil.getAppScopedResType(resources.get(resource), "display"));
-            String link = AppUtil.getAppScopedResType(resources.get(resource), "edit") + resource + "&appName=" + appName;
+            oneRow.put("resType", AppUtil.getAppScopedResType(value, "display"));
+            String link = AppUtil.getAppScopedResType(value, "edit") + resource + "&appName=" + appName;
             if (!moduleName.equals("-----------")) {
                 link = link + "&moduleName=" + moduleName;
             }
