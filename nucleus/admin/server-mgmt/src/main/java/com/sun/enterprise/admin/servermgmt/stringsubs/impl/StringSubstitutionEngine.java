@@ -84,7 +84,6 @@ public class StringSubstitutionEngine implements StringSubstitutor {
     //Root of JAXB parsed string-subs configuration
     private StringsubsDefinition _root = null;
     private Map<String, Pair> _changePairsMap = null;
-    private Map<String, String> _lookUpMap = null;
     Map<String, Property> _defaultProperties = null;
     private SubstitutableFactory _substitutableFactory = new SubstituableFactoryImpl();
     private AttributePreprocessor _attrPreprocessor = new AttributePreprocessorImpl();
@@ -103,11 +102,6 @@ public class StringSubstitutionEngine implements StringSubstitutor {
         }
         _configInputStream = inputStream;
         _root =  StringSubstitutionParser.parse(_configInputStream);
-    }
-
-    @Override
-    public void setLookUpMap(Map<String, String> lookUpMap) {
-        _lookUpMap = lookUpMap;
     }
 
     @Override
@@ -263,7 +257,7 @@ public class StringSubstitutionEngine implements StringSubstitutor {
         }
         SubstitutionAlgorithm algorithm = new SubstitutionAlgorithmFactory().getAlgorithm(substitutionMap);
         for (FileEntry fileEntry : fileList) {
-            fileEntry.setName(getLookUpMapValue(_attrPreprocessor.substitutePath(fileEntry.getName())));
+            fileEntry.setName(_attrPreprocessor.substitutePath(fileEntry.getName()));
             List<? extends Substitutable> substituables = _substitutableFactory.getFileEntrySubstituables(fileEntry);
             for (Substitutable substituable : substituables) {
                 algorithm.substitute(substituable);
@@ -276,7 +270,7 @@ public class StringSubstitutionEngine implements StringSubstitutor {
                 continue;
             }
             try {
-                archive.setName(getLookUpMapValue(_attrPreprocessor.substitutePath(archive.getName())));
+                archive.setName(_attrPreprocessor.substitutePath(archive.getName()));
                 List<? extends Substitutable> substituables = _substitutableFactory.getArchiveEntrySubstitutable(archive);
                 if (!isValid(substituables)) {
                     continue;
@@ -320,10 +314,9 @@ public class StringSubstitutionEngine implements StringSubstitutor {
                     continue;
                 }
 
-                if (_attrPreprocessor != null) {
-                    beforeValue = getLookUpMapValue(_attrPreprocessor.substituteBefore(beforeValue));
+                    beforeValue = _attrPreprocessor.substituteBefore(beforeValue);
                     afterValue = _attrPreprocessor.substituteAfter(afterValue);
-                    String processedAfterValue = getLookUpMapValue(afterValue);
+                    String processedAfterValue = afterValue;
                     if (afterValue.equalsIgnoreCase(processedAfterValue) 
                             && _defaultProperties.containsKey(beforeValue)) {
                         // Setting after value to null, so it will be substituted by its default value provided in stringsubs.xml
@@ -331,15 +324,9 @@ public class StringSubstitutionEngine implements StringSubstitutor {
                     } else {
                         afterValue = processedAfterValue;
                     }
-                }
                 _changePairsMap.put(id, new Pair(beforeValue, afterValue));
             }
         }
-    }
-
-    private String getLookUpMapValue(String key) {
-        String value = _lookUpMap.get(key);
-        return value == null ? key : value;
     }
 
     /**

@@ -41,6 +41,7 @@
 package com.sun.enterprise.admin.servermgmt.stringsubs.impl;
 
 import java.util.Map;
+
 import com.sun.enterprise.admin.servermgmt.stringsubs.AttributePreprocessor;
 
 /**
@@ -64,22 +65,30 @@ public class AttributePreprocessorImpl implements AttributePreprocessor
 
     @Override
     public String substituteAfter(String afterValue) {
-        afterValue = afterValue.replace(DELIMITER, "");
-        return afterValue;
+        return substitute(afterValue, DELIMITER, DELIMITER);
     }
 
     @Override
     public String substitutePath(String path) {
-        if (path != null && _lookUpMap != null) {
-            String[] pathTokens = path.split("\\" + DELIMITER);
-            if (pathTokens != null && pathTokens.length > 0) {
-                StringBuffer buffer = new StringBuffer();
-                for (int i = 0; i < pathTokens.length; i++) {
-                    buffer.append(i % 2 == 0 ? pathTokens[i] : _lookUpMap.get(pathTokens[i]));
-                }
-                path = buffer.toString();
-            }
-        }
-        return path;
+        return substitute(path, DELIMITER, DELIMITER);
+    }
+    
+    private String substitute(final String var, final String startDelim, final String endDelim)
+    {
+      if (var == null || startDelim == null || endDelim == null) {
+        return var;
+      }
+
+      int firstIndex = var.indexOf(startDelim);
+      int secondIndex = var.indexOf(endDelim, firstIndex + startDelim.length());
+      if (firstIndex == -1 || secondIndex == -1) {
+        return var;
+      }
+      StringBuffer stringStart = new StringBuffer(var.substring(0, firstIndex));
+      String sub = _lookUpMap.get(var.substring(firstIndex + startDelim.length(), secondIndex));
+      String stringEnd = var.substring(secondIndex + endDelim.length(), var.length());
+      stringStart.append(sub);
+      stringStart.append((stringEnd.indexOf(startDelim) == -1) ? stringEnd : substitute(stringEnd, startDelim, endDelim));
+      return stringStart.toString();
     }
 }

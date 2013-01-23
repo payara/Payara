@@ -287,15 +287,14 @@ public class DomainBuilder {
             domainSecurity.createPasswordAliasKeystore(new File(configDir, DomainConstants.DOMAIN_PASSWORD_FILE), masterPassword);
 
             // Add customized tokens in domain.xml.
-           CustomTokenClient tokenClient = new CustomTokenClient(_domainConfig, configDir);
-           Map<String, String> generatedTokens = tokenClient.getSubstitutableTokens();
+        /*   CustomTokenClient tokenClient = new CustomTokenClient(_domainConfig, configDir);
+           Map<String, String> generatedTokens = tokenClient.getSubstitutableTokens();*/
          
             // Perform string substitution.
             if (_domainTempalte.hasStringsubs()) {
                 StringSubstitutor substitutor = _domainTempalte.getStringSubs();
                 Map<String, String> lookUpMap = SubstitutableTokens.getSubstitutableTokens(_domainConfig);
-                lookUpMap.putAll(generatedTokens);
-                substitutor.setLookUpMap(lookUpMap);
+                //lookUpMap.putAll(generatedTokens);
                 substitutor.setAttributePreprocessor(new AttributePreprocessorImpl(lookUpMap));
                 substitutor.substituteAll();
             }

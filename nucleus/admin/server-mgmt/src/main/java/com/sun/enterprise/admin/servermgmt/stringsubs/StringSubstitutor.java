@@ -42,7 +42,6 @@ package com.sun.enterprise.admin.servermgmt.stringsubs;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.Archive;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.Component;
@@ -60,14 +59,6 @@ import com.sun.enterprise.admin.servermgmt.xml.stringsubs.StringsubsDefinition;
  */
 public interface StringSubstitutor
 {
-
-    /**
-     * Set's the map contains the value for substitutable strings.
-     *
-     * @param lookUpMap Map contains the value for the substitutable strings.
-     */
-    void setLookUpMap(Map<String, String> lookUpMap);
-
     /**
      * Set's the {@link AttributePreprocessor} to customize the substitution
      * process. Attribute preprocessor takes care to retrieve the value of

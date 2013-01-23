@@ -56,6 +56,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.sun.enterprise.admin.servermgmt.stringsubs.impl.AttributePreprocessorImpl;
 import com.sun.enterprise.admin.servermgmt.stringsubs.impl.SubstituableFactoryImpl;
 import com.sun.enterprise.admin.servermgmt.stringsubs.impl.SubstitutionFileUtil;
 import com.sun.enterprise.admin.servermgmt.stringsubs.impl.TestStringSubstitutionEngine;
@@ -82,6 +83,7 @@ public class TestStringSubstitutionFactory {
         _substitutionMap.put("JAVA", "REPLACED_JAVA");
         _substitutionMap.put("JAVA_HOME", "REPLACED_JAVA_HOME");
         _substitutionMap.put("MW_HOME", "REPLACED_MW_HOME");
+        _substitutionMap.put("TEST_FILE_DIR_PATH", _testFileDirPath);
     }
 
     /**
@@ -126,8 +128,7 @@ public class TestStringSubstitutionFactory {
                 getResourceAsStream(_stringSubsPath);
         try {
             StringSubstitutor substitutor = StringSubstitutionFactory.createStringSubstitutor(invalidStream);
-            substitutor.setLookUpMap(_substitutionMap);
-            substitutor.setAttributePreprocessor(new CustomAttributePreprocessor());
+            substitutor.setAttributePreprocessor(new AttributePreprocessorImpl(_substitutionMap));
             backUpTestFile();
             substitutor.substituteAll();
             for (Group group : substitutor.getStringSubsDefinition().getGroup()) {
@@ -185,28 +186,6 @@ public class TestStringSubstitutionFactory {
             }
         }
         return true;
-    }
-
-    /**
-     * Custom implementation of {@link AttributePreprocessor}.
-     */
-    private class CustomAttributePreprocessor implements AttributePreprocessor {
-
-        @Override
-        public String substituteBefore(String beforeValue) {
-            return beforeValue;
-        }
-
-        @Override
-        public String substituteAfter(String afterValue) {
-            return afterValue.replaceAll("\\W", "");
-        }
-
-        @Override
-        public String substitutePath(String path) {
-            path = path.replace("$TEST_FILE_DIR_PATH$", _testFileDirPath);
-            return path;
-        }
     }
 
     /**

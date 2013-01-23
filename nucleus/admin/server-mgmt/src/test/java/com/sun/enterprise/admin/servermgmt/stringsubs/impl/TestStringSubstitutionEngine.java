@@ -92,8 +92,7 @@ public class TestStringSubstitutionEngine {
         _substitutionRestoreMap.put("REPLACED_ORACLE_HOME", "@ORACLE_HOME@");
         _substitutionRestoreMap.put("REPLACED_MW_HOME", "@MW_HOME@");
         _engine = new StringSubstitutionEngine(configStream);
-        _engine.setLookUpMap(lookUpMap);
-        _engine.setAttributePreprocessor(new CustomAttributePreprocessor());
+        _engine.setAttributePreprocessor(new CustomAttributePreprocessor(lookUpMap));
     }
 
     /**
@@ -316,32 +315,14 @@ public class TestStringSubstitutionEngine {
     private class CustomAttributePreprocessor extends AttributePreprocessorImpl {
         private String testFilePath;
 
-        CustomAttributePreprocessor() {
+        CustomAttributePreprocessor(Map<String, String> lookUpMap) {
+            super(lookUpMap);
             if (_testFile == null) {
                 createTextFile();
             }
             testFilePath = _testFile.getAbsolutePath().replace(File.separator + _testFileName, "");
-        }
-
-        @Override
-        public String substituteBefore(String beforeValue) {
-            beforeValue = super.substituteBefore(beforeValue);
-            beforeValue = beforeValue.replace("$ARCHIVE_DIR$", _archiveDirPath);
-            beforeValue = beforeValue.replace("$TEST_FILE_DIR$", testFilePath);
-            return beforeValue;
-        }
-
-        @Override
-        public String substituteAfter(String afterValue) {
-            afterValue = super.substituteAfter(afterValue);
-            return afterValue.replaceAll("\\W", "");
-        }
-
-        @Override
-        public String substitutePath(String path) {
-            path = path.replace("$ARCHIVE_DIR$", _archiveDirPath);
-            path = path.replace("$TEST_FILE_DIR$", testFilePath);
-            return path;
+            lookUpMap.put("ARCHIVE_DIR", _archiveDirPath);
+            lookUpMap.put("TEST_FILE_DIR", testFilePath);
         }
     }
 
