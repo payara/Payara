@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.glassfish.contextpropagation.ContextLifecycle;
@@ -402,6 +403,42 @@ public class Utils {
     public Iterator<String> names() {
       AccessControlledMap acMap = mapFinder.getMapIfItExists();
       return acMap == null ? null : acMap.names();
+    }
+    
+    public interface StringFilter {
+      public boolean accept(String s);
+    }
+    
+    public Iterator<String>names(final StringFilter stringFilter) {
+      return new Iterator<String>() {
+        Iterator<String> it = names();
+        String next;
+        
+        @Override public boolean hasNext() {
+          if (next == null && it.hasNext()) {
+            while (it.hasNext()) {
+              String name = it.next(); 
+              if (stringFilter.accept(name)) {
+                next = name;
+                break;
+              }
+            }
+          }
+          return next != null;
+        }
+
+        @Override public String next() {
+          if (next == null) throw new NoSuchElementException();
+          String name = next;
+          next = null;
+          return name;
+        }
+
+        @Override public void remove() {
+          throw new UnsupportedOperationException();
+        }
+        
+      };
     }
 
     public AccessControlledMap getAccessControlledMap(boolean create) {
