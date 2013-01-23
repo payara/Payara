@@ -453,7 +453,11 @@ public class InputBuffer extends Reader
                     Thread.currentThread().setContextClassLoader(
                             ((StandardContext)request.getContext()).getClassLoader());
                 }
-                readListener.onDataAvailable();
+                try {
+                    readListener.onDataAvailable();
+                } catch(Throwable t) {
+                    readListener.onError(t);
+                }
             }
         }
 
@@ -478,7 +482,11 @@ public class InputBuffer extends Reader
                     Thread.currentThread().setContextClassLoader(
                             ((StandardContext)request.getContext()).getClassLoader());
                 }
-                readListener.onAllDataRead();
+                try {
+                    readListener.onAllDataRead();
+                } catch(Throwable t) {
+                    readListener.onError(t);
+                }
             }
         }
 

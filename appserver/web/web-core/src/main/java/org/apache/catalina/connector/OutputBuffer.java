@@ -761,7 +761,11 @@ public class OutputBuffer extends Writer
         private void processWritePossible() {
             synchronized(lk) {
                 prevIsReady = true;
-                writeListener.onWritePossible();
+                try {
+                    writeListener.onWritePossible();
+                } catch(Throwable t) {
+                    writeListener.onError(t);
+                }
             }
         }
 
@@ -784,5 +788,4 @@ public class OutputBuffer extends Writer
             }
         }
     }
-
 }
