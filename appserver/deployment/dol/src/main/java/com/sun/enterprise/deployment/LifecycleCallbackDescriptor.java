@@ -103,32 +103,32 @@ public class LifecycleCallbackDescriptor extends Descriptor {
     public Method getLifecycleCallbackMethodObject(ClassLoader loader) 
         throws Exception {
 
-        Method m = null;
+        Method method = null;
 
         if( getLifecycleCallbackClass() == null ) {
             throw new IllegalArgumentException("no lifecycle class defined");
         }
 
+        // according to the ejb interceptors spec the around invoke and life cycle methods can be on the super class.
         Class clazz = loader.loadClass(getLifecycleCallbackClass());
         
-        // Check for the method within this class only.
-        // This does not include super-classses.
-        for(Method next : clazz.getDeclaredMethods()) {
-            
-            // Overloading is not allowed for AroundInvoke or
-            // Callback methods so match by name only.
-            if( next.getName().equals(lifecycleCallbackMethod) ) {
-                m = next;
-                break;
+        while ( method == null && ! clazz.equals( Object.class ) ) {
+            for(Method next : clazz.getDeclaredMethods()) {
+                if( next.getName().equals(lifecycleCallbackMethod) ) {
+                    method = next;
+                    break;
+                }
+            }
+            if ( method == null ) {
+                clazz = clazz.getSuperclass();
             }
         }
 
-        if( m == null ) {
-            throw new NoSuchMethodException("no method matching " +
-                                            lifecycleCallbackMethod);
+        if( method == null ) {
+            throw new NoSuchMethodException("no method matching " + lifecycleCallbackMethod);
         }
 
-        return m;
+        return method;
     }
 
     public MetadataSource getMetadataSource() {
