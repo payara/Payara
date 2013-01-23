@@ -228,8 +228,9 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.resource</groupId>
-            <artifactId>javax.resource-api</artifactId>
+            <groupId>org.glassfish.main</groupId>
+            <artifactId>javax.resource</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main</groupId>
