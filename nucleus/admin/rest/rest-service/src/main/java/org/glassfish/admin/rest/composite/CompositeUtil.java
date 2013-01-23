@@ -402,7 +402,7 @@ public class CompositeUtil {
      * @return
      */
     public ActionReporter executeDeleteCommand(Subject subject, String command, ParameterMap parameters) {
-        return executeCommand(subject, command, parameters, true, true);
+        return executeCommand(subject, command, parameters, Status.BAD_REQUEST, true, true);
     }
 
     /**
@@ -425,7 +425,7 @@ public class CompositeUtil {
      * @return
      */
     public ActionReporter executeWriteCommand(Subject subject, String command, ParameterMap parameters) {
-        return executeCommand(subject, command, parameters, true, true);
+        return executeCommand(subject, command, parameters, Status.BAD_REQUEST, true, true);
     }
 
     /**
@@ -448,7 +448,7 @@ public class CompositeUtil {
      * @return
      */
     public ActionReporter executeReadCommand(Subject subject, String command, ParameterMap parameters) {
-        return executeCommand(subject, command, parameters, false, true);
+        return executeCommand(subject, command, parameters, Status.NOT_FOUND, true, true);
     }
 
     /**
@@ -460,18 +460,15 @@ public class CompositeUtil {
      * @param throwOnWarning  (vs.ignore warning)
      * @return
      */
-    public ActionReporter executeCommand(Subject subject, String command, ParameterMap parameters, boolean throwBadRequest, boolean throwOnWarning) {
+    public ActionReporter executeCommand(Subject subject, String command, ParameterMap parameters, Status status, boolean includeFailureMessage, boolean throwOnWarning) {
         RestActionReporter ar = ResourceUtil.runCommand(command, parameters,
                 Globals.getDefaultHabitat(), "", subject); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
         ExitCode code = ar.getActionExitCode();
         if (code.equals(ExitCode.FAILURE) || (code.equals(ExitCode.WARNING) && throwOnWarning)) {
-            if (throwBadRequest) {
-                throw new WebApplicationException(Response.status(Status.BAD_REQUEST)
-                        .entity(ar.getCombinedMessage())
-                        .build());
+            if (includeFailureMessage) {
+                throw new WebApplicationException(Response.status(status).entity(ar.getCombinedMessage()).build());
             } else {
-                // TODO: Why NOT_FOUND?
-                throw new WebApplicationException(Status.NOT_FOUND);
+                throw new WebApplicationException(status);
             }
         }
         return ar;

@@ -215,12 +215,13 @@ public abstract class CompositeResource extends AbstractResource implements Rest
      * Execute an <code>AdminCommand</code> with the specified parameters.
      * @param command
      * @param parameters
-     * @param throwBadRequest (vs. NOT_FOUND)
+     * @param status
+     * @param includeFailureMessage
      * @param throwOnWarning (vs.ignore warning)
      * @return
      */
-    protected ActionReporter executeCommand(String command, ParameterMap parameters, boolean throwBadRequest, boolean throwOnWarning) {
-        return getCompositeUtil().executeCommand(getSubject(), command, parameters, throwBadRequest, throwOnWarning);
+    protected ActionReporter executeCommand(String command, ParameterMap parameters, Status status, boolean includeFailureMessage, boolean throwOnWarning) {
+        return getCompositeUtil().executeCommand(getSubject(), command, parameters, status, includeFailureMessage, throwOnWarning);
     }
 
     /**
