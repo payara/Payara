@@ -112,5 +112,20 @@
             <artifactId>org.eclipse.persistence.asm</artifactId>
         </dependency>        
     </dependencies>
+    
+    <repositories>
+        <repository>
+            <id>eclipselink.repository</id>
+            <name>Eclipse Maven repository</name>
+            <url>http://download.eclipse.org/rt/eclipselink/maven.repo/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>    
 </project>
 
