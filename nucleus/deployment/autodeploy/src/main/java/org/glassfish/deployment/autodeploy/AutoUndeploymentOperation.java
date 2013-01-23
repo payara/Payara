@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -138,8 +138,9 @@ public class AutoUndeploymentOperation extends AutoOperation {
         String appName = archiveName;
         List<Application> applications = apps.getApplications();
         for (Application app : applications) {
-            if (app.getDeployProperties().getProperty
-                (DeploymentProperties.DEFAULT_APP_NAME).equals(archiveName)) {
+            String defaultAppName = app.getDeployProperties().getProperty
+                (DeploymentProperties.DEFAULT_APP_NAME);
+            if (defaultAppName != null && defaultAppName.equals(archiveName)) {
                 appName = app.getName();
             }
         }
