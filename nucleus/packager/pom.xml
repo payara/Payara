@@ -110,7 +110,7 @@
     </modules>
 
     <build>
-        <outputDirectory>${stage.dir}</outputDirectory>
+        <outputDirectory>${temp.dir}</outputDirectory>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

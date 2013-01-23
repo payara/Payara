@@ -83,8 +83,25 @@
                 <exclude>glassfish/**</exclude>
                 <exclude>modules/flashlight-agent.jar</exclude>
                 <exclude>META-INF/**</exclude>
+		<exclude>bin/**</exclude>
             </excludes>
             <outputDirectory>${install.dir.name}</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${temp.dir}</directory>
+	    <fileMode>755</fileMode>
+            <includes>
+                <include>bin/**</include>
+            </includes>
+            <outputDirectory>${install.dir.name}</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${temp.dir}/bin</directory>
+            <fileMode>755</fileMode>
+            <includes>
+                <include>nadmin*</include>
+            </includes>
+            <outputDirectory>${install.dir.name}/lib</outputDirectory>
         </fileSet>
     </fileSets>
 </assembly>
