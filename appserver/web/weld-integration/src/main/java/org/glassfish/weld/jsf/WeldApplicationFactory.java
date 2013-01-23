@@ -45,10 +45,14 @@ import javax.faces.application.ApplicationFactory;
 
 public class WeldApplicationFactory extends ApplicationFactory {
     
-    private final ApplicationFactory delegate;
+    private ApplicationFactory delegate;
    
     private Application application;
-   
+
+    // required for CDI
+    public WeldApplicationFactory() {
+
+    }
     public WeldApplicationFactory(ApplicationFactory delegate) {
         this.delegate = delegate;
     }
