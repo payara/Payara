@@ -974,14 +974,17 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         // without a tx.
         doTxRequiredCheck();
 
-        if(callFlowAgent.isEnabled()) {
-            callFlowAgent.entityManagerMethodStart(EntityManagerMethod.JOIN_TRANSACTION);
-            callFlowAgent.entityManagerMethodEnd();
+        try {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.JOIN_TRANSACTION);
+            }
+            _getDelegate().joinTransaction();
+        } finally {
+            if(callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
         }
 
-        // There's no point in calling anything on the physical
-        // entity manager since in all tx cases it will be
-        // correctly associated with a tx already.
     }
 
     @Override
