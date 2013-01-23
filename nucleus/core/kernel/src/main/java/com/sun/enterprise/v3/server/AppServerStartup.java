@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,15 +42,12 @@ package com.sun.enterprise.v3.server;
 
 
 import com.sun.appserv.server.util.Version;
-import com.sun.enterprise.admin.util.AdminConstants;
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModuleState;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import com.sun.enterprise.module.bootstrap.StartupContext;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Result;
-import com.sun.enterprise.v3.admin.StopServer;
 import com.sun.enterprise.v3.common.DoNothingActionReporter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,7 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Provider;
-import javax.security.auth.Subject;
+import javax.inject.Singleton;
 import org.glassfish.api.Async;
 import org.glassfish.api.FutureProvider;
 import org.glassfish.api.StartupRunLevel;
@@ -144,13 +141,13 @@ public class AppServerStartup implements ModuleStartup {
     @Inject
     Provider<CommandRunner> commandRunnerProvider;
     
+    private final MasterRunLevelListener masterListener = new MasterRunLevelListener();
+    
     private long platformInitTime;
 
     private String platform = System.getProperty("GlassFish_Platform");
 
-    private final Map<Class, Long> servicesTiming = new HashMap<Class, Long>();
-
-    private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
+    private final Map<Class<?>, Long> servicesTiming = new HashMap<Class<?>, Long>();
 
     /**
      * A keep alive thread that keeps the server JVM from going down
@@ -243,7 +240,7 @@ public class AppServerStartup implements ModuleStartup {
         DynamicConfiguration config = dcs.createDynamicConfiguration();
 
         config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(this));
-//        config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(systemRegistry));
+        config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(masterListener));
         config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(logger));
 
         config.addUnbindFilter(BuilderHelper.createContractFilter(ProcessEnvironment.class.getName()));
@@ -317,6 +314,7 @@ public class AppServerStartup implements ModuleStartup {
         }
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public synchronized void stop() {
         if(env.getStatus() != ServerEnvironment.Status.started) {
             // During shutdown because of shutdown hooks, we can be stopped multiple times.
@@ -362,25 +360,19 @@ public class AppServerStartup implements ModuleStartup {
      * @return false if an error occurred that required server shutdown; true otherwise
      */
     private boolean proceedTo(int runLevel, AppServerActivator activator) {
-        // set up the run level listener and activator
-        DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
-        DynamicConfiguration config = dcs.createDynamicConfiguration();
-
-        ActiveDescriptor<?> activatorDescriptor = config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(activator));
-
-        config.commit();
-
+        
+        masterListener.setChild(activator);
         try {
-            runLevelController.proceedTo(runLevel);
+            runLevelController.proceedTo(runLevel, activator);
         } catch (Exception e) {
             logger.log(Level.SEVERE, KernelLoggerInfo.shutdownRequired, e);
             shutdown();
             return false;
-        } finally {
-            config = dcs.createDynamicConfiguration();
-            config.addUnbindFilter(BuilderHelper.createSpecificDescriptorFilter(activatorDescriptor));
-            config.commit();
         }
+        finally {
+            masterListener.setChild(null);
+        }
+        
         return !activator.isShutdown();
     }
 
@@ -394,7 +386,7 @@ public class AppServerStartup implements ModuleStartup {
      * flag that the app server should shutdown.
      */
     private class AppServerActivator
-            implements Activator, RunLevelListener {
+            implements Activator {
 
         // ----- data members --------------------------------------------
 
@@ -408,7 +400,7 @@ public class AppServerStartup implements ModuleStartup {
 
         @Override
         public void activate(ActiveDescriptor<?> activeDescriptor) {
-            ((Activator)runLevelController).activate(activeDescriptor);
+            runLevelController.getDefaultActivator().activate(activeDescriptor);
         }
 
         @Override
@@ -418,7 +410,7 @@ public class AppServerStartup implements ModuleStartup {
                     if (logger.isLoggable(level)) {
                         logger.log(level, "Releasing services {0}", activeDescriptor);
                     }
-                    ((Activator)runLevelController).deactivate(activeDescriptor);
+                    runLevelController.getDefaultActivator().deactivate(activeDescriptor);
                 } catch(Throwable e) {
                     e.printStackTrace();
                 }
@@ -435,27 +427,6 @@ public class AppServerStartup implements ModuleStartup {
             awaitCompletion();
         }
 
-
-        // ----- RunLevelListener ----------------------------------------
-
-        @Override
-        public void onCancelled(RunLevelController controller, int previousProceedTo, boolean isInterrupt) {
-            logger.log(Level.INFO, KernelLoggerInfo.shutdownRequested);
-            forceShutdown();
-        }
-
-        @Override
-        public void onError(RunLevelController controller, Throwable error, boolean willContinue) {
-            logger.log(Level.INFO, KernelLoggerInfo.shutdownRequested, error);
-            forceShutdown();
-        }
-
-        @Override
-        public void onProgress(RunLevelController controller) {
-            logger.log(level, "progress event: {0}", controller);
-        }
-
-
         // ----- accessors -----------------------------------------------
 
         /**
@@ -466,7 +437,6 @@ public class AppServerStartup implements ModuleStartup {
         public boolean isShutdown() {
             return shutdown;
         }
-
 
         // ----- helper methods ------------------------------------------
 
@@ -515,6 +485,7 @@ public class AppServerStartup implements ModuleStartup {
          */
         private ArrayList<Future<Result<Thread>>> futures = new ArrayList<Future<Result<Thread>>>();
 
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
         public void activate(ActiveDescriptor<?> activeDescriptor) {
 
@@ -555,6 +526,7 @@ public class AppServerStartup implements ModuleStartup {
             awaitCompletion(3, TimeUnit.SECONDS);
         }
 
+        @SuppressWarnings({ "rawtypes", "unchecked" })
         @Override
         public void awaitCompletion(long timeout, TimeUnit unit)
                 throws ExecutionException, InterruptedException, TimeoutException {
@@ -585,7 +557,7 @@ public class AppServerStartup implements ModuleStartup {
             }
 
             if (logger.isLoggable(level)) {
-                for (Map.Entry<Class, Long> service : servicesTiming.entrySet()) {
+                for (Map.Entry<Class<?>, Long> service : servicesTiming.entrySet()) {
                     logger.log(level, "Service : " + service.getKey() + " took " + service.getValue() + " ms");
                 }
             }
@@ -631,5 +603,38 @@ public class AppServerStartup implements ModuleStartup {
 
             printModuleStatus(systemRegistry, level);
         }
+    }
+    
+    @Singleton
+    private static class MasterRunLevelListener implements RunLevelListener {
+        private AppServerActivator child;
+        
+        private void setChild(AppServerActivator child) {
+            this.child = child;
+        }
+
+        @Override
+        public void onCancelled(RunLevelController controller,
+                int previousProceedTo, boolean isInterrupt) {
+            logger.log(Level.INFO, KernelLoggerInfo.shutdownRequested);
+            
+            if (child == null) return;
+            child.forceShutdown();
+        }
+
+        @Override
+        public void onError(RunLevelController controller, Throwable error,
+                boolean willContinue) {
+            logger.log(Level.INFO, KernelLoggerInfo.shutdownRequested, error);
+            
+            if (child == null) return;
+            child.forceShutdown();
+        }
+
+        @Override
+        public void onProgress(RunLevelController controller) {
+            logger.log(level, "progress event: {0}", controller);
+        }
+        
     }
 }
