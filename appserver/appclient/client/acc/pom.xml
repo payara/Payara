@@ -377,7 +377,7 @@
 
      <!-- explicit dependencies for endorsed JARs the ACC needs -->
 
-     <!-- endorsed: javax.annotation.jar -->
+     <!-- endorsed: javax.annotation-api.jar -->
      <dependency>
          <groupId>javax.annotation</groupId>
          <artifactId>javax.annotation-api</artifactId>
