@@ -104,9 +104,8 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.resource</artifactId>
-            <version>${project.version}</version>
+            <groupId>javax.resource</groupId>
+            <artifactId>javax.resource-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.ejb</groupId>
