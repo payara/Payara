@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -168,13 +168,7 @@ public class ConfigureJMSCluster implements AdminCommand {
         }
 
         List instances = cluster.getInstances();
-        /*if(!force && instances.size() > 0){
-            report.setMessage(localStrings.getLocalString("configure.jms.cluster.clusterWithInstances",
-                            "The cluster has existing instances configured. This command should be run before adding instances to the cluster. To force run this command, please follow the instructions in the documentation and use the --force=true option"));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        } */
-
+        
         Config config = domain.getConfigNamed(cluster.getConfigRef());
         JmsService jmsService = config.getExtensionByType(JmsService.class);
 
@@ -340,7 +334,7 @@ public class ConfigureJMSCluster implements AdminCommand {
         String warning = null;
         if(instances.size() > 0){
             warning=localStrings.getLocalString("configure.jms.cluster.clusterWithInstances",
-                                    "WARNING: Please ensure that you have followed the instructions specified in the documentation before running this command with this option. Running this command without the required precautions can lead to inconsistent JMS behavior and corruption of configuration and message stores.");
+                                    "Warning: make sure that you have followed the instructions specified in the documentation before running this command with this option. Running this command without the required precautions can lead to inconsistent JMS behavior and corruption of configuration and message stores.");
         }
         report.setMessage((warning == null ? "" : warning + "\n") + (changeIntegrationMode == null ? "" : changeIntegrationMode + "\n") +
                 localStrings.getLocalString("configure.jms.cluster.success", "JMS Cluster Configuration updated for Cluster {0}.", clusterName));
