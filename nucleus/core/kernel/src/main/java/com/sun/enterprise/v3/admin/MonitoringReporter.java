@@ -318,14 +318,14 @@ public class MonitoringReporter extends V2DottedNameSupport {
         }
     }
 
-    private long getLastSampleTime(HashMap clusterInfo, String lastSampleTimeKey, int numofInstances) {
+    private long getLastSampleTime(HashMap<String, String> clusterInfo, String lastSampleTimeKey, int numofInstances) {
         long[] values = new long[numofInstances];
         int index=0;
-        Iterator it = clusterInfo.keySet().iterator();
-        while (it.hasNext()) {
-            String s = (String) it.next();
-            if (s.contains(lastSampleTimeKey)) {
-                values[index++] = Long.parseLong((String)clusterInfo.get(s));
+        for (Map.Entry e : clusterInfo.entrySet())  {
+            String key = (String) e.getKey();
+            String value = (String) e.getValue();
+            if (key.contains(lastSampleTimeKey)) {
+                values[index++] = Long.parseLong(value);
             }
         }
         Arrays.sort(values);
