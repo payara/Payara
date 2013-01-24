@@ -414,9 +414,9 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
         }
 
         public String getIdleTimeoutInSeconds() {
-            int idleTimeoutInSeconds = desc.getMaxIdleTime();
-            if (idleTimeoutInSeconds >= 0) {
-                return String.valueOf(idleTimeoutInSeconds);
+            String idleTimeoutInSeconds = desc.getProperty(PROPERTY_PREFIX + "idle-timeout-in-seconds");
+            if (isValidProperty(idleTimeoutInSeconds)) {
+                return idleTimeoutInSeconds;
             } else {
                 return "300";
             }

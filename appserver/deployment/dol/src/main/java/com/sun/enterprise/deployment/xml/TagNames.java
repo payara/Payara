@@ -144,7 +144,6 @@ public interface TagNames {
     public static final String JMS_CONNECTION_FACTORY_TRANSACTIONAL = "transactional";
     public static final String JMS_CONNECTION_FACTORY_MAX_POOL_SIZE = "max-pool-size";
     public static final String JMS_CONNECTION_FACTORY_MIN_POOL_SIZE = "min-pool-size";
-    public static final String JMS_CONNECTION_FACTORY_MAX_IDLE_TIME = "max-idle-time";
     public static final String JMS_CONNECTION_FACTORY_PROPERTY = "property";
     public static final String JMS_CONNECTION_FACTORY_PROPERTY_NAME = "name";
     public static final String JMS_CONNECTION_FACTORY_PROPERTY_VALUE = "value";

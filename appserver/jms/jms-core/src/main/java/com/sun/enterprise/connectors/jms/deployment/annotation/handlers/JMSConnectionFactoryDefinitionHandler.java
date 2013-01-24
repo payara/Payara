@@ -261,12 +261,6 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
                     }
                 }
 
-                if (desc.getMaxIdleTime() < 0) {
-                    if (defn.maxIdleTime() >= 0) {
-                        desc.setMaxIdleTime(defn.maxIdleTime());
-                    }
-                }
-
                 Properties properties = desc.getProperties();
                 String[] defnProperties = defn.properties();
 
@@ -325,9 +319,6 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
         }
         if (defn.minPoolSize() >= 0) {
             desc.setMinPoolSize(defn.minPoolSize());
-        }
-        if (defn.maxIdleTime() >= 0) {
-            desc.setMaxIdleTime(defn.maxIdleTime());
         }
 
         if (defn.properties() != null) {

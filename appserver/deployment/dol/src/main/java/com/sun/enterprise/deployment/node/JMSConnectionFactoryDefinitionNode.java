@@ -71,7 +71,6 @@ public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode
         table.put(TagNames.JMS_CONNECTION_FACTORY_TRANSACTIONAL, "setTransactional");
         table.put(TagNames.JMS_CONNECTION_FACTORY_MAX_POOL_SIZE, "setMaxPoolSize");
         table.put(TagNames.JMS_CONNECTION_FACTORY_MIN_POOL_SIZE, "setMinPoolSize");
-        table.put(TagNames.JMS_CONNECTION_FACTORY_MAX_IDLE_TIME, "setMaxIdleTime");
 
         return table;
     }
@@ -92,7 +91,6 @@ public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_TRANSACTIONAL, String.valueOf(desc.isTransactional()));
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_MAX_POOL_SIZE, desc.getMaxPoolSize());
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_MIN_POOL_SIZE, desc.getMinPoolSize());
-        appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_MAX_IDLE_TIME, desc.getMaxIdleTime());
 
         return node;
     }

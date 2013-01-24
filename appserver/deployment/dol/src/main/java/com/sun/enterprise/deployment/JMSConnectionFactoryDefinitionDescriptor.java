@@ -60,7 +60,6 @@ public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor
     private boolean transactional = true;
     private int maxPoolSize = -1;
     private int minPoolSize = -1;
-    private int maxIdleTime = -1;
 
     private boolean transactionSet = false;
 
@@ -166,14 +165,6 @@ public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor
         this.minPoolSize = minPoolSize;
     }
 
-    public int getMaxIdleTime() {
-        return maxIdleTime;
-    }
-
-    public void setMaxIdleTime(int maxIdleTime) {
-        this.maxIdleTime = maxIdleTime;
-    }
-
     public String getResourceId() {
         return resourceId;
     }
@@ -218,8 +209,7 @@ public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor
                 properties.equals(other.properties) &&
                 isTransactional() == other.isTransactional() &&
                 getMinPoolSize() == other.getMinPoolSize() &&
-                getMaxPoolSize() == other.getMaxPoolSize() &&
-                getMaxIdleTime() == other.getMaxIdleTime()
+                getMaxPoolSize() == other.getMaxPoolSize()
             );
     }
 }
