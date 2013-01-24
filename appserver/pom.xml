@@ -81,6 +81,7 @@
         <cdi-api.version>1.1-PRD</cdi-api.version>
         <validation-api.version>1.1.0.Beta1</validation-api.version>
         <javax.inject.version>1</javax.inject.version>
+	<javax.enterprise.deploy-api.version>1.6</javax.enterprise.deploy-api.version>
         
         <product.name>GlassFish Server Open Source Edition</product.name>
         <brief_product_name>GlassFish Server</brief_product_name>
@@ -231,6 +232,11 @@
                 <groupId>javax.jws</groupId>
                 <artifactId>jsr181-api</artifactId>
                 <version>${jsr181-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.enterprise.deploy</groupId>
+                <artifactId>javax.enterprise.deploy-api</artifactId>
+                <version>${javax.enterprise.deploy-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish</groupId>

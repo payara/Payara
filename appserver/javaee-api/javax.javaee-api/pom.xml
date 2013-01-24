@@ -148,8 +148,7 @@
         <!-- optional -->
         <dependency>
             <groupId>javax.enterprise.deploy</groupId>
-            <artifactId>deployment-api</artifactId>
-            <version>1.2-rev-1</version>
+            <artifactId>javax.enteprise.deploy-api</artifactId>
             <optional>true</optional>
         </dependency>
         <!--

@@ -82,9 +82,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.enterprise.deploy</artifactId>
-            <version>${project.version}</version>
+            <groupId>javax.enterprise.deploy</groupId>
+            <artifactId>javax.enterprise.deploy-api</artifactId>
         </dependency>
     </dependencies>
 </project>
