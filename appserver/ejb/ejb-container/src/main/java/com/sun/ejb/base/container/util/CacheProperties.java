@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -177,6 +177,18 @@ public class CacheProperties implements PostConstruct {
                     this.cacheIdleTimeoutInSeconds = (int) (value + 1);
 		}
 
+            }
+
+            /* lifespan of an idle sfsb is time-in-cache + time-on-disk, with cacheIdleTimeoutInSeconds setting
+               for the 1st interval and removalTimeoutInSeconds for the 2nd. So if you add them, the sfsb will stay
+               in the cache to the max possible interval, and because it'll be never written to disk,
+               there will be nothing to remove from there.
+               
+               set cacheIdleTimeoutInSeconds and maxCacheSize will cause cache never overflow, and sfsb just be
+               removed from cache when cacheIdleTimeoutInSeconds arrives */
+            if (sessionDesc.isStateful() && !sessionDesc.isPassivationCapable()) {
+                cacheIdleTimeoutInSeconds = cacheIdleTimeoutInSeconds + removalTimeoutInSeconds;
+                maxCacheSize = -1;                
             }
         }
 

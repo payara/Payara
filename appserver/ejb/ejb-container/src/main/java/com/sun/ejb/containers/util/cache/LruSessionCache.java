@@ -120,6 +120,12 @@ public class LruSessionCache
         level = "WARNING")
     private static final String EXITING_TRIM_UNSORTED_TIMEDOUT_BEANS = "AS-EJB-00011";
 
+    @LogMessageInfo(
+        message = "Can not find stateful session bean [{0}] in memory, and will not read it from disk because " +
+                  "current stateful session bean passivation-capable value is false",
+        level = "INFO")
+    private static final String SFSB_NOT_FOUND_WHEN_PASSIVATION_DISABLED = "AS-EJB-00049";
+    
     protected int		    cacheIdleTimeoutInSeconds;
     protected int		    removalTimeoutInSeconds;
     
@@ -290,6 +296,14 @@ public class LruSessionCache
                 }
                 return (StatefulEJBContext) item.getValue();
             }
+        }
+
+        // don't try to lookup session store when passivation capable is false
+        if (!container.isPassivationCapable()) {
+            if (_logger.isLoggable(Level.INFO)) {
+                _logger.log(Level.INFO, SFSB_NOT_FOUND_WHEN_PASSIVATION_DISABLED);                
+            }
+            return null;
         }
 
         //This is the thread that actually does the I/O
@@ -467,7 +481,9 @@ public class LruSessionCache
                 }
             }
 
-            if (saveStateToStore(sessionKey, ctx) == false) {
+            // we don't do passivation when passivation is disabled, but we still need remove the trimmed
+            // bean from cache
+            if (container.isPassivationCapable() && !saveStateToStore(sessionKey, ctx)) {
                 return false;
             }
 

@@ -266,6 +266,12 @@ public final class StatefulSessionContainer
         level = "WARNING")
     private static final String ERROR_DURING_CHECKPOINT = "AS-EJB-00035";
 
+    @LogMessageInfo(
+        message = "Cache is shutting down, {0} stateful session beans will not be restored after restarting " +
+                "since passivation is disabled",
+        level = "INFO")
+    private static final String SFSB_NOT_RESTORED_AFTER_RESTART = "AS-EJB-00050";
+    
     // We do not want too many ORB task for passivation
     public static final int MIN_PASSIVATION_BATCH_COUNT = 8;
 
@@ -314,7 +320,8 @@ public final class StatefulSessionContainer
     private Method afterBeginMethod;
     private Method beforeCompletionMethod;
     private Method afterCompletionMethod;
-
+    private boolean isPassivationCapable;
+    
     /*
      * Cache for keeping ref count for shared extended entity manager.
      * The key in this map is the physical entity manager
@@ -351,8 +358,14 @@ public final class StatefulSessionContainer
         EjbSessionDescriptor sfulDesc = (EjbSessionDescriptor) ejbDescriptor;
         postActivateInvInfo = getLifecycleCallbackInvInfo(sfulDesc.getPostActivateDescriptors());
         prePassivateInvInfo = getLifecycleCallbackInvInfo(sfulDesc.getPrePassivateDescriptors());
+
+        isPassivationCapable = sfulDesc.isPassivationCapable();
     }
 
+    public boolean isPassivationCapable() {
+        return isPassivationCapable;
+    }
+    
     private InvocationInfo getLifecycleCallbackInvInfo(
             Set<LifecycleCallbackDescriptor> lifecycleCallbackDescriptors) throws Exception {
         InvocationInfo inv = new InvocationInfo();
@@ -2829,6 +2842,10 @@ public final class StatefulSessionContainer
 
             _logger.log(Level.FINE, "Passivating SFSBs before container shutdown");
 
+            if (!isPassivationCapable() && _logger.isLoggable(Level.INFO)) {
+                _logger.log(Level.INFO, SFSB_NOT_RESTORED_AFTER_RESTART);
+            }
+            
             sessionBeanCache.shutdown();
 
             while (true) {
@@ -2852,7 +2869,10 @@ public final class StatefulSessionContainer
 
 
             try {
-                backingStore.close();
+                // backingStore will be null when passivation-capable is false
+                if (backingStore != null) {
+                    backingStore.close();
+                }
             } catch (BackingStoreException sfsbEx) {
                 _logger.log(Level.WARNING, ERROR_DURING_BACKING_STORE_SHUTDOWN, new Object[]{ejbName, sfsbEx});
             }
@@ -2900,7 +2920,10 @@ public final class StatefulSessionContainer
             sessionBeanCache.destroy();
             
             try {
-                backingStore.destroy();
+                // backingStore will be null when passivation-capable is false
+                if (backingStore != null) {
+                    backingStore.destroy();
+                }
             } catch (BackingStoreException sfsbEx) {
                 _logger.log(Level.WARNING, ERROR_DURING_BACKING_STORE_SHUTDOWN, new Object[]{ejbName, sfsbEx});
             }

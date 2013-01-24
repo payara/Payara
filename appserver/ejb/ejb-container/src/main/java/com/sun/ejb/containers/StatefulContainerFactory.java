@@ -71,6 +71,7 @@ import org.glassfish.ejb.LogFacade;
 import org.glassfish.ejb.config.EjbContainer;
 import org.glassfish.ejb.config.EjbContainerAvailability;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.glassfish.gms.bootstrap.GMSAdapter;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.ha.store.api.BackingStore;
@@ -166,6 +167,11 @@ public class StatefulContainerFactory extends BaseContainerFactory
         level = "WARNING")
     static final String SFSB_HELPER_REMOVE_EXPIRED_BEANS_FAILED = "AS-EJB-00047";
 
+    @LogMessageInfo(
+        message = "Disabling High Availability for the Stateful Session Bean {0}, as its marked non passivatable",
+        level = "WARNING")
+    private static final String SFSB_HA_DISABLED_BY_PASSIVATION_SETTING = "AS-EJB-00051";
+
     private static final Level TRACE_LEVEL = Level.FINE;
 
     private EjbDescriptor		    ejbDescriptor;
@@ -240,13 +246,26 @@ public class StatefulContainerFactory extends BaseContainerFactory
             _logger.log(Level.INFO, SFSB_BUILDER_RESOLVED_AVAILABILITY_ENABLED, this.HAEnabled);
         }
 
-
+        EjbSessionDescriptor sessionDescriptor = (EjbSessionDescriptor)ejbDescriptor;
+        //When passivation is disabled, we should also forbid ha.
+        if (!sessionDescriptor.isPassivationCapable() && HAEnabled) {
+            if (_logger.isLoggable(Level.WARNING)) {
+                _logger.log(Level.WARNING, SFSB_HA_DISABLED_BY_PASSIVATION_SETTING, ejbDescriptor.getEjbClassName());
+            }
+            HAEnabled = false;
+        }
 
         buildCheckpointPolicy(this.HAEnabled);
         buildSFSBUUIDUtil(ipAddress, port);
 
         //First build BackingStore before Cache is built
-        buildStoreManager();
+        if (sessionDescriptor.isPassivationCapable()){
+            buildStoreManager();
+        } else{
+            if (_logger.isLoggable(TRACE_LEVEL)) {
+                _logger.log(TRACE_LEVEL, "Stateful session bean passivation is disabled, so do not create store manger");
+            }
+        }
 
         buildCache();
         scheduleTimerTasks(sfsbContainer);
@@ -425,7 +444,7 @@ public class StatefulContainerFactory extends BaseContainerFactory
             }
         }
 
-        if (cacheProps.getRemovalTimeoutInSeconds() > 0) {
+        if (cacheProps.getRemovalTimeoutInSeconds() > 0 && container.isPassivationCapable()) {
             long timeout = cacheProps.getRemovalTimeoutInSeconds() * 1000L;
             try {
                 sfsbContainer.invokePeriodically(timeout, timeout,

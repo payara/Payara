@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,15 +41,20 @@
 package org.glassfish.ejb.deployment.util;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.sun.ejb.containers.EJBTimerSchedule;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.InjectionCapable;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
 import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
@@ -61,6 +66,7 @@ import com.sun.enterprise.deployment.util.ComponentValidator;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.util.EjbBundleVisitor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.ejb.LogFacade;
 import org.glassfish.ejb.deployment.descriptor.DummyEjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbCMPEntityDescriptor;
@@ -75,6 +81,7 @@ import org.glassfish.ejb.deployment.descriptor.RelationshipDescriptor;
 import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.deployment.AnnotationTypesProvider;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * This class validates a EJB Bundle descriptor once loaded from an .jar file
@@ -87,7 +94,15 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
     protected EjbDescriptor ejb = null;
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(EjbBundleValidator.class);
+    private static final Logger _logger  = LogFacade.getLogger();
 
+    @LogMessageInfo(
+        message = "Passivation-capable value of stateful session bean [{0}] is false, " +
+                "it should not have any PrePassivate nor PostActivate configuration, " +
+                "but you have configuration at [{1}].",
+        level = "WARNING")
+    private static final String REDUNDANT_PASSIVATION_CALLBACK_METADATA = "AS-EJB-00048";
+    
     @Override
     public void accept (BundleDescriptor descriptor) {
         this.bundleDescriptor = descriptor;
@@ -275,6 +290,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
         
         validateConcurrencyMetadata(ejb);
         validateStatefulTimeout(ejb);
+        validatePassivationConfiguration(ejb);
 
         try {
 
@@ -484,6 +500,49 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
         }
     }
 
+    /**
+     * Check when passivation-capable of sfsb is false, PrePassivate and PostActivate configurations
+     * are not recommended.
+     */
+    private void validatePassivationConfiguration(EjbDescriptor ejb) {
+        if (ejb instanceof EjbSessionDescriptor) {
+            EjbSessionDescriptor sessionDesc = (EjbSessionDescriptor) ejb;
+            if (!sessionDesc.isStateful() || sessionDesc.isPassivationCapable()) {
+                return;
+            }
+
+            String callbackInfo = getAllPrePassivatePostActivateCallbackInfo(sessionDesc);
+            if (callbackInfo.length() > 0) {
+                _logger.log(Level.WARNING, REDUNDANT_PASSIVATION_CALLBACK_METADATA, new Object[]{ejb.getName(), callbackInfo});
+            }
+        }
+    }
+
+    private String getAllPrePassivatePostActivateCallbackInfo(EjbSessionDescriptor sessionDesc) {
+        List<LifecycleCallbackDescriptor> descriptors = new ArrayList<LifecycleCallbackDescriptor>();
+        descriptors.addAll(sessionDesc.getPrePassivateDescriptors());
+        descriptors.addAll(sessionDesc.getPostActivateDescriptors());
+        for (EjbInterceptor interceptor : sessionDesc.getInterceptorClasses()) {
+            descriptors.addAll(interceptor.getCallbackDescriptors(LifecycleCallbackDescriptor.CallbackType.PRE_PASSIVATE));
+            descriptors.addAll(interceptor.getCallbackDescriptors(LifecycleCallbackDescriptor.CallbackType.POST_ACTIVATE));
+        }
+
+        StringBuilder result = new StringBuilder();
+        for (LifecycleCallbackDescriptor each : descriptors) {
+            result.append(each.getLifecycleCallbackClass());
+            result.append(".");
+            result.append(each.getLifecycleCallbackMethod());
+            result.append(", ");
+        }
+
+        if (result.length() > 2) {
+            return result.substring(0, result.length() - 2);
+        } else {
+            return result.toString();
+        }
+    }
+
+    
     private void checkDependsOn(EjbDescriptor ejb) {
 
         if( ejb instanceof EjbSessionDescriptor ) {
