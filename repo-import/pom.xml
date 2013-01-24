@@ -37,18 +37,6 @@ Use is subject to license terms.
 
     <profiles>
         <profile>
-            <id>obr</id>
-            <activation>
-                <property>
-                    <name>release-phase-all</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <modules>
-                <module>glassfish-obr-builder</module>
-            </modules>
-        </profile>
-        <profile>
             <id>release-phase2</id>
             <activation>
                 <property>
