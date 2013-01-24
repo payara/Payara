@@ -110,5 +110,11 @@ public interface BasicEjb {
      */
     public void doesApplicationDefinedPopulatorPostProcessorRun();
     
+    /**
+     * Tests that a service added via an HK2 {@link JustInTimeResolver}
+     * is properly added to the CDI bridge
+     */
+    public void isServiceAddedWithJITResolverAdded();
+    
 
 }

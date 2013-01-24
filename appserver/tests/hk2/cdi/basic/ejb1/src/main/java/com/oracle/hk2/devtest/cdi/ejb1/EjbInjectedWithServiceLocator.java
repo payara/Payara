@@ -57,6 +57,7 @@ import com.oracle.hk2.devtest.cdi.ejb1.ppp.ApplicationPopulatorPostProcessor;
 import com.oracle.hk2.devtest.cdi.ejb1.scoped.CustomScopedEjb;
 import com.oracle.hk2.devtest.cdi.ejb1.scoped.HK2Service;
 import com.oracle.hk2.devtest.cdi.extension.HK2ExtensionVerifier;
+import com.oracle.hk2.devtest.cdi.jit.CDIServiceInjectedWithHK2Service;
 import com.oracle.hk2.devtest.cdi.locator.BasicService;
 
 /**
@@ -75,6 +76,9 @@ public class EjbInjectedWithServiceLocator implements BasicEjb {
     
     @Inject
     private CustomScopedEjb customScopedEjb;
+    
+    @Inject
+    private CDIServiceInjectedWithHK2Service cdiInjectedWithHK2Service;
 
     @Override
     public boolean cdiManagerInjected() {
@@ -128,6 +132,13 @@ public class EjbInjectedWithServiceLocator implements BasicEjb {
         List<String> values = metadata.get(ApplicationPopulatorPostProcessor.KEY);
         if (!values.get(0).equals(ApplicationPopulatorPostProcessor.VALUE)) {
             throw new AssertionError("Incorrect value 0: " + values.get(0));
+        }
+    }
+
+    @Override
+    public void isServiceAddedWithJITResolverAdded() {
+        if (!cdiInjectedWithHK2Service.hasHK2Service()) {
+            throw new AssertionError("cdiInjectedWithHK2Service is not valid: " + cdiInjectedWithHK2Service.hasHK2Service());
         }
     }    
 }

@@ -166,4 +166,17 @@ public class BasicCDITest extends NucleusStartStopTest {
         
         basic.doesApplicationDefinedPopulatorPostProcessorRun();
     }
+    
+    /**
+     * Tests that a service added via JIT resolution works
+     * 
+     * @throws NamingException
+     */
+    @Test
+    public void testJITResolution() throws NamingException {
+        BasicEjb basic = (BasicEjb) context.lookup(BASIC_EJB_JNDI_NAME);
+        Assert.assertNotNull(basic);
+        
+        basic.isServiceAddedWithJITResolverAdded();
+    }
 }
