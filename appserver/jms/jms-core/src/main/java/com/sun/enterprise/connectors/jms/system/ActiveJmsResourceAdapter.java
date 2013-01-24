@@ -220,8 +220,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     private final String CONTAINER = "InAppClientContainer";
 
     //Activation config properties of MQ resource adapter.
-    public static final String DESTINATION        = "Destination";
-    public static final String DESTINATION_TYPE   = "DestinationType";
+    public static final String DESTINATION        = "destination";
+    public static final String DESTINATION_TYPE   = "destinationType";
     private static String SUBSCRIPTION_NAME  = "SubscriptionName";
     private static String CLIENT_ID          = "ClientID";
     public static final String PHYSICAL_DESTINATION  = "Name";
@@ -1965,11 +1965,12 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             jndiName = destDescriptor.getJndiName();
         }
 
-        //handling of MDB 1.3 runtime deployment descriptor
-        //if no RA-mid is specified, assume it is a 1.3 DD
-        if (jndiName == null || "".equals(jndiName)) { //something's wrong in DD
-            _logger.log(Level.SEVERE, "Missing Destination JNDI Name");
-        String msg = sm.getString("ajra.error_in_dd");
+        String destinationLookup = descriptor_.getActivationConfigValue("destinationLookup");
+        String destinationProp = descriptor_.getActivationConfigValue("destination");
+
+        if (destinationLookup == null &&  destinationProp == null && (jndiName == null || "".equals(jndiName))) {
+            _logger.log(Level.SEVERE, "MDB destination not specified.");
+            String msg = sm.getString("ajra.error_in_dd");
             throw new ConnectorRuntimeException(msg);
         }
 
@@ -1977,8 +1978,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
         descriptor_.setResourceAdapterMid(resourceAdapterMid);
 
-        String destinationLokup = descriptor_.getActivationConfigValue("destinationLookup");
-        if (destinationLokup == null) {
+        if (destinationLookup == null && destinationProp == null) {
             String appName = descriptor_.getApplication().getAppName();
             String moduleName = ConnectorsUtil.getModuleName(descriptor_);
 
