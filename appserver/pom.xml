@@ -123,7 +123,7 @@
         <weld.version>1.1.10.Final</weld.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <websocket-api.version>1.0-b11</websocket-api.version>
-        <tyrus.version>1.0-b09</tyrus.version>
+        <tyrus.version>1.0-b10</tyrus.version>
         <json.version>1.0-b02</json.version>
     </properties>
 
