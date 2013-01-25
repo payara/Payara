@@ -74,7 +74,7 @@ import java.util.logging.Logger;
 public abstract class EJBContextImpl
     implements EJBContext, ComponentContext, java.io.Serializable
 {
-    private static final Logger _logger = EjbContainerUtilImpl.getLogger();
+    static final Logger _logger = EjbContainerUtilImpl.getLogger();
 
     public enum BeanState {CREATED, POOLED, READY, INVOKING, INCOMPLETE_TX,
         IN_PASSIVATE, PASSIVATED, IN_ACTIVATE, ACTIVATED, IN_REMOVE, DESTROYED}
@@ -90,7 +90,7 @@ public abstract class EJBContextImpl
     transient protected BaseContainer container;
     
     transient protected Transaction transaction = null;
-    transient private Context initialContext = null;
+    transient protected Context initialContext = null;
     transient private ArrayList resources;
     transient private int concInvokeCount = 0;
     

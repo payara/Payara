@@ -46,6 +46,7 @@ import javax.ejb.TimerService;
 import javax.ejb.EJBException;
 import javax.transaction.TransactionManager;
 import javax.transaction.Status;
+import javax.naming.InitialContext;
 import java.util.logging.Level;
 
 /**
@@ -60,6 +61,13 @@ public final class SingletonContextImpl
 
     SingletonContextImpl(Object ejb, BaseContainer container) {
         super(ejb, container);
+        try {
+            initialContext = new InitialContext();
+        } catch(Exception ex) {
+            _logger.log(Level.FINE, "Exception in creating InitialContext",
+                ex);
+        }   
+
     }
 
     @Override
@@ -159,5 +167,27 @@ public final class SingletonContextImpl
         }
     }
 
+    @Override
+    public synchronized Object lookup(String name) {
+        Object o = null;
+
+        if( name == null ) {
+            throw new IllegalArgumentException("Argument is null");
+        }
+        if( initialContext == null ) {
+            throw new IllegalArgumentException("InitialContext is null");
+        }
+        try {
+            // if name starts with java: use it as is.  Otherwise, treat it
+            // as relative to the private component namespace.
+            String lookupString = name.startsWith("java:") ?
+                    name : "java:comp/env/" + name;
+
+            o = initialContext.lookup(lookupString);
+        } catch(Exception e) {
+            throw new IllegalArgumentException(e);
+        }
+        return o;
+    }
 
 }
