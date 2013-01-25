@@ -82,6 +82,7 @@
                 <exclude>modules/server-mgmt.jar</exclude>
                 <exclude>glassfish/**</exclude>
                 <exclude>modules/flashlight-agent.jar</exclude>
+		<exclude>modules/nucleus-domain.jar</exclude>
                 <exclude>META-INF/**</exclude>
 		<exclude>bin/**</exclude>
             </excludes>
