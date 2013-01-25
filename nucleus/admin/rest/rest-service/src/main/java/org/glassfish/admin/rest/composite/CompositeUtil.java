@@ -50,8 +50,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -88,6 +86,8 @@ import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.media.sse.EventOutput;
 
@@ -168,6 +168,20 @@ public class CompositeUtil {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+        public Set<Class<?>> getRestModels() {
+        Set<Class<?>>classes = new HashSet<Class<?>>();
+        for (ActiveDescriptor ad : Globals.getDefaultBaseServiceLocator()
+                .getDescriptors(BuilderHelper.createContractFilter(RestModel.class.getName()))) {
+            try {
+                classes.add(CompositeUtil.instance().getModel(Class.forName(ad.getImplementation())).getClass());
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        return classes;
     }
 
     /**

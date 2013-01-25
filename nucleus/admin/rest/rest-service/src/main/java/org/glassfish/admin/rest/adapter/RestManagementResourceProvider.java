@@ -48,7 +48,6 @@ import org.glassfish.admin.rest.generator.ResourcesGenerator;
 import org.glassfish.admin.rest.resources.GeneratorResource;
 import org.glassfish.admin.rest.resources.StatusGenerator;
 import org.glassfish.admin.rest.resources.custom.ManagementProxyResource;
-import org.glassfish.admin.restconnector.Constants;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceHandle;
@@ -66,6 +65,10 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.admin.rest.JavadocWadlGeneratorConfig;
+import org.glassfish.admin.rest.composite.RestModel;
+import org.glassfish.admin.restconnector.Constants;
+import org.glassfish.hk2.api.IndexedFilter;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.jersey.server.ServerProperties;
 
 
@@ -202,12 +205,12 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
     }
 
     @SuppressWarnings("unchecked")
-    private void addCompositeResources(Set<Class<?>> r, ServiceLocator habitat) {
-        List<ServiceHandle<RestResource>> handles = habitat.getAllServiceHandles(RestResource.class);
+    private void addCompositeResources(Set<Class<?>> r, ServiceLocator locator) {
+        List<ServiceHandle<RestResource>> handles = locator.getAllServiceHandles(RestResource.class);
         for (ServiceHandle<RestResource> handle : handles) {
             ActiveDescriptor<RestResource> ad = handle.getActiveDescriptor();
             if (!ad.isReified()) {
-                ad = (ActiveDescriptor<RestResource>) habitat.reifyDescriptor(ad);
+                ad = (ActiveDescriptor<RestResource>) locator.reifyDescriptor(ad);
             }
             r.add(ad.getImplementationClass());
         }

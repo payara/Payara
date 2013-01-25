@@ -40,11 +40,13 @@
 package org.glassfish.admin.rest.resources.composite;
 
 import org.glassfish.admin.rest.composite.RestModel;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  *
  * @author jdlee
  */
+@Service
 public interface Job extends RestModel {
     String getJobId();
     void setJobId(String jobid);
