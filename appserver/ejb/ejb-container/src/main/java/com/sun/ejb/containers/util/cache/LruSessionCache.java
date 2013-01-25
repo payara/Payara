@@ -121,7 +121,7 @@ public class LruSessionCache
     private static final String EXITING_TRIM_UNSORTED_TIMEDOUT_BEANS = "AS-EJB-00011";
 
     @LogMessageInfo(
-        message = "Can not find stateful session bean [{0}] in memory, and will not read it from disk because " +
+        message = "Cannot find stateful session bean [{0}] in memory, and will not read it from disk because " +
                   "current stateful session bean passivation-capable value is false",
         level = "INFO")
     private static final String SFSB_NOT_FOUND_WHEN_PASSIVATION_DISABLED = "AS-EJB-00049";

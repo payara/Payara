@@ -168,7 +168,7 @@ public class StatefulContainerFactory extends BaseContainerFactory
     static final String SFSB_HELPER_REMOVE_EXPIRED_BEANS_FAILED = "AS-EJB-00047";
 
     @LogMessageInfo(
-        message = "Disabling High Availability for the Stateful Session Bean {0}, as its marked non passivatable",
+        message = "Disabling high availability for the stateful session bean {0}, as its marked non passivatable",
         level = "WARNING")
     private static final String SFSB_HA_DISABLED_BY_PASSIVATION_SETTING = "AS-EJB-00051";
 
