@@ -41,12 +41,11 @@
 package org.apache.catalina.connector;
 
 import java.io.IOException;
-
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.WebConnection;
-
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.core.StandardContext;
 
@@ -64,6 +63,8 @@ public class WebConnectionImpl implements WebConnection {
     private ServletOutputStream outputStream;
 
     private Request request;
+
+    private final AtomicBoolean isClosed = new AtomicBoolean();
 
     // ----------------------------------------------------------- Constructor
 
@@ -98,31 +99,34 @@ public class WebConnectionImpl implements WebConnection {
 
     @Override
     public void close() throws Exception {
-        if ((request != null) && (request.isUpgrade())) {
-            HttpUpgradeHandler httpUpgradeHandler =
-                    request.getHttpUpgradeHandler();
-            try {
-                httpUpgradeHandler.destroy();
-            } finally {
-                ((StandardContext)request.getContext()).fireContainerEvent(
-                    ContainerEvent.PRE_DESTROY, httpUpgradeHandler);
-            }
-            request.getCoyoteRequest().getResponse().resume();
-        }
-        Exception exception = null;
-        try {
-            inputStream.close();
-        } catch(Exception ex) {
-            exception = ex;
-        }
-        try {
-            outputStream.close();
-        } catch(Exception ex) {
-            exception = ex;
-        }
+        // Make sure we run close logic only once
+        if (isClosed.compareAndSet(false, true)) {
+            if ((request != null) && (request.isUpgrade())) {
+                HttpUpgradeHandler httpUpgradeHandler =
+                        request.getHttpUpgradeHandler();
+                try {
+                    httpUpgradeHandler.destroy();
+                } finally {
+                    ((StandardContext)request.getContext()).fireContainerEvent(
+                        ContainerEvent.PRE_DESTROY, httpUpgradeHandler);
+                    request.getCoyoteRequest().getResponse().resume();
 
-        if (exception != null) {
-            throw exception;
+                }
+                Exception exception = null;
+                try {
+                    inputStream.close();
+                } catch(Exception ex) {
+                    exception = ex;
+                }
+                try {
+                    outputStream.close();
+                } catch(Exception ex) {
+                    exception = ex;
+                }
+                if (exception != null) {
+                    throw exception;
+                }
+            }
         }
     }
 
