@@ -77,5 +77,7 @@ public interface Job extends AdminCommandState {
     public File getJobsFile() ;
 
     public void setJobsFile(File jobsFile) ;
+
+    public String getScope();
     
 }

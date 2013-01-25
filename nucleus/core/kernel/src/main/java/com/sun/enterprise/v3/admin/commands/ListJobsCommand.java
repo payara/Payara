@@ -82,12 +82,12 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
     @Inject
     private ServerEnvironment serverEnvironment;
 
-    private static final String TITLE_NAME = "NAME";
-    private static final String TITLE_JOBID = "JOB ID";
-    private static final String TITLE_TIME = "TIME";
-    private static final String TITLE_STATE = "STATE";
-    private static final String TITLE_USER = "USER";
-    private static final String TITLE_NONE = "Nothing to list.";
+    protected static final String TITLE_NAME = "NAME";
+    protected static final String TITLE_JOBID = "JOB ID";
+    protected static final String TITLE_TIME = "TIME";
+    protected static final String TITLE_STATE = "STATE";
+    protected static final String TITLE_USER = "USER";
+    protected static final String TITLE_NONE = "Nothing to list.";
     public static final String NAME = "jobName";
     public static final String ID = "jobId";
     public static final String DATE = "executionDate";
@@ -102,13 +102,6 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
     @Override
     public void execute(AdminCommandContext context) {
 
-        report = context.getActionReport();
-
-        int longestName = TITLE_NAME.length();
-        int longestJobId = TITLE_JOBID.length();
-        int longestTime = TITLE_TIME.length();
-        int longestState = TITLE_STATE.length();
-        int longestUser = TITLE_USER.length();
 
 
         List<JobInfo> jobInfoList = new ArrayList<JobInfo>();
@@ -120,7 +113,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
             if (oneJob != null) {
                 List<String> userList =  SubjectUtil.getUsernamesFromSubject(oneJob.getSubject());
                 String message = oneJob.getActionReport() == null ? "" : oneJob.getActionReport().getMessage();
-                info = new JobInfo(oneJob.getId(),oneJob.getName(),oneJob.getCommandExecutionDate(),oneJob.getState().name(),"admin",message,oneJob.getJobsFile());
+                info = new JobInfo(oneJob.getId(),oneJob.getName(),oneJob.getCommandExecutionDate(),oneJob.getState().name(),userList.get(0),message,oneJob.getJobsFile());
 
             }  else {
                 if (jobManagerService.getCompletedJobs() != null) {
@@ -152,76 +145,12 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
                 }
             }
         }
-        for (JobInfo job :jobInfoList) {
-            int  jobId = job.jobId.length();
-            int time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(job.commandExecutionDate).length();
-            int name = job.jobName.length();
-            int state = job.exitCode.length();
-            int user = job.user.length();
 
-            if (name > longestName)
-                longestName = name;
-            if (time > longestTime)
-                longestTime = time;
-            if (jobId > longestJobId)
-                longestJobId = jobId;
-            if (state> longestState)
-                longestState = state;
+        display(jobInfoList,context);
 
-        }
-
-        if (jobInfoList.size() < 1) {
-            report.setMessage(TITLE_NONE);
-
-        }
-        longestName += 2;
-        longestJobId += 2;
-        longestState += 2;
-        longestTime += 2;
-        longestUser += 2;
-
-
-        String formattedLine =
-                "%-" + longestName
-                        + "s %-" + longestJobId
-                        + "s %-" + longestTime
-                        + "s %-" + longestState
-                        + "s %-" + longestUser
-                        + "s";
-
-
-        // no linefeed at the end!!!
-        boolean first = true;
-        MessagePart topMsg = report.getTopMessagePart();
-        Properties properties = report.getExtraProperties();
-        if (properties == null) {
-            properties = new Properties();
-            report.setExtraProperties(properties);
-        }
-        Collection<Map<String, Object>> details = new ArrayList<Map<String, Object>>();
-        properties.put("jobs", details);
-        for (JobInfo info : jobInfoList) {
-            if (first)    {
-                topMsg.setMessage(String.format(formattedLine, TITLE_NAME, TITLE_JOBID, TITLE_TIME, TITLE_STATE,TITLE_USER ));
-                first = false;
-            }
-
-            MessagePart msg = topMsg.addChild();
-            msg.setMessage(String.format(formattedLine, info.jobName, info.jobId,  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(info.commandExecutionDate), info.exitCode,info.user));
-            Map<String, Object> detail = new HashMap<String, Object>();
-            details.add(detail);
-            detail.put(NAME, info.jobName);
-            detail.put(ID, info.jobId);
-            detail.put(DATE, new Date(info.commandExecutionDate));
-            detail.put(CODE, info.exitCode);
-            detail.put(MESSAGE, info.message);
-            detail.put(USER, info.user);
-        }
-
-        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 
-    private static boolean skipJob(String name) {
+    public static boolean skipJob(String name) {
         return name == null || "attach".equals(name) || name.startsWith("_");
     }
 
@@ -232,7 +161,84 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
         return accessChecks;
     }
 
+    public void display(List<JobInfo> jobInfoList, AdminCommandContext context) {
+        report = context.getActionReport();
 
+
+        int longestName = TITLE_NAME.length();
+        int longestJobId = TITLE_JOBID.length();
+        int longestTime = TITLE_TIME.length();
+        int longestState = TITLE_STATE.length();
+        int longestUser = TITLE_USER.length();
+
+        for (JobInfo job :jobInfoList) {
+                   int  jobId = job.jobId.length();
+                   int time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(job.commandExecutionDate).length();
+                   int name = job.jobName.length();
+                   int state = job.exitCode.length();
+                   int user = job.user.length();
+
+                   if (name > longestName)
+                       longestName = name;
+                   if (time > longestTime)
+                       longestTime = time;
+                   if (jobId > longestJobId)
+                       longestJobId = jobId;
+                   if (state> longestState)
+                       longestState = state;
+
+               }
+
+               if (jobInfoList.size() < 1) {
+                   report.setMessage(TITLE_NONE);
+
+               }
+               longestName += 2;
+               longestJobId += 2;
+               longestState += 2;
+               longestTime += 2;
+               longestUser += 2;
+
+
+               String formattedLine =
+                       "%-" + longestName
+                               + "s %-" + longestJobId
+                               + "s %-" + longestTime
+                               + "s %-" + longestState
+                               + "s %-" + longestUser
+                               + "s";
+
+
+               // no linefeed at the end!!!
+               boolean first = true;
+               MessagePart topMsg = report.getTopMessagePart();
+               Properties properties = report.getExtraProperties();
+               if (properties == null) {
+                   properties = new Properties();
+                   report.setExtraProperties(properties);
+               }
+               Collection<Map<String, Object>> details = new ArrayList<Map<String, Object>>();
+               properties.put("jobs", details);
+               for (JobInfo info : jobInfoList) {
+                   if (first)    {
+                       topMsg.setMessage(String.format(formattedLine, TITLE_NAME, TITLE_JOBID, TITLE_TIME, TITLE_STATE,TITLE_USER ));
+                       first = false;
+                   }
+
+                   MessagePart msg = topMsg.addChild();
+                   msg.setMessage(String.format(formattedLine, info.jobName, info.jobId,  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(info.commandExecutionDate), info.exitCode,info.user));
+                   Map<String, Object> detail = new HashMap<String, Object>();
+                   details.add(detail);
+                   detail.put(NAME, info.jobName);
+                   detail.put(ID, info.jobId);
+                   detail.put(DATE, new Date(info.commandExecutionDate));
+                   detail.put(CODE, info.exitCode);
+                   detail.put(MESSAGE, info.message);
+                   detail.put(USER, info.user);
+               }
+
+               report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+    }
 
 }
 

@@ -67,21 +67,21 @@ import java.util.logging.Logger;
 @Service(name="job-persistence")
 public class JobPersistenceService implements JobPersistence {
 
-    private Marshaller jaxbMarshaller ;
+    protected Marshaller jaxbMarshaller ;
 
-    private Unmarshaller jaxbUnmarshaller;
+    protected Unmarshaller jaxbUnmarshaller;
 
-    private JobInfos jobInfos;
+    protected JobInfos jobInfos;
 
     @Inject
     private JobManager jobManager;
 
-    private JAXBContext jaxbContext;
+    protected JAXBContext jaxbContext;
 
-    private final static Logger logger = LogDomains.getLogger(JobPersistenceService.class, LogDomains.ADMIN_LOGGER);
+    protected final static Logger logger = LogDomains.getLogger(JobPersistenceService.class, LogDomains.ADMIN_LOGGER);
 
 
-    private static final LocalStringManagerImpl adminStrings =
+    protected static final LocalStringManagerImpl adminStrings =
             new LocalStringManagerImpl(JobPersistenceService.class);
     @Override
     public  void persist(Object obj) {

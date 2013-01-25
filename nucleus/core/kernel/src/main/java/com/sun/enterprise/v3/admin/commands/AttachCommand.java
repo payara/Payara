@@ -78,27 +78,27 @@ public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCo
 
     
     public static final String COMMAND_NAME = "attach";
-    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(AttachCommand.class);
+    protected final static LocalStringManagerImpl strings = new LocalStringManagerImpl(AttachCommand.class);
 
-    private AdminCommandEventBroker eventBroker;
-    private Job attached;
+    protected AdminCommandEventBroker eventBroker;
+    protected Job attached;
 
     @Inject
     JobManager registry;
 
     @Param(primary=true, optional=false, multiple=false)
-    String jobID;
+    protected String jobID;
 
     protected final List<AccessRequired.AccessCheck> accessChecks = new ArrayList<AccessRequired.AccessCheck>();
 
     @Override
     public void execute(AdminCommandContext context) {
         eventBroker = context.getEventBroker();
-        ActionReport ar = context.getActionReport();
+
         attached = registry.get(jobID);
         JobInfo jobInfo = null;
         String jobName = null;
-        String attachedUser = SubjectUtil.getUsernamesFromSubject(context.getSubject()).get(0);
+
         if (attached == null) {
             //try for completed jobs
             if (registry.getCompletedJobs() != null)
@@ -109,6 +109,43 @@ public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCo
 
         }
 
+        attach(attached,jobInfo,context,jobName);
+
+    }
+
+    @Override
+    public void onAdminCommandEvent(String name, Object event) {
+        if (name == null || name.startsWith("client.")) { //Skip nonsence or own events
+            return;
+        }
+        if (AdminCommandStateImpl.EVENT_STATE_CHANGED.equals(name) && 
+                ((Job) event).getState().equals(COMPLETED)) {
+            synchronized (attached) {
+                attached.notifyAll();
+            }
+        } else {
+            eventBroker.fireEvent(name, event); //Forward
+        }
+    }
+
+
+    @Override
+    public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
+        accessChecks.add(new AccessRequired.AccessCheck("jobs/job/$jobID","READ"));
+        return accessChecks;
+    }
+
+    protected void purgeJob(String jobid) {
+        try {
+            registry.purgeJob(jobid);
+            registry.purgeCompletedJobForId(jobid);
+        } catch (Exception ex) {
+        }
+    }
+
+    public void attach(Job attached, JobInfo jobInfo, AdminCommandContext context,String jobName) {
+        ActionReport ar = context.getActionReport();
+        String attachedUser = SubjectUtil.getUsernamesFromSubject(context.getSubject()).get(0);
         if ((attached == null && jobInfo == null) || (attached != null && attached.getName().startsWith("_"))
                 || (attached != null && AttachCommand.COMMAND_NAME.equals(attached.getName()))) {
             ar.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -140,7 +177,7 @@ public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCo
 
                     }
                     ar.setActionExitCode(attached.getActionReport().getActionExitCode());
-                    ar.appendMessage(strings.getLocalString("attach.finished", "Command {0} executed {1}",attached.getName(),attached.getActionReport().getActionExitCode()));
+                    ar.appendMessage(strings.getLocalString("attach.finished", "Command {0} executed with status {1}",attached.getName(),attached.getActionReport().getActionExitCode()));
                 }
             }
         } else {
@@ -156,37 +193,6 @@ public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCo
                 ar.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                 ar.appendMessage(strings.getLocalString("attach.finished", "Command {0} executed{1}",jobName,ActionReport.ExitCode.SUCCESS));
             }
-        }
-
-    }
-
-    @Override
-    public void onAdminCommandEvent(String name, Object event) {
-        if (name == null || name.startsWith("client.")) { //Skip nonsence or own events
-            return;
-        }
-        if (AdminCommandStateImpl.EVENT_STATE_CHANGED.equals(name) && 
-                ((Job) event).getState().equals(COMPLETED)) {
-            synchronized (attached) {
-                attached.notifyAll();
-            }
-        } else {
-            eventBroker.fireEvent(name, event); //Forward
-        }
-    }
-
-
-    @Override
-    public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
-        accessChecks.add(new AccessRequired.AccessCheck("jobs/job/$jobID","READ"));
-        return accessChecks;
-    }
-
-    private void purgeJob(String jobid) {
-        try {
-            registry.purgeJob(jobid);
-            registry.purgeCompletedJobForId(jobid);
-        } catch (Exception ex) {
         }
     }
 

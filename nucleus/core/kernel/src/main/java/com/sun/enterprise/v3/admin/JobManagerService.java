@@ -96,7 +96,7 @@ public class JobManagerService implements JobManager,PostConstruct {
 
     private AtomicInteger lastId = new AtomicInteger(0);
 
-    private static final LocalStringManagerImpl adminStrings =
+    protected static final LocalStringManagerImpl adminStrings =
             new LocalStringManagerImpl(JobManagerService.class);
 
     private final static Logger logger = KernelLoggerInfo.getLogger();
@@ -111,7 +111,7 @@ public class JobManagerService implements JobManager,PostConstruct {
 
     private final String JOBS_FILE = "jobs.xml";
 
-    private JAXBContext jaxbContext;
+    protected JAXBContext jaxbContext;
 
     protected File jobsFile;
 

@@ -182,5 +182,10 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
         return payload;
     }
 
+    @Override
+       public String getScope() {
+           return scope;
+       }
+
 
 }
