@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,7 +54,6 @@ import javax.ejb.FinderException;
 
 import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
-import org.glassfish.api.invocation.InvocationException;
 import org.glassfish.api.invocation.ComponentInvocation;
 
 import com.sun.ejb.EjbInvocation;
@@ -227,9 +226,7 @@ public class TimerWrapper
      */
     private static void checkCallPermission() throws IllegalStateException {
 
-        boolean allowed = false;
-
-        // Can't store a static ref because in embedded container it can be 
+        // Can't store a static ref because in embedded container it can be
         // changed by server restart
         EjbContainerUtil ejbContainerUtil = EjbContainerUtilImpl.getInstance();
         EJBTimerService timerService = EJBTimerService.getEJBTimerService();
@@ -238,44 +235,20 @@ public class TimerWrapper
                 ("EJBTimerService is not available");
         }
 
-        try {
-            ComponentInvocation inv = ejbContainerUtil.getCurrentInvocation();
-            if (inv == null)
-                throw new IllegalStateException
-                    ("Invocation cannot be null");
-
-            ComponentInvocation.ComponentInvocationType invType = inv.getInvocationType();
-            if( invType == ComponentInvocation.ComponentInvocationType.EJB_INVOCATION ) { 
-                if ( inv instanceof EjbInvocation ) {
-                    ComponentContext context = ((EjbInvocation) inv).context;
-                    // Delegate check to EJB context.  Let any 
-                    // IllegalStateException bubble up.
-                    context.checkTimerServiceMethodAccess();
-                    allowed = true;
-                } else {
-                    // NOTE : There shouldn't be any cases where an EJB
-                    // container uses com.sun.enterprise.ComponentInvocation
-                    // instead of com.sun.ejb.Invocation and timer method
-                    // access is allowed. No EJBContextImpl is available
-                    // to perform checks.
-                    allowed = false;
-                }
-            } else if( invType == ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION ) {
-                throw new IllegalStateException
-                    ("Web tier access to EJB timers through local " +
-                     "interfaces is not portable");
+        ComponentInvocation inv = ejbContainerUtil.getCurrentInvocation();
+        if (inv == null) {
+            throw new IllegalStateException
+                ("Invocation cannot be null");
+        }
+        ComponentInvocation.ComponentInvocationType invType = inv.getInvocationType();
+        if( invType == ComponentInvocation.ComponentInvocationType.EJB_INVOCATION ) {
+            if ( inv instanceof EjbInvocation ) {
+                ComponentContext context = ((EjbInvocation) inv).context;
+                // Delegate check to EJB context.  Let any
+                // IllegalStateException bubble up.
+                context.checkTimerServiceMethodAccess();
             }
-        } catch(InvocationException ie) {
-            IllegalStateException ise = new IllegalStateException
-                ("Operation not allowed");
-            ise.initCause(ie);
-            throw ise;
         }
-
-        if( !allowed ) {
-            throw new IllegalStateException("Operation not allowed");
-        }
-        
     }
 
     public SerializableObjectFactory getSerializableObjectFactory() {
