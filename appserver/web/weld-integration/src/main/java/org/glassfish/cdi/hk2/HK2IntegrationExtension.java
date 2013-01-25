@@ -78,6 +78,8 @@ public class HK2IntegrationExtension implements Extension {
      */
     @SuppressWarnings("unused")
     private <T> void injectionTargetObserver(@Observes ProcessInjectionTarget<T> pit) {
+        if (locator == null) return;
+        
         InjectionTarget<?> injectionTarget = pit.getInjectionTarget();
         Set<InjectionPoint> injectionPoints = injectionTarget.getInjectionPoints();
         
@@ -100,6 +102,8 @@ public class HK2IntegrationExtension implements Extension {
      */
     @SuppressWarnings({ "unused", "unchecked", "rawtypes" })
     private void afterDiscoveryObserver(@Observes AfterBeanDiscovery abd) {
+        if (locator == null) return;
+        
         HashSet<Class<? extends Annotation>> customScopes = new HashSet<Class<? extends Annotation>>();
         
         for (ActiveDescriptor<?> descriptor : foundWithHK2.values()) {
@@ -133,6 +137,8 @@ public class HK2IntegrationExtension implements Extension {
      */
     @SuppressWarnings("unused")
     private void afterDeploymentValidation(@Observes AfterDeploymentValidation event, BeanManager manager) {
+        if (locator == null) return;
+        
         CDISecondChanceResolver jit = new CDISecondChanceResolver(locator, manager);
         
         ServiceLocatorUtilities.addOneConstant(locator, jit);

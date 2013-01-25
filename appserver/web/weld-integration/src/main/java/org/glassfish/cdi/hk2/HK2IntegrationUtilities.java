@@ -80,7 +80,7 @@ public class HK2IntegrationUtilities {
             return (ServiceLocator) ic.lookup(APP_SL_NAME);
         }
         catch (NamingException ne) {
-            throw new AssertionError(ne);
+            return null;
         }
     }
     
