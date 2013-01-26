@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -110,6 +110,7 @@ public class InstanceHandler {
             @HandlerInput(name="endpoint",   type=String.class, required=true),
             @HandlerInput(name="target",   type=String.class, required=true),
             @HandlerInput(name="attrs", type=Map.class, required=false),
+            @HandlerInput(name="profiler", type=String.class, required=true),
             @HandlerInput(name="options",   type=List.class),
             @HandlerInput(name="deleteProfileEndpoint",   type=String.class),
             @HandlerInput(name="origList",   type=List.class)
@@ -129,9 +130,7 @@ public class InstanceHandler {
                 return;
             }
             Map<String, Object> payload = new HashMap<String, Object>();
-            if (endpoint.contains("profiler")) {
-                payload.put("profiler", "true");
-            }
+            payload.put("profiler", (String)handlerCtx.getInputValue("profiler"));
             prepareJvmOptionPayload(payload, target, options);
             RestUtil.restRequest(endpoint, payload, "POST", null, false, true);
         } catch (Exception ex) {
