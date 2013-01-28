@@ -37,7 +37,7 @@ Use is subject to license terms.
 
     <profiles>
         <profile>
-            <id>release-phase2</id>
+            <id>ips</id>
             <activation>
                 <property>
                     <name>release-phase-all</name>

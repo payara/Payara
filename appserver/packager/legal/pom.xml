@@ -52,9 +52,5 @@
     <name>Glassfish Legal content distribution fragment</name>
     <description>This pom describes how to assemble the Glassfish legal content distribution fragment</description>
     <packaging>distribution-fragment</packaging>
-    
-    <properties>
-        <temp.dir>${project.build.directory}/${stage.dir.name}/glassfish/legal</temp.dir>
-    </properties>
 </project>
 

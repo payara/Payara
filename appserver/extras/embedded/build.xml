@@ -63,12 +63,12 @@
 
     <target name="create.distribution" depends="get.distribution.type">
         <antcall target="makeJarDir"/>
-        <antcall target="removeJarsNotNeeded"/>
+<!--        <antcall target="removeJarsNotNeeded"/>
 	<antcall target="addDtds"/>
    	<antcall target="addRars"/>
 	<antcall target="addEjbTimer"/>
         <antcall target="rejar"/>
-        <attachArtifact file="${finaljar}"/>
+        <attachArtifact file="${finaljar}"/>-->
      </target>
 
      <target name="makeJarDir">

@@ -53,6 +53,32 @@
     <packaging>distribution-fragment</packaging>
     <description>This pom describes how to assemble the MQ package</description>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>process-step1</id>
+                    </execution>
+                    <execution>
+                        <id>process-step2</id>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>process-step3</id>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    
     <dependencies>
        <dependency>
             <groupId>org.glassfish.mq</groupId>

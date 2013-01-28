@@ -52,5 +52,38 @@
     <name>Glassfish OSGi Feature Pack Incorporation Package</name>
     <packaging>distribution-fragment</packaging>
     <description>This pom describes how to assemble the GlassFish OSGi Feature pack Incorporation package</description>
+    
+    <profiles>
+        <profile>
+            <id>ips</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>  
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.glassfish.build</groupId>
+                        <artifactId>glassfishbuild-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>process-step5</id>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>                            
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-resources</id>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>    
 </project>
 

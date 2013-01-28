@@ -56,21 +56,49 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>clean-domain</id>
+                    </execution>            
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
-                <extensions>true</extensions>
                 <executions>
                     <execution>
                         <id>create-domain</id>
                         <goals>
                             <goal>exec</goal>
-                        </goals>
-                        <phase>process-resources</phase>
+                        </goals>                        
                     </execution>                    
                 </executions>
-            </plugin>          
-        </plugins>        
+            </plugin>
+        </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>ips</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>               
+                    <plugin>
+                        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+                        <artifactId>maven-antrun-extended-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>create-ips-distribution</id>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     
     <dependencies>
         <!-- pull web packages -->

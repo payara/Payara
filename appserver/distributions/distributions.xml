@@ -69,11 +69,8 @@
 <property name="javaeesdk.release.repository.url" value="http://pkg.oracle.com/javaeesdk/6/release/"/>
 <property name="sun.contrib.repository.url" value="http://pkg.oracle.com/glassfish/v3/contrib/"/>
 
-<target name="init"> 
-    
-</target>
 
-<target name="create-nucleus-distributions"> 
+<target name="create-minnow-distributions"> 
     <ant antfile="../minnow/minnow-distributions.xml"/>
     <mkdir dir="${image.root}"/>
     <mkdir dir="${installer.image.dir}"/>
@@ -82,7 +79,7 @@
     </antcall>
 </target>
 
-<target name="create-web-distributions" depends="create-nucleus-distributions"> 
+<target name="create-web-distributions" depends="create-minnow-distributions"> 
     <ant antfile="../web/web-distributions.xml"/>
     <mkdir dir="${image.root}"/>
     <mkdir dir="${installer.image.dir}"/>

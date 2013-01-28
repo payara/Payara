@@ -55,7 +55,7 @@
     <packaging>distribution-fragment</packaging>
 
     <properties>
-        <temp.dir>${project.build.directory}/${stage.dir.name}</temp.dir>        
+        <temp.dir>${stage.dir}/glassfish</temp.dir>        
     </properties>
 
     <build>
