@@ -147,7 +147,7 @@
         <!-- optional -->
         <dependency>
             <groupId>javax.enterprise.deploy</groupId>
-            <artifactId>javax.enteprise.deploy-api</artifactId>
+            <artifactId>javax.enterprise.deploy-api</artifactId>
             <optional>true</optional>
         </dependency>
         <!--
