@@ -75,7 +75,7 @@
         </fileSet>
         <fileSet>
             <directory>${temp.dir}/${install.dir.name}</directory>
-            <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
+            <outputDirectory>${install.dir.name}</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>${temp.dir}</directory>
