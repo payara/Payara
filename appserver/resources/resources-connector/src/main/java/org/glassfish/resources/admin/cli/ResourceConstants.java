@@ -240,4 +240,6 @@ public final class ResourceConstants {
 
     public static final String WORK_SECURITY_MAP_MAPPED_PRINCIPAL = "mapped-principal";
 
+    // concurrent resource objects
+    public static final String CONTEXT_INFO = "context-info";
 }
