@@ -468,7 +468,7 @@ public final class CreateDomainCommand extends CLICommand {
             throw new CommandValidationException(strings.get("DomainExists", domainName));
         }
         DomainConfig domainConfig = null;
-        if (template == null || (template != null && template.endsWith(".jar"))) {
+        if (template == null || template.endsWith(".jar")) {
             domainConfig = new DomainConfig(domainName,
                     domainPath, adminUser, adminPassword,
                     masterPassword, saveMasterPassword,
@@ -555,9 +555,7 @@ public final class CreateDomainCommand extends CLICommand {
                     httpSSLPort, iiopSSLPort,
                     iiopMutualAuthPort, jmxPort, osgiShellTelnetPort, javaDebuggerPort,
                     domainProperties);
-            if (template != null) {
-                domainConfig.put(DomainConfig.K_TEMPLATE_NAME, template);
-            }
+            domainConfig.put(DomainConfig.K_TEMPLATE_NAME, template);
 
             domainConfig.put(DomainConfig.K_VALIDATE_PORTS,
                     Boolean.valueOf(checkPorts));
