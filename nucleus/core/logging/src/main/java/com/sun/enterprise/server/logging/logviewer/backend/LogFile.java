@@ -41,7 +41,8 @@
 package com.sun.enterprise.server.logging.logviewer.backend;
 
 import java.io.BufferedReader;
-import java.io.EOFException;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -49,9 +50,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 
 import com.sun.enterprise.server.logging.LogFacade;
+import com.sun.enterprise.server.logging.parser.LogParser;
+import com.sun.enterprise.server.logging.parser.LogParserFactory;
+import com.sun.enterprise.server.logging.parser.LogParserListener;
+import com.sun.enterprise.server.logging.parser.ParsedLogRecord;
 
 
 /**
@@ -68,6 +75,8 @@ import com.sun.enterprise.server.logging.LogFacade;
  */
 public class LogFile implements java.io.Serializable {
 
+    private static final long serialVersionUID = -2960142541274652618L;
+    
     private static SimpleDateFormat SIMPLE_DATE_FORMAT =
             new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
@@ -75,13 +84,9 @@ public class LogFile implements java.io.Serializable {
      * Constructor
      */
     public LogFile(String name) {
+        _logFileName = name;
         _recordIdx.add(Long.valueOf(0));
-        setLogFileName(name);
-        //START CR 6697509
-        //buildLogFileIndex();
-        //END CR 6697509
     }
-
 
     /**
      * This method returns up to _indexSize records starting with the given
@@ -93,50 +98,62 @@ public class LogFile implements java.io.Serializable {
         return getLogEntries(startingRecord, getIndexSize());
     }
 
-
     /**
      * This method returns up to _indexSize records starting with the given
      * record number.  It will return up to "maxRecords" records.
      *
      * @param    startingRecord    The starting point to search for LogEntries
-     * @param    masRecords    The maximum number of records to return
+     * @param    maxRecords    The maximum number of records to return
      */
-    public List getLogEntries(long startingRecord, long maxRecords) {
+    public List getLogEntries(final long startingRecord, final long maxRecords) {
         if (startingRecord < 0) {
             return null;
         }
 
         // Open the file at the desired starting Record
-        BufferedReader reader = getFilePosition(startingRecord);
-        List results = new ArrayList();
+        final long recordsToIgnore = (startingRecord % getIndexSize());
+        BufferedReader reader = getFilePosition(startingRecord - recordsToIgnore);
+        final List results = new ArrayList();
+        if (reader == null) {
+            return results;
+        }
         try {
-            while (results.size() < maxRecords) {
-                // Get a line from the log file
-                StringBuffer buffer = new StringBuffer();
-                String line = reader.readLine();
-                if (line == null) {
-                    break;
-                }
-                if (!line.startsWith(RECORD_BEGIN_MARKER)) {
-                    continue;
-                }
+            
+            File logFile = new File(getLogFileName());
+            LogParser logParser = LogParserFactory.getInstance().createLogParser(logFile );
+            logParser.parseLog(reader, new LogParserListener() {
 
-                // Read the whole record
-                buffer.append(line);
-                while (line !=null && !line.endsWith(RECORD_END_MARKER)) {
-                    buffer.append("\n");
-                    line = reader.readLine();
-                    buffer.append(line);
-                }
+                long counter = 0;
 
-                // Read the LogEntry
-                try {
-                    results.add(new LogEntry(buffer.toString(),
-                            startingRecord + results.size()));
-                } catch (IllegalArgumentException ex) {
-                    LogFacade.LOGGING_LOGGER.log(Level.FINE, "Could not read the log entry", ex);
+                @Override
+                public void outputSummary(BufferedWriter writer, Object... objects)
+                        throws IOException {
                 }
-            }
+                
+                @Override
+                public void foundLogRecord(long position, ParsedLogRecord logRecord) {
+                    counter++;
+                    if (counter <= recordsToIgnore) {
+                        return;
+                    }
+                    if (results.size() < maxRecords) {
+                        LogEntry entry = new LogEntry(logRecord.getFormattedLogRecord(),
+                                startingRecord + results.size());                    
+                        entry.setLoggedDateTime(new Date(logRecord.getTimeMillis()));
+                        entry.setLoggedLevel(logRecord.getLevel());
+                        entry.setLoggedLoggerName(logRecord.getLogger());
+                        entry.setLoggedMessage(logRecord.getMessage());
+                        entry.setLoggedNameValuePairs(logRecord.getSupplementalAttributes().toString());
+                        entry.setLoggedProduct(logRecord.getComponentId());
+                        entry.setMessageId(logRecord.getMessageId());                        
+                        results.add(entry);
+                    }
+                }
+                
+                @Override
+                public void close() throws IOException {                    
+                }
+            });
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         } finally {
@@ -158,52 +175,36 @@ public class LogFile implements java.io.Serializable {
      * the beginning of every record after the size specified by '_indexSize'
      * variable.
      */
-    protected synchronized void buildLogFileIndex() {
-        int cnt, idx;
-        // NOTE: This should be -1 for indexing at the right intervals
-        long recordCount = -1;
-        char recordBeginMarker[] = RECORD_BEGIN_MARKER.toCharArray();
-        int recordBeginMarkerLen = recordBeginMarker.length;
-
+    private synchronized void buildLogFileIndex() {
         // Open the file and skip to the where we left off
-        long charPos = ((Long) _recordIdx.get(_recordIdx.size() - 1)).longValue();
-        BufferedReader reader = getLogFileReader(charPos);
-        long localIndexSize = getIndexSize();
+        final long startPos = (Long) _recordIdx.get(_recordIdx.size() - 1);
+        final long localIndexSize = getIndexSize();
+        BufferedReader reader = getLogFileReader(startPos);
         try {
-            while (true) {
-                try {
-                    cnt = reader.read();
-                    if (cnt == -1) {
-                        break;
-                    }
-                    charPos++;
+            File logFile = new File(getLogFileName());
+            LogParser logParser = LogParserFactory.getInstance().createLogParser(logFile );
+            logParser.parseLog(reader, new LogParserListener() {
+                
+                long recordNumber = (_recordIdx.size() - 1) * localIndexSize;
 
-                    // Compare to RECORD_BEGIN_MARKER
-                    for (idx = 0; idx < recordBeginMarkerLen; idx++) {
-                        if (cnt != recordBeginMarker[idx]) {
-                            break;
-                        }
-                        cnt = reader.read();
-                        charPos++;
-                    }
-                    if (idx == recordBeginMarkerLen) {
-                        // Begining of a new record
-                        recordCount++;
-                        if (recordCount == localIndexSize) {
-                            // Now we have traversed the records equal
-                            // to index size. Time to add a new entry
-                            // into the index.
-                            recordCount = 0;
-                            _recordIdx.add(Long.valueOf(charPos - (recordBeginMarkerLen + 1)));
-                        }
-                    }
-                } catch (EOFException ex) {
-                    break;
-                } catch (Exception ex) {
-                    LogFacade.LOGGING_LOGGER.log(Level.FINE, "Error trying to position where we left off", ex);
-                    break;
+                @Override
+                public void outputSummary(BufferedWriter writer, Object... objects)
+                        throws IOException {
                 }
-            }
+                
+                @Override
+                public void foundLogRecord(long position, ParsedLogRecord object) {                    
+                    long modIndex = recordNumber % localIndexSize;
+                    if (modIndex == 0) {
+                        _recordIdx.add((Long)(startPos+position));
+                    }
+                    recordNumber++;
+                }
+                
+                @Override
+                public void close() throws IOException {                    
+                }
+            });
         } catch (Exception ex) {
             LogFacade.LOGGING_LOGGER.log(Level.FINE, "Error trying to position where we left off", ex);
         } finally {
@@ -216,72 +217,24 @@ public class LogFile implements java.io.Serializable {
         }
     }
 
-
     /**
      * This method returns the file position given the record number.
      *
      * @return The file position.
      * @param    recordNumber    The Record Number
      */
-    protected BufferedReader getFilePosition(long recordNumber) {
+    private BufferedReader getFilePosition(long recordNumber) {
         // The index is stored from the second slot. i.e., if there
         // are 100 records and the index will be on 20, 40, 60, 80, 100
         // if the _indexSize is 20. We don't store '0' hence we subtract
         // from 1 to get the right index
         int index = (int) (recordNumber / getIndexSize());
-        if (_recordIdx.size() <= index) {
-            // We have not indexed enough
-            buildLogFileIndex();
-            if (_recordIdx.size() <= index) {
-                // Hmm... something's not right
-                throw new IllegalArgumentException(
-                        "Attempting to access Log entries that don't exist! ");
-            }
+        if (index > _recordIdx.size()-1) {
+            return null;
         }
-        return getRecordPosition(index,
-                (int) (recordNumber % getIndexSize()));
+        Long filePosition = (Long) _recordIdx.get(index);
+        return getLogFileReader(filePosition);
     }
-
-
-    /**
-     * Gets the precise record position from the specified FilePosition.
-     */
-    private BufferedReader getRecordPosition(int index, int recordsToAdvance) {
-        // Get the indexed file position
-        long filePosition = ((Long) _recordIdx.get(index)).longValue();
-        BufferedReader reader = getLogFileReader(filePosition);
-
-        char recordBeginMarker[] = RECORD_BEGIN_MARKER.toCharArray();
-        int recordBeginMarkerLen = recordBeginMarker.length;
-        int ch;
-        int idx;
-        while (recordsToAdvance > 0) {
-            try {
-                // If we read past the end, throw exception
-                ch = reader.read();
-                filePosition++;
-
-                // Compare to RECORD_BEGIN_MARKER
-                for (idx = 0; idx < recordBeginMarkerLen; idx++) {
-                    if (ch != recordBeginMarker[idx]) {
-                        break;
-                    }
-                    ch = reader.read();
-                    filePosition++;
-                }
-                if (idx == recordBeginMarkerLen) {
-                    // Begining of a new record
-                    recordsToAdvance--;
-                }
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
-        // Return the reader
-        return reader;
-    }
-
 
     /**
      * This method opens the server.log file and moves the stream to
@@ -291,10 +244,13 @@ public class LogFile implements java.io.Serializable {
         FileInputStream file = null;
         try {
             file = new FileInputStream(getLogFileName());
-            long bytesSkipped = file.skip(fromFilePosition);
-            if (bytesSkipped != fromFilePosition) {
-                if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) { 
-                    LogFacade.LOGGING_LOGGER.log(Level.FINE, "Did not skip exact bytes while positioning reader in " + getLogFileName());
+            long bytesToSkip = fromFilePosition-1;
+            if (bytesToSkip > 0) {
+                long bytesSkipped = file.skip(bytesToSkip);
+                if (bytesSkipped != fromFilePosition) {
+                    if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) { 
+                        LogFacade.LOGGING_LOGGER.log(Level.FINE, "Did not skip exact bytes while positioning reader in " + getLogFileName());
+                    }
                 }
             }
             BufferedReader reader =
@@ -313,7 +269,6 @@ public class LogFile implements java.io.Serializable {
         return null;
     }
 
-
     /**
      *
      */
@@ -321,30 +276,14 @@ public class LogFile implements java.io.Serializable {
         return _logFileName;
     }
 
-
-    /**
-     *
-     */
-    public void setLogFileName(String filename) {
-        if (filename.equals(getLogFileName())) {
-            return;
-        }
-        _logFileName = filename;
-        _recordIdx = new ArrayList();
-        _recordIdx.add(Long.valueOf(0));
-    }
-
-
     /**
      * The log records are indexed, this method returns the last index.  It
      * will ensure that the indexes are up-to-date.
      */
     public long getLastIndexNumber() {
-        // Ensure the file is fully indexed for this call
         buildLogFileIndex();
         return _recordIdx.size() - 1;
     }
-
 
     /**
      *
@@ -352,16 +291,6 @@ public class LogFile implements java.io.Serializable {
     public long getIndexSize() {
         return _indexSize;
     }
-
-
-    /**
-     * The number of records between indexes.  This is also used as the max
-     * number of records returned from getLogEntries(long).
-     */
-    public void setIndexSize(long indexSize) {
-        _indexSize = indexSize;
-    }
-
 
     /**
      * Class to manage LogEntry information
@@ -374,45 +303,7 @@ public class LogFile implements java.io.Serializable {
         private static final long serialVersionUID = -8597022493595023899L;
         
         public LogEntry(String line, long recordNumber) {
-            if (!line.startsWith(RECORD_BEGIN_MARKER)) {
-                throw new IllegalArgumentException(
-                        "Log Entries must start with: '" + RECORD_BEGIN_MARKER +
-                                "': '" + line + "'.");
-            }
-            
-            line = line.substring(RECORD_BEGIN_MARKER.length());            
-            String[] tokens = line.split(FIELD_SEPARATOR_REGEX);
-
-            // We expect atleast the following tokens to be in the first line
-            // [#, DateTime, log level, Product Name, Logger Name, Name Value
-            // Pairs.
-            // If we don't have them here. Then it's a wrong message.
-            if (!(tokens.length > 5)) {
-                throw new IllegalArgumentException(
-                        "Log Entry does not contain all required fields: '" +
-                                line + "'.");
-            }
-
-            // The first token is the Record Begin Marker
-            try {
-                setLoggedDateTime(
-                        SIMPLE_DATE_FORMAT.parse(tokens[0]));
-                setLoggedLevel(tokens[1]);
-                setLoggedProduct(tokens[2]);
-                setLoggedLoggerName(tokens[3]);
-                setLoggedNameValuePairs(tokens[4]);
-                String message = tokens[5];
-
-                if (message != null) {
-                    setLoggedMessage(message);
-                }
-                setRecordNumber(recordNumber);
-            } catch (Exception e) {
-                RuntimeException t =
-                        new RuntimeException("Error in building Log Entry ");
-                t.initCause(e);
-                throw t;
-            }
+            setRecordNumber(recordNumber);
         }
 
         /**
@@ -494,7 +385,6 @@ public class LogFile implements java.io.Serializable {
             this.loggedNameValuePairs = loggedNameValuePairs;
         }
 
-
         /**
          *
          */
@@ -538,9 +428,8 @@ public class LogFile implements java.io.Serializable {
         }
 
         public String toString() {
-            return "" + getRecordNumber();
+            return getRecordNumber() + ":" + getLoggedMessage();
         }
-
 
         private long recordNumber = -1;
         private Date loggedDateTime = null;
@@ -551,15 +440,9 @@ public class LogFile implements java.io.Serializable {
         private String loggedMessage = null;
         private String messageId = "";
     }
-
-
-    public static final String RECORD_BEGIN_MARKER = "[#|";
-    public static final String RECORD_END_MARKER = "|#]";
-    public static final String FIELD_SEPARATOR = "|";
-
-    private static final String FIELD_SEPARATOR_REGEX = "\\|";
     
     private long _indexSize = 10;
     private String _logFileName = null;
-    private List _recordIdx		= new ArrayList();
+    private List _recordIdx   = new ArrayList();
+    
 }

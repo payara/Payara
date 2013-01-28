@@ -1,0 +1,310 @@
+[#|2012-10-19T15:26:37.531-0400|INFO|44.0|javax.enterprise.logging|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674797531;_LevelValue=800;_MessageID=NCLS-LOGGING-00009;|Running GlassFish Version: GlassFish Server Open Source Edition  4.0  (build sanshriv-private)|#]
+
+[#|2012-10-19T15:26:37.534-0400|INFO|44.0|javax.enterprise.logging|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674797534;_LevelValue=800;_MessageID=NCLS-LOGGING-00010;|Server log file is using Formatter class: com.sun.enterprise.server.logging.UniformLogFormatter|#]
+
+[#|2012-10-19T15:26:37.848-0400|INFO|44.0|com.sun.enterprise.config.modularity.StartupConfigBeanOverrider|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674797848;_LevelValue=800;|Starting the config overriding procedure|#]
+
+[#|2012-10-19T15:26:38.095-0400|INFO|44.0|com.sun.enterprise.config.modularity.StartupConfigBeanOverrider|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674798095;_LevelValue=800;|Finished the config overriding procedure|#]
+
+[#|2012-10-19T15:26:38.463-0400|INFO|44.0|javax.enterprise.system.core.com.sun.enterprise.v3.services.impl|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674798463;_LevelValue=800;|Grizzly Framework 2.3 started in: 25ms - bound to [/0.0.0.0:8,080]|#]
+
+[#|2012-10-19T15:26:38.526-0400|INFO|44.0|javax.enterprise.system.core.com.sun.enterprise.v3.services.impl|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674798526;_LevelValue=800;|Grizzly Framework 2.3 started in: 10ms - bound to [/0.0.0.0:8,181]|#]
+
+[#|2012-10-19T15:26:38.536-0400|INFO|44.0|javax.enterprise.system.core.com.sun.enterprise.v3.services.impl|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674798536;_LevelValue=800;|Grizzly Framework 2.3 started in: 3ms - bound to [/0.0.0.0:4,848]|#]
+
+[#|2012-10-19T15:26:38.628-0400|INFO|44.0|javax.enterprise.system.core.security.com.sun.enterprise.security.auth.realm|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674798628;_LevelValue=800;_MessageID=realm.loaded.successfully;|SEC1115: Realm [admin-realm] of classtype [com.sun.enterprise.security.auth.realm.file.FileRealm] successfully created.|#]
+
+[#|2012-10-19T15:26:38.629-0400|INFO|44.0|javax.enterprise.system.core.security.com.sun.enterprise.security.auth.realm|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674798629;_LevelValue=800;_MessageID=realm.loaded.successfully;|SEC1115: Realm [file] of classtype [com.sun.enterprise.security.auth.realm.file.FileRealm] successfully created.|#]
+
+[#|2012-10-19T15:26:38.632-0400|INFO|44.0|javax.enterprise.system.core.security.com.sun.enterprise.security.auth.realm|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674798632;_LevelValue=800;_MessageID=realm.loaded.successfully;|SEC1115: Realm [certificate] of classtype [com.sun.enterprise.security.auth.realm.certificate.CertificateRealm] successfully created.|#]
+
+[#|2012-10-19T15:26:38.963-0400|INFO|44.0|javax.enterprise.system.core.com.sun.enterprise.v3.services.impl|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674798963;_LevelValue=800;|Grizzly Framework 2.3 started in: 2ms - bound to [/0.0.0.0:3,700]|#]
+
+[#|2012-10-19T15:26:39.044-0400|INFO|44.0|org.glassfish.ha.store.spi.BackingStoreFactoryRegistry|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674799044;_LevelValue=800;|Registered org.glassfish.ha.store.adapter.cache.ShoalBackingStoreProxy for persistence-type = replicated in BackingStoreFactoryRegistry|#]
+
+[#|2012-10-19T15:26:39.045-0400|INFO|44.0|javax.enterprise.system.core.com.sun.enterprise.v3.server|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674799045;_LevelValue=800;|GlassFish Server Open Source Edition  4.0  (sanshriv-private) startup time : Felix (4,168ms), startup services(1,574ms), total(5,742ms)|#]
+
+[#|2012-10-19T15:26:39.777-0400|INFO|44.0|javax.enterprise.system.core.com.sun.enterprise.v3.services.impl|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674799777;_LevelValue=800;|Grizzly Framework 2.3 started in: 7ms - bound to [/0.0.0.0:7,676]|#]
+
+[#|2012-10-19T15:26:39.891-0400|INFO|44.0|javax.enterprise.system.jmx|_ThreadID=31;_ThreadName=Thread-6;_TimeMillis=1350674799891;_LevelValue=800;_MessageID=AS-JMX-00005;|JMXStartupService has started JMXConnector on JMXService URL service:jmx:rmi://adc6260176.us.oracle.com:8686/jndi/rmi://adc6260176.us.oracle.com:8686/jmxrmi|#]
+
+[#|2012-10-19T15:26:39.924-0400|INFO|44.0|com.sun.enterprise.glassfish.bootstrap.osgi|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674799924;_LevelValue=800;|Registered com.sun.enterprise.glassfish.bootstrap.osgi.EmbeddedOSGiGlassFishImpl@a894f60 as OSGi service registration: org.apache.felix.framework.ServiceRegistrationImpl@5371444d|#]
+
+[#|2012-10-19T15:27:23.593-0400|INFO|44.0|org.hibernate.validator.internal.util.Version|_ThreadID=56;_ThreadName=admin-listener(1);_TimeMillis=1350674843593;_LevelValue=800;|HV000001: Hibernate Validator 4.3.0.Final|#]
+
+[#|2012-10-19T15:27:24.024-0400|INFO|44.0|javax.enterprise.system.core.com.sun.enterprise.v3.services.impl|_ThreadID=64;_ThreadName=pool-15-thread-1;_TimeMillis=1350674844024;_LevelValue=800;|Grizzly Framework 2.3 started in: 3ms - bound to [/0.0.0.0:8,080]|#]
+
+[#|2012-10-19T15:27:24.038-0400|INFO|44.0|javax.enterprise.system.core.com.sun.enterprise.v3.services.impl|_ThreadID=64;_ThreadName=pool-15-thread-1;_TimeMillis=1350674844038;_LevelValue=800;|Grizzly Framework 2.3 started in: 7ms - bound to [/0.0.0.0:8,181]|#]
+
+[#|2012-10-19T15:27:24.194-0400|INFO|44.0|javax.enterprise.system.core.com.sun.enterprise.v3.admin.adapter|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674844194;_LevelValue=800;|The Admin Console is installing...|#]
+
+[#|2012-10-19T15:27:26.183-0400|INFO|44.0|javax.enterprise.system.core.com.sun.enterprise.v3.admin.adapter|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674846183;_LevelValue=800;|The Admin Console is already installed, but not yet loaded.|#]
+
+[#|2012-10-19T15:27:26.183-0400|INFO|44.0|javax.enterprise.system.core.com.sun.enterprise.v3.admin.adapter|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674846183;_LevelValue=800;|The Admin Console is starting. Please wait.|#]
+
+[#|2012-10-19T15:27:26.370-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674846370;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.web.glue, null) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.web.glue [190]], State = [READY]|#]
+
+[#|2012-10-19T15:27:26.371-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674846371;_LevelValue=800;|this.makeModuleFor(org.glassfish.web.javax.servlet.jsp, null) returned OSGiModuleImpl:: Bundle = [org.glassfish.web.javax.servlet.jsp [163]], State = [READY]|#]
+
+[#|2012-10-19T15:27:26.372-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674846372;_LevelValue=800;|this.makeModuleFor(org.glassfish.web.javax.el, null) returned OSGiModuleImpl:: Bundle = [org.glassfish.web.javax.el [116]], State = [READY]|#]
+
+[#|2012-10-19T15:27:27.593-0400|INFO|44.0|org.glassfish.jersey.server.ApplicationHandler|_ThreadID=73;_ThreadName=admin-listener(2);_TimeMillis=1350674847593;_LevelValue=800;|[failed to localize] init.msg(Jersey: 2.0-m09 2012-10-15 12:52:42)|#]
+
+[#|2012-10-19T15:27:28.241-0400|INFO|44.0|javax.enterprise.system.tools.admin.org.glassfish.admin.rest.adapter|_ThreadID=73;_ThreadName=admin-listener(2);_TimeMillis=1350674848241;_LevelValue=800;|REST00001: Listening to REST requests at context: /management/domain|#]
+
+[#|2012-10-19T15:27:28.295-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848295;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-common, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-common [129]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.296-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848296;_LevelValue=800;|this.makeModuleFor(org.glassfish.hk2.hk2, 2.1.37) returned OSGiModuleImpl:: Bundle = [org.glassfish.hk2.hk2 [23]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.296-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848296;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-plugin-service, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-plugin-service [42]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.299-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848299;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.deployment.deployment-client, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.deployment.deployment-client [84]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.300-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848300;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.registration.registration-api, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.registration.registration-api [210]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.300-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848300;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.registration.registration-impl, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.registration.registration-impl [25]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.301-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848301;_LevelValue=800;|this.makeModuleFor(javax.servlet-api, 3.0.99.b02) returned OSGiModuleImpl:: Bundle = [javax.servlet-api [118]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.301-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848301;_LevelValue=800;|this.makeModuleFor(javax.servlet.jsp-api, 2.2.1) returned OSGiModuleImpl:: Bundle = [javax.servlet.jsp-api [124]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.302-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848302;_LevelValue=800;|this.makeModuleFor(javax.el-api, 2.2.4) returned OSGiModuleImpl:: Bundle = [javax.el-api [111]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.302-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848302;_LevelValue=800;|this.makeModuleFor(com.sun.jsftemplating, 2.1.0) returned OSGiModuleImpl:: Bundle = [com.sun.jsftemplating [173]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.303-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848303;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.dataprovider, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.dataprovider [141]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.303-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848303;_LevelValue=800;|this.makeModuleFor(com.sun.pkg.client, 1.0.0) returned OSGiModuleImpl:: Bundle = [com.sun.pkg.client [176]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.304-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848304;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-community-branding-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-community-branding-plugin [153]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.304-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848304;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-ejb-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-ejb-plugin [201]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.314-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848314;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-updatecenter-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-updatecenter-plugin [160]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.315-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848315;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-ejb-lite-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-ejb-lite-plugin [55]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.315-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848315;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-jms-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-jms-plugin [263]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.316-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848316;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-common, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-common [129]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.316-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848316;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-jdbc-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-jdbc-plugin [82]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.316-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848316;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-jts-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-jts-plugin [132]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.317-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848317;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-corba-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-corba-plugin [255]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.317-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848317;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-common-full-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-common-full-plugin [240]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.317-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848317;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-jca-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-jca-plugin [211]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.318-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848318;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-cluster-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-cluster-plugin [164]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.318-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848318;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-web-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-web-plugin [48]], State = [READY]|#]
+
+[#|2012-10-19T15:27:28.393-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848393;_LevelValue=800;|Snifer org.glassfish.web.sniffer.WebSniffer@1ccb7 set up following modules: [OSGiModuleImpl:: Bundle = [org.glassfish.main.web.glue [190]], State = [READY], OSGiModuleImpl:: Bundle = [org.glassfish.web.javax.servlet.jsp [163]], State = [READY], OSGiModuleImpl:: Bundle = [org.glassfish.web.javax.el [116]], State = [READY]]|#]
+
+[#|2012-10-19T15:27:28.963-0400|INFO|44.0|javax.enterprise.web|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848963;_LevelValue=800;_MessageID=AS-WEB-00022;|Created HTTP listener http-listener-1 on host/port 0.0.0.0:8080|#]
+
+[#|2012-10-19T15:27:28.971-0400|INFO|44.0|javax.enterprise.web|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848971;_LevelValue=800;_MessageID=AS-WEB-00022;|Created HTTP listener http-listener-2 on host/port 0.0.0.0:8181|#]
+
+[#|2012-10-19T15:27:28.975-0400|INFO|44.0|javax.enterprise.web|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848975;_LevelValue=800;_MessageID=AS-WEB-00022;|Created HTTP listener admin-listener on host/port 0.0.0.0:4848|#]
+
+[#|2012-10-19T15:27:29.004-0400|INFO|44.0|javax.enterprise.web|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674849004;_LevelValue=800;_MessageID=AS-WEB-00024;|Created virtual server server|#]
+
+[#|2012-10-19T15:27:29.007-0400|INFO|44.0|javax.enterprise.web|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674849007;_LevelValue=800;_MessageID=AS-WEB-00024;|Created virtual server __asadmin|#]
+
+[#|2012-10-19T15:27:29.666-0400|INFO|44.0|org.apache.catalina.realm.JAASRealm|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674849666;_LevelValue=800;|Setting JAAS app name glassfish-web|#]
+
+[#|2012-10-19T15:27:29.667-0400|INFO|44.0|javax.enterprise.web|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674849667;_LevelValue=800;_MessageID=AS-WEB-00025;|Virtual server server loaded default web module |#]
+
+[#|2012-10-19T15:27:30.058-0400|INFO|44.0|javax.enterprise.system.core.security.com.sun.enterprise.security|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850058;_LevelValue=800;_MessageID=security.secmgroff;|SEC1002: Security Manager is OFF.|#]
+
+[#|2012-10-19T15:27:30.058-0400|INFO|44.0|javax.enterprise.system.core.security.com.sun.enterprise.security|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850058;_LevelValue=800;_MessageID=sec.service.startup.enter;|SEC1010: Entering Security Startup Service|#]
+
+[#|2012-10-19T15:27:30.061-0400|INFO|44.0|javax.enterprise.system.core.security.com.sun.enterprise.security|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850061;_LevelValue=800;_MessageID=policy.loading;|SEC1143: Loading policy provider com.sun.enterprise.security.provider.PolicyWrapper.|#]
+
+[#|2012-10-19T15:27:30.140-0400|INFO|44.0|javax.enterprise.system.core.security.com.sun.enterprise.security|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850140;_LevelValue=800;_MessageID=sec.service.startup.exit;|SEC1011: Security Service(s) Started Successfully|#]
+
+[#|2012-10-19T15:27:30.140-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850140;_LevelValue=800;|Snifer com.sun.enterprise.security.ee.SecuritySniffer@389278a3 set up following modules: null|#]
+
+[#|2012-10-19T15:27:30.725-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850725;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-common, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-common [129]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.725-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850725;_LevelValue=800;|this.makeModuleFor(org.glassfish.hk2.hk2, 2.1.37) returned OSGiModuleImpl:: Bundle = [org.glassfish.hk2.hk2 [23]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.725-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850725;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-plugin-service, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-plugin-service [42]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.726-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850726;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.deployment.deployment-client, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.deployment.deployment-client [84]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.726-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850726;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.registration.registration-api, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.registration.registration-api [210]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.726-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850726;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.registration.registration-impl, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.registration.registration-impl [25]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.727-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850727;_LevelValue=800;|this.makeModuleFor(javax.servlet-api, 3.0.99.b02) returned OSGiModuleImpl:: Bundle = [javax.servlet-api [118]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.727-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850727;_LevelValue=800;|this.makeModuleFor(javax.servlet.jsp-api, 2.2.1) returned OSGiModuleImpl:: Bundle = [javax.servlet.jsp-api [124]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.728-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850728;_LevelValue=800;|this.makeModuleFor(javax.el-api, 2.2.4) returned OSGiModuleImpl:: Bundle = [javax.el-api [111]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.728-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850728;_LevelValue=800;|this.makeModuleFor(com.sun.jsftemplating, 2.1.0) returned OSGiModuleImpl:: Bundle = [com.sun.jsftemplating [173]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.729-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850729;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.dataprovider, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.dataprovider [141]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.729-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850729;_LevelValue=800;|this.makeModuleFor(com.sun.pkg.client, 1.0.0) returned OSGiModuleImpl:: Bundle = [com.sun.pkg.client [176]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.729-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850729;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-community-branding-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-community-branding-plugin [153]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.730-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850730;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-ejb-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-ejb-plugin [201]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.730-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850730;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-updatecenter-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-updatecenter-plugin [160]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.731-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850731;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-ejb-lite-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-ejb-lite-plugin [55]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.731-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850731;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-jms-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-jms-plugin [263]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.731-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850731;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-common, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-common [129]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.732-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850732;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-jdbc-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-jdbc-plugin [82]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.735-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850735;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-jts-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-jts-plugin [132]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.735-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850735;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-corba-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-corba-plugin [255]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.736-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850736;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-common-full-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-common-full-plugin [240]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.736-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850736;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-jca-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-jca-plugin [211]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.736-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850736;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-cluster-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-cluster-plugin [164]], State = [READY]|#]
+
+[#|2012-10-19T15:27:30.737-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850737;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-web-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-web-plugin [48]], State = [READY]|#]
+
+[#|2012-10-19T15:27:32.187-0400|INFO|44.0|javax.enterprise.resource.webcontainer.jsf.config|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674852187;_LevelValue=800;_MessageID=jsf.config.listener.version;|Initializing Mojarra 2.2.0-m05 (-SNAPSHOT 20120807-1226) for context ''|#]
+
+[#|2012-10-19T15:27:34.353-0400|INFO|44.0|javax.enterprise.web|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674854353;_LevelValue=800;_MessageID=AS-WEB-00324;|Loading application [__admingui] at [/]|#]
+
+[#|2012-10-19T15:27:34.356-0400|INFO|44.0|javax.enterprise.system.core.com.sun.enterprise.v3.server|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674854356;_LevelValue=800;_MessageID=loading.application.time;|CORE10010: Loading application __admingui done in 8,172 ms|#]
+
+[#|2012-10-19T15:27:34.356-0400|INFO|44.0|javax.enterprise.system.core.com.sun.enterprise.v3.admin.adapter|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674854356;_LevelValue=800;|The Admin Console application is loaded.|#]
+
+[#|2012-10-19T15:27:35.161-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=73;_ThreadName=admin-listener(2);_TimeMillis=1350674855161;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /login.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:27:37.865-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=56;_ThreadName=admin-listener(1);_TimeMillis=1350674857865;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /login.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:27:38.478-0400|INFO|44.0|org.glassfish.admingui|_ThreadID=89;_ThreadName=admin-listener(6);_TimeMillis=1350674858478;_LevelValue=800;|Redirecting to /hello-world|#]
+
+[#|2012-10-19T15:27:47.999-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=73;_ThreadName=admin-listener(2);_TimeMillis=1350674867999;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file //index.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:27:48.061-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=90;_ThreadName=admin-listener(7);_TimeMillis=1350674868061;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/index.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:27:48.169-0400|INFO|44.0|org.glassfish.admingui|_ThreadID=90;_ThreadName=admin-listener(7);_TimeMillis=1350674868169;_LevelValue=800;|Admin Console: Initializing Session Attributes...|#]
+
+[#|2012-10-19T15:27:48.265-0400|SEVERE|44.0|org.glassfish.admingui|_ThreadID=90;_ThreadName=admin-listener(7);_TimeMillis=1350674868265;_LevelValue=1000;|RestResponse.getResponse() gives FAILURE.  endpoint = 'http://localhost:4848/management/domain/location'; attrs = '{}'|#]
+
+[#|2012-10-19T15:27:48.629-0400|WARNING|44.0|org.glassfish.admingui|_ThreadID=95;_ThreadName=Thread-20;_TimeMillis=1350674868629;_LevelValue=900;|Cannot create update center Image for /scratch/sanshriv/software/glassfish3; Update Center functionality will not be available in Admin Console|#]
+
+[#|2012-10-19T15:27:55.484-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=89;_ThreadName=admin-listener(6);_TimeMillis=1350674875484;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/applications/applications.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:27:56.493-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=89;_ThreadName=admin-listener(6);_TimeMillis=1350674876493;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/index.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:28:01.854-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=91;_ThreadName=admin-listener(8);_TimeMillis=1350674881854;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/applications/applications.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:28:01.893-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=74;_ThreadName=admin-listener(3);_TimeMillis=1350674881893;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/applications/upload.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:28:01.946-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=90;_ThreadName=admin-listener(7);_TimeMillis=1350674881946;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/applications/uploadFrame.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:28:19.153-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=90;_ThreadName=admin-listener(7);_TimeMillis=1350674899153;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/applications/fileChooser.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:28:25.612-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=88;_ThreadName=admin-listener(5);_TimeMillis=1350674905612;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/applications/fileChooser.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:28:28.402-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=90;_ThreadName=admin-listener(7);_TimeMillis=1350674908402;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/applications/fileChooser.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:28:29.974-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=89;_ThreadName=admin-listener(6);_TimeMillis=1350674909974;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/applications/fileChooser.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:28:32.222-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=75;_ThreadName=admin-listener(4);_TimeMillis=1350674912222;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/applications/fileChooser.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:28:36.958-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=73;_ThreadName=admin-listener(2);_TimeMillis=1350674916958;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/applications/fileChooser.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:28:44.356-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=89;_ThreadName=admin-listener(6);_TimeMillis=1350674924356;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/applications/fileChooser.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:29:06.920-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=74;_ThreadName=admin-listener(3);_TimeMillis=1350674946920;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/applications/uploadFrame.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:29:07.186-0400|INFO|44.0|javax.enterprise.web|_ThreadID=90;_ThreadName=admin-listener(7);_TimeMillis=1350674947186;_LevelValue=800;_MessageID=AS-WEB-00324;|Loading application [hello-world] at [/hello-world]|#]
+
+[#|2012-10-19T15:29:07.216-0400|INFO|44.0|javax.enterprise.system.tools.admin.org.glassfish.deployment.admin|_ThreadID=90;_ThreadName=admin-listener(7);_TimeMillis=1350674947216;_LevelValue=800;|hello-world was successfully deployed in 144 milliseconds.|#]
+
+[#|2012-10-19T15:29:07.297-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=75;_ThreadName=admin-listener(4);_TimeMillis=1350674947297;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/removeFrame.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:29:07.357-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=56;_ThreadName=admin-listener(1);_TimeMillis=1350674947357;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/applications/applications.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:29:08.132-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=75;_ThreadName=admin-listener(4);_TimeMillis=1350674948132;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/index.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:29:10.692-0400|WARNING|44.0|javax.enterprise.resource.webcontainer.jsf.context|_ThreadID=56;_ThreadName=admin-listener(1);_TimeMillis=1350674950692;_LevelValue=900;_MessageID=jsf.externalcontext.no.mime.type.found;|JSF1091: No mime type could be found for file /common/applications/webApplicationLinks.jsp.  To resolve this, add a mime-type mapping to the applications web.xml.|#]
+
+[#|2012-10-19T15:29:24.601-0400|WARNING|44.0|com.oracle.logging|_ThreadID=114;_ThreadName=http-listener-1(1);_TimeMillis=1350674964601;_LevelValue=900;|Hello World XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX0
+java.lang.Exception
+	at org.apache.jsp.hello_jsp._jspService(hello_jsp.java:71)
+	at org.apache.jasper.runtime.HttpJspBase.service(HttpJspBase.java:111)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:790)
+	at org.apache.jasper.servlet.JspServletWrapper.service(JspServletWrapper.java:411)
+	at org.apache.jasper.servlet.JspServlet.serviceJspFile(JspServlet.java:473)
+	at org.apache.jasper.servlet.JspServlet.service(JspServlet.java:377)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:790)
+	at org.apache.catalina.core.StandardWrapper.service(StandardWrapper.java:1593)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:285)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:175)
+	at org.apache.catalina.core.StandardPipeline.doInvoke(StandardPipeline.java:665)
+	at org.apache.catalina.core.StandardPipeline.invoke(StandardPipeline.java:604)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:162)
+	at org.apache.catalina.connector.CoyoteAdapter.doService(CoyoteAdapter.java:337)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:240)
+	at com.sun.enterprise.v3.services.impl.ContainerMapper.service(ContainerMapper.java:172)
+	at org.glassfish.grizzly.http.server.HttpHandler.doHandle(HttpHandler.java:164)
+	at org.glassfish.grizzly.http.server.HttpServerFilter.handleRead(HttpServerFilter.java:175)
+	at org.glassfish.grizzly.filterchain.ExecutorResolver$9.execute(ExecutorResolver.java:119)
+	at org.glassfish.grizzly.filterchain.DefaultFilterChain.executeFilter(DefaultFilterChain.java:265)
+	at org.glassfish.grizzly.filterchain.DefaultFilterChain.executeChainPart(DefaultFilterChain.java:200)
+	at org.glassfish.grizzly.filterchain.DefaultFilterChain.execute(DefaultFilterChain.java:134)
+	at org.glassfish.grizzly.filterchain.DefaultFilterChain.process(DefaultFilterChain.java:112)
+	at org.glassfish.grizzly.ProcessorExecutor.execute(ProcessorExecutor.java:77)
+	at org.glassfish.grizzly.nio.transport.TCPNIOTransport.fireIOEvent(TCPNIOTransport.java:825)
+	at org.glassfish.grizzly.strategies.AbstractIOStrategy.fireIOEvent(AbstractIOStrategy.java:112)
+	at org.glassfish.grizzly.strategies.WorkerThreadIOStrategy.run0(WorkerThreadIOStrategy.java:115)
+	at org.glassfish.grizzly.strategies.WorkerThreadIOStrategy.access$100(WorkerThreadIOStrategy.java:55)
+	at org.glassfish.grizzly.strategies.WorkerThreadIOStrategy$WorkerThreadRunnable.run(WorkerThreadIOStrategy.java:135)
+	at org.glassfish.grizzly.threadpool.AbstractThreadPool$Worker.doWork(AbstractThreadPool.java:578)
+	at org.glassfish.grizzly.threadpool.AbstractThreadPool$Worker.run(AbstractThreadPool.java:558)
+	at java.lang.Thread.run(Thread.java:722)
+|#]
+
+[#|2012-10-19T15:29:53.333-0400|INFO|44.0|org.glassfish.jersey.server.ApplicationHandler|_ThreadID=88;_ThreadName=admin-listener(5);_TimeMillis=1350674993333;_LevelValue=800;|[failed to localize] init.msg(Jersey: 2.0-m09 2012-10-15 12:52:42)|#]
+
+[#|2012-10-19T15:29:53.482-0400|INFO|44.0|javax.enterprise.system.tools.admin.org.glassfish.admin.rest.adapter|_ThreadID=88;_ThreadName=admin-listener(5);_TimeMillis=1350674993482;_LevelValue=800;|REST00001: Listening to REST requests at context: /command/domain|#]
+
+[#|2012-10-19T15:29:53.800-0400|INFO|44.0|javax.enterprise.logging|_ThreadID=116;_ThreadName=pool-38-thread-1;_TimeMillis=1350674993800;_LevelValue=800;_MessageID=NCLS-LOGGING-00003;|Updated logger levels successfully.|#]
+
+[#|2012-10-19T15:30:00.844-0400|INFO|44.0|javax.enterprise.system.tools.admin.com.sun.enterprise.v3.admin|_ThreadID=117;_ThreadName=Thread-23;_TimeMillis=1350675000844;_LevelValue=800;|Server shutdown initiated|#]
+
+[#|2012-10-19T15:30:00.846-0400|INFO|44.0|com.sun.enterprise.glassfish.bootstrap.osgi|_ThreadID=117;_ThreadName=Thread-23;_TimeMillis=1350675000846;_LevelValue=800;|Unregistered com.sun.enterprise.glassfish.bootstrap.osgi.EmbeddedOSGiGlassFishImpl@a894f60 from service registry|#]
+
+[#|2012-10-19T15:30:00.847-0400|INFO|44.0|javax.enterprise.logging.stdout|_ThreadID=117;_ThreadName=Thread-23;_TimeMillis=1350675000847;_LevelValue=800;|FileMonitoring shutdown|#]
+
+[#|2012-10-19T15:30:00.850-0400|INFO|44.0|javax.enterprise.system.jmx|_ThreadID=117;_ThreadName=Thread-23;_TimeMillis=1350675000850;_LevelValue=800;_MessageID=AS-JMX-00002;|JMXStartupService: Stopped JMXConnectorServer: null|#]
+
+[#|2012-10-19T15:30:00.850-0400|INFO|44.0|javax.enterprise.system.jmx|_ThreadID=117;_ThreadName=Thread-23;_TimeMillis=1350675000850;_LevelValue=800;_MessageID=AS-JMX-00001;|JMXStartupService and JMXConnectors have been shut down.|#]
+
+[#|2012-10-19T15:30:00.916-0400|SEVERE|44.0|javax.enterprise.system.container.web.org.glassfish.web.loader|_ThreadID=117;_ThreadName=Thread-23;_TimeMillis=1350675000916;_LevelValue=1000;|WEB9048: The web application [] created a ThreadLocal with key of type [java.lang.ThreadLocal] (value [java.lang.ThreadLocal@4cf1cc9e]) and a value of type [org.glassfish.admingui.theme.AdminguiThemeContext] (value [org.glassfish.admingui.theme.AdminguiThemeContext@16b0c089]) but failed to remove it when the web application was stopped. Threads are going to be renewed over time to try and avoid a probable memory leak.|#]
+
+[#|2012-10-19T15:30:00.917-0400|SEVERE|44.0|javax.enterprise.system.container.web.org.glassfish.web.loader|_ThreadID=117;_ThreadName=Thread-23;_TimeMillis=1350675000917;_LevelValue=1000;|WEB9048: The web application [] created a ThreadLocal with key of type [java.lang.ThreadLocal] (value [java.lang.ThreadLocal@4cf1cc9e]) and a value of type [org.glassfish.admingui.theme.AdminguiThemeContext] (value [org.glassfish.admingui.theme.AdminguiThemeContext@16b0c089]) but failed to remove it when the web application was stopped. Threads are going to be renewed over time to try and avoid a probable memory leak.|#]
+
+[#|2012-10-19T15:30:00.920-0400|SEVERE|44.0|javax.enterprise.system.container.web.org.glassfish.web.loader|_ThreadID=117;_ThreadName=Thread-23;_TimeMillis=1350675000920;_LevelValue=1000;|WEB9048: The web application [] created a ThreadLocal with key of type [java.lang.ThreadLocal] (value [java.lang.ThreadLocal@4cf1cc9e]) and a value of type [org.glassfish.admingui.theme.AdminguiThemeContext] (value [org.glassfish.admingui.theme.AdminguiThemeContext@16b0c089]) but failed to remove it when the web application was stopped. Threads are going to be renewed over time to try and avoid a probable memory leak.|#]
+
+[#|2012-10-19T15:30:00.921-0400|SEVERE|44.0|javax.enterprise.system.container.web.org.glassfish.web.loader|_ThreadID=117;_ThreadName=Thread-23;_TimeMillis=1350675000921;_LevelValue=1000;|WEB9048: The web application [] created a ThreadLocal with key of type [java.lang.ThreadLocal] (value [java.lang.ThreadLocal@4cf1cc9e]) and a value of type [org.glassfish.admingui.theme.AdminguiThemeContext] (value [org.glassfish.admingui.theme.AdminguiThemeContext@16b0c089]) but failed to remove it when the web application was stopped. Threads are going to be renewed over time to try and avoid a probable memory leak.|#]
+
+[#|2012-10-19T15:30:00.921-0400|SEVERE|44.0|javax.enterprise.system.container.web.org.glassfish.web.loader|_ThreadID=117;_ThreadName=Thread-23;_TimeMillis=1350675000921;_LevelValue=1000;|WEB9048: The web application [] created a ThreadLocal with key of type [java.lang.ThreadLocal] (value [java.lang.ThreadLocal@4cf1cc9e]) and a value of type [org.glassfish.admingui.theme.AdminguiThemeContext] (value [org.glassfish.admingui.theme.AdminguiThemeContext@16b0c089]) but failed to remove it when the web application was stopped. Threads are going to be renewed over time to try and avoid a probable memory leak.|#]
+
+[#|2012-10-19T15:30:00.922-0400|SEVERE|44.0|javax.enterprise.system.container.web.org.glassfish.web.loader|_ThreadID=117;_ThreadName=Thread-23;_TimeMillis=1350675000922;_LevelValue=1000;|WEB9048: The web application [] created a ThreadLocal with key of type [java.lang.ThreadLocal] (value [java.lang.ThreadLocal@4cf1cc9e]) and a value of type [org.glassfish.admingui.theme.AdminguiThemeContext] (value [org.glassfish.admingui.theme.AdminguiThemeContext@16b0c089]) but failed to remove it when the web application was stopped. Threads are going to be renewed over time to try and avoid a probable memory leak.|#]
+
+[#|2012-10-19T15:30:00.922-0400|SEVERE|44.0|javax.enterprise.system.container.web.org.glassfish.web.loader|_ThreadID=117;_ThreadName=Thread-23;_TimeMillis=1350675000922;_LevelValue=1000;|WEB9048: The web application [] created a ThreadLocal with key of type [java.lang.ThreadLocal] (value [java.lang.ThreadLocal@4cf1cc9e]) and a value of type [org.glassfish.admingui.theme.AdminguiThemeContext] (value [org.glassfish.admingui.theme.AdminguiThemeContext@16b0c089]) but failed to remove it when the web application was stopped. Threads are going to be renewed over time to try and avoid a probable memory leak.|#]
+
+[#|2012-10-19T15:30:00.976-0400|INFO|44.0|javax.enterprise.logging.stdout|_ThreadID=117;_ThreadName=Thread-23;_TimeMillis=1350675000976;_LevelValue=800;|JdbcRuntimeExtension,  getAllSystemRAResourcesAndPools = [GlassFishConfigBean.org.glassfish.jdbc.config.JdbcResource, GlassFishConfigBean.org.glassfish.jdbc.config.JdbcResource, GlassFishConfigBean.org.glassfish.jdbc.config.JdbcConnectionPool, GlassFishConfigBean.org.glassfish.jdbc.config.JdbcConnectionPool]|#]
+

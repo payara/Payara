@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,6 +74,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * GFFileHandler publishes formatted log Messages to a FILE.
@@ -88,7 +90,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
 
     private final static LocalStringManagerImpl LOCAL_STRINGS = 
         new LocalStringManagerImpl(GFFileHandler.class);
-            
+    
     @Inject
     ServerContext serverContext;
 
@@ -182,28 +184,29 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         BufferedReader br = null;
         String strLine = "";
         int odlFormatter = 0;
-        int uflFormatter = 0;
+        int uniformLogFormatter = 0;
         int otherFormatter = 0;
         boolean mustRotate = false;
-
+        
         try {
             br = new BufferedReader(new FileReader(serverLog));            
             while ((strLine = br.readLine()) != null) {
                 strLine = strLine.trim();
                 if (!strLine.equals("")) {
-                    if (strLine.startsWith("[[") && strLine.endsWith("]") && countOccurrences(strLine, '[') > 4) { // for odl formatter
+                    if (LogFormatHelper.isUniformFormatLogHeader(strLine)) {  // for ufl formatter
+                        uniformLogFormatter++;
+                    } else if (LogFormatHelper.isODLFormatLogHeader(strLine)) { 
+                        // for ODL formatter
                         odlFormatter++;
-                    } else if (strLine.startsWith("[#|") && countOccurrences(strLine, '|') > 4) {  // for ufl formatter
-                        uflFormatter++;
                     } else {
                         otherFormatter++;  // for other formatter
                     }
 
                     // multiple formatter found under log file then must rotate the log file
-                    if (odlFormatter > 0 && uflFormatter > 0) {
+                    if (odlFormatter > 0 && uniformLogFormatter > 0) {
                         mustRotate = true;
                         break;
-                    } else if (uflFormatter > 0 && otherFormatter > 0) {
+                    } else if (uniformLogFormatter > 0 && otherFormatter > 0) {
                         mustRotate = true;
                         break;
                     } else if (otherFormatter > 0 && odlFormatter > 0) {
@@ -212,7 +215,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                     }
 
                     // reading first few lines and breaking loop
-                    if (odlFormatter > 2 || uflFormatter > 2 || otherFormatter > 2) {
+                    if (odlFormatter > 2 || uniformLogFormatter > 2 || otherFormatter > 2) {
                         break;
                     }
                 }
@@ -232,7 +235,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
 
         if (odlFormatter > 0) {
             currentgffileHandlerFormatter = "com.sun.enterprise.server.logging.ODLLogFormatter";
-        } else if (uflFormatter > 0) {
+        } else if (uniformLogFormatter > 0) {
             currentgffileHandlerFormatter = "com.sun.enterprise.server.logging.UniformLogFormatter";
         }
 
@@ -843,16 +846,6 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
 
     }
 
-    private int countOccurrences(String haystack, char needle) {
-        int count = 0;
-        for (int i = 0; i < haystack.length(); i++) {
-            if (haystack.charAt(i) == needle) {
-                count++;
-            }
-        }
-        return count;
-    }
-    
     public boolean addLogEventListener(LogEventListener listener) {
         if (logEventListeners.contains(listener)) {
             return false;

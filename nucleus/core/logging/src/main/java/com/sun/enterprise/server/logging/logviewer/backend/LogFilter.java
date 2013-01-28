@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -100,6 +100,9 @@ public class LogFilter {
     LoggingConfigImpl loggingConfig;
 
     private static final Logger LOGGER = LogFacade.LOGGING_LOGGER;
+
+
+    private static final boolean DEBUG = false;
 
     /**
      * The public method that Log Viewer Front End will be calling on.
@@ -565,6 +568,9 @@ public class LogFilter {
 
         // Return the matches.  If this is less than requested, then there are
         // no more.
+        if (DEBUG) {
+            System.out.println("Log filter results size="+results.size() + ", requestedCount=" + requestedCount);
+        }
         return convertResultsToTheStructure(results);
     }
 
@@ -669,6 +675,19 @@ public class LogFilter {
     protected boolean allChecks(LogFile.LogEntry entry,
                                 Date fromDate, Date toDate, String queryLevel, boolean onlyLevel,
                                 List listOfModules, Properties nameValueMap, String anySearch) {
+        if (DEBUG) {
+            StringBuffer buf = new StringBuffer();
+            buf.append(dateTimeCheck(entry.getLoggedDateTime(), fromDate, toDate));
+            buf.append(",");
+            buf.append(levelCheck(entry.getLoggedLevel(), queryLevel, onlyLevel));
+            buf.append(",");
+            buf.append(moduleCheck(entry.getLoggedLoggerName(), listOfModules));
+            buf.append(",");
+            buf.append(nameValueCheck(entry.getLoggedNameValuePairs(), nameValueMap));
+            buf.append(",");
+            buf.append(messageDataCheck(entry.getLoggedMessage(), entry.getLoggedNameValuePairs(), anySearch));        
+            System.out.println("allChecks="+buf.toString());            
+        }
         if ((dateTimeCheck(entry.getLoggedDateTime(), fromDate, toDate))
                 && (levelCheck(entry.getLoggedLevel(), queryLevel, onlyLevel))
                 && (moduleCheck(entry.getLoggedLoggerName(), listOfModules))
@@ -692,8 +711,8 @@ public class LogFilter {
         if (!(loggedDateTime.before(fromDateTime) ||
                 loggedDateTime.after(toDateTime))) {
             return true;
-        }
-
+        } 
+        
         return false;
     }
 
@@ -708,25 +727,12 @@ public class LogFilter {
             return true;
         }
         final String queryLevel = queryLevelIn.trim();
-
         if (isOnlyLevelFlag) {
             // This means the user is interested in seeing log messages whose
             // log level is equal to what is specified
-            if (loggedLevel.equals(queryLevel)) {
-                return true;
-            }
-        } else {
-// FIXME: rework this...
-            for (int idx = 0; idx < LOG_LEVELS.length; idx++) {
-                if (loggedLevel.equals(LOG_LEVELS[idx])) {
-                    return true;
-                }
-                if (LOG_LEVELS[idx].equals(queryLevel)) {
-                    break;
-                }
-            }
-        }
-        return false;
+            return loggedLevel.equals(queryLevel);
+        } 
+        return true;
     }
 
     protected boolean moduleCheck(String loggerName, List modules) {
