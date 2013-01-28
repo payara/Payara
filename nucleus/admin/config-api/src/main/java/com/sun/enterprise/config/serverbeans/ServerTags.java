@@ -676,6 +676,8 @@ public class ServerTags  {
     //static public final String ASSOCIATE_WITH_THREAD = "associate-with-thread";
     //static public final String MATCH_CONNECTIONS = "match-connections";
     //static public final String MAX_CONNECTION_USAGE_COUNT = "max-connection-usage-count";
+    // Tags for Element context-service
+    static public final String CONTEXT_SERVICE = "context-service";
     // Tags for Element security-map
     static public final String SECURITY_MAP = "security-map";
     static public final String PRINCIPAL = "principal";
