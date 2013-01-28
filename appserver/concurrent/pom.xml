@@ -78,5 +78,6 @@
 
     <modules>
 	<module>config</module>
+	<module>admin</module>
     </modules>
 </project>

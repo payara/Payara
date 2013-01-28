@@ -74,7 +74,8 @@ import java.util.List;
 @ResourceTypeOrder(deploymentOrder=ResourceDeploymentOrder.CONTEXT_SERVICE)
 @ReferenceConstraint(skipDuringCreation=true, payload=ContextService.class)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ContextService.class)
-public interface ContextService extends Resource, BindableResource, PropertyBag {
+public interface ContextService extends ConfigBeanProxy, Resource,
+        PropertyBag, BindableResource, Payload  {
 
     /**
      * Gets the value of the contextInfo property.

@@ -74,7 +74,8 @@ import java.util.List;
 @ResourceTypeOrder(deploymentOrder=ResourceDeploymentOrder.MANAGED_THREAD_FACTORY)
 @ReferenceConstraint(skipDuringCreation=true, payload=ManagedThreadFactory.class)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ManagedThreadFactory.class)
-public interface ManagedThreadFactory extends Resource, BindableResource, PropertyBag {
+public interface ManagedThreadFactory extends ConfigBeanProxy, Resource,
+        PropertyBag, BindableResource, Payload  {
 
     /**
      * Gets the value of the contextServiceName property.

@@ -48,8 +48,10 @@ import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
 import org.jvnet.hk2.config.*;
+import org.jvnet.hk2.config.types.PropertyBag;
 import org.glassfish.resourcebase.resources.ResourceTypeOrder;
 import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
+import javax.validation.Payload;
 
 /**
  * Concurrency managed scheduled executor service resource definition
@@ -64,5 +66,7 @@ import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
 @ResourceTypeOrder(deploymentOrder=ResourceDeploymentOrder.MANAGED_SCHEDULED_EXECUTOR_SERVICE)
 @ReferenceConstraint(skipDuringCreation=true, payload=ManagedScheduledExecutorService.class)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ManagedScheduledExecutorService.class)
-public interface ManagedScheduledExecutorService extends Resource, BindableResource, ManagedExecutorService {
+public interface ManagedScheduledExecutorService extends ConfigBeanProxy, 
+        Resource, PropertyBag, BindableResource, Payload, 
+        ManagedExecutorService {
 }
