@@ -71,7 +71,7 @@ import java.util.List;
 @ResourceTypeOrder(deploymentOrder=ResourceDeploymentOrder.MANAGED_EXECUTOR_SERVICE)
 @ReferenceConstraint(skipDuringCreation=true, payload=ManagedExecutorService.class)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ManagedExecutorService.class)
-public interface ManagedExecutorService extends BindableResource, PropertyBag {
+public interface ManagedExecutorService extends Resource, BindableResource, PropertyBag {
 
     /**
      * Gets the value of the contextServiceName property.

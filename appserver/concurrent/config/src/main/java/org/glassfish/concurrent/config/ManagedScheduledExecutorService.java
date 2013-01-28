@@ -40,6 +40,8 @@
 
 package org.glassfish.concurrent.config;
 
+import com.sun.enterprise.config.serverbeans.BindableResource;
+import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
 import org.glassfish.admin.cli.resources.ResourceConfigCreator;
 import org.glassfish.api.admin.RestRedirect;
@@ -62,5 +64,5 @@ import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
 @ResourceTypeOrder(deploymentOrder=ResourceDeploymentOrder.MANAGED_SCHEDULED_EXECUTOR_SERVICE)
 @ReferenceConstraint(skipDuringCreation=true, payload=ManagedScheduledExecutorService.class)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ManagedScheduledExecutorService.class)
-public interface ManagedScheduledExecutorService extends ManagedExecutorService {
+public interface ManagedScheduledExecutorService extends Resource, BindableResource, ManagedExecutorService {
 }
