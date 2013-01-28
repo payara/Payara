@@ -94,13 +94,13 @@
 	<module>nucleus-felix</module>
 	<module>nucleus-hk2</module>
 	<module>nucleus-grizzly</module>
+	<module>nucleus-jersey</module>	
 	<module>nucleus</module>
 	<module>nucleus-corba-base</module>
 	<module>nucleus-common</module>
 	<module>nucleus-shoal</module>
 	<module>nucleus-cluster</module>
 	<module>nucleus-management</module>
-	<module>nucleus-jersey</module>	
         <module>nucleus-osgi</module>
 	<module>nucleus-jmx</module>
         <module>nucleus-cluster-l10n</module>	
