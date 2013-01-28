@@ -141,10 +141,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.docs.help</groupId>
-            <artifactId>console-common-help</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.main.admingui</groupId>
             <artifactId>console-updatecenter-plugin</artifactId>
             <version>${project.version}</version>
@@ -168,17 +164,9 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.docs.help</groupId>
-            <artifactId>console-cluster-plugin-help</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.main.admingui</groupId>
             <artifactId>console-web-plugin</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.docs.help</groupId>
-            <artifactId>console-web-plugin-help</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.admingui</groupId>
@@ -186,18 +174,10 @@
             <version>${project.version}</version>
         </dependency> 
         <dependency>
-            <groupId>org.glassfish.docs.help</groupId>
-            <artifactId>console-jdbc-plugin-help</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.main.admingui</groupId>
             <artifactId>console-jca-plugin</artifactId>
             <version>${project.version}</version>
         </dependency> 
-        <dependency>
-            <groupId>org.glassfish.docs.help</groupId>
-            <artifactId>console-jca-plugin-help</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.glassfish.main.admingui.connector</groupId>
             <artifactId>gf-admingui-connector</artifactId>

@@ -96,6 +96,12 @@
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.docs.help</groupId>
+           <artifactId>console-jdbc-plugin-help</artifactId>
+           <version>${v3-docs.version}</version>
+           <type>zip</type>
+        </dependency>
 
     </dependencies>
 </project>

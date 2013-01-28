@@ -141,10 +141,6 @@
             <artifactId>console-ejb-lite-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.docs.help</groupId>
-            <artifactId>console-ejb-lite-plugin-help</artifactId>
-        </dependency>
     </dependencies>
 </project>
 

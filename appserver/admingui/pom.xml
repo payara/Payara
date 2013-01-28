@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -118,10 +118,6 @@
         <module>corba</module>
         <module>full</module>
         <module>updatecenter</module>
-        <!--  this has been removed from the distribution, no need to build this at all.
-            <module>jruby</module>
-            <module>jython</module>
-        -->
         <module>war</module>
         <module>dist-fragment</module>
         <module>updatecenter-l10n</module>
@@ -139,7 +135,27 @@
         <module>ejb-lite-l10n</module>
         <module>core-l10n</module>
     </modules>
-
+    <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>unpack-dependencies</id>
+                <goals>
+                  <goal>unpack-dependencies</goal>
+                </goals>
+                <configuration>
+                  <includeGroupIds>org.glassfish.docs.help</includeGroupIds>
+                  <excludeTransitive>true</excludeTransitive>
+                  <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
 <!--
     <build>
         <plugins>

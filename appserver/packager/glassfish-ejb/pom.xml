@@ -153,17 +153,9 @@
             <version>${project.version}</version>
         </dependency> 
         <dependency>
-            <groupId>org.glassfish.docs.help</groupId>
-            <artifactId>console-ejb-plugin-help</artifactId>
-        </dependency> 
-        <dependency>
             <groupId>org.glassfish.main.admingui</groupId>
             <artifactId>console-corba-plugin</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.docs.help</groupId>
-            <artifactId>console-corba-plugin-help</artifactId>
         </dependency>
     </dependencies>
 </project>

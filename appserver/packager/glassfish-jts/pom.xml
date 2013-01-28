@@ -131,9 +131,5 @@
 	    <artifactId>console-jts-plugin</artifactId>
 	    <version>${project.version}</version>
 	</dependency>
-	<dependency>
-	    <groupId>org.glassfish.docs.help</groupId>
-	    <artifactId>console-jts-plugin-help</artifactId>
-	</dependency>
     </dependencies>
 </project>
