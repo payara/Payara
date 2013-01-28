@@ -71,7 +71,9 @@ public class Version {
     private static final String VERSION_PREFIX_KEY = "version_prefix";
     private static final String VERSION_SUFFIX_KEY = "version_suffix";
     private static final String BASED_ON_KEY = "based_on";
-    
+    private static final String DEFAULT_DOMAIN_TEMPLATE_NAME = "default_domain_template";
+
+    private static final String DEFAULT_DOMAIN_TEMPLATE_JAR = "nucleus-domain.jar";
     private static List<Properties> versionProps = new ArrayList<Properties>();
     private static Properties versionProp = getVersionProp();
     
@@ -255,6 +257,13 @@ public class Version {
     public static String getAbbrevProductName() {
         return getProperty(ABBREV_PRODUCT_NAME_KEY, "undefined");
     }
+
+    /**
+     * Returns template name use to create default domain.
+     */
+     public static String getDefaultDomainTemplate() {
+         return getProperty(DEFAULT_DOMAIN_TEMPLATE_NAME, DEFAULT_DOMAIN_TEMPLATE_JAR);
+     }
 
     /*
      * Fetch the value for the property identified by key

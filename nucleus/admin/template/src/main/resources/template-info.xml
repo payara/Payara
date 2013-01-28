@@ -43,7 +43,7 @@
 <domain-template-info xmlns="http://xmlns.oracle.com/cie/glassfish/domain-template"
     version="4.0.0.0"
     type="Domain Template"
-    name="Basic GlassFish Server Domain"
+    name="Basic Nucleus Domain"
     author="Oracle Corporation"
-    description="Create a basic GlassFish Server domain."
+    description="Create a basic Nucleus domain."
 ></domain-template-info>

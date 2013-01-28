@@ -468,7 +468,7 @@ public final class CreateDomainCommand extends CLICommand {
             throw new CommandValidationException(strings.get("DomainExists", domainName));
         }
         DomainConfig domainConfig = null;
-        if (template != null && template.endsWith(".jar")) {
+        if (template == null || (template != null && template.endsWith(".jar"))) {
             domainConfig = new DomainConfig(domainName,
                     domainPath, adminUser, adminPassword,
                     masterPassword, saveMasterPassword,

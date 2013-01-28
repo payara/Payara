@@ -58,6 +58,7 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
 import com.sun.enterprise.admin.servermgmt.DomainException;
 import com.sun.enterprise.admin.servermgmt.RepositoryException;
@@ -70,7 +71,9 @@ import com.sun.enterprise.admin.servermgmt.stringsubs.impl.AttributePreprocessor
 import com.sun.enterprise.admin.servermgmt.template.TemplateInfoHolder;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.Property;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.PropertyType;
+import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
 
 /**
@@ -86,6 +89,7 @@ public class DomainBuilder {
     /** The filename contains basic template information. */
     private final static String TEMPLATE_INFO_XML = "template-info.xml";
     private final static String META_DIR_NAME = "META-INF";
+    private final static String DEFUALT_TEMPLATE_RELATIVE_PATH = "common" + File.separator + "templates" + File.separator + "gf";
 
     private DomainConfig _domainConfig;
     private JarFile _templateJar;
@@ -113,6 +117,15 @@ public class DomainBuilder {
     // TODO : localization of index.html
     private void initialize() throws DomainException {
         String templateJarPath = (String)_domainConfig.get(DomainConfig.K_TEMPLATE_NAME);
+        if (templateJarPath == null || templateJarPath.isEmpty()) {
+            Map<String, String> envProperties = new ASenvPropertyReader().getProps();
+            templateJarPath = envProperties.get(SystemPropertyConstants.INSTALL_ROOT_PROPERTY) + File.separator
+                    + DEFUALT_TEMPLATE_RELATIVE_PATH + File.separator + Version.getDefaultDomainTemplate();
+        }
+        File template = new File(templateJarPath);
+        if (!template.exists() || !template.getName().endsWith(".jar")) {
+            throw new DomainException(_strings.get("invalidTemplateJar", template.getAbsolutePath()));
+        }
         try {
             _templateJar = new JarFile(new File(templateJarPath));
             JarEntry je = _templateJar.getJarEntry("config/" + DomainConstants.DOMAIN_XML_FILE);
