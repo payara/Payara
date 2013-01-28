@@ -193,12 +193,13 @@ public class LoggingHandlers {
         String config = (String)handlerCtx.getInputValue("config");
         Map<String, Object> props = new HashMap();
         try{
-            for(String key : attrs.keySet()){
+            for (Map.Entry<String, Object> e : attrs.entrySet()) {
+                String key=e.getKey();
                 if ((key.equals("com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging")|| 
                       key.equals("com.sun.enterprise.server.logging.GFFileHandler.logtoConsole") ||
                       key.equals("com.sun.enterprise.server.logging.GFFileHandler.multiLineMode") ||
                      key.equals("com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange" ))
-                        && (attrs.get(key) == null)) {
+                        && (e.getValue() == null)) {
                     attrs.put(key, "false");
                 }
                 props.put("id", key + "='" + attrs.get(key) + "'");
