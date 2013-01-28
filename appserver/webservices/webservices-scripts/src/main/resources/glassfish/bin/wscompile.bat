@@ -40,4 +40,4 @@ REM  only if the new code is made subject to such option by the copyright
 REM  holder.
 REM
 
-java %WSCOMPILE_OPTS% -Djava.endorsed.dirs="%~dp0..\modules\endorsed" -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\jaxrpc-api-osgi.jar;%~dp0..\modules\jaxb-osgi.jar;%~dp0..\modules\javax.mail.jar;%JAVA_HOME%/lib/tools.jar" com.sun.xml.rpc.tools.wscompile.Main %*
+java %WSCOMPILE_OPTS% -Djava.endorsed.dirs="%~dp0..\modules\endorsed" -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\javax.xml.rpc-api.jar;%~dp0..\modules\jaxb-osgi.jar;%~dp0..\modules\javax.mail.jar;%JAVA_HOME%/lib/tools.jar" com.sun.xml.rpc.tools.wscompile.Main %*

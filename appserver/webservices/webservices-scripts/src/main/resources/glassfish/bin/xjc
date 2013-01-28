@@ -43,4 +43,4 @@
 AS_INSTALL=`dirname $0`/..
 AS_INSTALL_LIB=$AS_INSTALL/modules
 
-java -Djava.endorsed.dirs="$AS_INSTALL_LIB/endorsed" -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/jaxrpc-api-osgi.jar:$AS_INSTALL_LIB/jaxb-osgi.jar" com.sun.tools.xjc.Driver "$@"
+java -Djava.endorsed.dirs="$AS_INSTALL_LIB/endorsed" -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/javax.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar" com.sun.tools.xjc.Driver "$@"

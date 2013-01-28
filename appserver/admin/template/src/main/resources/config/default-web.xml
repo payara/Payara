@@ -337,7 +337,7 @@
         javax.security.auth.message.jar
         javax.security.jacc.jar
         javax.transaction.jar
-        jaxrpc-api-osgi.jar
+        javax.xml.rpc-api.jar
         jersey-core.jar
         webservices-osgi.jar
         weld-osgi-bundle.jar

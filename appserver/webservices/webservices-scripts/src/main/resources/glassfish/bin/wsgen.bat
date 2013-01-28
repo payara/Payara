@@ -40,4 +40,4 @@ REM  only if the new code is made subject to such option by the copyright
 REM  holder.
 REM
 
-java %WSGEN_OPTS% -Djava.endorsed.dirs="%~dp0..\modules\endorsed" -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\jaxrpc-api-osgi.jar;%~dp0..\modules\jaxb-osgi.jar" com.sun.tools.ws.WsGen %*
+java %WSGEN_OPTS% -Djava.endorsed.dirs="%~dp0..\modules\endorsed" -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\javax.xml.rpc-api.jar;%~dp0..\modules\jaxb-osgi.jar" com.sun.tools.ws.WsGen %*
