@@ -92,11 +92,15 @@
         </sun:tableColumn>
         <sun:tableColumn headerText="$resource{i18n.common.PropertyValue}" sort="value" rowHeader="$boolean{false}" id="col3">
             <sun:textField  visible="#{!td.value.isConfidential}" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.PropertyValue']}" id="col1St" value="#{td.value.value}" />
+            <sun:passwordField  visible="#{td.value.isConfidential}" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.PropertyValue']}" id="confV" password="#{td.value.confValue}" />
         </sun:tableColumn>
+        <!--
         <sun:tableColumn rendered="#{pageSession.hasConfidential}" headerText="$resource{i18n.common.ConfidentialPropertyValue}" sort="value" rowHeader="$boolean{false}" id="col4">
             <sun:passwordField  visible="#{td.value.isConfidential}" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.PropertyValue']}" id="confV" password="#{td.value.confValue}" />
         </sun:tableColumn>
-        <sun:tableColumn rendered="#{pageSession.hasConfidential}" headerText="$resource{i18n.common.ConfirmConfidentialPropertyValue}" sort="value" rowHeader="$boolean{false}" id="col5">
+        -->
+            
+            <sun:tableColumn rendered="#{pageSession.hasConfidential}" headerText="$resource{i18n.common.ConfirmConfidentialPropertyValue}" sort="value" rowHeader="$boolean{false}" id="col5">
             <sun:passwordField visible="#{td.value.isConfidential}" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.PropertyValue']}" id="confV2" password="#{td.value.confValue2}" />
         </sun:tableColumn>
         "<br/>
