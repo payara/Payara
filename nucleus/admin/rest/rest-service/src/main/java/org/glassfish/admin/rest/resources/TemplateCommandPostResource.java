@@ -191,6 +191,9 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
 
     private static ParameterMap createDataBasedOnForm(FormDataMultiPart formData) {
         ParameterMap data = new ParameterMap();
+        if (formData == null) {
+            formData = new FormDataMultiPart();
+        }
         try {
             /* data passed to the generic command running
              *

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@
 package com.sun.enterprise.server.logging.commands;
 
 import com.sun.common.util.logging.LoggingConfigImpl;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -52,19 +53,16 @@ import org.glassfish.hk2.api.PerLookup;
 
 import java.io.IOException;
 import java.util.*;
+import org.glassfish.api.admin.RestEndpoint.OpType;
 
-/**
- * Created by IntelliJ IDEA.
- * User: naman
- * Date: 6 Apr, 2011
- * Time: 3:05:09 PM
- * To change this template use File | Settings | File Templates.
- */
 @ExecuteOn({RuntimeType.DAS})
 @Service(name = "_load-default-log-levels")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("load.default.log.levels")
+@RestEndpoints({
+    @RestEndpoint(configBean=Domain.class, opType=OpType.POST, path="load-default-log-levels")
+})
 public class LoadDefaultLogLevels implements AdminCommand {
 
     @Inject
