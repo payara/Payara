@@ -876,31 +876,60 @@ public class StandardSession
         
             // Notify interested application event listeners
             // FIXME - Assumes we call listeners in reverse order
-            List<HttpSessionListener> listeners = context.getSessionListeners();
-            if (notify && !listeners.isEmpty()) {
-                HttpSessionEvent event = new HttpSessionEvent(getSession());
-                int len = listeners.size();
-                for (int i = 0; i < len; i++) {
-                    // Invoke in reverse order of declaration
-                    HttpSessionListener listener = listeners.get((len - 1) - i);
-                    try {
-                        fireContainerEvent(context,
-                                           "beforeSessionDestroyed",
-                                           listener);
-                        listener.sessionDestroyed(event);
-                        fireContainerEvent(context,
-                                           "afterSessionDestroyed",
-                                           listener);
-                    } catch (Throwable t) {
+
+            // The call to expire() may not have been triggered by the webapp.
+            // Make sure the webapp's class loader is set when calling the
+            // listeners
+            ClassLoader oldTccl = null;
+            if (context.getLoader() != null &&
+                    context.getLoader().getClassLoader() != null) {
+                oldTccl = Thread.currentThread().getContextClassLoader();
+                if (Globals.IS_SECURITY_ENABLED) {
+                    PrivilegedAction<Void> pa = new PrivilegedSetTccl(
+                            context.getLoader().getClassLoader());
+                    AccessController.doPrivileged(pa);
+                } else {
+                    Thread.currentThread().setContextClassLoader(
+                            context.getLoader().getClassLoader());
+                }
+            }
+            try {
+                List<HttpSessionListener> listeners = context.getSessionListeners();
+                if (notify && !listeners.isEmpty()) {
+                    HttpSessionEvent event = new HttpSessionEvent(getSession());
+                    int len = listeners.size();
+                    for (int i = 0; i < len; i++) {
+                        // Invoke in reverse order of declaration
+                        HttpSessionListener listener = listeners.get((len - 1) - i);
                         try {
+                            fireContainerEvent(context,
+                                               "beforeSessionDestroyed",
+                                               listener);
+                            listener.sessionDestroyed(event);
                             fireContainerEvent(context,
                                                "afterSessionDestroyed",
                                                listener);
-                        } catch (Exception e) {
-                            // Ignore
+                        } catch (Throwable t) {
+                            try {
+                                fireContainerEvent(context,
+                                                   "afterSessionDestroyed",
+                                                   listener);
+                            } catch (Exception e) {
+                                // Ignore
+                            }
+                            // FIXME - should we do anything besides log these?
+                            log(rb.getString(SESSION_EVENT_LISTENER_EXCEPTION), t);
                         }
-                        // FIXME - should we do anything besides log these?
-                        log(rb.getString(SESSION_EVENT_LISTENER_EXCEPTION), t);
+                    }
+                }
+            } finally {
+                if (oldTccl != null) {
+                    if (Globals.IS_SECURITY_ENABLED) {
+                        PrivilegedAction<Void> pa =
+                            new PrivilegedSetTccl(oldTccl);
+                        AccessController.doPrivileged(pa);
+                    } else {
+                        Thread.currentThread().setContextClassLoader(oldTccl);
                     }
                 }
             }
@@ -2367,6 +2396,20 @@ public class StandardSession
             return true;
         } else {
             return false;
+        }
+    }
+
+    private static class PrivilegedSetTccl implements PrivilegedAction<Void> {
+        private ClassLoader cl;
+
+        PrivilegedSetTccl(ClassLoader cl) {
+            this.cl = cl;
+        }
+
+        @Override
+        public Void run() {
+            Thread.currentThread().setContextClassLoader(cl);
+            return null;
         }
     }
 }
