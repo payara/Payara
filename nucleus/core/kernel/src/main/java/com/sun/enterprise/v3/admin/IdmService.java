@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,6 +61,8 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.PasswordAliasStore;
+import org.glassfish.security.services.impl.JCEKSPasswordAliasStore;
 
 /** An implementation of the @link {IdentityManagement} that manages the password needs of the server.
  *  This implementation consults the Java KeyStore and assumes that the stores are available in server's
@@ -77,7 +79,7 @@ public class IdmService implements PostConstruct, IdentityManagement {
 
     @Inject
     private volatile ServerEnvironmentImpl env = null;
-
+    
     private char[] masterPassword;
 
     private static final String FIXED_KEY = "master-password"; //the fixed key for master-password file
@@ -116,12 +118,12 @@ public class IdmService implements PostConstruct, IdentityManagement {
                 logger.fine("The JCEKS file: " + mp.getAbsolutePath() + " does not exist, master password was not saved on disk during domain creation");
                 return false;
             }
-            PasswordAdapter p   = new PasswordAdapter(mp.getAbsolutePath(), FIXED_KEY.toCharArray());
-            String mpstr = p.getPasswordForAlias(FIXED_KEY);
-            if (mpstr == null) {
+            final PasswordAliasStore masterPasswordAliasStore = JCEKSPasswordAliasStore.newInstance(mp.getAbsolutePath(), FIXED_KEY.toCharArray());
+            char[] mpChars = masterPasswordAliasStore.get(FIXED_KEY);
+            if (mpChars == null) {
                 return false;
             }
-            masterPassword = mpstr.toCharArray();
+            masterPassword = mpChars;
             return true;
         } catch (Exception ex) {
             logger.fine("Error in master-password processing: " + ex.getMessage());

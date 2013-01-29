@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.security.common.MasterPassword;
+import org.glassfish.security.services.impl.DomainPasswordAliasStore;
 
 /**
  * RemoteAdminCommand which is sent from a server (DAS or instance).
@@ -73,7 +73,7 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
 
     private SSLUtils _sslUtils = null;
     
-    private MasterPassword masterPasswordHelper = null;
+    private DomainPasswordAliasStore domainPasswordAliasStore = null;
 
     public ServerRemoteAdminCommand(ServiceLocator habitat, String name, String host, int port,
             boolean secure, String user, String password, Logger logger)
@@ -89,6 +89,7 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
         secureAdmin = domain.getSecureAdmin();
         serverEnv = habitat.getService(ServerEnvironment.class);
         this.secure = SecureAdmin.Util.isEnabled(secureAdmin);
+        domainPasswordAliasStore = habitat.getService(DomainPasswordAliasStore.class);
         setInteractive(false);
     }
 
@@ -120,8 +121,8 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
             if (secureAdminInternalUser != null) {
                 try {
                     result = new AuthenticationInfo(secureAdminInternalUser.getUsername(), 
-                            masterPassword().getMasterPasswordAdapter().
-                                getPasswordForAlias(secureAdminInternalUser.getPasswordAlias()));
+                            new String(domainPasswordAliasStore.
+                                get(secureAdminInternalUser.getPasswordAlias())));
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
@@ -158,12 +159,5 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
             _sslUtils = habitat.getService(SSLUtils.class);
         }
         return _sslUtils;
-    }
-    
-    private synchronized MasterPassword masterPassword() {
-        if (masterPasswordHelper == null) {
-            masterPasswordHelper = habitat.getService(MasterPassword.class);
-        }
-        return masterPasswordHelper;
     }
 }

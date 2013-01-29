@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,7 @@
 package com.sun.enterprise.security.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import java.util.Enumeration;
+import java.util.Iterator;
 import org.glassfish.api.admin.AccessRequired;
 
 import org.glassfish.api.admin.AdminCommand;
@@ -49,15 +49,14 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.I18n;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.PasswordAliasStore;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.security.store.PasswordAdapter;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.security.common.MasterPassword;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -102,8 +101,8 @@ public class ListPasswordAlias implements AdminCommand {
     final private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(ListPasswordAlias.class);
 
-    @Inject @Named("Security SSL Password Provider Service")
-    private MasterPassword masterPasswordHelper;
+    @Inject @Named("domain-passwords")
+    private PasswordAliasStore domainPasswordAliasStore;
 
 
     /**
@@ -116,20 +115,19 @@ public class ListPasswordAlias implements AdminCommand {
         final ActionReport report = context.getActionReport();
 
         try {
-            PasswordAdapter pa = masterPasswordHelper.getMasterPasswordAdapter();
-            Enumeration e = pa.getAliases();
+            final Iterator<String> it = domainPasswordAliasStore.keys();
 
-            if (! e.hasMoreElements()) {
+            if (! it.hasNext()) {
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                 report.setMessage(localStrings.getLocalString(
                     "list.password.alias.nothingtolist",
                     "Nothing to list"));
             }
             
-            while (e.hasMoreElements()) {
+            while (it.hasNext()) {
                 ActionReport.MessagePart part =
                     report.getTopMessagePart().addChild();
-                part.setMessage((String)e.nextElement());
+                part.setMessage(it.next());
             }
             
         } catch (Exception ex) {

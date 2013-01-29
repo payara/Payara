@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,15 +46,14 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.PasswordAliasStore;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.security.store.PasswordAdapter;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.security.common.MasterPassword;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -104,12 +103,12 @@ public class CreatePasswordAlias implements AdminCommand {
     @Param(name="aliaspassword", password=true)
     private String aliasPassword;
 
-    @Inject @Named("Security SSL Password Provider Service")
-    private MasterPassword masterPasswordHelper;
-
+    @Inject @Named("domain-passwords")
+    private PasswordAliasStore domainPasswordAliasStore;
+    
     /**
      * Executes the command with the command parameters passed as Properties
-     * where the keys are paramter names and the values the parameter values
+     * where the keys are parameter names and the values the parameter values
      *
      * @param context information
      */
@@ -117,8 +116,7 @@ public class CreatePasswordAlias implements AdminCommand {
         final ActionReport report = context.getActionReport();
         
         try {
-            PasswordAdapter pa = masterPasswordHelper.getMasterPasswordAdapter();
-            if (pa.getPasswordForAlias(aliasName) != null) {
+            if (domainPasswordAliasStore.containsKey(aliasName)) {
                 report.setMessage(localStrings.getLocalString(
                     "create.password.alias.alreadyexists",
                     "Password alias with the specified name already exists. " +
@@ -128,7 +126,7 @@ public class CreatePasswordAlias implements AdminCommand {
                 return;
             }
 
-            pa.setPasswordForAlias(aliasName,aliasPassword.getBytes());
+            domainPasswordAliasStore.putAlias(aliasName, aliasPassword.toCharArray());
 
         } catch (Exception ex) {
             ex.printStackTrace();

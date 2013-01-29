@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,6 @@
 
 package org.glassfish.internal.api;
 
-import com.sun.enterprise.security.store.PasswordAdapter; 
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.i18n.StringManagerBase;
 import java.io.File;
@@ -51,7 +50,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.security.common.MasterPassword; 
+import org.glassfish.api.admin.PasswordAliasStore;
 
 /**
  * The purpose of this class is to expand paths that contain embedded 
@@ -73,15 +72,19 @@ public class RelativePathResolver {
     private static Logger _logger = null;
 
     private static RelativePathResolver _instance = null;
-    private PasswordAdapter pwdAdapter = null;
     
     private static final String ALIAS_TOKEN = "ALIAS";
     private static final String ALIAS_DELIMITER = "=";
 
-    private static MasterPassword masterPasswordHelper = null;
-
-    static{
-        masterPasswordHelper = Globals.getDefaultHabitat().getService(MasterPassword.class);
+    private static PasswordAliasStore domainPasswordAliasStore = null; 
+    
+    private synchronized static PasswordAliasStore getDomainPasswordAliasStore() {
+        if (domainPasswordAliasStore == null) {
+            System.err.println("*** RelativePathResolver.getDomainPWAliasStore about to look for it");
+            domainPasswordAliasStore = Globals.getDefaultHabitat().getService(PasswordAliasStore.class, "domain-passwords");
+            System.err.println("    Got it");
+        }
+        return domainPasswordAliasStore;
     }
     
     private synchronized static RelativePathResolver getInstance()
@@ -214,10 +217,7 @@ public class RelativePathResolver {
                     String aliasName = propName.substring(idx2 + 1).trim();    
                     //System.err.println("aliasName " + aliasName);
                     try {
-                        if (pwdAdapter==null) {
-                            pwdAdapter = masterPasswordHelper.getMasterPasswordAdapter();
-                        }
-                        result = pwdAdapter.getPasswordForAlias(aliasName);
+                        result = new String(getDomainPasswordAliasStore().get(aliasName));
                     } catch (Exception ex) {                        
                         InternalLoggerInfo.getLogger().log(Level.WARNING, InternalLoggerInfo.exceptionResolvingAlias, 
                             new Object[] {ex, aliasName, propName});
@@ -367,14 +367,13 @@ public class RelativePathResolver {
             return (at);
         }
         final String          an = RelativePathResolver.getAlias(at);
-        final PasswordAdapter pa = masterPasswordHelper.getMasterPasswordAdapter(); // use default password store
-        final boolean     exists = pa.aliasExists(an);
+        final boolean     exists = domainPasswordAliasStore.containsKey(an);
         if (!exists) {
             final StringManager lsm = StringManager.getManager(RelativePathResolver.class);
             final String msg = lsm.getString("no_such_alias", an, at);
             throw new IllegalArgumentException(msg);
         }
-        final String real = pa.getPasswordForAlias(an);
+        final String real = new String(domainPasswordAliasStore.get(an));
         return ( real );
     }    
 }

@@ -56,8 +56,8 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
+import org.glassfish.api.admin.PasswordAliasStore;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.security.common.MasterPassword;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -81,8 +81,8 @@ public class SecureAdminHelperImpl implements SecureAdminHelper {
     @Inject
     private SSLUtils sslUtils;
     
-    @Inject @Named("Security SSL Password Provider Service")
-    private MasterPassword masterPasswordHelper;
+    @Inject @Named("domain-passwords")
+    private PasswordAliasStore domainPasswordAliasStore;
     
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private volatile AdminService as;
@@ -174,7 +174,7 @@ public class SecureAdminHelperImpl implements SecureAdminHelper {
             throws CertificateException, NoSuchAlgorithmException, 
             KeyStoreException, NoSuchAlgorithmException, IOException {
             
-        if ( ! masterPasswordHelper.getMasterPasswordAdapter().aliasExists(passwordAlias)) {
+        if ( ! domainPasswordAliasStore.containsKey(passwordAlias)) {
             throw new RuntimeException(Strings.get("noAlias", passwordAlias));
         }
     }

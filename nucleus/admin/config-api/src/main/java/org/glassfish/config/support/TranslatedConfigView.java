@@ -40,11 +40,11 @@
 
 package org.glassfish.config.support;
 
+import org.glassfish.api.admin.PasswordAliasStore;
 import org.jvnet.hk2.config.ConfigView;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 //import org.glassfish.security.common.RelativePathResolver;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.security.common.MasterPassword;
 
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -56,9 +56,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.io.IOException;
-
-import com.sun.enterprise.security.store.PasswordAdapter;
-
 
 /**
  * View that translate configured attributes containing properties like ${foo.bar}
@@ -73,17 +70,17 @@ public class TranslatedConfigView implements ConfigView {
     private static final String ALIAS_TOKEN = "ALIAS";
     private static int MAX_SUBSTITUTION_DEPTH = 100;
     
+    
     public static Object getTranslatedValue(Object value) {
         if (value!=null && value instanceof String) {
             String stringValue = value.toString();
             if (stringValue.indexOf('$')==-1) {
                 return value;
             }
-            MasterPassword masterpasswd =  habitat.getService(MasterPassword.class);
-            if (masterpasswd!= null) {
+            if (domainPasswordAliasStore() != null) {
                 if (getAlias(stringValue) != null) {
                     try{
-                        return getRealPasswordFromAlias(masterpasswd,stringValue);
+                        return getRealPasswordFromAlias(stringValue);
                     } catch (Exception e) {
                         Logger.getAnonymousLogger().severe(
                                 Strings.get("TranslatedConfigView.aliaserror", stringValue, e.getLocalizedMessage()));
@@ -156,7 +153,15 @@ public class TranslatedConfigView implements ConfigView {
     public static void setHabitat(ServiceLocator h) {
          habitat = h;
     }
-
+    
+    private static PasswordAliasStore domainPasswordAliasStore = null;
+    private static synchronized PasswordAliasStore domainPasswordAliasStore() {
+        if (domainPasswordAliasStore == null) {
+            domainPasswordAliasStore = habitat.getService(PasswordAliasStore.class, "domain-passwords");
+        }
+        return domainPasswordAliasStore;
+    }
+    
    /**
      * check if a given property name matches AS alias pattern ${ALIAS=aliasname}.
      * if so, return the aliasname, otherwise return null.
@@ -182,19 +187,18 @@ public class TranslatedConfigView implements ConfigView {
        return aliasName;
     }
 
-    public static String getRealPasswordFromAlias(MasterPassword masterPasswordHelper,final String at) throws
+    public static String getRealPasswordFromAlias(final String at) throws
                KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException,
                UnrecoverableKeyException {
 
            final String          an = getAlias(at);
-           final PasswordAdapter pa = masterPasswordHelper.getMasterPasswordAdapter(); // use default password store
-           final boolean     exists = pa.aliasExists(an);
+           final boolean     exists = domainPasswordAliasStore.containsKey(an);
            if (!exists) {
 
                final String msg = String.format("Alias  %s does not exist",an);
                throw new IllegalArgumentException(msg);
            }
-           final String real = pa.getPasswordForAlias(an);
+           final String real = new String(domainPasswordAliasStore.get(an));
            return ( real );
        }
 

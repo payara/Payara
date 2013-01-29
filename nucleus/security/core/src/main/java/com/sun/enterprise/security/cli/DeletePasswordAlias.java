@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,15 +41,14 @@
 package com.sun.enterprise.security.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.PasswordAliasStore;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.security.common.MasterPassword;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -89,7 +88,7 @@ import org.glassfish.hk2.api.PerLookup;
         description="delete-password-alias")
 })
 
-@AccessRequired(resource="domain/passwordAliases/$aliasName", action="delete")
+@AccessRequired(resource="domain/passwordAliases/passwordAlias/$aliasName", action="delete")
 public class DeletePasswordAlias implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     final private static LocalStringManagerImpl localStrings =
@@ -97,17 +96,14 @@ public class DeletePasswordAlias implements AdminCommand, AdminCommandSecurity.P
 
     @Param(name="aliasname", primary=true)
     private String aliasName;
-    @Inject @Named("Security SSL Password Provider Service")
-    private MasterPassword masterPasswordHelper;
+    @Inject @Named("domain-passwords")
+    private PasswordAliasStore domainPasswordAliasStore;
 
-    private PasswordAdapter pa;
-    
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         try {
-            pa = masterPasswordHelper.getMasterPasswordAdapter();
-            if (pa.getPasswordForAlias(aliasName) == null) {
+            if ( ! domainPasswordAliasStore.containsKey(aliasName)) {
                 report.setMessage(localStrings.getLocalString(
                     "delete.password.alias.notfound",
                     "Password alias for the alias {0} does not exist.",
@@ -134,7 +130,7 @@ public class DeletePasswordAlias implements AdminCommand, AdminCommandSecurity.P
         final ActionReport report = context.getActionReport();
 
         try {
-            pa.removeAlias(aliasName);
+            domainPasswordAliasStore.removeAlias(aliasName);
         } catch (Exception ex) {
             ex.printStackTrace();
             reportFailure(report, ex);
