@@ -128,6 +128,8 @@
         <websocket-api.version>1.0-b11</websocket-api.version>
         <tyrus.version>1.0-b10</tyrus.version>
         <json.version>1.0-b02</json.version>
+        <concurrent-api.version>1.0-b01</concurrent-api.version>
+        <concurrent.version>1.0-b01</concurrent.version>
     </properties>
 
     <modules>
@@ -591,6 +593,16 @@
                 <groupId>org.glassfish.tyrus</groupId>
                 <artifactId>tyrus-websocket-core</artifactId>
                 <version>${tyrus.version}</version> 
+            </dependency>
+            <dependency>
+                <groupId>javax.enterprise.concurrent</groupId>
+                <artifactId>javax.enterprise.concurrent-api</artifactId>
+                <version>${concurrent-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>javax.enterprise.concurrent</artifactId>
+                <version>${concurrent.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.external</groupId>

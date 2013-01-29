@@ -125,12 +125,11 @@
             <version>1.0-rev-1</version>
             <optional>true</optional>
         </dependency>
-<!--
         <dependency>
             <groupId>javax.enterprise.concurrent</groupId>
             <artifactId>javax.enterprise.concurrent-api</artifactId>
-            <version>1.0</version>
-        </dependency>-->
+            <optional>true</optional>
+        </dependency>
 <!--
         <dependency>
             <groupId>javax.cache</groupId>
