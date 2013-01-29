@@ -44,11 +44,8 @@ import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
 import org.glassfish.admin.cli.resources.ResourceConfigCreator;
-import org.glassfish.api.Param;
 import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.api.admin.RestRedirects;
-import org.glassfish.api.admin.config.PropertiesDesc;
-import org.glassfish.quality.ToDo;
 import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
@@ -78,24 +75,22 @@ public interface ManagedThreadFactory extends ConfigBeanProxy, Resource,
         PropertyBag, BindableResource, Payload  {
 
     /**
-     * Gets the value of the contextServiceName property.
+     * Gets the value of the contextInfo property.
      *
      * @return possible object is
      *         {@link String }
-     *        
+     *
      */
     @Attribute
-    @NotNull
-    @ReferenceConstraint.RemoteKey(message="{resourceref.invalid.contextservicename}", type=ContextService.class)
-    String getContextServiceName();
+    String getContextInfo();
 
     /**
-     * Sets the value of the contextServiceName property.
+     * Sets the value of the contextInfo property.
      *
      * @param value allowed object is
      *              {@link String }
      */
-    void setContextServiceName(String value) throws PropertyVetoException;
+    void setContextInfo(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the threadPriority property.
@@ -137,4 +132,12 @@ public interface ManagedThreadFactory extends ConfigBeanProxy, Resource,
     @Element
     List<Property> getProperty();
 
+    @DuckTyped
+    String getIdentity();
+
+    class Duck {
+        public static String getIdentity(ManagedThreadFactory resource){
+            return resource.getJndiName();
+        }
+    }
 }

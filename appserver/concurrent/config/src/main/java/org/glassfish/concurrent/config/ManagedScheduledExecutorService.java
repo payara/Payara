@@ -69,4 +69,14 @@ import javax.validation.Payload;
 public interface ManagedScheduledExecutorService extends ConfigBeanProxy, 
         Resource, PropertyBag, BindableResource, Payload, 
         ManagedExecutorService {
+
+    @DuckTyped
+    String getIdentity();
+
+    class Duck {
+        public static String getIdentity(
+            ManagedScheduledExecutorService resource){
+            return resource.getJndiName();
+        }
+    }
 }

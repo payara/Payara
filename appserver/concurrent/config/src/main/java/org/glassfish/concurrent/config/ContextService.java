@@ -44,11 +44,8 @@ import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
 import org.glassfish.admin.cli.resources.ResourceConfigCreator;
-import org.glassfish.api.Param;
 import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.api.admin.RestRedirects;
-import org.glassfish.api.admin.config.PropertiesDesc;
-import org.glassfish.quality.ToDo;
 import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
@@ -118,4 +115,12 @@ public interface ContextService extends ConfigBeanProxy, Resource,
     @Element
     List<Property> getProperty();
 
+    @DuckTyped
+    String getIdentity();
+
+    class Duck {
+        public static String getIdentity(ContextService resource){
+            return resource.getJndiName();
+        }
+    }
 }

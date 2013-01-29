@@ -75,44 +75,40 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
         PropertyBag, BindableResource, Payload {
 
     /**
-     * Gets the value of the contextServiceName property.
-     *
-     * @return possible object is
-     *         {@link String }
-     *        
-     */
-    @Attribute
-    @NotNull
-    @ReferenceConstraint.RemoteKey(message="{resourceref.invalid.contextservicename}", type=ContextService.class)
-    String getContextServiceName();
-
-    /**
-     * Sets the value of the contextServiceName property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    void setContextServiceName(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the managedThreadFactoryName property.
+     * Gets the value of the contextInfo property.
      *
      * @return possible object is
      *         {@link String }
      *
      */
     @Attribute
-    @NotNull
-    @ReferenceConstraint.RemoteKey(message="{resourceref.invalid.managedthreadfactoryname}", type=ManagedThreadFactory.class)
-    String getManagedThreadFactoryName();
+    String getContextInfo();
 
     /**
-     * Sets the value of the managedThreadFactoryName property.
+     * Sets the value of the contextInfo property.
      *
      * @param value allowed object is
      *              {@link String }
      */
-    void setManagedThreadFactoryName(String value) throws PropertyVetoException;
+    void setContextInfo(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the threadPriority property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute(defaultValue=""+Thread.NORM_PRIORITY, dataType=Integer.class)
+    String getThreadPriority();
+
+
+    /**
+     * Sets the value of the threadPriority property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    void setThreadPriority(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the longRunningTasks property.
@@ -186,4 +182,12 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
     @Element
     List<Property> getProperty();
 
+    @DuckTyped
+    String getIdentity();
+
+    class Duck {
+        public static String getIdentity(ManagedExecutorService resource){
+            return resource.getJndiName();
+        }
+    }
 }
