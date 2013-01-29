@@ -153,7 +153,7 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
         MediaType.APPLICATION_XML,
         MediaType.APPLICATION_FORM_URLENCODED})
     public ActionReportResult hack(ParameterMap data) {
-        if (data.containsKey("operation")) {
+        if (data != null && data.containsKey("operation")) {
             List<String> l = data.get("operation");
             if (l.contains("__deleteoperation")) {
 
