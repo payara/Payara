@@ -1301,11 +1301,6 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
         AvailabilityService as = server.getConfig().getAvailabilityService();
 
-        JmsService jmsService = server.getConfig().getExtensionByType(JmsService.class);
-
-
-        //if (jmsService.getUseMasterBroker() != null && ! Boolean.parseBoolean(jmsService.getUseMasterBroker()))
-          //  return true;
 	if (as != null){
 		JmsAvailability jmsAvailability = as.getExtensionByType(JmsAvailability.class);
         	if (jmsAvailability.getAvailabilityEnabled() != null && Boolean.parseBoolean(jmsAvailability.getAvailabilityEnabled())){
