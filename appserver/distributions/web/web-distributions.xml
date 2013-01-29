@@ -89,12 +89,6 @@
 </target>
 
 <target name="create-common-image" description="Creating IPS Image">
-<!--
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-virtualization"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
--->
     <ant antfile="../distributions.xml" target="install-package">
         <property name="package.name" value="glassfish-registration"/>
         <property name="image.dir" value="${image.dir}"/>
@@ -135,10 +129,6 @@
         <property name="package.name" value="glassfish-gui"/>
         <property name="image.dir" value="${image.dir}"/>
     </ant>
-<!--    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-paas-gui"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>-->
     <ant antfile="../distributions.xml" target="install-package">
         <property name="package.name" value="javadb-common"/>
         <property name="image.dir" value="${image.dir}"/>

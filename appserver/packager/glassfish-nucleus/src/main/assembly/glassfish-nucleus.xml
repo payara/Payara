@@ -55,7 +55,7 @@
             <directory>${temp.dir}/nucleus</directory>
             <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
             <excludes>
-                <exclude>bin/nadmin*</exclude>
+                <exclude>bin/*</exclude>
                 <exclude>lib/nadmin*</exclude>
             </excludes>
         </fileSet>
@@ -65,11 +65,21 @@
             <fileMode>755</fileMode>
             <includes>
                 <include>lib/nadmin*</include>
+                <include>bin/*</include>
             </includes>
+            <excludes>
+                <exclude>bin/nadmin*</exclude>
+            </excludes>            
+        </fileSet>
+        <fileSet>
+            <directory>${temp.dir}/bin</directory>
+            <outputDirectory>${install.dir.name}/bin</outputDirectory>
+            <fileMode>755</fileMode>
         </fileSet>
         <fileSet>
             <directory>${temp.dir}</directory>
             <excludes>
+                <exclude>bin/*</exclude>
                 <exclude>nucleus/**</exclude>
                 <exclude>pkg_proto.py</exclude>
             </excludes>
