@@ -45,3 +45,6 @@ nucleus/core/logging/src/test/resources/com/sun/enterprise/server/logging/logvie
 .jks
 .json
 .class
+# Log files
+nucleus/core/logging/src/test/resources/com/sun/enterprise/server/logging/parser/uniform-server.log
+nucleus/core/logging/src/test/resources/com/sun/enterprise/server/logging/parser/odl-server.log
