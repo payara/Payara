@@ -80,9 +80,7 @@ public class RelativePathResolver {
     
     private synchronized static PasswordAliasStore getDomainPasswordAliasStore() {
         if (domainPasswordAliasStore == null) {
-            System.err.println("*** RelativePathResolver.getDomainPWAliasStore about to look for it");
             domainPasswordAliasStore = Globals.getDefaultHabitat().getService(PasswordAliasStore.class, "domain-passwords");
-            System.err.println("    Got it");
         }
         return domainPasswordAliasStore;
     }
