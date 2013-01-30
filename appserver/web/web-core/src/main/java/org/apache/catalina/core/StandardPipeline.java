@@ -767,6 +767,9 @@ public class StandardPipeline
                                     req.getInputStream(),
                                     ((org.apache.catalina.connector.Response)req.getResponse()).getOutputStream());
                     wc.setRequest(req);
+                    if (response instanceof org.apache.catalina.connector.Response) {
+                        wc.setResponse((org.apache.catalina.connector.Response) response);
+                    }
                     handler.init(wc);
                 } else {
                     log.log(Level.SEVERE, PROTOCOL_HANDLER_REQUIRED_EXCEPTION);

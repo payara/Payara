@@ -64,6 +64,8 @@ public class WebConnectionImpl implements WebConnection {
 
     private Request request;
 
+    private Response response;
+
     private final AtomicBoolean isClosed = new AtomicBoolean();
 
     // ----------------------------------------------------------- Constructor
@@ -106,10 +108,16 @@ public class WebConnectionImpl implements WebConnection {
                         request.getHttpUpgradeHandler();
                 try {
                     httpUpgradeHandler.destroy();
+                    request.setUpgrade(false);
+                    if (response != null) {
+                        response.setUpgrade(false);
+                    }
                 } finally {
                     ((StandardContext)request.getContext()).fireContainerEvent(
                         ContainerEvent.PRE_DESTROY, httpUpgradeHandler);
-                    request.getCoyoteRequest().getResponse().resume();
+                    if (request.getCoyoteRequest().getResponse().isSuspended()) {
+                        request.getCoyoteRequest().getResponse().resume();
+                    }
 
                 }
                 Exception exception = null;
@@ -132,6 +140,10 @@ public class WebConnectionImpl implements WebConnection {
 
     public void setRequest(Request req) {
         request = req;
+    }
+
+    public void setResponse(Response res) {
+        response = res;
     }
 
 }

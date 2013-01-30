@@ -511,6 +511,10 @@ public class InputBuffer extends Reader
                             request.getHttpUpgradeHandler();
                     try {
                         httpUpgradeHandler.destroy();
+                        request.setUpgrade(false);
+                        if (request.getResponse() instanceof Response) {
+                            ((Response)request.getResponse()).setUpgrade(false);
+                        }
                     } finally {
                         ((StandardContext)request.getContext()).fireContainerEvent(
                             ContainerEvent.PRE_DESTROY, httpUpgradeHandler);
