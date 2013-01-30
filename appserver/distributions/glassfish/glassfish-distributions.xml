@@ -161,7 +161,7 @@
 
 
         <unzip src="${legal-fragment.zip}"
-           dest="${image.dir}">
+           dest="${image.dir}/..">
           <patternset>
                   <exclude name="META-INF/**"/>
           </patternset>
