@@ -57,7 +57,4 @@ public interface Property extends RestModel {
 
     String getValue();
     void setValue(String value);
-
-    String getDescription();
-    void setDescription(String description);
 }
