@@ -3,7 +3,7 @@
 REM
 REM  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 REM 
-REM  Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+REM  Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
 REM 
 REM  The contents of this file are subject to the terms of either the GNU
 REM  General Public License Version 2 only ("GPL") or the Common Development

@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -82,42 +82,6 @@
     <target name="undeploy">
         <antcall target="undeploy-${deploy.platform}-impl"/>
     </target>
-
-    <target name="build-war" depends="archive-type" if="archive.war">
-        <echo message="Override build-war"/>
-        <echo message="Now creating a war file ${dist.dir}/${app.file.ext}"/>
-        <delete dir="${class.output}"/>
-        <delete dir="${dist.dir}"/>
-        <delete file="${app.file.ext}"/>
-        <mkdir dir="${class.output}"/>
-        <mkdir dir="${dist.dir}"/>
-        <javac   debug="true"
-                 fork="true"
-                 source="1.5"
-                 target="1.5"
-                 classpathref="class.path"
-                 srcdir="src/java"
-                 failonerror="false"
-                 destdir="${class.output}"/>
-
-        <copy file="src/java/jaxb1/jaxb.properties" todir="${class.output}/jaxb1/" failonerror="false"/>
-
-        <mkdir dir="${class.output}/META-INF"/>
-        <copy file="metadata/persistence.xml" todir="${class.output}/META-INF" failonerror="false"/>
-
-        <war destfile="${dist.dir}/${app.file.ext}" webxml="metadata/web.xml">
-            <fileset dir="web/html"/>
-            <fileset dir="web/jsp"/>
-            <classes dir="${class.output}">
-                <include name="**/*.class"/>
-                <include name="**/persistence.xml"/>
-                <include name="**/*.properties"/>
-            </classes>
-            <webinf dir="metadata">
-                <include name="**/*.xml"/>
-                <exclude name="**/persistence.xml"/>
-            </webinf>
-        </war>
-    </target>
-
+    
+    
 </project>
