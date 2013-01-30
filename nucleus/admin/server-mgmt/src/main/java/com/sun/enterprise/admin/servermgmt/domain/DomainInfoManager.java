@@ -68,17 +68,17 @@ public class DomainInfoManager {
      * Parses template information file and uses its information to create 
      * domain info file.
      */
-    public void process(DomainTemplate domainTemplate, File repoDir) {
+    public void process(DomainTemplate domainTemplate, File domainDir) {
         FileOutputStream outputStream = null;
         try {
             TemplateInfo templateInfo = domainTemplate.getInfo();
-            File infoDir = new File(repoDir, DomainConstants.INFO_DIRECTORY);
+            File infoDir = new File(domainDir, DomainConstants.INFO_DIRECTORY);
             if(!infoDir.exists() && !infoDir.mkdirs()) {
                 _logger.log(Level.INFO, _strings.get("directoryCreationError", infoDir.getAbsolutePath()));
                 return;
             }
-            File domainXML = new File(infoDir, DomainConstants.DOMAIN_INFO_XML);
-            outputStream = new FileOutputStream(domainXML);
+            File domainInfoXML = new File(infoDir, DomainConstants.DOMAIN_INFO_XML);
+            outputStream = new FileOutputStream(domainInfoXML);
             ObjectFactory objFactory = new ObjectFactory();
             DomainInfo domainInfo = objFactory.createDomainInfo();
             String javaHome = System.getenv(JAVA_HOME);

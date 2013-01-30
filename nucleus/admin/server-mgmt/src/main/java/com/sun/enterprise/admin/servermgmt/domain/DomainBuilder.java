@@ -118,9 +118,13 @@ public class DomainBuilder {
     private void initialize() throws DomainException {
         String templateJarPath = (String)_domainConfig.get(DomainConfig.K_TEMPLATE_NAME);
         if (templateJarPath == null || templateJarPath.isEmpty()) {
+            String defaultTemplateName = Version.getDefaultDomainTemplate();
+            if (defaultTemplateName == null || defaultTemplateName.isEmpty()) {
+                throw new DomainException(_strings.get("missingDefaultTemplateName"));
+            }
             Map<String, String> envProperties = new ASenvPropertyReader().getProps();
             templateJarPath = envProperties.get(SystemPropertyConstants.INSTALL_ROOT_PROPERTY) + File.separator
-                    + DEFUALT_TEMPLATE_RELATIVE_PATH + File.separator + Version.getDefaultDomainTemplate();
+                    + DEFUALT_TEMPLATE_RELATIVE_PATH + File.separator + defaultTemplateName;
         }
         File template = new File(templateJarPath);
         if (!template.exists() || !template.getName().endsWith(".jar")) {
@@ -154,7 +158,7 @@ public class DomainBuilder {
             } else {
                 _logger.log(Level.WARNING, _strings.get("missingFile", STRINGSUBS_FILE));
             }
-            _domainTempalte = new DomainTemplate(templateInfoHolder, stringSubstitutor);
+            _domainTempalte = new DomainTemplate(templateInfoHolder, stringSubstitutor, templateJarPath);
 
             // Loads default self signed certificate.
             je = _templateJar.getJarEntry("config/" + DomainConstants.KEYSTORE_FILE);

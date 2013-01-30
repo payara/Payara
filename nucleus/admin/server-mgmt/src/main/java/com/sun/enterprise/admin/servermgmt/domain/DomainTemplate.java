@@ -49,9 +49,10 @@ public class DomainTemplate {
     private String _location;
     private TemplateInfoHolder _templateInfoHolder;
 
-    public DomainTemplate(TemplateInfoHolder tInfoHolder, StringSubstitutor substitutor) {
+    public DomainTemplate(TemplateInfoHolder tInfoHolder, StringSubstitutor substitutor, String location) {
         _templateInfoHolder = tInfoHolder;
         _stringSubstitutor = substitutor;
+        _location = location;
     }
 
     /**
