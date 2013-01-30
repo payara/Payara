@@ -44,11 +44,9 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -360,25 +358,25 @@ public class ResourceUtil {
                 params = getParamMetaData(command, commandParamsToSkip.keySet(), habitat, logger);
             }
 
-            Iterator<CommandModel.ParamModel> iterator = params.iterator();
-            CommandModel.ParamModel paramModel;
-            while (iterator.hasNext()) {
-                paramModel = iterator.next();
-                Param param = paramModel.getParam();
+            if (params != null) {
+                Iterator<CommandModel.ParamModel> iterator = params.iterator();
+                CommandModel.ParamModel paramModel;
+                while (iterator.hasNext()) {
+                    paramModel = iterator.next();
+                    Param param = paramModel.getParam();
+                    ParameterMetaData parameterMetaData = getParameterMetaData(paramModel);
 
-                ParameterMetaData parameterMetaData = getParameterMetaData(paramModel);
+                    String parameterName = (param.primary()) ? "id" : paramModel.getName();
+
+                    // If the Param has an alias, use it instead of the name
+                    String alias = param.alias();
+                    if (alias != null && (!alias.isEmpty())) {
+                        parameterName = alias;
+                    }
 
 
-                String parameterName = (param.primary()) ? "id" : paramModel.getName();
-
-                // If the Param has an alias, use it instead of the name
-                String alias = param.alias();
-                if (alias != null && (!alias.isEmpty())) {
-                    parameterName = alias;
+                    methodMetaData.putParameterMetaData(parameterName, parameterMetaData);
                 }
-
-
-                methodMetaData.putParameterMetaData(parameterName, parameterMetaData);
             }
         }
 
@@ -562,7 +560,12 @@ public class ResourceUtil {
      */
     public static Collection<CommandModel.ParamModel> getParamMetaData(
             String commandName, ServiceLocator habitat, Logger logger) {
-        return habitat.<CommandRunner>getService(CommandRunner.class).getModel(commandName, logger).getParameters();
+        final CommandModel model = habitat.<CommandRunner>getService(CommandRunner.class).getModel(commandName, logger);
+        if (model == null) {
+            return null;
+        }
+        
+        return model.getParameters();
     }
 
     /**
