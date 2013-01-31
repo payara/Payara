@@ -135,7 +135,7 @@ public class ContextServiceManager implements ResourceManager {
 
 
         if (jndiName == null) {
-            String msg = localStrings.getLocalString("create.context.service.noJndiName", "No JNDI name defined for context service.");
+            String msg = localStrings.getLocalString("context.service.noJndiName", "No JNDI name defined for context service.");
             return new ResourceStatus(ResourceStatus.FAILURE, msg);
         }
 
@@ -223,7 +223,7 @@ public class ContextServiceManager implements ResourceManager {
                 }
             } else {
                 if (!resourceUtil.isResourceRefInTarget(jndiName, target)) {
-                    String msg = localStrings.getLocalString("delete.context.service.no.resource-ref", "This context-resource [ {0} ] is not referenced in target [ {1} ]", jndiName, target);
+                    String msg = localStrings.getLocalString("delete.context.service.no.resource-ref", "This context-service [ {0} ] is not referenced in target [ {1} ]", jndiName, target);
                     return new ResourceStatus(ResourceStatus.FAILURE, msg);
                 }
 
@@ -245,17 +245,17 @@ public class ContextServiceManager implements ResourceManager {
                     return param.getResources().remove(resource);
                 }
             }, resources) == null) {
-                String msg = localStrings.getLocalString("context.service.deletionFailed", "Context service {0} delete failed", jndiName);
+                String msg = localStrings.getLocalString("delete.context.service.failed", "Context service {0} deletion failed", jndiName);
                 return new ResourceStatus(ResourceStatus.FAILURE, msg);
             }
         } catch(TransactionFailure tfe) {
-            String msg = localStrings.getLocalString("context.service.deletionFailed", "Context service {0} delete failed ", jndiName);
+            String msg = localStrings.getLocalString("delete.context.service.failed", "Context service {0} deletion failed ", jndiName);
             ResourceStatus status = new ResourceStatus(ResourceStatus.FAILURE, msg);
             status.setException(tfe);
             return status;
         }
 
-        String msg = localStrings.getLocalString("context.service.deleteSuccess", "Context service {0} deleted successfully", jndiName);
+        String msg = localStrings.getLocalString("delete.context.service.success", "Context service {0} deleted successfully", jndiName);
         return new ResourceStatus(ResourceStatus.SUCCESS, msg);
     }
 }
