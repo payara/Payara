@@ -105,7 +105,7 @@ public class WARDirContext extends BaseDirContext {
     @LogMessageInfo(
             message = "Exception closing WAR File {0}",
             level = "WARNING")
-    public static final String EXCEPTION_CLOSING_WAR = "AS-WEB-00007";
+    public static final String EXCEPTION_CLOSING_WAR = "AS-WEB-NAMING-00007";
 
     // ----------------------------------------------------------- Constructors
 

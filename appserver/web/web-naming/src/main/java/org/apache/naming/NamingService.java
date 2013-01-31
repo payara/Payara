@@ -85,7 +85,7 @@ public final class NamingService
     @LogMessageInfo(
             message = "Unable to restore original system properties",
             level = "WARNING")
-    public static final String UNABLE_TO_RESTORE_ORIGINAL_SYS_PROPERTIES = "AS-WEB-00008";
+    public static final String UNABLE_TO_RESTORE_ORIGINAL_SYS_PROPERTIES = "AS-WEB-NAMING-00008";
 
     // ----------------------------------------------------- Instance Variables
         

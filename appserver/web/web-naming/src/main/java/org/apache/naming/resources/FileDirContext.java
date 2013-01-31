@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -117,34 +117,34 @@ public class FileDirContext extends BaseDirContext {
     @LogMessageInfo(
             message = "Canonical Pathname cannot be null",
             level = "FINE")
-    public static final String FILE_RESOURCES_NULL_CANONICAL_PATH = "AS-WEB-NAMING_00001";
+    public static final String FILE_RESOURCES_NULL_CANONICAL_PATH = "AS-WEB-NAMING-00001";
 
     @LogMessageInfo(
             message = "Outside webapp not allowed {0} {1} {2}",
             level = "FINE")
-    public static final String FILE_RESOURCES_NOT_ALLOWED = "AS-WEB-NAMING_00002";
+    public static final String FILE_RESOURCES_NOT_ALLOWED = "AS-WEB-NAMING-00002";
 
     @LogMessageInfo(
             message = "Absolute Pathname cannot be null {0} {1}",
             level = "FINE")
-    public static final String FILE_RESOURCES_NULL_ABS_PATH = "AS-WEB-NAMING_00003";
+    public static final String FILE_RESOURCES_NULL_ABS_PATH = "AS-WEB-NAMING-00003";
 
     @LogMessageInfo(
             message = "Canonical pathname {0} equals to absolute pathname {1} {2}",
             level = "FINE")
-    public static final String FILE_RESOURCES_PATH_EQUALS_ABS_PATH = "AS-WEB-NAMING_00004";
+    public static final String FILE_RESOURCES_PATH_EQUALS_ABS_PATH = "AS-WEB-NAMING-00004";
 
     @LogMessageInfo(
             message = "File cannot be read {0}",
             level = "FINE")
-    public static final String FILE_RESOURCES_NOT_EXIST = "AS-WEB-NAMING_00005";
+    public static final String FILE_RESOURCES_NOT_EXIST = "AS-WEB-NAMING-00005";
 
     @LogMessageInfo(
             message = "Could not get dir listing for {0}",
             level = "WARNING",
             cause = "Some IO error occurred such as bad file permissions",
             action = "Verify the file descriptors")
-    public static final String FILE_RESOURCES_LISTING_NULL = "AS-WEB-00006";
+    public static final String FILE_RESOURCES_LISTING_NULL = "AS-WEB-NAMING-00006";
 
 
     // -------------------------------------------------------------- Constants
