@@ -48,6 +48,9 @@ import org.glassfish.tests.utils.NucleusTestUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import com.oracle.hk2.devtest.cdi.ear.ejb1.Ejb1Remote;
 
 /**
  * 
@@ -60,6 +63,8 @@ public class CDIEarTest extends NucleusStartStopTest {
     
     private final static String SOURCE_HOME = System.getProperty("source.home", "$");
     private final static String SOURCE_HOME_APP = "/appserver/tests/hk2/" + APP_JAR;
+    
+    private final static String EJB1_JNDI_NAME = "java:global/app/ejb1/Ejb1";
     
     private boolean deployed1;
     private Context context;
@@ -88,5 +93,21 @@ public class CDIEarTest extends NucleusStartStopTest {
             context.close();
             context = null;
         }
+    }
+    
+    @Test
+    public void testInjectFromLib1IntoEjb1() throws NamingException {
+        Ejb1Remote ejb1 = (Ejb1Remote) context.lookup(EJB1_JNDI_NAME);
+        
+        ejb1.isLib1HK2ServiceAvailable();
+        
+    }
+    
+    @Test
+    public void testInjectFromEjb1IntoEjb1() throws NamingException {
+        Ejb1Remote ejb1 = (Ejb1Remote) context.lookup(EJB1_JNDI_NAME);
+        
+        ejb1.isEjb1HK2ServiceAvailable();
+        
     }
 }

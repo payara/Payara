@@ -37,36 +37,40 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.oracle.hk2.devtest.cdi.ear.ejb1;
+package com.oracle.hk2.devtest.cdi.ear.lib1;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-
-import com.oracle.hk2.devtest.cdi.ear.lib1.HK2Service;
-import com.oracle.hk2.devtest.cdi.ear.lib1.Lib1HK2Service;
+import org.glassfish.hk2.api.Factory;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * 
  * @author jwells
  *
  */
-@Stateless
-@Remote(Ejb1Remote.class)
-public class Ejb1 implements Ejb1Remote {
-    @Inject
-    private Ejb1HK2Service ejb1Service;
-    
-    @Inject
-    private Lib1HK2Service lib1Service;
+@Service
+public class Lib1Hk2ServiceFactory implements Factory<Lib1HK2Service> {
 
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Factory#provide()
+     */
     @Override
-    public boolean isEjb1HK2ServiceAvailable() {
-        return (ejb1Service != null) && HK2Service.EJB1.equals(ejb1Service.getComponentName()) ;
+    public Lib1HK2Service provide() {
+        return new Lib1HK2Service() {
+
+            @Override
+            public String getComponentName() {
+                return HK2Service.LIB1;
+            }
+            
+        };
     }
 
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Factory#dispose(java.lang.Object)
+     */
     @Override
-    public boolean isLib1HK2ServiceAvailable() {
-        return (lib1Service != null) && HK2Service.LIB1.equals(lib1Service.getComponentName()) ;
+    public void dispose(Lib1HK2Service instance) {
+        // TODO Auto-generated method stub
+
     }
+
 }

@@ -66,23 +66,28 @@
                         <webModule>
                             <groupId>org.glassfish.tests.hk2.cdi.ear</groupId>
                             <artifactId>war1</artifactId>
+                            <bundleFileName>war1.war</bundleFileName>
                         </webModule>
                         <webModule>
                             <groupId>org.glassfish.tests.hk2.cdi.ear</groupId>
                             <artifactId>war2</artifactId>
+                            <bundleFileName>war2.war</bundleFileName>
                         </webModule>
                         <ejbModule>
                             <groupId>org.glassfish.tests.hk2.cdi.ear</groupId>
                             <artifactId>ejb1</artifactId>
+                            <bundleFileName>ejb1.jar</bundleFileName>
                         </ejbModule>
                         <ejbModule>
                             <groupId>org.glassfish.tests.hk2.cdi.ear</groupId>
                             <artifactId>ejb2</artifactId>
+                            <bundleFileName>ejb2.jar</bundleFileName>
                         </ejbModule>
                         <jarModule>
                             <groupId>org.glassfish.tests.hk2.cdi.ear</groupId>
                             <artifactId>lib1</artifactId>
                             <bundleDir>lib</bundleDir>
+                            <bundleFileName>lib1.jar</bundleFileName>
                         </jarModule>
                     </modules>
                 </configuration>
