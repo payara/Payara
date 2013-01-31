@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -70,8 +70,6 @@ import java.util.logging.Formatter;
 @PerLookup
 public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
 
-    private static final String AS_COMPONENT_NAME = "AS";
-
     // loggerResourceBundleTable caches references to all the ResourceBundle
     // and can be searched using the LoggerName as the key 
     private Map<String, ResourceBundle> loggerResourceBundleTable;
@@ -87,6 +85,8 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
     private static String ecID = "";
 
     private FormatterDelegate _delegate = null;
+    
+    private UniformLogFormatter uniformLogFormatter = new UniformLogFormatter();
 
     private static final String LINE_SEPARATOR =
         (String) java.security.AccessController.doPrivileged(
@@ -209,15 +209,15 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
 
             // Adding organization ID
             recordBuffer.append(FIELD_BEGIN_MARKER);
-            logEvent.setComponentId(AS_COMPONENT_NAME);
-            recordBuffer.append(AS_COMPONENT_NAME);
+            logEvent.setComponentId(uniformLogFormatter.getProductId());
+            recordBuffer.append(uniformLogFormatter.getProductId());
             recordBuffer.append(FIELD_END_MARKER);
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
             // Adding messageType
             Level logLevel = record.getLevel();
             recordBuffer.append(FIELD_BEGIN_MARKER);
-            String odlLevel = getMapplingLogRecord(logLevel);
+            String odlLevel = logLevel.getName();
             logEvent.setLevel(odlLevel);
             recordBuffer.append(odlLevel);
             recordBuffer.append(FIELD_END_MARKER);
@@ -233,8 +233,10 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
 
             // Adding logger Name / module Name
             recordBuffer.append(FIELD_BEGIN_MARKER);
-            recordBuffer.append(record.getLoggerName());
-            logEvent.setLogger(record.getLoggerName());
+            String loggerName = record.getLoggerName();
+            loggerName = (loggerName == null) ? "" : loggerName;
+            recordBuffer.append(loggerName);
+            logEvent.setLogger(loggerName);
             recordBuffer.append(FIELD_END_MARKER);
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 
@@ -468,28 +470,6 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
             }
         }
         return message;
-    }
-
-    public String getMapplingLogRecord(Level levelInRecord) {
-        String level = levelInRecord.toString();
-        if (level.equals("OFF")) {
-            return "OFF";
-        } else if (level.equals("SEVERE")) {
-            return "ERROR";
-        } else if (level.equals("WARNING")) {
-            return "WARNING";
-        } else if (level.equals("INFO")) {
-            return "NOTIFICATION";
-        } else if (level.equals("CONFIG")) {
-            return "NOTIFICATION";
-        } else if (level.equals("FINE")) {
-            return "TRACE";
-        } else if (level.equals("FINER")) {
-            return "TRACE";
-        } else if (level.equals("FINEST")) {
-            return "TRACE";
-        }
-        return "";
     }
 
     void setLogEventBroadcaster(LogEventBroadcaster logEventBroadcaster) {
