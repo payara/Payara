@@ -116,7 +116,7 @@
     
     <profiles>
         <profile>
-            <id>release-phase2</id>
+            <id>javaee-api</id>
             <activation>
                 <property>
                     <name>release-phase-all</name>
