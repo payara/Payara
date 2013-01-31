@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,6 +48,15 @@ import java.lang.annotation.*;
  * Date: 30/7/12
  * Time: 3:31 PM
  * To change this template use File | Settings | File Templates.
+ */
+
+/*
+@ResourceConfigCreator annotation is used to indicate the creator of the resource.
+
+The valid values can be a creator for a particular resource-type (eg: create-jdbc-resource, create-mail-resource)
+
+While creating resource-ref for a particular resource-type, this commandName would be used to validate
+the target type as not all resources might support all the targets.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
