@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -217,37 +217,37 @@ public class WebappClassLoader
     @LogMessageInfo(
             message = "This web container has not yet been started",
             level = "WARNING")
-    public static final String NOT_STARTED = "AS-WEB-UTIL-000010";
+    public static final String NOT_STARTED = "AS-WEB-UTIL-00010";
 
     @LogMessageInfo(
             message = "Failed to check for ThreadLocal references for web application [{0}]",
             level = "WARNING")
-    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS_FAIL = "AS-WEB-UTIL-000011";
+    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS_FAIL = "AS-WEB-UTIL-00011";
 
     @LogMessageInfo(
             message = "Unable to determine string representation of key of type [{0}]",
             level = "SEVERE",
             cause = "An Exception occurred",
             action = "Check the exception for error")
-    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS_BAD_KEY = "AS-WEB-UTIL-000012";
+    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS_BAD_KEY = "AS-WEB-UTIL-00012";
 
     @LogMessageInfo(
             message = "Unknown",
             level = "INFO")
-    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS_UNKNOWN = "AS-WEB-UTIL-000013";
+    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS_UNKNOWN = "AS-WEB-UTIL-00013";
 
     @LogMessageInfo(
             message = "Unable to determine string representation of value of type [{0}]",
             level = "SEVERE",
             cause = "An Exception occurred",
             action = "Check the exception for error")
-    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS_BAD_VALUE = "AS-WEB-UTIL-000014";
+    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS_BAD_VALUE = "AS-WEB-UTIL-00014";
 
     @LogMessageInfo(
             message = "The web application [{0}] created a ThreadLocal with key of type [{1}] (value [{2}]). " +
                     "The ThreadLocal has been correctly set to null and the key will be removed by GC.",
             level = "FINE")
-    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS_DEBUG = "AS-WEB-UTIL-000015";
+    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS_DEBUG = "AS-WEB-UTIL-00015";
 
     @LogMessageInfo(
             message = "The web application [{0}] created a ThreadLocal with key of type [{1}] (value [{2}]) and " +
@@ -256,71 +256,71 @@ public class WebappClassLoader
             level = "SEVERE",
             cause = "Failed to remove a ThreadLocal when the web application was stopped",
             action = "Threads are going to be renewed over time to try and avoid a probable memory leak.")
-    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS = "AS-WEB-UTIL-000016";
+    public static final String CHECK_THREAD_LOCALS_FOR_LEAKS = "AS-WEB-UTIL-00016";
 
     @LogMessageInfo(
             message = "Failed to find class sun.rmi.transport.Target to clear context class loader " +
                     "for web application [{0}]. This is expected on non-Sun JVMs.",
             level = "INFO")
-    public static final String CLEAR_RMI_INFO = "AS-WEB-UTIL-000017";
+    public static final String CLEAR_RMI_INFO = "AS-WEB-UTIL-00017";
 
     @LogMessageInfo(
             message = "Failed to clear context class loader referenced from sun.rmi.transport.Target for web application [{0}]",
             level = "WARNING")
-    public static final String CLEAR_RMI_FAIL = "AS-WEB-UTIL-000018";
+    public static final String CLEAR_RMI_FAIL = "AS-WEB-UTIL-00018";
 
     @LogMessageInfo(
             message = "Removed [{0}] ResourceBundle references from the cache for web application [{1}]",
             level = "FINE")
-    public static final String CLEAR_REFERENCES_RESOURCE_BUNDLES_COUNT = "AS-WEB-UTIL-000019";
+    public static final String CLEAR_REFERENCES_RESOURCE_BUNDLES_COUNT = "AS-WEB-UTIL-00019";
 
     @LogMessageInfo(
             message = "Failed to clear ResourceBundle references for web application [{0}]",
             level = "SEVERE",
             cause = "An Exception occurred",
             action = "Check the exception for error")
-    public static final String CLEAR_REFERENCES_RESOURCE_BUNDLES_FAIL = "AS-WEB-UTIL-000020";
+    public static final String CLEAR_REFERENCES_RESOURCE_BUNDLES_FAIL = "AS-WEB-UTIL-00020";
 
     @LogMessageInfo(
             message = "Illegal JAR entry detected with name {0}",
             level = "INFO")
-    public static final String ILLEGAL_JAR_PATH = "AS-WEB-UTIL-000021";
+    public static final String ILLEGAL_JAR_PATH = "AS-WEB-UTIL-00021";
 
     @LogMessageInfo(
             message = "Unable to validate JAR entry with name {0}",
             level = "INFO")
-    public static final String VALIDATION_ERROR_JAR_PATH = "AS-WEB-UTIL-000022";
+    public static final String VALIDATION_ERROR_JAR_PATH = "AS-WEB-UTIL-00022";
 
     @LogMessageInfo(
             message = "Unable to create {0}",
             level = "WARNING")
-    public static final String UNABLE_TO_CREATE = "AS-WEB-UTIL-000023";
+    public static final String UNABLE_TO_CREATE = "AS-WEB-UTIL-00023";
 
     @LogMessageInfo(
             message = "Unable to delete {0}",
             level = "WARNING")
-    public static final String UNABLE_TO_DELETE = "AS-WEB-UTIL-000024";
+    public static final String UNABLE_TO_DELETE = "AS-WEB-UTIL-00024";
 
     @LogMessageInfo(
             message = "Unable to read data for class with name [{0}]",
             level = "WARNING")
-    public static final String READ_CLASS_ERROR = "AS-WEB-UTIL-000025";
+    public static final String READ_CLASS_ERROR = "AS-WEB-UTIL-00025";
 
     @LogMessageInfo(
             message = "Unable to purge bean classes from BeanELResolver",
             level = "WARNING")
-    public static final String UNABLE_PURGE_BEAN_CLASSES = "AS-WEB-UTIL-000026";
+    public static final String UNABLE_PURGE_BEAN_CLASSES = "AS-WEB-UTIL-00026";
 
     @LogMessageInfo(
             message = "Ignoring [{0}] during Tag Library Descriptor (TLD) processing",
             level = "WARNING")
-    public static final String TLD_PROVIDER_IGNORE_URL = "AS-WEB-UTIL-000037";
+    public static final String TLD_PROVIDER_IGNORE_URL = "AS-WEB-UTIL-00038";
 
     @LogMessageInfo(
             message = "Unable to determine TLD resources for [{0}] tag library, " +
                     "because class loader [{1}] for [{2}] is not an instance of java.net.URLClassLoader",
             level = "WARNING")
-    public static final String UNABLE_TO_DETERMINE_TLD_RESOURCES = "AS-WEB-UTIL-000038";
+    public static final String UNABLE_TO_DETERMINE_TLD_RESOURCES = "AS-WEB-UTIL-00039";
 
     /**
      * Set of package names which are not allowed to be loaded from a webapp
