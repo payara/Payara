@@ -63,7 +63,7 @@
 glassfish_version="4.0,0-${build.id}"
 felix_version="4.0.2,0-0"
 javadb_version="10.5.3.0,0-0"
-corba_version="3.2.0,0-6"
+corba_version="4.0.0,0-4"
 jsf_version="2.2.0,0-8"
 grizzly_version="2.3,0-11"
 metro_version="2.3,0-189"
