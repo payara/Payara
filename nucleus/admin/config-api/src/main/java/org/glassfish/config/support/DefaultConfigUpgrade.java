@@ -136,8 +136,6 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
 
             createSecurityServiceConfig(defaultConfig);
 
-            createDiagnosticServiceConfig(defaultConfig);
-
             createJavaConfig(defaultConfig);
 
             createAvailabilityService(defaultConfig);
@@ -250,17 +248,6 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
             } catch (XMLStreamException ex) {
                 logger.log(
                         Level.SEVERE, problemParsingSecurityServiceConfig, ex);
-            }
-        }
-    }
-
-    private void createDiagnosticServiceConfig(Config defaultConfig) throws TransactionFailure, XMLStreamException {
-        while (true) {
-            if (parser.next() == START_ELEMENT) {
-                if (parser.getLocalName().equals("diagnostic-service")) {
-                    ConfigSupport.apply(new DiagnosticServiceConfigCode(), defaultConfig);
-                    break;
-                }
             }
         }
     }
