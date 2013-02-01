@@ -432,8 +432,10 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             TransactionServices transactionServices = new TransactionServicesImpl(services);
             deploymentImpl.getServices().add(TransactionServices.class, transactionServices);
 
-            ValidationServices validationServices = new ValidationServicesImpl();
-            deploymentImpl.getServices().add(ValidationServices.class, validationServices);
+            // JJS: commented out next 2 lines as the new hibernate validator provides this via their
+            // portable extensions.
+//            ValidationServices validationServices = new ValidationServicesImpl();
+//            deploymentImpl.getServices().add(ValidationServices.class, validationServices);
 
             SecurityServices securityServices = new SecurityServicesImpl();
             deploymentImpl.getServices().add(SecurityServices.class, securityServices);
