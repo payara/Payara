@@ -697,17 +697,13 @@
     
     <profiles>
         <profile>
-            <!--
-                RE profile for release purposes.
-            -->
-            <id>release-phase2</id>
+            <id>ips</id>
             <activation>
                 <property>
                     <name>release-phase-all</name>
                     <value>true</value>
                 </property>
             </activation>
-
             <modules>
                 <module>installer</module>
             </modules>
