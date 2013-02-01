@@ -94,7 +94,7 @@ public class ReferenceValidator implements ConstraintValidator<ReferenceConstrai
             for (RemoteKeyInfo remoteKeyInfo : remoteKeys) {
                 if (remoteKeyInfo.method.getParameterTypes().length > 0) {
                     throw new UnexpectedTypeException(localStrings.getLocalString("referenceValidator.not.getter", 
-                            "ReferenceConstraint annotaion must be on getter method only."));
+                            "The RemoteKey annotation must be on a getter method."));
                 }
                 try {
                     Object value = remoteKeyInfo.method.invoke(config);
@@ -113,7 +113,7 @@ public class ReferenceValidator implements ConstraintValidator<ReferenceConstrai
                         }
                     } else {
                         throw new UnexpectedTypeException(localStrings.getLocalString("referenceValidator.not.string", 
-                            "Remote key must be String."));
+                            "The RemoteKey annotation must identify a method that returns a String."));
                     }
                 } catch (Exception ex) {
                     return false;

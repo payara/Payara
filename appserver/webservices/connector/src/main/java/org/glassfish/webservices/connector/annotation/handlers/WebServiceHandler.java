@@ -510,7 +510,7 @@ public class WebServiceHandler extends AbstractHandler {
                 } else {
                     throw new AnnotationProcessorException(
                             wsLocalStrings.getLocalString("missing.targetnamespace",
-                            "WS00029: The javax.jws.WebService annotation targetNamespace MUST be used for classes or interfaces in no package"));
+                            "WS00029: The javax.jws.WebService annotation targetNamespace must be used for classes or interfaces that are in no package"));
                 }
                 targetNameSpace = "http://" + (targetNameSpace==null?"":targetNameSpace+"/");
             }
