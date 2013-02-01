@@ -143,6 +143,9 @@ public class NucleusTestUtils {
         File cmd = new File(nucleusRoot, isWindows() ? "bin/nadmin.bat" : "bin/nadmin");
         if (!cmd.canExecute()) {
             cmd = new File(nucleusRoot, isWindows() ? "bin/asadmin.bat" : "bin/asadmin");
+                if (!cmd.canExecute()) {
+                    cmd = new File(nucleusRoot, isWindows() ? "bin/padmin.bat" : "bin/padmin");
+                }
         }
         return cmdWithOutput(cmd, timeout, args);
     }
@@ -151,6 +154,9 @@ public class NucleusTestUtils {
             File cmd = new File(nucleusRoot, isWindows() ? "bin/nadmin.bat" : "bin/nadmin");
             if (!cmd.canExecute()) {
                 cmd = new File(nucleusRoot, isWindows() ? "bin/asadmin.bat" : "bin/asadmin");
+                if (!cmd.canExecute()) {
+                    cmd = new File(nucleusRoot, isWindows() ? "bin/padmin.bat" : "bin/padmin");
+                }
             }
             return cmdDetachWithOutput(cmd,DEFAULT_TIMEOUT_MSEC, args);
         }
