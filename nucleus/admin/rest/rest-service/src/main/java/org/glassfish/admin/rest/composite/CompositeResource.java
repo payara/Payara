@@ -297,6 +297,10 @@ public abstract class CompositeResource extends AbstractResource implements Rest
         return "";
     }
 
+    protected Response created(String name, String message, RestModel model) {
+        return created(getChildItemUri(name), Util.responseBody().addSuccess(message).setEntity(model));
+    }
+
     protected Response created(URI location, ResponseBody responseBody) {
         return Response
                 .status(Status.CREATED)
@@ -304,8 +308,16 @@ public abstract class CompositeResource extends AbstractResource implements Rest
                 .entity(responseBody).build();
     }
 
+    protected Response updated(String message, RestModel model) {
+        return updated(Util.responseBody().addSuccess(message).setEntity(model));
+    }
+
     protected Response updated(ResponseBody responseBody) {
         return Response.ok().entity(responseBody).build();
+    }
+
+    protected Response deleted(String message) {
+        return deleted(Util.responseBody().addSuccess(message));
     }
 
     protected Response deleted(ResponseBody responseBody) {
