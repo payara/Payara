@@ -182,7 +182,7 @@ public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCo
             }
         } else {
 
-            if (jobInfo != null && jobInfo.exitCode.equals(COMPLETED.toString())) {
+            if (jobInfo != null && jobInfo.state.equals(COMPLETED.toString())) {
 
                 //In most cases if the user who attaches to the command is the same
                 //as one who started it then purge the job once it is completed

@@ -230,7 +230,7 @@ public class JobManagerService implements JobManager,PostConstruct {
             jobsRetentionPeriod = convert(managedJobConfig.getJobRetentionPeriod());
 
             if (currentTime - executedTime > jobsRetentionPeriod &&
-                    job.exitCode.equals(AdminCommandState.State.COMPLETED.name())) {
+                    job.state.equals(AdminCommandState.State.COMPLETED.name())) {
                  expiredJobs.add(job);
             }
 

@@ -166,7 +166,7 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
             }
 
             List<String> userList =  SubjectUtil.getUsernamesFromSubject(subject);
-            jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,State.COMPLETED.name(),userList.get(0),report.getMessage(),getJobsFile()));
+            jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,report.getActionExitCode().name(),userList.get(0),report.getMessage(),getJobsFile(),State.COMPLETED.name()));
         }
         complete(report);
     }

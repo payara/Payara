@@ -86,6 +86,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
     protected static final String TITLE_JOBID = "JOB ID";
     protected static final String TITLE_TIME = "TIME";
     protected static final String TITLE_STATE = "STATE";
+    protected static final String TITLE_EXITCODE = "EXIT CODE";
     protected static final String TITLE_USER = "USER";
     protected static final String TITLE_NONE = "Nothing to list.";
     public static final String NAME = "jobName";
@@ -93,6 +94,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
     public static final String DATE = "executionDate";
     public static final String CODE = "exitCode";
     public static final String USER = "user";
+    public static final String STATE = "jobState";
     public static final String MESSAGE = "message";
 
 
@@ -112,8 +114,10 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
 
             if (oneJob != null) {
                 List<String> userList =  SubjectUtil.getUsernamesFromSubject(oneJob.getSubject());
-                String message = oneJob.getActionReport() == null ? "" : oneJob.getActionReport().getMessage();
-                info = new JobInfo(oneJob.getId(),oneJob.getName(),oneJob.getCommandExecutionDate(),oneJob.getState().name(),userList.get(0),message,oneJob.getJobsFile());
+                ActionReport actionReport = oneJob.getActionReport();
+                String message = actionReport == null ? "" : actionReport.getMessage();
+                String exitCode =  actionReport == null ? "" : actionReport.getActionExitCode().name();
+                info = new JobInfo(oneJob.getId(),oneJob.getName(),oneJob.getCommandExecutionDate(),exitCode,userList.get(0),message,oneJob.getJobsFile(),oneJob.getState().name());
 
             }  else {
                 if (jobManagerService.getCompletedJobs() != null) {
@@ -131,8 +135,10 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
                 Job job = iterator.next();
                 if (!skipJob(job.getName())) {
                     List<String> userList =  SubjectUtil.getUsernamesFromSubject(job.getSubject());
-                    String message = job.getActionReport() == null ? "" : job.getActionReport().getMessage();
-                    jobInfoList.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),job.getState().name(),userList.get(0),message,job.getJobsFile()));
+                    ActionReport actionReport = job.getActionReport();
+                    String message = actionReport == null ? "" : actionReport.getMessage();
+                    String exitCode = actionReport == null ? "" : actionReport.getActionExitCode().name();
+                    jobInfoList.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),exitCode,userList.get(0),message,job.getJobsFile(),job.getState().name()));
                 }
             }
 
@@ -170,13 +176,15 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
         int longestTime = TITLE_TIME.length();
         int longestState = TITLE_STATE.length();
         int longestUser = TITLE_USER.length();
+        int longestExitCode = TITLE_EXITCODE.length();
 
         for (JobInfo job :jobInfoList) {
                    int  jobId = job.jobId.length();
                    int time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(job.commandExecutionDate).length();
                    int name = job.jobName.length();
-                   int state = job.exitCode.length();
+                   int state = job.state.length();
                    int user = job.user.length();
+                   int exitCode = job.exitCode.length();
 
                    if (name > longestName)
                        longestName = name;
@@ -186,6 +194,8 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
                        longestJobId = jobId;
                    if (state> longestState)
                        longestState = state;
+                   if (exitCode> longestExitCode)
+                       longestExitCode = exitCode;
 
                }
 
@@ -198,6 +208,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
                longestState += 2;
                longestTime += 2;
                longestUser += 2;
+               longestExitCode +=2;
 
 
                String formattedLine =
@@ -205,6 +216,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
                                + "s %-" + longestJobId
                                + "s %-" + longestTime
                                + "s %-" + longestState
+                               + "s %-" + longestExitCode
                                + "s %-" + longestUser
                                + "s";
 
@@ -221,17 +233,18 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
                properties.put("jobs", details);
                for (JobInfo info : jobInfoList) {
                    if (first)    {
-                       topMsg.setMessage(String.format(formattedLine, TITLE_NAME, TITLE_JOBID, TITLE_TIME, TITLE_STATE,TITLE_USER ));
+                       topMsg.setMessage(String.format(formattedLine, TITLE_NAME, TITLE_JOBID, TITLE_TIME, TITLE_STATE,TITLE_EXITCODE,TITLE_USER ));
                        first = false;
                    }
 
                    MessagePart msg = topMsg.addChild();
-                   msg.setMessage(String.format(formattedLine, info.jobName, info.jobId,  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(info.commandExecutionDate), info.exitCode,info.user));
+                   msg.setMessage(String.format(formattedLine, info.jobName, info.jobId,  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(info.commandExecutionDate), info.state,info.exitCode,info.user));
                    Map<String, Object> detail = new HashMap<String, Object>();
                    details.add(detail);
                    detail.put(NAME, info.jobName);
                    detail.put(ID, info.jobId);
                    detail.put(DATE, new Date(info.commandExecutionDate));
+                   detail.put(STATE,info.state);
                    detail.put(CODE, info.exitCode);
                    detail.put(MESSAGE, info.message);
                    detail.put(USER, info.user);

@@ -65,4 +65,7 @@ public interface Job extends RestModel {
 
     String getUser();
     void setUser(String user);
+
+    String getJobState();
+    void setJobState(String state);
 }
