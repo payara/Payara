@@ -96,7 +96,7 @@ public class CDIEarTest extends NucleusStartStopTest {
     }
     
     private Ejb1Remote lookupWithFiveSecondSleep() throws NamingException, InterruptedException {
-        long sleepTime = 5L * 60L * 1000L;
+        long sleepTime = 5L * 1000L;
         long interval = 100L;
         
         while (sleepTime > 0) {
