@@ -63,9 +63,9 @@ public class TransactionalInterceptorBase {
     }
 
     //todo get rid of this...
-    public void setTransactionManager(TransactionManager transactionManager) {
-        this.transactionManager = transactionManager;
-    }
+//    public void setTransactionManager(TransactionManager transactionManager) {
+//        this.transactionManager = transactionManager;
+//    }
 
     public Object proceed(InvocationContext ctx) throws Exception {
         javax.transaction.cdi.Transactional transactionalAnnotation =
