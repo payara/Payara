@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,11 +40,7 @@
 package com.sun.enterprise.admin.cli;
 
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
-import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -71,11 +67,15 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import java.io.File;
+import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
- * The asadmin main program.
+ * The admin main program (nadmin).
  */
-public class AsadminMain {
+public class AdminMain {
 
     private String classPath;
     private String className;
@@ -97,7 +97,7 @@ public class AsadminMain {
         SystemPropertyConstants.PRODUCT_ROOT_PROPERTY
     };
     private static final LocalStringsImpl strings =
-            new LocalStringsImpl(AsadminMain.class);
+            new LocalStringsImpl(AdminMain.class);
 
     static {
         Map<String, String> systemProps = new ASenvPropertyReader().getProps();
@@ -112,10 +112,11 @@ public class AsadminMain {
     /*
      * Skinning Methods
      *
-     * The AsadminMain class can be "skinned" to present different CLI interface
-     * for different products. Skinning is achieved by extending AsadminMain and
+     * The AdminMain class can be "skinned" to present different CLI interface
+     * for different products. Skinning is achieved by extending AdminMain and
      * redefining the methods in this section.
      */
+
     /**
      * Get the class loader that is used to load local commands.
      *
@@ -127,8 +128,8 @@ public class AsadminMain {
          * lib/asadmin directory. This directory can contain extension jar files
          * with new local asadmin commands.
          */
-        final ClassLoader ecl = AsadminMain.class.getClassLoader();
-        
+        final ClassLoader ecl = AdminMain.class.getClassLoader();
+
         File inst = new File(System.getProperty(
                 SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
         final File ext = new File(new File(inst, "lib"), "asadmin");
@@ -154,10 +155,9 @@ public class AsadminMain {
         return ecl;
     }
     
-    
 
     protected String getCommandName() {
-        return "asadmin";
+        return "nadmin";
     }
     
     /*
@@ -193,10 +193,10 @@ public class AsadminMain {
     }
 
     public static void main(String[] args) {
-        //System.exit(new AsadminMain().doMain(args));
+        //System.exit(new AdminMain().doMain(args));
         //long startTime = System.currentTimeMillis();
-        AsadminMain asadminMain = new AsadminMain();
-        int code = asadminMain.doMain(args);
+        AdminMain adminMain = new AdminMain();
+        int code = adminMain.doMain(args);
         //System.out.println("Overal duration: " + (System.currentTimeMillis() - startTime)+" ms");
         System.exit(code);
     }
@@ -269,7 +269,7 @@ public class AsadminMain {
         
         classPath =
                 SmartFile.sanitizePaths(System.getProperty("java.class.path"));
-        className = AsadminMain.class.getName();
+        className = AdminMain.class.getName();
 
         /*
          * Special case: no arguments is the same as "multimode".
@@ -320,7 +320,7 @@ public class AsadminMain {
             // if the first argument is an option, we're using the new form
             if (argv.length > 0 && argv[0].startsWith("-")) {
                 /*
-                 * Parse all the asadmin options, stopping at the first
+                 * Parse all the admin options, stopping at the first
                  * non-option, which is the command name.
                  */
                 Parser rcp = new Parser(argv, 0,
@@ -415,7 +415,7 @@ public class AsadminMain {
     }
 
     /**
-     * Print usage message for asadmin command. XXX - should be derived from
+     * Print usage message for the admin command. XXX - should be derived from
      * ProgramOptions.
      */
     private void printUsage() {

@@ -178,6 +178,11 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>appserver-cli</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
             <artifactId>admin-core</artifactId>
             <version>${project.version}</version>
         </dependency>

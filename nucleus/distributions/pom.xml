@@ -143,7 +143,7 @@
                         </fileset>
                     </filesets>
                     <!-- exec configuration -->
-                    <executable>${stage.dir}/${nucleus.install.dir.name}/bin/asadmin</executable>
+                    <executable>${stage.dir}/${nucleus.install.dir.name}/bin/nadmin</executable>
                     <commandlineArgs>${create-domain.args}</commandlineArgs>
                 </configuration>
             </plugin>

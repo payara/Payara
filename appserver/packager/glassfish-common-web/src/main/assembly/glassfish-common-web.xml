@@ -57,6 +57,7 @@
             <excludes>
                 <exclude>modules/javax.annotation-api.jar</exclude>
                 <exclude>modules/cli-optional.jar</exclude>
+                <exclude>modules/appserver-cli.jar</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -64,6 +65,13 @@
             <outputDirectory>${install.dir.name}/glassfish/lib/asadmin</outputDirectory>
             <includes>
                 <include>cli-optional.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${temp.dir}/glassfish/modules</directory>
+            <outputDirectory>${install.dir.name}/glassfish/lib/client</outputDirectory>
+            <includes>
+                <include>appserver-cli.jar</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -85,6 +93,14 @@
                 <exclude>nucleus/**</exclude>
             </excludes>
             <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${temp.dir}</directory>
+            <fileMode>755</fileMode>
+            <includes>
+                <include>bin/**</include>
+            </includes>
+            <outputDirectory>${install.dir.name}</outputDirectory>
         </fileSet>
     </fileSets>
 </assembly>

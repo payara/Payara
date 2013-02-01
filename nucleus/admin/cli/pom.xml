@@ -119,7 +119,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.sun.enterprise.admin.cli.AsadminMain</mainClass>
+                            <mainClass>com.sun.enterprise.admin.cli.AdminMain</mainClass>
                         </manifest>
                         <manifestEntries>
 				<Class-Path>config-api.jar cluster-cli.jar glassfish.jar server-mgmt.jar common-util.jar admin-util.jar launcher.jar backup.jar admin-cli-l10n.jar glassfish-api.jar hk2.jar  hk2-config.jar hk2-deprecated.jar hk2-api.jar core.jar gms-adapter.jar logging.jar  javax.ws.rs-api.jar jersey-media-multipart.jar jettison.jar jersey-common.jar guava-osgi.jar jersey-client.jar jackson-core-asl.jar mimepull.jar jersey-media-sse.jar jersey-server.jar</Class-Path>

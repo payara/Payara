@@ -2,7 +2,7 @@
 REM
 REM  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 REM 
-REM  Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+REM  Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 REM 
 REM  The contents of this file are subject to the terms of either the GNU
 REM  General Public License Version 2 only ("GPL") or the Common Development
@@ -40,18 +40,18 @@ REM  holder.
 REM
 
 REM Always use JDK 1.6 or higher
-REM Depends on Java from ..\config\asenv.bat
+REM Depends on Java from ..\glassfish\config\asenv.bat
 VERIFY OTHER 2>nul
 setlocal ENABLEEXTENSIONS
 if ERRORLEVEL 0 goto ok
 echo "Unable to enable extensions"
 exit /B 1
 :ok
-call "%~dp0..\config\asenv.bat" 
+call "%~dp0..\glassfish\config\asenv.bat"
 if "%AS_JAVA%x" == "x" goto UsePath
 set JAVA="%AS_JAVA%\bin\java"
 goto run
 :UsePath
 set JAVA=java
 :run
-%JAVA% -jar "%~dp0..\modules\admin-cli.jar" %*
+%JAVA% -jar "%~dp0..\glassfish\lib\client\appserver-cli.jar" %*
