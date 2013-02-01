@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -126,7 +126,7 @@
                         }
                         if (!#{pageSession.parentObjectNameStr2}){
                             //create as a sub-element
-                            gf.createEntity(endpoint="$attribute{resultEndpoint}"
+                            gf.createEntity(endpoint="$attribute{objStr}"
                                 attrs="#{pageSession.valueMap2}"
                                 convertToFalse="#{pageSession.convertToFalseList2}"
                                 result => $attribute{resultEndpoint2});
