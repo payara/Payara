@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.appserv.server.util;
 
 import java.io.File;
@@ -47,20 +46,22 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
-*
-* This class provides static methods to make accessible the version 
-* as well as the individual parts that make up the version
-*
+ *
+ * This class provides static methods to make accessible the version as well as
+ * the individual parts that make up the version
+ * 
 */
 public class Version {
 
     private static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot";
     private static final String PRODUCT_NAME_KEY = "product_name";
-    private static final String BRIEF_PRODUCT_NAME_KEY = "brief_product_name"; 
+    private static final String BRIEF_PRODUCT_NAME_KEY = "brief_product_name";
     private static final String ABBREV_PRODUCT_NAME_KEY = "abbrev_product_name";
     private static final String MAJOR_VERSION_KEY = "major_version";
     private static final String MINOR_VERSION_KEY = "minor_version";
@@ -70,11 +71,11 @@ public class Version {
     private static final String VERSION_SUFFIX_KEY = "version_suffix";
     private static final String BASED_ON_KEY = "based_on";
     private static final String DEFAULT_DOMAIN_TEMPLATE_NAME = "default_domain_template";
-
     private static final String DEFAULT_DOMAIN_TEMPLATE_JAR = "nucleus-domain.jar";
     private static List<Properties> versionProps = new ArrayList<Properties>();
+    private static Map<String,Properties> versionPropsMap = new HashMap<String,Properties>();
     private static Properties versionProp = getVersionProp();
-    
+
     private static Properties getVersionProp() {
         String installRoot = System.getProperty(INSTALL_ROOT_PROP_NAME);
         if (installRoot != null) {
@@ -82,17 +83,21 @@ public class Version {
             File bd = new File(new File(ir, "config"), "branding");
             if (bd.isDirectory()) {
                 for (File f : bd.listFiles(new FileFilter() {
-                            @Override
-                            public boolean accept(File f) {
-                                return f.getName().endsWith(".properties") && f.canRead();
-                            }   
-                    })) {
+                    @Override
+                    public boolean accept(File f) {
+                        return f.getName().endsWith(".properties") && f.canRead();
+                    }
+                })) {
                     FileReader fr = null;
                     try {
                         fr = new FileReader(f);
                         Properties p = new Properties();
                         p.load(fr);
                         versionProps.add(p);
+                        String apn = p.getProperty(ABBREV_PRODUCT_NAME_KEY);
+                        if (apn != null) {
+                            versionPropsMap.put(apn, p);
+                        }
                         fr.close();
                     } catch (IOException ex) {
                         // ignore files that cannot be read
@@ -104,7 +109,7 @@ public class Version {
                                 // nothing to do
                             }
                         }
-                    }                                  
+                    }
                 }
             }
             // sort the list based on the based-on property.  If a is based on b,
@@ -123,9 +128,9 @@ public class Version {
                         return 1;
                     }
                     return 0;
-                    } 
-                });
-            
+                }
+            });
+
             // save the first element in the list for later use
             if (versionProps.size() > 0) {
                 return versionProps.get(0);
@@ -135,10 +140,10 @@ public class Version {
         }
         return null;
     }
-    
+
     /**
      * Returns version
-     */ 
+     */
     public static String getVersion() {
         StringBuilder sb = new StringBuilder(getProductName());
         sb.append(" ").append(getVersionPrefix());
@@ -160,15 +165,13 @@ public class Version {
             if (min != null && min.length() > 0 && Integer.parseInt(min) >= 0) {
                 if (upd != null && upd.length() > 0 && Integer.parseInt(upd) >= 0) {
                     v = maj + "." + min + "." + upd;
-                }
-                else {
+                } else {
                     v = maj + "." + min;
                 }
             } else {
                 if (upd != null && upd.length() > 0 && Integer.parseInt(upd) >= 0) {
                     v = maj + ".0." + upd;
-                }
-                else {
+                } else {
                     v = maj;
                 }
             }
@@ -179,79 +182,79 @@ public class Version {
     }
 
     /**
-    * Returns full version including build id
-    */
+     * Returns full version including build id
+     */
     public static String getFullVersion() {
         return (getVersion() + " (build " + getBuildVersion() + ")");
     }
 
     /**
-    * Returns abbreviated version.
-    */
+     * Returns abbreviated version.
+     */
     public static String getAbbreviatedVersion() {
         return getMajorVersion();
     }
 
     /**
-    * Returns Major version
-    */ 
+     * Returns Major version
+     */
     public static String getMajorVersion() {
         return getProperty(MAJOR_VERSION_KEY, "0");
     }
 
     /**
-    * Returns Minor version
-    */ 
+     * Returns Minor version
+     */
     public static String getMinorVersion() {
         return getProperty(MINOR_VERSION_KEY, "0");
     }
 
     /**
-    * Returns Update version
-    */
+     * Returns Update version
+     */
     public static String getUpdateVersion() {
         return getProperty(UPDATE_VERSION_KEY, "0");
     }
 
     /**
-    * Returns Build version
-    */ 
+     * Returns Build version
+     */
     public static String getBuildVersion() {
         return getProperty(BUILD_ID_KEY, "0");
     }
 
     /**
-    * Returns version prefix
-    */ 
+     * Returns version prefix
+     */
     public static String getVersionPrefix() {
         return getProperty(VERSION_PREFIX_KEY, "");
     }
 
     /**
-    * Returns version suffix
-    */ 
+     * Returns version suffix
+     */
     public static String getVersionSuffix() {
         return getProperty(VERSION_SUFFIX_KEY, "");
     }
 
     /**
-    * Returns Proper Product Name
-    */
+     * Returns Proper Product Name
+     */
     public static String getProductName() {
         return getProperty(PRODUCT_NAME_KEY,
                 "Undefined Product Name - define product and version info in config/branding");
     }
 
     /**
-    * Returns Brief Product Name (used in manual pages)
-    */
+     * Returns Brief Product Name (used in manual pages)
+     */
     public static String getBriefProductName() {
         return getProperty(BRIEF_PRODUCT_NAME_KEY, "Undefined Product Name");
     }
 
     /**
-    * Returns Abbreviated Product Name
-    */
+     * Returns Abbreviated Product Name
+     */
     public static String getAbbrevProductName() {
         return getProperty(ABBREV_PRODUCT_NAME_KEY, "undefined");
     }
@@ -259,22 +262,35 @@ public class Version {
     /**
      * Returns template name use to create default domain.
      */
-     public static String getDefaultDomainTemplate() {
-         return getProperty(DEFAULT_DOMAIN_TEMPLATE_NAME, DEFAULT_DOMAIN_TEMPLATE_JAR);
-     }
+    public static String getDefaultDomainTemplate() {
+        return getProperty(DEFAULT_DOMAIN_TEMPLATE_NAME, DEFAULT_DOMAIN_TEMPLATE_JAR);
+    }
 
     /*
      * Fetch the value for the property identified by key
      * from the first Properties object in the list. If it doesn't exist
+     * look in the based on Properties, recursively. If still not found,
      * return the default, def.
      */
     private static String getProperty(String key, String def) {
-        String v;
-        if (versionProp == null ||
-                (v = versionProp.getProperty(key)) == null) {
-            return def;
-        }
-        return v;
+        return getProperty(versionProp, key, def);
     }
 
+    private static String getProperty(Properties p, String key, String def) {
+        if (p == null) {
+            return def;
+        }
+        String v = p.getProperty(key);
+        if (v != null) {
+            return v;
+        }
+        String basedon = p.getProperty(BASED_ON_KEY);
+        if (basedon != null) {
+            Properties bp = versionPropsMap.get(basedon);
+            if (bp != null) {
+                return getProperty(bp, key, def);
+            }
+        }
+        return def;
+    }
 }
