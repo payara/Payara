@@ -56,8 +56,24 @@
                 priority="400"
                 content="fullResourceLink.jsf"
     />
-
-
+    
+    <!--  Uncomment this if want to add concurrent support 
+    <integration-point
+        id="concurrentNodes"
+        type="org.glassfish.admingui:navNode"
+        priority="450"
+        parentId="resources"
+        content="concurrent/concurrentNode.jsf"
+    />
+    <integration-point
+        id="concurrentLink"
+        parentId="propSheetSection"
+        type="org.glassfish.admingui:resources"
+        priority="450"
+        content="concurrent/concurrentLink.jsf"
+    />
+    -->
+    
     <!-- add the property sheet for deployment page, specific for ear app -->
     <integration-point
         id="full_deploy_ear"

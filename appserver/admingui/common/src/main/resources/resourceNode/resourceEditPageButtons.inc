@@ -42,14 +42,6 @@
 
 <!-- resourceNode/resourceEditPageButtons.inc -->
 
-    <!-- To use this general include files for page buttons,  the following page Session attributes should be set:
-        setPageSessionAttribute(key="edit" value="#{false}" );
-        setPageSessionAttribute(key="showDefaultButton" value="#{false}" );  //true is default
-        setPageSessionAttribute(key="showCancelButton" value="#{false}" );   // true is default
-        setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );    //false is default
-        setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );   //false is default
-        
-    -->
 #include "/common/shared/editPageLoadDefaultButton.inc"
 
     <!facet pageButtonsTop>
@@ -57,34 +49,26 @@
             <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
                     onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
                 <!command
-                    if(#{pageSession.hasPropertySheet}){
-                        gf.createEntity(endpoint="#{pageSession.selfUrl}"
-                            attrs="#{pageSession.valueMap}"
-                            skipAttrs="#{pageSession.skipAttrsList}"
-                            convertToFalse="#{pageSession.convertToFalseList}"
-                            onlyUseAttrs="#{pageSession.onlyUseAttrs}"
-                        );
-                        if(#{pageSession.has2Objects}){
-                            gf.createEntity(endpoint="#{pageSession.selfUrl2}"
-                                attrs="#{pageSession.valueMap2}"
-                                skipAttrs="#{pageSession.skipAttrsList2}"
-                                convertToFalse="#{pageSession.convertToFalseList2}"
-                                onlyUseAttrs="#{pageSession.onlyUseAttrs2}"
-                            );
-                        }
+                    if ("#{pageSession.childType}=context-service") {
+                        convertArrayToCommaString(array="#{pageSession.contextInfo}"  commaString="#{requestScope.tmp}");
+                        mapPut(map="#{pageSession.valueMap}" key="contextInfo" value="#{requestScope.tmp}");
                     }
+                    if ("#{pageSession.childType}=managed-thread-factory") {
+                        convertArrayToCommaString(array="#{pageSession.contextInfo}"  commaString="#{requestScope.tmp}");
+                        mapPut(map="#{pageSession.valueMap}" key="contextInfo" value="#{requestScope.tmp}");
+                    }
+                    gf.createEntity(endpoint="#{pageSession.selfUrl}"
+                        attrs="#{pageSession.valueMap}"
+                        skipAttrs="#{pageSession.skipAttrsList}"
+                        convertToFalse="#{pageSession.convertToFalseList}"
+                        onlyUseAttrs="#{pageSession.onlyUseAttrs}"
+                    );
 
-                    if (#{pageSession.hasPropertyTable}){
-                        getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
-                        getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});
-                        removeEmptyProps(props="#{newList}" modifiedProps="#{newList}");
-                        javaToJSON(obj="#{newList}" json="#{requestScope.tmpJSON}");
-                        gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="POST" data="#{requestScope.tmpJSON}" result="#{requestScope.restResponse}");
-                    }
-
-                    if (#{pageSession.additionalSaveHandler}){
-                        gf.invokeHandler(handler="#{pageSession.additionalSaveHandler}", args="#{pageSession.additionalSaveHandlerArgs}" );
-                    }
+                    getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
+                    getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});
+                    removeEmptyProps(props="#{newList}" modifiedProps="#{newList}");
+                    javaToJSON(obj="#{newList}" json="#{requestScope.tmpJSON}");
+                    gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="POST" data="#{requestScope.tmpJSON}" result="#{requestScope.restResponse}");
                     prepareSuccessfulMsg();                
                     gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                 />
@@ -94,6 +78,17 @@
             <sun:button id="newButton" rendered="#{!edit}" text="$resource{i18n.button.OK}"
                     onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}') && checkForBackslash('#{resCompId}', '$resource{i18n.msg.JS.resources.resName}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
                 <!command
+                    
+                    if ("#{pageSession.childType}=context-service") {
+                        convertArrayToCommaString(array="#{pageSession.contextInfo}"  commaString="#{requestScope.tmp}");
+                        mapPut(map="#{pageSession.valueMap}" key="contextInfo" value="#{requestScope.tmp}");
+                    }
+                    if ("#{pageSession.childType}=managed-thread-factory") {
+                        convertArrayToCommaString(array="#{pageSession.contextInfo}"  commaString="#{requestScope.tmp}");
+                        mapPut(map="#{pageSession.valueMap}" key="contextInfo" value="#{requestScope.tmp}");
+                    }
+                    
+                    //TODO: remove the test for admin-object-resource after GLASSFISH-19533
                     if ("#{pageSession.childType}=admin-object-resource") {
                         mapPut(map="#{pageSession.valueMap}" key="target" value="server-config");
                     }
@@ -115,8 +110,10 @@
                      -->
                     //The selected Targets will be available as #{pageSession.selectedTargets},  which is an array.
                     //We need to create source-ref of the selected targets.
+                    println("---------CCC-------sel=#{pageSession.selectedTargets}");
                     convertArrayToCommaString(array="#{pageSession.selectedTargets}" commaString="#{requestScope.cs}")
                     convertStringtoList(str="#{requestScope.cs}" result="#{requestScope.targetList}");
+                    println("-----------DDD----");
                     //println("===========#{requestScope.targetList}");
                     setAttribute(key="nTargets" value="#{requestScope.targetList.size()}");
                     dec(number="#{requestScope.nTargets}" value="#{requestScope.endRef}");
@@ -136,44 +133,20 @@
                         gf.createEntity(endpoint="#{requestScope.endp}" attrs="#{requestScope.refsMap}" convertToFalse={"enabled"});
                     }
 
-                    if(#{pageSession.has2Objects}){
-                        if (#{pageSession.parentObjectNameStr2}){
-                            gf.createEntity(endpoint="#{pageSession.parentUrl2}/#{pageSession.childType2}"
-                                attrs="#{pageSession.valueMap2}"
-                                skipAttrs="#{pageSession.skipAttrsList2}"
-                                convertToFalse="#{pageSession.convertToFalseList2}"
-                                result => $attribute{resultEndpoint});
-                        }
-                        if (!#{pageSession.parentObjectNameStr2}){
-                            //create as a sub-element
-                            gf.createEntity(endpoint="$attribute{resultEndpoint}"
-                                attrs="#{pageSession.valueMap2}"
-                                convertToFalse="#{pageSession.convertToFalseList2}"
-                                result => $attribute{resultEndpoint2});
-                        }
-                    }                
 
-                    if (#{pageSession.hasPropertyTable}){
-
-                        if (#{pageSession.hasConfidential}){
-                        //println("=========================== has Confidential ==============");
-                            gf.combineProperties(tableList="#{pageSession.tableList}" combined="#{requestScope.newList}");
-                        }
-
-                        if (!#{pageSession.hasConfidential}){
-                        //println("----------------------- NOT Confidential ==============");
-                            getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
-                            getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});
-                        }
-                        removeEmptyProps(props="#{newList}" modifiedProps="#{newList}");
-                        javaToJSON(obj="#{newList}" json="#{requestScope.tmpJSON}");
-                        urlencode(value="#{pageSession.valueMap['name']}" encoding="UTF-8" result="#{requestScope.encodeName}");
-                        gf.restRequest(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}/#{requestScope.encodeName}/property.json" method="POST" data="#{requestScope.tmpJSON}" result="#{requestScope.restResponse}");
+                    if (#{pageSession.hasConfidential}){
+                        gf.combineProperties(tableList="#{pageSession.tableList}" combined="#{requestScope.newList}");
                     }
 
-                    if (#{pageSession.additionalSaveHandler}){
-                        gf.invokeHandler(handler="#{pageSession.additionalSaveHandler}", args="#{pageSession.additionalSaveHandlerArgs}" );
+                    if (!#{pageSession.hasConfidential}){
+                        getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
+                        getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});
                     }
+                    removeEmptyProps(props="#{newList}" modifiedProps="#{newList}");
+                    javaToJSON(obj="#{newList}" json="#{requestScope.tmpJSON}");
+                    urlencode(value="#{pageSession.valueMap['name']}" encoding="UTF-8" result="#{requestScope.encodeName}");
+                    gf.restRequest(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}/#{requestScope.encodeName}/property.json" method="POST" data="#{requestScope.tmpJSON}" result="#{requestScope.restResponse}");
+                    
                     if (#{pageSession.showSuccessfulMsg}){
                         prepareSuccessfulMsg();
                         gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
