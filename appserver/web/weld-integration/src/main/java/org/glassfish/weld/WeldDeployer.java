@@ -194,7 +194,13 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     fireProcessInjectionTargetEvents(bootstrap, deploymentImpl);
                     bootstrap.deployBeans();
                 } catch (Throwable t) {
-                    DeploymentException de = new DeploymentException(t.getMessage());
+                    try {
+                        bootstrap.shutdown();
+                    } finally {
+                        // ignore.
+                    }
+                    String msgPrefix = getDeploymentErrorMsgPrefix( t );
+                    DeploymentException de = new DeploymentException(msgPrefix + t.getMessage());
                     de.initCause(t);
                     throw(de);
                 } finally {
@@ -227,7 +233,13 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     bootstrap.validateBeans();
                     bootstrap.endInitialization();
                 } catch (Throwable t) {
-                    DeploymentException de = new DeploymentException(t.getMessage());
+                    try {
+                        bootstrap.shutdown();
+                    } finally {
+                        // ignore.
+                    }
+                    String msgPrefix = getDeploymentErrorMsgPrefix( t );
+                    DeploymentException de = new DeploymentException( msgPrefix + t.getMessage());
                     de.initCause(t);
                     throw(de);
                 }
@@ -236,8 +248,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 }
             }
         } else if ( event.is(org.glassfish.internal.deployment.Deployment.APPLICATION_STOPPED) ||
-                    event.is(org.glassfish.internal.deployment.Deployment.APPLICATION_UNLOADED)) {
-            ApplicationInfo appInfo = (ApplicationInfo)event.hook();
+                    event.is(org.glassfish.internal.deployment.Deployment.APPLICATION_UNLOADED) ||
+                    event.is(org.glassfish.internal.deployment.Deployment.APPLICATION_DISABLED)) {
+                ApplicationInfo appInfo = (ApplicationInfo)event.hook();
 
             Application app = appInfo.getMetaData(Application.class);
 
@@ -256,34 +269,56 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             if (Boolean.valueOf(shutdown).equals(Boolean.TRUE)) {
                 return;
             }
-            WeldBootstrap bootstrap = appInfo.getTransientAppMetaData(WELD_BOOTSTRAP, 
-                WeldBootstrap.class);
-            if (bootstrap != null) {
-                final String fAppName = appInfo.getName();
-                invocationManager.pushAppEnvironment(new ApplicationEnvironment() {
 
-                    @Override
-                    public String getName() {
-                        return fAppName;
+            ClassLoader currentContextClassLoader = Thread.currentThread().getContextClassLoader();
+            Thread.currentThread().setContextClassLoader(appInfo.getAppClassLoader());
+            try {
+                WeldBootstrap bootstrap = appInfo.getTransientAppMetaData(WELD_BOOTSTRAP, WeldBootstrap.class);
+                if (bootstrap != null) {
+                    final String fAppName = appInfo.getName();
+                    invocationManager.pushAppEnvironment(new ApplicationEnvironment() {
+
+                        @Override
+                        public String getName() {
+                            return fAppName;
+                        }
+
+                    });
+                    try {
+                        bootstrap.shutdown();
+                    } catch(Exception e) {
+                        _logger.log(Level.WARNING, "JCDI shutdown error", e);
                     }
-                    
-                });
-                try {
-                    bootstrap.shutdown();  
-                } catch(Exception e) {
-                    _logger.log(Level.WARNING, "JCDI shutdown error", e);
+                    finally {
+                        invocationManager.popAppEnvironment();
+                    }
+                    appInfo.addTransientAppMetaData(WELD_SHUTDOWN, "true");
                 }
-                finally {
-                    invocationManager.popAppEnvironment();
-                }
-                appInfo.addTransientAppMetaData(WELD_SHUTDOWN, "true");
+            } finally {
+                Thread.currentThread().setContextClassLoader(currentContextClassLoader);
             }
-            DeploymentImpl deploymentImpl = appInfo.getTransientAppMetaData(
-                WELD_DEPLOYMENT, DeploymentImpl.class);
+            DeploymentImpl deploymentImpl = appInfo.getTransientAppMetaData( WELD_DEPLOYMENT, DeploymentImpl.class);
             if (deploymentImpl != null) {
                 deploymentImpl.cleanup();
             }
         }
+    }
+
+    private String getDeploymentErrorMsgPrefix( Throwable t ) {
+        return "CDI deployment failure:";
+        //todo: when weld 2.0 is used change this method to what's commented out:
+//        if ( t instanceof javax.enterprise.inject.spi.DefinitionException ) {
+//            return "CDI definition failure:";
+//        } else if ( t instanceof javax.enterprise.inject.spi.DeploymentException ) {
+//            return "CDI deployment failure:";
+//        } else {
+//            Throwable cause = t.getCause();
+//            if ( cause == t || cause == null ) {
+//                return "CDI deployment failure:";
+//            } else {
+//                return getDeploymentErrorMsgPrefix( cause );
+//            }
+//        }
     }
 
     /*

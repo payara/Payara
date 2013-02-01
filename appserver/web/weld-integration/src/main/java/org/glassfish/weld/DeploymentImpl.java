@@ -43,7 +43,6 @@ package org.glassfish.weld;
 import static java.util.logging.Level.FINE;
 import static org.glassfish.weld.connector.WeldUtils.JAR_SUFFIX;
 import static org.glassfish.weld.connector.WeldUtils.META_INF_BEANS_XML;
-import static org.glassfish.weld.connector.WeldUtils.META_INF_SERVICES_EXTENSION;
 import static org.glassfish.weld.connector.WeldUtils.SEPARATOR_CHAR;
 
 import java.io.IOException;
@@ -108,7 +107,12 @@ public class DeploymentImpl implements Deployment {
         }
 
         BeanDeploymentArchive bda = new BeanDeploymentArchiveImpl(archive, ejbs, context);
-        this.beanDeploymentArchives.add(bda);
+        addBeanDeploymentArchives(bda);
+    }
+
+    // Refactored constructor and scanArchive to use this method as it was duplicate code.
+    private void addBeanDeploymentArchives(BeanDeploymentArchive bda) {
+        beanDeploymentArchives.add(bda);
         if (((BeanDeploymentArchiveImpl)bda).getBDAType().equals(BDAType.WAR)) {
             if (warBDAs == null) {
                 warBDAs = new ArrayList<BeanDeploymentArchive>();
@@ -120,7 +124,7 @@ public class DeploymentImpl implements Deployment {
             }
             jarBDAs.add(bda);
         }
-        this.idToBeanDeploymentArchive.put(bda.getId(), bda);
+        idToBeanDeploymentArchive.put(bda.getId(), bda);
     }
 
     /**
@@ -147,20 +151,7 @@ public class DeploymentImpl implements Deployment {
             idToBeanDeploymentArchive = new HashMap<String, BeanDeploymentArchive>();
         }
 
-        beanDeploymentArchives.add(bda);
-        if (((BeanDeploymentArchiveImpl)bda).getBDAType().equals(BDAType.WAR)) {
-            if (warBDAs == null) {
-                warBDAs = new ArrayList<BeanDeploymentArchive>();
-            }
-            warBDAs.add(bda);
-        } else if (((BeanDeploymentArchiveImpl)bda).getBDAType().equals(BDAType.JAR)) {
-            if (jarBDAs == null) {
-                jarBDAs = new ArrayList<BeanDeploymentArchive>();
-            }
-            jarBDAs.add(bda);
-        }
-        idToBeanDeploymentArchive.put(bda.getId(), bda);
-
+        addBeanDeploymentArchives(bda);
     }
 
     /**
@@ -240,10 +231,28 @@ public class DeploymentImpl implements Deployment {
                 }
             }
         }
-
-
+        addDependentBdas();
     }
 
+    private void addDependentBdas() {
+        Set<BeanDeploymentArchive> additionalBdas = new HashSet<BeanDeploymentArchive>();
+        for ( BeanDeploymentArchive oneBda : beanDeploymentArchives ) {
+            BeanDeploymentArchiveImpl beanDeploymentArchiveImpl = ( BeanDeploymentArchiveImpl ) oneBda;
+            Collection<BeanDeploymentArchive> subBdas = beanDeploymentArchiveImpl.getBeanDeploymentArchives();
+            for (BeanDeploymentArchive subBda : subBdas) {
+                if ( subBda.getBeanClasses().size() > 0 ) {
+                    // only add it if it's cdi-enabled (contains at least one bean that is managed by cdi)
+                    additionalBdas.add(subBda);
+                }
+            }
+        }
+
+        for ( BeanDeploymentArchive oneBda : additionalBdas ) {
+            if ( ! beanDeploymentArchives.contains( oneBda ) ) {
+                beanDeploymentArchives.add( oneBda );
+            }
+        }
+    }
 
     @Override
     public List<BeanDeploymentArchive> getBeanDeploymentArchives() {
@@ -424,11 +433,16 @@ public class DeploymentImpl implements Deployment {
                                     libJars = new ArrayList<ReadableArchive>();
                                 }
                                 libJars.add(jarInLib);
-                            } else if (jarInLib.exists(META_INF_SERVICES_EXTENSION)){
-                                if (libJars == null) {
-                                    libJars = new ArrayList<ReadableArchive>();
-                                }
-                                libJars.add(jarInLib);
+                                // This is causing tck failures, specifically
+                                // MultiModuleProcessingTest.testProcessedModulesCount
+                                // creating a bda for an extionsion that does not include a beans.xml is handled later
+                                // when annotated types are created by that extension.  This is done in
+                                // loadBeanDeploymentArchive(Class<?> beanClass)
+//                            } else if (jarInLib.exists(META_INF_SERVICES_EXTENSION)){
+//                                if (libJars == null) {
+//                                    libJars = new ArrayList<ReadableArchive>();
+//                                }
+//                                libJars.add(jarInLib);
                             }
                         } catch (IOException e) {
                             logger.log(FINE, "Exception thrown while scanning for library jars", e);

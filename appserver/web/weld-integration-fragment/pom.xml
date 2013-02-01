@@ -78,7 +78,11 @@
                             <!-- The export of javassist.util.proxy is done to ensure that the weld-generated proxy has access to the ProxyFactory class
                       in that package. This "partial" export of the javassist package would not cause the problem described in IT 12368, because
                       javassist has fixed the issue in JASSIST-104, and as part of WELD-570, the new javassist version is integrated in Weld 1.1.Beta2
-                       j.j.snyder: added for 1.1.6.Final: org.jboss.weld.interceptor.proxy, org.jboss.weld.interceptor.util.proxy-->
+                       j.j.snyder: added for 1.1.6.Final: org.jboss.weld.interceptor.proxy, org.jboss.weld.interceptor.util.proxy
+                      added for weld 2.0:
+                                org.jboss.weld.util.bean,
+                                org.jboss.weld.serialization
+                       -->
                             <Export-Package>
                                 org.jboss.weld.proxy.util,
                                 org.jboss.weld.bean.proxy.util,
@@ -87,7 +91,9 @@
                                 org.jboss.weld.bean.builtin.ee,
                                 javassist.util.proxy,
                                 org.jboss.weld.interceptor.proxy,
-                                org.jboss.weld.interceptor.util.proxy
+                                org.jboss.weld.interceptor.util.proxy,
+                                org.jboss.weld.util.bean,
+                                org.jboss.weld.serialization
                             </Export-Package>
                             <Bundle-Description>${project.description}</Bundle-Description> 
                         </manifestEntries>

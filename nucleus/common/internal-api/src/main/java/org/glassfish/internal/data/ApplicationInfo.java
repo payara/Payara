@@ -151,6 +151,14 @@ public class ApplicationInfo extends ModuleInfo {
     }
 
     /**
+     * Returns the application classloader for this application.
+     * @return The application classloader for this application.
+     */
+    public ClassLoader getAppClassLoader() {
+        return appClassLoader;
+    }
+
+    /**
      * Sets the application classloader for this application
      * @param cLoader application classloader
      */

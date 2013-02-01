@@ -48,7 +48,6 @@ import static org.glassfish.weld.connector.WeldUtils.CLASS_SUFFIX;
 import static org.glassfish.weld.connector.WeldUtils.EXPANDED_RAR_SUFFIX;
 import static org.glassfish.weld.connector.WeldUtils.JAR_SUFFIX;
 import static org.glassfish.weld.connector.WeldUtils.META_INF_BEANS_XML;
-import static org.glassfish.weld.connector.WeldUtils.META_INF_SERVICES_EXTENSION;
 import static org.glassfish.weld.connector.WeldUtils.RAR_SUFFIX;
 import static org.glassfish.weld.connector.WeldUtils.SEPARATOR_CHAR;
 import static org.glassfish.weld.connector.WeldUtils.WEB_INF_BEANS_XML;
@@ -397,12 +396,18 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                                   + " as a bean archive and hence added another BDA for it");
                             }
                             weblibJarsThatAreBeanArchives.add(weblibJarArchive);
-                        } else if (weblibJarArchive.exists(META_INF_SERVICES_EXTENSION)) {
-                            if ( logger.isLoggable( FINE ) ) {
-                                logger.log(FINE, "-WEB-INF/lib: considering " + entry
-                                        + " as an extension and creating another BDA for it");
-                            }
-                            weblibJarsThatAreBeanArchives.add(weblibJarArchive);
+
+                            // This is causing tck failures, specifically
+                            // MultiModuleProcessingTest.testProcessedModulesCount
+                            // creating a bda for an extionsion that does not include a beans.xml is handled later
+                            // when annotated types are created by that extension.  This is done in
+                            // DeploymentImpl.loadBeanDeploymentArchive(Class<?> beanClass)
+//                        } else if (weblibJarArchive.exists(META_INF_SERVICES_EXTENSION)) {
+//                            if ( logger.isLoggable( FINE ) ) {
+//                                logger.log(FINE, "-WEB-INF/lib: considering " + entry
+//                                        + " as an extension and creating another BDA for it");
+//                            }
+//                            weblibJarsThatAreBeanArchives.add(weblibJarArchive);
                         } else {
                             if ( logger.isLoggable( FINE ) ) {
                                 logger.log(FINE, "-WEB-INF/lib: skipping " + archive.getName()
@@ -445,14 +450,20 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                 collectJarInfo(archive, true);
             }
 
-            if (archive.exists(META_INF_SERVICES_EXTENSION)){
-                if ( logger.isLoggable( FINE ) ) {
-                    logger.log(FINE, "-JAR processing: " + archive.getURI()
-                            + " as an extensions jar since it has META-INF/services extension");
-                }
-                bdaType = BDAType.UNKNOWN;
-                collectJarInfo(archive, false);
-            }
+
+            // This is causing tck failures, specifically
+            // MultiModuleProcessingTest.testProcessedModulesCount
+            // creating a bda for an extionsion that does not include a beans.xml is handled later
+            // when annotated types are created by that extension.  This is done in
+            // DeploymentImpl.loadBeanDeploymentArchive(Class<?> beanClass)
+//            if (archive.exists(META_INF_SERVICES_EXTENSION)){
+//                if ( logger.isLoggable( FINE ) ) {
+//                    logger.log(FINE, "-JAR processing: " + archive.getURI()
+//                            + " as an extensions jar since it has META-INF/services extension");
+//                }
+//                bdaType = BDAType.UNKNOWN;
+//                collectJarInfo(archive, false);
+//            }
 
         } catch(IOException e) {
             logger.log(SEVERE, e.getLocalizedMessage(), e);

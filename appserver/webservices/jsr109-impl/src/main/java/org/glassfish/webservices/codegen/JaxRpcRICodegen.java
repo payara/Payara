@@ -178,10 +178,12 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         try {
             ClassLoader clr = serviceRef.getBundleDescriptor().getClassLoader();
 
-            Class serviceInterface = clr.loadClass(serviceRef.getServiceInterface());
+            if ( serviceRef.getServiceInterface() != null ) {
+                Class serviceInterface = clr.loadClass(serviceRef.getServiceInterface());
 
-            if (javax.xml.ws.Service.class.isAssignableFrom(serviceInterface)) {
-                jaxwsClient = true;
+                if (javax.xml.ws.Service.class.isAssignableFrom(serviceInterface)) {
+                    jaxwsClient = true;
+                }
             }
 
             // Resolve port component links to target endpoint address.
