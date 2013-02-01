@@ -58,7 +58,16 @@
                 <exclude>modules/javax.annotation-api.jar</exclude>
                 <exclude>modules/cli-optional.jar</exclude>
                 <exclude>modules/appserver-cli.jar</exclude>
+                <exclude>bin/*</exclude>
             </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>${temp.dir}/glassfish</directory>
+            <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
+            <fileMode>755</fileMode>
+            <includes>
+                <include>bin/*</include>
+            </includes>
         </fileSet>
         <fileSet>
             <directory>${temp.dir}/glassfish/modules</directory>
