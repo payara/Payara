@@ -95,17 +95,42 @@ public class CDIEarTest extends NucleusStartStopTest {
         }
     }
     
-    @Test
-    public void testInjectFromLib1IntoEjb1() throws NamingException {
-        Ejb1Remote ejb1 = (Ejb1Remote) context.lookup(EJB1_JNDI_NAME);
+    private Ejb1Remote lookupWithFiveSecondSleep() throws NamingException, InterruptedException {
+        long sleepTime = 5L * 60L * 1000L;
+        long interval = 100L;
         
-        ejb1.isLib1HK2ServiceAvailable();
+        while (sleepTime > 0) {
+            try {
+                return (Ejb1Remote) context.lookup(EJB1_JNDI_NAME);
+            }
+            catch (NamingException ne) {
+                sleepTime -= interval;
+                if (sleepTime <= 0) {
+                    throw ne;
+                }
+                
+                if ((sleepTime % 1000L) == 0) {
+                    System.out.println("Sleeping another " + (sleepTime / 1000) + " seconds...");
+                }
+                
+                Thread.sleep(interval);
+            }
+            
+        }
         
+        throw new AssertionError("Should never get here");
     }
     
     @Test
-    public void testInjectFromEjb1IntoEjb1() throws NamingException {
-        Ejb1Remote ejb1 = (Ejb1Remote) context.lookup(EJB1_JNDI_NAME);
+    public void testInjectFromLib1IntoEjb1() throws NamingException, InterruptedException {
+        Ejb1Remote ejb1 = lookupWithFiveSecondSleep();
+        
+        ejb1.isLib1HK2ServiceAvailable(); 
+    }
+    
+    @Test
+    public void testInjectFromEjb1IntoEjb1() throws NamingException, InterruptedException {
+        Ejb1Remote ejb1 = lookupWithFiveSecondSleep();
         
         ejb1.isEjb1HK2ServiceAvailable();
         
