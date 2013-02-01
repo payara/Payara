@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -71,6 +71,7 @@ import com.sun.ejb.monitoring.stats.StatelessSessionBeanStatsProvider;
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
+import com.sun.enterprise.security.SecurityManager;
 
 /** This class provides container functionality specific to stateless 
  *  SessionBeans.
@@ -130,16 +131,16 @@ public class StatelessSessionContainer
      * This constructor is called from the JarManager when a Jar is deployed.
      * @exception Exception on error
      */
-    StatelessSessionContainer(EjbDescriptor desc, ClassLoader loader)
+    StatelessSessionContainer(EjbDescriptor desc, ClassLoader loader, SecurityManager sm)
 	throws Exception
     {
-        this(ContainerType.STATELESS, desc, loader);
+        this(ContainerType.STATELESS, desc, loader, sm);
     }
 
-    protected StatelessSessionContainer(ContainerType conType, EjbDescriptor desc, ClassLoader loader)
+    protected StatelessSessionContainer(ContainerType conType, EjbDescriptor desc, ClassLoader loader, SecurityManager sm)
         throws Exception
         {
-            super(conType, desc, loader);
+            super(conType, desc, loader, sm);
 
         ejbContainer = ejbContainerUtilImpl.getEjbContainer();
 

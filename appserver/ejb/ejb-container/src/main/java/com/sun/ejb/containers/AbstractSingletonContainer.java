@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -66,6 +66,7 @@ import com.sun.enterprise.admin.monitor.callflow.ComponentType;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.util.Utility;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.ResourceHandler;
@@ -124,9 +125,9 @@ public abstract class AbstractSingletonContainer
      * @exception Exception on error
      */
 
-    protected AbstractSingletonContainer(EjbDescriptor desc, ClassLoader loader)
+    protected AbstractSingletonContainer(EjbDescriptor desc, ClassLoader loader, SecurityManager sm)
         throws Exception {
-        super(ContainerType.SINGLETON, desc, loader);
+        super(ContainerType.SINGLETON, desc, loader, sm);
 
         super.createCallFlowAgent(ComponentType.SLSB);
 

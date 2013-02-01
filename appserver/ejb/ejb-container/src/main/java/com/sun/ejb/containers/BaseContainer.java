@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -137,6 +137,7 @@ import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.WebServicesDescriptor;
 import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -383,7 +384,7 @@ public abstract class BaseContainer
 
     protected EJBMetaData metadata = null;
 
-    protected com.sun.enterprise.security.SecurityManager securityManager;
+    protected final SecurityManager securityManager;
     
     protected boolean isSession;
     protected boolean isStatelessSession;
@@ -513,10 +514,11 @@ public abstract class BaseContainer
      * This constructor is called from ContainerFactoryImpl when an
      * EJB Jar is deployed.
      */
-    protected BaseContainer(ContainerType type, EjbDescriptor ejbDesc, ClassLoader loader)
+    protected BaseContainer(ContainerType type, EjbDescriptor ejbDesc, ClassLoader loader, SecurityManager sm)
         throws Exception
     {
         this.containerType = type;
+        this.securityManager = sm;
         
         try {
             this.loader = loader;
@@ -1029,14 +1031,8 @@ public abstract class BaseContainer
         return ejbClass;
     }
     
-    public final com.sun.enterprise.security.SecurityManager getSecurityManager() {
+    public final SecurityManager getSecurityManager() {
         return securityManager;
-    }
-    
-    public final void setSecurityManager(com.sun.enterprise.security.SecurityManager sm)
-        throws Exception
-    {
-        securityManager = sm;
     }
     
     final Properties getEnvironmentProperties() {

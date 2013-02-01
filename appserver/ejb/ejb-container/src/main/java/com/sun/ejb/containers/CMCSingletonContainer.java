@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,6 +51,7 @@ import com.sun.ejb.ComponentContext;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.InvocationInfo;
 import com.sun.ejb.MethodLockInfo;
+import com.sun.enterprise.security.SecurityManager;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 
 /**
@@ -70,9 +71,9 @@ public class CMCSingletonContainer
 
     private final MethodLockInfo defaultMethodLockInfo;
 
-    public CMCSingletonContainer(EjbDescriptor desc, ClassLoader cl)
+    public CMCSingletonContainer(EjbDescriptor desc, ClassLoader cl, SecurityManager sm)
             throws Exception {
-        super(desc, cl);
+        super(desc, cl, sm);
 
         // In absence of any method lock info default is WRITE lock with no timeout.
         defaultMethodLockInfo = new MethodLockInfo();

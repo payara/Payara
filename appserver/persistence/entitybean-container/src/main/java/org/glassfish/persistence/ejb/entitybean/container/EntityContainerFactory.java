@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,6 +50,7 @@ import javax.inject.Named;
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.security.SecurityManager;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -83,6 +84,7 @@ public final class EntityContainerFactory extends BaseContainerFactory
                      DeploymentContext deployContext)
             throws Exception {
         EntityContainer container = null;
+        SecurityManager sm = getSecurityManager(ejbDescriptor);
 
         // instantiate container class
       // EjbApplication got this ContainerFactory by ejbDescriptor type
@@ -91,7 +93,7 @@ public final class EntityContainerFactory extends BaseContainerFactory
       if (((EjbEntityDescriptor)ejbDescriptor).getIASEjbExtraDescriptors()
               .isIsReadOnlyBean()) {
 
-        container = new ReadOnlyBeanContainer (ejbDescriptor, loader);
+        container = new ReadOnlyBeanContainer (ejbDescriptor, loader, sm);
       } else {
         String commitOption = null;
         IASEjbExtraDescriptors iased = ((EjbEntityDescriptor)ejbDescriptor).
@@ -107,18 +109,18 @@ public final class EntityContainerFactory extends BaseContainerFactory
                   "entitybean.container.commit_option_A_not_supported",
                   new Object []{ejbDescriptor.getName()}
           );
-          container = new EntityContainer(ejbDescriptor, loader);
+          container = new EntityContainer(ejbDescriptor, loader, sm);
         } else if (commitOption.equals("C")) {
           _logger.log(Level.FINE, "Using commit option C for: "
                   + ejbDescriptor.getName());
-          container = new CommitCEntityContainer(ejbDescriptor, loader);
+          container = new CommitCEntityContainer(ejbDescriptor, loader, sm);
         } else {
           _logger.log(Level.FINE,"Using commit option B for: " +
                   ejbDescriptor.getName());
-          container = new EntityContainer(ejbDescriptor, loader);
+          container = new EntityContainer(ejbDescriptor, loader, sm);
         }
       }
-      initContainer(container, ejbDescriptor);
+      container.initializeHome();
       return container;
     }
 }

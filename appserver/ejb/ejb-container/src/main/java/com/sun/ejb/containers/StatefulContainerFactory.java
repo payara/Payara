@@ -62,6 +62,7 @@ import com.sun.ejb.containers.util.cache.NRUSessionCache;
 import com.sun.ejb.containers.util.cache.UnBoundedSessionCache;
 import com.sun.enterprise.config.serverbeans.AvailabilityService;
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -482,9 +483,10 @@ public class StatefulContainerFactory extends BaseContainerFactory
     int port = 8080;
 
     cacheProps.init(ejbDescriptor);
-    sfsbContainer = new StatefulSessionContainer(ejbDescriptor, loader);
+    SecurityManager sm = getSecurityManager(ejbDescriptor);
+    sfsbContainer = new StatefulSessionContainer(ejbDescriptor, loader, sm);
     buildComponents(ipAddress, port, deployContext);
-    initContainer(sfsbContainer, ejbDescriptor);
+    sfsbContainer.initializeHome();
     return sfsbContainer;
   }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@ package com.sun.ejb.containers;
 
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;
+import com.sun.enterprise.security.SecurityManager;
 import javax.inject.Singleton;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
@@ -56,9 +57,10 @@ public class StatelessContainerFactory extends BaseContainerFactory implements
                                      ClassLoader loader,
                                      DeploymentContext deployContext)
             throws Exception {
+        SecurityManager sm = getSecurityManager(ejbDescriptor);
         StatelessSessionContainer slsbContainer = new StatelessSessionContainer(ejbDescriptor,
-                loader);
-        initContainer(slsbContainer, ejbDescriptor);
+                loader, sm);
+        slsbContainer.initializeHome();
         return slsbContainer;
     }
 }

@@ -105,6 +105,7 @@ import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
 import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
@@ -339,14 +340,15 @@ public final class StatefulSessionContainer
      * @throws Exception on error
      */
     public StatefulSessionContainer(EjbDescriptor desc,
-                                    ClassLoader loader)
+                                    ClassLoader loader,
+                                    SecurityManager sm)
             throws Exception {
-        this(ContainerType.STATEFUL, desc, loader);
+        this(ContainerType.STATEFUL, desc, loader, sm);
     }
     public StatefulSessionContainer(ContainerType conType, EjbDescriptor desc,
-                                    ClassLoader loader)
+                                    ClassLoader loader, SecurityManager sm)
             throws Exception {
-        super(conType, desc, loader);
+        super(conType, desc, loader, sm);
         super.createCallFlowAgent(ComponentType.SFSB);
         this.ejbName = desc.getName();
 

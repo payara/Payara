@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@
 package org.glassfish.persistence.ejb.entitybean.container;
 
 import com.sun.ejb.EjbInvocation;
+import com.sun.enterprise.security.SecurityManager;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 
 /*
@@ -60,10 +61,10 @@ public class CommitCEntityContainer
      * This constructor is called from the JarManager when a Jar is deployed.
      * @exception Exception on error
      */
-    protected CommitCEntityContainer(EjbDescriptor desc, ClassLoader loader)
+    protected CommitCEntityContainer(EjbDescriptor desc, ClassLoader loader, SecurityManager sm)
         throws Exception
     {
-        super(desc, loader);
+        super(desc, loader, sm);
     }
     
     protected EntityContextImpl getReadyEJB(EjbInvocation inv) {

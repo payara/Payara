@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,6 +50,8 @@ import javax.ejb.EJBException;
 import javax.ejb.EJBHome;
 import javax.ejb.MessageDrivenBean;
 import javax.ejb.RemoveException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.transaction.Status;
 import javax.transaction.xa.XAResource;
 
@@ -88,6 +90,7 @@ import com.sun.enterprise.admin.monitor.callflow.ComponentType;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
+import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
@@ -147,10 +150,10 @@ public final class MessageBeanContainer extends BaseContainer implements
     private int statMessageCount = 0;
 
     private TransactedPoolManager poolMgr;
-    
-    MessageBeanContainer(EjbDescriptor desc, ClassLoader loader)
+
+    MessageBeanContainer(EjbDescriptor desc, ClassLoader loader, SecurityManager sm)
             throws Exception {
-        super(ContainerType.MESSAGE_DRIVEN, desc, loader);
+        super(ContainerType.MESSAGE_DRIVEN, desc, loader, sm);
 
         // Instantiate the ORB and Remote naming manager
         // to allow client lookups of JMS queues/topics/connectionfactories
@@ -166,6 +169,7 @@ public final class MessageBeanContainer extends BaseContainer implements
 
         EjbMessageBeanDescriptor msgBeanDesc = (EjbMessageBeanDescriptor) desc;
 
+        EjbInvocation ejbInvocation = null;
         try {
 
             // Register the tx attribute for each method on MessageListener
@@ -222,6 +226,9 @@ public final class MessageBeanContainer extends BaseContainer implements
             messageBeanClient_ = clientFactory
                     .createMessageBeanClient(msgBeanDesc);
 
+            ejbInvocation = createEjbInvocation();
+            ejbInvocation.container = this;
+            invocationManager.preInvoke(ejbInvocation);
             messageBeanClient_.setup(this);
 
             registerMonitorableComponents(msgListenerMethods);
@@ -238,6 +245,10 @@ public final class MessageBeanContainer extends BaseContainer implements
                             desc.getName(), ex.toString() });
             _logger.log(Level.SEVERE, ex.getClass().getName(), ex);
             throw ex;
+        } finally {
+            if(ejbInvocation != null) {
+                invocationManager.postInvoke(ejbInvocation);
+            }
         }
     }
 
@@ -264,7 +275,7 @@ public final class MessageBeanContainer extends BaseContainer implements
 
     @Override 
     protected void initializeHome() throws Exception {
-        //For MDBs this is no op
+        throw new UnsupportedOperationException("MessageDrivenBean needn't initialize home");
     }
 
     @Override 

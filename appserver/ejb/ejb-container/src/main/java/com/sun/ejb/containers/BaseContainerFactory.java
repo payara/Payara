@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@
 package com.sun.ejb.containers;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.security.SecurityManager;
 import javax.inject.Inject;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.security.application.EJBSecurityManager;
@@ -53,24 +54,15 @@ public abstract class BaseContainerFactory {
   @Inject
   private EJBSecurityManagerFactory securityManagerFactory;
 
-  /**
-   * @param bc the container to be initialized. We don't accept null
-   *           to be passed in
-   * @param ejbDescriptor
-   * @throws Exception
-   */
-  protected void initContainer(BaseContainer bc,
-                               EjbDescriptor ejbDescriptor)
-          throws Exception {
-    assert bc != null;
+    protected final SecurityManager getSecurityManager(EjbDescriptor ejbDescriptor)
+            throws Exception {
 
-    String ctxId = EJBSecurityManager.getContextID(ejbDescriptor);
-    String ejbName = ejbDescriptor.getName();
-    EJBSecurityManager sm = securityManagerFactory.getManager(ctxId, ejbName, false);
-    if (sm == null) {
-      sm = securityManagerFactory.createManager(ejbDescriptor, true);
+        String ctxId = EJBSecurityManager.getContextID(ejbDescriptor);
+        String ejbName = ejbDescriptor.getName();
+        EJBSecurityManager sm = securityManagerFactory.getManager(ctxId, ejbName, false);
+        if (sm == null) {
+            sm = securityManagerFactory.createManager(ejbDescriptor, true);
+        }
+        return sm;
     }
-    bc.setSecurityManager(sm);
-    bc.initializeHome();
-  }
 }

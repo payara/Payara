@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,6 +68,7 @@ import com.sun.ejb.containers.EJBContextImpl;
 import com.sun.ejb.containers.EJBHomeInvocationHandler;
 import com.sun.ejb.containers.EJBLocalHomeInvocationHandler;
 import com.sun.ejb.containers.EJBLocalRemoteObject;
+import com.sun.enterprise.security.SecurityManager;
 import org.glassfish.persistence.ejb.entitybean.container.cache.EJBObjectCache;
 import org.glassfish.persistence.ejb.entitybean.container.cache.FIFOEJBObjectCache;
 import org.glassfish.persistence.ejb.entitybean.container.cache.UnboundedEJBObjectCache;
@@ -123,11 +124,11 @@ public class ReadOnlyBeanContainer
     //  support bean level flag for this
     private boolean RELATIVE_TIME_CHECK_MODE = false;
 
-    protected ReadOnlyBeanContainer(EjbDescriptor desc, ClassLoader loader)
+    protected ReadOnlyBeanContainer(EjbDescriptor desc, ClassLoader loader, SecurityManager sm)
         throws Exception
     {
         //super(ContainerType.READ_ONLY, desc, loader);
-        super(ContainerType.ENTITY, desc, loader);
+        super(ContainerType.ENTITY, desc, loader, sm);
         
         EjbEntityDescriptor ed = (EjbEntityDescriptor)desc;
         refreshPeriodInMillis =

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -102,6 +102,7 @@ import com.sun.ejb.spi.container.BeanStateSynchronization;
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
+import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -263,14 +264,14 @@ public class EntityContainer
      * This constructor is called from the JarManager when a Jar is deployed.
      * @exception Exception on error
      */
-    protected EntityContainer(EjbDescriptor desc, ClassLoader loader)
+    protected EntityContainer(EjbDescriptor desc, ClassLoader loader, SecurityManager sm)
     	throws Exception {    
-    	this(ContainerType.ENTITY, desc, loader);
+    	this(ContainerType.ENTITY, desc, loader, sm);
     }
     
-    protected EntityContainer(ContainerType containerType, EjbDescriptor desc, ClassLoader loader)
+    protected EntityContainer(ContainerType containerType, EjbDescriptor desc, ClassLoader loader, SecurityManager sm)
     	throws Exception {
-        super(containerType, desc, loader);
+        super(containerType, desc, loader, sm);
         EjbEntityDescriptor ed = (EjbEntityDescriptor)desc;
         isReentrant = ed.isReentrant();
         if ( ed.getPersistenceType().equals(

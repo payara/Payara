@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@ package com.sun.ejb.containers;
 
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;
+import com.sun.enterprise.security.SecurityManager;
 import javax.inject.Singleton;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
@@ -62,12 +63,13 @@ public class SingletonContainerFactory extends BaseContainerFactory
         assert ejbDescriptor instanceof EjbSessionDescriptor;
         EjbSessionDescriptor sd = (EjbSessionDescriptor) ejbDescriptor;
         AbstractSingletonContainer container;
+        SecurityManager sm = getSecurityManager(ejbDescriptor);
         if (sd.hasContainerManagedConcurrency()) {
-            container = new CMCSingletonContainer(ejbDescriptor, loader);
+            container = new CMCSingletonContainer(ejbDescriptor, loader, sm);
         } else {
-            container = new BMCSingletonContainer(ejbDescriptor, loader);
+            container = new BMCSingletonContainer(ejbDescriptor, loader, sm);
         }
-        initContainer(container, ejbDescriptor);
+        container.initializeHome();
         return container;
     }
 }

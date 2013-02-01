@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,7 @@ package org.glassfish.ejb.mdb;
 import com.sun.ejb.containers.BaseContainerFactory;
 import javax.inject.Singleton;
 import org.glassfish.api.deployment.DeploymentContext;
+import com.sun.enterprise.security.SecurityManager;
 import org.jvnet.hk2.annotations.Service;
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;
@@ -58,9 +59,9 @@ public final class MessageBeanContainerFactory extends
                                    ClassLoader loader,
                                    DeploymentContext deployContext)
           throws Exception {
+      SecurityManager sm = getSecurityManager(ejbDescriptor);
     MessageBeanContainer mdbContainer = new MessageBeanContainer
-            (ejbDescriptor, loader);
-    initContainer(mdbContainer, ejbDescriptor);
+            (ejbDescriptor, loader, sm);
     return mdbContainer;
   }
 }
