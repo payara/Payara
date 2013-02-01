@@ -68,6 +68,8 @@ public class NucleusTestUtils {
         "AS_ADMIN_PASSWORDFILE",
         "AS_LOGFILE",
         "AS_ADMIN_USER",
+        "P_ADMIN_PASSWORDFILE",
+        "P_ADMIN_USER",
     };
     protected static final File nucleusRoot = initNucleusRoot();
 
