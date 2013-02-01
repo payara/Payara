@@ -678,6 +678,7 @@ public class ServerTags  {
     //static public final String MAX_CONNECTION_USAGE_COUNT = "max-connection-usage-count";
     // Tags for Element context-service
     static public final String CONTEXT_SERVICE = "context-service";
+    static public final String MANAGED_THREAD_FACTORY = "managed-thread-factory";
     // Tags for Element security-map
     static public final String SECURITY_MAP = "security-map";
     static public final String PRINCIPAL = "principal";

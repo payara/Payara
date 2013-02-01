@@ -242,4 +242,5 @@ public final class ResourceConstants {
 
     // concurrent resource objects
     public static final String CONTEXT_INFO = "context-info";
+    public static final String THREAD_PRIORITY = "thread-priority";
 }
