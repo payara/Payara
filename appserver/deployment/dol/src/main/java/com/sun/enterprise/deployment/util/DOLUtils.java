@@ -334,11 +334,6 @@ public class DOLUtils {
                 sortedConfDDFiles.add(gfConfDD);
                 return sortedConfDDFiles;
             }
-            if (runtimeAltDDPath.indexOf(
-                DescriptorConstants.WLS) != -1 && wlsConfDD != null) {
-                sortedConfDDFiles.add(wlsConfDD);
-                return sortedConfDDFiles;
-            }
         }
 
         // sort the deployment descriptor files by precedence order 
@@ -377,8 +372,7 @@ public class DOLUtils {
     }
 
     public static void validateRuntimeAltDDPath(String runtimeAltDDPath) {
-        if (runtimeAltDDPath.indexOf(DescriptorConstants.GF_PREFIX) == -1 && 
-            runtimeAltDDPath.indexOf(DescriptorConstants.WLS) == -1) {
+        if (runtimeAltDDPath.indexOf(DescriptorConstants.GF_PREFIX) == -1) { 
             String msg = localStrings.getLocalString(
                 "enterprise.deployment.util.unsupportedruntimealtdd", "Unsupported external runtime alternate deployment descriptor [{0}].", new Object[] {runtimeAltDDPath});
             throw new IllegalArgumentException(msg);
