@@ -105,7 +105,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                               <Class-Path>../../modules/common-util.jar ../../modules/glassfish-api.jar ../../modules/config-api.jar ../../modules/internal-api.jar ../../modules/config-types.jar ../../modules/grizzly-config.jar cli-optional-l10n.jar</Class-Path>
+                               <Class-Path>../../modules/backup.jar ../../modules/common-util.jar ../../modules/glassfish-api.jar ../../modules/config-api.jar ../../modules/internal-api.jar ../../modules/config-types.jar ../../modules/grizzly-config.jar cli-optional-l10n.jar</Class-Path>
                         </manifestEntries>
                     </archive>
                 </configuration>
