@@ -1434,19 +1434,6 @@
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
-      <xsd:element name="max-idle-time"
-                   type="javaee:xsdIntegerType"
-                   minOccurs="0">
-        <xsd:annotation>
-          <xsd:documentation>
-
-            The number of seconds that a physical connection should
-            remain unused in the pool before the connection is
-            closed for a connection pool.
-            
-          </xsd:documentation>
-        </xsd:annotation>
-      </xsd:element>
     </xsd:sequence>
     <xsd:attribute name="id"
                    type="xsd:ID"/>
