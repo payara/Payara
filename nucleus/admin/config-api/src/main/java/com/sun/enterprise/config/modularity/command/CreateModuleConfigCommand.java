@@ -134,14 +134,14 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
             }
             if (config == null) {
                 report.setMessage(localStrings.getLocalString("create.module.config.target.name.invalid",
-                        "The target name you specified is invalid. Please double check the target name and try again"));
+                        "The target name specified is invalid. Please double check the target name and try again"));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
         }
         if (isAll && (serviceName != null)) {
             report.setMessage(localStrings.getLocalString("create.module.config.service.name.ignored",
-                    "You can only use --all or specify a service name. These two options are exclusive."));
+                    "One of the --all service name parameters can be used at a time. These two options can not be used together."));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
@@ -149,7 +149,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
         if (!isAll && (serviceName == null)) {
             //TODO check for usability options, should we create the default configs, show them or fail the execution?
             report.setMessage(localStrings.getLocalString("create.module.config.no.service.no.all",
-                    "As no service name specified and the --all is not used either. Showing all default configurations not merged with domain configuration under target {0}.", target));
+                    "No service name specified and the --all is not used either. Showing all default configurations not merged with domain configuration under target {0}.", target));
 
             try {
                 defaultConfigurationElements = getAllDefaultConfigurationElements(target);
@@ -158,7 +158,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
                 }
             } catch (Exception e) {
                 String msg = localStrings.getLocalString("create.module.config.failure",
-                        "Failed to execute the command due to {0}. For more details check the log file.", e.getLocalizedMessage());
+                        "Failed to execute the command due to: {0}. For more details check the log file.", e.getLocalizedMessage());
                 LOG.log(Level.INFO, msg, e);
                 report.setMessage(msg);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -175,7 +175,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
                 }
             } catch (Exception e) {
                 String msg = localStrings.getLocalString("create.module.config.show.all.failed",
-                        "Failed to show all default configurations not merged with domain configuration under target {0} due to {1}.", target, e.getLocalizedMessage());
+                        "Failed to show all default configurations not merged with domain configuration under target {0} due to: {1}.", target, e.getLocalizedMessage());
                 LOG.log(Level.INFO, msg, e);
                 report.setMessage(msg);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -190,7 +190,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
                 createAllMissingElements(report);
             } catch (Exception e) {
                 String msg = localStrings.getLocalString("create.module.config.creating.all.failed",
-                        "Failed to create all default configuration elements that are not present in the domain.xml under target {0} due to {1}.", target, e.getLocalizedMessage());
+                        "Failed to create all default configuration elements that are not present in the domain.xml under target {0} due to: {1}.", target, e.getLocalizedMessage());
                 LOG.log(Level.INFO, msg, e);
                 report.setMessage(msg);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -219,7 +219,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
 
             } catch (Exception e) {
                 String msg = localStrings.getLocalString("create.module.config.creating.for.service.name.failed",
-                        "Failed to create module configuration for {0} under the target {1} due to {2}.", serviceName, target, e.getMessage());
+                        "Failed to create module configuration for {0} under the target {1} due to: {2}.", serviceName, target, e.getMessage());
                 LOG.log(Level.INFO, msg, e);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(msg);

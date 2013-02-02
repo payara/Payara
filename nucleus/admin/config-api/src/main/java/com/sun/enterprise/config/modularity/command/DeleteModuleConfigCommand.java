@@ -135,7 +135,7 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
             }
             if (config == null) {
                 report.setMessage(localStrings.getLocalString("delete.module.config.target.name.invalid",
-                        "The target name you specified is invalid. Please double check the target name and try again"));
+                        "The target name specified is invalid. Please double check the target name and try again."));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -143,7 +143,7 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
 
         if (serviceName == null) {
             report.setMessage(localStrings.getLocalString("delete.module.config.service.name.is.required",
-                    "The service name is required, please specify which service you want to delete its default configuration"));
+                    "The service name is required, please specify which service you want to delete its default configuration."));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }

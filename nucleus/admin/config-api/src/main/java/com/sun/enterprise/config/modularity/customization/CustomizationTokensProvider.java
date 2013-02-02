@@ -120,7 +120,7 @@ public class CustomizationTokensProvider {
                                 return pl;
                             } catch (IOException ex) {
                                 // any failure here is fatal
-                                LOG.log(Level.SEVERE, strings.getLocalString("modules.class.loader.failed", "Failed to create a classloader for modules directory"), ex);
+                                LOG.log(Level.SEVERE, strings.getLocalString("modules.class.loader.failed", "Failed to create a ClassLoader for modules directory."), ex);
                             }
                             return ecl;
                         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -147,7 +147,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
 
         if (isAll == true && serviceName != null) {
             report.setMessage(localStrings.getLocalString("get.active.config.target.service.and.all.exclusive",
-                    "Specifying a service name and using --all=true are exclusive to each other."));
+                    "Specifying a service name and using --all=true can not be used together."));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
@@ -170,7 +170,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
                 }
             } catch (Exception e) {
                 String msg = localStrings.getLocalString("get.active.config.getting.active.config.for.service.failed",
-                        "Failed to get active configuration for {0} under the target {1} due to {2}.", serviceName, target, e.getMessage());
+                        "Failed to get active configuration for {0} under the target {1} due to: {2}.", serviceName, target, e.getMessage());
                 LOG.log(Level.INFO, msg, e);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(msg);
@@ -191,7 +191,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
             report.setMessage(sb.toString());
         } catch (Exception e) {
             String msg = localStrings.getLocalString("get.active.config.getting.active.config.for.service.failed",
-                    "Failed to get active configuration for {0} under the target {1} due to {2}.", serviceName, target, e.getMessage());
+                    "Failed to get active configuration for {0} under the target {1} due to: {2}.", serviceName, target, e.getMessage());
             LOG.log(Level.INFO, msg, e);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(msg);
