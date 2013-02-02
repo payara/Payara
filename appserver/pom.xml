@@ -130,6 +130,8 @@
         <json.version>1.0-b02</json.version>
         <concurrent-api.version>1.0-b01</concurrent-api.version>
         <concurrent.version>1.0-b01</concurrent.version>
+        <javax.batch-api.version>1.0-b07</javax.batch-api.version>
+        <javax.batch-runtime.version>1.0-b07</javax.batch-runtime.version>
     </properties>
 
     <modules>
@@ -149,6 +151,7 @@
         <module>jdbc</module>
         <module>persistence</module>
         <module>concurrent</module>
+        <module>batch</module>
         <module>extras</module>
         <module>admingui</module>
         <module>extras/embedded/shell</module>
@@ -678,6 +681,16 @@
                 <groupId>org.glassfish.docs.help</groupId>
                 <artifactId>console-web-plugin-help</artifactId>
                 <version>${v3-docs.version}</version>
+            </dependency>            
+            <dependency>
+                <groupId>javax.batch</groupId>
+                <artifactId>javax.batch-api-all</artifactId>
+                <version>${javax.batch-api.version}</version>
+            </dependency>            
+            <dependency>
+                <groupId>com.ibm.batch</groupId>
+                <artifactId>com.ibm.batch-runtime-all</artifactId>
+                <version>${javax.batch-runtime.version}</version>
             </dependency>            
         </dependencies>
     </dependencyManagement>

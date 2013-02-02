@@ -136,12 +136,10 @@
             <artifactId>javax.cache-api</artifactId>
             <version>1.0</version>
         </dependency>-->
-<!-- 
        <dependency>
             <groupId>javax.batch</groupId>
             <artifactId>javax.batch-api</artifactId>
-            <version>1.0</version>
-        </dependency>-->
+        </dependency>
         
         <!-- optional -->
         <dependency>
