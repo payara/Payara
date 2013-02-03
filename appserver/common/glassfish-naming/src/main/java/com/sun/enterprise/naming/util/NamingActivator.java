@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,14 +40,14 @@
 
 package com.sun.enterprise.naming.util;
 
-import com.sun.enterprise.naming.GlassFishNamingBuilder;
-import org.glassfish.internal.api.Globals;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import com.sun.enterprise.naming.util.ObjectInputOutputStreamFactoryFactory;
-import com.sun.enterprise.naming.util.OSGiObjectInputOutputStreamFactoryImpl;
 
 /**
+ * This activator is responsible for setting {@link OSGiObjectInputOutputStreamFactoryImpl}
+ * as the factory in {@link ObjectInputOutputStreamFactoryFactory}
+ *
+ * @see ObjectInputOutputStreamFactoryFactory#setFactory
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 public class NamingActivator implements BundleActivator
@@ -56,10 +56,6 @@ public class NamingActivator implements BundleActivator
     {
         ObjectInputOutputStreamFactoryFactory.setFactory(
                 new OSGiObjectInputOutputStreamFactoryImpl(context));
-
-        // force initialisation of NamingBuilder so that any naming operation will be redirected via
-        // our builder which is essential for issue #8458
-        Globals.getDefaultHabitat().getService(GlassFishNamingBuilder.class);
     }
 
     public void stop(BundleContext context) throws Exception

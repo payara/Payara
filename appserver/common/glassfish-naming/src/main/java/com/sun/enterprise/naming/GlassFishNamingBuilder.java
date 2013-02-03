@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,8 +41,8 @@
 package com.sun.enterprise.naming;
 
 import com.sun.enterprise.naming.impl.SerialInitContextFactory;
-import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.jvnet.hk2.annotations.Service;
@@ -67,7 +67,7 @@ import java.util.logging.Level;
 import static com.sun.enterprise.naming.util.LogFacade.logger;
 
 /**
- * This is both a startup run level service as well as our implementation of
+ * This is both a init run level service as well as our implementation of
  * {@link InitialContextFactoryBuilder}. When GlassFish starts up, this
  * startup service configures NamingManager with appropriate builder by calling
  * {@link javax.naming.spi.NamingManager#setInitialContextFactoryBuilder}.
@@ -77,10 +77,13 @@ import static com.sun.enterprise.naming.util.LogFacade.logger;
  * InitialContextFactory class. While loading user specified class, it first
  * uses Thread's context class loader and then CommonClassLoader.
  *
+ * Please note that this is setup as an init level service to ensure that JNDI subsystem is setup
+ * before applications are loaded.
+ *
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 @Service
-@RunLevel(value = StartupRunLevel.VAL, mode = RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
+@RunLevel(value = InitRunLevel.VAL, mode = RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
 public class GlassFishNamingBuilder implements InitialContextFactoryBuilder, PostConstruct, PreDestroy
 {
     @LogMessageInfo(message = "Failed to load {0} using CommonClassLoader")
