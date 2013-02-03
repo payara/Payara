@@ -86,7 +86,7 @@ public class ConfigModularityJustInTimeInjectionResolver implements JustInTimeIn
         supportedTypes.add("org.glassfish.orb.admin.config.IiopService");
         supportedTypes.add("com.sun.enterprise.config.serverbeans.ManagedJobConfig");
         supportedTypes.add("org.glassfish.paas.maintenance.configbeans.PatchingServiceConfig");
-        supportedTypes.add("org.glassfish.paas.sdp.config.ServiceDefinitionPackages");
+        supportedTypes.add("com.oracle.cloudlogic.sdp.config.ServiceDefinitionPackages");
     }
 
     @Override
