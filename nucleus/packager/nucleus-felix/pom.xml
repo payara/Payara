@@ -41,26 +41,6 @@
 
 -->
 
-<!--
-  This module creates a distribution fragement that contains
-  Apache Felix and associated configuration files and bundles.
-  The layout looks like this:
-  osgi/
-    felix/
-       bin/
-          felix.jar
-       conf/
-          osgi.properties
-  modules/
-       [org.apache.felix.*]
-       autostart/
-          [org.apache.felix.scr.jar]
-
-   This is more or less how the layout would look if one downloads the Felix
-   distribution from Felix project and installs. The only difference being we keep
-   the bundles in glassfish/modules dir as opposed to bundle dir in felix.
--->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -79,14 +59,10 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.main</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.bundlerepository</artifactId>
-            <optional>true</optional>
+            <groupId>org.glassfish.main.osgi-platforms</groupId>
+            <artifactId>felix</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
         </dependency>
     </dependencies>
 </project>

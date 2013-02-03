@@ -49,18 +49,9 @@
     </formats>
 
     <includeBaseDirectory>false</includeBaseDirectory>
-    <files>
-        <file>
-            <source>${temp.dir}/modules/org.apache.felix.main.jar</source>
-            <destName>${install.dir.name}/osgi/felix/bin/felix.jar</destName>
-        </file>
-    </files>
     <fileSets>
         <fileSet>
             <directory>${temp.dir}</directory>
-            <excludes>
-                <exclude>**/org.apache.felix.main.jar</exclude>
-            </excludes>
             <outputDirectory>${install.dir.name}</outputDirectory>
         </fileSet>
     </fileSets>

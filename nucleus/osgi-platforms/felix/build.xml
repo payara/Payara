@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -43,10 +43,6 @@
 
 <project name="felix distribution fragment creation" default="create.bundle" basedir="target/stage">
     <target name="create.bundle">
-        <echo>v=${hk2.version}</echo>
-        <copy todir="target/classes" overwrite="true">
-            <fileset dir="src/main/resources" />
-        </copy>
         <zip destfile="target/felix.zip" basedir="target/classes/" excludes="**/.ade_path/**" />
         <attachArtifact file="target/felix.zip"/>
     </target>
