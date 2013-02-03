@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,6 +50,7 @@ import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -190,20 +191,11 @@ public class OSGiObjectInputOutputStreamFactoryImpl
             Long bundleId = name2Id.get(key);
             if (bundleId != null) {
                 final Bundle b = ctx.getBundle(bundleId);
-
-                if (System.getSecurityManager() == null) {
-                    return b.loadClass(desc.getName());
+                String cname = desc.getName();
+                if (cname.startsWith("[")) {
+                    return loadArrayClass(b, cname);
                 } else {
-                    try {
-                        return (Class) java.security.AccessController.doPrivileged(
-                                new java.security.PrivilegedExceptionAction() {
-                                    public java.lang.Object run() throws ClassNotFoundException {
-                                        return b.loadClass(desc.getName());
-                                    }
-                                });
-                    } catch (java.security.PrivilegedActionException pae) {
-                        throw (ClassNotFoundException) pae.getException();
-                    }
+                    return loadClassFromBundle(b, cname);
                 }
             }
         }
@@ -221,4 +213,36 @@ public class OSGiObjectInputOutputStreamFactoryImpl
         out.writeUTF(key);
     }
 
+    private Class loadArrayClass(Bundle b, String cname) throws ClassNotFoundException {
+        // We are never called with primitive types, so we don't have to check for primitive types.
+        assert(cname.charAt(0) == 'L'); // An array
+        Class component;        // component class
+        int dcount;            // dimension
+        for (dcount = 1; cname.charAt(dcount) == '['; dcount++){
+        }
+        assert(cname.charAt(dcount) == 'L');
+        component = loadClassFromBundle(b, cname.substring(dcount + 1, cname.length() - 1));
+        int dim[] = new int[dcount];
+        for (int i = 0; i < dcount; i++) {
+            dim[i] = 0;
+        }
+        return Array.newInstance(component, dim).getClass();
+    }
+
+    private Class loadClassFromBundle(final Bundle b, final String cname) throws ClassNotFoundException {
+        if (System.getSecurityManager() == null) {
+            return b.loadClass(cname);
+        } else {
+            try {
+                return (Class) java.security.AccessController.doPrivileged(
+                        new java.security.PrivilegedExceptionAction() {
+                            public java.lang.Object run() throws ClassNotFoundException {
+                                return b.loadClass(cname);
+                            }
+                        });
+            } catch (java.security.PrivilegedActionException pae) {
+                throw (ClassNotFoundException) pae.getException();
+            }
+        }
+    }
 }
