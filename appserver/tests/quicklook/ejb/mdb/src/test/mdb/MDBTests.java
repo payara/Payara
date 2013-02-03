@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,7 +51,7 @@ public class MDBTests {
     private boolean execReturn = false;
     private String APPCLIENT = System.getProperty("APPCLIENT");
     private String ASADMIN = System.getProperty("ASADMIN");
-    private String cwd = System.getProperty("BASEDIR");
+    private String cwd = System.getProperty("BASEDIR") == null ? System.getProperty("user.dir") : System.getProperty("BASEDIR");
     private String cmd;
     private String mdbApp= "ejb-ejb30-hello-mdbApp";
 
@@ -68,7 +68,6 @@ public class MDBTests {
     public void deployJMSAppTest(String mdbAppDir) throws Exception {
         cmd = ASADMIN + " deploy  --retrieve=" + cwd + File.separator + mdbAppDir
                 + " " + cwd + File.separator + mdbAppDir + mdbApp + ".ear ";
-        //System.out.println("CMD = "+cmd);
         execReturn = RtExec.execute(cmd);
         Assert.assertEquals(execReturn, true, "Deploy the mdb app failed ... ");
     }
@@ -85,7 +84,6 @@ public class MDBTests {
     @Test (dependsOnMethods = { "runJMSAppTest" })
     public void undeployJMSAppTest() throws Exception {
         cmd = ASADMIN + " undeploy " + mdbApp;
-        //System.out.println("CMD = "+cmd);
         execReturn = RtExec.execute(cmd);
         Assert.assertEquals(execReturn, true, "UnDeploy the mdb app failed ... ");
     }
