@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -328,6 +328,13 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
     private void storeBundleIds(Long[] bundleIds) {
         try {
             File f = framework.getBundleContext().getDataFile(BUNDLEIDS_FILENAME);
+            // GLASSFISH-19623: f can be null
+            if (f == null) {
+                logger.logp(Level.WARNING, "OSGiGlassFishRuntimeBuilder", "storeProvisioningOptions",
+                        "Storage support not available in framework bundle, so can't store bundle ids." +
+                                "This may lead to slower start up time.");
+                return;
+            }
             ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(f));
             os.writeObject(bundleIds);
             os.flush();
@@ -342,7 +349,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
     private Long[] readBundleIds() {
         try {
             File f = framework.getBundleContext().getDataFile(BUNDLEIDS_FILENAME);
-            if (!f.exists()) return new Long[0];
+            if (f == null || !f.exists()) return new Long[0];// GLASSFISH-19623: f can be null
             ObjectInputStream is = new ObjectInputStream(new FileInputStream(f));
             Long[] result;
             try {
@@ -362,6 +369,13 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
     private void storeProvisioningOptions() {
         try {
             File f = framework.getBundleContext().getDataFile(PROVISIONING_OPTIONS_FILENAME);
+            // GLASSFISH-19623: f can be null
+            if (f == null) {
+                logger.logp(Level.WARNING, "OSGiGlassFishRuntimeBuilder", "storeProvisioningOptions",
+                        "Storage support not available in framework bundle, so can't store provisioning options. " +
+                                "This may lead to slower start up time.");
+                return;
+            }
             final FileOutputStream os = new FileOutputStream(f);
             getNewProvisioningOptions().store(os, "");
             os.flush();
@@ -378,15 +392,15 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
             Properties options = new Properties();
             try {
                 File f = framework.getBundleContext().getDataFile(PROVISIONING_OPTIONS_FILENAME);
-                if (f.exists()) {
+                if (f != null && f.exists()) { // GLASSFISH-19623: f can be null
                     options.load(new FileInputStream(f));
                     logger.logp(Level.FINE, "OSGiGlassFishRuntimeBuilder", "getOldProvisioningOptions",
                             "Read provisioning options from {0}", new Object[]{f.getAbsolutePath()});
+                    oldProvisioningOptions = options;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            oldProvisioningOptions = options;
         }
         return oldProvisioningOptions;
     }
