@@ -138,7 +138,7 @@
         </dependency>-->
        <dependency>
             <groupId>javax.batch</groupId>
-            <artifactId>javax.batch-api</artifactId>
+            <artifactId>javax.batch-api-all</artifactId>
         </dependency>
         
         <!-- optional -->
