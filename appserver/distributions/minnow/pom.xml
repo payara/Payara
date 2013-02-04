@@ -92,6 +92,9 @@
                         <executions>
                             <execution>
                                 <id>create-ips-distribution</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>                                
                             </execution>
                         </executions>
                     </plugin>

@@ -147,6 +147,9 @@
                                     </fileset>
                                     <fileset>
                                         <dir>${stage.dir}</dir>
+                                        <excludes>**/bin/*</excludes>
+                                        <excludes>**/bin/*.bat</excludes>
+                                        <excludes>**/lib/nadmin*</excludes>                                        
                                     </fileset>
                                 </filesets>
                             </configuration>
@@ -186,34 +189,81 @@
                         <execution> 
                             <id>create-ips-distribution</id>
                             <phase>package</phase>
-                            <goals>
-                                <goal>run</goal>
-                            </goals>
+                            <configuration>
+                                <tasks>
+                                    <ant dir="." antfile="../distributions.xml" target="create-${project.artifactId}-distributions">
+                                        <property name="install.dir.name" value="${install.dir.name}"/>
+                                    </ant>
+                                </tasks>
+                            </configuration>           
                         </execution>
                     </executions>
-                    <configuration>
-                        <tasks>
-                            <ant dir="." antfile="../distributions.xml" target="create-${project.artifactId}-distributions"/>
-                        </tasks>
-                    </configuration>
                 </plugin>                
             </plugins>
         </pluginManagement>
     </build>
     <profiles>
         <profile>
-            <!-- make repo-setup happen before in the reactor -->
             <id>ips</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+                        <artifactId>maven-antrun-extended-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>repo-import</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <tasks>
+                                        <ant dir="." antfile="./repo-import.xml"/>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <inherited>false</inherited>
+                    </plugin>
+                </plugins>
+            </build>
             <dependencies>
                 <dependency>
-                    <groupId>org.glassfish.main</groupId>
-                    <artifactId>glassfishbuild-repo-setup</artifactId>
-                    <version>${project.version}</version>
-                    <type>pom</type>
-                    <scope>provided</scope>
-                    <optional>true</optional>
+                    <groupId>org.glassfish.mq</groupId>
+                    <artifactId>mq-distribution</artifactId>
+                    <version>${mq.version}</version>
+                    <classifier>repo</classifier>
+                    <type>zip</type>
                 </dependency>
-            </dependencies>
+                <dependency>
+                    <groupId>javadb</groupId>
+                    <artifactId>javadb-common</artifactId>
+                    <version>${javadb.version}</version>
+                    <classifier>ips</classifier>
+                    <type>zip</type>
+                </dependency>
+                <dependency>
+                    <groupId>javadb</groupId>
+                    <artifactId>javadb-core</artifactId>
+                    <version>${javadb.version}</version>
+                    <classifier>ips</classifier>
+                    <type>zip</type>
+                </dependency>
+                <dependency>
+                    <groupId>javadb</groupId>
+                    <artifactId>javadb-client</artifactId>
+                    <version>${javadb.version}</version>
+                    <classifier>ips</classifier>
+                    <type>zip</type>
+                </dependency>
+                <dependency>
+                    <groupId>org.glassfish.l10n</groupId>
+                    <artifactId>l10n-distribution</artifactId>
+                    <version>${l10n.version}</version>
+                    <type>zip</type>
+                </dependency>
+            </dependencies>            
         </profile>
     </profiles>  
 </project>

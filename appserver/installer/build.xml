@@ -54,8 +54,8 @@
 		<!-- Could have used ant-contrib's foreach :-) -->
 		<antcall target="do_processing">
 			<param name="bundle.name" value="GlassFishV3WebProfilePreview" />
-			<param name="sourcezip.name" value="../distributions/glassfish/target/web-ips-installer.zip" />
-			<param name="sourcezip.ml.name" value="../distributions/glassfish/target/web-ips-ml-installer.zip" />
+			<param name="sourcezip.name" value="../distributions/web/target/web-ips-installer.zip" />
+			<param name="sourcezip.ml.name" value="../distributions/web/target/web-ips-ml-installer.zip" />
 			<param name="selfextractexe.name" value="glassfish-web" />
 			<param name="selfextractexe.ml.name" value="glassfish-web-ml" />
 		</antcall>

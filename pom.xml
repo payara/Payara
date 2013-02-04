@@ -140,7 +140,6 @@
             <modules>
                 <module>nucleus</module>
                 <module>appserver</module>
-                <module>repo-import</module>
             </modules>
         </profile>
         <profile>

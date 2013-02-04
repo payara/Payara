@@ -41,259 +41,310 @@
 
 -->
 
-<project name="GlassFish Distributions (IPS) Creation" default="create-prelude-image" basedir=".">
-
-<property name="image.root" value="target/local_image"/>
-<property name="installer.image.dir" value="${image.root}/installer"/>
-<property name="glassfish.image.dir" value="${image.root}/glassfish"/>
-<property name="installer.image.dir.l10n" value="${image.root}/installer-l10n"/>
-<property name="glassfish.image.dir.l10n" value="${image.root}/glassfish-l10n"/>
-<property name="install.dir.name" value="glassfish3"/>
-<property name="repo.url" value="http://repine.us.oracle.com:40000"/>
-<!-- property name="repo.url" value="http://localhost:10000"/ -->
-<property name="repo.host" value="http://pkg.glassfish.org"/>
-<property name="title" value="GlassFish 3"/>
-<property name="description" value="GlassFish Server is a modular, lightweight, and extensible Java EE 6 application server built on OSGi. Key features include fast startup time, improved developer productivity, hybrid OSGi/Java EE applications, high availability clustering, centralized administration, and overall ease-of-use."/>
-<property name="image.cache" value="${image.dir}/.org.opensolaris,pkg/cfg_cache"/>
-<property name="dev.authority" value="dev.glassfish.org"/>
-<property name="contrib.authority" value="contrib.glassfish.org"/>
-<property name="stable.authority" value="stable.glassfish.org"/>
-
-<property name="repository.url" value="http://pkg.glassfish.org/v3"/>
-<property name="dev.repository.url" value="${repository.url}/dev/"/>
-<property name="contrib.repository.url" value="${repository.url}/contrib/"/>
-<property name="stable.repository.url" value="${repository.url}/stable/"/>
-
-<property name="sun.contrib.authority" value="contrib.glassfish.oracle.com"/>
-<property name="javaeesdk.release.authority" value="release.javaeesdk.oracle.com"/>
-<property name="javaeesdk.release.repository.url" value="http://pkg.oracle.com/javaeesdk/6/release/"/>
-<property name="sun.contrib.repository.url" value="http://pkg.oracle.com/glassfish/v3/contrib/"/>
-
-
-<target name="create-minnow-distributions"> 
-    <ant antfile="../minnow/minnow-distributions.xml"/>
-    <mkdir dir="${image.root}"/>
-    <mkdir dir="${installer.image.dir}"/>
-    <antcall target="create-distributions"> 
-         <param name="image.name" value="minnow"/>
-    </antcall>
-</target>
-
-<target name="create-web-distributions" depends="create-minnow-distributions"> 
-    <ant antfile="../web/web-distributions.xml"/>
-    <mkdir dir="${image.root}"/>
-    <mkdir dir="${installer.image.dir}"/>
-    <antcall target="create-distributions"> 
-         <param name="image.name" value="web"/>
-    </antcall>
-</target>
-
-<target name="create-glassfish-distributions" depends="create-web-distributions"> 
-    <ant antfile="../glassfish/glassfish-distributions.xml"/>
-    <mkdir dir="${image.root}"/>
-    <mkdir dir="${installer.image.dir}"/>
-    <antcall target="create-distributions"> 
-         <param name="image.name" value="glassfish"/>
-    </antcall>
-</target>
-
-<target name="create-distributions" description="Creating IPS Distributions">
-    <chmod file="${installer.image.dir}/${install.dir.name}/bin/*" perm="ugo+rx"/>
-    <chmod file="${installer.image.dir}/${install.dir.name}/glassfish/bin/*" perm="ugo+rx"/>
-    <chmod file="${installer.image.dir.l10n}/${install.dir.name}/bin/*" perm="ugo+rx"/>
-    <chmod file="${installer.image.dir.l10n}/${install.dir.name}/glassfish/bin/*" perm="ugo+rx"/>
-    <!-- Delete all contents under ips-metadata download directory --> 
-    <delete includeemptydirs="true">
-        <fileset dir="${installer.image.dir}/${install.dir.name}/.org.opensolaris,pkg/download" includes="**/*"/>
-        <fileset dir="${installer.image.dir}/${install.dir.name}/.org.opensolaris,pkg/pkg" includes="**/license.*"/>
-        <fileset dir="${installer.image.dir.l10n}/${install.dir.name}/.org.opensolaris,pkg/download" includes="**/*"/>
-        <fileset dir="${installer.image.dir.l10n}/${install.dir.name}/.org.opensolaris,pkg/pkg" includes="**/license.*"/>
-    </delete>
-    <antcall target="pack-compression">
-        <param name="image.directory" value="${installer.image.dir}"/>
-    </antcall>
-    <antcall target="pack-compression">
-        <param name="image.directory" value="${installer.image.dir.l10n}"/>
-    </antcall>
-    <!-- backup cfg_cache file, replace repo.url value, zip, restore -->
-    <copy file="${installer.image.dir}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache"
-	    tofile="${basedir}/cfg_cache.bak" />
-    <replace file="${installer.image.dir}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache">
-	    <replacefilter token="${repo.url}"
-		    value="${dev.repository.url}"/>
-    </replace>	
-    <exec dir="${installer.image.dir}/${install.dir.name}" executable="zip">
-        <arg line= "-r ../../../../target/${image.name}-ips-installer.zip ."/>
-    </exec>
-    <move file="${basedir}/cfg_cache.bak" 
-	  tofile="${installer.image.dir}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache"
-	  overwrite="true" />
-	  
-    <copy file="${installer.image.dir.l10n}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache"
-	    tofile="${basedir}/cfg_cache.bak" />
-    <replace file="${installer.image.dir.l10n}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache">
-	    <replacefilter token="${repo.url}"
-		    value="${dev.repository.url}"/>
-    </replace>	
-    <exec dir="${installer.image.dir.l10n}/${install.dir.name}" executable="zip">
-        <arg line= "-r ../../../../target/${image.name}-ips-ml-installer.zip ."/>
-    </exec>
-    <move file="${basedir}/cfg_cache.bak" 
-	  tofile="${installer.image.dir.l10n}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache"
-	  overwrite="true" />  
-
-    <chmod file="${glassfish.image.dir}/${install.dir.name}/bin/*" perm="ugo+rx"/>
-    <chmod file="${glassfish.image.dir}/${install.dir.name}/glassfish/bin/*" perm="ugo+rx"/>
-    <chmod file="${glassfish.image.dir.l10n}/${install.dir.name}/bin/*" perm="ugo+rx"/>
-    <chmod file="${glassfish.image.dir.l10n}/${install.dir.name}/glassfish/bin/*" perm="ugo+rx"/>
-    <!-- Delete all contents under ips-metadata download directory --> 
-    <delete includeemptydirs="true">
-        <fileset dir="${glassfish.image.dir}/${install.dir.name}/.org.opensolaris,pkg/download" includes="**/*"/>
-        <fileset dir="${glassfish.image.dir}/${install.dir.name}/.org.opensolaris,pkg/pkg" includes="**/license.*"/>
-        <fileset dir="${glassfish.image.dir.l10n}/${install.dir.name}/.org.opensolaris,pkg/download" includes="**/*"/>
-        <fileset dir="${glassfish.image.dir.l10n}/${install.dir.name}/.org.opensolaris,pkg/pkg" includes="**/license.*"/>
-    </delete>
-    <!-- backup cfg_cache file, replace repo.url value, zip, restore -->
-    <copy file="${glassfish.image.dir}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache"
-	    tofile="${basedir}/cfg_cache.bak" />
-    <replace file="${glassfish.image.dir}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache">
-	    <replacefilter token="${repo.url}"
-		    value="${dev.repository.url}"/>
-    </replace>	
-    <exec dir="${glassfish.image.dir}" executable="zip">
-        <arg line= "-r ../../../target/${image.name}-ips.zip ${install.dir.name}"/>
-    </exec>
-    <move file="${basedir}/cfg_cache.bak" 
-	  tofile="${glassfish.image.dir}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache"
-	  overwrite="true" />
-	  
-    <copy file="${glassfish.image.dir.l10n}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache"
-	    tofile="${basedir}/cfg_cache.bak" />
-    <replace file="${glassfish.image.dir.l10n}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache">
-	    <replacefilter token="${repo.url}"
-		    value="${dev.repository.url}"/>
-    </replace>	
-    <exec dir="${glassfish.image.dir.l10n}" executable="zip">
-        <arg line= "-r ../../../target/${image.name}-ips-ml.zip ${install.dir.name}"/>
-    </exec>
-    <move file="${basedir}/cfg_cache.bak" 
-	  tofile="${glassfish.image.dir.l10n}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache"
-	  overwrite="true" />
-    
-</target>
-
-<target name="create-local-image" depends="check-ips"
-    description="Create local IPS image using ${repo.url}">
-    <echo message="Creating local IPS image for ${repo.url} to ${image.dir}"/>
-    <mkdir dir="${image.dir}"/>
-    <exec executable="pkg" failonerror="true">
-        <arg line="image-create -U -a ${dev.authority}=${repo.url} ${image.dir}" />
-    </exec>
-    <exec dir="${image.dir}" executable="pkg" failonerror="true">
-        <arg line="refresh" />
-    </exec>
-
-    <!-- Set title and description properties in UC cfg_cache -->
-    <echo message="title: ${title}"/>
-    <echo message="description: ${description}"/>
-    <exec dir="${image.dir}" executable="pkg" failonerror="true">
-        <arg line="set-property title 'GlassFish 3'"/>
-    </exec>
-    <exec dir="${image.dir}" executable="pkg" failonerror="true">
-        <arg line="set-property image-tou-url 'http://glassfish-repo.java.net/terms.html'"/>
-    </exec>
-
-    <exec dir="${image.dir}" executable="pkg" failonerror="true">
-        <arg line="set-property description 'GlassFish Server is a modular, lightweight, and extensible Java EE 6 application server built on OSGi. Key features include fast startup time, improved developer productivity, hybrid OSGi/Java EE applications, high availability clustering, centralized administration, and overall ease-of-use.'"/>
-    </exec>
-   
-</target>
-
-<target name="install-package" depends="check-ips"
-    description="Install Package ${package.name} from ${repo.url}">
-    <echo message="Install Package ${package.name} from ${repo.url} to ${image.dir}"/>
-    <exec dir="${image.dir}" executable="pkg" failonerror="true">
-        <arg line="install ${package.name}" />
-    </exec>
-</target>
-
-<target name="check-ips">
-    <available file="pkg" property="ips.present"/>
-    <!-- fail message="Install IPS/UC2.0 Client. Unable to find pkg, pkgsend commands" unless="ips.present"/ -->
-</target>
-
-<target name="update-cfg-cache" depends="check-ips">
+<project name="GlassFish Distributions (IPS) Creation" basedir=".">
+    <property name="image.root" value="target/local_image"/>
+    <property name="installer.image.dir" value="${image.root}/installer"/>
+    <property name="glassfish.image.dir" value="${image.root}/glassfish"/>
+    <property name="installer.image.dir.l10n" value="${image.root}/installer-l10n"/>
+    <property name="glassfish.image.dir.l10n" value="${image.root}/glassfish-l10n"/>
+    <property name="repo.url" value="http://repine.us.oracle.com:40000"/>
+    <!-- property name="repo.url" value="http://localhost:10000"/ -->
+    <property name="repo.host" value="http://pkg.glassfish.org"/>
+    <property name="title" value="GlassFish 3"/>
+    <property name="description" value="GlassFish Server is a modular, lightweight, and extensible Java EE 6 application server built on OSGi. Key features include fast startup time, improved developer productivity, hybrid OSGi/Java EE applications, high availability clustering, centralized administration, and overall ease-of-use."/>
     <property name="image.cache" value="${image.dir}/.org.opensolaris,pkg/cfg_cache"/>
-    <echo message="Updating cfg_cache in local IPS image with ${repo.url}"/>
-    <echo message="image.dir: ${image.dir}"/>
-    <echo message="cfg_cache: ${image.cache}"/>
-    <available file="${image.dir}/.org.opensolaris,pkg/cfg_cache" property="cache.present"/>
-    <fail message="${image.dir}/.org.opensolaris,pkg/cfg_cache File NOT present, call create-local-image target first" unless="cache.present"/>
+    <property name="source.distribution.name.base" value="GlassFish Open Source Edition 4.0"/>
+    <property name="dev.authority" value="dev.glassfish.org"/>
+    <property name="contrib.authority" value="contrib.glassfish.org"/>
+    <property name="stable.authority" value="stable.glassfish.org"/>
 
-    <antcall target="create-authorities"> 
-         <param name="image.dir" value="${image.dir}"/>
-    </antcall> 
+    <property name="repository.url" value="http://pkg.glassfish.org/v3"/>
+    <property name="dev.repository.url" value="${repository.url}/dev/"/>
+    <property name="contrib.repository.url" value="${repository.url}/contrib/"/>
+    <property name="stable.repository.url" value="${repository.url}/stable/"/>
 
-</target>
+    <property name="sun.contrib.authority" value="contrib.glassfish.oracle.com"/>
+    <property name="javaeesdk.release.authority" value="release.javaeesdk.oracle.com"/>
+    <property name="javaeesdk.release.repository.url" value="http://pkg.oracle.com/javaeesdk/6/release/"/>
+    <property name="sun.contrib.repository.url" value="http://pkg.oracle.com/glassfish/v3/contrib/"/>
 
-<target name="create-authorities" depends="check-ips"
-	description="Update cfg_cache for authorities">
+    <target name="init">
+        <condition property="windows">
+            <os family="windows" />
+        </condition>
+        <condition property="unix">
+            <os family="unix" />
+        </condition>
+    </target>
+    
+    <target name="create-minnow-distributions" depends="create-minnow-images, create-distributions"/>
+    <target name="create-web-distributions" depends="create-web-images">
+        <install.legal.fragments image.dir="${glassfish.image.dir}" delete.includes="3RD-PARTY-LICENSE.txt"/>
+        <install.legal.fragments image.dir="${installer.image.dir}" delete.includes="3RD-PARTY-LICENSE.txt"/>
+        <install.legal.fragments image.dir="${glassfish.image.dir.l10n}" delete.includes="3RD-PARTY-LICENSE.txt"/>
+        <install.legal.fragments image.dir="${installer.image.dir.l10n}" delete.includes="3RD-PARTY-LICENSE.txt"/>
+        <antcall target="create-distributions"/>
+    </target>
+    <target name="create-glassfish-distributions" depends="create-glassfish-images">
+        <install.legal.fragments image.dir="${glassfish.image.dir}" delete.includes="3RD-PARTY-LICENSE-WEB-PROFILE.txt"/>
+        <install.legal.fragments image.dir="${installer.image.dir}" delete.includes="3RD-PARTY-LICENSE-WEB-PROFILE.txt"/>
+        <install.legal.fragments image.dir="${glassfish.image.dir.l10n}" delete.includes="3RD-PARTY-LICENSE-WEB-PROFILE.txt"/>
+        <install.legal.fragments image.dir="${installer.image.dir.l10n}" delete.includes="3RD-PARTY-LICENSE-WEB-PROFILE.txt"/>
+        <antcall target="create-distributions"/>
+    </target>
+    
+    <target name="create-minnow-images">
+        <create.local.image image.dir="${glassfish.image.dir}"/>
+        <create.images type="minnow" name="Minnow"/>
+    </target>
+    <target name="create-web-images">
+        <copy.image 
+            source="../minnow/${glassfish.image.dir}"
+            target="${glassfish.image.dir}" />
+        <create.images type="web" name="Web"/>
+        <antcall target="create-domain" />
+        <antcall target="create-domain-ml" />
+    </target>
+    <target name="create-glassfish-images">
+        <copy.image 
+            source="../web/${glassfish.image.dir}"
+            target="${glassfish.image.dir}" />
+        <create.images type="glassfish"/>  
+        <antcall target="create-domain" />
+        <antcall target="create-domain-ml" />
+    </target>
+         
+    <macrodef name="copy.image">
+        <attribute name="target" />
+        <attribute name="source" />
+        <sequential>
+            <copy todir="@{target}">
+              <fileset dir="@{source}"/>
+            </copy>
+            <chmod file="@{target}/${install.dir.name}/bin/*" perm="ugo+rx"/>
+            <chmod file="@{target}/${install.dir.name}/glassfish/bin/*" perm="ugo+rx"/>
+            <delete dir="${basedir}/@{target}/${install.dir.name}/glassfish/domains/domain1" />
+        </sequential>
+    </macrodef>
+    <macrodef name="create.images">
+        <attribute name="type" />
+        <attribute name="name" default="" />
+        <sequential>
+            <property name="image.name" value="@{type}"/>
+            <property name="source.distribution.name" value="${source.distribution.name.base} @{name}"/>        
+            <!-- create basic image -->    
+            <ant antfile="../@{type}/@{type}-distributions.xml" target="install-packages">
+                <property name="image.dir" value="${glassfish.image.dir}/${install.dir.name}"/>
+            </ant>
+            <install.servicetag.registry image.dir="${glassfish.image.dir}/${install.dir.name}" />
 
-    <exec dir="${image.dir}" executable="pkg" failonerror="true">
-        <arg line="set-authority -P -O ${repo.url} '${dev.authority}'"/>
-    </exec>
-    <exec dir="${image.dir}" executable="pkg" failonerror="true">
-        <arg line="set-authority -O ${contrib.repository.url} '${contrib.authority}'"/>
-    </exec>
-    <!-- disabling sun contrib authority setup - not used until close to fcs
-    <exec dir="${image.dir}" executable="pkg" failonerror="true">
-	    <arg line="set-authority -O ${repo.url} '${sun.contrib.authority}'"/>
-    </exec>
-    -->
-</target>
+            <!-- create installer image -->
+            <copy.image source="${glassfish.image.dir}" target="${installer.image.dir}" />
+            <!--<pack modules.dir="${installer.image.dir}/${install.dir.name}/glassfish/modules" deleteIncludes="*.jar"/>-->
+                        
+            <!-- create glassfish.l10n image -->
+            <copy.image source="${glassfish.image.dir}" target="${glassfish.image.dir.l10n}/" />
+            <ant antfile="../@{type}/@{type}-distributions.xml" target="install-l10n-packages">
+                <property name="image.dir" value="${glassfish.image.dir.l10n}/${install.dir.name}"/>
+            </ant>
+            <!-- create installer l10n -->
+            <copy.image source="${glassfish.image.dir.l10n}" target="${installer.image.dir.l10n}" />
+            <!--<pack modules.dir="${installer.image.dir.l10n}/${install.dir.name}/glassfish/modules" deleteIncludes="*.jar"/>-->
+        </sequential>
+    </macrodef>
+    <macrodef name="create.local.image">
+        <attribute name="image.dir" default="${image.dir}"/>
+        <attribute name="repo.url" default="${repo.url}"/>
+        <attribute name="authority" default="${dev.authority}"/>
+        <attribute name="title" default="${title}"/>
+        <attribute name="description" default="${description}"/>
+        <sequential>
+            <mkdir dir="@{image.dir}/${install.dir.name}"/>
+            <pkg dir="@{image.dir}/${install.dir.name}" cmd="image-create -U -a @{authority}=@{repo.url} ."/>
+            <pkg dir="@{image.dir}/${install.dir.name}" cmd="refresh" />
+            <pkg dir="@{image.dir}/${install.dir.name}" cmd="set-property title '@{title}'" />
+            <pkg dir="@{image.dir}/${install.dir.name}" cmd="set-property image-tou-url 'http://glassfish-repo.java.net/terms.html'"/>
+            <pkg dir="@{image.dir}/${install.dir.name}" cmd="set-property description '@{description}'" />
+        </sequential>
+    </macrodef>
+    <macrodef name="pkg">
+        <attribute name="cmd" />
+        <attribute name="uc.toolkit.dir" default="${uc.toolkit.dir}" />
+        <attribute name="dir" default="${image.dir}"/>
+        <sequential>
+            <echo message="[ pkg @{cmd} ]"/>
+            <exec dir="@{dir}" executable="@{uc.toolkit.dir}/bin/pkg" failonerror="true">
+                <arg line="@{cmd}" />
+            </exec>
+        </sequential>
+    </macrodef>
+    <macrodef name="install.package">
+        <attribute name="image.dir" default="${image.dir}"/>
+        <attribute name="name"/>
+        <attribute name="repo.url" default="${repo.url}"/>
+        <sequential>
+            <echo message="Install Package @{name}"/>
+            <pkg dir="@{image.dir}" cmd="install @{name}"/>
+            <echo message=""/>
+        </sequential>
+    </macrodef>
+    <macrodef name="pack">
+        <attribute name="modules.dir" />
+        <attribute name="includes" default="**/*.jar"/>
+        <attribute name="excludes" default="**/javahelp.jar,**/org.eclipse.persistence.*.jar"/>
+        <attribute name="mapperFrom" default="*.jar"/>
+        <attribute name="mapperTo" default="*.pack.gz"/>
+        <attribute name="deleteIncludes" default="**/*.jar"/>
+        <attribute name="deleteExcludes" default="@{excludes}"/>
+        <sequential>
+            <echo message=""/>
+            <echo message=" [pack200] dir={@{modules.dir}} - includes={@{includes}} - excludes={@{excludes}}"/>
+            <apply executable="pack200" dest="@{modules.dir}" parallel="false">
+                <targetfile/>
+                <srcfile/>
+                <fileset dir="@{modules.dir}" includes="@{includes}" excludes="@{excludes}" />
+                <mapper type="glob" from="@{mapperFrom}" to="@{mapperTo}"/>
+            </apply>
+            <!-- remove *.pack.gz files -->
+            <delete>
+                <fileset dir="@{modules.dir}" includes="@{deleteIncludes}" excludes="@{deleteExcludes}" />
+            </delete>
+        </sequential>
+    </macrodef>
+    <macrodef name="create.distribution">
+        <attribute name="image.dir" />
+        <attribute name="fname" />
+        <attribute name="from" default="${repo.url}" />
+        <attribute name="to" default="${dev.repository.url}" />
+        <attribute name="image.name" default="${image.name}" />
+        <attribute name="backup" default="${basedir}/cfg_cache.bak"/>
+        <attribute name="cfgcache" default="@{image.dir}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache"/>
+        <attribute name="deleteIncludes" />
+        <sequential>
+            <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.sh" tofile="@{image.dir}/${install.dir.name}/bin/updatetool"/>
+            <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.bat" tofile="@{image.dir}/${install.dir.name}/bin/updatetool.bat"/>
+            <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.sh" tofile="@{image.dir}/${install.dir.name}/bin/pkg"/>
+            <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.bat" tofile="@{image.dir}/${install.dir.name}/bin/pkg.bat"/>    
+                       
+            <chmod file="@{image.dir}/${install.dir.name}/bin/*" perm="ugo+rx"/>
+            <chmod file="@{image.dir}/${install.dir.name}/glassfish/bin/*" perm="ugo+rx"/>
+            <chmod file="@{image.dir}/${install.dir.name}/glassfish/lib/nadmin*" perm="ugo+rx"/>
+            
+            <!-- Delete all contents under ips-metadata download directory --> 
+            <delete includeemptydirs="true">
+                <fileset dir="@{image.dir}/${install.dir.name}/.org.opensolaris,pkg/download" includes="**/*"/>
+                <fileset dir="@{image.dir}/${install.dir.name}/.org.opensolaris,pkg/pkg" includes="**/license.*"/>
+            </delete>
+            
+            <!-- backup cfg_cache file, replace repo.url value, zip, restore -->
+            <copy file="@{cfgcache}" tofile="@{backup}" />
+            <replace file="@{cfgcache}">
+                <replacefilter token="@{from}" value="@{to}"/>
+            </replace>
+            <zip destfile="${basedir}/target/@{fname}">
+                <zipfileset dir="@{image.dir}" filemode="755" includes="**/bin/*, **/lib/nadmin*"/>
+                <zipfileset dir="@{image.dir}" excludes="**/bin/*, **/lib/nadmin*"/>
+            </zip>
+            <move file="@{backup}"  tofile="@{cfgcache}"  overwrite="true" />
+        </sequential>
+    </macrodef>
+    <macrodef name="install.legal.fragments">
+        <attribute name="image.dir" />
+        <attribute name="delete.includes" />
+        <sequential>
+            <resolveArtifact artifactId="legal-fragment" groupId="org.glassfish.main.packager" property="legal-fragment.zip"/>
+            <unzip src="${legal-fragment.zip}" dest="@{image.dir}">
+                <patternset>
+                    <exclude name="META-INF/**"/>
+                </patternset>
+            </unzip>
+            <!-- remove files if needed -->
+            <delete quiet="false">
+                <fileset dir="@{image.dir}/${install.dir.name}/glassfish/legal/" includes="@{delete.includes}"/>
+            </delete>                
+        </sequential>
+    </macrodef>
+    <macrodef name="install.servicetag.registry">
+        <attribute name="image.dir" default="${image.dir}"/>
+        <attribute name="source.distribution.name" default="${source.distribution.name}"/>
+        <sequential>
+            <resolveArtifact artifactId="servicetag-registry" groupId="org.glassfish.main.registration" property="servicetag-registry.zip"/>
+            <unzip src="${servicetag-registry.zip}" dest="@{image.dir}">
+                <patternset>
+                    <exclude name="META-INF/**"/>
+                </patternset>
+            </unzip>
+            <replace file="@{image.dir}/glassfish/lib/registration/servicetag-registry.xml" 
+                 token="%%%SOURCE%%%" value="@{source.distribution.name}"/> 
+        </sequential>
+    </macrodef>    
+    
+    <target name="create-distributions">
+        <create.distribution 
+            image.dir="${installer.image.dir.l10n}"
+            fname="${image.name}-ips-installer.zip"
+            deleteIncludes="*.jar" />
+        <create.distribution 
+            image.dir="${installer.image.dir}"
+            fname="${image.name}-ips-ml-installer.zip" 
+            deleteIncludes="*.jar" />
+        <create.distribution 
+            image.dir="${glassfish.image.dir}"
+            fname="${image.name}-ips.zip"
+            deleteIncludes="*.pack.gz" />
+        <attachArtifact file="${basedir}/target/${image.name}-ips.zip" classifier="ips"/>
+        <create.distribution 
+            image.dir="${glassfish.image.dir.l10n}"
+            fname="${image.name}-ips-ml.zip"
+            deleteIncludes="*.pack.gz" />
+    </target>    
 
-<!-- Create Domain -->
-<target name="create-domain"
-    description="Create default domain- domain1">
-    <echo message="Directory to run command from: ${exec.dir}"/>
-    <echo message="Command to run: ${exec.executable}"/>
-	<exec dir="${exec.dir}" executable="${exec.executable}" failonerror="true" >
-        <arg line="--user admin create-domain --template=${exec.dir}/../common/templates/gf/appserver-domain.jar --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1"/>
-    </exec>
-</target>
+    <target name="update-cfg-cache">
+        <property name="image.cache" value="${image.dir}/.org.opensolaris,pkg/cfg_cache"/>
+        <echo message="Updating cfg_cache in local IPS image with ${repo.url}"/>
+        <echo message="image.dir: ${image.dir}"/>
+        <echo message="cfg_cache: ${image.cache}"/>
+        <available file="${image.dir}/.org.opensolaris,pkg/cfg_cache" property="cache.present"/>
+        <fail message="${image.dir}/.org.opensolaris,pkg/cfg_cache File NOT present, call create-local-image target first" unless="cache.present"/>
 
-<!-- get artifacts required to create default domain -->
-<target name="fetch-domain-creation-artifacts">
-    <resolveArtifact artifactId="cli-optional" groupId="org.glassfish.main.admin" property="cli-optional.jar"/>
-    <resolveArtifact artifactId="server-mgmt" groupId="org.glassfish.main.admin" property="server-mgmt.jar"/>
-
-    <echo message="cli-optional jar: ${cli-optional.jar}"/>
-    <echo message="server-mgmt jar: ${server-mgmt.jar}"/>
-
-    <copy file="${cli-optional.jar}" tofile="${modules.dir}/cli-optional.jar"/>
-    <copy file="${server-mgmt.jar}" tofile="${modules.dir}/server-mgmt.jar"/>
-</target>
-
-<!-- delete artifacts required to create default domain; these are not bundled as part of nucleus -->
-<target name="delete-domain-creation-artifacts">
-    <delete>
-        <fileset dir="${modules.dir}">
-            <include name="cli-optional.jar"/>
-            <include name="server-mgmt.jar"/>
-        </fileset>
-    </delete>
-</target>
-<!-- pack200 compression -->
-<target name="pack-compression">
-    <apply executable="pack200" dest="${image.directory}/${install.dir.name}/glassfish/modules" parallel="false">
-        <targetfile/>
-        <srcfile/>
-	<fileset dir="${image.directory}/${install.dir.name}/glassfish/modules" includes="**/*.jar" excludes="**/javahelp.jar,**/org.eclipse.persistence.*.jar" />
-        <mapper type="glob" from="*.jar" to="*.pack.gz"/>
-    </apply>
-    <!-- remove *.pack.gz files -->
-    <delete>
-	    <fileset dir="${image.directory}/${install.dir.name}/glassfish/modules" includes="**/*.jar" excludes="**/javahelp.jar,**/org.eclipse.persistence.*.jar" />
-    </delete>
-</target>
+        <antcall target="create-authorities"> 
+            <param name="image.dir" value="${image.dir}"/>
+        </antcall> 
+    </target>
+    
+    <target name="create-authorities">
+        <pkg dir="@{image.dir}" cmd="set-authority -P -O ${repo.url} '${dev.authority}'"/>
+        <pkg dir="@{image.dir}" cmd="set-authority -O ${contrib.repository.url} '${contrib.authority}'" />
+        <!-- disabling sun contrib authority setup - not used until close to fcs
+        <pkg dir="@{image.dir}" cmd="set-authority -O ${repo.url} '${sun.contrib.authority}'"/>
+        -->
+    </target>
+    
+    <target name="create-domain" depends="init-glassfish-home, create-domain-on-windows, create-domain-on-unix"/>
+    <target name="create-domain-ml" depends="init-glassfish-home-ml, create-domain-on-windows, create-domain-on-unix"/>
+    <target name="init-glassfish-home" depends="init">
+        <property name="glassfish.home" value="${basedir}/${glassfish.image.dir}/${install.dir.name}/glassfish" />
+    </target>
+    <target name="init-glassfish-home-ml" depends="init">
+        <property name="glassfish.home" value="${basedir}/${glassfish.image.dir.l10n}/${install.dir.name}/glassfish" />
+    </target>    
+    <target name="create-domain-on-windows" depends="init" if="windows">
+        <antcall target="_create-domain">
+            <param name="exec.dir" value="${glassfish.home}/bin"/>
+            <param name="exec.executable" value="${glassfish.home}/bin/asadmin.bat"/>
+        </antcall>
+    </target>
+    <target name="create-domain-on-unix" depends="init" if="unix">
+        <antcall target="_create-domain">
+            <param name="exec.dir" value="${glassfish.home}/bin"/>
+            <param name="exec.executable" value="${glassfish.home}/bin/asadmin"/>
+        </antcall>
+    </target>
+    <target name="_create-domain">
+        <echo message="Directory to run command from: ${exec.dir}"/>
+        <echo message="Command to run: ${exec.executable}"/>
+        <exec dir="${exec.dir}" executable="${exec.executable}" failonerror="true" >
+            <arg line="--user admin create-domain --template=${glassfish.home}/common/templates/gf/appserver-domain.jar --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1"/>
+        </exec>
+    </target>
 </project>

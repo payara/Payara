@@ -41,193 +41,32 @@
 
 -->
 
-<project name="Web Distribution (ips) Creation" default="create-image" basedir=".">
-<property name="source.distribution.name" value="GlassFish Open Source Edition 4.0 Web Profile"/>
-<import file="../distributions.xml"/>
-<target name="init">
-        <condition property="windows">
-            <os family="windows" />
-        </condition>
-        <condition property="unix">
-            <os family="unix" />
-        </condition>
+<project name="Web IPS distribution" default="create-web-distributions" basedir=".">
+    <import file="../distributions.xml" />
+    
+    <target name="install-packages">
+        <install.package name="glassfish-registration"/>
+        <install.package name="glassfish-jpa"/>
+        <install.package name="glassfish-jts"/>
+        <install.package name="glassfish-ejb-lite"/>
+        <install.package name="glassfish-jsf"/>
+        <install.package name="glassfish-osgi-http"/>
+        <install.package name="glassfish-jmx"/>
+        <install.package name="glassfish-jcdi"/>
+        <install.package name="glassfish-gui"/>
+        <install.package name="javadb-common"/>
+        <install.package name="javadb-core"/>
+        <install.package name="javadb-client"/>
+        <install.package name="glassfish-web-incorporation"/>
+        <install.package name="glassfish-web-profile"/>
     </target>
 
-<target name="create-image" depends="create-installer-image, create-glassfish-image">
-    <mkdir dir="${installer.image.dir}"/>
-    <mkdir dir="${installer.image.dir}/${install.dir.name}"/>
-    <mkdir dir="${glassfish.image.dir}"/>
-</target>
-
-<target name="create-installer-image" description="Creating IPS Image without Domains for Installer">
-    <antcall target="create-common-image">
-        <param name="image.dir" value="${installer.image.dir}/${install.dir.name}"/>
-    </antcall>
-    <antcall target="create-common-image">
-        <param name="image.dir" value="${installer.image.dir.l10n}/${install.dir.name}"/>
-    </antcall>
-    <antcall target="install-l10n-packages">
-        <param name="image.dir" value="${installer.image.dir.l10n}/${install.dir.name}"/>
-    </antcall>
-</target>
-
-<target name="create-glassfish-image" description="Creating IPS Image with Domains">
-    <antcall target="create-common-image">
-        <param name="image.dir" value="${glassfish.image.dir}/${install.dir.name}"/>
-    </antcall>
-    <antcall target="create-common-image">
-        <param name="image.dir" value="${glassfish.image.dir.l10n}/${install.dir.name}"/>
-    </antcall>
-    <antcall target="install-l10n-packages">
-        <param name="image.dir" value="${glassfish.image.dir.l10n}/${install.dir.name}"/>
-    </antcall>
-
-    <!-- create domains -->
-    <antcall target="create-domain"/>
-    <antcall target="create-domain-ml"/>
-
-</target>
-
-<target name="create-common-image" description="Creating IPS Image">
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-registration"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-jpa"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-jts"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-ejb-lite"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-jsf"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-osgi-http"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-osgi"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-jmx"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>    
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-jcdi"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-gui"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="javadb-common"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="javadb-core"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="javadb-client"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-web-incorporation"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-web-profile"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-
-    <!-- stage servicetag registry file and set source value -->
-
-    <resolveArtifact artifactId="servicetag-registry" groupId="org.glassfish.main.registration" property="servicetag-registry.zip"/>
-
-
-    <unzip src="${servicetag-registry.zip}"
-        dest="${image.dir}">
-        <patternset>
-                <exclude name="META-INF/**"/>
-        </patternset>
-    </unzip>
-
-    <replace file="${image.dir}/glassfish/lib/registration/servicetag-registry.xml" 
-            token="%%%SOURCE%%%" value="${source.distribution.name}"/>
-
-    <!-- stage appropriate legal content for this distribution -
-        it is OK to inherit nucleus content at this point     -->
-
-</target>
-
-<target name="install-l10n-packages" description="Installing l10n packages">
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-jca-l10n"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-jts-l10n"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-ejb-lite-l10n"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-web-l10n"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-jdbc-l10n"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-gui-l10n"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-     
-</target>
-
-<target name="create-domain" depends="create-domain-on-windows, create-domain-on-unix"/>
-
-<target name="create-domain-ml" depends="create-domain-on-windows-ml, create-domain-on-unix-ml"/>
-
-<target name="create-domain-on-windows" depends="init" if="windows">
-    <ant antfile="../distributions.xml" target="create-domain">
-        <property name="exec.dir" value="${basedir}/target/local_image/glassfish/${install.dir.name}/glassfish/bin"/>
-        <property name="exec.executable" value="${basedir}/target/local_image/glassfish/${install.dir.name}/glassfish/bin/asadmin.bat"/>
-    </ant>
-</target>
-
-<target name="create-domain-on-windows-ml" depends="init" if="windows">
-    <ant antfile="../distributions.xml" target="create-domain">
-        <property name="exec.dir" value="${basedir}/target/local_image/glassfish-l10n/${install.dir.name}/glassfish/bin"/>
-        <property name="exec.executable" value="${basedir}/target/local_image/glassfish-l10n/${install.dir.name}/glassfish/bin/asadmin.bat"/>
-    </ant>
-</target>
-
-<target name="create-domain-on-unix" depends="init" if="unix">
-    <ant antfile="../distributions.xml" target="create-domain">
-        <property name="exec.dir" value="${basedir}/target/local_image/glassfish/${install.dir.name}/glassfish/bin"/>
-        <property name="exec.executable" value="${basedir}/target/local_image/glassfish/${install.dir.name}/glassfish/bin/asadmin"/>
-    </ant>
-</target>
-
-<target name="create-domain-on-unix-ml" depends="init" if="unix">
-    <ant antfile="../distributions.xml" target="create-domain">
-        <property name="exec.dir" value="${basedir}/target/local_image/glassfish-l10n/${install.dir.name}/glassfish/bin"/>
-        <property name="exec.executable" value="${basedir}/target/local_image/glassfish-l10n/${install.dir.name}/glassfish/bin/asadmin"/>
-    </ant>
-</target>
-    
+    <target name="install-l10n-packages">
+        <install.package name="glassfish-jca-l10n"/>
+        <install.package name="glassfish-jts-l10n"/>
+        <install.package name="glassfish-ejb-lite-l10n"/>
+        <install.package name="glassfish-web-l10n"/>
+        <install.package name="glassfish-jdbc-l10n"/>
+        <install.package name="glassfish-gui-l10n"/>
+    </target>
 </project>
