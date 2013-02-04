@@ -87,8 +87,6 @@ import org.jvnet.hk2.config.ConfigModel;
  */
 public class Util {
     private static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS");
-
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Util.class);
     private static Client client;
 
@@ -96,7 +94,8 @@ public class Util {
     }
 
     public static void logTimingMessage(String msg) {
-        RestLogging.restLogger.log(Level.INFO, RestLogging.TIMESTAMP_MESSAGE, new Object[]{DATE_FORMAT.format(new Date()), msg});
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
+        RestLogging.restLogger.log(Level.INFO, RestLogging.TIMESTAMP_MESSAGE, new Object[]{sdf.format(new Date()), msg});
     }
 
     /**
