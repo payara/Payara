@@ -76,8 +76,7 @@ public class BatchRuntimeHelper
         }
     }
     public int getVersion() {
-        return batchRuntimeConfiguration != null
-                ? batchRuntimeConfiguration.getVersion() : 0;
+        return 0;
     }
 
     public int getMaxThreadPoolSize() {

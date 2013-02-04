@@ -41,7 +41,7 @@ package org.glassfish.batch;
 
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.VersionedConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 
@@ -53,7 +53,7 @@ import javax.validation.constraints.Min;
  */
 @Configured
 public interface BatchRuntime
-    extends VersionedConfigBeanProxy, ConfigExtension {
+    extends ConfigBeanProxy, ConfigExtension {
 
     @Element
     JobExecutorService getJobExecutorService();
