@@ -40,6 +40,7 @@
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -102,6 +103,6 @@ public class StopServer {
         File pidFile = new File(env.getConfigDirPath(), "pid");
 
         if (pidFile.isFile())
-            pidFile.delete();
+            FileUtils.deleteFileNowOrLater(pidFile);
     }
 }
