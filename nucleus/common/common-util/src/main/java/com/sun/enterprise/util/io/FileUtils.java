@@ -86,9 +86,9 @@ public class FileUtils {
 
     /**
      * Wrapper for File.delete
-     * This version will return true if the directory does not exist when the method returns.
-     * Unlike File.delete which returns false if the directory does not exist.
-     * @param f The file pointing to the directory to be deleted
+     * This version will return true if the file does not exist when the method returns.
+     * Unlike File.delete which returns false if the file does not exist.
+     * @param f The file to be deleted
      * @return
      */
     public static boolean deleteFileMaybe(File f) {
