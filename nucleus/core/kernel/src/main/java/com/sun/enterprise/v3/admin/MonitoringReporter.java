@@ -784,9 +784,8 @@ public class MonitoringReporter extends V2DottedNameSupport {
         else {
             statsMap = ((StatisticImpl) value).getStaticAsMap();
         }
-        for (String attrName : statsMap.keySet()) {
-            Object attrValue = statsMap.get(attrName);
-            map.put(name + "-" + attrName, attrValue);
+        for (Map.Entry<String,Object> entry : statsMap.entrySet()) {
+            map.put(name + "-" + entry.getKey(), entry.getValue());
         }
     }
 
@@ -850,17 +849,17 @@ public class MonitoringReporter extends V2DottedNameSupport {
 
     private String getNames(List<Server> list) {
         boolean first = true;
-        String ret = "";
+        StringBuilder sb = new StringBuilder();
 
         for (Server server : list) {
             if (first)
                 first = false;
             else
-                ret += ", ";
+                sb.append(", ");
 
-            ret += server.getName();
+            sb.append(server.getName());
         }
-        return ret;
+        return sb.toString();
     }
 
     private static String handleEscapes(String s) {
