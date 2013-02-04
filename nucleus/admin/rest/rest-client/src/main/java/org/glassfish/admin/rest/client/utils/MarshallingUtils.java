@@ -50,7 +50,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -108,7 +107,7 @@ public class MarshallingUtils {
                 }
             }
         } catch (Exception ex) {
-            Logger.getLogger(MarshallingUtils.class.getName()).log(Level.SEVERE, null, ex);
+            RestClientLogging.logger.log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
         } finally {
             try {
@@ -116,7 +115,7 @@ public class MarshallingUtils {
                     input.close();
                 }
             } catch (IOException ex) {
-                Logger.getLogger(MarshallingUtils.class.getName()).log(Level.SEVERE, null, ex);
+                RestClientLogging.logger.log(Level.SEVERE, null, ex);
             }
         }
         return list;
@@ -150,7 +149,7 @@ public class MarshallingUtils {
             writer.close();
             return sw.toString();
         } catch (Exception ex) {
-            Logger.getLogger(MarshallingUtils.class.getName()).log(Level.SEVERE, null, ex);
+            RestClientLogging.logger.log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
         }
     }
@@ -201,7 +200,7 @@ public class MarshallingUtils {
                     }
                 }
             } catch (Exception ex) {
-                Logger.getLogger(MarshallingUtils.class.getName()).log(Level.SEVERE, null, ex);
+                RestClientLogging.logger.log(Level.SEVERE, null, ex);
                 throw new RuntimeException(ex);
             } finally {
                 try {
@@ -209,7 +208,7 @@ public class MarshallingUtils {
                         input.close();
                     }
                 } catch (IOException ex) {
-                    Logger.getLogger(MarshallingUtils.class.getName()).log(Level.SEVERE, null, ex);
+                    RestClientLogging.logger.log(Level.SEVERE, null, ex);
                 }
             }
         } else {
