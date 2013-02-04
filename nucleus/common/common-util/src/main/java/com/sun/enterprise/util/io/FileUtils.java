@@ -497,6 +497,16 @@ public class FileUtils {
     }
 
     /**
+     * Delete a file.  If impossible to delete then try to delete it when the JVM exits.
+     * E.g. when Windows is using a jar in the current JVM -- you can not delete the jar until
+     * the JVM dies.
+     * @param f file to delete
+     */
+    public static void deleteFileNowOrLater(File f) {
+        if(!deleteFile(f))
+            f.deleteOnExit();
+    }
+    /**
      * Delete a file.  If on Windows and the delete fails, run the gc and retry the deletion.
      *
      * @param f file to delete
