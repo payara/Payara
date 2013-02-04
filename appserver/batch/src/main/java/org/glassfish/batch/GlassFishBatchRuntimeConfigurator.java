@@ -65,13 +65,13 @@ public class GlassFishBatchRuntimeConfigurator {
 
     private boolean threadPoolInitialized = false;
 
-
-    private static final String DEFAULT_DATA_SOURCE_NAME = "jdbc/__TimerPool";
-
     private static final String CREATE_TABLE_DDL_NAME = "/batch_";
 
     @Inject
     private ServerContext serverContext;     //getInstallRoot()
+
+    @Inject
+    private BatchRuntimeHelper helper;
 
     public boolean isInitialized() {
         return dbInitialized && threadPoolInitialized;
@@ -79,7 +79,7 @@ public class GlassFishBatchRuntimeConfigurator {
 
     public void initializeBatchRuntime() {
         if (!dbInitialized)
-            setDataSourceName(DEFAULT_DATA_SOURCE_NAME);
+            setDataSourceName(helper.getDataSourceName());
 
         if (!threadPoolInitialized)
             setThreadPoolConfiguration();
@@ -114,10 +114,10 @@ public class GlassFishBatchRuntimeConfigurator {
             ServicesManager servicesManager = ServicesManager.getInstance();
             IBatchConfig batchConfig = servicesManager.getBatchRuntimeConfiguration();
             GlassfishThreadPoolConfigurationBean threadPoolBean = new GlassfishThreadPoolConfigurationBean();
-            threadPoolBean.setIdleThreadTimeout(600);
-            threadPoolBean.setMaxQueueSize(4096);
-            threadPoolBean.setMaxThreadPoolSize(16);
-            threadPoolBean.setMinThreadPoolSize(2);
+            threadPoolBean.setIdleThreadTimeout(helper.getMaxIdleThreadTimeout());
+            threadPoolBean.setMaxQueueSize(helper.getMaxQueueSize());
+            threadPoolBean.setMaxThreadPoolSize(helper.getMaxThreadPoolSize());
+            threadPoolBean.setMinThreadPoolSize(helper.getMinThreadPoolSize());
             batchConfig.setGlassfishThreadPoolConfigurationBean(threadPoolBean);
             threadPoolInitialized = true;
         } catch (Throwable th) {
