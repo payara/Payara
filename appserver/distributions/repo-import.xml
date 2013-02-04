@@ -87,7 +87,7 @@
             <unzip src="${@{artifactId}}" dest="target/repo-source"/>
             <!-- adjusting catalog permissions -->
             <chmod file="target/repo-source/catalog/attrs" perm="644"/>
-            <chmod file="target/repo-source/catalog" perm="644"/>
+            <chmod file="target/repo-source/catalog/catalog" perm="644"/>
             <packages/>
             <echo message="" />
         </sequential>
