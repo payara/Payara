@@ -143,15 +143,11 @@ public class LogRecord {
         this.recordNumber = recordNumber;
     }
 
- /*   private String quoted(String s) {
-        return "\"" + s + "\"";
-    }*/
-
     public String toJSON() {
         JSONObject obj = new JSONObject();
         try {
             obj.put("recordNumber", recordNumber);
-            obj.put("loggedDateTimeInMS", loggedDateTime.getTime());
+            obj.put("loggedDateTimeInMS", (loggedDateTime != null) ? loggedDateTime.getTime() : null);
             obj.put("loggedLevel", loggedLevel);
             obj.put("productName", productName);
             obj.put("loggerName", loggerName);
@@ -174,7 +170,7 @@ public class LogRecord {
 
             Element result = d.createElement("record");
             result.setAttribute("recordNumber", "" + recordNumber);
-            result.setAttribute("loggedDateTimeInMS", "" + loggedDateTime.getTime());
+            result.setAttribute("loggedDateTimeInMS", (loggedDateTime != null) ? ("" + loggedDateTime.getTime()) : "");
             result.setAttribute("loggedLevel", loggedLevel);
             result.setAttribute("productName", productName);
             result.setAttribute("loggerName", loggerName);

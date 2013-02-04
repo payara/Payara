@@ -39,6 +39,7 @@
  */
 package org.glassfish.admin.rest.composite;
 
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -52,10 +53,10 @@ public class RestModelImpl {
     private Set<String> setFields = new TreeSet<String>();
 
     public boolean isSet(String fieldName) {
-        return setFields.contains(fieldName.toLowerCase());
+        return setFields.contains(fieldName.toLowerCase(Locale.US));
     }
 
     public void fieldSet(String fieldName) {
-        setFields.add(fieldName.toLowerCase());
+        setFields.add(fieldName.toLowerCase(Locale.US));
     }
 }

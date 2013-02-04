@@ -91,7 +91,7 @@ public class RestModelSchemaResource extends CompositeResource {
                 RestLogging.restLogger.log(Level.WARNING, null, ex);
             }
         }
-        JAXBContext jc = JAXBContext.newInstance(classes.toArray(new Class<?>[]{}));
+        JAXBContext jc = JAXBContext.newInstance(classes.toArray(new Class<?>[classes.size()]));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         jc.generateSchema(new MySchemaOutputResolver(baos));
         return new String(baos.toByteArray());
@@ -114,7 +114,7 @@ public class RestModelSchemaResource extends CompositeResource {
         } catch (ClassNotFoundException ex) {
             RestLogging.restLogger.log(Level.WARNING, null, ex);
         }
-        JAXBContext jc = JAXBContext.newInstance(classes.toArray(new Class<?>[]{}));
+        JAXBContext jc = JAXBContext.newInstance(classes.toArray(new Class<?>[classes.size()]));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         jc.generateSchema(new MySchemaOutputResolver(baos));
         return new String(baos.toByteArray());

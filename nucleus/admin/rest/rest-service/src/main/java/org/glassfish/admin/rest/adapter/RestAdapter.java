@@ -129,7 +129,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     protected AdminAccessController adminAuthenticator;
 
     private volatile JerseyContainer adapter = null;
-    private AdminEndpointDecider epd = null;
+    private AdminEndpointDecider epd;
 
     protected RestAdapter() {
         setAllowEncodedSlash(true);
