@@ -130,14 +130,10 @@ public class PlainTextActionReporter extends ActionReporter {
 
     @Override
     public void getCombinedMessages(ActionReporter aReport, StringBuilder out) {
-        PlainTextActionReporter ptr = null;
-        try {
-            ptr = (PlainTextActionReporter) aReport;
-        }
-        catch (Exception e) {
+        if(aReport == null || !(aReport instanceof PlainTextActionReporter) )
             throw new RuntimeException("Internal Error: Sub reports are different types than parent report.");
-        }
-
+        // guaranteed safe above.
+        PlainTextActionReporter ptr = (PlainTextActionReporter) aReport;
         String s = ptr.getOutputData();
 
         if (ok(s)) {

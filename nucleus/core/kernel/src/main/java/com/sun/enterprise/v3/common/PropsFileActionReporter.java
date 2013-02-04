@@ -102,9 +102,9 @@ public class PropsFileActionReporter extends ActionReporter {
         if (part.getChildren().size() > 0) {
             attr.putValue("children-type", part.getChildrenType());
             attr.putValue("use-main-children-attribute", "true");
-            String keys = null;
+            StringBuilder keys = null;
             for (MessagePart child : part.getChildren()) {
-                // need to URL encode a ';' as %3B because it is used as a 
+                // need to URL encode a ';' as %3B because it is used as a
                 // delimiter
                 String cm = child.getMessage();
                 if (cm != null) {
@@ -115,12 +115,20 @@ public class PropsFileActionReporter extends ActionReporter {
                     }
                 }
                 String newPrefix = (prefix == null ? cm : prefix + "." + cm);
-                keys = (keys == null ? newPrefix : keys + ";" + newPrefix);
+
+                if(keys == null)
+                    keys = new StringBuilder();
+                else
+                    keys.append(';');
+
+                if(newPrefix != null)
+                    keys.append(newPrefix);
+
                 Attributes childAttr = new Attributes();
                 m.getEntries().put(newPrefix, childAttr);
                 writeReport(newPrefix, child, m, childAttr);
             }
-            attr.putValue("children", keys);
+            attr.putValue("children", keys.toString());
         }
     }
 
