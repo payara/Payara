@@ -140,7 +140,7 @@
 
             <!-- create installer image -->
             <copy.image source="${glassfish.image.dir}" target="${installer.image.dir}" />
-            <!--<pack modules.dir="${installer.image.dir}/${install.dir.name}/glassfish/modules" deleteIncludes="*.jar"/>-->
+            <pack modules.dir="${installer.image.dir}/${install.dir.name}/glassfish/modules" deleteIncludes="*.jar"/>
                         
             <!-- create glassfish.l10n image -->
             <copy.image source="${glassfish.image.dir}" target="${glassfish.image.dir.l10n}/" />
@@ -149,7 +149,7 @@
             </ant>
             <!-- create installer l10n -->
             <copy.image source="${glassfish.image.dir.l10n}" target="${installer.image.dir.l10n}" />
-            <!--<pack modules.dir="${installer.image.dir.l10n}/${install.dir.name}/glassfish/modules" deleteIncludes="*.jar"/>-->
+            <pack modules.dir="${installer.image.dir.l10n}/${install.dir.name}/glassfish/modules" deleteIncludes="*.jar"/>
         </sequential>
     </macrodef>
     <macrodef name="create.local.image">
