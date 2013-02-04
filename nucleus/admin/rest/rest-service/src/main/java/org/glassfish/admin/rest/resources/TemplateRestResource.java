@@ -85,10 +85,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ws.rs.core.Response.Status;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.OptionsCapable;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.api.ActionReport.ExitCode;
 
@@ -423,7 +423,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
                 }
             }
         } catch (Exception ex) {
-            Logger.getLogger(TemplateRestResource.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         } finally {
             formData.cleanup();
         }
@@ -605,7 +605,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
                 deleteMethodMetaData = new MethodMetaData();
             } else {
                 deleteMethodMetaData = ResourceUtil.getMethodMetaData(
-                        command, locatorBridge.getRemoteLocator(), RestService.logger);
+                        command, locatorBridge.getRemoteLocator(), RestLogging.restLogger);
 
                 //In case of delete operation(command), do not  display/provide id attribute.
                 deleteMethodMetaData.removeParamMetaData("id");

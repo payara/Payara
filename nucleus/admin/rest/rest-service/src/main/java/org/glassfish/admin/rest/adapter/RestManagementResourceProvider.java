@@ -40,12 +40,10 @@
 
 package org.glassfish.admin.rest.adapter;
 
-
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.admin.rest.RestResource;
 import org.glassfish.admin.rest.generator.ASMResourcesGenerator;
 import org.glassfish.admin.rest.generator.ResourcesGenerator;
-import org.glassfish.admin.rest.resources.GeneratorResource;
 import org.glassfish.admin.rest.resources.StatusGenerator;
 import org.glassfish.admin.rest.resources.custom.ManagementProxyResource;
 import org.glassfish.api.container.EndpointRegistrationException;
@@ -63,14 +61,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.admin.rest.JavadocWadlGeneratorConfig;
-import org.glassfish.admin.rest.composite.RestModel;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.restconnector.Constants;
-import org.glassfish.hk2.api.IndexedFilter;
-import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.jersey.server.ServerProperties;
-
 
 /**
  * Responsible for providing ReST resources for management operations.
@@ -112,7 +106,7 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
         try {
             domainResourceClass = Class.forName("org.glassfish.admin.rest.resources.generatedASM.DomainResource");
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(RestManagementAdapter.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
 
         final Set<Class<?>> r = new HashSet<Class<?>>();
@@ -200,7 +194,7 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
             resourcesGenerator.generateSingle(dom.document.getRoot().model, dom.document);
             resourcesGenerator.endGeneration();
         } catch (Exception ex) {
-            Logger.getLogger(GeneratorResource.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
     }
 

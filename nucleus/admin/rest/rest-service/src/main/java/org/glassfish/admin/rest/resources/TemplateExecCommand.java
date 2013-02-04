@@ -124,7 +124,7 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
         OptionsResult optionsResult = new OptionsResult(resourceName);
         Map<String, MethodMetaData> mmd = new HashMap<String, MethodMetaData>();
         MethodMetaData methodMetaData = ResourceUtil.getMethodMetaData(commandName, getCommandParams(),
-                locatorBridge.getRemoteLocator(), RestService.logger);
+                locatorBridge.getRemoteLocator(), RestLogging.restLogger);
 
         optionsResult.putMethodMetaData(commandMethod, methodMetaData);
         mmd.put(commandMethod, methodMetaData);

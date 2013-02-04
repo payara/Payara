@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,7 +46,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.glassfish.admin.rest.RestLogging;
 
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -73,7 +73,7 @@ public class TextResourcesGenerator extends ResourcesGeneratorBase {
             writer = new TextClassWriter( habitat ,generationDir, className, baseClassName, resourcePath);
         } catch (IOException e) {
             // Log the root cause. The generation is going to fail with NPE.
-            Logger.getLogger(TextResourcesGenerator.class.getName()).log(Level.SEVERE, e.getMessage());
+            RestLogging.restLogger.log(Level.SEVERE, e.getMessage());
             throw new GeneratorException(e);
         }
         return writer;
@@ -90,10 +90,8 @@ public class TextResourcesGenerator extends ResourcesGeneratorBase {
                 out = new BufferedWriter(fstream);
                 out.write("generation_date=" + new Date() + "\n");
             } else {
-                Logger.getLogger(TextResourcesGenerator.class.getName()).log(Level.SEVERE, 
-                        "Unable to create codegeneration.properties"); // i18n
+                RestLogging.restLogger.log(Level.SEVERE, RestLogging.FILE_CREATION_FAILED, "codegeneration.properties");
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -101,7 +99,7 @@ public class TextResourcesGenerator extends ResourcesGeneratorBase {
                 try {
                     out.close();
                 } catch (IOException ex) {
-                    Logger.getLogger(TextResourcesGenerator.class.getName()).log(Level.SEVERE, null, ex);
+                    RestLogging.restLogger.log(Level.SEVERE, null, ex);
                 }
             }
         }

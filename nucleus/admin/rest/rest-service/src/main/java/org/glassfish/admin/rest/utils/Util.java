@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,14 +54,19 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.security.auth.Subject;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.client.ClientFactory;
 import javax.ws.rs.core.HttpHeaders;
 import org.glassfish.admin.rest.Constants;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.model.ResponseBody;
 
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
@@ -82,17 +87,16 @@ import org.jvnet.hk2.config.ConfigModel;
  */
 public class Util {
     private static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS");
 
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Util.class);
     private static Client client;
-    private static Logger logger = Logger.getLogger(Util.class.getName());
 
     private Util() {
     }
 
     public static void logTimingMessage(String msg) {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
-        logger.log(Level.INFO, "{0}:  {1}", new Object[]{sdf.format(new Date()), msg});
+        RestLogging.restLogger.log(Level.INFO, RestLogging.TIMESTAMP_MESSAGE, new Object[]{DATE_FORMAT.format(new Date()), msg});
     }
 
     /**
@@ -434,9 +438,8 @@ public class Util {
             File[] f = dir.listFiles();
             if (f.length == 0) {
                 if (!dir.delete()) {
-                    if (logger.isLoggable(Level.WARNING)) {
-                        logger.warning(String.format("Unable to delete directory %s.  Will attempt deletion again upon JVM exit.",
-                                dir.getAbsolutePath()));
+                    if (RestLogging.restLogger.isLoggable(Level.WARNING)) {
+                        RestLogging.restLogger.log(Level.WARNING, RestLogging.UNABLE_DELETE_DIRECTORY, dir.getAbsolutePath());
                     }
                 }
             } else {
@@ -446,9 +449,8 @@ public class Util {
             }
         } else {
             if (!dir.delete()) {
-                if (logger.isLoggable(Level.WARNING)) {
-                    logger.warning(String.format("Unable to delete file %s.  Will attempt deletion again upon JVM exit.",
-                                   dir.getAbsolutePath()));
+                if (RestLogging.restLogger.isLoggable(Level.WARNING)) {
+                    RestLogging.restLogger.log(Level.WARNING, RestLogging.UNABLE_DELETE_FILE, dir.getAbsolutePath());
                 }
                 dir.deleteOnExit();
             }
@@ -511,14 +513,14 @@ public class Util {
             }
             return f;
         } catch (IOException ex) {
-            Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         } finally {
             try {
                 if (out != null) {
                     out.close();
                 }
             } catch (IOException ex) {
-                Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
+                RestLogging.restLogger.log(Level.SEVERE, null, ex);
             }
         }
         return null;

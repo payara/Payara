@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,18 +40,20 @@
 
 package org.glassfish.admin.rest.utils.xml;
 
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.xml.transform.*;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
+import org.glassfish.admin.rest.RestLogging;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -168,7 +170,7 @@ public class XmlObject {
 
             return stringWriter.getBuffer().toString();
         } catch (Exception ex) {
-            Logger.getLogger(XmlEntity.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
         }
 

@@ -65,7 +65,6 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.security.auth.Subject;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -79,6 +78,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.RestExtension;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.composite.metadata.AttributeReference;
 import org.glassfish.admin.rest.composite.metadata.HelpText;
 import org.glassfish.admin.rest.utils.JsonUtil;
@@ -179,7 +179,7 @@ public class CompositeUtil {
             try {
                 classes.add(CompositeUtil.instance().getModel(Class.forName(ad.getImplementation())).getClass());
             } catch (ClassNotFoundException ex) {
-                Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+                RestLogging.restLogger.log(Level.SEVERE, null, ex);
             }
         }
 
@@ -228,7 +228,7 @@ public class CompositeUtil {
                     try {
                         value = getter.invoke(source);
                     } catch (Exception ex) {
-                        Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+                        RestLogging.restLogger.log(Level.SEVERE, null, ex);
                     }
                     if (value != null) {
                         String currentValue = currentValues.get(basePath + key);
@@ -238,7 +238,7 @@ public class CompositeUtil {
                         }
                     }
                 } catch (NoSuchMethodException ex) {
-                    Logger.getLogger(CompositeUtil.class.getName()).log(Level.FINE, null, ex);
+                    RestLogging.restLogger.log(Level.FINE, null, ex);
                 }
             }
         }
@@ -531,7 +531,7 @@ public class CompositeUtil {
                     Class<?> c = Class.forName(className, true, baseModel.getClassLoader());
                     exts.add(c);
                 } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+                    RestLogging.restLogger.log(Level.SEVERE, null, ex);
                 }
             }
         }
@@ -558,9 +558,12 @@ public class CompositeUtil {
                     }
                     if (line.charAt(0) != '#') {
                         if (!line.contains(":")) {
-                            Logger.getLogger(CompositeUtil.class.getName()).log(Level.INFO,
-                                    "Incorrectly formatted entry in {0}: {1}",
-                                    new String[]{"META-INF/restmodelextensions", line}); // TODO: i18n
+                            RestLogging.restLogger.log(Level.INFO,
+                                    RestLogging.INCORRECTLY_FORMATTED_ENTRY,
+                                    new String[]{
+                                        "META-INF/restmodelextensions",
+                                        line
+                                    });
                         }
                         String[] entry = line.split(":");
                         String base = entry[0];
@@ -576,13 +579,13 @@ public class CompositeUtil {
 
             }
         } catch (IOException ex) {
-            Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                 } catch (IOException ex) {
-                    Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+                    RestLogging.restLogger.log(Level.SEVERE, null, ex);
                 }
             }
         }
@@ -643,7 +646,7 @@ public class CompositeUtil {
                 annos.put(a.annotationType().getName(), anno);
             }
         } catch (Exception ex) {
-            Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, ex.getLocalizedMessage());
+            RestLogging.restLogger.log(Level.SEVERE, ex.getLocalizedMessage());
         }
 
         return annos;
@@ -888,7 +891,7 @@ public class CompositeUtil {
                         }
                     });
 
-            Logger.getLogger(CompositeUtil.class.getName()).log(Level.FINE, "Loading bytecode for {0}", className);
+            RestLogging.restLogger.log(Level.FINE, "Loading bytecode for {0}", className);
             final ClassLoader classLoader =
                     similarClass.getClassLoader();
             //Thread.currentThread().getContextClassLoader();

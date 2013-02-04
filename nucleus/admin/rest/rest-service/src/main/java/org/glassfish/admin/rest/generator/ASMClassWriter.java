@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,7 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.objectweb.asm.AnnotationVisitor;
@@ -302,8 +302,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         try {
             defineClass(this.getClass(), cw.toByteArray());
         } catch (Exception ex) {
-            Logger.getLogger(ASMClassWriter.class.getName()).log(Level.SEVERE, null, ex);
-            ex.printStackTrace();
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
 
     }
@@ -467,7 +466,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
                         }
                     });
 
-            Logger.getLogger(ASMClassWriter.class.getName()).log(Level.FINE, "Loading bytecode for {0}", generatedClassName);
+            RestLogging.restLogger.log(Level.FINE, "Loading bytecode for {0}", generatedClassName);
             clM.invoke(similarClass.getClassLoader()
                     /*Thread.currentThread().getContextClassLoader()*/, generatedClassName, byteContent, 0,
                      byteContent.length, pd);
@@ -515,8 +514,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
                 fos.write(classData);
                 fos.flush();
             } else {
-                Logger.getLogger(ASMClassWriter.class.getName()).log(Level.INFO, null,
-                        "Unable to make directories");
+                RestLogging.restLogger.log(Level.INFO, RestLogging.DIR_CREATION_FAILED, file.getParent());
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -525,7 +523,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
                 try {
                     fos.close();
                 } catch (IOException ex) {
-                    Logger.getLogger(ASMClassWriter.class.getName()).log(Level.SEVERE, null, ex);
+                    RestLogging.restLogger.log(Level.SEVERE, null, ex);
                 }
             }
         }

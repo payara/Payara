@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -349,7 +349,7 @@ public abstract class TemplateListOfResource extends AbstractResource {
         //POST meta data
         String command = getPostCommand();
         if (command != null) {
-            MethodMetaData postMethodMetaData = ResourceUtil.getMethodMetaData(command, locatorBridge.getRemoteLocator(), RestService.logger);
+            MethodMetaData postMethodMetaData = ResourceUtil.getMethodMetaData(command, locatorBridge.getRemoteLocator(), RestLogging.restLogger);
             if (Util.getResourceName(uriInfo).equals("Application")) {
                 postMethodMetaData.setIsFileUploadOperation(true);
             }

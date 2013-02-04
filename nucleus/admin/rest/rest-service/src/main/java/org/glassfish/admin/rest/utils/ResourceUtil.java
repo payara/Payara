@@ -70,6 +70,7 @@ import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.glassfish.admin.rest.Constants;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.generator.CommandResourceMetaData;
 import org.glassfish.admin.rest.provider.MethodMetaData;
 import org.glassfish.admin.rest.provider.ParameterMetaData;
@@ -145,7 +146,7 @@ public class ResourceUtil {
             bytes = buffer.toByteArray();
             buffer.close();
         } catch (IOException ex) {
-            Logger.getLogger(ResourceUtil.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
 
         return bytes;
@@ -595,12 +596,13 @@ public class ResourceUtil {
             try {
                 skipParameter = commandParamsToSkip.contains(parameterName);
             } catch (Exception e) {
+                // TODO: logging bundle lookup?
                 String errorMessage = localStrings.getLocalString("rest.metadata.skip.error",
                         "Parameter \"{0}\" may be redundant and not required.",
                         new Object[]{parameterName});
                 // TODO: Why are we logging twice?
-                Logger.getLogger(ResourceUtil.class.getName()).log(Level.INFO, null, errorMessage);
-                Logger.getLogger(ResourceUtil.class.getName()).log(Level.INFO, null, e);
+                RestLogging.restLogger.log(Level.INFO, null, errorMessage);
+                RestLogging.restLogger.log(Level.INFO, null, e);
             }
 
             if (!skipParameter) {

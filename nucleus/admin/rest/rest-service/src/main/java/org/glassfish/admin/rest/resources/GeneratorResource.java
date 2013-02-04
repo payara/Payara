@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,12 +42,12 @@ package org.glassfish.admin.rest.resources;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import org.glassfish.admin.rest.RestLogging;
 
 
 import org.glassfish.admin.rest.generator.ResourcesGenerator;
@@ -87,7 +87,7 @@ public class GeneratorResource {
             resourcesGenerator.generateSingle(rootModel, document);
             resourcesGenerator.endGeneration();
         } catch (Exception ex) {
-            Logger.getLogger(GeneratorResource.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
             retVal = "Exception encountered during generation process: " + ex.toString() + "\nPlease look at server.log for more information.";
         }
         return retVal;

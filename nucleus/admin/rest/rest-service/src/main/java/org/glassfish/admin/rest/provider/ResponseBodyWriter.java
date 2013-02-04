@@ -40,11 +40,11 @@
 package org.glassfish.admin.rest.provider;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ws.rs.Produces;
 import javax.ws.rs.ext.Provider;
 import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.Constants;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.model.ResponseBody;
 
 /**
@@ -64,8 +64,7 @@ public class ResponseBodyWriter extends BaseProvider<ResponseBody> {
         try {
             sb.append(body.toJson().toString(getFormattingIndentLevel()));
         } catch (JSONException ex) {
-            Logger.getLogger(RestModelWriter.class.getName()).
-                    log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
 
         return sb.toString();

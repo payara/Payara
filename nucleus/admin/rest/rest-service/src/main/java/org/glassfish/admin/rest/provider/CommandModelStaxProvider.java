@@ -40,10 +40,8 @@
 package org.glassfish.admin.rest.provider;
 
 import com.sun.enterprise.util.StringUtils;
-import com.sun.logging.LogDomains;
 import java.io.File;
 import java.util.Properties;
-import java.util.logging.Logger;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
@@ -59,10 +57,6 @@ import org.glassfish.api.admin.CommandModel;
 @Provider
 @Produces({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON, "application/x-javascript"})
 public class CommandModelStaxProvider extends AbstractStaxProvider<CommandModel> {
-    
-    protected static final Logger logger =
-            LogDomains.getLogger(CommandModelStaxProvider.class, LogDomains.ADMIN_LOGGER);
-    
     public CommandModelStaxProvider() {
         super(CommandModel.class, MediaType.APPLICATION_XML_TYPE, 
               MediaType.TEXT_XML_TYPE, MediaType.APPLICATION_JSON_TYPE);

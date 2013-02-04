@@ -46,8 +46,8 @@ import com.sun.enterprise.v3.common.PropsFileActionReporter;
 import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ws.rs.core.MediaType;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.resources.admin.CommandResource;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandEventBroker;
@@ -79,9 +79,6 @@ public class SseCommandHelper implements Runnable, AdminCommandEventBroker.Admin
         public ActionReport process(ActionReport report, EventOutput ec);
 
     }
-
-    private final static Logger logger =
-            LogDomains.getLogger(CommandResource.class, LogDomains.ADMIN_LOGGER);
     private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(CommandResource.class);
 
     private final CommandRunner.CommandInvocation commandInvocation;
@@ -100,9 +97,8 @@ public class SseCommandHelper implements Runnable, AdminCommandEventBroker.Admin
         try {
             commandInvocation.execute();
         } catch (Throwable thr) {
-            logger.log(Level.WARNING, strings.getLocalString("sse.commandexecution.unexpectedexception",
-                    "Unexpected exception during command execution. {0}",
-                    thr.toString()),thr);
+            RestLogging.restLogger.log(Level.WARNING, RestLogging.UNEXPECTED_EXCEPTION,
+                    thr.toString());
             ActionReport actionReport = new PropsFileActionReporter(); //new RestActionReporter();
             actionReport.setFailureCause(thr);
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -112,7 +108,7 @@ public class SseCommandHelper implements Runnable, AdminCommandEventBroker.Admin
             try {
                 eventOuptut.close();
             } catch (IOException ex) {
-                logger.log(Level.WARNING, null, ex);
+                RestLogging.restLogger.log(Level.WARNING, null, ex);
             }
         }
     }
@@ -165,8 +161,8 @@ public class SseCommandHelper implements Runnable, AdminCommandEventBroker.Admin
         try {
             eventOuptut.write(outEvent);
         } catch (Exception ex) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, null, ex);
+            if (RestLogging.restLogger.isLoggable(Level.FINE)) {
+                RestLogging.restLogger.log(Level.FINE, null, ex);
             }
             if (eventOuptut.isClosed()) {
                 unregister();

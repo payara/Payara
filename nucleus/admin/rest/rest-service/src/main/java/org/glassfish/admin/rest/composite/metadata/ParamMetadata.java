@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,10 +41,10 @@ package org.glassfish.admin.rest.composite.metadata;
 
 import java.lang.annotation.Annotation;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.OptionsCapable;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.jvnet.hk2.config.Attribute;
 
@@ -162,15 +162,14 @@ public class ParamMetadata {
                             if (DefaultsGenerator.class.isAssignableFrom(clazz)) {
                                 defval = ((DefaultsGenerator) clazz.newInstance()).getDefaultValue(name);
                             } else {
-                                Logger.getLogger(ParamMetadata.class.getName()).log(Level.SEVERE, null, 
-                                    "The class specified by generator does not implement DefaultsGenerator"); //i18n
+                                RestLogging.restLogger.log(Level.SEVERE, RestLogging.DOESNT_IMPLEMENT_DEFAULTS_GENERATOR);
                             }
                         } else {
                             defval = parseValue(def.value());
                         }
                         break;
                     } catch (Exception ex) {
-                        Logger.getLogger(ParamMetadata.class.getName()).log(Level.SEVERE, null, ex);
+                        RestLogging.restLogger.log(Level.SEVERE, null, ex);
                     }
                 } else if (Attribute.class.isAssignableFrom(annotation.getClass())) {
                     Attribute attr = (Attribute)annotation;
@@ -203,11 +202,9 @@ public class ParamMetadata {
                 return new Float(value);
             }
             // TBD - arrays/lists of values
-            Logger.getLogger(ParamMetadata.class.getName()).log(Level.SEVERE, null, 
-                "Unsupported fixed value.  Supported types are String, boolean, Boolean, int, Integer, long, Long, double, Double, float, and Float"); //i18n
+            RestLogging.restLogger.log(Level.SEVERE, RestLogging.UNSUPPORTED_FIXED_VALUE);
         } catch (NumberFormatException e) {
-            Logger.getLogger(ParamMetadata.class.getName()).log(Level.SEVERE, null, 
-                "Fixed value type does not match the property type"); //i18n
+            RestLogging.restLogger.log(Level.SEVERE, RestLogging.VALUE_DOES_NOT_MATCH_TYPE);
         }
         return null;
     }

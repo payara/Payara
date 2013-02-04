@@ -43,7 +43,6 @@ package org.glassfish.admin.rest.adapter;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
-import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Collections;
@@ -53,7 +52,6 @@ import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -61,6 +59,7 @@ import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 
 import org.glassfish.admin.rest.Constants;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.RestService;
 import org.glassfish.admin.rest.provider.ActionReportResultHtmlProvider;
 import org.glassfish.admin.rest.provider.ActionReportResultJsonProvider;
@@ -129,7 +128,6 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     @Inject @Optional
     protected AdminAccessController adminAuthenticator;
 
-    protected static final Logger logger = LogDomains.getLogger(RestAdapter.class, LogDomains.ADMIN_LOGGER);
     private volatile JerseyContainer adapter = null;
     private AdminEndpointDecider epd = null;
 
@@ -139,7 +137,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
 
     @Override
     public void postConstruct() {
-        epd = new AdminEndpointDecider(config, logger);
+        epd = new AdminEndpointDecider(config, RestLogging.restLogger);
         latch.countDown();
     }
 
@@ -154,7 +152,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
 
     @Override
     public void service(Request req, Response res) {
-        logger.log(Level.FINER, "Received resource request: {0}", req.getRequestURI());
+        RestLogging.restLogger.log(Level.FINER, "Received resource request: {0}", req.getRequestURI());
 
         try {
             res.setCharacterEncoding(Constants.ENCODING);
@@ -174,11 +172,11 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                 }
 
                 String context = getContextRoot();
-                logger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
+                RestLogging.restLogger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
                 if ((context != null) && (!"".equals(context)) && (adapter == null)) {
                         adapter = exposeContext(getRestResourceProvider().
                             getResourceClasses(habitat), sc, habitat);
-                    logger.log(Level.INFO, "rest.rest_interface_initialized", context);
+                    RestLogging.restLogger.log(Level.INFO, RestLogging.REST_INTERFACE_INITIALIZED, context);
                 }
                 //delegate to adapter managed by Jersey.
                 adapter.service(req, res);
@@ -207,9 +205,10 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
             res.setHeader(HEADER_AUTHENTICATE, "BASIC");
             reportError(req, res, status, msg);
         } catch (Exception e) {
+            // TODO: This string is duplicated.  Can we pull this text out of the logging bundle?
             String msg = localStrings.getLocalString("rest.adapter.server.exception",
                     "An error occurred while processing the request. Please see the server logs for details.");
-            logger.log(Level.INFO, msg, e);
+            RestLogging.restLogger.log(Level.INFO, RestLogging.SERVER_ERROR, e);
             reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg); //service unavailable
         }
     }

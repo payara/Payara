@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.admin.rest;
 
 import java.util.logging.Logger;
@@ -50,16 +49,50 @@ import org.glassfish.logging.annotation.LoggerInfo;
  * @author jdlee
  */
 public class RestLogging {
+
     @LogMessagesResourceBundle
     public static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.admin.rest.LogMessages";
-
     @LoggerInfo(subsystem = "REST", description = "Main REST Logger", publish = true)
     public static final String REST_MAIN_LOGGER = "javax.enterprise.admin.rest";
-
     public static final Logger restLogger = Logger.getLogger(REST_MAIN_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
-
     @LogMessageInfo(
             message = "Listening to REST requests at context: {0}/domain.",
             level = "INFO")
     public static final String REST_INTERFACE_INITIALIZED = "NCLS-REST-00001";
+    @LogMessageInfo(
+            message = "Incorrectly formatted entry in {0}: {1}",
+            level = "INFO")
+    public static final String INCORRECTLY_FORMATTED_ENTRY = "NCLS-REST-00002";
+    @LogMessageInfo(
+            message = "An error occurred while processing the request. Please see the server logs for details.",
+            level = "SEVERE")
+    public static final String SERVER_ERROR = "NCLS-REST-00003";
+    @LogMessageInfo(
+            message="The class specified by generator does not implement DefaultsGenerator",
+            level="SEVERE")
+    public static final String DOESNT_IMPLEMENT_DEFAULTS_GENERATOR = "NCLS-REST-00004";
+    @LogMessageInfo(
+            message="Unsupported fixed value.  Supported types are String, boolean, Boolean, int, Integer, long, Long, double, Double, float, and Float",
+            level="SEVERE")
+    public static final String UNSUPPORTED_FIXED_VALUE = "NCLS-REST-00005";
+    @LogMessageInfo(
+            message="Fixed value type does not match the property type",
+            level="SEVERE")
+    public static final String VALUE_DOES_NOT_MATCH_TYPE = "NCLS-REST-00006";
+    @LogMessageInfo(message="Cannot marshal", level="SEVERE")
+    public static final String CANNOT_MARSHAL = "NCLS-REST-00007";
+    @LogMessageInfo(message="Unexpected exception during command execution. {0}", level="WARNING")
+    public static final String UNEXPECTED_EXCEPTION = "NCLS-REST-00008";
+    @LogMessageInfo(message="Unable to delete directory {0}.  Will attempt deletion again upon JVM exit.",level="WARNING")
+    public static final String UNABLE_DELETE_DIRECTORY = "NCLS-REST-00009";
+    @LogMessageInfo(message="Unable to delete file %s.  Will attempt deletion again upon JVM exit.",level="WARNING")
+    public static final String UNABLE_DELETE_FILE = "NCLS-REST-00010";
+    @LogMessageInfo(message="{0}:  {1}",level="INFO")
+    public static final String TIMESTAMP_MESSAGE = "NCLS-REST-00011";
+    @LogMessageInfo(message="Compilation failed.", level="INFO")
+    public static final String COMPILATION_FAILED = "NCLS-REST-00012";
+    @LogMessageInfo(message="File creation failed: {0}", level="SEVERE")
+    public static final String FILE_CREATION_FAILED = "NCLS-REST-00013";
+    @LogMessageInfo(message="Directory creation failed: {0}", level="INFO")
+    public static final String DIR_CREATION_FAILED = "NCLS-REST-00014";
 }

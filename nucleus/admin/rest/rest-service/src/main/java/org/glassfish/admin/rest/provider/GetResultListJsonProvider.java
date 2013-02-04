@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,7 +52,7 @@ import javax.ws.rs.ext.Provider;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.glassfish.admin.rest.RestLogging;
 
 import static org.glassfish.admin.rest.provider.ProviderUtil.*;
 
@@ -83,7 +83,7 @@ public class GetResultListJsonProvider extends BaseProvider<GetResultList> {
                 obj.put(KEY_COMMANDS, getCommandLinks(proxy.getCommandResourcesPaths()));
             }
         } catch (JSONException ex) {
-            Logger.getLogger(GetResultListJsonProvider.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
 
         return obj.toString();

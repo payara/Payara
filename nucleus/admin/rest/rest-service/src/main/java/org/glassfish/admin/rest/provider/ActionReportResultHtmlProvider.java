@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,8 +42,12 @@ package org.glassfish.admin.rest.provider;
 
 import org.glassfish.api.ActionReport.ExitCode;
 import com.sun.enterprise.v3.common.ActionReporter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
@@ -52,9 +56,6 @@ import org.jvnet.hk2.config.ConfigBean;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.glassfish.admin.rest.provider.ProviderUtil.getHtmlForComponent;
 import static org.glassfish.admin.rest.provider.ProviderUtil.getHtmlRespresentationsForCommand;

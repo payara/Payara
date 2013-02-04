@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,7 +54,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Path;
@@ -125,7 +124,7 @@ public class StatusGenerator extends AbstractResource {
             resourcesGenerator.generateSingle(rootModel, document);
             resourcesGenerator.endGeneration();
         } catch (Exception ex) {
-            Logger.getLogger(GeneratorResource.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
             //retVal = "Exception encountered during generation process: " + ex.toString() + "\nPlease look at server.log for more information.";
         }
 
@@ -181,13 +180,13 @@ public class StatusGenerator extends AbstractResource {
             propsI18N.store(f, "");
 
         } catch (Exception ex) {
-            Logger.getLogger(StatusGenerator.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         } finally {
             if (f != null) {
                 try {
                     f.close();
                 } catch (IOException ex) {
-                    Logger.getLogger(StatusGenerator.class.getName()).log(Level.SEVERE, null, ex);
+                    RestLogging.restLogger.log(Level.SEVERE, null, ex);
                 }
             }
         }
@@ -207,8 +206,7 @@ public class StatusGenerator extends AbstractResource {
             resourcesGenerator.generateSingle(rootModel, document);
             resourcesGenerator.endGeneration();
         } catch (Exception ex) {
-            Logger.getLogger(GeneratorResource.class.getName()).log(Level.SEVERE, null, ex);
-            //retVal = "Exception encountered during generation process: " + ex.toString() + "\nPlease look at server.log for more information.";
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
 
         status.append("<h4>All Commands used in REST Admin</h4>\n<ul>\n");
@@ -266,13 +264,13 @@ public class StatusGenerator extends AbstractResource {
             propsI18N.store(f, "");
 
         } catch (Exception ex) {
-            Logger.getLogger(StatusGenerator.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         } finally {
             if (f != null) {
                 try {
                     f.close();
                 } catch (IOException ex) {
-                    Logger.getLogger(StatusGenerator.class.getName()).log(Level.SEVERE, null, ex);
+                    RestLogging.restLogger.log(Level.SEVERE, null, ex);
                 }
             }
         }
@@ -499,7 +497,7 @@ public class StatusGenerator extends AbstractResource {
 
     public Collection<CommandModel.ParamModel> getParamMetaData(String commandName) {
         CommandRunner cr = serviceLocator.getService(CommandRunner.class);
-        CommandModel cm = cr.getModel(commandName, RestService.logger);
+        CommandModel cm = cr.getModel(commandName, RestLogging.restLogger);
         Collection<CommandModel.ParamModel> params = cm.getParameters();
         return params;
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,17 +51,16 @@ import com.sun.enterprise.util.uuid.UuidGeneratorImpl;
 import com.sun.enterprise.v3.common.ActionReporter;
 import com.sun.enterprise.v3.common.PlainTextActionReporter;
 import com.sun.enterprise.v3.common.PropsFileActionReporter;
-import com.sun.logging.LogDomains;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.security.auth.Subject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.utils.SseCommandHelper;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
@@ -79,9 +78,6 @@ import org.glassfish.jersey.media.sse.SseFeature;
  */
 @Path("/")
 public class CommandResource {
-
-    private final static Logger logger =
-            LogDomains.getLogger(CommandResource.class, LogDomains.ADMIN_LOGGER);
     private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(CommandResource.class);
 
     public static final String SESSION_COOKIE_NAME = "JSESSIONID";
@@ -102,8 +98,8 @@ public class CommandResource {
     @Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
     public Response getCommandModel(@PathParam("command") String command) throws WebApplicationException {
         CommandName commandName = new CommandName(normalizeCommandName(command));
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "getCommandModel({0})", commandName);
+        if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
+            RestLogging.restLogger.log(Level.FINEST, "getCommandModel({0})", commandName);
         }
         CommandModel model = getCommandModel(commandName);
         String eTag = CachedCommandModel.computeETag(model);
@@ -125,8 +121,8 @@ public class CommandResource {
     public String getManPageHtml(@PathParam("command") String command)
             throws IOException, WebApplicationException {
         CommandName commandName = new CommandName(normalizeCommandName(command));
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "getManPageHtml({0})", commandName);
+        if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
+            RestLogging.restLogger.log(Level.FINEST, "getManPageHtml({0})", commandName);
         }
         BufferedReader help = getManPageReader(commandName);
         if (help == null) {
@@ -148,8 +144,8 @@ public class CommandResource {
     public String getManPageTxt(@PathParam("command") String command, @QueryParam("eol") String eol)
             throws IOException, WebApplicationException {
         CommandName commandName = new CommandName(normalizeCommandName(command));
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "getManPageTxt({0}, {1})", new Object[]{commandName, eol});
+        if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
+            RestLogging.restLogger.log(Level.FINEST, "getManPageTxt({0}, {1})", new Object[]{commandName, eol});
         }
         BufferedReader help = getManPageReader(commandName);
         if (help == null) {
@@ -178,8 +174,8 @@ public class CommandResource {
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
                 ParameterMap data) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "execCommandSimpInSimpOut({0})", commandName);
+        if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
+            RestLogging.restLogger.log(Level.FINEST, "execCommandSimpInSimpOut({0})", commandName);
         }
         return executeCommand(commandName, null, data, false, indent, modelETag, jSessionId);
     }
@@ -194,8 +190,8 @@ public class CommandResource {
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
                 FormDataMultiPart mp) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "execCommandMultInSimpOut({0})", commandName);
+        if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
+            RestLogging.restLogger.log(Level.FINEST, "execCommandMultInSimpOut({0})", commandName);
         }
         ParameterMap data = new ParameterMap();
         Payload.Inbound inbound = RestPayloadImpl.Inbound.parseFromFormDataMultipart(mp, data);
@@ -210,8 +206,8 @@ public class CommandResource {
                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "execCommandEmptyInSimpOut({0})", commandName);
+        if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
+            RestLogging.restLogger.log(Level.FINEST, "execCommandEmptyInSimpOut({0})", commandName);
         }
         ParameterMap data = new ParameterMap();
         return executeCommand(commandName, null, data, false, indent, modelETag, jSessionId);
@@ -229,8 +225,8 @@ public class CommandResource {
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
                 ParameterMap data) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "execCommandSimpInMultOut({0})", commandName);
+        if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
+            RestLogging.restLogger.log(Level.FINEST, "execCommandSimpInMultOut({0})", commandName);
         }
         return executeCommand(commandName, null, data, true, indent, modelETag, jSessionId);
     }
@@ -245,8 +241,8 @@ public class CommandResource {
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
                 FormDataMultiPart mp) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "execCommandMultInMultOut({0})", commandName);
+        if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
+            RestLogging.restLogger.log(Level.FINEST, "execCommandMultInMultOut({0})", commandName);
         }
         ParameterMap data = new ParameterMap();
         Payload.Inbound inbound = RestPayloadImpl.Inbound.parseFromFormDataMultipart(mp, data);
@@ -261,8 +257,8 @@ public class CommandResource {
                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "execCommandEmptyInMultOut({0})", commandName);
+        if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
+            RestLogging.restLogger.log(Level.FINEST, "execCommandEmptyInMultOut({0})", commandName);
         }
         ParameterMap data = new ParameterMap();
         return executeCommand(commandName, null, data, true, indent, modelETag, jSessionId);
@@ -279,8 +275,8 @@ public class CommandResource {
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
                 ParameterMap data) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "execCommandSimpInSseOut({0})", commandName);
+        if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
+            RestLogging.restLogger.log(Level.FINEST, "execCommandSimpInSseOut({0})", commandName);
         }
         return executeSseCommand(commandName, null, data, modelETag, jSessionId);
     }
@@ -294,8 +290,8 @@ public class CommandResource {
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
                 FormDataMultiPart mp) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "execCommandMultInMultOut({0})", commandName);
+        if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
+            RestLogging.restLogger.log(Level.FINEST, "execCommandMultInMultOut({0})", commandName);
         }
         ParameterMap data = new ParameterMap();
 //        Payload.Inbound inbound = RestPayloadImpl.Inbound.parseFromFormDataMultipart(mp, data);
@@ -309,8 +305,8 @@ public class CommandResource {
                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "execCommandEmptyInMultOut({0})", commandName);
+        if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
+            RestLogging.restLogger.log(Level.FINEST, "execCommandEmptyInMultOut({0})", commandName);
         }
         ParameterMap data = new ParameterMap();
         return executeSseCommand(commandName, null, data, modelETag, jSessionId);
@@ -345,8 +341,8 @@ public class CommandResource {
     private Response executeSseCommand(CommandName commandName, Payload.Inbound inbound,
             ParameterMap params, String modelETag, Cookie jSessionId) throws WebApplicationException {
         //Scope support
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "executeSseCommand(): ", commandName);
+        if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
+            RestLogging.restLogger.log(Level.FINEST, "executeSseCommand(): ", commandName);
         }
         //Check command model
         CommandModel model = getCommandModel(commandName);
@@ -374,8 +370,8 @@ public class CommandResource {
             ParameterMap params, boolean supportsMultiparResult, String xIndentHeader,
             String modelETag, Cookie jSessionId) throws WebApplicationException {
         //Scope support
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.log(Level.FINEST, "executeCommand(): ", commandName);
+        if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
+            RestLogging.restLogger.log(Level.FINEST, "executeCommand(): ", commandName);
         }
         //Check command model
         CommandModel model = getCommandModel(commandName);
@@ -407,7 +403,7 @@ public class CommandResource {
             MultiPart mp = new MultiPart();
             mp.bodyPart(ar, MediaType.APPLICATION_JSON_TYPE);
             if (outbound.size() > 0) {
-                outbound.addToMultipart(mp, logger);
+                outbound.addToMultipart(mp, RestLogging.restLogger);
             }
             rb.entity(mp);
         } else {
@@ -491,7 +487,7 @@ public class CommandResource {
 
     private CommandModel getCommandModel(CommandName commandName) throws WebApplicationException {
         CommandRunner cr = getCommandRunner();
-        CommandModel model = cr.getModel(commandName.getScope(), commandName.getName(), logger);
+        CommandModel model = cr.getModel(commandName.getScope(), commandName.getName(), RestLogging.restLogger);
         if (model == null) {
             throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND)
                     .type(MediaType.TEXT_PLAIN)

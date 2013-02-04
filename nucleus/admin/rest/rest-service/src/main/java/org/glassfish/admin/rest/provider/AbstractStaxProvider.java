@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,6 @@
  */
 package org.glassfish.admin.rest.provider;
 
-import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -47,7 +46,6 @@ import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -58,7 +56,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.codehaus.jettison.mapped.MappedNamespaceConvention;
 import org.codehaus.jettison.mapped.MappedXMLStreamWriter;
 import org.glassfish.admin.rest.Constants;
-import org.glassfish.admin.rest.RestService;
+import org.glassfish.admin.rest.RestLogging;
 import org.jvnet.hk2.config.IndentingXMLStreamWriter;
 
 /** Abstract implementation for entity writers to STaX API. This supports 
@@ -104,9 +102,6 @@ public abstract class AbstractStaxProvider<T> extends BaseProvider<T> {
         }
         
     }
-    
-    protected static final Logger logger =
-            LogDomains.getLogger(AbstractStaxProvider.class, LogDomains.ADMIN_LOGGER);
     
     public AbstractStaxProvider(Class desiredType, MediaType ... mediaType) {
         super(desiredType, mediaType);
@@ -181,7 +176,7 @@ public abstract class AbstractStaxProvider<T> extends BaseProvider<T> {
                 entityStream.write(writer.getPostfix().getBytes(Constants.ENCODING));
             }
         } catch (XMLStreamException uee) {
-            logger.log(Level.SEVERE, "Cannot marshal", uee);
+            RestLogging.restLogger.log(Level.SEVERE,RestLogging.CANNOT_MARSHAL, uee);
             throw new WebApplicationException(uee, Response.Status.INTERNAL_SERVER_ERROR);
         }
     }

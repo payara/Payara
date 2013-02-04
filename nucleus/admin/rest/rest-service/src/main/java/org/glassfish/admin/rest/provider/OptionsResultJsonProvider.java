@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,7 +51,7 @@ import javax.ws.rs.ext.Provider;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.glassfish.admin.rest.RestLogging;
 
 
 /**
@@ -63,7 +63,6 @@ import java.util.logging.Logger;
 @Produces(MediaType.APPLICATION_JSON)
 public class OptionsResultJsonProvider extends BaseProvider<OptionsResult> {
     private static final String NAME = "name";
-    private static final String QUERY_PARAMETERS = "queryParameters";
     private static final String MESSAGE_PARAMETERS = "messageParameters";
 
     public OptionsResultJsonProvider() {
@@ -77,7 +76,7 @@ public class OptionsResultJsonProvider extends BaseProvider<OptionsResult> {
         try {
             obj.put(proxy.getName(), getRespresenationForMethodMetaData(proxy));
         } catch (JSONException ex) {
-            Logger.getLogger(OptionsResultJsonProvider.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
         return obj.toString();
     }
@@ -97,7 +96,7 @@ public class OptionsResultJsonProvider extends BaseProvider<OptionsResult> {
                 method.put(MESSAGE_PARAMETERS, getMessageParams(methodMetaData));
                 arr.put(method);
             } catch (JSONException ex) {
-                Logger.getLogger(OptionsResultJsonProvider.class.getName()).log(Level.SEVERE, null, ex);
+                RestLogging.restLogger.log(Level.SEVERE, null, ex);
             }
         }
 

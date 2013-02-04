@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,11 +54,11 @@ import java.util.Scanner;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.loader.util.ASClassLoaderUtil;
@@ -82,7 +82,7 @@ public class JavaClientGenerator extends ClientGenerator {
         try {
             System.out.println("Generating class in " + baseDirectory.getCanonicalPath());
         } catch (IOException ex) {
-            Logger.getLogger(JavaClientGenerator.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
         messages.add(MSG_INSTALL.replace("VERSION", versionString));
     }
@@ -122,12 +122,12 @@ public class JavaClientGenerator extends ClientGenerator {
             
             Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
             if (!compiler.getTask(null, fileManager, null, options, null, compilationUnits).call()) {
-                Logger.getLogger(JavaClientGenerator.class.getName()).log(Level.INFO, "Compilation failed.");
+                RestLogging.restLogger.log(Level.INFO, RestLogging.COMPILATION_FAILED);
             }
             
             fileManager.close();
         } catch (IOException ex) {
-            Logger.getLogger(JavaClientGenerator.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -147,16 +147,14 @@ public class JavaClientGenerator extends ClientGenerator {
             
             artifacts.put(jarFile.getName(), jarFile.toURI());
         } catch (Exception ex) {
-            Logger.getLogger(JavaClientGenerator.class.getName()).
-                    log(Level.SEVERE, null, ex);
+           RestLogging.restLogger.log(Level.SEVERE, null, ex);
         } finally {
             try {
                 if (target != null) {
                     target.close();
                 }
             } catch (IOException ex) {
-                Logger.getLogger(JavaClientGenerator.class.getName()).
-                        log(Level.SEVERE, null, ex);
+                RestLogging.restLogger.log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -191,7 +189,7 @@ public class JavaClientGenerator extends ClientGenerator {
             
             artifacts.put("pom.xml", out.toURI());
         } catch (IOException ex) {
-            Logger.getLogger(JavaClientGenerator.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         } finally {
             if (writer != null) {
                 try {

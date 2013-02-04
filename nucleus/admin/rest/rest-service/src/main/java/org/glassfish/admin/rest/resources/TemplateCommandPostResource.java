@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -57,6 +56,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.Constants;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.results.ActionReportResult;
 
 import org.glassfish.admin.rest.utils.ResourceUtil;
@@ -231,9 +231,11 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
                 }
             }
         } catch (Exception ex) {
-            Logger.getLogger(TemplateCommandPostResource.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         } finally {
-            formData.cleanup();
+            if (formData != null) {
+                formData.cleanup();
+            }
         }
         return data;
 

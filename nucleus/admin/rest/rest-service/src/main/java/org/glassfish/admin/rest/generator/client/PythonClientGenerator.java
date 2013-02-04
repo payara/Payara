@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,16 +44,22 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigModel;
 
 import com.sun.appserv.server.util.Version;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
-import java.io.*;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.glassfish.admin.rest.RestLogging;
 
 public class PythonClientGenerator extends ClientGenerator {
     private File baseDirectory;
@@ -98,13 +104,13 @@ public class PythonClientGenerator extends ClientGenerator {
             artifacts.put(zipFile.getName(), zipFile.toURI());
             Util.deleteDirectory(baseDirectory);
         } catch (Exception ex) {
-            Logger.getLogger(PythonClientGenerator.class.getName()).log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         } finally {
             if (zip != null) {
                 try {
                     zip.close();
                 } catch (IOException ex) {
-                    Logger.getLogger(PythonClientGenerator.class.getName()).log(Level.SEVERE, null, ex);
+                    RestLogging.restLogger.log(Level.SEVERE, null, ex);
                 }
             }
         }

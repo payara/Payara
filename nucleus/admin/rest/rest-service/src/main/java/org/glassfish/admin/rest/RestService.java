@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,8 +41,6 @@
 package org.glassfish.admin.rest;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
-import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
@@ -74,9 +72,6 @@ public class RestService implements PostConstruct, PreDestroy, RestInterfaceUID 
     @Inject
     LocalPassword localPassword;
 
-
-    public final static Logger logger =
-            LogDomains.getLogger(RestService.class, LogDomains.ADMIN_LOGGER);
     public final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(RestService.class);
 

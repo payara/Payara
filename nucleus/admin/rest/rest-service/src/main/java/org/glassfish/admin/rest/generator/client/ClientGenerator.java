@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,6 @@ package org.glassfish.admin.rest.generator.client;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.admin.rest.utils.ResourceUtil;
-import org.glassfish.admin.rest.RestService;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.admin.rest.client.RestClientBase;
 import org.glassfish.admin.rest.client.RestLeaf;
@@ -61,7 +60,12 @@ import org.jvnet.hk2.config.DomDocument;
 
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.glassfish.admin.rest.RestLogging;
 
 /**
  *
@@ -196,7 +200,7 @@ public abstract class ClientGenerator {
 
     protected CommandModel getCommandModel(String commandName) {
         CommandRunner cr = getBaseServiceLocator().getService(CommandRunner.class);
-        return cr.getModel(commandName, RestService.logger);
+        return cr.getModel(commandName, RestLogging.restLogger);
     }
 
     protected Set<String> processElements(ClientClassWriter writer, ConfigModel model) {

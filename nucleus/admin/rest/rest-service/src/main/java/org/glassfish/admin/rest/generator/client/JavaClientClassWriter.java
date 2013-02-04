@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,8 +46,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.admin.rest.Constants;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.admin.rest.client.RestClientBase;
 import org.glassfish.api.Param;
@@ -139,8 +139,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
         try {
             boolean createSuccess = classFile.createNewFile();
             if (!createSuccess){
-               Logger.getLogger(JavaClientClassWriter.class.getName()).
-                    log(Level.SEVERE, "File creation failed: {0}", classFile.getName());
+               RestLogging.restLogger.log(Level.SEVERE, RestLogging.FILE_CREATION_FAILED, classFile.getName());
             }
             classFile.deleteOnExit();
             source = new BufferedWriter(new FileWriter(classFile));
@@ -180,8 +179,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
                 source.append(method);
             }
         } catch (IOException ex) {
-            Logger.getLogger(JavaClientClassWriter.class.getName()).
-                    log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -190,8 +188,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
         try {
             source.append(TMPL_CTOR_SIMPLE.replace("CLASSNAME", className).replace("PARENTCLASS", parentClassName));
         } catch (IOException ex) {
-            Logger.getLogger(JavaClientClassWriter.class.getName()).
-                    log(Level.SEVERE, null, ex);
+           RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -200,8 +197,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
         try {
             source.append(TMPL_GET_SEGMENT.replace("TAGNAME", tagName));
         } catch (IOException ex) {
-            Logger.getLogger(JavaClientClassWriter.class.getName()).
-                    log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -221,8 +217,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
 
             source.append(method);
         } catch (IOException ex) {
-            Logger.getLogger(JavaClientClassWriter.class.getName()).
-                    log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
     }
     
@@ -257,8 +252,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
                 .replace("TYPE", type)
                 .replace("FIELDNAME", fieldName));
         } catch (IOException ex) {
-            Logger.getLogger(JavaClientClassWriter.class.getName()).
-                    log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -278,8 +272,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
                 .replace("HASKEY2", hasKey ? ", name" : "")
                 .replace("ELEMENTNAME", elementName));
         } catch (IOException ex) {
-            Logger.getLogger(JavaClientClassWriter.class.getName()).
-                    log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -289,8 +282,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
         try {
             source.append(TMPL_COLLECTION_LEAF_RESOURCE.replace("CLASSNAME", className));
         } catch (IOException ex) {
-            Logger.getLogger(JavaClientClassWriter.class.getName()).
-                    log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -299,8 +291,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
         try {
             source.append(TMPL_COLLECTION_LEAF_RESOURCE.replace("CLASSNAME", className));
         } catch (IOException ex) {
-            Logger.getLogger(JavaClientClassWriter.class.getName()).
-                    log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -318,7 +309,7 @@ public class JavaClientClassWriter implements ClientClassWriter {
                 try {
                     source.close();
                 } catch (IOException ex) {
-                    Logger.getLogger(ClientGenerator.class.getName()).log(Level.SEVERE, null, ex);
+                    RestLogging.restLogger.log(Level.SEVERE, null, ex);
                 }
             }
         }
