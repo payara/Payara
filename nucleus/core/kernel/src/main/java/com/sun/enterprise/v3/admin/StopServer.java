@@ -75,9 +75,8 @@ public class StopServer {
                 Thread.sleep(1000);
                 gfKernel = habitat.getService(GlassFish.class);
             }
-            if (gfKernel != null) {
-                gfKernel.stop();
-            }
+            // gfKernel is absolutely positively for-sure not null.
+            gfKernel.stop();
         }
         catch (Throwable t) {
             // ignore

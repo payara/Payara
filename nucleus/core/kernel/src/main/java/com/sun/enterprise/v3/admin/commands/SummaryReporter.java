@@ -52,11 +52,11 @@ import javax.management.MBeanServerConnection;
 
 
 class SummaryReporter {
-    
+
     private final MBeanServerConnection mbsc;
     private final StringManager sm = StringManager.getManager(SummaryReporter.class);
     private final static String secretProperty = "module.core.status";
-    
+
     public SummaryReporter(final MBeanServerConnection mbsc) {
         this.mbsc = mbsc;
     }
@@ -74,7 +74,7 @@ class SummaryReporter {
             throw new RuntimeException(e);
         }
     }
-    
+
     private String getOSInfo(final OperatingSystemMXBean os) {
         final StringBuilderNewLineAppender sb = new StringBuilderNewLineAppender(new StringBuilder());
         sb.append(sm.getString("os.info"));
@@ -100,12 +100,12 @@ class SummaryReporter {
         // I decided to sort this for better readability -- 27 Feb 2006
         final TreeMap<String, String> props = new TreeMap<String, String>(unsorted);
         sb.append(sm.getString("rt.sysprops"));
-        for (final String n : props.keySet()) {
-            sb.append(n + " = " + filterForbidden(n, props.get(n)));
+        for (Map.Entry<String, String> entry : props.entrySet()) {
+            sb.append(entry.getKey()).append(" = ").append(filterForbidden(entry.getKey(), entry.getValue()));
         }
         return ( sb.toString() );
     }
-    
+
     private String getSystemLoad(OperatingSystemMXBean os) {
         //available only on 1.6
         String info = ThreadMonitor.NA;
@@ -117,7 +117,7 @@ class SummaryReporter {
                 return ( ret.toString() );
             }
         } catch(Exception e) {
-            
+
         }
         return ( info );
     }
