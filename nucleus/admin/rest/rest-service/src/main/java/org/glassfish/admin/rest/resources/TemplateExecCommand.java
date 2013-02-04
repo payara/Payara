@@ -43,7 +43,6 @@ package org.glassfish.admin.rest.resources;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.net.HttpURLConnection;
 import org.glassfish.admin.rest.utils.ResourceUtil;
-import org.glassfish.admin.rest.RestService;
 import org.glassfish.admin.rest.provider.MethodMetaData;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.results.OptionsResult;
@@ -53,7 +52,6 @@ import org.glassfish.api.admin.ParameterMap;
 
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -63,13 +61,19 @@ import java.util.Properties;
 import java.util.Set;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.PathSegment;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
 
 import org.glassfish.jersey.media.sse.EventOutput;
 
 import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.OptionsCapable;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.utils.Util;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,6 @@
  * holder.
  */
 
-
 package org.glassfish.admin.restconnector;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -71,8 +70,6 @@ public abstract class AbstractProxyRestAdapter implements Adapter {
 
     private AdminEndpointDecider aed;
 
-    private Logger logger = Logger.getLogger(getClass().getPackage().getName());
-
     /*
      * This is not a component itself, so it can not use injection facility.
      * All injection capable fields are implemented as abstract getters.
@@ -85,7 +82,7 @@ public abstract class AbstractProxyRestAdapter implements Adapter {
 
     private synchronized AdminEndpointDecider getEpd() {
         if (aed == null) {
-            aed = new AdminEndpointDecider(getConfig(), logger);
+            aed = new AdminEndpointDecider(getConfig(), Logging.logger);
         }
         return aed;
     }
