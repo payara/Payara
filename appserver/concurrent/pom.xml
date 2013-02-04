@@ -79,5 +79,6 @@
     <modules>
 	<module>config</module>
 	<module>admin</module>
+	<module>runtime</module>
     </modules>
 </project>
