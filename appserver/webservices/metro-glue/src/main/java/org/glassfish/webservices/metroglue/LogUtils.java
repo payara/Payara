@@ -51,7 +51,7 @@ import org.glassfish.logging.annotation.LoggerInfo;
  */
 public final class LogUtils {
 
-    private static final String LOGMSG_PREFIX = "WS-METROGLUE";
+    private static final String LOGMSG_PREFIX = "AS-WSMETROGLUE";
 
     @LogMessagesResourceBundle
     public static final String LOG_MESSAGES = "org.glassfish.webservices.metroglue.LogMessages";
@@ -109,10 +109,10 @@ public final class LogUtils {
     @LogMessageInfo(
             message = "WS19999: Caught unexpected exception.",
             level = "WARNING")
-    public static final String WSTX_SERVICE_UNEXPECTED_EXCEPTION = LOGMSG_PREFIX + "19999";
+    public static final String WSTX_SERVICE_UNEXPECTED_EXCEPTION = LOGMSG_PREFIX + "-19999";
 
     @LogMessageInfo(
             message = "WS19998: Exception occurred retrieving port configuration for WSTX service.",
             level = "FINEST")
-    public static final String WSTX_SERVICE_PORT_CONFIGURATION_EXCEPTION = LOGMSG_PREFIX + "19998";
+    public static final String WSTX_SERVICE_PORT_CONFIGURATION_EXCEPTION = LOGMSG_PREFIX + "-19998";
 }

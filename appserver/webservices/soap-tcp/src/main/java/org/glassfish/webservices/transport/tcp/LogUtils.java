@@ -51,7 +51,7 @@ import org.glassfish.logging.annotation.LoggerInfo;
  */
 public final class LogUtils {
 
-    private static final String LOGMSG_PREFIX = "WS-SOAPTCP";
+    private static final String LOGMSG_PREFIX = "AS-WSSOAPTCP";
 
     @LogMessagesResourceBundle
     public static final String LOG_MESSAGES = "org.glassfish.webservices.transport.tcp.LogMessages";
