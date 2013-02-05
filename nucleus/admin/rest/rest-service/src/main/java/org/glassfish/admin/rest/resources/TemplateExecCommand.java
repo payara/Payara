@@ -140,7 +140,7 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
     }
 
     @OPTIONS
-    @Consumes(Constants.MEDIA_TYPE_JSON)
+    @Produces(Constants.MEDIA_TYPE_JSON)
     public String options() throws JSONException {
         try {
             return new RestResourceMetadata(this).toJson().toString(Util.getFormattingIndentLevel());

@@ -159,6 +159,48 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
     }
 
     /**
+     * allows for remote files to be put in a tmp area and we pass the
+     * local location of this file to the corresponding command instead of the content of the file
+     * * Yu need to add  enctype="multipart/form-data" in the form
+     * for ex:  <form action="http://localhost:4848/management/domain/applications/application" method="post" enctype="multipart/form-data">
+     * then any param of type="file" will be uploaded, stored locally and the param will use the local location
+     * on the server side (ie. just the path)
+     */
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Object postLegacyFormat(FormDataMultiPart formData) {
+        return createOrUpdateEntityLegacyFormat(createDataBasedOnForm(formData)); //execute the deploy command with a copy of the file locally
+    }
+
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(Constants.MEDIA_TYPE_JSON)
+    public Object post(FormDataMultiPart formData) {
+        return createOrUpdateEntity(createDataBasedOnForm(formData)); //execute the deploy command with a copy of the file locally
+    }
+
+    @DELETE
+    public Response delete(HashMap<String, String> data) {
+        return Response.ok(ResourceUtil.getActionReportResult(doDelete(data),
+                localStrings.getLocalString("rest.resource.delete.message", "\"{0}\" deleted successfully.",
+                new Object[]{ uriInfo.getAbsolutePath() }),
+                requestHeaders,
+                uriInfo))
+                .build(); //200 - ok
+    }
+
+    @OPTIONS
+    public ActionReportResult optionsLegacyFormat() {
+        return buildActionReportResult(false);
+    }
+
+    @OPTIONS
+    @Produces(Constants.MEDIA_TYPE_JSON)
+    public RestResourceMetadata options() {
+        return new RestResourceMetadata(this);
+    }
+
+    /**
      * This method performs the creation or updating of an entity, regardless of the
      * request's mime type.  If an error occurs, a <code>WebApplicationException</code>
      * is thrown, so if the method returns, the create/update was successful.
@@ -201,31 +243,6 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
         } catch (Exception ex) {
             throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    /**
-     * allows for remote files to be put in a tmp area and we pass the
-     * local location of this file to the corresponding command instead of the content of the file
-     * * Yu need to add  enctype="multipart/form-data" in the form
-     * for ex:  <form action="http://localhost:4848/management/domain/applications/application" method="post" enctype="multipart/form-data">
-     * then any param of type="file" will be uploaded, stored locally and the param will use the local location
-     * on the server side (ie. just the path)
-     */
-    @POST
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Object post(FormDataMultiPart formData) {
-        HashMap<String, String> data = createDataBasedOnForm(formData);
-        return doCreateOrUpdate(data); //execute the deploy command with a copy of the file locally
-    }
-
-    @DELETE
-    public Response delete(HashMap<String, String> data) {
-        return Response.ok(ResourceUtil.getActionReportResult(doDelete(data),
-                localStrings.getLocalString("rest.resource.delete.message", "\"{0}\" deleted successfully.",
-                new Object[]{ uriInfo.getAbsolutePath() }),
-                requestHeaders,
-                uriInfo))
-                .build(); //200 - ok
     }
 
     protected ExitCode doDelete(HashMap<String, String> data) {
@@ -293,17 +310,6 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
         throw new WebApplicationException(handleError(Status.BAD_REQUEST,
                 localStrings.getLocalString("rest.resource.delete.forbidden",
                 "DELETE on \"{0}\" is forbidden.", new Object[]{uriInfo.getAbsolutePath()})));
-    }
-
-    @OPTIONS
-    public ActionReportResult optionsLegacyFormat() {
-        return buildActionReportResult(false);
-    }
-
-    @OPTIONS
-    @Produces(Constants.MEDIA_TYPE_JSON)
-    public RestResourceMetadata options() {
-        return new RestResourceMetadata(this);
     }
 
     @Override
