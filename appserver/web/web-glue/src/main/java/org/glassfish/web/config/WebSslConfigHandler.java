@@ -40,15 +40,17 @@
 
 package org.glassfish.web.config;
 
+import java.text.MessageFormat;
 import com.sun.enterprise.admin.commands.CreateSsl;
 import com.sun.enterprise.admin.commands.DeleteSsl;
 import com.sun.enterprise.admin.commands.SslConfigHandler;
-import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.web.WebContainer;
 import org.glassfish.api.ActionReport;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.grizzly.config.dom.Ssl;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -61,8 +63,26 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name="http-listener")
 public class WebSslConfigHandler implements SslConfigHandler {
 
-    final private static LocalStringManagerImpl localStrings =
-        new LocalStringManagerImpl(CreateSsl.class);
+    @LogMessageInfo(
+            message = "Network Listener named {0} does not exist.  Creating or using the named protocol element instead.",
+            level = "INFO")
+    private static final String CREATE_SSL_HTTP_NOT_FOUND = "AS-WEB-00369";
+
+    @LogMessageInfo(
+            message = "Network Listener named {0} to which this ssl element is being added already has an ssl element.",
+            level = "INFO")
+    private static final String CREATE_SSL_HTTP_ALREADY_EXISTS = "AS-WEB-00370";
+
+    @LogMessageInfo(
+            message = "HTTP Listener named {0} not found",
+            level = "INFO")
+    private static final String DELETE_SSL_HTTP_LISTENER_NOT_FOUND = "AS-WEB-00371";
+
+    @LogMessageInfo(
+            message = "Ssl element does not exist for Listener named {0}",
+            level = "INFO")
+    private static final String DELETE_SSL_ELEMENT_DOES_NOT_EXIST = "AS-WEB-00372";
+
 
     @Override
     public void create(final CreateSsl command, ActionReport report) {
@@ -74,17 +94,18 @@ public class WebSslConfigHandler implements SslConfigHandler {
         try {
             if (listener == null) {
                 report.setMessage(
-                        localStrings.getLocalString("create.ssl.http.notfound",
-                                "Network Listener named {0} does not exist.  Creating or using the named protocol element instead.",
-                                command.listenerId));
+                        WebContainer.rb.getString(
+                                MessageFormat.format(
+                                        CREATE_SSL_HTTP_NOT_FOUND, command.listenerId)));
                 httpProtocol = command.findOrCreateProtocol(command.listenerId);
             } else {
                 httpProtocol = listener.findHttpProtocol();
                 Ssl ssl = httpProtocol.getSsl();
                 if (ssl != null) {
-                    report.setMessage(localStrings.getLocalString("create.ssl.http.alreadyExists",
-                        "Network Listener named {0} to which this ssl element is being added already has an ssl element.",
-                        command.listenerId));
+                    report.setMessage(
+                            WebContainer.rb.getString(
+                                    MessageFormat.format(
+                                            CREATE_SSL_HTTP_ALREADY_EXISTS, command.listenerId)));
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
                 }
@@ -112,18 +133,18 @@ public class WebSslConfigHandler implements SslConfigHandler {
             netConfig.getNetworkListener(command.listenerId);
 
         if (networkListener == null) {
-            report.setMessage(localStrings.getLocalString(
-                "delete.ssl.http.listener.notfound",
-                "HTTP Listener named {0} not found", command.listenerId));
+            report.setMessage(
+                    WebContainer.rb.getString(
+                            MessageFormat.format(DELETE_SSL_HTTP_LISTENER_NOT_FOUND, command.listenerId)));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
 
         Protocol protocol = networkListener.findHttpProtocol();
         if (protocol.getSsl() == null) {
-            report.setMessage(localStrings.getLocalString(
-                "delete.ssl.element.doesnotexist", "Ssl element does " +
-                "not exist for Listener named {0}", command.listenerId));
+            report.setMessage(
+                    WebContainer.rb.getString(
+                            MessageFormat.format(DELETE_SSL_ELEMENT_DOES_NOT_EXIST, command.listenerId)));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }

@@ -40,7 +40,6 @@
 
 package org.glassfish.web.deployment.node;
 
-import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
@@ -48,9 +47,10 @@ import com.sun.enterprise.deployment.node.XMLNode;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.net.URLPattern;
-import org.glassfish.web.deployment.descriptor.WebComponentDescriptorImpl;
+import com.sun.enterprise.web.WebContainer;
 import org.glassfish.web.deployment.xml.WebTagNames;
 
+import java.text.MessageFormat;
 import java.util.logging.Level;
 
 /**
@@ -63,11 +63,6 @@ public class ServletMappingNode extends DeploymentDescriptorNode {
 
     private String servletName;
     private String urlPattern;
-
-    private static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(ServletMappingNode.class);
-
-    //protected WebComponentDescriptor descriptor = null;
 
     /**
      * @return the descriptor instance to associate with this XMLNode
@@ -116,11 +111,10 @@ public class ServletMappingNode extends DeploymentDescriptorNode {
                     }
                     value = trimmedUrl;
                 } else {
-                    throw new IllegalArgumentException(localStrings
-                            .getLocalString(
-                                    "enterprise.deployment.invalidurlpattern",
-                                    "Invalid URL Pattern: [{0}]",
-                                    new Object[] { value }));
+                    throw new IllegalArgumentException(
+                            WebContainer.rb.getString(
+                                    MessageFormat.format(
+                                            FilterMappingNode.ENTERPRISE_DEPLOYMENT_INVALID_URL_PATTERN, value)));
                 }
             }
 

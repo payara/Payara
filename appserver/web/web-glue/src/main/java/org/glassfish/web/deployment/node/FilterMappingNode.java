@@ -50,12 +50,14 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.net.URLPattern;
+import com.sun.enterprise.web.WebContainer;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
 import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
+import java.text.MessageFormat;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -71,9 +73,12 @@ import javax.servlet.DispatcherType;
 public class FilterMappingNode extends DeploymentDescriptorNode<ServletFilterMappingDescriptor> {
 
     private ServletFilterMappingDescriptor descriptor;
-    private static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(ServletMappingNode.class);
-    
+
+    @LogMessageInfo(
+            message = "Invalid URL Pattern: [{0}]",
+            level = "INFO")
+    protected static final String ENTERPRISE_DEPLOYMENT_INVALID_URL_PATTERN = "AS-WEB-00373";
+
     /**
      * @return the descriptor instance to associate with this XMLNode
      */
@@ -135,11 +140,10 @@ public class FilterMappingNode extends DeploymentDescriptorNode<ServletFilterMap
                     }
                     value = trimmedUrl;
                 } else {
-                    throw new IllegalArgumentException(localStrings
-                            .getLocalString(
-                                    "enterprise.deployment.invalidurlpattern",
-                                    "Invalid URL Pattern: [{0}]",
-                                    new Object[] { value }));
+                    throw new IllegalArgumentException(
+                            WebContainer.rb.getString(
+                                    MessageFormat.format(
+                                            ENTERPRISE_DEPLOYMENT_INVALID_URL_PATTERN, value)));
                 }
             }
             descriptor.addURLPattern(value);

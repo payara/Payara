@@ -200,7 +200,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     public static final Logger logger =
             Logger.getLogger(WEB_MAIN_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 
-    protected static final ResourceBundle rb = logger.getResourceBundle();
+    public static final ResourceBundle rb = logger.getResourceBundle();
 
     @LogMessageInfo(
             message = "Loading web module {0} in virtual server {1} at {2}",

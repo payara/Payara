@@ -46,10 +46,12 @@ import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.net.URLPattern;
+import com.sun.enterprise.web.WebContainer;
 import org.glassfish.web.deployment.descriptor.WebResourceCollectionImpl;
 import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
+import java.text.MessageFormat;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -62,8 +64,6 @@ import java.util.logging.Level;
 public class WebResourceCollectionNode extends DeploymentDescriptorNode<WebResourceCollectionImpl>  {
 
     private WebResourceCollectionImpl descriptor;
-    private static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(ServletMappingNode.class);
 
     /**
      * @return the descriptor instance to associate with this XMLNode
@@ -133,11 +133,10 @@ public class WebResourceCollectionNode extends DeploymentDescriptorNode<WebResou
                     }
                     value = trimmedUrl;
                 } else {
-                    throw new IllegalArgumentException(localStrings
-                            .getLocalString(
-                                    "enterprise.deployment.invalidurlpattern",
-                                    "Invalid URL Pattern: [{0}]",
-                                    new Object[] { value }));
+                    throw new IllegalArgumentException(
+                            WebContainer.rb.getString(
+                                    MessageFormat.format(
+                                            FilterMappingNode.ENTERPRISE_DEPLOYMENT_INVALID_URL_PATTERN, value)));
                 }
             }
             descriptor.addUrlPattern(value);
