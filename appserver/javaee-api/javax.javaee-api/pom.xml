@@ -130,12 +130,6 @@
             <artifactId>javax.enterprise.concurrent-api</artifactId>
             <optional>true</optional>
         </dependency>
-<!--
-        <dependency>
-            <groupId>javax.cache</groupId>
-            <artifactId>javax.cache-api</artifactId>
-            <version>1.0</version>
-        </dependency>-->
        <dependency>
             <groupId>javax.batch</groupId>
             <artifactId>javax.batch-api-all</artifactId>
@@ -145,7 +139,6 @@
         <dependency>
             <groupId>javax.enterprise.deploy</groupId>
             <artifactId>javax.enterprise.deploy-api</artifactId>
-            <optional>true</optional>
         </dependency>
         <!--
             - using jboss coordinate because it's the only sources.jar available for jaxr
