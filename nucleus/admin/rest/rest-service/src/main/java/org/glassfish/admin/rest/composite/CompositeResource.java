@@ -85,7 +85,8 @@ import org.glassfish.jersey.media.sse.EventOutput;
 public abstract class CompositeResource extends AbstractResource implements RestResource, DefaultsGenerator, OptionsCapable {
     // All methods that expect a request body should include the annotation:
     // @Consumes(CONSUMES_TYPE)
-    protected static final String CONSUMES_TYPE = Constants.MEDIA_TYPE_JSON;
+    public static final String CONSUMES_TYPE = Constants.MEDIA_TYPE_JSON;
+    public static final String QUERY_PARAM_DETACHED = "__detached";
     // TODO: These should be configurable
     protected static final int THREAD_POOL_CORE = 5;
     protected static final int THREAD_POOL_MAX = 10;
@@ -347,8 +348,8 @@ public abstract class CompositeResource extends AbstractResource implements Rest
         return this.getUriInfo().getPathParameters().getFirst(name);
     }
 
-    protected boolean detachedRequested() {
-        return Boolean.parseBoolean(getUriInfo().getQueryParameters().getFirst("detached"));
+    protected boolean detachedRequested(String detached) {
+        return Boolean.parseBoolean(detached);
     }
 
     protected synchronized ExecutorService getExecutorService() {
