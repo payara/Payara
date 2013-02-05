@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -41,66 +40,53 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-nucleus-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.cluster</groupId>
-    <artifactId>cluster</artifactId>
-    <packaging>pom</packaging>
-    <name>Cluster</name>
-    <developers>
-        <developer>
-            <id>tmueller</id>
-            <name>Tom Mueller</name>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>lead</role>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>shannon</id>
-            <name>Bill Shannon</name>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>bnevins</id>
-            <name>Byron Nevins</name>
-            <organization>Oracle Corporation</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>bbissett</id>
-            <name>Bobby Bissett</name>
-            <organization>Oracle Corporation</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
-    <modules>
-        <module>common</module>
-        <module>admin</module>
-        <module>cli</module>
-        <module>gms-bootstrap</module>
-        <module>gms-adapter</module>
-        <module>ssh</module>
-        <module>gms-bootstrap-l10n</module>
-        <module>cli-l10n</module>
-        <module>ssh-l10n</module>
-        <module>common-l10n</module>
-        <module>admin-l10n</module>
-        <module>uc-l10n</module>
-    </modules>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>nucleus-resources-l10n</artifactId>
+    
+    <name>nucleus.resources l10n</name>
+    <description>Nucleus Resource Classes l10n</description>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Export-Package />
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>**/*.jar</exclude>
+                </excludes>
+            </resource>
+        </resources>
+    </build>
 </project>
 

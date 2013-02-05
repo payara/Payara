@@ -153,6 +153,7 @@
         <module>tests</module>
         <module>diagnostics</module>
 	<module>resources</module>
+	<module>resources-l10n</module>
     </modules>
     
     <build>

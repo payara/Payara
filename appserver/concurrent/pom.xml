@@ -80,5 +80,7 @@
 	<module>config</module>
 	<module>admin</module>
 	<module>runtime</module>
+	<module>admin-l10n</module>
+	<module>config-l10n</module>
     </modules>
 </project>

@@ -126,6 +126,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.main.webservices</groupId>
+            <artifactId>connector-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.main.security</groupId>
             <artifactId>webservices.security-l10n</artifactId>
             <version>${project.version}</version>
