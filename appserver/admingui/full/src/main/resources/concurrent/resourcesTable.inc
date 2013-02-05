@@ -57,10 +57,10 @@
    <sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}" data={"$pageSession{listOfRows}"} sourceVar="td">
        <!beforeCreate
            gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", id="jndiName", result="#{pageSession.tmpRows}");
-           println("================ #{pageSession.tmpRows}");
+           //println("================ #{pageSession.tmpRows}");
            
            gfr.getResourcesTableData();
-           println("------------- #{pageSession.listOfRows}");
+           //println("------------- #{pageSession.listOfRows}");
         />
      <!afterCreate
          getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
