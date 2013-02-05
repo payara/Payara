@@ -39,9 +39,11 @@
  */
 package com.sun.enterprise.admin.progress;
 
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
+import org.glassfish.api.admin.CommandProgress;
 import org.glassfish.api.admin.ProgressStatus;
 import org.glassfish.api.admin.progress.ProgressStatusBase;
 import org.glassfish.api.admin.progress.ProgressStatusDTO;
@@ -54,6 +56,9 @@ import org.glassfish.api.admin.progress.ProgressStatusEvent;
  * @author mmares
  */
 public class ProgressStatusClient {
+    
+    private static final LocalStringsImpl strings =
+            new LocalStringsImpl(ProgressStatusClient.class);
     
     private ProgressStatus status;
     private final Map<String, ProgressStatus> map = new HashMap<String, ProgressStatus>();
@@ -177,6 +182,44 @@ public class ProgressStatusClient {
 
     public synchronized ProgressStatus getProgressStatus() {
         return status;
+    }
+    
+    public static String composeMessageForPrint(CommandProgress cp) {
+        if (cp == null) {
+            return null;
+        }
+        StringBuilder result = new StringBuilder();
+        synchronized (cp) {
+            //Measurements
+            int percentage = Math.round(cp.computeCompletePortion() * 100);
+            if (percentage >= 0) {
+                result.append(percentage);
+                switch (result.length()) {
+                    case 1:
+                        result.insert(0, "  ");
+                        break;
+                    case 2:
+                        result.insert(0, ' ');
+                        break;
+                    default:
+                        break;
+                }
+                result.append('%');
+            } else {
+                int sumSteps = cp.computeSumSteps();
+                result.append(sumSteps);
+            }
+            //Message
+            String message = cp.getLastMessage();
+            if (!StringUtils.ok(message) && StringUtils.ok(cp.getName())) {
+                message = strings.getString("progressstatus.message.starting", "Starting");
+            }
+            if (StringUtils.ok(message)) {
+                result.append(": ");
+                result.append(message);
+            }
+        }
+        return result.toString();
     }
     
 }

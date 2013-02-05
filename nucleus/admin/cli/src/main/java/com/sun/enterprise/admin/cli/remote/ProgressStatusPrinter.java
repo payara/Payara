@@ -92,10 +92,7 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
     
     private static final char[] spinner = new char[] {'|', '/', '-', '\\'};
     
-    private int lastPercentage = -1;
-    private String lastMessage = "";
-    private StringBuilder outMsg = new StringBuilder();
-    private int lastSumSteps = -1;
+    private String lastMessage;
     private int lastMsgLength = 0;
     private boolean firstPrint = true;
     private int spinnerIndex = -1;
@@ -171,75 +168,35 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
         }
         //Now print
         if (commandProgress != null) {
-            outMsg.setLength(0);
-            boolean printIt = false;
-            //Measurements
-            int percentage = Math.round(commandProgress.computeCompletePortion() * 100);
-            if (percentage >= 0) {
-                outMsg.append(percentage);
-                switch (outMsg.length()) {
-                    case 1:
-                        outMsg.insert(0, "  ");
-                        break;
-                    case 2:
-                        outMsg.insert(0, ' ');
-                        break;
-                    default:
-                        break;
-                }
-                outMsg.append('%');
-                if (percentage != lastPercentage) {
-                    printIt = true;
-                    lastPercentage = percentage;
-                }
-            } else {
-                int sumSteps = commandProgress.computeSumSteps();
-                outMsg.append(sumSteps);
-                if (sumSteps > lastSumSteps) {
-                    printIt = true;
-                    lastSumSteps = sumSteps;
-                }
-            }
-            //Message
-            String message = commandProgress.getLastMessage();
-            if (message != null && message.length() > 0) {
-                outMsg.append(": ");
-                outMsg.append(message);
-                if (!message.equals(lastMessage)) {
-                    printIt = true;
-                    lastMessage = message;
-                }
-            }
+            String message = ProgressStatusClient.composeMessageForPrint(commandProgress);
             //Print
-            if (printIt) {
+            if (StringUtils.ok(message) && !message.equals(lastMessage)) {
                 if (disableAnimation || debugOutput) {
                     if (!firstPrint && !debugOutput) {
                         System.out.println();
                     }
-                    firstPrint = false;
-                    System.out.print(outMsg);
-                    this.lastMsgLength = outMsg.length();
+                    System.out.print(message);
                     if (debugOutput) {
                         System.out.println();
                     }
                 } else {
                     if (!firstPrint) {
                         System.out.print('\r');
-                    } else {
-                        firstPrint = false;
                     }
-                    System.out.print(outMsg);
+                    System.out.print(message);
                     System.out.print(' ');
-                    int spaceCount = lastMsgLength - outMsg.length();
+                    int spaceCount = lastMsgLength - message.length();
                     for (int i = 0; i < spaceCount; i++) {
                         System.out.print(' ');
                     }
                     for (int i = 0; i < spaceCount; i++) {
                         System.out.print('\b');
                     }
-                    lastMsgLength = outMsg.length();
                     spinnerIndex = -1;
                 }
+                this.firstPrint = false;
+                this.lastMsgLength = message.length();
+                this.lastMessage = message;
             }
             //Change ticker
             if (!debugOutput) {
@@ -281,10 +238,7 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
     public synchronized void reset() {
         client = new ProgressStatusClient(null);
         commandProgress = null;
-        lastPercentage = -1;
-        lastMessage = "";
-        outMsg.setLength(0);
-        lastSumSteps = -1;
+        lastMessage = null;
         lastMsgLength = 0;
         firstPrint = true;
         if (this.ticker != null) {
