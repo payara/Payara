@@ -38,6 +38,8 @@
  * holder.
  */
 package com.sun.enterprise.v3.admin.commands;
+import com.sun.enterprise.admin.progress.ProgressStatusClient;
+import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.i18n.StringManager;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -116,6 +118,10 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
                 List<String> userList =  SubjectUtil.getUsernamesFromSubject(oneJob.getSubject());
                 ActionReport actionReport = oneJob.getActionReport();
                 String message = actionReport == null ? "" : actionReport.getMessage();
+
+                if (!StringUtils.ok(message)) {
+                    message = ProgressStatusClient.composeMessageForPrint(oneJob.getCommandProgress());
+                }
                 String exitCode =  actionReport == null ? "" : actionReport.getActionExitCode().name();
                 info = new JobInfo(oneJob.getId(),oneJob.getName(),oneJob.getCommandExecutionDate(),exitCode,userList.get(0),message,oneJob.getJobsFile(),oneJob.getState().name());
 
@@ -136,7 +142,11 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
                 if (!skipJob(job.getName())) {
                     List<String> userList =  SubjectUtil.getUsernamesFromSubject(job.getSubject());
                     ActionReport actionReport = job.getActionReport();
+
                     String message = actionReport == null ? "" : actionReport.getMessage();
+                    if (!StringUtils.ok(message)) {
+                        message = ProgressStatusClient.composeMessageForPrint(job.getCommandProgress());
+                    }
                     String exitCode = actionReport == null ? "" : actionReport.getActionExitCode().name();
                     jobInfoList.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),exitCode,userList.get(0),message,job.getJobsFile(),job.getState().name()));
                 }
