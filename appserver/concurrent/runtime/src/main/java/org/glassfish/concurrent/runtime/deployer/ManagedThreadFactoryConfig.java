@@ -40,18 +40,24 @@
 
 package org.glassfish.concurrent.runtime.deployer;
 
-import org.glassfish.concurrent.config.ContextService;
+import org.glassfish.concurrent.config.ManagedThreadFactory;
 
 /**
- * Contains configuration information for a ContextService object
+ * Contains configuration information for a ManagedThreadFactory object
  */
-public class ContextServiceConfig extends BaseConfig {
+public class ManagedThreadFactoryConfig extends BaseConfig {
 
-    private String contextInfo = null;
+    private int threadPriority;
+    private String contextInfo;
 
-    public ContextServiceConfig(ContextService config) {
+    public ManagedThreadFactoryConfig(ManagedThreadFactory config) {
         super(config.getJndiName());
         contextInfo = config.getContextInfo();
+        threadPriority = parseInt(config.getThreadPriority(), Thread.NORM_PRIORITY);
+    }
+
+    public int getThreadPriority() {
+        return threadPriority;
     }
 
     public String getContextInfo() {
@@ -59,6 +65,6 @@ public class ContextServiceConfig extends BaseConfig {
     }
 
     public TYPE getType() {
-        return TYPE.CONTEXT_SERVICE;
+        return TYPE.MANAGED_THREAD_FACTORY;
     }
 }

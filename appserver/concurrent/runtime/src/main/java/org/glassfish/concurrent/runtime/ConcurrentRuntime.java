@@ -44,9 +44,9 @@ import com.sun.enterprise.security.integration.AppServSecurityContext;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.concurrent.runtime.deployer.ContextServiceConfig;
 import org.glassfish.concurrent.runtime.deployer.ManagedExecutorServiceConfig;
-import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
-import org.glassfish.enterprise.concurrent.ContextServiceImpl;
-import org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl;
+import org.glassfish.concurrent.runtime.deployer.ManagedScheduledExecutorServiceConfig;
+import org.glassfish.concurrent.runtime.deployer.ManagedThreadFactoryConfig;
+import org.glassfish.enterprise.concurrent.*;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
@@ -68,6 +68,9 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     private static ConcurrentRuntime _runtime;
 
     private Map<String, ManagedExecutorServiceImpl> managedExecutorServiceMap;
+    private Map<String, ManagedScheduledExecutorServiceImpl> managedScheduledExecutorServiceMap;
+    private Map<String, ContextServiceImpl> contextServiceMap;
+    private Map<String, ManagedThreadFactoryImpl> managedThreadFactoryMap;
 
     @Inject
     AppServSecurityContext securityContext;
@@ -102,9 +105,16 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     }
 
     public synchronized ContextServiceImpl getContextService(ResourceInfo resource, ContextServiceConfig config) {
-        ContextServiceImpl obj = createContextService(config.getJndiName(), config.getContextInfo());
-        // TODO: remember this object somewhere?
-        return obj;
+        String jndiName = config.getJndiName();
+        if (contextServiceMap != null && contextServiceMap.containsKey(jndiName)) {
+            return contextServiceMap.get(jndiName);
+        }
+        ContextServiceImpl contextService = createContextService(config.getJndiName(), config.getContextInfo());
+        if (contextServiceMap == null) {
+            contextServiceMap = new HashMap();
+        }
+        contextServiceMap.put(jndiName, contextService);
+        return contextService;
     }
 
     public synchronized ManagedExecutorServiceImpl getManagedExecutorService(ResourceInfo resource, ManagedExecutorServiceConfig config) {
@@ -127,7 +137,45 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         return mes;
     }
 
+    public synchronized ManagedScheduledExecutorServiceImpl getManagedScheduledExecutorService(ResourceInfo resource,
+                                                                                               ManagedScheduledExecutorServiceConfig config) {
+        String jndiName = config.getJndiName();
+        if (managedScheduledExecutorServiceMap != null && managedScheduledExecutorServiceMap.containsKey(jndiName)) {
+            return managedScheduledExecutorServiceMap.get(jndiName);
+        }
+        ManagedScheduledExecutorServiceImpl mes = new ManagedScheduledExecutorServiceImpl(config.getJndiName(), null, 0, false,
+                1, 1,
+                0, TimeUnit.SECONDS,
+                0,
+                createContextService(config.getJndiName() + "-contextservice", config.getContextInfo()),
+                AbstractManagedExecutorService.RejectPolicy.ABORT,
+                AbstractManagedExecutorService.RunLocation.LOCAL,
+                true);
+        if (managedScheduledExecutorServiceMap == null) {
+            managedScheduledExecutorServiceMap = new HashMap();
+        }
+        managedScheduledExecutorServiceMap.put(jndiName, mes);
+        return mes;
+    }
+
+    public synchronized ManagedThreadFactoryImpl getManagedThreadFactory(ResourceInfo resource, ManagedThreadFactoryConfig config) {
+        String jndiName = config.getJndiName();
+        if (managedThreadFactoryMap != null && managedThreadFactoryMap.containsKey(jndiName)) {
+            return managedThreadFactoryMap.get(jndiName);
+        }
+        ManagedThreadFactoryImpl managedThreadFactory = new ManagedThreadFactoryImpl(config.getJndiName(),
+                createContextService(config.getJndiName() + "-contextservice", config.getContextInfo()),
+                config.getThreadPriority(),
+                false);
+        if (managedThreadFactoryMap == null) {
+            managedThreadFactoryMap = new HashMap();
+        }
+        managedThreadFactoryMap.put(jndiName, managedThreadFactory);
+        return managedThreadFactory;
+    }
+
     private ContextServiceImpl createContextService(String jndiName, String contextInfo) {
+
         ContextSetupProviderImpl contextSetupProvider = new ContextSetupProviderImpl(invocationManager, securityContext,
                 ContextSetupProviderImpl.CONTEXT_TYPE.CLASSLOADING,
                 ContextSetupProviderImpl.CONTEXT_TYPE.NAMING,
@@ -144,6 +192,6 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
 
     @Override
     public void preDestroy() {
-        // TODO shut down objects here?
+        // TODO shut down objects here
     }
 }

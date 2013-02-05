@@ -57,9 +57,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     static final long serialVersionUID = 1L;
 
-    static enum CONTEXT_TYPE {CLASSLOADING, SECURITY, NAMING}
+    static enum CONTEXT_TYPE {CLASSLOADING, SECURITY, NAMING, WORKAREA}
 
-    private boolean classloading, security, naming;
+    private boolean classloading, security, naming, workArea;
 
     public ContextSetupProviderImpl(InvocationManager invocationManager, AppServSecurityContext securityContext, CONTEXT_TYPE... contextTypes) {
         this.invocationManager = invocationManager;
@@ -74,6 +74,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                     break;
                 case NAMING:
                     naming = true;
+                    break;
+                case WORKAREA:;
+                    workArea = true;
                     break;
             }
         }
@@ -102,7 +105,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (!naming) {
             savedInvocation.setJNDIEnvironment(null);
         }
-
+        // TODO - support workarea propagation
         return new InvocationContext(savedInvocation, contextClassloader, currentSecurityContext);
     }
 

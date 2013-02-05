@@ -42,8 +42,6 @@ package org.glassfish.concurrent.runtime.deployer;
 
 import org.glassfish.concurrent.config.ManagedExecutorService;
 
-import java.io.Serializable;
-
 /**
  * Contains configuration information for a ManagedExecutorService object
  */
@@ -70,7 +68,6 @@ public class ManagedExecutorServiceConfig extends BaseConfig  {
         maximumPoolSize = parseInt(config.getMaximumPoolSize(), Integer.MAX_VALUE);
         taskQueueCapacity = parseInt(config.getTaskQueueCapacity(), Integer.MAX_VALUE);
         threadLifeTimeSeconds = parseInt(config.getThreadLifetimeSeconds(), 0);
-
     }
 
     public String getContextInfo() {
@@ -107,18 +104,6 @@ public class ManagedExecutorServiceConfig extends BaseConfig  {
 
     public int getThreadLifeTimeSeconds() {
         return threadLifeTimeSeconds;
-    }
-
-    public int parseInt(String strValue, int defaultValue) {
-        if (strValue != null) {
-            try {
-                int intValue = Integer.parseInt(strValue);
-                return intValue;
-            } catch (NumberFormatException e) {
-                // ignore, just return default in this case
-            }
-        }
-        return defaultValue;
     }
 
     @Override

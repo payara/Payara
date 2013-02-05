@@ -45,6 +45,18 @@ import java.io.Serializable;
 
 public abstract class BaseConfig implements Serializable {
 
+    public int parseInt(String strValue, int defaultValue) {
+        if (strValue != null) {
+            try {
+                int intValue = Integer.parseInt(strValue);
+                return intValue;
+            } catch (NumberFormatException e) {
+                // ignore, just return default in this case
+            }
+        }
+        return defaultValue;
+    }
+
     public enum TYPE {
         MANAGED_EXECUTOR_SERVICE,
         MANAGED_SCHEDULED_EXECUTOR_SERVICE,

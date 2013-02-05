@@ -42,9 +42,7 @@ package org.glassfish.concurrent.runtime.deployer;
 
 import com.sun.logging.LogDomains;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
-import org.glassfish.enterprise.concurrent.ContextServiceImpl;
-import org.glassfish.enterprise.concurrent.ManagedExecutorServiceAdapter;
-import org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl;
+import org.glassfish.enterprise.concurrent.*;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
 import javax.naming.Context;
@@ -78,6 +76,12 @@ public class ConcurrentObjectFactory implements ObjectFactory {
             case MANAGED_EXECUTOR_SERVICE:
                 instance = getManagedExecutorService((ManagedExecutorServiceConfig)config, resourceInfo);
                 break;
+            case MANAGED_SCHEDULED_EXECUTOR_SERVICE:
+                instance = getManagedScheduledExecutorService((ManagedScheduledExecutorServiceConfig)config, resourceInfo);
+                break;
+            case MANAGED_THREAD_FACTORY:
+                instance = getManagedThreadFactory((ManagedThreadFactoryConfig)config, resourceInfo);
+                break;
             default:
                 break;
         }
@@ -90,8 +94,18 @@ public class ConcurrentObjectFactory implements ObjectFactory {
         return contextService;
     }
 
+    private ManagedThreadFactoryImpl getManagedThreadFactory(ManagedThreadFactoryConfig config, ResourceInfo resourceInfo) {
+        ManagedThreadFactoryImpl managedThreadFactory = getRuntime().getManagedThreadFactory(resourceInfo, config);
+        return managedThreadFactory;
+    }
+
     private ManagedExecutorServiceAdapter getManagedExecutorService(ManagedExecutorServiceConfig config, ResourceInfo resourceInfo) {
         ManagedExecutorServiceImpl mes = getRuntime().getManagedExecutorService(resourceInfo, config);
+        return mes.getAdapter();
+    }
+
+    private ManagedScheduledExecutorServiceAdapter getManagedScheduledExecutorService(ManagedScheduledExecutorServiceConfig config, ResourceInfo resourceInfo) {
+        ManagedScheduledExecutorServiceImpl mes = getRuntime().getManagedScheduledExecutorService(resourceInfo, config);
         return mes.getAdapter();
     }
 
