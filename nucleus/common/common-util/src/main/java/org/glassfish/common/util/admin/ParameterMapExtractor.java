@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -185,7 +185,7 @@ public class ParameterMapExtractor {
         return sb.toString();
     }
 
-    public String propertiesValue(final Properties props, final char sep) {
+    public static String propertiesToPropertiesString(final Properties props, final char sep) {
         final StringBuilder sb = new StringBuilder();
         final String sepString = String.valueOf(sep);
         final String sepQuote = new StringBuilder("\\\\").append(sep).toString();
@@ -202,6 +202,10 @@ public class ParameterMapExtractor {
             currentSep = sepString;
         }
         return sb.toString();
+    }
+
+    public String propertiesValue(final Properties props, final char sep) {
+        return propertiesToPropertiesString(props, sep);
     }
 
     private Collection<? extends String> multipleValue(final Param p, final Object value) {
