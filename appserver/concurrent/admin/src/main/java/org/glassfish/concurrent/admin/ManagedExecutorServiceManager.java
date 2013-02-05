@@ -47,7 +47,7 @@ import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.concurrent.config.ManagedThreadFactory;
+import org.glassfish.concurrent.config.ManagedExecutorService;
 import org.glassfish.resources.admin.cli.ResourceManager;
 import org.glassfish.resourcebase.resources.admin.cli.ResourceUtil;
 import org.glassfish.resourcebase.resources.api.ResourceStatus;
@@ -70,22 +70,29 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 
 /**
  *
- * The managed thread factory manager allows you to create and delete 
- * the managed-thread-factory config element
+ * The managed executor service manager allows you to create and delete 
+ * the managed-executor-service config element
  */
-@Service (name=ServerTags.MANAGED_THREAD_FACTORY)
-@I18n("managed.thread.factory.manager")
+@Service (name=ServerTags.MANAGED_EXECUTOR_SERVICE)
+@I18n("managed.executor.service.manager")
 @ConfiguredBy(Resources.class)
-public class ManagedThreadFactoryManager implements ResourceManager {
+public class ManagedExecutorServiceManager implements ResourceManager {
 
     final private static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(ManagedThreadFactoryManager.class);
+            new LocalStringManagerImpl(ManagedExecutorServiceManager.class);
     private static final String DESCRIPTION = ServerTags.DESCRIPTION;
 
     private String jndiName = null;
     private String description = null;
     private String threadPriority = ""+Thread.NORM_PRIORITY;
     private String contextInfo = null;
+    private String longRunningTask = Boolean.FALSE.toString();
+    private String hungAfterSeconds = null;
+    private String corePoolSize = "0";
+    private String maximumPoolSize = ""+Integer.MAX_VALUE;
+    private String keepAliveSeconds = "60";
+    private String threadLifetimeSeconds = "0";
+    private String taskQueueCapacity = ""+Integer.MAX_VALUE;
     private String enabled = Boolean.TRUE.toString();
     private String enabledValueForTarget = Boolean.TRUE.toString();
 
@@ -99,7 +106,7 @@ public class ManagedThreadFactoryManager implements ResourceManager {
     private BindableResourcesHelper resourcesHelper;
 
     public String getResourceType () {
-        return ServerTags.MANAGED_THREAD_FACTORY;
+        return ServerTags.MANAGED_EXECUTOR_SERVICE;
     }
 
     public ResourceStatus create(Resources resources, HashMap attributes, final Properties properties,
@@ -122,12 +129,12 @@ public class ManagedThreadFactoryManager implements ResourceManager {
 
                 resourceUtil.createResourceRef(jndiName, enabledValueForTarget, target);
         } catch (TransactionFailure tfe) {
-            String msg = localStrings.getLocalString("create.managed.thread.factory.failed", "Managed thread factory {0} creation failed", jndiName) + " " + tfe.getLocalizedMessage();
+            String msg = localStrings.getLocalString("create.managed.executor.service.failed", "Managed executor service {0} creation failed", jndiName) + " " + tfe.getLocalizedMessage();
             ResourceStatus status = new ResourceStatus(ResourceStatus.FAILURE, msg);
             status.setException(tfe);
             return status;
         }
-        String msg = localStrings.getLocalString("create.managed.thread.factory.success", "Managed thread factory {0} created successfully", jndiName);
+        String msg = localStrings.getLocalString("create.managed.executor.service.success", "Managed executor service {0} created successfully", jndiName);
         return new ResourceStatus(ResourceStatus.SUCCESS, msg);
     }
 
@@ -136,11 +143,11 @@ public class ManagedThreadFactoryManager implements ResourceManager {
 
 
         if (jndiName == null) {
-            String msg = localStrings.getLocalString("managed.thread.factory.noJndiName", "No JNDI name defined for managed thread factory.");
+            String msg = localStrings.getLocalString("managed.executor.service.noJndiName", "No JNDI name defined for managed executor service.");
             return new ResourceStatus(ResourceStatus.FAILURE, msg);
         }
 
-        status = resourcesHelper.validateBindableResourceForDuplicates(resources, jndiName, validateResourceRef, target, ManagedThreadFactory.class);
+        status = resourcesHelper.validateBindableResourceForDuplicates(resources, jndiName, validateResourceRef, target, ManagedExecutorService.class);
         
         return status;
     }
@@ -150,6 +157,13 @@ public class ManagedThreadFactoryManager implements ResourceManager {
         description = (String) attributes.get(DESCRIPTION);
         contextInfo = (String) attributes.get(CONTEXT_INFO);
         threadPriority = (String) attributes.get(THREAD_PRIORITY);
+        longRunningTask = (String) attributes.get(LONG_RUNNING_TASKS);
+        hungAfterSeconds = (String) attributes.get(HUNG_AFTER_SECONDS);
+        corePoolSize = (String) attributes.get(CORE_POOL_SIZE);
+        maximumPoolSize = (String) attributes.get(MAXIMUM_POOL_SIZE);
+        keepAliveSeconds = (String) attributes.get(KEEP_ALIVE_SECONDS);
+        threadLifetimeSeconds = (String) attributes.get(THREAD_LIFETIME_SECONDS);
+        taskQueueCapacity = (String) attributes.get(TASK_QUEUE_CAPACITY);
         if(target != null){
             enabled = resourceUtil.computeEnabledValueForResourceBasedOnTarget((String)attributes.get(ENABLED), target);
         }else{
@@ -158,34 +172,42 @@ public class ManagedThreadFactoryManager implements ResourceManager {
         enabledValueForTarget = (String) attributes.get(ENABLED); 
     }
 
-    private ManagedThreadFactory createResource(Resources param, Properties properties) throws PropertyVetoException,
+    private ManagedExecutorService createResource(Resources param, Properties properties) throws PropertyVetoException,
             TransactionFailure {
-        ManagedThreadFactory newResource = createConfigBean(param, properties);
+        ManagedExecutorService newResource = createConfigBean(param, properties);
         param.getResources().add(newResource);
         return newResource;
     }
 
-    private ManagedThreadFactory createConfigBean(Resources param, Properties properties) throws PropertyVetoException,
+    private ManagedExecutorService createConfigBean(Resources param, Properties properties) throws PropertyVetoException,
             TransactionFailure {
-        ManagedThreadFactory managedThreadFactory = param.createChild(ManagedThreadFactory.class);
-        managedThreadFactory.setJndiName(jndiName);
+        ManagedExecutorService managedExecutorService = param.createChild(ManagedExecutorService.class);
+        managedExecutorService.setJndiName(jndiName);
         if (description != null) {
-            managedThreadFactory.setDescription(description);
+            managedExecutorService.setDescription(description);
         }
         if (contextInfo != null) {
-            managedThreadFactory.setContextInfo(contextInfo);
+            managedExecutorService.setContextInfo(contextInfo);
         }
-        managedThreadFactory.setThreadPriority(threadPriority);
-        managedThreadFactory.setEnabled(enabled);
+        managedExecutorService.setThreadPriority(threadPriority);
+        if (hungAfterSeconds != null) {
+            managedExecutorService.setHungAfterSeconds(hungAfterSeconds);
+        }
+        managedExecutorService.setCorePoolSize(corePoolSize);
+        managedExecutorService.setMaximumPoolSize(maximumPoolSize);
+        managedExecutorService.setKeepAliveSeconds(keepAliveSeconds);
+        managedExecutorService.setThreadLifetimeSeconds(threadLifetimeSeconds);
+        managedExecutorService.setTaskQueueCapacity(taskQueueCapacity);
+        managedExecutorService.setEnabled(enabled);
         if (properties != null) {
             for ( Map.Entry e : properties.entrySet()) {
-                Property prop = managedThreadFactory.createChild(Property.class);
+                Property prop = managedExecutorService.createChild(Property.class);
                 prop.setName((String)e.getKey());
                 prop.setValue((String)e.getValue());
-                managedThreadFactory.getProperty().add(prop);
+                managedExecutorService.getProperty().add(prop);
             }
         }
-        return managedThreadFactory;
+        return managedExecutorService;
     }
 
     public Resource createConfigBean(final Resources resources, HashMap attributes, final Properties properties, boolean validate) throws Exception{
@@ -207,13 +229,13 @@ public class ManagedThreadFactoryManager implements ResourceManager {
             throws Exception {
         
         if (jndiName == null) {
-            String msg = localStrings.getLocalString("managed.thread.factory.noJndiName", "No JNDI name defined for managed thread factory.");
+            String msg = localStrings.getLocalString("managed.executor.service.noJndiName", "No JNDI name defined for managed executor service.");
             return new ResourceStatus(ResourceStatus.FAILURE, msg);
         }
 
         // ensure we already have this resource
-        if(ConnectorsUtil.getResourceByName(resources, ManagedThreadFactory.class, jndiName) == null){
-            String msg = localStrings.getLocalString("delete.managed.thread.factory.notfound", "A managed thread factory named {0} does not exist.", jndiName);
+        if(ConnectorsUtil.getResourceByName(resources, ManagedExecutorService.class, jndiName) == null){
+            String msg = localStrings.getLocalString("delete.managed.executor.service.notfound", "A managed executor service named {0} does not exist.", jndiName);
             return new ResourceStatus(ResourceStatus.FAILURE, msg);
         }
 
@@ -221,17 +243,17 @@ public class ManagedThreadFactoryManager implements ResourceManager {
 
             if ("domain".equals(target)) {
                 if (resourceUtil.getTargetsReferringResourceRef(jndiName).size() > 0) {
-                    String msg = localStrings.getLocalString("delete.managed.thread.factory.resource-ref.exist", "This managed thread factory [ {0} ] is referenced in an instance/cluster target, use delete-resource-ref on appropriate target", jndiName);
+                    String msg = localStrings.getLocalString("delete.managed.executor.service.resource-ref.exist", "This managed executor service [ {0} ] is referenced in an instance/cluster target, use delete-resource-ref on appropriate target", jndiName);
                     return new ResourceStatus(ResourceStatus.FAILURE, msg);
                 }
             } else {
                 if (!resourceUtil.isResourceRefInTarget(jndiName, target)) {
-                    String msg = localStrings.getLocalString("delete.managed.thread.factory.no.resource-ref", "This managed thread factory [ {0} ] is not referenced in target [ {1} ]", jndiName, target);
+                    String msg = localStrings.getLocalString("delete.managed.executor.service.no.resource-ref", "This managed executor service [ {0} ] is not referenced in target [ {1} ]", jndiName, target);
                     return new ResourceStatus(ResourceStatus.FAILURE, msg);
                 }
 
                 if (resourceUtil.getTargetsReferringResourceRef(jndiName).size() > 1) {
-                    String msg = localStrings.getLocalString("delete.managed.thread.factory.multiple.resource-refs", "This managed thread factory [ {0} ] is referenced in multiple instance/cluster targets, Use delete-resource-ref on appropriate target", jndiName);
+                    String msg = localStrings.getLocalString("delete.managed.executor.service.multiple.resource-refs", "This managed executor service [ {0} ] is referenced in multiple instance/cluster targets, Use delete-resource-ref on appropriate target", jndiName);
                     return new ResourceStatus(ResourceStatus.FAILURE, msg);
                 }
             }
@@ -241,24 +263,24 @@ public class ManagedThreadFactoryManager implements ResourceManager {
             // delete resource-ref
             resourceUtil.deleteResourceRef(jndiName, target);
             
-            // delete managed-thread-factory
+            // delete managed executor service
             if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
-                    ManagedThreadFactory resource = (ManagedThreadFactory) ConnectorsUtil.getResourceByName(resources, ManagedThreadFactory.class, jndiName);
+                    ManagedExecutorService resource = (ManagedExecutorService) ConnectorsUtil.getResourceByName(resources, ManagedExecutorService.class, jndiName);
                     return param.getResources().remove(resource);
                 }
             }, resources) == null) {
-                String msg = localStrings.getLocalString("delete.managed.thread.factory.failed", "Managed thread factory {0} deletion failed", jndiName);
+                String msg = localStrings.getLocalString("delete.managed.executor.service.failed", "Managed executor service {0} deletion failed", jndiName);
                 return new ResourceStatus(ResourceStatus.FAILURE, msg);
             }
         } catch(TransactionFailure tfe) {
-            String msg = localStrings.getLocalString("delete.managed.thread.factory.failed", "Managed thread factory {0} deletion failed ", jndiName);
+            String msg = localStrings.getLocalString("delete.managed.executor.service.failed", "Managed executor service {0} deletion failed ", jndiName);
             ResourceStatus status = new ResourceStatus(ResourceStatus.FAILURE, msg);
             status.setException(tfe);
             return status;
         }
 
-        String msg = localStrings.getLocalString("delete.managed.thread.factory.success", "Managed thread factory {0} deleted successfully", jndiName);
+        String msg = localStrings.getLocalString("delete.managed.executor.service.success", "Managed executor service {0} deleted successfully", jndiName);
         return new ResourceStatus(ResourceStatus.SUCCESS, msg);
     }
 }

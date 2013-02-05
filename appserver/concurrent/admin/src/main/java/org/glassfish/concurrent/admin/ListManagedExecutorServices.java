@@ -51,7 +51,7 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.concurrent.config.ManagedThreadFactory;
+import org.glassfish.concurrent.config.ManagedExecutorService;
 import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
 import org.jvnet.hk2.annotations.Service;
 
@@ -59,24 +59,24 @@ import javax.inject.Inject;
 import java.util.Collection;
 
 /**
- * List Managed Thread Factory Resources command
+ * List Managed Executor Service Resources command
  * 
  */
 @TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE })
 @ExecuteOn(value={RuntimeType.DAS})
-@Service(name="list-managed-thread-factories")
+@Service(name="list-managed-executor-services")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.managed.thread.factorys")
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
         opType=RestEndpoint.OpType.GET, 
-        path="list-managed-thread-factories", 
+        path="list-managed-executor-services", 
         description="List Managed Thread Factories")
 })
-public class ListManagedThreadFactories implements AdminCommand {
+public class ListManagedExecutorServices implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListManagedThreadFactories.class);    
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListManagedExecutorServices.class);    
 
     @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     private String target ;
@@ -98,16 +98,16 @@ public class ListManagedThreadFactories implements AdminCommand {
         final ActionReport report = context.getActionReport();
 
         try {
-            Collection<ManagedThreadFactory> managedThreadFactories = domain.getResources().getResources(ManagedThreadFactory.class);
-            for (ManagedThreadFactory managedThreadFactory : managedThreadFactories) {
-                String jndiName = managedThreadFactory.getJndiName();
+            Collection<ManagedExecutorService> managedExecutorServices = domain.getResources().getResources(ManagedExecutorService.class);
+            for (ManagedExecutorService managedExecutorService : managedExecutorServices) {
+                String jndiName = managedExecutorService.getJndiName();
                 if(bindableResourcesHelper.resourceExists(jndiName, target)){
                     ActionReport.MessagePart part = report.getTopMessagePart().addChild();
                     part.setMessage(jndiName);
                 }
             }
         } catch (Exception e) {
-            report.setMessage(localStrings.getLocalString("list.managed.thread.factory.failed", "List managed thread factories failed"));
+            report.setMessage(localStrings.getLocalString("list.managed.executor.service.failed", "List managed executor services failed"));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;

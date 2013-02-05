@@ -218,17 +218,17 @@ public class ContextServiceManager implements ResourceManager {
 
             if ("domain".equals(target)) {
                 if (resourceUtil.getTargetsReferringResourceRef(jndiName).size() > 0) {
-                    String msg = localStrings.getLocalString("delete.context.service.resource-ref.exist", "This context-service [ {0} ] is referenced in an instance/cluster target, use delete-resource-ref on appropriate target", jndiName);
+                    String msg = localStrings.getLocalString("delete.context.service.resource-ref.exist", "This context service [ {0} ] is referenced in an instance/cluster target, use delete-resource-ref on appropriate target", jndiName);
                     return new ResourceStatus(ResourceStatus.FAILURE, msg);
                 }
             } else {
                 if (!resourceUtil.isResourceRefInTarget(jndiName, target)) {
-                    String msg = localStrings.getLocalString("delete.context.service.no.resource-ref", "This context-service [ {0} ] is not referenced in target [ {1} ]", jndiName, target);
+                    String msg = localStrings.getLocalString("delete.context.service.no.resource-ref", "This context service [ {0} ] is not referenced in target [ {1} ]", jndiName, target);
                     return new ResourceStatus(ResourceStatus.FAILURE, msg);
                 }
 
                 if (resourceUtil.getTargetsReferringResourceRef(jndiName).size() > 1) {
-                    String msg = localStrings.getLocalString("delete.context.service.multiple.resource-refs", "This context-service [ {0} ] is referenced in multiple instance/cluster targets, Use delete-resource-ref on appropriate target", jndiName);
+                    String msg = localStrings.getLocalString("delete.context.service.multiple.resource-refs", "This context service [ {0} ] is referenced in multiple instance/cluster targets, Use delete-resource-ref on appropriate target", jndiName);
                     return new ResourceStatus(ResourceStatus.FAILURE, msg);
                 }
             }

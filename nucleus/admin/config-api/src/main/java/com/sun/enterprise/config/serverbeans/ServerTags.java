@@ -676,9 +676,11 @@ public class ServerTags  {
     //static public final String ASSOCIATE_WITH_THREAD = "associate-with-thread";
     //static public final String MATCH_CONNECTIONS = "match-connections";
     //static public final String MAX_CONNECTION_USAGE_COUNT = "max-connection-usage-count";
-    // Tags for Element context-service
+    // Tags for concurrent resources elements
     static public final String CONTEXT_SERVICE = "context-service";
     static public final String MANAGED_THREAD_FACTORY = "managed-thread-factory";
+    static public final String MANAGED_EXECUTOR_SERVICE = "managed-executor-service";
+    static public final String MANAGED_SCHEDULED_EXECUTOR_SERVICE = "managed-scheduled-executor-service";
     // Tags for Element security-map
     static public final String SECURITY_MAP = "security-map";
     static public final String PRINCIPAL = "principal";

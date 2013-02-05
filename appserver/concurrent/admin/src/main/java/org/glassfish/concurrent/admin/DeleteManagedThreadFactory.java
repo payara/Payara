@@ -59,7 +59,7 @@ import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 
 /**
- * Delete Context Service Command
+ * Delete Managed Thread Factory Command
  * 
  */
 @TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })

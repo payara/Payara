@@ -243,4 +243,11 @@ public final class ResourceConstants {
     // concurrent resource objects
     public static final String CONTEXT_INFO = "context-info";
     public static final String THREAD_PRIORITY = "thread-priority";
+    public static final String LONG_RUNNING_TASKS = "long-runnings-tasks";
+    public static final String HUNG_AFTER_SECONDS = "hung-after-seconds";
+    public static final String CORE_POOL_SIZE = "core-pool-size";
+    public static final String MAXIMUM_POOL_SIZE = "maximum-pool-size";
+    public static final String KEEP_ALIVE_SECONDS = "keep-alive-seconds";
+    public static final String THREAD_LIFETIME_SECONDS = "thread-lifetime-seconds";
+    public static final String TASK_QUEUE_CAPACITY = "task-queue-capacity";
 }

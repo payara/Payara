@@ -145,6 +145,81 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
     void setHungAfterSeconds(String value) throws PropertyVetoException;
 
     /**
+     * Gets the value of the corePoolSize property.
+     *
+     * @return possible object is {@link String }
+     */
+    @Attribute(defaultValue = "0", dataType = Integer.class)
+    String getCorePoolSize();
+
+    /**
+     * Sets the value of the coreSize property.
+     *
+     * @param value allowed object is {@link String }
+     */
+    void setCorePoolSize(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the maximumPoolSize property.
+     *
+     * @return possible object is {@link String }
+     */
+    @Attribute(defaultValue = ""+Integer.MAX_VALUE, dataType = Integer.class)
+    String getMaximumPoolSize();
+
+    /**
+     * Sets the value of the maximumPoolSize property.
+     *
+     * @param value allowed object is {@link String }
+     */
+    void setMaximumPoolSize(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the keepAlivesSeconds property.
+     *
+     * @return possible object is {@link String }
+     */
+    @Attribute(defaultValue = "60", dataType = Integer.class)
+    String getKeepAliveSeconds();
+
+    /**
+     * Sets the value of the keepAliveSeconds property.
+     *
+     * @param value allowed object is {@link String }
+     */
+    void setKeepAliveSeconds(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the threadLifetimeSeconds property.
+     *
+     * @return possible object is {@link String }
+     */
+    @Attribute(defaultValue = "0", dataType = Integer.class)
+    String getThreadLifetimeSeconds();
+
+    /**
+     * Sets the value of the threadLifetimeSeconds property.
+     *
+     * @param value allowed object is {@link String }
+     */
+    void setThreadLifetimeSeconds(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the threadLifetimeSeconds property.
+     *
+     * @return possible object is {@link String }
+     */
+    @Attribute(defaultValue = ""+Integer.MAX_VALUE, dataType = Integer.class)
+    String getTaskQueueCapacity();
+
+    /**
+     * Sets the value of the threadLifetimeSeconds property.
+     *
+     * @param value allowed object is {@link String }
+     */
+    void setTaskQueueCapacity(String value) throws PropertyVetoException;
+
+    /**
      * Gets the value of the description property.
      *
      * @return possible object is
@@ -160,21 +235,6 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
      *              {@link String }
      */
     void setDescription(String value) throws PropertyVetoException;
-
-    /**
-        Get the value of the poolInfo property.
-     */
-    @Element
-    PoolInfo getPoolInfo();
-
-    /**
-     * Sets the value of the poolInfo property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    void setPoolInfo(PoolInfo value) throws PropertyVetoException;
-
 
     /**
         Properties as per {@link PropertyBag}

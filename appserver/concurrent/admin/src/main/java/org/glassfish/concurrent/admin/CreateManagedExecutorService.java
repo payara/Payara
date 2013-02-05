@@ -64,17 +64,17 @@ import java.util.Properties;
 
 
 /**
- * Create Managed Thread Factory Command
+ * Create Managed Executor Service Command
  *
  */
 @TargetType(value={CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
 @ExecuteOn(RuntimeType.ALL)
-@Service(name="create-managed-thread-factory")
+@Service(name="create-managed-executor-service")
 @PerLookup
-@I18n("create.managed.thread.factory")
-public class CreateManagedThreadFactory implements AdminCommand {
+@I18n("create.managed.executor.service")
+public class CreateManagedExecutorService implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateManagedThreadFactory.class);
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateManagedExecutorService.class);
 
     @Param(name="jndi_name", primary=true)
     private String jndiName;
@@ -87,6 +87,27 @@ public class CreateManagedThreadFactory implements AdminCommand {
 
     @Param(name="threadpriority", defaultValue=""+Thread.NORM_PRIORITY, optional=true)
     private Integer threadpriority;
+
+    @Param(name="longrunningtask", defaultValue="false", optional=true)
+    private Boolean longrunningtask;
+
+    @Param(name="hungafterseconds", optional=true)
+    private Integer hungafterseconds;
+
+    @Param(name="corepoolsize", defaultValue="0", optional=true)
+    private Integer corepoolsize;
+
+    @Param(name="maximumpoolsize", defaultValue=""+Integer.MAX_VALUE, optional=true)
+    private Integer maximumpoolsize;
+
+    @Param(name="keepaliveseconds", defaultValue="60", optional=true)
+    private Integer keepaliveseconds;
+
+    @Param(name="threadlifetimeseconds", defaultValue="0", optional=true)
+    private Integer threadlifetimeseconds;
+
+    @Param(name="taskqueuecapacity", defaultValue=""+Integer.MAX_VALUE, optional=true)
+    private Integer taskqueuecapacity;
 
     @Param(optional=true)
     private String description;
@@ -101,7 +122,7 @@ public class CreateManagedThreadFactory implements AdminCommand {
     private Domain domain;
 
     @Inject
-    private ManagedThreadFactoryManager managedThreadFactoryMgr;
+    private ManagedExecutorServiceManager managedExecutorServiceMgr;
 
     /**
      * Executes the command with the command parameters passed as Properties
@@ -117,14 +138,30 @@ public class CreateManagedThreadFactory implements AdminCommand {
         attrList.put(ResourceConstants.CONTEXT_INFO, contextinfo);
         attrList.put(ResourceConstants.THREAD_PRIORITY, 
             threadpriority.toString());
+        attrList.put(ResourceConstants.LONG_RUNNING_TASKS, 
+            longrunningtask.toString());
+        if (hungafterseconds != null) {
+            attrList.put(ResourceConstants.HUNG_AFTER_SECONDS, 
+                hungafterseconds.toString());
+        }
+        attrList.put(ResourceConstants.CORE_POOL_SIZE, 
+            corepoolsize.toString());
+        attrList.put(ResourceConstants.MAXIMUM_POOL_SIZE, 
+            maximumpoolsize.toString());
+        attrList.put(ResourceConstants.KEEP_ALIVE_SECONDS, 
+            keepaliveseconds.toString());
+        attrList.put(ResourceConstants.THREAD_LIFETIME_SECONDS, 
+            threadlifetimeseconds.toString());
+        attrList.put(ResourceConstants.TASK_QUEUE_CAPACITY, 
+            taskqueuecapacity.toString());
         attrList.put(ServerTags.DESCRIPTION, description);
         attrList.put(ResourceConstants.ENABLED, enabled.toString());
         ResourceStatus rs;
 
         try {
-            rs = managedThreadFactoryMgr.create(domain.getResources(), attrList, properties, target);
+            rs = managedExecutorServiceMgr.create(domain.getResources(), attrList, properties, target);
         } catch(Exception e) {
-            report.setMessage(localStrings.getLocalString("create.managed.thread.factory.failed", "Managed thread factory {0} creation failed", jndiName));
+            report.setMessage(localStrings.getLocalString("create.managed.executor.service.failed", "Managed executor service {0} creation failed", jndiName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;

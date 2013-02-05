@@ -41,7 +41,6 @@
 package org.glassfish.concurrent.runtime.deployer;
 
 import org.glassfish.concurrent.config.ManagedExecutorService;
-import org.glassfish.concurrent.config.PoolInfo;
 
 import java.io.Serializable;
 
@@ -66,14 +65,11 @@ public class ManagedExecutorServiceConfig extends BaseConfig  {
         hungAfterSeconds = parseInt(config.getHungAfterSeconds(), 0);
         longRunningTasks = Boolean.valueOf(config.getLongRunningTasks());
         threadPriority = parseInt(config.getThreadPriority(), Thread.NORM_PRIORITY);
-        PoolInfo poolInfo = config.getPoolInfo();
-        if (poolInfo != null) {
-            corePoolSize = parseInt(poolInfo.getCoreSize(), 0);
-            keepAliveSeconds = parseInt(poolInfo.getKeepAliveSeconds(), Integer.MAX_VALUE);
-            maximumPoolSize = parseInt(poolInfo.getMaximumSize(), Integer.MAX_VALUE);
-            taskQueueCapacity = parseInt(poolInfo.getTaskQueueCapacity(), Integer.MAX_VALUE);
-            threadLifeTimeSeconds = parseInt(poolInfo.getThreadLifetimeSeconds(), 0);
-        }
+        corePoolSize = parseInt(config.getCorePoolSize(), 0);
+        keepAliveSeconds = parseInt(config.getKeepAliveSeconds(), Integer.MAX_VALUE);
+        maximumPoolSize = parseInt(config.getMaximumPoolSize(), Integer.MAX_VALUE);
+        taskQueueCapacity = parseInt(config.getTaskQueueCapacity(), Integer.MAX_VALUE);
+        threadLifeTimeSeconds = parseInt(config.getThreadLifetimeSeconds(), 0);
 
     }
 
