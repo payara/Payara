@@ -206,7 +206,7 @@ public class LogFile implements java.io.Serializable {
                 }
             });
         } catch (Exception ex) {
-            LogFacade.LOGGING_LOGGER.log(Level.FINE, "Error trying to position where we left off", ex);
+            throw new RuntimeException(ex);
         } finally {
             if (reader != null) {
                 try {

@@ -40,27 +40,13 @@
 
 package com.sun.enterprise.server.logging;
 
-import com.sun.appserv.server.util.Version;
-import com.sun.enterprise.admin.monitor.callflow.Agent;
-import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
-import org.glassfish.api.logging.Task;
-import org.glassfish.config.support.TranslatedConfigView;
-import org.glassfish.internal.api.ServerContext;
-import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.ContractsProvided;
-import javax.inject.Inject;
-
-import org.jvnet.hk2.annotations.Optional;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.PreDestroy;
-import javax.inject.Singleton;
-
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.FieldPosition;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -73,9 +59,34 @@ import java.util.Vector;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.logging.ErrorManager;
+import java.util.logging.Formatter;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
+import java.util.logging.StreamHandler;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.glassfish.api.logging.Task;
+import org.glassfish.config.support.TranslatedConfigView;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.server.ServerEnvironmentImpl;
+import org.jvnet.hk2.annotations.ContractsProvided;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Service;
+
+import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.admin.monitor.callflow.Agent;
+import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.io.FileUtils;
+import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 
 /**
  * GFFileHandler publishes formatted log Messages to a FILE.
@@ -99,7 +110,9 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
 
     @Inject @Optional
     Agent agent;
-
+    
+    private ServiceLocator habitat = Globals.getDefaultBaseServiceLocator();
+    
     // This is a OutputStream to keep track of number of bytes
     // written out to the stream
     private MeteredStream meter;
@@ -139,6 +152,8 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
 
     private static final SimpleDateFormat logRotateDateFormatter =
             new SimpleDateFormat(LOG_ROTATE_DATE_FORMAT);
+
+    private static final String DEFAULT_FORMATTER_CLASS_NAME = UniformLogFormatter.class.getName();
 
     private BooleanLatch done = new BooleanLatch();
     private Thread pump;
@@ -346,16 +361,6 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         // it will be rotated.
         setLimitForRotation(rotationLimitAttrValue);        
 
-        // Below snapshot of the code is used to rotate server.log file on startup. It is used to avoid different format
-        // log messages logged under same server.log file.
-        gffileHandlerFormatter = manager.getProperty(cname + ".formatter");
-        if (mustRotate) {
-            rotate();
-        } else if (!currentgffileHandlerFormatter.equals("") && gffileHandlerFormatter != null && !gffileHandlerFormatter.equals(currentgffileHandlerFormatter)) {
-            rotate();
-        }
-
-
         //setLevel(Level.ALL);
         propValue = manager.getProperty(cname + ".flushFrequency");
         if (propValue != null) {
@@ -374,96 +379,56 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
             flushFrequency = 1;
 
         String formatterName = manager.getProperty(cname + ".formatter");
-        formatterName = (formatterName == null) ? UniformLogFormatter.class.getName() : formatterName; 
+        formatterName = (formatterName == null) ? DEFAULT_FORMATTER_CLASS_NAME : formatterName; 
+        
+        // Below snapshot of the code is used to rotate server.log file on startup. It is used to avoid different format
+        // log messages logged under same server.log file.
+        gffileHandlerFormatter = formatterName;
+        if (mustRotate) {
+            rotate();
+        } else if (gffileHandlerFormatter != null 
+                && !gffileHandlerFormatter
+                        .equals(currentgffileHandlerFormatter)) {
+            rotate();
+        }
+        
+        String excludeFields = manager.getProperty(LogManagerService.EXCLUDE_FIELDS_PROPERTY);
+        boolean multiLineMode = Boolean.parseBoolean(manager.getProperty(LogManagerService.MULTI_LINE_MODE_PROPERTY));
+                
+        if (UniformLogFormatter.class.getName().equals(formatterName)) {
+            configureUniformLogFormatter(excludeFields, multiLineMode);
+        } else if (ODLLogFormatter.class.getName().equals(formatterName)) {
+            configureODLFormatter(excludeFields, multiLineMode);
+        } else {
+            // Custom formatter is configured in logging.properties
+            // Check if the user specified formatter is in play else
+            // log an error message
+            Formatter currentFormatter = this.getFormatter();
+            if (currentFormatter == null || !currentFormatter.getClass().getName().equals(formatterName)) {
+                Formatter formatter = findFormatterService(formatterName);
+                if (formatter == null) {
+                    lr = new LogRecord(Level.SEVERE, LogFacade.INVALID_FORMATTER_CLASS_NAME);
+                    lr.setParameters(new Object[]{formatterName});
+                    lr.setThreadID((int) Thread.currentThread().getId());
+                    lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
+                    lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
+                    EarlyLogHandler.earlyMessages.add(lr);
+                    // Fall back to the GlassFish default
+                    configureDefaultFormatter(excludeFields, multiLineMode);                                    
+                } else {
+                    setFormatter(formatter);
+                }
+            }
+        }
+        
+        formatterName = this.getFormatter().getClass().getName();
         lr = new LogRecord(Level.INFO, LogFacade.LOG_FORMATTER_INFO);        
         lr .setParameters(new Object[] {formatterName});
         lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
         lr.setThreadID((int) Thread.currentThread().getId());
         lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
         EarlyLogHandler.earlyMessages.add(lr);
-
-        String excludeFields = manager.getProperty(LogManagerService.EXCLUDE_FIELDS_PROPERTY);
-        boolean multiLineMode = Boolean.parseBoolean(manager.getProperty(LogManagerService.MULTI_LINE_MODE_PROPERTY));
-
-        if (UniformLogFormatter.class.getName().equals(formatterName)) {
-            // this loop is used for UFL formatter
-            UniformLogFormatter formatterClass = null;
-            // set the formatter
-            if (agent != null) {
-                formatterClass = new UniformLogFormatter(new AgentFormatterDelegate(agent));
-                setFormatter(formatterClass);
-            } else {
-                formatterClass = new UniformLogFormatter();
-                setFormatter(formatterClass);
-            }
-
-            formatterClass.setExcludeFields(excludeFields);
-            formatterClass.setMultiLineMode(multiLineMode);
-            formatterClass.setLogEventBroadcaster(this);
-
-            if (formatterClass != null) {
-                recordBeginMarker = manager.getProperty(cname + ".logFormatBeginMarker");
-                if (recordBeginMarker == null || ("").equals(recordBeginMarker)) {
-                    recordBeginMarker = RECORD_BEGIN_MARKER;
-                }
-
-                recordEndMarker = manager.getProperty(cname + ".logFormatEndMarker");
-                if (recordEndMarker == null || ("").equals(recordEndMarker)) {
-                    recordEndMarker = RECORD_END_MARKER;
-                }
-
-                recordFieldSeparator = manager.getProperty(cname + ".logFormatFieldSeparator");
-                if (recordFieldSeparator == null || ("").equals(recordFieldSeparator) || recordFieldSeparator.length() > 1) {
-                    recordFieldSeparator = RECORD_FIELD_SEPARATOR;
-                }
-
-                recordDateFormat = manager.getProperty(cname + ".logFormatDateFormat");
-                if (recordDateFormat != null && !("").equals(recordDateFormat)) {
-                    SimpleDateFormat sdf = new SimpleDateFormat(recordDateFormat);
-                    try {
-                        sdf.format(new Date());
-                    } catch (Exception e) {
-                        recordDateFormat = RECORD_DATE_FORMAT;
-                    }
-                } else {
-                    recordDateFormat = RECORD_DATE_FORMAT;
-                }
-
-                formatterClass.setRecordBeginMarker(recordBeginMarker);
-                formatterClass.setRecordEndMarker(recordEndMarker);
-                formatterClass.setRecordDateFormat(recordDateFormat);
-                formatterClass.setRecordFieldSeparator(recordFieldSeparator);
-            }
-
-        } else if (ODLLogFormatter.class.getName().equals(formatterName)) {
-            // this loop is used for ODL formatter
-            ODLLogFormatter formatterClass = null;
-            // set the formatter
-            if (agent != null) {
-                formatterClass = new ODLLogFormatter(new AgentFormatterDelegate(agent));
-                setFormatter(formatterClass);
-            } else {
-                formatterClass = new ODLLogFormatter();
-                setFormatter(formatterClass);
-            }
-            formatterClass.setExcludeFields(excludeFields);
-            formatterClass.setMultiLineMode(multiLineMode);
-            formatterClass.setLogEventBroadcaster(this);
-        } else {
-            // this loop is used for any other formatter
-            try {
-                setFormatter((Formatter) this.getClass().getClassLoader().loadClass(formatterName).newInstance());
-            } catch (Exception e) {
-                lr = new LogRecord(Level.WARNING, LogFacade.INVALID_FORMATTER_CLASS_NAME);
-                lr.setParameters(new Object[]{formatterName});
-                lr.setThreadID((int) Thread.currentThread().getId());
-                lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-                lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-                lr.setThrown(e);
-                EarlyLogHandler.earlyMessages.add(lr);
-            } 
-        }
-
+        
         propValue = manager.getProperty(cname + ".maxHistoryFiles");
         try {
             if (propValue != null) {
@@ -477,11 +442,96 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
             lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
             EarlyLogHandler.earlyMessages.add(lr);
         }
+        
         if (maxHistoryFiles < 0)
             maxHistoryFiles = 10;
 
     }
 
+    private Formatter findFormatterService(String formatterName) {
+        List<Formatter> formatterServices = habitat.getAllServices(Formatter.class);
+        for (Formatter formatter : formatterServices) {
+            if (formatter.getClass().getName().equals(formatterName)) {
+                return formatter;
+            }
+        }
+        return null;
+    }
+
+    private void configureDefaultFormatter(String excludeFields,
+            boolean multiLineMode) {
+        configureUniformLogFormatter(excludeFields, multiLineMode);
+    }
+
+    private void configureODLFormatter(String excludeFields, boolean multiLineMode) {
+        // this loop is used for ODL formatter
+        ODLLogFormatter formatterClass = null;
+        // set the formatter
+        if (agent != null) {
+            formatterClass = new ODLLogFormatter(new AgentFormatterDelegate(agent));
+            setFormatter(formatterClass);
+        } else {
+            formatterClass = new ODLLogFormatter();
+            setFormatter(formatterClass);
+        }
+        formatterClass.setExcludeFields(excludeFields);
+        formatterClass.setMultiLineMode(multiLineMode);
+        formatterClass.setLogEventBroadcaster(this);        
+    }
+
+    private void configureUniformLogFormatter(String excludeFields, boolean multiLineMode) {
+        LogManager manager = LogManager.getLogManager();
+        String cname = getClass().getName();
+        // this loop is used for UFL formatter
+        UniformLogFormatter formatterClass = null;
+        // set the formatter
+        if (agent != null) {
+            formatterClass = new UniformLogFormatter(new AgentFormatterDelegate(agent));
+            setFormatter(formatterClass);
+        } else {
+            formatterClass = new UniformLogFormatter();
+            setFormatter(formatterClass);
+        }
+
+        formatterClass.setExcludeFields(excludeFields);
+        formatterClass.setMultiLineMode(multiLineMode);
+        formatterClass.setLogEventBroadcaster(this);
+
+        if (formatterClass != null) {
+            recordBeginMarker = manager.getProperty(cname + ".logFormatBeginMarker");
+            if (recordBeginMarker == null || ("").equals(recordBeginMarker)) {
+                recordBeginMarker = RECORD_BEGIN_MARKER;
+            }
+
+            recordEndMarker = manager.getProperty(cname + ".logFormatEndMarker");
+            if (recordEndMarker == null || ("").equals(recordEndMarker)) {
+                recordEndMarker = RECORD_END_MARKER;
+            }
+
+            recordFieldSeparator = manager.getProperty(cname + ".logFormatFieldSeparator");
+            if (recordFieldSeparator == null || ("").equals(recordFieldSeparator) || recordFieldSeparator.length() > 1) {
+                recordFieldSeparator = RECORD_FIELD_SEPARATOR;
+            }
+
+            recordDateFormat = manager.getProperty(cname + ".logFormatDateFormat");
+            if (recordDateFormat != null && !("").equals(recordDateFormat)) {
+                SimpleDateFormat sdf = new SimpleDateFormat(recordDateFormat);
+                try {
+                    sdf.format(new Date());
+                } catch (Exception e) {
+                    recordDateFormat = RECORD_DATE_FORMAT;
+                }
+            } else {
+                recordDateFormat = RECORD_DATE_FORMAT;
+            }
+
+            formatterClass.setRecordBeginMarker(recordBeginMarker);
+            formatterClass.setRecordEndMarker(recordEndMarker);
+            formatterClass.setRecordDateFormat(recordDateFormat);
+            formatterClass.setRecordFieldSeparator(recordFieldSeparator);
+        }        
+    }
+    
     void initializePump() {
         pump = new Thread() {
             public void run() {

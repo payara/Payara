@@ -47,13 +47,20 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.sun.enterprise.server.logging.LogFormatHelper;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+
 public class LogParserFactory {
+
+    final private static LocalStringManagerImpl LOCAL_STRINGS = 
+            new LocalStringManagerImpl(LogParserFactory.class);
 
     static final String NEWLINE = System.getProperty("line.separator");
     
     private static enum LogFormat {
         UNIFORM_LOG_FORMAT,
-        ODL_LOG_FORMAT
+        ODL_LOG_FORMAT,
+        UNKNOWN_LOG_FORMAT
     };
     
     private static final String ODL_LINE_HEADER_REGEX = 
@@ -75,19 +82,23 @@ public class LogParserFactory {
         odlDateFormatPattern  = Pattern.compile(ODL_LINE_HEADER_REGEX);
     }
     
-    public LogParser createLogParser(File logFile) throws IOException {
+    public LogParser createLogParser(File logFile) throws LogParserException, IOException {
         BufferedReader reader=null;
         try {
             reader = new BufferedReader(new FileReader(logFile));
             String line = reader.readLine();
             LogFormat format = detectLogFormat(line);
+            if (DEBUG) {
+                System.out.println("Log format=" + format.name() + " for line:" + line);
+            }
             switch(format) {
             case UNIFORM_LOG_FORMAT:
                 return new UniformLogParser(logFile.getName());
             case ODL_LOG_FORMAT:
                 return new ODLLogParser(logFile.getName());
             default:
-                return new UniformLogParser(logFile.getName());
+                throw new LogParserException(LOCAL_STRINGS.getLocalString("unknown.log.format",
+                        "The format of the log file {0} is not known.", logFile.getAbsolutePath()));
             }
         } finally {
             if (reader != null) {
@@ -107,8 +118,10 @@ public class LogParserFactory {
                 System.out.println("Matched ODL pattern for line:" + line);
             }
             return LogFormat.ODL_LOG_FORMAT;
-        } else {
+        } else if (LogFormatHelper.isUniformFormatLogHeader(line)) {
             return LogFormat.UNIFORM_LOG_FORMAT;
+        } else {
+            return LogFormat.UNKNOWN_LOG_FORMAT;
         }
     }                
     

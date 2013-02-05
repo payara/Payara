@@ -564,7 +564,6 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
      * @param multiLineMode the multiLineMode to set
      */
     void setMultiLineMode(boolean value) {
-        System.out.println("Setting multiline mode=" + value);
         multiLineMode = value;
     }
 

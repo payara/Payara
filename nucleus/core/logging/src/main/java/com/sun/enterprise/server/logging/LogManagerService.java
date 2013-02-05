@@ -77,6 +77,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.*;
+import java.util.logging.Formatter;
 
 /**
  * Reinitialzie the log manager using our logging.properties file.
@@ -398,10 +399,11 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                     Enumeration<String> loggerNames = logMgr.getLoggerNames();
                     while (loggerNames.hasMoreElements()) {
                         String loggerName = loggerNames.nextElement();
-                        logMgr.getLogger(loggerName);
-                        for (Handler handler : LOGGER.getHandlers()) {
-                            if (handler.getFormatter() instanceof UniformLogFormatter) {
-                                ((UniformLogFormatter) handler.getFormatter()).setDelegate(agentDelegate);
+                        Logger logger = logMgr.getLogger(loggerName);
+                        for (Handler handler : logger.getHandlers()) {
+                            Formatter formatter = handler.getFormatter();
+                            if (formatter != null && formatter  instanceof UniformLogFormatter) {
+                                ((UniformLogFormatter) formatter).setDelegate(agentDelegate);
                             }
                         }
                     }
