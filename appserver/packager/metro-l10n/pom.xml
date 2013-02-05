@@ -127,7 +127,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.webservices</groupId>
-            <artifactId>connector-l10n</artifactId>
+            <artifactId>webservices-connector-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
