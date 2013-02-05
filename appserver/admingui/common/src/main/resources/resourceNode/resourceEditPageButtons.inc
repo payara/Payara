@@ -54,9 +54,14 @@
                         mapPut(map="#{pageSession.valueMap}" key="contextInfo" value="#{requestScope.tmp}");
                     }
                     if ("#{pageSession.childType}=managed-thread-factory") {
+                         convertArrayToCommaString(array="#{pageSession.contextInfo}"  commaString="#{requestScope.tmp}");
+                        mapPut(map="#{pageSession.valueMap}" key="contextInfo" value="#{requestScope.tmp}");
+                    }
+                    if ("#{pageSession.childType}=managed-executor-service") {
                         convertArrayToCommaString(array="#{pageSession.contextInfo}"  commaString="#{requestScope.tmp}");
                         mapPut(map="#{pageSession.valueMap}" key="contextInfo" value="#{requestScope.tmp}");
                     }
+                    
                     gf.createEntity(endpoint="#{pageSession.selfUrl}"
                         attrs="#{pageSession.valueMap}"
                         skipAttrs="#{pageSession.skipAttrsList}"
@@ -87,6 +92,10 @@
                         convertArrayToCommaString(array="#{pageSession.contextInfo}"  commaString="#{requestScope.tmp}");
                         mapPut(map="#{pageSession.valueMap}" key="contextInfo" value="#{requestScope.tmp}");
                     }
+                    if ("#{pageSession.childType}=managed-executor-service") {
+                        convertArrayToCommaString(array="#{pageSession.contextInfo}"  commaString="#{requestScope.tmp}");
+                        mapPut(map="#{pageSession.valueMap}" key="contextInfo" value="#{requestScope.tmp}");
+                    }
                     
                     //TODO: remove the test for admin-object-resource after GLASSFISH-19533
                     if ("#{pageSession.childType}=admin-object-resource") {
@@ -110,11 +119,8 @@
                      -->
                     //The selected Targets will be available as #{pageSession.selectedTargets},  which is an array.
                     //We need to create source-ref of the selected targets.
-                    println("---------CCC-------sel=#{pageSession.selectedTargets}");
                     convertArrayToCommaString(array="#{pageSession.selectedTargets}" commaString="#{requestScope.cs}")
                     convertStringtoList(str="#{requestScope.cs}" result="#{requestScope.targetList}");
-                    println("-----------DDD----");
-                    //println("===========#{requestScope.targetList}");
                     setAttribute(key="nTargets" value="#{requestScope.targetList.size()}");
                     dec(number="#{requestScope.nTargets}" value="#{requestScope.endRef}");
                     forLoop(end="#{requestScope.endRef}"  varName="nn"){
