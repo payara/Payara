@@ -86,7 +86,7 @@ public class ManagedExecutorServiceManager implements ResourceManager {
     private String description = null;
     private String threadPriority = ""+Thread.NORM_PRIORITY;
     private String contextInfo = null;
-    private String longRunningTask = Boolean.FALSE.toString();
+    private String longRunningTasks = Boolean.FALSE.toString();
     private String hungAfterSeconds = null;
     private String corePoolSize = "0";
     private String maximumPoolSize = ""+Integer.MAX_VALUE;
@@ -157,7 +157,7 @@ public class ManagedExecutorServiceManager implements ResourceManager {
         description = (String) attributes.get(DESCRIPTION);
         contextInfo = (String) attributes.get(CONTEXT_INFO);
         threadPriority = (String) attributes.get(THREAD_PRIORITY);
-        longRunningTask = (String) attributes.get(LONG_RUNNING_TASKS);
+        longRunningTasks = (String) attributes.get(LONG_RUNNING_TASKS);
         hungAfterSeconds = (String) attributes.get(HUNG_AFTER_SECONDS);
         corePoolSize = (String) attributes.get(CORE_POOL_SIZE);
         maximumPoolSize = (String) attributes.get(MAXIMUM_POOL_SIZE);

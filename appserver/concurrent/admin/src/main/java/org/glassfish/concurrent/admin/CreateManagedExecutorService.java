@@ -88,8 +88,8 @@ public class CreateManagedExecutorService implements AdminCommand {
     @Param(name="threadpriority", defaultValue=""+Thread.NORM_PRIORITY, optional=true)
     private Integer threadpriority;
 
-    @Param(name="longrunningtask", defaultValue="false", optional=true)
-    private Boolean longrunningtask;
+    @Param(name="longrunningtasks", defaultValue="false", optional=true)
+    private Boolean longrunningtasks;
 
     @Param(name="hungafterseconds", optional=true)
     private Integer hungafterseconds;
@@ -139,7 +139,7 @@ public class CreateManagedExecutorService implements AdminCommand {
         attrList.put(ResourceConstants.THREAD_PRIORITY, 
             threadpriority.toString());
         attrList.put(ResourceConstants.LONG_RUNNING_TASKS, 
-            longrunningtask.toString());
+            longrunningtasks.toString());
         if (hungafterseconds != null) {
             attrList.put(ResourceConstants.HUNG_AFTER_SECONDS, 
                 hungafterseconds.toString());
