@@ -90,7 +90,7 @@ import org.jvnet.hk2.config.TransactionFailure;
         })
 })
 public class ConfigureJMSCluster implements AdminCommand {
-    final private static String SUPPORTED_DB_VENDORS = "oracle|postgressql|mysql|derby|db2";
+    final private static String SUPPORTED_DB_VENDORS = "oracle|postgresql|mysql|derby|db2";
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ConfigureJMSCluster.class);
     final private static String MASTER_BROKER = "masterbroker";
     final private static String SHARED_DB = "shareddb";
