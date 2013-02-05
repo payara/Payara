@@ -135,7 +135,7 @@
         <module>glassfish-osgi-incorporation</module>
         <module>glassfish-osgi-feature-pack</module>
         <module>glassfish-ant-tasks</module>
-        <module>glassfish-appclient-l10n</module>
+<!--        <module>glassfish-appclient-l10n</module>
         <module>glassfish-cluster-l10n</module>
         <module>glassfish-cmp-l10n</module>
         <module>glassfish-common-full-l10n</module>
@@ -156,7 +156,7 @@
         <module>glassfish-management-l10n</module>
         <module>glassfish-common-web-l10n</module>
         <module>glassfish-osgi-gui-l10n</module>
-        <module>glassfish-registration-l10n</module>
+        <module>glassfish-registration-l10n</module>-->
         <module>glassfish-jmx</module>
         <module>glassfish-entitybeans-container</module>
         <module>json</module>
