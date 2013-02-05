@@ -48,6 +48,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.composite.CompositeResource;
 
@@ -58,18 +59,7 @@ import org.glassfish.admin.rest.composite.CompositeResource;
 @Produces({MediaType.APPLICATION_JSON, "application/x-javascript", CompositeResource.CONSUMES_TYPE})
 public class MapWriter extends BaseProvider<Map> {
     public MapWriter() {
-        super(Map.class, MediaType.APPLICATION_JSON_TYPE);
-
-    }
-
-    @Override
-    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] antns, MediaType mt) {
-        boolean acceptable = false;
-        if (genericType instanceof ParameterizedType) {
-            ParameterizedType pt = (ParameterizedType)genericType;
-            acceptable = ((Class)pt.getRawType()).isAssignableFrom(type);
-        }
-        return acceptable;
+        super(Map.class, MediaType.APPLICATION_JSON_TYPE, Constants.MEDIA_TYPE_JSON_TYPE);
     }
 
     @Override
