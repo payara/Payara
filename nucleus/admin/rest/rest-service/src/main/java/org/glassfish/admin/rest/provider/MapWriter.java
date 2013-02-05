@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,9 @@
  */
 package org.glassfish.admin.rest.provider;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.ws.rs.Produces;
@@ -46,16 +49,27 @@ import javax.ws.rs.core.MediaType;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.RestLogging;
+import org.glassfish.admin.rest.composite.CompositeResource;
 
 /**
  *
  * @author jdlee
  */
-@Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
+@Produces({MediaType.APPLICATION_JSON, "application/x-javascript", CompositeResource.CONSUMES_TYPE})
 public class MapWriter extends BaseProvider<Map> {
     public MapWriter() {
         super(Map.class, MediaType.APPLICATION_JSON_TYPE);
 
+    }
+
+    @Override
+    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] antns, MediaType mt) {
+        boolean acceptable = false;
+        if (genericType instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType)genericType;
+            acceptable = ((Class)pt.getRawType()).isAssignableFrom(type);
+        }
+        return acceptable;
     }
 
     @Override
