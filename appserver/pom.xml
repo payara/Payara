@@ -129,7 +129,7 @@
         <tyrus.version>1.0-b10</tyrus.version>
         <json.version>1.0-b02</json.version>
         <concurrent-api.version>1.0-b01</concurrent-api.version>
-        <concurrent.version>1.0-b01</concurrent.version>
+        <concurrent.version>1.0-b02</concurrent.version>
         <javax.batch-api.version>1.0-b07</javax.batch-api.version>
         <javax.batch-runtime.version>1.0-b07</javax.batch-runtime.version>
     </properties>
