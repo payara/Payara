@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 
 /**
  * Transactional annotation Interceptor class for NotSupported transaction type,
- *  ie javax.transaction.cdi.Transactional.TxType.NOT_SUPPPORTED
+ *  ie javax.transaction.cdi.Transactional.TxType.NOT_SUPPORTED
  * If called outside a transaction context, managed bean method execution will then
  *  continue outside a transaction context.
  * If called inside a transaction context, the current transaction context will be suspended,
@@ -75,14 +75,14 @@ public class TransactionalInterceptorNotSupported extends TransactionalIntercept
             } catch (Exception exception) {
                 logger.info("Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
                         "called inside a transaction context.  Suspending transaction failed due to " + exception);
-            //todo wrap in new transactional exception and throw(?)
+            //todo wrap in new transactional exception and throw
             }
         }
         Object proceed = null;
         try {
             proceed = proceed(ctx);
         } finally {
-            if (transaction != null) getTransactionManager().resume(transaction);
+            if (transaction != null) getTransactionManager().resume(transaction); //todo wrap in new transactional exception and throw
         }
         return proceed;
     }

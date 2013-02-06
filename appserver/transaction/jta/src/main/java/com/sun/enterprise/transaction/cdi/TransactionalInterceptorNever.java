@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,7 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.transaction.InvalidTransactionException;
+import javax.transaction.cdi.TransactionalException;
 import java.util.logging.Logger;
 
 /**
@@ -53,7 +54,6 @@ import java.util.logging.Logger;
  * If called outside a transaction context, managed bean method execution will then
  *  continue outside a transaction context.
  * If called inside a transaction context, InvalidTransactionException will be thrown
- * [todo spec ex to be thrown, see code]
  *
  * @author Paul Parkinson
  */
@@ -66,9 +66,10 @@ public class TransactionalInterceptorNever extends TransactionalInterceptorBase 
         Logger logger = Logger.getLogger(ctx.getTarget().getClass().getName());
         logger.info("In NEVER TransactionalInterceptor");
         if(getTransactionManager().getTransaction() != null)
-            //todo wrap in new transactional exception
-            throw new InvalidTransactionException("Managed bean with Transactional annotation and TxType of NEVER " +
-                    "called inside a transaction context");  //todo determine correct exception instead of EJBException
+            throw new TransactionalException(
+                    "InvalidTransactionException thrown from TxType.NEVER transactional interceptor.",
+                    new InvalidTransactionException("Managed bean with Transactional annotation and TxType of NEVER " +
+                    "called inside a transaction context"));
         return proceed(ctx);
     }
 }
