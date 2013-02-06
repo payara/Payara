@@ -107,8 +107,8 @@
         <servlet-api.version>3.1-b05</servlet-api.version>
         <grizzly.version>2.3-rc2</grizzly.version>
         <saaj-api.version>1.3.4</saaj-api.version>
-        <hk2.version>2.1.55</hk2.version>
-        <hk2.plugin.version>2.1.55</hk2.plugin.version>
+        <hk2.version>2.1.57</hk2.version>
+        <hk2.plugin.version>2.1.57</hk2.plugin.version>
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
         <pfl.version>3.2.0-b001</pfl.version>
         <gmbal.version>3.2.0-b003</gmbal.version>
@@ -410,17 +410,13 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>generateInjectors</goal>
+                            <goal>generate-injectors</goal>
                         </goals>
                     </execution>
                     <execution>
-                        <id>test-generation</id>
-                        <configuration>
-                            <test>true</test>
-                        </configuration>
-                        <phase>generate-test-sources</phase>
+                        <id>generate-test-injectors</id>
                         <goals>
-                            <goal>generateInjectors</goal>
+                            <goal>generate-test-injectors</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -430,21 +426,14 @@
                 <artifactId>hk2-inhabitant-generator</artifactId>
                 <executions>
                     <execution>
-                        <configuration>
-                            <noswap>true</noswap>
-                        </configuration>
                         <goals>
-                            <goal>generateInhabitants</goal>
+                            <goal>generate-inhabitants</goal>
                         </goals>
                     </execution>
                     <execution>
-                        <id>test</id>
-                        <phase>process-test-classes</phase>
-                        <configuration>
-                            <test>true</test>
-                        </configuration>
+                        <id>generate-test-inhabitants</id>
                         <goals>
-                            <goal>generateInhabitants</goal>
+                            <goal>generate-test-inhabitants</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -641,107 +630,16 @@
         <dependencies>
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2</artifactId>
+                <artifactId>hk2-bom</artifactId>
                 <version>${hk2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>config-types</artifactId>
-                <version>${hk2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-config</artifactId>
-                <version>${hk2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-locator</artifactId>
-                <version>${hk2.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.felix</groupId>
-                        <artifactId>org.apache.felix.bundlerepository</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-runlevel</artifactId>
-                <version>${hk2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>core</artifactId>
-                <version>${hk2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-maven</artifactId>
-                <version>${hk2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>osgi-adapter</artifactId>
-                <version>${hk2.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.felix</groupId>
-                        <artifactId>org.apache.felix.bundlerepository</artifactId>
-                    </exclusion>
-                </exclusions>                
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>stax-osgi</artifactId>
-                <version>${hk2.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgi-resource-locator</artifactId>
                 <version>1.0.1</version>
             </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2.external</groupId>
-                <artifactId>cglib</artifactId>
-                <version>${hk2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-junitrunner</artifactId>
-                <version>${hk2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-api</artifactId>
-                <version>${hk2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>class-model</artifactId>
-                <version>${hk2.version}</version>
-            </dependency>            
-            <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-utils</artifactId>
-                <version>${hk2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2.external</groupId>
-                <artifactId>asm-all-repackaged</artifactId>
-                <version>${hk2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2.external</groupId>
-                <artifactId>bean-validator</artifactId>
-                <version>${hk2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.hk2.external</groupId>
-                <artifactId>javax.inject</artifactId>
-                <version>${hk2.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
                 <artifactId>grizzly-framework</artifactId>
@@ -772,11 +670,6 @@
                 <artifactId>grizzly-portunif</artifactId>
                 <version>${grizzly.version}</version>
             </dependency>
-<!--            <dependency>
-                <groupId>org.glassfish.grizzly</groupId>
-                <artifactId>grizzly-compat</artifactId>
-                <version>${grizzly.version}</version>
-            </dependency>-->
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
                 <artifactId>grizzly-comet</artifactId>
@@ -792,11 +685,6 @@
                 <artifactId>grizzly-http-ajp</artifactId>
                 <version>${grizzly.version}</version>
             </dependency>
-<!--            <dependency>
-                <groupId>org.glassfish.grizzly</groupId>
-                <artifactId>grizzly-messagesbus</artifactId>
-                <version>${grizzly.version}</version>
-            </dependency>-->
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
                 <artifactId>grizzly-config</artifactId>
