@@ -684,7 +684,12 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
                         LogUtils.DEPLOYMENT_BACKEND_CANNOT_FIND_SERVLET),
                         nextEndpoint.getEndpointName()));
             }
-            String servletImplClass = nextEndpoint.getServletImplClass();
+
+            if (nextEndpoint.hasEndpointAddressUri()) {
+                webComp.getUrlPatternsSet().clear();
+                webComp.addUrlPattern(nextEndpoint.getEndpointAddressUri());
+            }
+
             if( !nextEndpoint.getWebService().hasFilePublishing() ) {
                 String publishingUri = nextEndpoint.getPublishingUri();
                 String publishingUrlPattern =
@@ -692,6 +697,8 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
                 webComp.addUrlPattern(publishingUrlPattern);
 
             }
+
+            String servletImplClass = nextEndpoint.getServletImplClass();
             try {
                 Class servletImplClazz  = cl.loadClass(servletImplClass);
                 String containerServlet;
