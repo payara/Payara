@@ -64,7 +64,6 @@
     <modules>
         <module>api-pom</module>
         <module>javax.jws</module>
-        <module>javax.xml.soap</module>
     </modules>
     
     <build>

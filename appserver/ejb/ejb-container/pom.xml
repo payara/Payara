@@ -137,9 +137,8 @@
         </dependency>
         <!-- these 2 dependencies are for compilation only  -->
         <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.xml.soap</artifactId>
-            <version>${project.version}</version>
+            <groupId>javax.xml.soap</groupId>
+            <artifactId>javax.xml.soap-api</artifactId>
             <optional>true</optional>
         </dependency>        
         <dependency>
