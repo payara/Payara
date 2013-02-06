@@ -58,9 +58,14 @@
 
 package org.apache.naming;
 
+import java.text.MessageFormat;
 import java.util.Hashtable;
+import java.util.ResourceBundle;
 import javax.naming.NamingException;
 import javax.naming.Context;
+
+import org.apache.naming.resources.FileDirContext;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * Handles the associations :
@@ -77,6 +82,27 @@ public class ContextBindings {
 
 
     // -------------------------------------------------------------- Variables
+
+
+    private static final ResourceBundle rb = FileDirContext.logger.getResourceBundle();
+
+
+    @LogMessageInfo(
+            message = "Unknown context name : {0}",
+            level = "INFO")
+    private static final String UNKNOWN_CONTEXT = "AS-WEB-NAMING-00014";
+
+
+    @LogMessageInfo(
+            message = "No naming context bound to this thread",
+            level = "INFO")
+    private static final String NO_CONTEXT_BOUND_TO_THREAD = "AS-WEB-NAMING-00015";
+
+
+    @LogMessageInfo(
+            message = "No naming context bound to this class loader",
+            level = "INFO")
+    private static final String NO_CONTEXT_BOUND_TO_CL = "AS-WEB-NAMING-00016";
 
 
     /**
@@ -112,13 +138,6 @@ public class ContextBindings {
      */
     private static Hashtable<ClassLoader, Object> clNameBindings =
         new Hashtable<ClassLoader, Object>();
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm = 
-        StringManager.getManager(Constants.Package);
 
 
     // --------------------------------------------------------- Public Methods
@@ -203,8 +222,9 @@ public class ContextBindings {
         if (ContextAccessController.checkSecurityToken(name, token)) {
             Context context = contextNameBindings.get(name);
             if (context == null)
-                throw new NamingException
-                    (sm.getString("contextBindings.unknownContext", name));
+                throw new NamingException(
+                        rb.getString(
+                                MessageFormat.format(UNKNOWN_CONTEXT, name)));
             threadBindings.put(Thread.currentThread(), context);
             threadNameBindings.put(Thread.currentThread(), name);
         }
@@ -242,8 +262,8 @@ public class ContextBindings {
         throws NamingException {
         Context context = threadBindings.get(Thread.currentThread());
         if (context == null)
-            throw new NamingException
-                (sm.getString("contextBindings.noContextBoundToThread"));
+            throw new NamingException(
+                    rb.getString(NO_CONTEXT_BOUND_TO_THREAD));
         return context;
     }
 
@@ -255,8 +275,8 @@ public class ContextBindings {
         throws NamingException {
         Object name = threadNameBindings.get(Thread.currentThread());
         if (name == null)
-            throw new NamingException
-                (sm.getString("contextBindings.noContextBoundToThread"));
+            throw new NamingException(
+                    rb.getString(NO_CONTEXT_BOUND_TO_CL));
         return name;
     }
 
@@ -305,8 +325,9 @@ public class ContextBindings {
         if (ContextAccessController.checkSecurityToken(name, token)) {
             Context context = contextNameBindings.get(name);
             if (context == null)
-                throw new NamingException
-                    (sm.getString("contextBindings.unknownContext", name));
+                throw new NamingException(
+                        rb.getString(
+                                MessageFormat.format(UNKNOWN_CONTEXT, name)));
             clBindings.put(classLoader, context);
             clNameBindings.put(classLoader, name);
         }
@@ -367,8 +388,8 @@ public class ContextBindings {
                 return context;
             }
         } while ((cl = cl.getParent()) != null);
-        throw new NamingException
-            (sm.getString("contextBindings.noContextBoundToCL"));
+        throw new NamingException(
+                rb.getString(NO_CONTEXT_BOUND_TO_CL));
     }
 
 
@@ -385,8 +406,8 @@ public class ContextBindings {
                 return name;
             }
         } while ((cl = cl.getParent()) != null);
-        throw new NamingException
-            (sm.getString("contextBindings.noContextBoundToCL"));
+        throw new NamingException(
+                rb.getString(NO_CONTEXT_BOUND_TO_CL));
     }
 
 

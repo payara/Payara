@@ -58,6 +58,9 @@
 
 package org.apache.naming;
 
+import org.apache.naming.resources.FileDirContext;
+import org.glassfish.logging.annotation.LogMessageInfo;
+
 import java.util.Hashtable;
 
 import javax.naming.Binding;
@@ -79,6 +82,12 @@ public class SelectorContext implements Context {
 
 
     // -------------------------------------------------------------- Constants
+
+
+    @LogMessageInfo(
+            message = "This context must be accessed through a java: URL",
+            level = "FINE")
+    private static final String NO_JAVA_URL = "AS-WEB-NAMING-00025";
 
 
     /**
@@ -126,12 +135,6 @@ public class SelectorContext implements Context {
      * Environment.
      */
     protected Hashtable<String, Object> env;
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm = StringManager.getManager(Constants.Package);
 
 
     /**
@@ -702,7 +705,7 @@ public class SelectorContext implements Context {
                 return (name);
             } else {
                 throw new NamingException
-                    (sm.getString("selectorContext.noJavaUrl"));
+                    (FileDirContext.rb.getString(NO_JAVA_URL));
             }
         }
         
@@ -727,7 +730,7 @@ public class SelectorContext implements Context {
                 return (name);
             } else {
                 throw new NamingException
-                    (sm.getString("selectorContext.noJavaUrl"));
+                        (FileDirContext.rb.getString(NO_JAVA_URL));
             }
         }
 

@@ -58,13 +58,8 @@
 
 package org.apache.naming.resources;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.text.MessageFormat;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.File;
@@ -114,37 +109,74 @@ public class FileDirContext extends BaseDirContext {
     public static final Logger logger =
             Logger.getLogger(WEB_NAMING_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 
+    public static final ResourceBundle rb = logger.getResourceBundle();
+
     @LogMessageInfo(
             message = "Canonical Pathname cannot be null",
             level = "FINE")
-    public static final String FILE_RESOURCES_NULL_CANONICAL_PATH = "AS-WEB-NAMING-00001";
+    private static final String FILE_RESOURCES_NULL_CANONICAL_PATH = "AS-WEB-NAMING-00001";
 
     @LogMessageInfo(
             message = "Outside webapp not allowed {0} {1} {2}",
             level = "FINE")
-    public static final String FILE_RESOURCES_NOT_ALLOWED = "AS-WEB-NAMING-00002";
+    private static final String FILE_RESOURCES_NOT_ALLOWED = "AS-WEB-NAMING-00002";
 
     @LogMessageInfo(
             message = "Absolute Pathname cannot be null {0} {1}",
             level = "FINE")
-    public static final String FILE_RESOURCES_NULL_ABS_PATH = "AS-WEB-NAMING-00003";
+    private static final String FILE_RESOURCES_NULL_ABS_PATH = "AS-WEB-NAMING-00003";
 
     @LogMessageInfo(
             message = "Canonical pathname {0} equals to absolute pathname {1} {2}",
             level = "FINE")
-    public static final String FILE_RESOURCES_PATH_EQUALS_ABS_PATH = "AS-WEB-NAMING-00004";
+    private static final String FILE_RESOURCES_PATH_EQUALS_ABS_PATH = "AS-WEB-NAMING-00004";
 
     @LogMessageInfo(
             message = "File cannot be read {0}",
             level = "FINE")
-    public static final String FILE_RESOURCES_NOT_EXIST = "AS-WEB-NAMING-00005";
+    private static final String FILE_RESOURCES_NOT_EXIST = "AS-WEB-NAMING-00005";
 
     @LogMessageInfo(
             message = "Could not get dir listing for {0}",
             level = "WARNING",
             cause = "Some IO error occurred such as bad file permissions",
             action = "Verify the file descriptors")
-    public static final String FILE_RESOURCES_LISTING_NULL = "AS-WEB-NAMING-00006";
+    private static final String FILE_RESOURCES_LISTING_NULL = "AS-WEB-NAMING-00006";
+
+    @LogMessageInfo(
+            message = "Document base {0} does not exist or is not a readable directory",
+            level = "INFO")
+    private static final String FILE_RESOURCES_BASE = "AS-WEB-NAMING-00007";
+
+    @LogMessageInfo(
+            message = "Document base cannot be null",
+            level = "INFO")
+    protected static final String RESOURCES_NULL = "AS-WEB-NAMING-00008";
+
+    @LogMessageInfo(
+            message = "Resource {0} not found",
+            level = "INFO")
+    protected static final String RESOURCES_NOT_FOUND = "AS-WEB-NAMING-00009";
+
+    @LogMessageInfo(
+            message = "Name {0} is already bound in this Context",
+            level = "INFO")
+    private static final String RESOURCES_ALREADY_BOUND = "AS-WEB-NAMING-00010";
+
+    @LogMessageInfo(
+            message = "Bind failed: {0}",
+            level = "INFO")
+    private static final String RESOURCES_BIND_FAILED = "AS-WEB-NAMING-00011";
+
+    @LogMessageInfo(
+            message = "Unbind failed: {0}",
+            level = "INFO")
+    private static final String RESOURCES_UNBIND_FAILED = "AS-WEB-NAMING-00012";
+
+    @LogMessageInfo(
+            message = "Failed to rename [{0}] to [{1}]",
+            level = "INFO")
+    private static final String RESOURCES_RENAME_FAIL = "AS-WEB-NAMING-00013";
 
 
     // -------------------------------------------------------------- Constants
@@ -236,7 +268,7 @@ public class FileDirContext extends BaseDirContext {
         // Validate the format of the proposed document root
         if (docBase == null)
             throw new IllegalArgumentException
-            (sm.getString("resources.null"));
+            (rb.getString(RESOURCES_NULL));
 
         // START S1AS8PE 4965170
         base = docBaseFileCache.get(docBase);
@@ -257,7 +289,7 @@ public class FileDirContext extends BaseDirContext {
         // Validate that the document base is an existing directory
         if (!base.exists() || !base.isDirectory() || !base.canRead())
             throw new IllegalArgumentException
-                (sm.getString("fileResources.base", docBase));
+                    (rb.getString(MessageFormat.format(FILE_RESOURCES_BASE, docBase)));
         this.absoluteBase = base.getAbsolutePath();
         super.setDocBase(docBase);
 
@@ -330,8 +362,7 @@ public class FileDirContext extends BaseDirContext {
         
         if (file == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
-        
+                (rb.getString(MessageFormat.format(RESOURCES_NOT_FOUND, name)));
         if (file.isDirectory()) {
             FileDirContext tempContext = new FileDirContext(env);
             tempContext.setDocBase(file.getPath());
@@ -368,14 +399,14 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NameNotFoundException
-                (sm.getString("resources.notFound", name));
+                (rb.getString(MessageFormat.format(RESOURCES_NOT_FOUND, name)));
 
         // START S1AS8PE 4965170
         fileCache.remove(name);
         // END S1AS8PE 4965170
         if (!file.delete())
             throw new NamingException
-                (sm.getString("resources.unbindFailed", name));
+                (rb.getString(MessageFormat.format(RESOURCES_UNBIND_FAILED, name)));
 
     }
 
@@ -398,7 +429,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                (sm.getString("resources.notFound", oldName));
+                (rb.getString(MessageFormat.format(RESOURCES_NOT_FOUND, oldName)));
 
         // START S1AS8PE 4965170
         File newFile = fileCache.get(newName);
@@ -408,8 +439,8 @@ public class FileDirContext extends BaseDirContext {
         // END S1AS8PE 4965170
         
         if (!file.renameTo(newFile)) {
-            throw new NamingException(sm.getString("resources.renameFail",
-                    oldName, newName));
+            throw new NamingException(
+                    rb.getString(MessageFormat.format(RESOURCES_RENAME_FAIL, oldName, newName)));
         }
     }
 
@@ -434,7 +465,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                (rb.getString(MessageFormat.format(RESOURCES_NOT_FOUND, name)));
 
         return new NamingContextEnumeration(list(file).iterator());
 
@@ -461,7 +492,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                (rb.getString(MessageFormat.format(RESOURCES_NOT_FOUND, name)));
 
         return new NamingContextBindingsEnumeration(list(file).iterator(),
                 this);
@@ -563,7 +594,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                (rb.getString(MessageFormat.format(RESOURCES_NOT_FOUND, name)));
 
         return new FileResourceAttributes(file);
 
@@ -633,7 +664,7 @@ public class FileDirContext extends BaseDirContext {
         File file = new File(base, name);
         if (file.exists())
             throw new NameAlreadyBoundException
-                (sm.getString("resources.alreadyBound", name));
+                (rb.getString(MessageFormat.format(RESOURCES_ALREADY_BOUND, name)));
         
         rebind(file, obj, attrs);
         
@@ -684,15 +715,15 @@ public class FileDirContext extends BaseDirContext {
             if (file.exists()) {
                 if (!file.delete())
                     throw new NamingException
-                        (sm.getString("resources.bindFailed", name));
+                        (rb.getString(MessageFormat.format(RESOURCES_BIND_FAILED, name)));
             }
             if (!file.mkdir())
                 throw new NamingException
-                    (sm.getString("resources.bindFailed", name));
+                    (rb.getString(MessageFormat.format(RESOURCES_BIND_FAILED, name)));
         }
         if (is == null)
             throw new NamingException
-                (sm.getString("resources.bindFailed", name));
+                (rb.getString(MessageFormat.format(RESOURCES_BIND_FAILED, name)));
         
         // Open os
         
@@ -715,7 +746,7 @@ public class FileDirContext extends BaseDirContext {
             }
         } catch (IOException e) {
             throw new NamingException
-                (sm.getString("resources.bindFailed", e));
+                (rb.getString(MessageFormat.format(RESOURCES_BIND_FAILED, e)));
         }
         
     }
@@ -744,10 +775,10 @@ public class FileDirContext extends BaseDirContext {
         File file = new File(base, name);
         if (file.exists())
             throw new NameAlreadyBoundException
-                (sm.getString("resources.alreadyBound", name));
+                (rb.getString(MessageFormat.format(RESOURCES_ALREADY_BOUND, name)));
         if (!file.mkdir())
             throw new NamingException
-                (sm.getString("resources.bindFailed", name));
+                (rb.getString(MessageFormat.format(RESOURCES_BIND_FAILED, name)));
         return (DirContext) lookup(name);
         
     }

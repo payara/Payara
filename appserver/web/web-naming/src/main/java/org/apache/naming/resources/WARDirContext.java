@@ -59,11 +59,7 @@
 package org.apache.naming.resources;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.*;
 import java.util.logging.*;
 import java.io.File;
 import java.io.InputStream;
@@ -102,10 +98,23 @@ public class WARDirContext extends BaseDirContext {
 
     private static final Logger log = org.apache.naming.resources.FileDirContext.logger;
 
+    private static final ResourceBundle rb = log.getResourceBundle();
+
     @LogMessageInfo(
             message = "Exception closing WAR File {0}",
             level = "WARNING")
-    public static final String EXCEPTION_CLOSING_WAR = "AS-WEB-NAMING-00007";
+    private static final String EXCEPTION_CLOSING_WAR = "AS-WEB-NAMING-00026";
+
+    @LogMessageInfo(
+            message = "Doc base must point to a WAR file",
+            level = "INFO")
+    private static final String NOT_WAR = "AS-WEB-NAMING-00027";
+
+    @LogMessageInfo(
+            message = "Invalid or unreadable WAR file : {0}",
+            level = "INFO")
+    private static final String INVALID_WAR = "AS-WEB-NAMING-00028";
+
 
     // ----------------------------------------------------------- Constructors
 
@@ -168,10 +177,10 @@ public class WARDirContext extends BaseDirContext {
 	// Validate the format of the proposed document root
 	if (docBase == null)
 	    throw new IllegalArgumentException
-		(sm.getString("resources.null"));
+                (rb.getString(FileDirContext.RESOURCES_NULL));
 	if (!(docBase.endsWith(".war")))
 	    throw new IllegalArgumentException
-		(sm.getString("warResources.notWar"));
+                (rb.getString(NOT_WAR));
 
 	// Calculate a File object referencing this document base directory
 	File base = new File(docBase);
@@ -179,12 +188,12 @@ public class WARDirContext extends BaseDirContext {
 	// Validate that the document base is an existing directory
 	if (!base.exists() || !base.canRead() || base.isDirectory())
 	    throw new IllegalArgumentException
-		(sm.getString("warResources.notWar"));
+                (rb.getString(NOT_WAR));
         try {
             this.base = new ZipFile(base);
         } catch (Exception e) {
 	    throw new IllegalArgumentException
-		(sm.getString("warResources.invalidWar", e.getMessage()));
+                (rb.getString(MessageFormat.format(INVALID_WAR, e.getMessage())));
         }
         super.setDocBase(docBase);
 
@@ -249,7 +258,7 @@ public class WARDirContext extends BaseDirContext {
         Entry entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                    (rb.getString(MessageFormat.format(FileDirContext.RESOURCES_NOT_FOUND, name)));
         ZipEntry zipEntry = entry.getEntry();
         if (zipEntry.isDirectory())
             return new WARDirContext(base, entry);
@@ -334,7 +343,7 @@ public class WARDirContext extends BaseDirContext {
         Entry entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                    (rb.getString(MessageFormat.format(FileDirContext.RESOURCES_NOT_FOUND, name)));
         return new NamingContextEnumeration(list(entry).iterator());
     }
 
@@ -378,7 +387,7 @@ public class WARDirContext extends BaseDirContext {
         Entry entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                    (rb.getString(MessageFormat.format(FileDirContext.RESOURCES_NOT_FOUND, name)));
         return new NamingContextBindingsEnumeration(list(entry).iterator(), this);
     }
 
@@ -493,7 +502,7 @@ public class WARDirContext extends BaseDirContext {
             entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                (sm.getString("resources.notFound", name));
+                    (rb.getString(MessageFormat.format(FileDirContext.RESOURCES_NOT_FOUND, name)));
         
         ZipEntry zipEntry = entry.getEntry();
 

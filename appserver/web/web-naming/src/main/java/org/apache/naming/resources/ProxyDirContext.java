@@ -78,8 +78,6 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
-import org.apache.naming.StringManager;
-
 /**
  * Proxy Directory Context implementation.
  *
@@ -125,12 +123,6 @@ public class ProxyDirContext implements DirContext {
 
 
     // ----------------------------------------------------- Instance Variables
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm = StringManager.getManager(Constants.Package);
 
 
     /**

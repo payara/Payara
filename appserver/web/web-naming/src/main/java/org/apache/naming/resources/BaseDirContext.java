@@ -75,7 +75,6 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
-import org.apache.naming.StringManager;
 import org.apache.naming.NameParserImpl;
 
 /**
@@ -129,12 +128,6 @@ public abstract class BaseDirContext implements DirContext {
      * Environment.
      */
     protected Hashtable<String, Object> env;
-
-
-    /**
-     * The string manager for this package.
-     */
-    protected static final StringManager sm = StringManager.getManager(Constants.Package);
 
 
     /**
@@ -199,7 +192,7 @@ public abstract class BaseDirContext implements DirContext {
 	// Validate the format of the proposed document root
 	if (docBase == null)
 	    throw new IllegalArgumentException
-		(sm.getString("resources.null"));
+                (FileDirContext.rb.getString(FileDirContext.RESOURCES_NULL));
 
 	// Change the document root property
 	this.docBase = docBase;
