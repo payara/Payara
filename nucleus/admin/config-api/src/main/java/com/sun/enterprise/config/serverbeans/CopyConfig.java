@@ -125,9 +125,7 @@ public abstract class CopyConfig implements AdminCommand {
             File src = new File(srcConfigLoggingFile);
 
             if (!src.exists()) {
-                String rootFolder = envImpl.getProps().get(com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
-                String templateDir = rootFolder + File.separator + "lib" + File.separator + "templates";
-                src = new File(templateDir, ServerEnvironmentImpl.kLoggingPropertiesFileName);
+                src = new File(env.getConfigDirPath(), ServerEnvironmentImpl.kLoggingPropertiesFileName);
             }
 
             File dest = new File(configConfigDir, ServerEnvironmentImpl.kLoggingPropertiesFileName);
