@@ -69,10 +69,9 @@
                     <execution>
                         <configuration>
                             <locator>application</locator>
-                            <noswap>true</noswap>
                         </configuration>
                         <goals>
-                            <goal>generateInhabitants</goal>
+                            <goal>generate-inhabitants</goal>
                         </goals>
                     </execution>
                 </executions>
