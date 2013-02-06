@@ -154,6 +154,23 @@
            <artifactId>ant</artifactId>
            <version>${project.version}</version>
        </dependency>
+       <!--
+       The following dependencies are for batch (JSR 352). This is a temporary solution
+       	till 19614 is resolved.
+       -->
+       <dependency>
+           <groupId>org.glassfish.main</groupId>
+           <artifactId>batch-connector</artifactId>
+           <version>${project.version}</version>
+       </dependency>
+        <dependency>
+            <groupId>javax.batch</groupId>
+            <artifactId>javax.batch-api-all</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.batch</groupId>
+            <artifactId>com.ibm.batch-runtime-all</artifactId>
+        </dependency>
     </dependencies>
 </project>
 
