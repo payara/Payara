@@ -171,8 +171,8 @@ public class CachedCommandModel extends CommandModelData {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             md.update(tag.toString().getBytes("UTF-8"));
-            return toBase64(md.digest());
-//            return DatatypeConverter.printBase64Binary(md.digest());
+//            return toBase64(md.digest());
+            return DatatypeConverter.printBase64Binary(md.digest());
         } catch (Exception ex) {
             return "v2" + tag.toString();
         }
