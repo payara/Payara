@@ -109,6 +109,7 @@ public class ApplicationInfo extends ModuleInfo {
 
     public void add(EngineRef ref) {
         engines.add(ref);
+        reversedEngines.addFirst(ref);
     }
     
     public void addTransientAppMetaData(String metaDataKey, 

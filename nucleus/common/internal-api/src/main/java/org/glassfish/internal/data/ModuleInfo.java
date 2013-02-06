@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -78,6 +79,13 @@ import org.jvnet.hk2.config.types.Property;
 public class ModuleInfo {
 
     protected Set<EngineRef> engines = new LinkedHashSet<EngineRef>();
+
+    // The reversed engines contain the same elements as engines but just in
+    // reversed order, they are used when stopping/unloading the module.
+    // The engines should be stopped/unloaded in the reverse order of what
+    // they were originally loaded/started.
+    protected LinkedList<EngineRef> reversedEngines = new LinkedList<EngineRef>();
+
     final protected Map<Class<? extends Object>, Object> metaData = new HashMap<Class<? extends Object>, Object>();
 
     protected final String name;
@@ -94,6 +102,9 @@ public class ModuleInfo {
         this.events = events;
         for (EngineRef ref : refs) {
             engines.add(ref);
+        }
+        for (EngineRef ref : refs) {
+            reversedEngines.addFirst(ref);
         }
         this.moduleProps = moduleProps;
     }
@@ -170,6 +181,7 @@ public class ModuleInfo {
         moduleClassLoader = context.getClassLoader();
 
         Set<EngineRef> filteredEngines = new LinkedHashSet<EngineRef>();
+        LinkedList<EngineRef> filteredReversedEngines = new LinkedList<EngineRef>();
 
         ClassLoader currentClassLoader  = Thread.currentThread().getContextClassLoader();
         try {
@@ -196,6 +208,7 @@ public class ModuleInfo {
                    engine.load(context, tracker);
                    engine.setApplicationContainer(appCtr);
                    filteredEngines.add(engine);
+                   filteredReversedEngines.addFirst(engine);
                 } catch(Exception e) {
                     logger.log(Level.SEVERE, "Exception while invoking " + deployer.getClass() + " load method", e);
                     throw e;
@@ -207,6 +220,7 @@ public class ModuleInfo {
 
             }
             engines = filteredEngines;
+            reversedEngines = filteredReversedEngines;
             if (tracing!=null) {
                 tracing.addMark(DeploymentTracing.Mark.LOAD_EVENTS);
             }
@@ -300,7 +314,7 @@ public class ModuleInfo {
         ClassLoader currentClassLoader  = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(moduleClassLoader);
-            for (EngineRef module : _getEngineRefs()) {
+            for (EngineRef module : reversedEngines) {
                 try {
                     context.setClassLoader(moduleClassLoader);
                     module.stop(context);
@@ -324,7 +338,7 @@ public class ModuleInfo {
         ClassLoader currentClassLoader  = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(moduleClassLoader);
-            for (EngineRef engine : _getEngineRefs()) {
+            for (EngineRef engine : reversedEngines) {
                 if (engine.getApplicationContainer()!=null && engine.getApplicationContainer().getClassLoader()!=null) {
                     classLoaders.add(engine.getApplicationContainer().getClassLoader());
                     try {
@@ -351,7 +365,7 @@ public class ModuleInfo {
     }
 
     public void clean(ExtendedDeploymentContext context) throws Exception {
-        for (EngineRef ref : _getEngineRefs()) {
+        for (EngineRef ref : reversedEngines) {
             ref.clean(context);
         }
         if (events!=null) {
@@ -364,7 +378,7 @@ public class ModuleInfo {
 
         boolean isSuccess = true;
 
-        for (EngineRef engine : _getEngineRefs()) {
+        for (EngineRef engine : reversedEngines) {
             try {
                 engine.getApplicationContainer().suspend();
             } catch(Exception e) {
