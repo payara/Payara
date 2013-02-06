@@ -119,22 +119,6 @@ public class IIOPEndpointsInfo {
     */
 
     /**
-     * Determines if the AS process is running in EE. 
-     * XXX: to refactor this to use the common implementation.
-     * from PELaunch.java
-     */
-    private static boolean isEE() {
-        boolean isEE = false;
-        final String eepffc = "com.sun.enterprise.ee.server.pluggable.EEPluggableFeatureImpl";
-        final String pn = "com.sun.appserv.pluggable.features";
-        final String pv = System.getProperty(pn);
-        if (eepffc.equals(pv)) {
-            isEE = true;
-        }
-        return ( isEE );
-    }
-
-    /**
      * This method returns the endpoints in host:port,host1:port1,host2:port2,...
      * format. This is called by Java Web Start
      */

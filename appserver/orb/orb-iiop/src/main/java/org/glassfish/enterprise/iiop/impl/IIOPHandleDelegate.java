@@ -122,7 +122,7 @@ public final class IIOPHandleDelegate
                 // the delegate.  If BAD_OPERATION is not thrown, then the 
                 // stub is connected.  This will happen if istream is an 
                 // IIOP input stream.
-                Delegate delegate = StubAdapter.getDelegate(obj);
+                StubAdapter.getDelegate(obj);
 
             } catch(org.omg.CORBA.BAD_OPERATION bo) {
 

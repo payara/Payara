@@ -68,29 +68,7 @@ public class IORAddrAnyInterceptor extends org.omg.CORBA.LocalObject
     public IORAddrAnyInterceptor(Codec c) {
         codec = c;
     }
-    
-    /**
-     * Get all the InetAddresses on the machine
-     */
-    private static ArrayList getAllInetAddresses() {
-        ArrayList result = new ArrayList();
-        try {
-            Enumeration e = NetworkInterface.getNetworkInterfaces();
-            while (e.hasMoreElements()) {
-                NetworkInterface ni = (NetworkInterface)e.nextElement();
-                Enumeration ee = ni.getInetAddresses();
-                while (ee.hasMoreElements()) {
-                    InetAddress addr = (InetAddress)ee.nextElement();
-                    result.add(addr);
-                }
-            }
-        } catch (SocketException se) {
-            _logger.log(Level.WARNING,"Exception getting all Network Interfaces",se);
-            return result;
-        }
-        return result;
-    }
-    
+
     /**
      * Provides an opportunity to destroy this interceptor.
      * The destroy method is called during <code>ORB.destroy</code>. When an

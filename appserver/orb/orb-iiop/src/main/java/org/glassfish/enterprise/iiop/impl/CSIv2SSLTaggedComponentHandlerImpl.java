@@ -143,7 +143,7 @@ public class CSIv2SSLTaggedComponentHandlerImpl
 
             IIOPProfileTemplate iiopProfileTemplate = (IIOPProfileTemplate)ior.
                                  getProfile().getTaggedProfileTemplate();
-            IIOPAddress primary = iiopProfileTemplate.getPrimaryAddress() ;
+            // IIOPAddress primary = iiopProfileTemplate.getPrimaryAddress() ;
             // String host = primary.getHost().toLowerCase(Locale.ENGLISH);
 
             IIOPSSLUtil sslUtil = null;

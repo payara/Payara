@@ -266,7 +266,7 @@ public class S1ASThreadPoolManager implements ThreadPoolManager {
      * manager
      */
     public String getThreadPoolStringId(int numericIdForThreadpool) {
-        String id = (String) indexToIdTable.get(new Integer(numericIdForThreadpool));
+        String id = (String) indexToIdTable.get(Integer.valueOf(numericIdForThreadpool));
         return ((id == null) ? defaultID : id);
     }
 
