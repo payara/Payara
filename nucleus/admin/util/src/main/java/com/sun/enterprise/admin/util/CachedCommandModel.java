@@ -53,6 +53,9 @@ import org.glassfish.api.admin.CommandModel;
  */
 public class CachedCommandModel extends CommandModelData {
     
+    private static final String ALPHABET =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    
     private String eTag;
     private String usage;
     private boolean addedUploadOption = false;
@@ -168,10 +171,48 @@ public class CachedCommandModel extends CommandModelData {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             md.update(tag.toString().getBytes("UTF-8"));
-            return DatatypeConverter.printBase64Binary(md.digest());
+            return toBase64(md.digest());
+//            return DatatypeConverter.printBase64Binary(md.digest());
         } catch (Exception ex) {
             return "v2" + tag.toString();
         }
+    }
+    
+    public static String toBase64(byte[] bytes) {
+        int length = bytes.length;
+        if (length == 0) {
+            return "";
+        }
+        StringBuilder result =
+                new StringBuilder((int) Math.ceil((double) length / 3d) * 4);
+        int remainder = length % 3;
+        length -= remainder;
+        int block;
+        int i = 0;
+        while (i < length) {
+            block = ((bytes[i++] & 0xff) << 16) | ((bytes[i++] & 0xff) << 8) |
+                    (bytes[i++] & 0xff);
+            result.append(ALPHABET.charAt(block >>> 18));
+            result.append(ALPHABET.charAt((block >>> 12) & 0x3f));
+            result.append(ALPHABET.charAt((block >>> 6) & 0x3f));
+            result.append(ALPHABET.charAt(block & 0x3f));
+        }
+        if (remainder == 0) {
+            return result.toString();
+        }
+        if (remainder == 1) {
+            block = (bytes[i] & 0xff) << 4;
+            result.append(ALPHABET.charAt(block >>> 6));
+            result.append(ALPHABET.charAt(block & 0x3f));
+            result.append("==");
+            return result.toString();
+        }
+        block = (((bytes[i++] & 0xff) << 8) | ((bytes[i]) & 0xff)) << 2;
+        result.append(ALPHABET.charAt(block >>> 12));
+        result.append(ALPHABET.charAt((block >>> 6) & 0x3f));
+        result.append(ALPHABET.charAt(block & 0x3f));
+        result.append("=");
+        return result.toString();
     }
     
     //TODO: This is very light algorithm. But have allways problem to find something - keep searching
