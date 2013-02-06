@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -142,23 +142,23 @@ public class ContainerMapper extends StaticHttpHandler {
         Mapper.setAllowReplacement(true);
     }
     
-//    private static void dispatch(HttpHandler adapter,
-//            ClassLoader cl,
-//            Request req,
-//            Response res) throws Exception {
-//        ClassLoader currentCL = Thread.currentThread().getContextClassLoader();
-//        try {
-//            if (cl==null) {
-//                cl = adapter.getClass().getClassLoader();
-//            }
-//            Thread.currentThread().setContextClassLoader(cl);
-//
-//            adapter.service(req, res);
-//        }
-//        finally {
-//            Thread.currentThread().setContextClassLoader(currentCL);
-//        }
-//    }
+    private static void dispatch(HttpHandler adapter,
+            ClassLoader cl,
+            Request req,
+            Response res) throws Exception {
+        ClassLoader currentCL = Thread.currentThread().getContextClassLoader();
+        try {
+            if (cl==null) {
+                cl = adapter.getClass().getClassLoader();
+            }
+            Thread.currentThread().setContextClassLoader(cl);
+            
+            adapter.service(req, res);
+        }
+        finally {
+            Thread.currentThread().setContextClassLoader(currentCL);
+        }
+    }
 
     /**
      * Map the request to its associated {@link Adapter}.
@@ -237,21 +237,21 @@ public class ContainerMapper extends StaticHttpHandler {
             } else {
 //                req.setNote(MAPPED_ADAPTER, adapter);
 
-//                ContextRootInfo contextRootInfo = null;
-//                if (mappingData.context != null && mappingData.context instanceof ContextRootInfo) {
-//                    contextRootInfo = (ContextRootInfo) mappingData.context;
-//                }
+                ContextRootInfo contextRootInfo = null;
+                if (mappingData.context != null && mappingData.context instanceof ContextRootInfo) {
+                    contextRootInfo = (ContextRootInfo) mappingData.context;
+                }
 
-                //if (contextRootInfo == null) {
+                if (contextRootInfo == null) {
                     httpService.service(request, response);
-//                } else {
-//                    ClassLoader cl = null;
-//                    if (contextRootInfo.getContainer() instanceof ApplicationContainer) {
-//                        cl = ((ApplicationContainer) contextRootInfo.getContainer()).getClassLoader();
-//                    }
-//
-//                    dispatch(httpService, cl, request, response);
-//                }
+                } else {
+                    ClassLoader cl = null;
+                    if (contextRootInfo.getContainer() instanceof ApplicationContainer) {
+                        cl = ((ApplicationContainer) contextRootInfo.getContainer()).getClassLoader();
+                    }
+                    
+                    dispatch(httpService, cl, request, response);
+                }
             }
         } catch (Exception ex) {
             try {
