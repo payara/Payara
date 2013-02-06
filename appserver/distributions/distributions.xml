@@ -220,6 +220,7 @@
         <attribute name="backup" default="${basedir}/cfg_cache.bak"/>
         <attribute name="cfgcache" default="@{image.dir}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache"/>
         <attribute name="deleteIncludes" />
+        <attribute name="zipBaseDir" default="@{image.dir}"/>
         <sequential>
             <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.sh" tofile="@{image.dir}/${install.dir.name}/bin/updatetool"/>
             <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.bat" tofile="@{image.dir}/${install.dir.name}/bin/updatetool.bat"/>
@@ -242,8 +243,8 @@
                 <replacefilter token="@{from}" value="@{to}"/>
             </replace>
             <zip destfile="${basedir}/target/@{fname}">
-                <zipfileset dir="@{image.dir}" filemode="755" includes="**/bin/*, **/lib/nadmin*"/>
-                <zipfileset dir="@{image.dir}" excludes="**/bin/*, **/lib/nadmin*"/>
+                <zipfileset dir="@{zipBaseDir}" filemode="755" includes="**/bin/*, **/lib/nadmin*"/>
+                <zipfileset dir="@{zipBaseDir}" excludes="**/bin/*, **/lib/nadmin*"/>
             </zip>
             <move file="@{backup}"  tofile="@{cfgcache}"  overwrite="true" />
         </sequential>
@@ -281,13 +282,15 @@
     
     <target name="create-distributions">
         <create.distribution 
-            image.dir="${installer.image.dir.l10n}"
-            fname="${image.name}-ips-installer.zip"
-            deleteIncludes="*.jar" />
-        <create.distribution 
             image.dir="${installer.image.dir}"
+            fname="${image.name}-ips-installer.zip"
+            deleteIncludes="*.jar"
+            zipBaseDir="${installer.image.dir}/${install.dir.name}" />
+        <create.distribution 
+            image.dir="${installer.image.dir.l10n}"
             fname="${image.name}-ips-ml-installer.zip" 
-            deleteIncludes="*.jar" />
+            deleteIncludes="*.jar"
+            zipBaseDir="${installer.image.dir.l10n}/${install.dir.name}" />
         <create.distribution 
             image.dir="${glassfish.image.dir}"
             fname="${image.name}-ips.zip"
