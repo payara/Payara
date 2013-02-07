@@ -46,6 +46,7 @@ import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
+import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
@@ -70,6 +71,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -103,6 +105,9 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
     private ConfigModularityUtils configModularityUtils;
 
     @Inject
+    StartupContext startupContext;
+
+    @Inject
     private
     ServiceLocator serviceLocator;
 
@@ -122,35 +127,8 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
     @Inject
     ServerEnvironmentImpl serverenv;
 
-
     @Override
     public void execute(AdminCommandContext context) {
-        report = context.getActionReport();
-        if (serviceName == null && isAll == false) {
-            report.setMessage(localStrings.getLocalString("get.active.config.service.name.required",
-                    "You need to specify a service name to get it's active configuration."));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-        if (target != null) {
-            Config newConfig = getConfigForName(target, serviceLocator, domain);
-            if (newConfig != null) {
-                config = newConfig;
-            }
-            if (config == null) {
-                report.setMessage(localStrings.getLocalString("get.active.config.target.name.invalid",
-                        "The target name you specified is invalid. Please double check the target name and try again"));
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
-        }
-
-        if (isAll == true && serviceName != null) {
-            report.setMessage(localStrings.getLocalString("get.active.config.target.service.and.all.exclusive",
-                    "Specifying a service name and using --all=true can not be used together."));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
         if (serviceName != null) {
             String className = configModularityUtils.convertConfigElementNameToClassName(serviceName);
             Class configBeanType = configModularityUtils.getClassFor(serviceName);
@@ -178,6 +156,28 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
                 return;
             }
         }
+
+        if (isAll) {
+            List<Class> configBeans = configModularityUtils.getAnnotatedConfigBeans(CustomConfiguration.class);
+            for (Class clz : configBeans) {
+                try {
+                    String serviceDefaultConfig = getActiveConfigFor(clz);
+                    if (serviceDefaultConfig != null) {
+                        report.setMessage(serviceDefaultConfig);
+                        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                        return;
+                    }
+                } catch (Exception e) {
+                    String msg = localStrings.getLocalString("get.active.config.getting.active.config.for.service.failed",
+                            "Failed to get active configuration for {0} under the target {1} due to: {2}.", serviceName, target, e.getMessage());
+                    LOG.log(Level.INFO, msg, e);
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    report.setMessage(msg);
+                    report.setFailureCause(e);
+                    return;
+                }
+            }
+        }
         //TODO for now just cover the config beans with annotations, at a later time cover all config beans of type
         // config extension or domain extension.
         List<Class> clzs = configModularityUtils.getAnnotatedConfigBeans(CustomConfiguration.class);
@@ -188,7 +188,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
                 sb.append(getActiveConfigFor(clz));
                 sb.append(LINE_SEPARATOR);
             }
-            report.setMessage(sb.toString());
+            report.appendMessage(sb.toString());
         } catch (Exception e) {
             String msg = localStrings.getLocalString("get.active.config.getting.active.config.for.service.failed",
                     "Failed to get active configuration for {0} under the target {1} due to: {2}.", serviceName, target, e.getMessage());
@@ -254,31 +254,68 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
 
     @Override
     public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
-        Class configBeanType = configModularityUtils.getClassFor(serviceName);
-        if (configBeanType == null) {
-            //TODO check if this is the correct course of action.
+        Class configBeanType = null;
+        if (serviceName == null && isAll) {
+            List<AccessRequired.AccessCheck> l = new ArrayList<AccessRequired.AccessCheck>();
+            List<Class> clzs = configModularityUtils.getAnnotatedConfigBeans(CustomConfiguration.class);
+            for (Class clz : clzs) {
+                List<ConfigBeanDefaultValue> configBeanDefaultValueList =
+                        configModularityUtils.getDefaultConfigurations(clz, configModularityUtils.getRuntimeTypePrefix(startupContext));
+                l.addAll(getAccessChecksForDefaultValue(configBeanDefaultValueList, target, Arrays.asList("read")));
+            }
+            return l;
+        } else {
+            configBeanType = configModularityUtils.getClassFor(serviceName);
+            if (configBeanType == null) {
+                //TODO check if this is the correct course of action.
+                return Collections.emptyList();
+            }
+
+            if (configModularityUtils.hasCustomConfig(configBeanType)) {
+                List<ConfigBeanDefaultValue> defaults = configModularityUtils.getDefaultConfigurations(configBeanType,
+                        configModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
+                return getAccessChecksForDefaultValue(defaults, target, Arrays.asList("read"));
+            }
+
+            if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
+                return getAccessChecksForConfigBean(config.getExtensionByType(configBeanType), target, Arrays.asList("read"));
+            }
+            if (configBeanType.isAssignableFrom(DomainExtension.class)) {
+                return getAccessChecksForConfigBean(domain.getExtensionByType(configBeanType), target, Arrays.asList("read"));
+            }
+            //TODO check if this is right course of action
             return Collections.emptyList();
         }
-
-        if (configModularityUtils.hasCustomConfig(configBeanType)) {
-            List<ConfigBeanDefaultValue> defaults = configModularityUtils.getDefaultConfigurations(configBeanType,
-                    configModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
-            return getAccessChecksForDefaultValue(defaults, target, Arrays.asList("read"));
-        }
-
-        if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
-            return getAccessChecksForConfigBean(config.getExtensionByType(configBeanType), target, Arrays.asList("read"));
-        }
-        if (configBeanType.isAssignableFrom(DomainExtension.class)) {
-            return getAccessChecksForConfigBean(config.getExtensionByType(configBeanType), target, Arrays.asList("read"));
-        }
-        //TODO check if this is right course of action
-        return Collections.emptyList();
     }
 
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
-        //TODO check if it is actually required to use this method to infer the resources etc or only using the
+        report = context.getActionReport();
+        if (serviceName == null && isAll == false) {
+            report.setMessage(localStrings.getLocalString("get.active.config.service.name.required",
+                    "You need to specify a service name to get it's active configuration."));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;
+        }
+        if (target != null) {
+            Config newConfig = getConfigForName(target, serviceLocator, domain);
+            if (newConfig != null) {
+                config = newConfig;
+            }
+            if (config == null) {
+                report.setMessage(localStrings.getLocalString("get.active.config.target.name.invalid",
+                        "The target name you specified is invalid. Please double check the target name and try again"));
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return false;
+            }
+        }
+
+        if (isAll == true && serviceName != null) {
+            report.setMessage(localStrings.getLocalString("get.active.config.target.service.and.all.exclusive",
+                    "Specifying a service name and using --all=true can not be used together."));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;
+        }
         return true;
     }
 }

@@ -47,6 +47,7 @@ import com.sun.enterprise.config.modularity.customization.ConfigCustomizationTok
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
+import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
@@ -70,6 +71,7 @@ import org.jvnet.hk2.config.Dom;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -89,7 +91,7 @@ import java.util.logging.Logger;
 @Service(name = "create-module-config")
 @PerLookup
 @I18n("create.module.config")
-public final class CreateModuleConfigCommand extends AbstractConfigModularityCommand implements AdminCommand,AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
+public final class CreateModuleConfigCommand extends AbstractConfigModularityCommand implements AdminCommand, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
     private final Logger LOG = Logger.getLogger(CreateModuleConfigCommand.class.getName());
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CreateModuleConfigCommand.class);
@@ -99,6 +101,9 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
 
     @Inject
     private Domain domain;
+    @Inject
+    StartupContext startupContext;
+
 
     @Inject
     ServiceLocator serviceLocator;
@@ -121,30 +126,11 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
 
     @Param(optional = true, name = "serviceName", primary = true)
     private String serviceName;
-
+    private ActionReport report;
 
     @Override
     public void execute(AdminCommandContext context) {
-        final ActionReport report = context.getActionReport();
         String defaultConfigurationElements;
-        if (target != null) {
-            Config newConfig = getConfigForName(target, serviceLocator, domain);
-            if (newConfig != null) {
-                config = newConfig;
-            }
-            if (config == null) {
-                report.setMessage(localStrings.getLocalString("create.module.config.target.name.invalid",
-                        "The target name specified is invalid. Please double check the target name and try again"));
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
-        }
-        if (isAll && (serviceName != null)) {
-            report.setMessage(localStrings.getLocalString("create.module.config.service.name.ignored",
-                    "One of the --all service name parameters can be used at a time. These two options can not be used together."));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
 
         if (!isAll && (serviceName == null)) {
             //TODO check for usability options, should we create the default configs, show them or fail the execution?
@@ -308,33 +294,64 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
         }
         return sb.toString();
     }
+
     @Override
-       public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
-           Class configBeanType = configModularityUtils.getClassFor(serviceName);
-           if (configBeanType == null) {
-               //TODO check if this is the correct course of action.
-               return Collections.emptyList();
-           }
+    public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
+        Class configBeanType = null;
+        if (serviceName == null && isAll) {
+            List<AccessRequired.AccessCheck> l = new ArrayList<AccessRequired.AccessCheck>();
+            List<Class> clzs = configModularityUtils.getAnnotatedConfigBeans(CustomConfiguration.class);
+            for (Class clz : clzs) {
+                List<ConfigBeanDefaultValue> configBeanDefaultValueList =
+                        configModularityUtils.getDefaultConfigurations(clz, configModularityUtils.getRuntimeTypePrefix(startupContext));
+                l.addAll(getAccessChecksForDefaultValue(configBeanDefaultValueList, target, Arrays.asList("read", "create", "delete")));
+            }
+            return l;
+        } else {
+            configBeanType = configModularityUtils.getClassFor(serviceName);
+            if (configBeanType == null) {
+                //TODO check if this is the correct course of action.
+                return Collections.emptyList();
+            }
 
-           if (configModularityUtils.hasCustomConfig(configBeanType)) {
-               List<ConfigBeanDefaultValue> defaults = configModularityUtils.getDefaultConfigurations(configBeanType,
-                       configModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
-               return getAccessChecksForDefaultValue(defaults, target, Arrays.asList("read", "create","delete"));
-           }
+            if (configModularityUtils.hasCustomConfig(configBeanType)) {
+                List<ConfigBeanDefaultValue> defaults = configModularityUtils.getDefaultConfigurations(configBeanType,
+                        configModularityUtils.getRuntimeTypePrefix(serverenv.getStartupContext()));
+                return getAccessChecksForDefaultValue(defaults, target, Arrays.asList("read"));
+            }
 
-           if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
-               return getAccessChecksForConfigBean(config.getExtensionByType(configBeanType), target, Arrays.asList("read", "create","delete"));
-           }
-           if (configBeanType.isAssignableFrom(DomainExtension.class)) {
-               return getAccessChecksForConfigBean(config.getExtensionByType(configBeanType), target, Arrays.asList("read", "create","delete"));
-           }
-           //TODO check if this is right course of action
-           return Collections.emptyList();
-       }
+            if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
+                return getAccessChecksForConfigBean(config.getExtensionByType(configBeanType), target, Arrays.asList("read", "create", "delete"));
+            }
+            if (configBeanType.isAssignableFrom(DomainExtension.class)) {
+                return getAccessChecksForConfigBean(domain.getExtensionByType(configBeanType), target, Arrays.asList("read", "create", "delete"));
+            }
+            //TODO check if this is right course of action
+            return Collections.emptyList();
+        }
+    }
 
-       @Override
-       public boolean preAuthorization(AdminCommandContext context) {
-           //TODO check if it is actually required to use this method to infer the resources etc or only using the
-           return true;
-       }
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        report = context.getActionReport();
+        if (target != null) {
+            Config newConfig = getConfigForName(target, serviceLocator, domain);
+            if (newConfig != null) {
+                config = newConfig;
+            }
+            if (config == null) {
+                report.setMessage(localStrings.getLocalString("create.module.config.target.name.invalid",
+                        "The target name specified is invalid. Please double check the target name and try again"));
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return false;
+            }
+        }
+        if (isAll && (serviceName != null)) {
+            report.setMessage(localStrings.getLocalString("create.module.config.service.name.ignored",
+                    "One of the --all service name parameters can be used at a time. These two options can not be used together."));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;
+        }
+        return true;
+    }
 }
