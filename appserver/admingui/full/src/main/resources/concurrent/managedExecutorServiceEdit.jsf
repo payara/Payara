@@ -56,6 +56,7 @@
     setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/full/concurrent/managedExecutorServices.jsf");
     setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
     setPageSessionAttribute(key="childType" value="managed-executor-service");
+    setPageSessionAttribute(key="isConcurrent" value="true");
     //For resourceEditTabs.inc
     setPageSessionAttribute(key="generalPage" value="#{pageSession.selfPage}");
     setPageSessionAttribute(key="targetPage" value="#{request.contextPath}/common/resourceNode/resourceEditTargets.jsf?name=#{pageSession.encodedName}");

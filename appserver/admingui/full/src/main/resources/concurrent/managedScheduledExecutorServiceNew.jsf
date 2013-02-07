@@ -40,20 +40,20 @@
 
 -->
 
-<!-- concurent/managedExecutorServiceNew.jsf -->
+<!-- concurent/managedScheduledExecutorServiceNew.jsf -->
 
 <!initPage
     setResourceBundle(key="i18ncon" bundle="org.glassfish.full.admingui.Strings");
     setResourceBundle(key="help_con" bundle="org.glassfish.full.admingui.Helplinks")
     setAttribute(key="edit" value="#{false}");
 />
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18ncon.managedExecutorService.newPageTitle}" >
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18ncon.managedScheduledExecutorService.newPageTitle}" >
 <!define name="content">
     <event>
     <!beforeCreate
         getRequestValue(key="target" value="#{pageSession.targetValue}");
-        setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/full/concurrent/managedExecutorServices.jsf");
-        setPageSessionAttribute(key="childType" value="managed-executor-service");
+        setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/full/concurrent/managedScheduledExecutorServices.jsf");
+        setPageSessionAttribute(key="childType" value="managed-scheduled-executor-service");
         setPageSessionAttribute(key="isConcurrent" value="true");
         setPageSessionAttribute(key="convertToFalseList" value={"enabled", "longRunningTasks" });
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
@@ -70,7 +70,7 @@
     <sun:form id="form">
 #include "/common/shared/alertMsg_1.inc"
 
-        <sun:title id="propertyContentPage" title="$resource{i18ncon.managedExecutorService.newPageTitle}" helpText="$resource{i18ncon.managedExecutorService.newPageTitleHelp}">
+        <sun:title id="propertyContentPage" title="$resource{i18ncon.managedScheduledExecutorService.newPageTitle}" helpText="$resource{i18ncon.managedScheduledExecutorService.newPageTitleHelp}">
 #include "/common/resourceNode/resourceEditPageButtons.inc"
         </sun:title>
 #include "/full/concurrent/managedExecutorServiceAttr.inc"
@@ -83,7 +83,7 @@
 </event>
 
 
-        <sun:hidden id="helpKey" value="$resource{help_con.managedExecutorServiceNew}" />
+        <sun:hidden id="helpKey" value="$resource{help_con.managedScheduledExecutorServiceNew}" />
     </sun:form>
     "<br/>
 #include "/common/shared/changeButtonsJS.inc" 

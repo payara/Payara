@@ -94,6 +94,9 @@
             <sun:textField id="hungafter" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['hungAfterSeconds']}" />      
             <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
        </sun:property>
+   </sun:propertySheetSection>
+                
+   <sun:propertySheetSection id="poolSettingsPropertySheet" label="$resource{i18ncon.propertySheetSection.poolSettings}">         
                 
        <sun:property id="coresize" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.corePoolSize}"  helpText="$resource{i18ncon.corePoolSizeHelp}">
             <sun:textField id="coresize" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['corePoolSize']}" />      

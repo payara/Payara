@@ -40,22 +40,22 @@
 
 -->
 
-<!-- concurrent/managedThreadFactoryEdit.jsf -->
+<!-- concurrent/managedScheduledExecutorServiceEdit.jsf -->
 <!initPage
     setResourceBundle(key="i18ncon" bundle="org.glassfish.full.admingui.Strings");
     setResourceBundle(key="help_con" bundle="org.glassfish.full.admingui.Helplinks")
 />
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18ncon.managedThreadFactory.editPageTitle}" >
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18ncon.managedScheduledExecutorService.editPageTitle}" >
 <!define name="content">
 <event>
     <!beforeCreate
     setSessionAttribute(key="conEditTabs" value="general");
     getRequestValue(key="name" value="#{pageSession.Name}");
     urlencode(value="#{pageSession.Name}" encoding="UTF-8" result="#{pageSession.encodedName}");
-    setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/full/concurrent/managedThreadFactoryEdit.jsf?name=#{pageSession.encodedName}");
-    setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/full/concurrent/managedThreadFactories.jsf");
+    setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/full/concurrent/managedScheduledExecutorServiceEdit.jsf?name=#{pageSession.encodedName}");
+    setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/full/concurrent/managedScheduledExecutorServices.jsf");
     setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
-    setPageSessionAttribute(key="childType" value="managed-thread-factory");
+    setPageSessionAttribute(key="childType" value="managed-scheduled-executor-service");
     setPageSessionAttribute(key="isConcurrent" value="true");
     //For resourceEditTabs.inc
     setPageSessionAttribute(key="generalPage" value="#{pageSession.selfPage}");
@@ -63,7 +63,7 @@
 
     gf.buildResourceUrl(base="#{pageSession.parentUrl}/#{pageSession.childType}", resourceName="#{pageSession.Name}", url="#{pageSession.selfUrl}");
     gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
-    setPageSessionAttribute(key="convertToFalseList" value={"enabled"});
+    setPageSessionAttribute(key="convertToFalseList" value={"enabled", "longRunningTasks" });
     setPageSessionAttribute(key="skipAttrsList", value={"jndiName"});
     
     gf.restRequest(endpoint="#{pageSession.selfUrl}/property" method="GET" result="#{requestScope.propTable}");
@@ -79,13 +79,13 @@
 #include "/common/shared/alertMsg_1.inc"
     
     <!-- Page Title -->
-    <sun:title id="propertyContentPage" title="$resource{i18ncon.managedThreadFactory.editPageTitle}" helpText="$resource{i18ncon.managedThreadFactory.editPageTitleHelp}" >        
+    <sun:title id="propertyContentPage" title="$resource{i18ncon.managedScheduledExecutorService.editPageTitle}" helpText="$resource{i18ncon.managedScheduledExecutorService.editPageTitleHelp}" >        
 #include "/common/resourceNode/resourceEditPageButtons.inc"
     </sun:title>
-#include "/full/concurrent/managedThreadFactoryAttr.inc"
+#include "/full/concurrent/managedExecutorServiceAttr.inc"
 #include "/common/shared/propertyDescTable.inc"
     
-    <sun:hidden id="helpKey" value="$resource{help_con.managedThreadFactoryEdit}" />
+    <sun:hidden id="helpKey" value="$resource{help_con.managedScheduledExecutorServiceEdit}" />
 </sun:form>
             "<br/>
 //#include "/common/shared/changeButtonsJS.inc"

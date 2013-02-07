@@ -96,20 +96,20 @@
         </facet>
     </dynamicTreeNode>
         
-    <dynamicTreeNode id="msesNodes"
+    <dynamicTreeNode id="managedScheduledExecutorServices"
 	    treeAdaptorClass="org.glassfish.admingui.common.tree.ListTreeAdaptor"
 	    children="#{requestScope.children}"
             childImageURL="/resource/jdbc/images/JDBC.gif"
             childExpanded="false"
-            childURL="/full/concurrent/MgnSchExeServiceEditEdit.jsf?name=#{$this{valueBinding}.text}"
+            childURL="/full/concurrent/managedScheduledExecutorServiceEdit.jsf?name=#{$this{valueBinding}.text}"
             text="$resource{i18ncon.tree.ManagedScheduledExecutorServices}"
-            url="/full/concurrent/ManagedScheduledExecutorServices.jsf">
+            url="/full/concurrent/managedScheduledExecutorServices.jsf">
 	<ui:event type="beforeCreate">
 	    gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/context-service" method="get" result="#{requestScope.resp}");
 	    setAttribute(key="children" value="#{requestScope.resp.data.extraProperties.childResources}");
 	</ui:event>
 	<!facet image>
-	    <sun:iconHyperlink id="treeIcon" icon="TREE_FOLDER" url="/full/concurrent/ManagedScheduledExecutorServices.jsf"  border="0" immediate="true" alt="$resource{i18ncon.tree.ManagedScheduledExecutorServices}"/>
+	    <sun:iconHyperlink id="treeIcon" icon="TREE_FOLDER" url="/full/concurrent/managedScheduledExecutorServices.jsf"  border="0" immediate="true" alt="$resource{i18ncon.tree.ManagedScheduledExecutorServices}"/>
 	</facet>
     </dynamicTreeNode>
         

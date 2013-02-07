@@ -59,7 +59,7 @@
         setPageSessionAttribute(key="rest-api" value="true");
 
         setPageSessionAttribute(key="hasThreadPriority" value="#{true}");
-        setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18ncon.msg.JS.confirmDeleteManagedExecutorServices}");
+        setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18ncon.msg.JS.confirmDeleteManagedExecutorService}");
         setPageSessionAttribute(key="createLink" value="#{request.contextPath}/full/concurrent/managedExecutorServiceNew.jsf");
         setPageSessionAttribute(key="listLink" value="#{request.contextPath}/full/concurrent/managedExecutorServices.jsf");
         setPageSessionAttribute(key="editLink" value="#{request.contextPath}/full/concurrent/managedExecutorServiceEdit.jsf");

@@ -40,52 +40,41 @@
 
 -->
 
-<!-- concurent/managedExecutorServiceNew.jsf -->
-
 <!initPage
+    setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings");
     setResourceBundle(key="i18ncon" bundle="org.glassfish.full.admingui.Strings");
     setResourceBundle(key="help_con" bundle="org.glassfish.full.admingui.Helplinks")
-    setAttribute(key="edit" value="#{false}");
 />
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18ncon.managedExecutorService.newPageTitle}" >
+<!composition template="/templates/default.layout"
+    guiTitle="$resource{i18ncon.managedScheduledExecutorServices.pageTitle}"
+    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:resources:concurrent:managedScheduledExecutorServices');
+    setTimeout('admingui.table.changeThreeTableButtons(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)"
+>
 <!define name="content">
     <event>
     <!beforeCreate
-        getRequestValue(key="target" value="#{pageSession.targetValue}");
-        setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/full/concurrent/managedExecutorServices.jsf");
-        setPageSessionAttribute(key="childType" value="managed-executor-service");
-        setPageSessionAttribute(key="isConcurrent" value="true");
-        setPageSessionAttribute(key="convertToFalseList" value={"enabled", "longRunningTasks" });
+        setPageSessionAttribute(key="childType" value="managed-scheduled-executor-service");
+        //REST related
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
-        gf.getDefaultValues(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}", valueMap="#{pageSession.valueMap}");
-        createMap(result="#{pageSession.valueMap}")
-        setPageSessionAttribute(key="edit" value="#{false}" );
-        createMap(result="#{pageSession.valueMap2}")
-        mapPut(map="#{pageSession.valueMap}" key="enabled" value="true");
-        mapPut(map="#{pageSession.valueMap}" key="contextInfo" value="");
-        mapPut(map="#{pageSession.valueMap2}" key="enabled" value="true");
-        setPageSessionAttribute(key="useString" value="#{false}");
+        setPageSessionAttribute(key="hasThreadPriority" value="#{true}");
+        setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18ncon.msg.JS.confirmDeleteManagedScheduledExecutorService}");
+        setPageSessionAttribute(key="createLink" value="#{request.contextPath}/full/concurrent/managedScheduledExecutorServiceNew.jsf");
+        setPageSessionAttribute(key="listLink" value="#{request.contextPath}/full/concurrent/managedScheduledExecutorServices.jsf");
+        setPageSessionAttribute(key="editLink" value="#{request.contextPath}/full/concurrent/managedScheduledExecutorServiceEdit.jsf");
+        setPageSessionAttribute(key="tableTitle" value="$resource{i18ncon.resourcesTable.managedScheduledExecutorServices}");
+        setPageSessionAttribute(key="generalPage" value="#{request.contextPath}/full/concurrent/managedScheduledExecutorServiceEdit.jsf");
+        setPageSessionAttribute(key="targetPage" value="#{request.contextPath}/common/resourceNode/resourceEditTargets.jsf");
+        
     />
     </event>
-    <sun:form id="form">
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":resources:concurrent:managedScheduledExecutorServices");</script>
+        <sun:form id="propertyForm">
 #include "/common/shared/alertMsg_1.inc"
-
-        <sun:title id="propertyContentPage" title="$resource{i18ncon.managedExecutorService.newPageTitle}" helpText="$resource{i18ncon.managedExecutorService.newPageTitleHelp}">
-#include "/common/resourceNode/resourceEditPageButtons.inc"
-        </sun:title>
-#include "/full/concurrent/managedExecutorServiceAttr.inc"
-#include "/common/shared/propertyDescTable.inc"
-<event>
-<!afterCreate
-    setPageSessionAttribute(key="setDefaultTarget" value="true");
-    includeIntegrations(type="org.glassfish.admingui:TargetSectionForResource" );
-/>
-</event>
-
-
-        <sun:hidden id="helpKey" value="$resource{help_con.managedExecutorServiceNew}" />
-    </sun:form>
-    "<br/>
-#include "/common/shared/changeButtonsJS.inc" 
+             <sun:title id="propertyContentPage" title="$resource{i18ncon.managedScheduledExecutorServices.pageTitle}"
+                 helpText="$resource{i18ncon.managedScheduledExecutorServices.pageTitleHelp}" />
+             "<br /> <br />
+#include "/full/concurrent/resourcesTable.inc"
+            <sun:hidden id="helpKey" value="$resource{help_con.managedScheduledExecutorServices}" />
+        </sun:form>
 </define>
 </composition>
