@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,7 @@ package com.sun.enterprise.registration.impl.environment;
 import java.io.*;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Locale;
 
 /**
  * Solaris implementation of the SystemEnvironment class.
@@ -335,7 +336,7 @@ class SolarisSystemEnvironment extends SystemEnvironment {
                 int indx = s.indexOf(target) + target.length();
                 if (indx < s.length()) {
                     String tmp = s.substring(indx).trim();
-                    String lowerCaseStr = tmp.toLowerCase();
+                    String lowerCaseStr = tmp.toLowerCase(Locale.US);
                     if (!lowerCaseStr.startsWith("not available")
                             && !lowerCaseStr.startsWith("to be filled by o.e.m")) {
                         return tmp;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,6 +56,7 @@ import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.Locale;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.common.Descriptor;
 
@@ -127,7 +128,7 @@ public final class PersistenceDescriptor extends Descriptor {
         try {
             if( !field.trim().equals("") ) {
                 Class persClass = getPersistentClass();
-                String methodName = "get" + field.substring(0,1).toUpperCase() 
+                String methodName = "get" + field.substring(0,1).toUpperCase(Locale.US) 
                     + field.substring(1);
                 Method method = TypeUtil.getMethod
                     (persClass, persClass.getClassLoader(), methodName,

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -153,11 +154,11 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
                 ParameterMap params = new ParameterMap();
 
                 if(commandLine == null) {
-                    params.set("DEFAULT".toLowerCase(), "asadmin-osgi-shell");
+                    params.set("DEFAULT".toLowerCase(Locale.US), "asadmin-osgi-shell");
                 } else if(commandLine instanceof String) {
-                    params.set("DEFAULT".toLowerCase(), (String) commandLine);
+                    params.set("DEFAULT".toLowerCase(Locale.US), (String) commandLine);
                 } else if(commandLine instanceof List) {
-                    params.set("DEFAULT".toLowerCase(), (List<String>) commandLine);
+                    params.set("DEFAULT".toLowerCase(Locale.US), (List<String>) commandLine);
                 }
 
                 if(sessionOp != null) {

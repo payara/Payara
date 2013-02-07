@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -206,7 +206,7 @@ class LinuxSystemEnvironment extends SystemEnvironment {
         }
         boolean dmiFlag = false;
         for (String s : dmiInfo.split("\n")) {
-            String line = s.toLowerCase();
+            String line = s.toLowerCase(Locale.US);
             if (dmiFlag) {
                 if (line.contains(target)) {
                     String key = target + ":";

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,7 @@ import javax.inject.Named;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -154,7 +155,7 @@ public abstract class AbstractHandler implements AnnotationHandler {
             methodName.startsWith("set") ) {
             // Derive javabean property name.
             propertyName = 
-                methodName.substring(3, 4).toLowerCase() +
+                methodName.substring(3, 4).toLowerCase(Locale.US) +
                 methodName.substring(4);
         }  else {
             throw new AnnotationProcessorException(

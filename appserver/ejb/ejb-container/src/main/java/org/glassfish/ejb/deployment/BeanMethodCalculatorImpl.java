@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.logging.LogDomains;
+import java.util.Locale;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.glassfish.ejb.deployment.descriptor.FieldDescriptor;
@@ -93,7 +94,7 @@ final public class BeanMethodCalculatorImpl {
                 if( nextName.startsWith("get") &&
                     nextName.length() > 3 ) {
                     String field = 
-                        nextName.substring(3,4).toLowerCase() +
+                        nextName.substring(3,4).toLowerCase(Locale.US) +
                         nextName.substring(4);
                     fieldDescriptors.add(new FieldDescriptor(field));
                 }

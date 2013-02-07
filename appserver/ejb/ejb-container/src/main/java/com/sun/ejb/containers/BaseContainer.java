@@ -142,6 +142,7 @@ import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Utility;
+import java.util.Locale;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
@@ -3190,7 +3191,7 @@ public abstract class BaseContainer
                 // HOME method
 
                 String upperCasedName = 
-                    methodName.substring(0,1).toUpperCase() +
+                    methodName.substring(0,1).toUpperCase(Locale.US) +
                     methodName.substring(1);
                 invInfo.targetMethod1 = ejbClass.getMethod
                     ("ejbHome" + upperCasedName, paramTypes);

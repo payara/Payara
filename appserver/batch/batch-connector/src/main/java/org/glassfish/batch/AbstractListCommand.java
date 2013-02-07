@@ -46,6 +46,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 
 import javax.inject.Inject;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -113,12 +114,12 @@ public abstract class AbstractListCommand
 
         Set<String> validHeaders = new HashSet<String>();
         for (String h : getSupportedHeaders())
-            validHeaders.add(h.toLowerCase());
+            validHeaders.add(h.toLowerCase(Locale.US));
         for (int i=0; i<headers.length; i++) {
-            if (!validHeaders.contains(headers[i].toLowerCase())) {
+            if (!validHeaders.contains(headers[i].toLowerCase(Locale.US))) {
                 throw new IllegalArgumentException("IllegalArgument " + headers[i]);
             }
-            headers[i] = headers[i].toLowerCase();
+            headers[i] = headers[i].toLowerCase(Locale.US);
         }
 
         outputHeaders = headers;

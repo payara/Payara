@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -174,7 +174,7 @@ public class ModuleExploder {
              /*
               *Expand the file only if it is a jar and only if it does not lie in WEB-INF/lib.
               */
-            if (fileName.toLowerCase().endsWith(".jar") && 
+            if (fileName.toLowerCase(Locale.US).endsWith(".jar") && 
                 ( ! fileName.replace('\\', '/').toUpperCase(Locale.getDefault()).startsWith(WEB_INF_PREFIX)) ) { 
 
                 try {

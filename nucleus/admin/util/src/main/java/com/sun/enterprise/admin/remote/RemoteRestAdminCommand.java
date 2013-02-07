@@ -1404,7 +1404,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             } catch (UnknownHostException ex) {
                 canonicalHostCache = host;
                 if (canonicalHostCache != null) {
-                    canonicalHostCache = canonicalHostCache.trim().toLowerCase();
+                    canonicalHostCache = canonicalHostCache.trim().toLowerCase(Locale.US);
                 }
             }
         }
