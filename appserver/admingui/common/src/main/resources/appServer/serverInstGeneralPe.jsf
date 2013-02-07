@@ -47,7 +47,6 @@
     setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
 />
 <!composition template="/templates/default.layout"  guiTitle="$resource{i18n.instance.GeneralTitle}" >
-#include "/cluster/shared/handlers.inc"
 <!define name="content">
     <event>
     <!beforeCreate
