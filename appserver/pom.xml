@@ -98,7 +98,7 @@
 
         <uc-pkg-client.version>1.122-54.2834</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-54.2834</uc-pkg-bootstrap.version>
-        <webservices.version>2.3-b202</webservices.version>
+        <webservices.version>2.3-b210</webservices.version>
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
         <woodstox.version>4.1.2</woodstox.version>
         <jaxb-api.version>2.2.7</jaxb-api.version>
