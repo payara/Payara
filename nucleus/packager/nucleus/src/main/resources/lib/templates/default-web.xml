@@ -328,15 +328,15 @@
         web-glue.jar
         bean-validator.jar
         javax.ejb.jar
-        javax.enterprise.deploy.jar
+        javax.enterprise.deploy-api.jar
         javax.jms-api.jar
         javax.mail.jar
-        javax.management.j2ee.jar
+        javax.management.j2ee-api.jar
         javax.persistence.jar
-        javax.resource.jar
+        javax.resource-api.jar
         javax.security.auth.message.jar
         javax.security.jacc.jar
-        javax.transaction.jar
+        javax.transaction-api.jar
         javax.xml.rpc-api.jar
         jersey-core.jar
         webservices-osgi.jar

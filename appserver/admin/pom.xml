@@ -60,7 +60,6 @@
         <module>admin-core</module>
         <module>backup-l10n</module>
         <module>cli-optional-l10n</module>
-        <module>javax.management.j2ee</module>
         <module>template</module>
     </modules>
 </project>
