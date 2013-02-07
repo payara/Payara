@@ -40,7 +40,6 @@
 
 package org.glassfish.concurrent.admin;
 
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -64,80 +63,78 @@ import java.util.Properties;
 
 
 /**
- * Create Managed Thread Factory Command
+ * Base command for creating managed executor service and managed 
+ * scheduled executor service
  *
  */
-@TargetType(value={CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
-@ExecuteOn(RuntimeType.ALL)
-@Service(name="create-managed-thread-factory")
-@PerLookup
-@I18n("create.managed.thread.factory")
-public class CreateManagedThreadFactory implements AdminCommand {
+public class CreateManagedExecutorServiceBase {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateManagedThreadFactory.class);
+    final protected static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateManagedExecutorServiceBase.class);
 
     @Param(name="jndi_name", primary=true)
-    private String jndiName;
+    protected String jndiName;
 
     @Param(optional=true, defaultValue="true")
-    private Boolean enabled;
+    protected Boolean enabled;
 
     @Param(name="contextinfo", optional=true)
-    private String contextinfo;
+    protected String contextinfo;
 
     @Param(name="threadpriority", alias="threadPriority", defaultValue=""+Thread.NORM_PRIORITY, optional=true)
-    private Integer threadpriority;
+    protected Integer threadpriority;
+
+    @Param(name="longrunningtasks", alias="longRunningTasks", defaultValue="false", optional=true)
+    protected Boolean longrunningtasks;
+
+    @Param(name="hungafterseconds", optional=true)
+    protected Integer hungafterseconds;
+
+    @Param(name="corepoolsize", alias="corePoolSize", defaultValue="0", optional=true)
+    protected Integer corepoolsize;
+
+    @Param(name="maximumpoolsize", alias="maximumPoolSize", defaultValue=""+Integer.MAX_VALUE, optional=true)
+    protected Integer maximumpoolsize;
+
+    @Param(name="keepaliveseconds", alias="keepAliveSeconds", defaultValue="60", optional=true)
+    protected Integer keepaliveseconds;
+
+    @Param(name="threadlifetimeseconds", alias="threadLifetimeSeconds", defaultValue="0", optional=true)
+    protected Integer threadlifetimeseconds;
+
+    @Param(name="taskqueuecapacity", alias="taskQueueCapacity", defaultValue=""+Integer.MAX_VALUE, optional=true)
+    protected Integer taskqueuecapacity;
 
     @Param(optional=true)
-    private String description;
+    protected String description;
 
     @Param(name="property", optional=true, separator=':')
-    private Properties properties;
+    protected Properties properties;
 
     @Param(optional=true)
-    private String target = SystemPropertyConstants.DAS_SERVER_NAME;
+    protected String target = SystemPropertyConstants.DAS_SERVER_NAME;
 
-    @Inject
-    private Domain domain;
-
-    @Inject
-    private ManagedThreadFactoryManager managedThreadFactoryMgr;
-
-    /**
-     * Executes the command with the command parameters passed as Properties
-     * where the keys are the paramter names and the values the parameter values
-     *
-     * @param context information
-     */
-    public void execute(AdminCommandContext context) {
-        final ActionReport report = context.getActionReport();
-
-        HashMap attrList = new HashMap();
+    protected void setAttributeList(HashMap attrList) {
         attrList.put(ResourceConstants.JNDI_NAME, jndiName);
         attrList.put(ResourceConstants.CONTEXT_INFO, contextinfo);
         attrList.put(ResourceConstants.THREAD_PRIORITY, 
             threadpriority.toString());
+        attrList.put(ResourceConstants.LONG_RUNNING_TASKS, 
+            longrunningtasks.toString());
+        if (hungafterseconds != null) {
+            attrList.put(ResourceConstants.HUNG_AFTER_SECONDS, 
+                hungafterseconds.toString());
+        }
+        attrList.put(ResourceConstants.CORE_POOL_SIZE, 
+            corepoolsize.toString());
+        attrList.put(ResourceConstants.MAXIMUM_POOL_SIZE, 
+            maximumpoolsize.toString());
+        attrList.put(ResourceConstants.KEEP_ALIVE_SECONDS, 
+            keepaliveseconds.toString());
+        attrList.put(ResourceConstants.THREAD_LIFETIME_SECONDS, 
+            threadlifetimeseconds.toString());
+        attrList.put(ResourceConstants.TASK_QUEUE_CAPACITY, 
+            taskqueuecapacity.toString());
         attrList.put(ServerTags.DESCRIPTION, description);
         attrList.put(ResourceConstants.ENABLED, enabled.toString());
-        ResourceStatus rs;
-
-        try {
-            rs = managedThreadFactoryMgr.create(domain.getResources(), attrList, properties, target);
-        } catch(Exception e) {
-            report.setMessage(localStrings.getLocalString("create.managed.thread.factory.failed", "Managed thread factory {0} creation failed", jndiName));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setFailureCause(e);
-            return;
-        }
-        ActionReport.ExitCode ec = ActionReport.ExitCode.SUCCESS;
-        if (rs.getMessage() != null){
-             report.setMessage(rs.getMessage());
-        }
-        if (rs.getStatus() == ResourceStatus.FAILURE) {
-            ec = ActionReport.ExitCode.FAILURE;
-            if (rs.getException() != null)
-                report.setFailureCause(rs.getException());
-        }
-        report.setActionExitCode(ec);
     }
 }

@@ -42,22 +42,21 @@ package org.glassfish.concurrent.admin;
 
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.config.serverbeans.ServerTags;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.I18n;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfiguredBy;
 
 /**
  *
- * The managed executor service manager allows you to create and delete 
- * the managed-executor-service config element
+ * The managed scheduled executor service manager allows you to create and 
+ * delete the managed-scheduled-executor-service config element
  */
-@Service (name=ServerTags.MANAGED_EXECUTOR_SERVICE)
-@I18n("managed.executor.service.manager")
+@Service (name=ServerTags.MANAGED_SCHEDULED_EXECUTOR_SERVICE)
+@I18n("managed.executor.scheduled.service.manager")
 @ConfiguredBy(Resources.class)
-public class ManagedExecutorServiceManager extends ManagedExecutorServiceBaseManager {
+public class ManagedScheduledExecutorServiceManager extends ManagedExecutorServiceBaseManager {
 
     public String getResourceType () {
-        return ServerTags.MANAGED_EXECUTOR_SERVICE;
+        return ServerTags.MANAGED_SCHEDULED_EXECUTOR_SERVICE;
     }
 }

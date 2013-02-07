@@ -51,7 +51,7 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.concurrent.config.ManagedExecutorService;
+import org.glassfish.concurrent.config.ManagedScheduledExecutorService;
 import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
 import org.jvnet.hk2.annotations.Service;
 
@@ -59,24 +59,24 @@ import javax.inject.Inject;
 import java.util.Collection;
 
 /**
- * List Managed Executor Service Resources command
+ * List Managed Scheduled Executor Service Resources command
  * 
  */
 @TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE })
 @ExecuteOn(value={RuntimeType.DAS})
-@Service(name="list-managed-executor-services")
+@Service(name="list-managed-scheduled-executor-services")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@I18n("list.managed.executor.services")
+@I18n("list.managed.scheduled.executor.service")
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
         opType=RestEndpoint.OpType.GET, 
-        path="list-managed-executor-services", 
-        description="List Managed Executor Services")
+        path="list-managed-scheduled-executor-services", 
+        description="List Managed Scheduled Executor Services")
 })
-public class ListManagedExecutorServices implements AdminCommand {
+public class ListManagedScheduledExecutorServices implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListManagedExecutorServices.class);    
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListManagedScheduledExecutorServices.class);    
 
     @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     private String target ;
@@ -98,16 +98,16 @@ public class ListManagedExecutorServices implements AdminCommand {
         final ActionReport report = context.getActionReport();
 
         try {
-            Collection<ManagedExecutorService> managedExecutorServices = domain.getResources().getResources(ManagedExecutorService.class);
-            for (ManagedExecutorService managedExecutorService : managedExecutorServices) {
-                String jndiName = managedExecutorService.getJndiName();
+            Collection<ManagedScheduledExecutorService> managedScheduledExecutorServices = domain.getResources().getResources(ManagedScheduledExecutorService.class);
+            for (ManagedScheduledExecutorService managedScheduledExecutorService : managedScheduledExecutorServices) {
+                String jndiName = managedScheduledExecutorService.getJndiName();
                 if(bindableResourcesHelper.resourceExists(jndiName, target)){
                     ActionReport.MessagePart part = report.getTopMessagePart().addChild();
                     part.setMessage(jndiName);
                 }
             }
         } catch (Exception e) {
-            report.setMessage(localStrings.getLocalString("list.managed.executor.service.failed", "List managed executor services failed"));
+            report.setMessage(localStrings.getLocalString("list.managed.scheduled.executor.service.failed", "List managed scheduled executor services failed"));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;

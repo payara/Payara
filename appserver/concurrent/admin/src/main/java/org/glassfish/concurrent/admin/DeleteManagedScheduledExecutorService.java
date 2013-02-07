@@ -41,77 +41,73 @@
 package org.glassfish.concurrent.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.concurrent.config.ManagedExecutorService;
-import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
+import org.glassfish.resourcebase.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import java.util.Collection;
 
 /**
- * List Managed Executor Service Resources command
+ * Delete Managed Scheduled Executor Service Command
  * 
  */
-@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE })
-@ExecuteOn(value={RuntimeType.DAS})
-@Service(name="list-managed-executor-services")
+@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
+@ExecuteOn(RuntimeType.ALL)
+@Service(name="delete-managed-scheduled-executor-service")
 @PerLookup
-@CommandLock(CommandLock.LockType.NONE)
-@I18n("list.managed.executor.services")
-@RestEndpoints({
-    @RestEndpoint(configBean=Resources.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="list-managed-executor-services", 
-        description="List Managed Executor Services")
-})
-public class ListManagedExecutorServices implements AdminCommand {
+@I18n("delete.managed.scheduled.executor.service")
+public class DeleteManagedScheduledExecutorService implements AdminCommand {
     
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListManagedExecutorServices.class);    
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteManagedScheduledExecutorService.class);    
 
-    @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
-    private String target ;
+    @Param(optional=true)
+    private String target = SystemPropertyConstants.DAS_SERVER_NAME;
     
+    @Param(name="managed_scheduled_executor_service_name", primary=true)
+    private String jndiName;
+
     @Inject
     private Domain domain;
 
     @Inject
-    private BindableResourcesHelper bindableResourcesHelper;
+    private ManagedScheduledExecutorServiceManager managedScheduledExecutorServiceMgr;
 
     /**
      * Executes the command with the command parameters passed as Properties
-     * where the keys are the parameter names and the values the parameter values
+     * where the keys are the paramter names and the values the parameter values
      *
      * @param context information
      */
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
-
         try {
-            Collection<ManagedExecutorService> managedExecutorServices = domain.getResources().getResources(ManagedExecutorService.class);
-            for (ManagedExecutorService managedExecutorService : managedExecutorServices) {
-                String jndiName = managedExecutorService.getJndiName();
-                if(bindableResourcesHelper.resourceExists(jndiName, target)){
-                    ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-                    part.setMessage(jndiName);
-                }
+            ResourceStatus rs = managedScheduledExecutorServiceMgr.delete(domain.getResources(), jndiName, target);
+            if(rs.getMessage() != null){
+                report.setMessage(rs.getMessage());
             }
-        } catch (Exception e) {
-            report.setMessage(localStrings.getLocalString("list.managed.executor.service.failed", "List managed executor services failed"));
+            if (rs.getStatus() == ResourceStatus.SUCCESS) {
+                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);       
+            } else {
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                if (rs.getException() != null)
+                    report.setFailureCause(rs.getException());
+            }
+        } catch(Exception e) {
+            report.setMessage(localStrings.getLocalString("delete.managed.scheduled.executor.service.failed", "Managed scheduled executor service {0} deletion failed", jndiName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
-            return;
         }
-        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 }

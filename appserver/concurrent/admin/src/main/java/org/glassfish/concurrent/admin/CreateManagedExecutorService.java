@@ -72,51 +72,7 @@ import java.util.Properties;
 @Service(name="create-managed-executor-service")
 @PerLookup
 @I18n("create.managed.executor.service")
-public class CreateManagedExecutorService implements AdminCommand {
-
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateManagedExecutorService.class);
-
-    @Param(name="jndi_name", primary=true)
-    private String jndiName;
-
-    @Param(optional=true, defaultValue="true")
-    private Boolean enabled;
-
-    @Param(name="contextinfo", optional=true)
-    private String contextinfo;
-
-    @Param(name="threadpriority", defaultValue=""+Thread.NORM_PRIORITY, optional=true)
-    private Integer threadpriority;
-
-    @Param(name="longrunningtasks", defaultValue="false", optional=true)
-    private Boolean longrunningtasks;
-
-    @Param(name="hungafterseconds", optional=true)
-    private Integer hungafterseconds;
-
-    @Param(name="corepoolsize", defaultValue="0", optional=true)
-    private Integer corepoolsize;
-
-    @Param(name="maximumpoolsize", defaultValue=""+Integer.MAX_VALUE, optional=true)
-    private Integer maximumpoolsize;
-
-    @Param(name="keepaliveseconds", defaultValue="60", optional=true)
-    private Integer keepaliveseconds;
-
-    @Param(name="threadlifetimeseconds", defaultValue="0", optional=true)
-    private Integer threadlifetimeseconds;
-
-    @Param(name="taskqueuecapacity", defaultValue=""+Integer.MAX_VALUE, optional=true)
-    private Integer taskqueuecapacity;
-
-    @Param(optional=true)
-    private String description;
-
-    @Param(name="property", optional=true, separator=':')
-    private Properties properties;
-
-    @Param(optional=true)
-    private String target = SystemPropertyConstants.DAS_SERVER_NAME;
+public class CreateManagedExecutorService extends CreateManagedExecutorServiceBase implements AdminCommand {
 
     @Inject
     private Domain domain;
@@ -134,28 +90,8 @@ public class CreateManagedExecutorService implements AdminCommand {
         final ActionReport report = context.getActionReport();
 
         HashMap attrList = new HashMap();
-        attrList.put(ResourceConstants.JNDI_NAME, jndiName);
-        attrList.put(ResourceConstants.CONTEXT_INFO, contextinfo);
-        attrList.put(ResourceConstants.THREAD_PRIORITY, 
-            threadpriority.toString());
-        attrList.put(ResourceConstants.LONG_RUNNING_TASKS, 
-            longrunningtasks.toString());
-        if (hungafterseconds != null) {
-            attrList.put(ResourceConstants.HUNG_AFTER_SECONDS, 
-                hungafterseconds.toString());
-        }
-        attrList.put(ResourceConstants.CORE_POOL_SIZE, 
-            corepoolsize.toString());
-        attrList.put(ResourceConstants.MAXIMUM_POOL_SIZE, 
-            maximumpoolsize.toString());
-        attrList.put(ResourceConstants.KEEP_ALIVE_SECONDS, 
-            keepaliveseconds.toString());
-        attrList.put(ResourceConstants.THREAD_LIFETIME_SECONDS, 
-            threadlifetimeseconds.toString());
-        attrList.put(ResourceConstants.TASK_QUEUE_CAPACITY, 
-            taskqueuecapacity.toString());
-        attrList.put(ServerTags.DESCRIPTION, description);
-        attrList.put(ResourceConstants.ENABLED, enabled.toString());
+        setAttributeList(attrList);
+
         ResourceStatus rs;
 
         try {
