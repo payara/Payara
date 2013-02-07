@@ -43,7 +43,6 @@ import com.sun.enterprise.admin.util.*;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.universal.collections.ManifestUtils;
-
 import com.sun.enterprise.universal.glassfish.AdminCommandResponse;
 import com.sun.enterprise.util.AnnotationUtil;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -64,7 +63,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import javax.inject.Scope;
 import javax.inject.Singleton;
 import javax.security.auth.Subject;
@@ -77,6 +75,7 @@ import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
 import org.glassfish.api.admin.Payload;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.SupplementalCommandExecutor.SupplementalCommand;
+import org.glassfish.api.logging.LogHelper;
 import org.glassfish.common.util.admin.CommandModelImpl;
 import org.glassfish.common.util.admin.ManPageFinder;
 import org.glassfish.common.util.admin.MapInjectionResolver;
@@ -182,8 +181,8 @@ public class CommandRunnerImpl implements CommandRunner {
             String commandServiceName = (scope != null) ? scope + commandName : commandName;
             command = habitat.getService(AdminCommand.class, commandServiceName);
         } catch (MultiException e) {
-            logger.log(Level.SEVERE, KernelLoggerInfo.cantInstantiateCommand, 
-                    new Object[] {commandName, e});
+            LogHelper.log(logger, Level.SEVERE, KernelLoggerInfo.cantInstantiateCommand, 
+                    e, commandName);
             return null;
         }
         return command == null ? null : getModel(command);
