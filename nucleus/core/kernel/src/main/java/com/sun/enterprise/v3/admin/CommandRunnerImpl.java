@@ -1416,8 +1416,8 @@ public class CommandRunnerImpl implements CommandRunner {
                     }
                     //Run main command if it is applicable for this instance type
                     if ((runtimeTypes.contains(RuntimeType.ALL))
-                            || (serverEnv.isDas() && (CommandTarget.DOMAIN.isValid(habitat, targetName)
-                            || runtimeTypes.contains(RuntimeType.DAS)))
+                            || (serverEnv.isDas() && 
+                                (CommandTarget.DOMAIN.isValid(habitat, targetName) || runtimeTypes.contains(RuntimeType.DAS)))
                             || runtimeTypes.contains(RuntimeType.SINGLE_INSTANCE)
                             || (serverEnv.isInstance() && runtimeTypes.contains(RuntimeType.INSTANCE))) {
                         logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.maincommand",
