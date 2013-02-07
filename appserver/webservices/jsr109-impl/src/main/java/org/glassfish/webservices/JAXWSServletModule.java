@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,22 +46,15 @@
  */
 
 package org.glassfish.webservices;
-import com.sun.xml.ws.api.server.Container;
-import com.sun.xml.ws.api.server.ResourceInjector;
-import javax.servlet.ServletContext;
+
 import com.sun.xml.ws.transport.http.servlet.ServletModule;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
-import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.istack.NotNull;
 import com.sun.xml.ws.api.server.BoundEndpoint;
-import com.sun.xml.ws.api.server.WSEndpoint;
-import java.lang.ref.WeakReference;
-import javax.xml.ws.WebServiceException;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Hashtable;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implementation of JAX-WS ServletModule SPI used by WSIT WS-MetadataExchange.
@@ -76,30 +69,34 @@ import java.net.URISyntaxException;
 public class JAXWSServletModule extends ServletModule {
     
     //Map of context-roots to JAXWSServletModules
-    private final static Hashtable<String, WeakReference<JAXWSServletModule>> modules =
-            new Hashtable<String, WeakReference<JAXWSServletModule>>();
-    
+    private final static Map<String, JAXWSServletModule> modules =
+            new ConcurrentHashMap<String, JAXWSServletModule>();
+
     //Map of uri->BoundEndpoint used to implement getBoundEndpoint.  Map is rather
     //than Set, so that when a new endpoint is redeployed at a given uri, the old
     //endpoint will be replaced by the new endpoint.  The values() method of the
     //field is returned by <code>getBoundEndpoints</code>.
-     private final Hashtable<String, BoundEndpoint> endpoints = 
-             new Hashtable<String, BoundEndpoint>();
+     private final Map<String, BoundEndpoint> endpoints =
+             new ConcurrentHashMap<String, BoundEndpoint>();
      
     //the context-root for endpoints belonging to this module.
     private final String contextPath;
     
          
     public static synchronized JAXWSServletModule getServletModule(String contextPath) {
-        
-        WeakReference<JAXWSServletModule> ret = modules.get(contextPath);
+
+        JAXWSServletModule ret = modules.get(contextPath);
         if (ret == null) {
-            ret = new WeakReference<JAXWSServletModule>(new JAXWSServletModule(contextPath));
+            ret = new JAXWSServletModule(contextPath);
             modules.put(contextPath, ret);
         }
-        return ret.get();
+        return ret;
     } 
-    
+
+    public static void destroy(String contextPath) {
+        modules.remove(contextPath);
+    }
+
     private JAXWSServletModule(String contextPath) {
             this.contextPath = contextPath;
     }
@@ -107,14 +104,14 @@ public class JAXWSServletModule extends ServletModule {
     public void addEndpoint(String uri, ServletAdapter adapter) {
         endpoints.put(uri, adapter);
     }
-    
+
+    @Override
     public @NotNull List<BoundEndpoint> getBoundEndpoints() {
             return new ArrayList(endpoints.values());
     }
 
+    @Override
     public @NotNull String getContextPath() {
         return contextPath;
     }
-    
-   
 }

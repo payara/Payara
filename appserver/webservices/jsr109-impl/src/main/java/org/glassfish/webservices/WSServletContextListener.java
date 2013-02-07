@@ -339,5 +339,6 @@ public class WSServletContextListener implements ServletContextListener {
             }*/
            
         }
+        JAXWSServletModule.destroy(contextRoot);
     }
 }
