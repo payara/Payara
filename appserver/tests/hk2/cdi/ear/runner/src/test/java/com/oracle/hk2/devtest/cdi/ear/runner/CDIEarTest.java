@@ -66,6 +66,8 @@ public class CDIEarTest extends NucleusStartStopTest {
     
     private final static String EJB1_JNDI_NAME = "java:global/app/ejb1/Ejb1";
     
+    private final static String WAR1_URL = "http://localhost:8080/war1/war1";
+    
     private boolean deployed1;
     private Context context;
     
@@ -134,5 +136,13 @@ public class CDIEarTest extends NucleusStartStopTest {
         
         ejb1.isEjb1HK2ServiceAvailable();
         
+    }
+    
+    @Test
+    public void testInjectedLib1Ejb1War1IntoWar1() {
+        String fromWar1 = NucleusTestUtils.getURL(WAR1_URL);
+        
+        Assert.assertTrue(fromWar1.contains("success"),
+                "Does not contain the word success: " + fromWar1);
     }
 }

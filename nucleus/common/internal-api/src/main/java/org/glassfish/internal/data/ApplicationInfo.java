@@ -57,6 +57,7 @@ import org.glassfish.api.event.EventListener.Event;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
+import org.glassfish.hk2.bootstrap.DescriptorFileFinder;
 import org.glassfish.hk2.bootstrap.HK2Populator;
 import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
 import org.glassfish.internal.deployment.Deployment;
@@ -289,6 +290,8 @@ public class ApplicationInfo extends ModuleInfo {
                 tracing.addModuleMark(DeploymentTracing.ModuleMark.LOADED, module.getName());
             }
         }
+        
+        populateApplicationServiceLocator();
 
         isLoaded = true;
 
@@ -488,6 +491,9 @@ public class ApplicationInfo extends ModuleInfo {
         return isLoaded;
     }
     
+    private final static String APPLICATION_LOADER_FILES = DescriptorFileFinder.RESOURCE_BASE + "application";
+    private final static String WEB_LOADER_FILES = "hk2-locator/application";
+    
     /**
      * Populates the ApplicationServiceLocator with services using the current
      * appClassLoader.  Services must be described in files named
@@ -496,7 +502,7 @@ public class ApplicationInfo extends ModuleInfo {
      * 
      * @throws IOException On failure to read the service files
      */
-    public void populateApplicationServiceLocator() throws IOException {
+    private void populateApplicationServiceLocator() throws IOException {
         ServiceLoader<PopulatorPostProcessor> postProcessors =
                 ServiceLoader.load(PopulatorPostProcessor.class, appClassLoader);
         
@@ -508,8 +514,26 @@ public class ApplicationInfo extends ModuleInfo {
         // Add this one AFTER all the other processors
         allProcessors.addLast(new ApplicationClassLoadingPostProcessor(appClassLoader));
         
-        HK2Populator.populate(appServiceLocator, new ApplicationDescriptorFileFinder(appClassLoader),
+        HK2Populator.populate(appServiceLocator, new ApplicationDescriptorFileFinder(appClassLoader, APPLICATION_LOADER_FILES),
             allProcessors);
+        
+        HashSet<ClassLoader> treatedLoaders = new HashSet<ClassLoader>();
+        treatedLoaders.add(appClassLoader);
+        
+        for (ModuleInfo module : modules) {
+            ClassLoader moduleClassLoader = module.getModuleClassLoader();
+            
+            if ((moduleClassLoader == null) || treatedLoaders.contains(moduleClassLoader)) {
+                continue;
+            }
+            treatedLoaders.add(moduleClassLoader);
+            
+            allProcessors.removeLast();
+            allProcessors.addLast(new ApplicationClassLoadingPostProcessor(moduleClassLoader));
+                
+            HK2Populator.populate(appServiceLocator, new ApplicationDescriptorFileFinder(moduleClassLoader,
+                    WEB_LOADER_FILES),
+                    allProcessors);  
+        }
     }
-
 }

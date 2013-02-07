@@ -481,7 +481,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 context.setPhase(DeploymentContextImpl.Phase.PREPARED);
                 Thread.currentThread().setContextClassLoader(context.getClassLoader());
                 appInfo.setAppClassLoader(context.getClassLoader());
-                appInfo.populateApplicationServiceLocator();
                 events.send(new Event<DeploymentContext>(Deployment.APPLICATION_PREPARED, context), false);
 
                 // now were falling back into the mainstream loading/starting sequence, at this

@@ -122,6 +122,10 @@ public class ModuleInfo {
     public Set<ClassLoader> getClassLoaders() {
         return classLoaders;
     }
+    
+    public ClassLoader getModuleClassLoader() {
+        return moduleClassLoader;
+    }
 
     public void cleanClassLoaders() {
         classLoaders = null; 

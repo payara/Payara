@@ -56,18 +56,20 @@ import org.glassfish.hk2.bootstrap.DescriptorFileFinder;
  *
  */
 public class ApplicationDescriptorFileFinder implements DescriptorFileFinder {
-    private final static String APPLICATION_LOADER_FILES = DescriptorFileFinder.RESOURCE_BASE + "application";
+    
+    private final String resourceName;
     private final ClassLoader loaderToUse;
     
     /* package */
-    ApplicationDescriptorFileFinder(ClassLoader loaderToUse) {
+    ApplicationDescriptorFileFinder(ClassLoader loaderToUse, String resourceName) {
+        this.resourceName = resourceName;
         this.loaderToUse = loaderToUse;
     }
 
     @Override
     public List<InputStream> findDescriptorFiles() throws IOException {
-        Enumeration<URL> urls = loaderToUse.getResources(APPLICATION_LOADER_FILES);
-        
+        Enumeration<URL> urls = loaderToUse.getResources(resourceName);
+
         LinkedList<InputStream> retVal = new LinkedList<InputStream>();
         
         while (urls.hasMoreElements()) {
