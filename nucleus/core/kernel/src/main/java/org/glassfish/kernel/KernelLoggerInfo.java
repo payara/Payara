@@ -70,7 +70,7 @@ public class KernelLoggerInfo {
     public static final String cantDecodeParameter = LOGMSG_PREFIX + "-0001";
 
     @LogMessageInfo(
-            message = "Cannot instantiate model for command {0}, exception: {1}",
+            message = "Cannot instantiate model for command {0}",
             cause = "The service that implements the command could not be loaded.",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
