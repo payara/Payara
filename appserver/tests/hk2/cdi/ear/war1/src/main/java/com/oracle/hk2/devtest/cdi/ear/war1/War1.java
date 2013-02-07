@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import javax.inject.Inject;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -59,14 +58,19 @@ import com.oracle.hk2.devtest.cdi.ear.lib1.Lib1HK2Service;
  *
  */
 public class War1 extends HttpServlet {
+    /**
+     * For serialization
+     */
+    private static final long serialVersionUID = 8705667047049271376L;
+
     @Inject
     private Lib1HK2Service lib1Hk2Service;
     
     @Inject
     private Ejb1HK2Service ejb1Hk2Service;
     
-    //@Inject
-    //private War1HK2Service war1Hk2Service;
+    @Inject
+    private War1HK2Service war1Hk2Service;
     
     /**
      * Just prints out the value of the ServiceLocator getName
@@ -84,9 +88,9 @@ public class War1 extends HttpServlet {
             throw new ServletException("ejb1HK2Service from ejb1 was invalid: " + ejb1Hk2Service);
         }
         
-        //if (war1Hk2Service == null || !war1Hk2Service.getComponentName().equals(HK2Service.WAR1)) {
-        //    throw new ServletException("war1HK2Service from war1 was invalid: " + war1Hk2Service);
-        //}
+        if (war1Hk2Service == null || !war1Hk2Service.getComponentName().equals(HK2Service.WAR1)) {
+            throw new ServletException("war1HK2Service from war1 was invalid: " + war1Hk2Service);
+        }
 
         response.setContentType("text/html");
         PrintWriter writer = response.getWriter();
