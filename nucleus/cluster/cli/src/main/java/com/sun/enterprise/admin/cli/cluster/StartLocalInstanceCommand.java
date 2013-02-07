@@ -81,7 +81,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
     @Param(optional = true, shortName = "d", defaultValue = "false")
     private boolean debug;
 
-    @Param(name = "_dry-run", shortName = "n", optional = true,
+    @Param(name = "dry-run", shortName = "n", optional = true,
             defaultValue = "false")
     private boolean dry_run;
 
@@ -167,7 +167,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
                 logger.info(sb.toString());
                 return SUCCESS;
             }
-            
+
             launcher.launch();
 
             if (verbose || watchdog) { // we can potentially loop forever here...
@@ -189,7 +189,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
                         default:
                             return returnValue;
                     }
-                    
+
                     if (env.debug())
                         System.setProperty(CLIConstants.WALL_CLOCK_START_PROP,
                                             "" + System.currentTimeMillis());
@@ -243,7 +243,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
         args.add("--verbose=" + String.valueOf(verbose));
         args.add("--watchdog=" + String.valueOf(watchdog));
         args.add("--debug=" + String.valueOf(debug));
-        
+
         // IT 14015
         // We now REQUIRE all restarted instance to do a sync.
         // just stick with the default...

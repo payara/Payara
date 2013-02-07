@@ -84,7 +84,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
     private boolean debug;
     @Param(name = "domain_name", primary = true, optional = true)
     private String domainName0;
-    @Param(name = "_dry-run", shortName = "n", optional = true,
+    @Param(name = "dry-run", shortName = "n", optional = true,
             defaultValue = "false")
     private boolean dry_run;
     private static final LocalStringsImpl strings =
@@ -147,7 +147,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
             }
 
             doAdminPasswordCheck();
-            
+
             // launch returns very quickly if verbose is not set
             // if verbose is set then it returns after the domain dies
             launcher.launch();
@@ -304,16 +304,16 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
         createLauncher();
         // continue with normal start...
     }
-    
+
     /*
      * Check to make sure that at least one admin user is able to login.
      * If none is found, then prompt for an admin password.
-     * 
+     *
      * NOTE: this depends on launcher.setup having already been called.
      */
     private void doAdminPasswordCheck() throws CommandException {
         String arfile = launcher.getAdminRealmKeyFile();
-        if (arfile != null) {  
+        if (arfile != null) {
             try {
                 FileRealmHelper ar = new FileRealmHelper(arfile);
                 if (!ar.hasAuthenticatableUser()) {
