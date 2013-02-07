@@ -58,7 +58,6 @@
         setPageSessionAttribute(key="convertToFalseList" value={"enabled"});
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
         gf.getDefaultValues(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}", valueMap="#{pageSession.valueMap}");
-        createMap(result="#{pageSession.valueMap}")
         setPageSessionAttribute(key="edit" value="#{false}" );
         createMap(result="#{pageSession.valueMap2}")
         mapPut(map="#{pageSession.valueMap}" key="enabled" value="true");

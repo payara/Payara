@@ -105,7 +105,7 @@
             text="$resource{i18ncon.tree.ManagedScheduledExecutorServices}"
             url="/full/concurrent/managedScheduledExecutorServices.jsf">
 	<ui:event type="beforeCreate">
-	    gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/context-service" method="get" result="#{requestScope.resp}");
+	    gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/managed-scheduled-executor-service" method="get" result="#{requestScope.resp}");
 	    setAttribute(key="children" value="#{requestScope.resp.data.extraProperties.childResources}");
 	</ui:event>
 	<!facet image>
