@@ -51,6 +51,7 @@ import org.glassfish.admin.rest.composite.CompositeResource;
 import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.utils.StringUtil;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.ParameterMap;
 
 /**
  *
@@ -60,17 +61,25 @@ public class JobResource extends CompositeResource {
 
     @GET
     public RestModel<Job> getJob(@PathParam("jobId") String jobId) {
-        ActionReport ar = executeReadCommand("list-jobs");
-        Collection<Map<String, Object>> jobMaps = (List<Map<String, Object>>)ar.getExtraProperties().get("jobs");
+        ActionReport ar = executeReadCommand(getCommandName(), getParameters());
+        Collection<Map<String, Object>> jobMaps = (List<Map<String, Object>>) ar.getExtraProperties().get("jobs");
         if (jobMaps != null) {
             for (Map<String, Object> jobMap : jobMaps) {
                 if (StringUtil.compareStrings(jobId, (String) jobMap.get(ListJobsCommand.ID))) {
-                    Job model = JobsResources.constructJobModel(jobMap);
+                    Job model = JobsResource.constructJobModel(jobMap);
                     return model;
                 }
             }
         }
 
         throw new WebApplicationException(Response.Status.NOT_FOUND);
+    }
+
+    protected String getCommandName() {
+        return "list-jobs";
+    }
+
+    protected ParameterMap getParameters() {
+        return new ParameterMap();
     }
 }

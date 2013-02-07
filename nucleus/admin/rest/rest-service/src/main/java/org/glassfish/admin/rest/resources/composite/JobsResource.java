@@ -42,7 +42,6 @@ package org.glassfish.admin.rest.resources.composite;
 import com.sun.enterprise.v3.admin.commands.ListJobsCommand;
 import java.net.URI;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import javax.ws.rs.DefaultValue;
@@ -54,6 +53,7 @@ import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.RestCollection;
 import org.glassfish.api.ActionReport;
 import org.glassfish.admin.rest.utils.StringUtil;
+import org.glassfish.api.admin.ParameterMap;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -62,12 +62,12 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 @Path("/jobs")
-public class JobsResources extends CompositeResource {
+public class JobsResource extends CompositeResource {
 
     @GET
     public RestCollection<Job> getJobs(@QueryParam("currentUser") @DefaultValue("false") final boolean currentUser) throws Exception {
         RestCollection<Job> rc = new RestCollection<Job>();
-        ActionReport ar = executeReadCommand("list-jobs");
+        ActionReport ar = executeReadCommand(getCommandName(), getParameters());
         Collection<Map<String, Object>> jobMaps = (List<Map<String, Object>>) ar.getExtraProperties().get("jobs");
         if (jobMaps != null) {
             for (Map<String, Object> jobMap : jobMaps) {
@@ -86,6 +86,14 @@ public class JobsResources extends CompositeResource {
     @Path("id/{jobId}")
     public JobResource getJobResource() {
         return getSubResource(JobResource.class);
+    }
+
+    protected String getCommandName() {
+        return "list-jobs";
+    }
+
+    protected ParameterMap getParameters() {
+        return new ParameterMap();
     }
 
     public static Job constructJobModel(Map<String, Object> jobMap) {

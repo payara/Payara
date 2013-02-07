@@ -45,6 +45,7 @@
 						org.glassfish.admin.rest.utils, \
 						org.glassfish.admin.rest.composite, \
 						org.glassfish.admin.rest.composite.metadata, \
+						org.glassfish.admin.rest.resources.composite, \
 						org.glassfish.admin.rest.wadl, \
 						org.glassfish.admin.rest.utils.xml
 DynamicImport-Package: \
