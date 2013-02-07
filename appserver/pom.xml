@@ -106,12 +106,11 @@
         <stax2-api.version>3.1.1</stax2-api.version>
         <jaxr-api.version>1.0-b01</jaxr-api.version>
 
-        <javax-persistence-api.version>2.0.105.v201212201717</javax-persistence-api.version>
         <!-- Versions for EclipseLink artifacts -->
-        <eclipselink.version>2.5.0-M6</eclipselink.version>
-        <eclipselink.asm.version>3.3.1.v201206041142</eclipselink.asm.version>
-        <eclipselink.antlr.version>3.2.0.v201206041011</eclipselink.antlr.version>
+        <eclipselink.version>2.5.0-M7</eclipselink.version>
+        <javax-persistence-api.version>2.1.0-M7</javax-persistence-api.version> 
         <!-- End versions for EclipseLink artifacts -->
+
         <!-- repackage of org.netbeans.modules:org-netbeans-modules-dbschema RELEASE60 artifact-->
         <dbschema.version>3.1.1</dbschema.version>
         <!-- osgi version string must start with a number. Manually mapping above dbschema.version to osgi.version here -->
@@ -300,12 +299,12 @@
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.antlr</artifactId>
-                <version>${eclipselink.antlr.version}</version>
+                <version>${eclipselink.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.asm</artifactId>
-                <version>${eclipselink.asm.version}</version>
+                <version>${eclipselink.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.woodstox</groupId>
