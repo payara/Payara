@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,6 +47,7 @@ import com.sun.enterprise.deployment.AdminObject;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import javax.resource.spi.AdministeredObject;
+import javax.resource.spi.ResourceAdapterAssociation;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
@@ -114,6 +115,7 @@ public class AdministeredObjectHandler extends AbstractHandler {
         List<Class> interfacesList = new ArrayList<Class>(Arrays.asList(interfaces));
         interfacesList.remove(Serializable.class);
         interfacesList.remove(Externalizable.class);
+        interfacesList.remove(ResourceAdapterAssociation.class);
         return interfacesList;
     }
 
