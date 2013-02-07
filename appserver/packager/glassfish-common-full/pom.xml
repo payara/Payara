@@ -159,7 +159,7 @@
        	till 19614 is resolved.
        -->
        <dependency>
-           <groupId>org.glassfish.main</groupId>
+           <groupId>org.glassfish.main.batch</groupId>
            <artifactId>batch-connector</artifactId>
            <version>${project.version}</version>
        </dependency>
