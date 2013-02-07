@@ -84,6 +84,8 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
 
     private File jobsFile;
 
+    private long completionDate;
+
 
 
     protected AdminCommandInstanceImpl(String id, String name,String commandScope,Subject sub,boolean managedJob) {
@@ -157,6 +159,7 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
             commandProgress.complete();
         }
         this.payload = outbound;
+        this.completionDate = System.currentTimeMillis();
         JobPersistence jobPersistenceService = null;
         if (isManagedJob) {
             if (scope != null)   {
@@ -166,7 +169,7 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
             }
 
             List<String> userList =  SubjectUtil.getUsernamesFromSubject(subject);
-            jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,report.getActionExitCode().name(),userList.get(0),report.getMessage(),getJobsFile(),State.COMPLETED.name()));
+            jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,report.getActionExitCode().name(),userList.get(0),report.getMessage(),getJobsFile(),State.COMPLETED.name(),completionDate));
         }
         complete(report);
     }
@@ -183,9 +186,13 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
     }
 
     @Override
-       public String getScope() {
-           return scope;
-       }
+    public String getScope() {
+        return scope;
+    }
 
+    @Override
+    public long getCommandCompletionDate() {
+         return completionDate;
+    }
 
 }

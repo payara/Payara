@@ -96,6 +96,7 @@ public class JobsResources extends CompositeResource {
         model.setJobId((String) jobMap.get(ListJobsCommand.ID));
         model.setJobName((String) jobMap.get(ListJobsCommand.NAME));
         model.setExecutionDate(jobMap.get(ListJobsCommand.DATE).toString());
+        model.setCompletionDate(jobMap.get(ListJobsCommand.COMPLETION_DATE).toString());
         model.setJobState(jobMap.get(ListJobsCommand.STATE).toString());
         model.setExitCode((String) jobMap.get(ListJobsCommand.CODE));
         model.setMessage((String) jobMap.get(ListJobsCommand.MESSAGE));

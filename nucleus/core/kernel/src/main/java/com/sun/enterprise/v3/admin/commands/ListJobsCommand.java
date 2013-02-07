@@ -98,6 +98,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
     public static final String USER = "user";
     public static final String STATE = "jobState";
     public static final String MESSAGE = "message";
+    public static final String COMPLETION_DATE = "completionDate";
 
 
     final private static StringManager localStrings =
@@ -123,7 +124,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
                     message = ProgressStatusClient.composeMessageForPrint(oneJob.getCommandProgress());
                 }
                 String exitCode =  actionReport == null ? "" : actionReport.getActionExitCode().name();
-                info = new JobInfo(oneJob.getId(),oneJob.getName(),oneJob.getCommandExecutionDate(),exitCode,userList.get(0),message,oneJob.getJobsFile(),oneJob.getState().name());
+                info = new JobInfo(oneJob.getId(),oneJob.getName(),oneJob.getCommandExecutionDate(),exitCode,userList.get(0),message,oneJob.getJobsFile(),oneJob.getState().name(),0);
 
             }  else {
                 if (jobManagerService.getCompletedJobs() != null) {
@@ -148,7 +149,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
                         message = ProgressStatusClient.composeMessageForPrint(job.getCommandProgress());
                     }
                     String exitCode = actionReport == null ? "" : actionReport.getActionExitCode().name();
-                    jobInfoList.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),exitCode,userList.get(0),message,job.getJobsFile(),job.getState().name()));
+                    jobInfoList.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),exitCode,userList.get(0),message,job.getJobsFile(),job.getState().name(),0));
                 }
             }
 
@@ -254,6 +255,12 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
                    detail.put(NAME, info.jobName);
                    detail.put(ID, info.jobId);
                    detail.put(DATE, new Date(info.commandExecutionDate));
+                   if (info.commandCompletionDate == 0)
+                       //for a running job
+                       detail.put(COMPLETION_DATE, " ");
+                   else
+                       // for a completed job
+                       detail.put(COMPLETION_DATE, new Date(info.commandCompletionDate));
                    detail.put(STATE,info.state);
                    detail.put(CODE, info.exitCode);
                    detail.put(MESSAGE, info.message);

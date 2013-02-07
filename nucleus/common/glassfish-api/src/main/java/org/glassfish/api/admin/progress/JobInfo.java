@@ -68,9 +68,11 @@ public class JobInfo  {
     public String user;
     @XmlTransient
     public File jobFile;
+    @XmlElement
+    public long commandCompletionDate;
 
 
-    public JobInfo(String jobId,String jobName,long commandStartDate,String exitCode,String user,String message, File jobsFileLoc,String state) {
+    public JobInfo(String jobId,String jobName,long commandStartDate,String exitCode,String user,String message, File jobsFileLoc,String state,long commandCompletionDate) {
         this.jobId = jobId;
         this.jobName = jobName;
         this.commandExecutionDate = commandStartDate;
@@ -79,6 +81,7 @@ public class JobInfo  {
         this.message=message;
         this.jobFile = jobsFileLoc;
         this.state = state;
+        this.commandCompletionDate = commandCompletionDate;
     }
 
     public JobInfo() {}

@@ -57,6 +57,9 @@ public interface Job extends RestModel {
     String getExecutionDate();
     void setExecutionDate(String executionDate);
 
+    String getCompletionDate();
+    void setCompletionDate(String completionDate);
+
     String getMessage();
     void setMessage(String message);
 
