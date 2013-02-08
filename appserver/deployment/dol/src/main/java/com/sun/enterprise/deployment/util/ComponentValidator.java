@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -145,7 +145,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
             if( msgDest == null ) {
                 String linkName = 
                     msgDestReferencer.getMessageDestinationLinkName();
-                DOLUtils.getDefaultLogger().log(Level.WARNING, "enterprise.deployment.backend.invalidDescriptorMappingFailure",
+                DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING,
                     new Object[] {"message-destination", linkName});
             } else {
                 if (msgDestReferencer instanceof MessageDestinationReferenceDescriptor) {
@@ -617,7 +617,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
         if (!type.equals(ejbRef.getType())) {
             // if they don't match 
             // print a warning and reset the type in ejb ref
-            DOLUtils.getDefaultLogger().log(Level.WARNING, "enterprise.deployment.backend.invalidDescriptorMappingFailure",
+            DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING,
             new Object[] {ejbRef.getName() , type});
 
             ejbRef.setType(ejbRef.getType());
@@ -724,7 +724,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                 WebServiceEndpoint portComponentLink = next.resolveLinkName();
                 if( portComponentLink == null ) {
                     String linkName = next.getPortComponentLinkName(); 
-                    DOLUtils.getDefaultLogger().log(Level.WARNING, "enterprise.deployment.backend.invalidDescriptorMappingFailure",
+                    DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING,
                         new Object[] {"port-component" , linkName});
                 }                                                   
             }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -125,7 +125,7 @@ public class J2EEDocumentBuilder {
         
     public static void write (Descriptor descriptor, final RootXMLNode node,  final File resultFile) throws Exception {
         if (node==null) {
-            DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.invalidDescriptorMappingFailure",
+            DOLUtils.getDefaultLogger().log(Level.SEVERE, DOLUtils.INVALID_DESC_MAPPING,
                 new Object[] {descriptor, null});
             return;
         }
@@ -150,7 +150,7 @@ public class J2EEDocumentBuilder {
     public static void write (Descriptor descriptor, final RootXMLNode node,  final Result output) 
                                 throws Exception {
         if (node==null) {
-            DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.invalidDescriptorMappingFailure",
+            DOLUtils.getDefaultLogger().log(Level.SEVERE, DOLUtils.INVALID_DESC_MAPPING,
                 new Object[] {descriptor, null});
             return;
         }

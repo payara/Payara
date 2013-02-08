@@ -132,6 +132,9 @@ public class DOLUtils {
     @LogMessageInfo(message = "{0} module [{1}] contains characteristics of other module type: {2}.", level="WARNING")
       private static final String INCOMPATIBLE_TYPE = "AS-DEPLOYMENT-00003";
 
+    @LogMessageInfo(message = "Unsupported deployment descriptors element {0} value {1}.", level="WARNING")
+      public static final String INVALID_DESC_MAPPING = "AS-DEPLOYMENT-00015";
+
     // The system property to control the precedence between GF DD
     // and WLS DD when they are both present. When this property is 
     // set to true, GF DD will have higher precedence over WLS DD.

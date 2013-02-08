@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,6 +57,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * This node is responsible for handling runtime info for
@@ -66,6 +68,13 @@ import java.util.logging.Level;
  * @version 
  */
 public class WebServiceEndpointRuntimeNode extends DeploymentDescriptorNode {
+
+    private static final Logger logger = DOLUtils.getDefaultLogger();
+
+    @LogMessageInfo(message = "Unknown port-component-name {0} port, all sub elements will be ignored.", level="SEVERE",
+            cause = "Used port-component-name does not exists.",
+            action = "Use the name of existing web service endpoint")
+      private static final String WS_PORT_UNKNOWN = "AS-DEPLOYMENT-00016";
 
     private Descriptor descriptor;
 
@@ -78,6 +87,7 @@ public class WebServiceEndpointRuntimeNode extends DeploymentDescriptorNode {
                                RuntimeNameValuePairNode.class, "addProperty");
     }
 
+    @Override
     public Object getDescriptor() {
         return descriptor;
     }
@@ -88,6 +98,7 @@ public class WebServiceEndpointRuntimeNode extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
+    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         table.put(WebServicesTagNames.ENDPOINT_ADDRESS_URI, 
@@ -113,6 +124,7 @@ public class WebServiceEndpointRuntimeNode extends DeploymentDescriptorNode {
      * @param value it's associated value
      */
 
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (WebServicesTagNames.PORT_COMPONENT_NAME.equals
             (element.getQName())) {
@@ -120,16 +132,19 @@ public class WebServiceEndpointRuntimeNode extends DeploymentDescriptorNode {
             if (parentDesc instanceof EjbDescriptor) {
                 EjbBundleDescriptor bundle = 
                     ((EjbDescriptor) parentDesc).getEjbBundleDescriptor();
-                WebServicesDescriptor webServices = bundle.getWebServices();
-                descriptor = webServices.getEndpointByName(value);
+                if (bundle != null) {
+                    WebServicesDescriptor webServices = bundle.getWebServices();
+                    descriptor = webServices.getEndpointByName(value);
+                }
             } else if( parentDesc instanceof WebComponentDescriptor) {
                 WebBundleDescriptor bundle = ((WebComponentDescriptor) parentDesc).getWebBundleDescriptor();
-                WebServicesDescriptor webServices = bundle.getWebServices();
-                descriptor = webServices.getEndpointByName(value);
+                if (bundle != null) {
+                    WebServicesDescriptor webServices = bundle.getWebServices();
+                    descriptor = webServices.getEndpointByName(value);
+                }
             }
             if (descriptor==null) {
-                DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.port_component_name_unknown",                
-                    new Object[] { value });                        
+                logger.log(Level.SEVERE, WS_PORT_UNKNOWN, value);
             }
         } else super.setElementValue(element, value);
     }

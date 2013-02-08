@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -198,7 +198,7 @@ public class ModuleContentLinker extends DefaultDOLVisitor implements ComponentV
                 new Object[] {serviceRef.getWsdlFileUri()});            
         } catch(Exception e) {
             DOLUtils.getDefaultLogger().log
-                (Level.SEVERE, "enterprise.deployment.backend.invalidDescriptorMappingFailure",
+                (Level.SEVERE, DOLUtils.INVALID_DESC_MAPPING,
                 new Object[] {serviceRef.getName() , rootLocation_});
         }
     }
@@ -233,7 +233,7 @@ public class ModuleContentLinker extends DefaultDOLVisitor implements ComponentV
             } 
         } catch(Exception e) {
             DOLUtils.getDefaultLogger().log
-                (Level.SEVERE, "enterprise.deployment.backend.invalidDescriptorMappingFailure",
+                (Level.SEVERE, DOLUtils.INVALID_DESC_MAPPING,
                 new Object[] {webService.getName() , rootLocation_});
         } 
     }
