@@ -520,7 +520,9 @@ public class DOLUtils {
         DeployCommandParameters parameters = new DeployCommandParameters(new File(archive.getURI()));
         ExtendedDeploymentContext context = new DeploymentContextImpl(null, archive, parameters, habitat.<ServerEnvironment>getService(ServerEnvironment.class));
         context.setArchiveHandler(handler);
+        context.addTransientAppMetaData(Types.class.getName(), types);
         Collection<Sniffer> sniffers = snifferManager.getSniffers(context, classPathURIs, types);
+        context.postDeployClean(true);
         String type = getTypeFromModuleType(md.getModuleType());
         Sniffer mainSniffer = null;
         for (Sniffer sniffer : sniffers) {
