@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,6 +58,8 @@ import java.net.URISyntaxException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.sun.enterprise.glassfish.bootstrap.LogFacade;
 
 /**
  * Goes through a list of URIs and installs bundles from those locations.
@@ -134,7 +136,7 @@ public class BundleProvisioner {
         Integer getStartLevel(Jar jar);
     }
 
-    private static Logger logger = Logger.getLogger(BundleProvisioner.class.getPackage().getName());
+    private static Logger logger = LogFacade.BOOTSTRAP_LOGGER;
 
     private BundleContext bundleContext;
     private boolean systemBundleUpdationRequired;
@@ -215,9 +217,7 @@ public class BundleProvisioner {
         for (URI uri : getAutoStartLocations()) {
             Bundle bundle = getBundle(new Jar(uri));
             if (bundle == null) {
-                logger.logp(Level.WARNING, "BundleProvisioner", "startBundles",
-                        "Can not start bundle {0} because it is not contained in the list of installed bundles",
-                        new Object[]{uri});
+                logger.log(Level.WARNING, LogFacade.CANT_START_BUNDLE, new Object[]{uri});
                 continue;
             } else {
                 startBundle(bundle);
@@ -237,8 +237,11 @@ public class BundleProvisioner {
                 logger.logp(Level.FINE, "BundleProvisioner", "startBundle", "Started bundle = {0}",
                         new Object[]{bundle});
             } catch (BundleException e) {
-                logger.logp(Level.WARNING, "BundleProvisioner", "startBundle",
-                        "Failed to start " + bundle, e);
+                LogFacade.log(logger,
+                        Level.WARNING,
+                        LogFacade.BUNDLE_START_FAILED,
+                        e,
+                        bundle);
             }
         }
     }
@@ -307,8 +310,7 @@ public class BundleProvisioner {
             Bundle bundle = getBundle(jar);
             if (bundle == null) {
                 // this is highly unlikely, but can't be ruled out.
-                logger.logp(Level.WARNING, "BundleProvisioner", "uninstall",
-                        "Can't uninstall bundle = {0} as it's already uninstalled", new Object[]{bundle});
+                logger.log(Level.WARNING, LogFacade.BUNDLE_ALREADY_UNINSTALED, new Object[]{bundle});
                 continue;
             }
             try {
@@ -318,13 +320,13 @@ public class BundleProvisioner {
                 bundle.uninstall();
                 noOfUninstalledBundles++;
                 removeBundle(jar);
-                logger.logp(Level.INFO, "BundleProvisioner", "uninstall",
-                        "Uninstalled bundle {0} installed from {1} ",
-                        new Object[]{bundle.getBundleId(), jar.getPath()});
+                logger.log(Level.INFO, LogFacade.UNINSTALLED_BUNDLE, new Object[]{bundle.getBundleId(), jar.getPath()});
             } catch (Exception e) {
-                logger.logp(Level.WARNING, "BundleProvisioner", "uninstall",
-                        "Failed to uninstall bundle " + jar.getPath(),
-                        e);
+                LogFacade.log(logger,
+                        Level.WARNING,
+                        LogFacade.BUNDLE_UNINSTALL_FAILED,
+                        e,
+                        jar.getPath());
             }
         }
         return noOfUninstalledBundles;
@@ -337,8 +339,7 @@ public class BundleProvisioner {
                 Bundle bundle = getBundle(existingJar);
                 if (bundle == null) {
                     // this is highly unlikely, but can't be ruled out.
-                    logger.logp(Level.WARNING, "BundleProvisioner", "update",
-                            "Can't update bundle = {0} as it's already uninstalled", new Object[]{bundle});
+                    logger.log(Level.WARNING, LogFacade.CANT_UPDATE_ALREADY_INSTALLED, new Object[]{bundle});
                     continue;
                 }
                 try {
@@ -347,13 +348,13 @@ public class BundleProvisioner {
                     }
                     bundle.update();
                     noOfUpdatedBundles++;
-                    logger.logp(Level.INFO, "BundleProvisioner", "update",
-                            "Updated bundle {0} from {1} ",
-                            new Object[]{bundle.getBundleId(), jar.getPath()});
+                    logger.log(Level.INFO, LogFacade.BUNDLE_UPDATED, new Object[]{bundle.getBundleId(), jar.getPath()});
                 } catch (Exception e) {
-                    logger.logp(Level.WARNING, "BundleProvisioner", "update",
-                            "Failed to update " + jar.getPath(),
-                            e);
+                    LogFacade.log(logger,
+                            Level.WARNING,
+                            LogFacade.UPDATE_FAILED,
+                            e,
+                            jar.getPath());
                 }
             }
         }
@@ -458,9 +459,11 @@ public class BundleProvisioner {
                     }
                 }
             } catch (Exception e) {
-                logger.logp(Level.WARNING, "BundleProvisioner", "install",
-                        "Failed to install " + jar.getURI(),
-                        e);
+                LogFacade.log(logger,
+                        Level.WARNING,
+                        LogFacade.INSTALL_FAILED,
+                        e,
+                        jar.getURI());
             }
         }
         return noOfInstalledBundles;
@@ -598,10 +601,9 @@ public class BundleProvisioner {
                         String list = config.getProperty(key);
                         for (URI uri : getLocations(list)) {
                             if (startLevels.containsKey(uri)) {
-                                logger.logp(Level.WARNING, "BundleProvisioner$DefaultCustomizer",
-                                        "processStartLevels",
-                                        "Can not set the start level for {0} to {2} as it is already set to {1}.",
+                                logger.log(Level.WARNING, LogFacade.CANT_SET_START_LEVEL,
                                         new Object[]{uri, startLevels.get(uri), startLevel});
+                                
                             } else {
                                 startLevels.put(uri, startLevel);
                             }
@@ -638,8 +640,7 @@ public class BundleProvisioner {
                 try {
                     URI uri = new URI(s);
                     if (!uri.isAbsolute()) {
-                        logger.logp(Level.WARNING, "BundleProvisioner", "getLocations",
-                                "Skipping entry {0} because it is not an absolute URI ", new Object[]{uri});
+                        logger.log(Level.WARNING, LogFacade.ENTRY_SKIPPED, new Object[]{uri});
                         continue;
                     }
                     if (expand && isDirectory(uri)) {
@@ -648,8 +649,8 @@ public class BundleProvisioner {
                         uris.add(uri);
                     }
                 } catch (URISyntaxException e) {
-                    logger.logp(Level.WARNING, "BundleProvisioner", "getLocations",
-                            "Skipping entry {0} due to " + e, new Object[]{s});
+                    LogFacade.log(logger,
+                            Level.WARNING, LogFacade.ENTRY_SKIPPED_DUE_TO, e, s);
                 }
             }
             return uris;
@@ -741,7 +742,7 @@ public class BundleProvisioner {
      * @param args
      */
     public static void main(String[] args) throws Exception {
-        logger.logp(Level.INFO, "BundleProvisioner", "main", "Starting");
+        logger.log(Level.INFO, LogFacade.STARTING_BUNDLEPROVISIONER);
         Properties props = new Properties();
         props.load(new FileInputStream(args[0]));
         Util.substVars(props);
@@ -757,17 +758,14 @@ public class BundleProvisioner {
             throw new RuntimeException("no OSGi framework in classpath");
         }
         long t1 = System.currentTimeMillis();
-        logger.logp(Level.INFO, "BundleProvisioner", "main", "timeTaken to locate OSGi framework = {0} ms",
-                new Object[]{t1 - t0});
+        logger.log(Level.INFO, LogFacade.OSGI_LOCATE_TIME, (t1-t0));
         f.init();
         long t2 = System.currentTimeMillis();
-        logger.logp(Level.INFO, "BundleProvisioner", "main", "timeTaken to initialize OSGi framework = {0} ms",
-                new Object[]{t2 - t1});
+        logger.log(Level.INFO, LogFacade.OSGI_INIT_TIME, (t2-t1));
         BundleProvisioner bundleProvisioner = createBundleProvisioner(f.getBundleContext(), props);
         bundleProvisioner.installBundles();
         long t3 = System.currentTimeMillis();
-        logger.logp(Level.INFO, "BundleProvisioner", "main", "timeTaken to finish installation of bundles = {0} ms",
-                new Object[]{t3 - t2});
+        logger.log(Level.INFO, LogFacade.BUNDLE_INSTALLATION_TIME, (t3-t2));
         int installed = bundleProvisioner.getNoOfInstalledBundles();
         int updated = bundleProvisioner.getNoOfUpdatedBundles();
         int uninstalled = bundleProvisioner.getNoOfUninstalledBundles();
@@ -779,9 +777,8 @@ public class BundleProvisioner {
         bundleProvisioner.startBundles();
         f.start();
         long t4 = System.currentTimeMillis();
-        logger.logp(Level.INFO, "BundleProvisioner", "main", "time taken to finish starting bundles = {0} ms",
-                new Object[]{t4 - t3});
-        logger.logp(Level.INFO, "BundleProvisioner", "main", "total time taken to start = {0}", new Object[]{t4-t0});
+        logger.log(Level.INFO, LogFacade.BUNDLE_STARTING_TIME, (t4-t3));
+        logger.log(Level.INFO, LogFacade.TOTAL_START_TIME, (t4-t0));
         if (args.length == 3 && args[2].equalsIgnoreCase("wait-before-stopping")) {
             System.out.println("Hit enter to continue");
             System.in.read(); //
@@ -789,15 +786,15 @@ public class BundleProvisioner {
         f.stop();
         f.waitForStop(0);
         long t5 = System.currentTimeMillis();
-        logger.logp(Level.INFO, "BundleProvisioner", "main", "time taken to stop = {0} ms", new Object[]{t5 - t4});
-        logger.logp(Level.INFO, "BundleProvisioner", "main", "Total time taken = {0}", new Object[]{t5-t0});
+        logger.log(Level.INFO, LogFacade.BUNDLE_STOP_TIME, (t5 - t4));
+        logger.log(Level.INFO, LogFacade.TOTAL_TIME, (t5-t0));
         out.printf("%d,%d,%d,%d,%d,%d,%d\n", t1-t0, t2-t1, t3-t2, t4-t3, t4-t0, t5-t4, t5-t0);
     }
 
     static BundleProvisioner createBundleProvisioner(BundleContext bctx, Properties props) {
         Class clazz = Boolean.valueOf(props.getProperty(Constants.ONDEMAND_BUNDLE_PROVISIONING)) ?
                 MinimalBundleProvisioner.class : BundleProvisioner.class;
-        logger.logp(Level.INFO, "BundleProvisioner", "createBundleProvisioner", "clazz = {0}", new Object[]{clazz});
+        logger.log(Level.INFO, LogFacade.CREATE_BUNDLE_PROVISIONER, clazz);
         try {
             final Constructor constructor = clazz.getConstructor(BundleContext.class, Properties.class);
             return (BundleProvisioner) constructor.newInstance(bctx, props);

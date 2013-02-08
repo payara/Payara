@@ -53,6 +53,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,16 +67,16 @@ import static com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap;
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 public class ASMainHelper {
-
-    private static Logger logger = Logger.getLogger(ASMainHelper.class.getPackage().getName());
-
+    
+    private static Logger logger = LogFacade.BOOTSTRAP_LOGGER;
+    
     /*protected*/
 
     static void checkJdkVersion() {
         int minor = getMinorJdkVersion();
 
         if (minor < 7) {
-            logger.severe("GlassFish requires JDK 7, you are using JDK version " + minor);
+            logger.log(Level.SEVERE, LogFacade.BOOTSTRAP_INCORRECT_JDKVERSION, new Object[]{ 7, minor});
             System.exit(1);
         }
     }
@@ -717,7 +718,7 @@ public class ASMainHelper {
             if (!f.exists()) {
                 f = new File(glassfishDir, fileName);
             } else {
-                logger.info("Using " + f.getAbsolutePath() + " as the framework configuration file.");
+                logger.log(Level.INFO, LogFacade.BOOTSTRAP_FMWCONF, f.getAbsolutePath());
             }
             return f;
         }

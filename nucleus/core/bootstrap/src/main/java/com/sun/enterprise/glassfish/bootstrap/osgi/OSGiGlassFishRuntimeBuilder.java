@@ -64,6 +64,8 @@ import static com.sun.enterprise.glassfish.bootstrap.osgi.Constants.PROVISIONING
 import static org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN;
 import static org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT;
 
+import com.sun.enterprise.glassfish.bootstrap.LogFacade;
+
 /**
  * This RuntimeBuilder can only handle GlassFish_Platform of following types:
  * <p/>
@@ -102,7 +104,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
     private Framework framework;
     private Properties properties;
 
-    private Logger logger = Logger.getLogger(getClass().getPackage().getName());
+    private Logger logger = LogFacade.BOOTSTRAP_LOGGER;
 
     private Properties oldProvisioningOptions;
     private Properties newProvisioningOptions;
@@ -147,7 +149,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
                 storeBundleIds(bundleIds.toArray(new Long[bundleIds.size()]));
             }
             if (bundleProvisioner.isSystemBundleUpdationRequired()) {
-                logger.logp(Level.INFO, "OSGiFrameworkLauncher", "launchOSGiFrameWork", "Updating system bundle");
+                logger.log(Level.INFO, LogFacade.UPDATING_SYSTEM_BUNDLE);
                 framework.update();
                 framework.waitForStop(0);
                 framework.init();
@@ -247,8 +249,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
             // Felix framework can't be updated. It leads to some NPE in resolver somewhere.
             // As a work around, we create a new framework instance with a clean cache.
             // uninstallOldBundles();
-            logger.logp(Level.INFO, "OSGiGlassFishRuntimeBuilder", "reconfigure",
-                    "Provisioning options have changed, recreating the framework with a clean OSGi storage(aka cache)");
+            logger.log(Level.INFO, LogFacade.PROVISIONING_OPTIONS_CHANGED);
             framework.stop();
             framework.waitForStop(0);
             properties.setProperty(FRAMEWORK_STORAGE_CLEAN,
@@ -281,8 +282,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
         if (b != null) {
             uninstallBundle(b);
         } else {
-            logger.logp(Level.WARNING, "OSGiGlassFishRuntimeBuilder", "uninstallBundle",
-                    "Unable to locate bundle {0}", new Object[]{id});
+            logger.log(Level.WARNING, LogFacade.CANT_LOCATE_BUNDLE, new Object[]{id});
         }
     }
 
@@ -330,9 +330,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
             File f = framework.getBundleContext().getDataFile(BUNDLEIDS_FILENAME);
             // GLASSFISH-19623: f can be null
             if (f == null) {
-                logger.logp(Level.WARNING, "OSGiGlassFishRuntimeBuilder", "storeProvisioningOptions",
-                        "Storage support not available in framework bundle, so can't store bundle ids." +
-                                "This may lead to slower start up time.");
+                logger.log(Level.WARNING, LogFacade.CANT_STORE_BUNDLEIDS);
                 return;
             }
             ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(f));
@@ -371,9 +369,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
             File f = framework.getBundleContext().getDataFile(PROVISIONING_OPTIONS_FILENAME);
             // GLASSFISH-19623: f can be null
             if (f == null) {
-                logger.logp(Level.WARNING, "OSGiGlassFishRuntimeBuilder", "storeProvisioningOptions",
-                        "Storage support not available in framework bundle, so can't store provisioning options. " +
-                                "This may lead to slower start up time.");
+                logger.log(Level.WARNING, LogFacade.CANT_STORE_PROVISIONING_OPTIONS);
                 return;
             }
             final FileOutputStream os = new FileOutputStream(f);

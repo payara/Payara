@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,6 +55,8 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.glassfish.bootstrap.LogFacade;
+
 /**
  * This is a specialized {@link BundleProvisioner} that installs only a minimum set of of bundles.
  * It derives the set of bundles to be included from the list of bundles to be started and all fragment bundles
@@ -63,10 +65,10 @@ import java.util.logging.Logger;
  * @author sanjeeb.sahoo@oracle.com
  */
 public class MinimalBundleProvisioner extends BundleProvisioner {
-    private Logger logger = Logger.getLogger(getClass().getPackage().getName());
+    private Logger logger = LogFacade.BOOTSTRAP_LOGGER;
     private List<Long> installedBundleIds;
     static class MinimalCustomizer extends DefaultCustomizer {
-        private Logger logger = Logger.getLogger(getClass().getPackage().getName());
+        private Logger logger = LogFacade.BOOTSTRAP_LOGGER;
         public MinimalCustomizer(Properties config) {
             super(config);
         }
@@ -104,8 +106,7 @@ public class MinimalBundleProvisioner extends BundleProvisioner {
             List<URI> installLocations = getAutoStartLocations();
             List<URI> fragments = selectFragmentJars(super.getAutoInstallLocations());
             installLocations.addAll(fragments);
-            logger.logp(Level.INFO, "MinimalBundleProvisioner$MinimalCustomizer", "getAutoInstallLocations",
-                    "installLocations = {0}", new Object[]{installLocations});
+            logger.log(Level.INFO, LogFacade.SHOW_INSTALL_LOCATIONS, new Object[]{installLocations});
             return installLocations;
         }
 
@@ -124,8 +125,7 @@ public class MinimalBundleProvisioner extends BundleProvisioner {
                         fragments.add(uri);
                     }
                 } catch (IOException e) {
-                    logger.logp(Level.INFO, "MinimalBundleProvisioner$MinimalCustomizer", "selectFragmentJars",
-                            "Unable to determine if " + uri + " is a fragment or not due to ", e);
+                    LogFacade.log(logger, Level.INFO, LogFacade.CANT_TELL_IF_FRAGMENT, e, uri);
                 } finally {
                     try {
                         if (is != null) {
@@ -166,8 +166,7 @@ public class MinimalBundleProvisioner extends BundleProvisioner {
     @Override
     public void startBundles() {
         if (installedBundleIds.isEmpty()) {
-            logger.logp(Level.INFO, "MinimalBundleProvisioner", "startBundles",
-                    "Skipping starting of bundles bundles have been provisioned already", new Object[]{});
+            logger.log(Level.INFO, LogFacade.SKIP_STARTING_ALREADY_PROVISIONED_BUNDLES);
         } else {
             super.startBundles();
         }
@@ -185,8 +184,7 @@ public class MinimalBundleProvisioner extends BundleProvisioner {
         }
         Jar latestJar = getCustomizer().getLatestJar();
         final boolean chnaged = latestJar.getLastModified() > latestBundle.getLastModified();
-        logger.logp(Level.INFO, "MinimalBundleProvisioner", "hasAnyThingChanged",
-                "{0} : latest file in installation location = {1} and latest installed bundle = {2} ",
+        logger.log(Level.INFO, LogFacade.LATEST_FILE_IN_INSTALL_LOCATION,
                 new Object[]{chnaged, latestJar.getURI(), latestBundle.getLocation()});
         return chnaged;
     }

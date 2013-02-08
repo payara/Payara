@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,6 +50,8 @@ import org.osgi.framework.ServiceRegistration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.glassfish.bootstrap.LogFacade;
+
 /**
  * A specialized implementation of GlassFish which takes care of calling
  * registering & unregistering GlassFish service from service registry when GlassFish is started and stopped.
@@ -59,7 +61,7 @@ import java.util.logging.Logger;
  * @author sanjeeb.sahoo@oracle.com
  */
 public class EmbeddedOSGiGlassFishImpl extends GlassFishDecorator {
-    private final Logger logger = Logger.getLogger(getClass().getPackage().getName());
+    private final Logger logger = LogFacade.BOOTSTRAP_LOGGER;
     private ServiceRegistration reg;
     private final BundleContext bundleContext;
 
@@ -82,18 +84,16 @@ public class EmbeddedOSGiGlassFishImpl extends GlassFishDecorator {
 
     private void registerService() {
         reg = getBundleContext().registerService(GlassFish.class.getName(), this, null);
-        logger.logp(Level.INFO, "EmbeddedOSGiGlassFishImpl", "registerService",
-                "Registered {0} as OSGi service registration: {1}", new Object[]{this, reg});
+        logger.log(Level.INFO, LogFacade.SERVICE_REGISTERED, new Object[]{this, reg});
     }
 
     private void unregisterService() {
         if (getBundleContext() != null) { // bundle is still active
             try {
                 reg.unregister();
-                logger.logp(Level.INFO, "EmbeddedOSGiGlassFishImpl", "unregisterService",
-                        "Unregistered {0} from service registry", new Object[]{this});
+                logger.log(Level.INFO, LogFacade.SERVICE_UNREGISTERED, this);
             } catch (IllegalStateException e) {
-                logger.logp(Level.WARNING, "EmbeddedOSGiGlassFishImpl", "remove", "Exception while unregistering ", e);
+                LogFacade.log(logger, Level.WARNING, LogFacade.SERVICE_UNREGISTRATION_EXCEPTION, e, e);
             }
         }
     }

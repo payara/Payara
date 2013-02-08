@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -103,7 +103,7 @@ public class JarUtil {
                     DEFAULT_JMS_ADAPTER
             ));
 
-    private static final Logger _logger = Logger.getAnonymousLogger();
+    private static final Logger logger = LogFacade.BOOTSTRAP_LOGGER;
 
     private static String getSystemModuleLocation(String installDir, String rarName) {
         return installDir + File.separator + "lib" +
@@ -143,8 +143,12 @@ public class JarUtil {
                 os = new FileOutputStream(fileName);
                 Util.copy(is, os, is.available());
             } catch (IOException e) {
-                Object args[] = new Object[]{rarName, e};
-                _logger.log(Level.WARNING, "error.extracting.archive", args);
+                LogFacade.log(logger,
+                        Level.WARNING,
+                        LogFacade.BOOTSTRAP_CANT_EXTRACT_ARCHIVE,
+                        e,
+                        rarName);
+                
                 return false;
             } finally {
                 try {
@@ -152,8 +156,8 @@ public class JarUtil {
                         os.close();
                     }
                 } catch (IOException ioe) {
-                    if (_logger.isLoggable(Level.FINEST)) {
-                        _logger.log(Level.FINEST, "Exception while closing archive [ " +
+                    if (logger.isLoggable(Level.FINEST)) {
+                        logger.log(Level.FINEST, "Exception while closing archive [ " +
                                 fileName + " ]", ioe);
                     }
                 }
@@ -161,8 +165,8 @@ public class JarUtil {
                 try {
                     is.close();
                 } catch (IOException ioe) {
-                    if (_logger.isLoggable(Level.FINEST)) {
-                        _logger.log(Level.FINEST, "Exception while closing archive [ " +
+                    if (logger.isLoggable(Level.FINEST)) {
+                        logger.log(Level.FINEST, "Exception while closing archive [ " +
                                 rarName + " ]", ioe);
                     }
                 }
@@ -178,13 +182,11 @@ public class JarUtil {
                 }
                 return true;
             } else {
-                _logger.log(Level.INFO, "could not find RAR [ " + rarName +
-                        " ] location [ " + fileName + " ] " +
-                        "after extraction");
+                logger.log(Level.INFO, LogFacade.BOOTSTRAP_CANT_FIND_RAR, new Object[] { rarName, fileName });
                 return false;
             }
         } else {
-            _logger.log(Level.FINEST, "could not find RAR [ " + rarName +
+            logger.log(Level.FINEST, "could not find RAR [ " + rarName +
                     " ] in the archive, skipping .rar extraction");
             return false;
         }
@@ -218,8 +220,8 @@ public class JarUtil {
                         fos.close();
                     }
                 } catch (Exception e) {
-                    if (_logger.isLoggable(Level.FINEST)) {
-                        _logger.log(Level.FINEST, "exception while closing archive [ " +
+                    if (logger.isLoggable(Level.FINEST)) {
+                        logger.log(Level.FINEST, "exception while closing archive [ " +
                                 f.getName() + " ]", e);
                     }
                 }
@@ -229,8 +231,8 @@ public class JarUtil {
                         is.close();
                     }
                 } catch (Exception e) {
-                    if (_logger.isLoggable(Level.FINEST)) {
-                        _logger.log(Level.FINEST, "exception while closing archive [ " +
+                    if (logger.isLoggable(Level.FINEST)) {
+                        logger.log(Level.FINEST, "exception while closing archive [ " +
                                 file.getName() + " ]", e);
                     }
                 }

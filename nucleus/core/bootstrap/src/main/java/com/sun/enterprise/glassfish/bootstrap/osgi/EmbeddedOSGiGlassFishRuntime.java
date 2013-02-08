@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,7 +60,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 /**
  * Implementation of GlassFishRuntime in an OSGi environment.
@@ -75,7 +74,6 @@ public class EmbeddedOSGiGlassFishRuntime extends GlassFishRuntime {
 
     List<GlassFish> gfs = new ArrayList<GlassFish>();
 
-    Logger logger = Logger.getLogger(getClass().getPackage().getName());
     private final BundleContext context;
 
     public EmbeddedOSGiGlassFishRuntime(BundleContext context) {
