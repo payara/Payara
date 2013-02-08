@@ -72,6 +72,7 @@ public class Version {
     private static final String BASED_ON_KEY = "based_on";
     private static final String DEFAULT_DOMAIN_TEMPLATE_NAME = "default_domain_template";
     private static final String DEFAULT_DOMAIN_TEMPLATE_JAR = "nucleus-domain.jar";
+    private static final String ADMIN_CLIENT_COMMAND_NAME_KEY = "admin_client_command_name";
     private static List<Properties> versionProps = new ArrayList<Properties>();
     private static Map<String,Properties> versionPropsMap = new HashMap<String,Properties>();
     private static Properties versionProp = getVersionProp();
@@ -264,6 +265,14 @@ public class Version {
      */
     public static String getDefaultDomainTemplate() {
         return getProperty(DEFAULT_DOMAIN_TEMPLATE_NAME, DEFAULT_DOMAIN_TEMPLATE_JAR);
+    }
+
+    /**
+     * Returns the admin client command string which represents the name of the
+     * command use for performing admin related domain tasks.
+     */
+    public static String getAdminClientCommandName() {
+        return getProperty(ADMIN_CLIENT_COMMAND_NAME_KEY, "nadmin");
     }
 
     /*
