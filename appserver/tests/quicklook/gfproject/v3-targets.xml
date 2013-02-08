@@ -92,19 +92,14 @@
 </target>
 
 <target name="restart-server-windows" if="isWindows">
-    <antcall target="stop-server-windows"/>
-    <antcall target="start-server-windows"/>
-    <!-- Use stop/start on windows since restart on windows passed on some 
-     windows systems and failed on others. See issue 16442.
-     exec executable="cmd" outputproperty="message1">
+    <exec executable="cmd" outputproperty="message1">
 	<env key="GlassFish_Platform" value="Felix"/>
         <arg value="/c"/>
         <arg value="${glassfish.home}\bin\asadmin.bat"/>
         <arg value="restart-domain"/>
         <arg value="domain1"/>
     </exec>
-    <sleep seconds="10"/ -->
-    <echo message="Successfully restarted the domain"/>
+    <echo message="${message1}"/>
 </target>
 
 <target name="create-jdbc-connection-pool" depends="setOSConditions,asenv-unix,asenv-windows">
