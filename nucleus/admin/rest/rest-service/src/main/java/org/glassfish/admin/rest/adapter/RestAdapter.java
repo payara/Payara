@@ -174,8 +174,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                 String context = getContextRoot();
                 RestLogging.restLogger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
                 if ((context != null) && (!"".equals(context)) && (adapter == null)) {
-                        adapter = exposeContext(getRestResourceProvider().
-                            getResourceClasses(habitat), sc, habitat);
+                    adapter = exposeContext();
                     RestLogging.restLogger.log(Level.INFO, RestLogging.REST_INTERFACE_INITIALIZED, context);
                 }
                 //delegate to adapter managed by Jersey.
@@ -293,8 +292,8 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
      * so that Jersey is not loaded when the RestAdapter is loaded at boot time
      * gain a few 100 millis at GlassFish startup time
      */
-    protected JerseyContainer exposeContext(Set<Class<?>> classes, final ServerContext sc,
-                                     final ServiceLocator habitat) throws EndpointRegistrationException {
+    protected JerseyContainer exposeContext() throws EndpointRegistrationException {
+        Set<Class<?>> classes = getRestResourceProvider().getResourceClasses(habitat);
         // Use common classloader. Jersey artifacts are not visible through
         // module classloader. Actually there is a more important reason to use CommonClassLoader.
         // jax-rs API called RuntimeDelegate makes stupid class loading assumption and throws LinkageError

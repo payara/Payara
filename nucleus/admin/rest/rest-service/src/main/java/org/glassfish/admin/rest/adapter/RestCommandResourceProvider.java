@@ -42,10 +42,12 @@
 package org.glassfish.admin.rest.adapter;
 
 import com.sun.enterprise.admin.remote.writer.PayloadPartProvider;
+import com.sun.logging.LogDomains;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.ws.rs.core.MediaType;
 import org.glassfish.admin.rest.provider.*;
 import org.glassfish.admin.rest.readers.JsonParameterMapProvider;
@@ -61,8 +63,7 @@ import org.glassfish.jersey.media.sse.OutboundEventWriter;
  * @author sanjeeb.sahoo@oracle.com
  */
 public class RestCommandResourceProvider extends AbstractRestResourceProvider {
-
-
+    
     public RestCommandResourceProvider() {
         super();
     }
@@ -85,8 +86,7 @@ public class RestCommandResourceProvider extends AbstractRestResourceProvider {
         return mappings;
     }
 
-    @Override
-    public Set<Class<?>> getResourceClasses(ServiceLocator habitat) {
+    public static Set<Class<?>> getResourceClasses() {
         final Set<Class<?>> r = new HashSet<Class<?>>();
         r.add(CommandResource.class);
         //ActionReport - providers
@@ -106,6 +106,11 @@ public class RestCommandResourceProvider extends AbstractRestResourceProvider {
 //        //Debuging filters
 //        r.add(LoggingFilter.class);
         return r;
+    }
+    
+    @Override
+    public Set<Class<?>> getResourceClasses(ServiceLocator habitat) {
+        return getResourceClasses();
     }
 
     @Override
