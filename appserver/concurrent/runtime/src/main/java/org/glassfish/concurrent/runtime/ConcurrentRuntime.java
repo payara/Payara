@@ -141,7 +141,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getCorePoolSize(),
                 config.getMaximumPoolSize(),
                 config.getKeepAliveSeconds(), TimeUnit.SECONDS,
-                config.getTaskQueueCapacity(),
+                0, //config.getTaskQueueCapacity(),
                 createContextService(config.getJndiName() + "-contextservice", config.getContextInfo()),
                 AbstractManagedExecutorService.RejectPolicy.ABORT,
                 AbstractManagedExecutorService.RunLocation.LOCAL,
