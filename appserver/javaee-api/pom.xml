@@ -53,11 +53,10 @@
     <packaging>pom</packaging>
     <version>4.0-SNAPSHOT</version>
     
-    <name>JavaEE APi</name>
+    <name>JavaEE API</name>
     <description>Java EE API modules repackaged as OSGi bundles in GlassFish</description>
 
     <properties>
-        <javaee.version>7.0-${build.id}</javaee.version>
         <findbugs.skip>true</findbugs.skip>
     </properties>
 
@@ -66,22 +65,14 @@
         <module>javax.jws</module>
     </modules>
     
-    <build>
+    <build>                
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <configuration>
-                    <skip>false</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>           
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -96,9 +87,11 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-remote-resources-plugin</artifactId>
                 <executions>
                     <execution>
+                        <phase>process-resources</phase>
                         <goals>
                             <goal>process</goal>
                         </goals>
@@ -111,6 +104,42 @@
                 </executions>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.glassfish.build</groupId>
+                    <artifactId>glassfishbuild-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>unpack-sources</id>
+                            <phase>process-resources</phase>
+                            <configuration>
+                                <attachSources>true</attachSources>
+                                <excludeArtifactIds>tools-jar</excludeArtifactIds>
+                                <excludes>javax/help/**</excludes>
+                                <includes>javax/**</includes>
+                                <excludeTransitive>true</excludeTransitive>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>attach-all-artifacts</id>
+                            <phase>verify</phase>
+                            <configuration>
+                                <pomFile>${project.build.outputDirectory}/pom.xml</pomFile>
+                            </configuration> 
+                        </execution>                        
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <doctitle>${project.name}</doctitle>
+                        <windowtitle>${project.name}</windowtitle>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>        
     </build>    
     
     <profiles>
@@ -122,85 +151,11 @@
                     <value>true</value>
                 </property>
             </activation>
-            
-            <properties>
-                <javaee.version>7.0-${build.id}</javaee.version>
-            </properties>
-            
             <modules>
                 <module>javax.javaee-web-api</module>
                 <module>javax.javaee-api</module>
                 <!--<module>javax.javaee-endorsed-api</module>-->
             </modules>
-            
-            <build>
-                <resources>
-                    <resource>
-                        <directory>src/main/resources</directory>
-                        <filtering>true</filtering>
-                    </resource>
-                </resources>
-                <finalName>${project.artifactId}-${javaee.version}</finalName>
-                <plugins>
-                    <!-- skip default-install -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-install-plugin</artifactId>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.glassfish.build</groupId>
-                        <artifactId>glassfishbuild-maven-plugin</artifactId>
-                        <configuration>
-                            <pomFile>${project.build.outputDirectory}/pom.xml</pomFile>
-                        </configuration>                        
-                        <executions>
-                            <execution>
-                                <id>unpack-sources</id>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>unpack-sources</goal>
-                                </goals>
-                                <configuration>
-                                    <attachSources>true</attachSources>
-                                    <excludeArtifactIds>tools-jar</excludeArtifactIds>
-                                    <excludes>javax/help/**</excludes>
-                                    <includes>javax/**</includes>
-                                    <excludeTransitive>true</excludeTransitive>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>lazy-deploy</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>lazy-deploy</goal>
-                                </goals>
-                                <configuration>
-                                   <!-- <skip>true</skip> -->
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>lazy-install</id>
-                                <phase>install</phase>
-                                <goals>
-                                    <goal>lazy-install</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <configuration>
-                            <excludePackageNames>javax.xml.rpc:javax.xml.registry</excludePackageNames>
-                            <doctitle>${project.name}</doctitle>
-                            <windowtitle>${project.name}</windowtitle>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
     </profiles>
 </project>

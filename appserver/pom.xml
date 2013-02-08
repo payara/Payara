@@ -92,10 +92,12 @@
         <major_version>4</major_version>
         <minor_version>0</minor_version>
         <update_version></update_version>
-        <version_suffix></version_suffix>
+        
+        <javaee.major_version>7</javaee.major_version>
+        <javaee.version_qualifier>-b${build.id}</javaee.version_qualifier>
+        <javaee.version>${javaee.major_version}.${minor_version}${javaee.version_qualifier}</javaee.version>
         
         <jsftemplating.version>2.1.0</jsftemplating.version>
-
         <uc-pkg-client.version>1.122-54.2834</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-54.2834</uc-pkg-bootstrap.version>
         <webservices.version>2.3-b210</webservices.version>

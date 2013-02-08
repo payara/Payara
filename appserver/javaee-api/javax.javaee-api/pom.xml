@@ -51,51 +51,70 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>javaee-api</artifactId>
     <name>JavaEE Full Profile API</name>
-    
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>glassfishbuild-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-sources</id>
+                        <goals>
+                            <goal>unpack-sources</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>attach-all-artifacts</id>
+                        <goals>
+                            <goal>attach-all-artifacts</goal>
+                        </goals>
+                    </execution>  
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+            
     <dependencies>
         <!-- web profile api  -->
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
             <version>${javaee.version}</version>
-            <optional>true</optional>
         </dependency>
         
         <!-- full profile api dependencies -->
         <dependency>
             <groupId>javax.jms</groupId>
             <artifactId>javax.jms-api</artifactId>
-            <optional>true</optional>
         </dependency>
         <!--
-            - using com.sun.mail.java.mail instead of javax.mail:javax.mail-api
+            using com.sun.mail.java.mail instead of javax.mail:javax.mail-api
             because javax.mail has a dependency to com.sun.mail classes,
             but the pom does not bring the dependency.
         -->
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>javax.resource</groupId>
             <artifactId>javax.resource-api</artifactId>
-            <optional>true</optional>
         </dependency>
+        <!-- 
+            should be replaced with javax.jws-api, see GLASSFISH-19652
+        -->
         <dependency>
             <groupId>javax.jws</groupId>
             <artifactId>jsr181-api</artifactId>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>javax.xml.soap</groupId>
             <artifactId>javax.xml.soap-api</artifactId>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>javax.xml.ws</groupId>
             <artifactId>jaxws-api</artifactId>   
-            <optional>true</optional>
         </dependency>
         <!--
             should we using javax.xml.bind:jaxb-api instead
@@ -106,12 +125,11 @@
         </dependency>
         <dependency>
             <groupId>javax.management.j2ee</groupId>
-            <artifactId>management-api</artifactId>
-            <version>1.1-rev-1</version>
-            <optional>true</optional>
+            <artifactId>javax.management.j2ee-api</artifactId>
         </dependency>
         <!--
-            - using glassfish coordinates as javax.security:security-api:1.4 is not available
+             using glassfish coordinates as javax.security*
+             are not yet available under official coordinates
         -->
         <dependency>
             <groupId>org.glassfish.main</groupId>
@@ -120,15 +138,14 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>javax.security.auth.message</groupId>
-            <artifactId>jmac</artifactId>
-            <version>1.0-rev-1</version>
+            <groupId>org.glassfish.main</groupId>
+            <artifactId>javax.security.auth.message</artifactId>
+            <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>javax.enterprise.concurrent</groupId>
             <artifactId>javax.enterprise.concurrent-api</artifactId>
-            <optional>true</optional>
         </dependency>
        <dependency>
             <groupId>javax.batch</groupId>
@@ -140,13 +157,9 @@
             <groupId>javax.enterprise.deploy</groupId>
             <artifactId>javax.enterprise.deploy-api</artifactId>
         </dependency>
-        <!--
-            - using jboss coordinate because it's the only sources.jar available for jaxr
-        -->
         <dependency>
-            <groupId>org.jboss.spec.javax.xml.registry</groupId>
-            <artifactId>jboss-jaxr-api_1.0_spec</artifactId>
-            <version>1.0.2.Final</version>
+            <groupId>javax.xml.registry</groupId>
+            <artifactId>javax.xml.registry-api</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>

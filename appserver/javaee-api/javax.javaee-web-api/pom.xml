@@ -52,6 +52,29 @@
     <artifactId>javaee-web-api</artifactId>
     <name>JavaEE Web Profile API</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>glassfishbuild-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-sources</id>
+                        <goals>
+                            <goal>unpack-sources</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>attach-all-artifacts</id>
+                        <goals>
+                            <goal>attach-all-artifacts</goal>
+                        </goals>
+                    </execution>  
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -113,14 +136,9 @@
             <artifactId>javax.transaction.cdi-api</artifactId>
 	    <optional>true</optional>
         </dependency>
-        <!-- 
-            - using hibernate coordinate as there is no javax.persistence:persistence-api:2.0
-            - moreover, org.eclipse.persistence:javax.persistence has non UTF-8 characters
-        -->
         <dependency>
-            <groupId>org.hibernate.javax.persistence</groupId>
-            <artifactId>hibernate-jpa-2.0-api</artifactId>
-            <version>1.0.1.Final</version>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>javax.persistence</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>

@@ -75,4 +75,23 @@
         <system>IssueTracker</system>
         <url>http://java.net/jira/browse/GLASSFISH</url>
     </issueManagement>
+    
+    <developers>
+        <developer>
+            <id>shannon</id>
+            <name>Bill Shannon</name>
+            <organization>Oracle Corp.</organization>
+            <roles>
+                <role>lead</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>ldemichiel</id>
+            <name>Linda De Michiel</name>
+            <organization>Oracle Corp.</organization>
+            <roles>
+                <role>lead</role>
+            </roles>
+        </developer>
+    </developers>
 </project>
