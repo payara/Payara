@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@ package org.glassfish.webservices;
 
 import com.sun.istack.NotNull;
 import com.sun.xml.ws.api.Component;
+import com.sun.xml.ws.api.SOAPVersion;
 import com.sun.xml.ws.api.WSBinding;
 import com.sun.xml.ws.api.message.Packet;
 import com.sun.xml.ws.api.model.SEIModel;
@@ -48,6 +49,7 @@ import com.sun.xml.ws.api.model.wsdl.WSDLPort;
 import com.sun.xml.ws.api.pipe.Codec;
 import com.sun.xml.ws.api.pipe.FiberContextSwitchInterceptor;
 import com.sun.xml.ws.api.pipe.ServerTubeAssemblerContext;
+import com.sun.xml.ws.api.pipe.ThrowableContainerPropertySet;
 import com.sun.xml.ws.api.server.Adapter;
 import com.sun.xml.ws.api.server.Container;
 import com.sun.xml.ws.api.server.ServiceDefinition;
@@ -82,7 +84,6 @@ public class JAXWSAdapterRegistryTest {
      * Putting load on freshly-started Glassfish web-app messes up its initialization process
      */
     @Test
-    @Ignore
     public void testAddAdapter() {
         final String contextRoot = "/cr";
         final String urlPattern = "/up";
@@ -94,7 +95,7 @@ public class JAXWSAdapterRegistryTest {
             ts[i] = new Thread(new Runnable() {
                 @Override
                 public void run() {
-//                    registry.addAdapter(contextRoot, urlPattern + j, new A(j));
+                    registry.addAdapter(contextRoot, urlPattern + j, new A(j));
                 }
             });
         }
@@ -111,10 +112,10 @@ public class JAXWSAdapterRegistryTest {
         for (int i = 0; i < size; i++) {
             Adapter a = registry.getAdapter(contextRoot, urlPattern + i, urlPattern + i);
             Assert.assertNotNull("No adapter for '" + contextRoot + urlPattern + i + "'", a);
-//            Assert.assertEquals(i, ((A)a).getX());
+            Assert.assertEquals(i, ((A)a).getX());
         }
     }
-/*
+
     private class A extends Adapter {
 
         private int x;
@@ -232,20 +233,24 @@ public class JAXWSAdapterRegistryTest {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-//        @Override
+        @Override
         public EndpointReference getEndpointReference(Class clazz, String address, String wsdlAddress, Element... referenceParameters) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-//        @Override
+        @Override
         public EndpointReference getEndpointReference(Class clazz, String address, String wsdlAddress, List metadata, List referenceParameters) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-//        @Override
+        @Override
         public OperationDispatcher getOperationDispatcher() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public Packet createServiceResponseForException(ThrowableContainerPropertySet tcps, Packet packet, SOAPVersion soapv, WSDLPort wsdlp, SEIModel seim, WSBinding wsb) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
-    */
 }
