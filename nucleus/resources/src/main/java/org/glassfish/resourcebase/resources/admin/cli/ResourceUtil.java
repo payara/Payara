@@ -185,29 +185,30 @@ public class ResourceUtil {
             return;
         }
 
-        if( domain.getConfigNamed(target) != null){
-            return;
-        }
-
-        Server server = configBeansUtilities.getServerNamed(target);
-        if (server != null) {
-            if (server.isResourceRefExists(jndiName)) {
-                // delete ResourceRef for Server
-                server.deleteResourceRef(jndiName);
-            }
+        Config config = domain.getConfigNamed(target);
+        if(config!=null) {
+            config.deleteResourceRef(jndiName);
         } else {
-            Cluster cluster = domain.getClusterNamed(target);
-            if(cluster != null){
-                if (cluster.isResourceRefExists(jndiName)) {
-                    // delete ResourceRef of Cluster
-                    cluster.deleteResourceRef(jndiName);
+            Server server = configBeansUtilities.getServerNamed(target);
+            if (server != null) {
+                if (server.isResourceRefExists(jndiName)) {
+                    // delete ResourceRef for Server
+                    server.deleteResourceRef(jndiName);
+                }
+            } else {
+                Cluster cluster = domain.getClusterNamed(target);
+                if(cluster != null){
+                    if (cluster.isResourceRefExists(jndiName)) {
+                        // delete ResourceRef of Cluster
+                        cluster.deleteResourceRef(jndiName);
 
-                    // delete ResourceRef for all instances of Cluster
-                    Target tgt = targetProvider.get();
-                    List<Server> instances = tgt.getInstances(target);
-                    for (Server svr : instances) {
-                        if (svr.isResourceRefExists(jndiName)) {
-                            svr.deleteResourceRef(jndiName);
+                        // delete ResourceRef for all instances of Cluster
+                        Target tgt = targetProvider.get();
+                        List<Server> instances = tgt.getInstances(target);
+                        for (Server svr : instances) {
+                            if (svr.isResourceRefExists(jndiName)) {
+                                svr.deleteResourceRef(jndiName);
+                            }
                         }
                     }
                 }
