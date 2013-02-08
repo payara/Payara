@@ -217,22 +217,12 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                         otherFormatter++;  // for other formatter
                     }
 
-                    // multiple formatter found under log file then must rotate the log file
-                    if (odlFormatter > 0 && uniformLogFormatter > 0) {
+                    // Rotate on startup for custom log files
+                    if (otherFormatter > 0) {
                         mustRotate = true;
-                        break;
-                    } else if (uniformLogFormatter > 0 && otherFormatter > 0) {
-                        mustRotate = true;
-                        break;
-                    } else if (otherFormatter > 0 && odlFormatter > 0) {
-                        mustRotate = true;
-                        break;
                     }
-
-                    // reading first few lines and breaking loop
-                    if (odlFormatter > 2 || uniformLogFormatter > 2 || otherFormatter > 2) {
-                        break;
-                    }
+                    // Read only first log record line and break out of the loop
+                    break;
                 }
             }
         } catch (Exception e) {
