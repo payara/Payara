@@ -153,7 +153,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     private static final SimpleDateFormat logRotateDateFormatter =
             new SimpleDateFormat(LOG_ROTATE_DATE_FORMAT);
 
-    private static final String DEFAULT_FORMATTER_CLASS_NAME = UniformLogFormatter.class.getName();
+    private static final String DEFAULT_LOG_FILE_FORMATTER_CLASS_NAME = UniformLogFormatter.class.getName();
 
     private BooleanLatch done = new BooleanLatch();
     private Thread pump;
@@ -379,7 +379,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
             flushFrequency = 1;
 
         String formatterName = manager.getProperty(cname + ".formatter");
-        formatterName = (formatterName == null) ? DEFAULT_FORMATTER_CLASS_NAME : formatterName; 
+        formatterName = (formatterName == null) ? DEFAULT_LOG_FILE_FORMATTER_CLASS_NAME : formatterName; 
         
         // Below snapshot of the code is used to rotate server.log file on startup. It is used to avoid different format
         // log messages logged under same server.log file.
@@ -448,7 +448,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
 
     }
 
-    private Formatter findFormatterService(String formatterName) {
+    Formatter findFormatterService(String formatterName) {
         List<Formatter> formatterServices = habitat.getAllServices(Formatter.class);
         for (Formatter formatter : formatterServices) {
             if (formatter.getClass().getName().equals(formatterName)) {

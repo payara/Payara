@@ -121,6 +121,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
     String serverLogFileDetail = "";
     String handlerDetail = "";
+    String handlerServices = "";
     String consoleHandlerFormatterDetail = "";
     String gffileHandlerFormatterDetail = "";
     String rotationOnTimeLimitInMinutesDetail = "";
@@ -140,6 +141,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
     private final String SERVER_LOG_FILE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.file";
     private final String HANDLER_PROPERTY = "handlers";
+    private final String HANDLER_SERVICES_PROPERTY = "handlerServices";
     private final String CONSOLEHANDLER_FORMATTER_PROPERTY = "java.util.logging.ConsoleHandler.formatter";
     private final String GFFILEHANDLER_FORMATTER_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.formatter";
     private final String ROTATIONTIMELIMITINMINUTES_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes";
@@ -299,18 +301,20 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         }
 
         // force the ConsoleHandler to use GF formatter
-        String formatterClassname = null;
+        String formatterClassName = null;
         try {
 
             Map<String, String> props = getLoggingProperties();
-            formatterClassname = props.get(CONSOLEHANDLER_FORMATTER_PROPERTY);
-            consoleHandlerFormatterDetail = formatterClassname;
-            Class formatterClass = LogManagerService.class.getClassLoader().loadClass(formatterClassname);
+            formatterClassName = props.get(CONSOLEHANDLER_FORMATTER_PROPERTY);
+            if (formatterClassName == null || formatterClassName.isEmpty()) {
+                formatterClassName = UniformLogFormatter.class.getName();
+            }
+            consoleHandlerFormatterDetail = formatterClassName;
             excludeFields  = props.get(EXCLUDE_FIELDS_PROPERTY);
             multiLineMode  = Boolean.parseBoolean(props.get(MULTI_LINE_MODE_PROPERTY));
-            if (formatterClass.getName().equals("com.sun.enterprise.server.logging.UniformLogFormatter")) {
+            if (formatterClassName.equals(UniformLogFormatter.class.getName())) {
                 // used to support UFL formatter in GF.
-                UniformLogFormatter formatter = (UniformLogFormatter) formatterClass.newInstance();
+                UniformLogFormatter formatter = new UniformLogFormatter();
                 String cname = "com.sun.enterprise.server.logging.GFFileHandler";
                 recordBeginMarker = props.get(cname + ".logFormatBeginMarker");
                 if (recordBeginMarker == null || ("").equals(recordBeginMarker)) {
@@ -350,24 +354,34 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                 formatter.setRecordFieldSeparator(recordFieldSeparator);
                 formatter.setExcludeFields(excludeFields);
                 formatter.setMultiLineMode(multiLineMode);
-                for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                for (Handler handler : logMgr.getLogger("").getHandlers()) {                    
                     // only get the ConsoleHandler
-                    handler.setFormatter(formatter);
+                    if (handler.getClass().equals(ConsoleHandler.class)) {
+                        handler.setFormatter(formatter);
+                        break;
+                    }
                 }
-            } else if (formatterClass.getName().equals("com.sun.enterprise.server.logging.ODLLogFormatter")) {
+            } else if (formatterClassName.equals(ODLLogFormatter.class.getName())) {
                 // used to support ODL formatter in GF.
-                ODLLogFormatter formatter = (ODLLogFormatter) formatterClass.newInstance();
+                ODLLogFormatter formatter = new ODLLogFormatter();
                 formatter.setExcludeFields(excludeFields);
                 formatter.setMultiLineMode(multiLineMode);
                 for (Handler handler : logMgr.getLogger("").getHandlers()) {
                     // only get the ConsoleHandler
-                    handler.setFormatter(formatter);
+                    if (handler.getClass().equals(ConsoleHandler.class)) {
+                        handler.setFormatter(formatter);
+                        break;
+                    }
                 }
             }
 
             //setting default attributes value for all properties
             serverLogFileDetail = props.get(SERVER_LOG_FILE_PROPERTY);
-            handlerDetail = props.get(HANDLER_PROPERTY);
+            handlerDetail = props.get(HANDLER_PROPERTY);   
+            handlerServices = props.get(HANDLER_SERVICES_PROPERTY);
+            if (handlerServices == null) {
+                handlerServices = "";
+            }
             consoleHandlerFormatterDetail = props.get(CONSOLEHANDLER_FORMATTER_PROPERTY);
             gffileHandlerFormatterDetail = props.get(GFFILEHANDLER_FORMATTER_PROPERTY);
             rotationOnTimeLimitInMinutesDetail = props.get(ROTATIONTIMELIMITINMINUTES_PROPERTY);
@@ -389,7 +403,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             LOGGER.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
         }
 
-        Collection<Handler> handlers = habitat.getAllServices(Handler.class);
+        Collection<Handler> handlers = getHandlerServices();        
         if (handlers != null && handlers.size() > 0) {
             // Need to lock Logger.class first before locking LogManager to avoid deadlock.
             // See GLASSFISH-7274 for more details.
@@ -510,6 +524,10 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     if (!val.equals(handlerDetail)) {
                                         generateAttributeChangeEvent(HANDLER_PROPERTY, handlerDetail, props);
                                     }
+                                } else if (a.equals(HANDLER_SERVICES_PROPERTY)) {
+                                    if (!val.equals(handlerServices)) {
+                                        generateAttributeChangeEvent(HANDLER_SERVICES_PROPERTY, handlerServices, props);
+                                    }
                                 } else if (a.equals(CONSOLEHANDLER_FORMATTER_PROPERTY)) {
                                     if (!val.equals(consoleHandlerFormatterDetail)) {
                                         generateAttributeChangeEvent(CONSOLEHANDLER_FORMATTER_PROPERTY, consoleHandlerFormatterDetail, props);
@@ -619,6 +637,59 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             if (logRecord != null) {
                 LOGGER.log(logRecord);
             }
+        }
+    }
+
+    private Collection<Handler> getHandlerServices() {
+        Set<String> handlerServicesSet = new HashSet<String>();
+        handlerServicesSet.add(GFFileHandler.class.getName());
+        String[] handlerServicesArray = handlerServices.split(",");
+        for (String handlerService : handlerServicesArray) {
+            handlerServicesSet.add(handlerService);
+        }
+        List<Handler> handlers = habitat.getAllServices(Handler.class);
+        List<Handler> result = new ArrayList<Handler>();
+        List<Handler> customHandlers = new ArrayList<Handler>();
+        GFFileHandler gfFileHandler = null;
+        for (Handler handler: handlers) {
+            String handlerClassName = handler.getClass().getName();
+            if (handlerServicesSet.contains(handlerClassName )) {
+                result.add(handler);
+            }
+            if (handlerClassName.equals(GFFileHandler.class.getName())) {
+                gfFileHandler = (GFFileHandler) handler;
+            } else {
+                customHandlers.add(handler);
+            }
+        }
+        
+        // Set formatter on custom handler service if configured
+        for (Handler handler : customHandlers) {
+            try {
+                Map<String, String> props = getLoggingProperties();
+                String handlerClassName = handler.getClass().getName();
+                String formatterClassName = props.get(handlerClassName+".formatter");
+                Formatter formatter = getCustomFormatter(formatterClassName, gfFileHandler);
+                if (formatter != null) {
+                    handler.setFormatter(formatter);
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
+            }
+        }        
+        return result;
+    }
+
+    private Formatter getCustomFormatter(String formatterClassName, 
+            GFFileHandler gfFileHandler) 
+    {
+        try {
+            Class customFormatterClass = 
+                    ClassLoader.getSystemClassLoader().loadClass(
+                            formatterClassName);
+            return (Formatter) customFormatterClass.newInstance();
+        } catch (Exception e) {
+            return gfFileHandler.findFormatterService(formatterClassName);
         }
     }
 
