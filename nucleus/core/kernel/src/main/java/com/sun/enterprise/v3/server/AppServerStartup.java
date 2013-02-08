@@ -323,16 +323,32 @@ public class AppServerStartup implements ModuleStartup {
             return;
         }
         env.setStatus(ServerEnvironment.Status.stopping);
-        events.send(new Event(EventTypes.PREPARE_SHUTDOWN), false);
+        try {
+            events.send(new Event(EventTypes.PREPARE_SHUTDOWN), false);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, KernelLoggerInfo.exceptionDuringShutdown, e);
+        }
 
         // deactivate the run level services
-        proceedTo(InitRunLevel.VAL, new AppServerActivator());
+        try {
+            proceedTo(InitRunLevel.VAL, new AppServerActivator());
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, KernelLoggerInfo.exceptionDuringShutdown, e);
+        }
 
         // first send the shutdown event synchronously
         env.setStatus(ServerEnvironment.Status.stopped);
-        events.send(new Event(EventTypes.SERVER_SHUTDOWN), false);
+        try {
+            events.send(new Event(EventTypes.SERVER_SHUTDOWN), false);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, KernelLoggerInfo.exceptionDuringShutdown, e);
+        }
 
-        runLevelController.proceedTo(0);
+        try {
+            runLevelController.proceedTo(0);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, KernelLoggerInfo.exceptionDuringShutdown, e);
+        }
 
         logger.info(KernelLoggerInfo.shutdownFinished);
 
