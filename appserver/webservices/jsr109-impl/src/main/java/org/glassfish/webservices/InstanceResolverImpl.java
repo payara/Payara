@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,8 +57,6 @@ import com.sun.xml.ws.api.server.Invoker;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.container.common.spi.util.InjectionException;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 import javax.xml.ws.Provider;
@@ -70,7 +68,7 @@ public final class InstanceResolverImpl<T> extends InstanceResolver<T> {
     //delegate to this InstanceResolver
     private  InstanceResolver<T> resolver;
     private  T instance;
-    private Class<T> classtobeResolved;
+    private final Class<T> classtobeResolved;
 
     private WSWebServiceContext wsc;
     private WSEndpoint endpoint;
@@ -79,30 +77,31 @@ public final class InstanceResolverImpl<T> extends InstanceResolver<T> {
 
     public  InstanceResolverImpl(@NotNull Class<T> clasz) {
         this.classtobeResolved = clasz;
-
     }
 
+    @Override
     public @NotNull T resolve(Packet request) {
         //See iss 9721
         //Injection and instantiation is now done lazily
-
-       try {
-            instance = injManager.createManagedObject(classtobeResolved);
-        } catch (InjectionException e) {
-            throw new WebServiceException(e);
+        if (resolver == null) {
+            try {
+                instance = injManager.createManagedObject(classtobeResolved);
+            } catch (InjectionException e) {
+                throw new WebServiceException(e);
+            }
+            resolver = InstanceResolver.createSingleton(instance);
+            getResourceInjector(endpoint).inject(wsc, instance);
         }
-
-        resolver = InstanceResolver.createSingleton(instance);
-        getResourceInjector(endpoint).inject(wsc, instance);
         return resolver.resolve(request);
     }
 
+    @Override
     public void start(WSWebServiceContext wsc, WSEndpoint endpoint) {
         this.wsc = wsc;
         this.endpoint = endpoint;
-
     }
 
+    @Override
     public void dispose() {
         try {
             if(instance != null) {//instance can be null as it is created laziily
@@ -115,8 +114,9 @@ public final class InstanceResolverImpl<T> extends InstanceResolver<T> {
     
     private ResourceInjector getResourceInjector(WSEndpoint endpoint) {
         ResourceInjector ri = endpoint.getContainer().getSPI(ResourceInjector.class);
-        if(ri==null)
+        if (ri == null) {
             ri = ResourceInjector.STANDALONE;
+        }
         return ri;
     }
     
@@ -125,6 +125,7 @@ public final class InstanceResolverImpl<T> extends InstanceResolver<T> {
      */
 	public  //TODO - make this package private.  Cannot do it until this method is removed from base
 		//       class com.sun.xml.ws.api.server.InstanceResolver
+     @Override
      @NotNull Invoker createInvoker() {
         return new Invoker() {
             @Override
@@ -147,11 +148,10 @@ public final class InstanceResolverImpl<T> extends InstanceResolver<T> {
                 return ((Provider<T>)resolve(p)).invoke(arg);
             }
 
+            @Override
             public String toString() {
                 return "Default Invoker over "+InstanceResolverImpl.this.toString();
             }
         };
     }
-
-
 }
