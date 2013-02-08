@@ -292,7 +292,7 @@ public class RestMethodMetadata {
 
                 if (annotation instanceof QueryParam) {
                     queryParameters.add(new ParamMetadata(context,
-                            (Class<?>)paramType,
+                            paramType,
                             ((QueryParam)annotation).value(),
                             paramAnnos[i]));
                     processed = true;
@@ -331,7 +331,7 @@ public class RestMethodMetadata {
                 String methodName = m.getName();
                 if (methodName.startsWith("get")) {
                     String propertyName = methodName.substring(3, 4).toLowerCase(Locale.getDefault()) + methodName.substring(4);
-                    map.put(propertyName, new ParamMetadata(context, m.getReturnType(), propertyName, m.getAnnotations()));
+                    map.put(propertyName, new ParamMetadata(context, m.getGenericReturnType(), propertyName, m.getAnnotations()));
                 }
             }
 

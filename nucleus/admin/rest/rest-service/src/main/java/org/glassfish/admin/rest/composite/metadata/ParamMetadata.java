@@ -40,6 +40,8 @@
 package org.glassfish.admin.rest.composite.metadata;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.logging.Level;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -54,7 +56,7 @@ import org.jvnet.hk2.config.Attribute;
  */
 public class ParamMetadata {
     private String name;
-    private String type;
+    private Type type;
     private String help;
     private Object defaultValue;
     private boolean readOnly = false;
@@ -62,16 +64,14 @@ public class ParamMetadata {
     private boolean immutable = false;
     private boolean createOnly = false;
     private OptionsCapable context;
-    private Class<?> paramType;
 
     public ParamMetadata() {
 
     }
-    public ParamMetadata(OptionsCapable context, Class<?> paramType, String name, Annotation[] annotations) {
+    public ParamMetadata(OptionsCapable context, Type paramType, String name, Annotation[] annotations) {
         this.name = name;
         this.context = context;
-        this.type = paramType.getSimpleName();
-        this.paramType = paramType;
+        this.type = paramType;
         final CompositeUtil instance = CompositeUtil.instance();
         help = instance.getHelpText(annotations);
         defaultValue = getDefaultValue(annotations);
@@ -100,11 +100,11 @@ public class ParamMetadata {
         this.name = name;
     }
 
-    public String getType() {
+    public Type getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(Type type) {
         this.type = type;
     }
 
@@ -126,13 +126,13 @@ public class ParamMetadata {
 
     @Override
     public String toString() {
-        return "ParamMetadata{" + "name=" + name + ", type=" + type + ", help=" + help + '}';
+        return "ParamMetadata{" + "name=" + name + ", type=" + getTypeString() + ", help=" + help + '}';
     }
 
     public JSONObject toJson() throws JSONException {
         JSONObject o = new JSONObject();
 //        o.put("name", name);
-        o.put("type", type);
+        o.put("type", getTypeString());
         o.put("help", help);
         Object defVal = (defaultValue != null) ? defaultValue : JSONObject.NULL;
         o.put("default", defVal);
@@ -141,6 +141,23 @@ public class ParamMetadata {
         o.put("immutable", immutable);
         o.put("createOnly", createOnly);
         return o;
+    }
+    
+    protected String getTypeString() {
+        if (type instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType)type;
+            StringBuilder sb = new StringBuilder(((Class<?>)pt.getRawType()).getSimpleName());
+            sb.append("<");
+            String sep = "";
+            for (Type t : pt.getActualTypeArguments()) {
+                sb.append(sep)
+                        .append(((Class<?>)t).getSimpleName());
+                sep = ";";
+            }
+            return sb.append(">").toString();
+        } else {
+            return ((Class<?>)type).getSimpleName();
+        }
     }
 
     /**
@@ -182,23 +199,24 @@ public class ParamMetadata {
     }
 
     private Object parseValue(String value) {
+        Class<?> clazz = (Class<?>)type;
         try {
-            if (paramType.equals(String.class)) {
+            if (clazz.equals(String.class)) {
                 return value;
             }
-            if (paramType.equals(Boolean.TYPE) || paramType.equals(Boolean.class)) {
+            if (clazz.equals(Boolean.TYPE) || clazz.equals(Boolean.class)) {
                 return Boolean.valueOf(value);
             }
-            if (paramType.equals(Integer.TYPE) || paramType.equals(Integer.class)) {
+            if (clazz.equals(Integer.TYPE) || clazz.equals(Integer.class)) {
                 return new Integer(value);
             }
-            if (paramType.equals(Long.TYPE) || paramType.equals(Long.class)) {
+            if (clazz.equals(Long.TYPE) || clazz.equals(Long.class)) {
                 return new Long(value);
             }
-            if (paramType.equals(Double.TYPE) || paramType.equals(Double.class)) {
+            if (clazz.equals(Double.TYPE) || clazz.equals(Double.class)) {
                 return new Double(value);
             }
-            if (paramType.equals(Float.TYPE) || paramType.equals(Float.class)) {
+            if (clazz.equals(Float.TYPE) || clazz.equals(Float.class)) {
                 return new Float(value);
             }
             // TBD - arrays/lists of values
