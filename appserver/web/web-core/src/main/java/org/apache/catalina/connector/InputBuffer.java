@@ -60,6 +60,8 @@ package org.apache.catalina.connector;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,7 +70,7 @@ import javax.servlet.ReadListener;
 import javax.servlet.http.HttpUpgradeHandler;
 
 import org.apache.catalina.ContainerEvent;
-import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.Globals;
 import org.apache.catalina.core.StandardServer;
 import org.glassfish.grizzly.ReadHandler;
 import org.glassfish.grizzly.http.server.Request;
@@ -437,7 +439,7 @@ public class InputBuffer extends Reader
             if (!Boolean.TRUE.equals(IS_READY_SCOPE.get())) {
                 processDataAvailable();
             } else {
-                AsyncContextImpl.pool.execute(new Runnable() {
+                AsyncContextImpl.getExecutorService().execute(new Runnable() {
                     @Override
                     public void run() {
                         processDataAvailable();
@@ -447,16 +449,37 @@ public class InputBuffer extends Reader
         }
 
         private void processDataAvailable() {
-            synchronized(lk) {
-                prevIsReady = true;
-                if (request.getContext() != null) {
-                    Thread.currentThread().setContextClassLoader(
-                            ((StandardContext)request.getContext()).getClassLoader());
+            ClassLoader oldCL;
+            if (Globals.IS_SECURITY_ENABLED) {
+                PrivilegedAction<ClassLoader> pa = new PrivilegedGetTccl();
+                oldCL = AccessController.doPrivileged(pa);
+            } else {
+                oldCL = Thread.currentThread().getContextClassLoader();
+            }
+
+            try {
+                ClassLoader newCL = request.getContext().getLoader().getClassLoader();
+                if (Globals.IS_SECURITY_ENABLED) {
+                    PrivilegedAction<Void> pa = new PrivilegedSetTccl(newCL);
+                    AccessController.doPrivileged(pa);
+                } else {
+                    Thread.currentThread().setContextClassLoader(newCL);
                 }
-                try {
-                    readListener.onDataAvailable();
-                } catch(Throwable t) {
-                    readListener.onError(t);
+
+                synchronized(lk) {
+                    prevIsReady = true;
+                    try {
+                        readListener.onDataAvailable();
+                    } catch(Throwable t) {
+                        readListener.onError(t);
+                    }
+                }
+            } finally {
+                if (Globals.IS_SECURITY_ENABLED) {
+                    PrivilegedAction<Void> pa = new PrivilegedSetTccl(oldCL);
+                    AccessController.doPrivileged(pa);
+                } else {
+                    Thread.currentThread().setContextClassLoader(oldCL);
                 }
             }
         }
@@ -466,7 +489,7 @@ public class InputBuffer extends Reader
             if (!Boolean.TRUE.equals(IS_READY_SCOPE.get())) {
                 processAllDataRead();
             } else {
-                AsyncContextImpl.pool.execute(new Runnable() {
+                AsyncContextImpl.getExecutorService().execute(new Runnable() {
                     @Override
                     public void run() {
                         processAllDataRead();
@@ -476,16 +499,37 @@ public class InputBuffer extends Reader
         }
 
         private void processAllDataRead() {
-            synchronized(lk) {
-                prevIsReady = true;
-                if (request.getContext() != null) {
-                    Thread.currentThread().setContextClassLoader(
-                            ((StandardContext)request.getContext()).getClassLoader());
+            ClassLoader oldCL;
+            if (Globals.IS_SECURITY_ENABLED) {
+                PrivilegedAction<ClassLoader> pa = new PrivilegedGetTccl();
+                oldCL = AccessController.doPrivileged(pa);
+            } else {
+                oldCL = Thread.currentThread().getContextClassLoader();
+            }
+
+            try {
+                ClassLoader newCL = request.getContext().getLoader().getClassLoader();
+                if (Globals.IS_SECURITY_ENABLED) {
+                    PrivilegedAction<Void> pa = new PrivilegedSetTccl(newCL);
+                    AccessController.doPrivileged(pa);
+                } else {
+                    Thread.currentThread().setContextClassLoader(newCL);
                 }
-                try {
-                    readListener.onAllDataRead();
-                } catch(Throwable t) {
-                    readListener.onError(t);
+
+                synchronized(lk) {
+                    prevIsReady = true;
+                    try {
+                        readListener.onAllDataRead();
+                    } catch(Throwable t) {
+                        readListener.onError(t);
+                    }
+                }
+            } finally {
+                if (Globals.IS_SECURITY_ENABLED) {
+                    PrivilegedAction<Void> pa = new PrivilegedSetTccl(oldCL);
+                    AccessController.doPrivileged(pa);
+                } else {
+                    Thread.currentThread().setContextClassLoader(oldCL);
                 }
             }
         }
@@ -495,7 +539,7 @@ public class InputBuffer extends Reader
             if (!Boolean.TRUE.equals(IS_READY_SCOPE.get())) {
                 processError(t);
             } else {
-                AsyncContextImpl.pool.execute(new Runnable() {
+                AsyncContextImpl.getExecutorService().execute(new Runnable() {
                     @Override
                     public void run() {
                         processError(t);
@@ -505,26 +549,75 @@ public class InputBuffer extends Reader
         }
 
         private void processError(final Throwable t) {
-            synchronized(lk) {
-                if (request.isUpgrade()) {
-                    HttpUpgradeHandler httpUpgradeHandler =
-                            request.getHttpUpgradeHandler();
-                    try {
-                        httpUpgradeHandler.destroy();
-                        request.setUpgrade(false);
-                        if (request.getResponse() instanceof Response) {
-                            ((Response)request.getResponse()).setUpgrade(false);
-                        }
-                    } finally {
-                        (request.getContext()).fireContainerEvent(
-                            ContainerEvent.PRE_DESTROY, httpUpgradeHandler);
-                    }
-                    if (grizzlyRequest.getResponse().isSuspended()) {
-                        grizzlyRequest.getResponse().resume();
-                    }
-                }
-                readListener.onError(t);
+            ClassLoader oldCL;
+            if (Globals.IS_SECURITY_ENABLED) {
+                PrivilegedAction<ClassLoader> pa = new PrivilegedGetTccl();
+                oldCL = AccessController.doPrivileged(pa);
+            } else {
+                oldCL = Thread.currentThread().getContextClassLoader();
             }
+
+            try {
+                ClassLoader newCL = request.getContext().getLoader().getClassLoader();
+                if (Globals.IS_SECURITY_ENABLED) {
+                    PrivilegedAction<Void> pa = new PrivilegedSetTccl(newCL);
+                    AccessController.doPrivileged(pa);
+                } else {
+                    Thread.currentThread().setContextClassLoader(newCL);
+                }
+
+                synchronized(lk) {
+                    if (request.isUpgrade()) {
+                        HttpUpgradeHandler httpUpgradeHandler =
+                                request.getHttpUpgradeHandler();
+                        try {
+                            httpUpgradeHandler.destroy();
+                            request.setUpgrade(false);
+                            if (request.getResponse() instanceof Response) {
+                                ((Response)request.getResponse()).setUpgrade(false);
+                            }
+                        } finally {
+                            (request.getContext()).fireContainerEvent(
+                                ContainerEvent.PRE_DESTROY, httpUpgradeHandler);
+                        }
+                        if (grizzlyRequest.getResponse().isSuspended()) {
+                            grizzlyRequest.getResponse().resume();
+                        }
+                    }
+                    readListener.onError(t);
+                }
+            } finally {
+                if (Globals.IS_SECURITY_ENABLED) {
+                    PrivilegedAction<Void> pa = new PrivilegedSetTccl(oldCL);
+                    AccessController.doPrivileged(pa);
+                } else {
+                    Thread.currentThread().setContextClassLoader(oldCL);
+                }
+            }
+        }
+    }
+
+    private static class PrivilegedSetTccl implements PrivilegedAction<Void> {
+
+        private ClassLoader cl;
+
+        PrivilegedSetTccl(ClassLoader cl) {
+            this.cl = cl;
+        }
+
+        @Override
+        public Void run() {
+            Thread.currentThread().setContextClassLoader(cl);
+            return null;
+        }
+    }
+
+    private static class PrivilegedGetTccl
+            implements PrivilegedAction<ClassLoader> {
+
+        @Override
+        public ClassLoader run() {
+            return Thread.currentThread().getContextClassLoader();
         }
     }
 }
