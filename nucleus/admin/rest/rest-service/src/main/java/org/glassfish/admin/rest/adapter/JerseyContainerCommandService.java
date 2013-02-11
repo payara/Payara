@@ -62,6 +62,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.hk2.utilities.Binder;
+import org.glassfish.internal.api.KernelIdentity;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.internal.inject.ReferencingFactory;
@@ -83,6 +84,9 @@ public class JerseyContainerCommandService implements PostConstruct {
     @Inject
     protected ServiceLocator habitat;
     
+    @Inject
+    private KernelIdentity kernelIdentity;
+    
     private Future<JerseyContainer> future;
     
     @Override
@@ -100,7 +104,7 @@ public class JerseyContainerCommandService implements PostConstruct {
                                 public void run() {
                                     CommandRunner cr = habitat.getService(CommandRunner.class);
                                     final CommandRunner.CommandInvocation invocation =
-                                                    cr.getCommandInvocation("uptime", new PropsFileActionReporter(), null);
+                                                    cr.getCommandInvocation("uptime", new PropsFileActionReporter(), kernelIdentity.getSubject());
                                     invocation.parameters(new ParameterMap());
                                     invocation.execute();
                                 }
