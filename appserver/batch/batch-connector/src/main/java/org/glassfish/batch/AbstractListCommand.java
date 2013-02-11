@@ -125,7 +125,7 @@ public abstract class AbstractListCommand
         outputHeaders = headers;
         displayHeaders = new String[outputHeaders.length];
         for (int index = 0; index < displayHeaders.length; index++)
-            displayHeaders[index] = isHeaderRequired() ? outputHeaders[index].toUpperCase() : "";
+            displayHeaders[index] = isHeaderRequired() ? outputHeaders[index].toUpperCase(Locale.US) : "";
 
     }
 
