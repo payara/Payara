@@ -151,6 +151,18 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
             return new ResourceStatus(ResourceStatus.FAILURE, msg);
         }
 
+        if (Integer.parseInt(corePoolSize) == 0 && 
+            Integer.parseInt(maximumPoolSize) == 0) {
+            String msg = localStrings.getLocalString("coresize.maxsize.both.zero", "Options corepoolsize and maximumpoolsize cannot both have value 0.");
+            return new ResourceStatus(ResourceStatus.FAILURE, msg);
+        }
+
+        if (Integer.parseInt(corePoolSize) > 
+            Integer.parseInt(maximumPoolSize)) {
+            String msg = localStrings.getLocalString("coresize.biggerthan.maxsize", "Option corepoolsize cannot have a bigger value than option maximumpoolsize."); 
+            return new ResourceStatus(ResourceStatus.FAILURE, msg);
+        }
+
         Class clazz = ManagedExecutorService.class;
         if (getResourceType().equals(ServerTags.MANAGED_SCHEDULED_EXECUTOR_SERVICE)) {
             clazz = ManagedScheduledExecutorService.class;
