@@ -40,4 +40,20 @@ REM  only if the new code is made subject to such option by the copyright
 REM  holder.
 REM
 
-java %WSIMPORT_OPTS% -Djava.endorsed.dirs="%~dp0..\modules\endorsed" -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\javax.xml.rpc-api.jar;%~dp0..\modules\jaxb-osgi.jar" com.sun.tools.ws.WsImport %*
+VERIFY OTHER 2>nul
+setlocal ENABLEEXTENSIONS
+if ERRORLEVEL 0 goto ok
+echo "Unable to enable extensions"
+exit /B 1
+
+:ok
+call "%~dp0..\config\asenv.bat"
+if "%AS_JAVA%x" == "x" goto UsePath
+set JAVA="%AS_JAVA%\bin\java"
+goto run
+
+:UsePath
+set JAVA=java
+
+:run
+%JAVA% -jar %WSIMPORT_OPTS% -Djava.endorsed.dirs="%~dp0..\modules\endorsed" -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\javax.xml.rpc-api.jar;%~dp0..\modules\jaxb-osgi.jar" com.sun.tools.ws.WsImport %*

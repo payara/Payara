@@ -40,8 +40,19 @@
 # holder.
 #
 
-AS_INSTALL=`dirname $0`/..
-AS_INSTALL_LIB=$AS_INSTALL/modules
+AS_INSTALL=`dirname "$0"`/..
 
+case "`uname`" in
+  CYGWIN*) AS_INSTALL=`cygpath --windows $AS_INSTALL`
+esac
 
-java $WSIMPORT_OPTS -Djava.endorsed.dirs="$AS_INSTALL_LIB/endorsed" -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/javax.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar" com.sun.tools.ws.WsImport "$@"
+AS_INSTALL_LIB="$AS_INSTALL/modules"
+. "${AS_INSTALL}/config/asenv.conf"
+JAVA=java
+
+#Depends upon Java from ../config/asenv.conf
+if [ ${AS_JAVA} ]; then
+    JAVA=${AS_JAVA}/bin/java
+fi
+
+exec "$JAVA" $WSIMPORT_OPTS -Djava.endorsed.dirs="$AS_INSTALL_LIB/endorsed" -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/javax.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar" com.sun.tools.ws.WsImport "$@"
