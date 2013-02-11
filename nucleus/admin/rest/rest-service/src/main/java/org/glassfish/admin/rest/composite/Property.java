@@ -38,23 +38,25 @@
  * holder.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.glassfish.admin.rest.composite;
 
 import org.jvnet.hk2.annotations.Service;
 
 /**
- *
- * @author jdlee
+ * This model represents an arbitrary name/value pair that can be attached to 
+ * a number of different configuration objects.
  */
 @Service
 public interface Property extends RestModel {
+    /**
+     * Property name
+     */
     String getName();
     void setName(String name);
 
+    /**
+     * Property value
+     */
     String getValue();
     void setValue(String value);
 }

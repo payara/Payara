@@ -64,6 +64,44 @@ import org.jvnet.hk2.annotations.Service;
 @Path("/jobs")
 public class JobsResource extends CompositeResource {
 
+    /**
+     * The GET method on this resource returns a list of Job entities that represent 
+     * each recent or current job known to this GlassFish instance.
+     * <p>
+     * Roles: PaasAdmin, AccountAdmin
+     * <p>
+     * 
+     * <h3>Example Interactions</h3>
+     * <h4>View the detached jobs</h4>
+     * 
+     * <div class="codeblock">
+     * curl --user admin:admin123 -v \
+     *   -H Accept:application/vnd.oracle.glassfish+json \
+     *   -H Content-Type:application/vnd.oracle.glassfish+json \
+     *   -H X-Requested-By:MyClient \
+     *   http://localhost:7001/management/jobs
+     * 
+     * HTTP/1.1 200 OK
+     * {
+     *     "items": [{
+     *             "exitCode": "COMPLETED",
+     *             "jobId": "1",
+     *             "jobName": "load-sdp",
+     *             "jobState": "COMPLETED",
+     *             "executionDate": "Wed Jan 02 11:36:38 CST 2013",
+     *             "message": "SDP loaded with name nucleusSDP.",
+     *             "user": "admin"
+     *         }],
+     *     "metadata": [{"id": "http:\/\/localhost:7001\/management\/jobs\/id\/1"}]
+     * }
+     * </div>
+     * <p>
+     * @param currentUser
+     * @return A collection of Job entities which contains information for each job resource. 
+     *  For each job returned, the <code>jobId</code> field can be used to format the URI to 
+     *  interact with a specific job.
+     * @throws Exception 
+     */
     @GET
     public RestCollection<Job> getJobs(@QueryParam("currentUser") @DefaultValue("false") final boolean currentUser) throws Exception {
         RestCollection<Job> rc = new RestCollection<Job>();
@@ -96,7 +134,7 @@ public class JobsResource extends CompositeResource {
         return new ParameterMap();
     }
 
-    public static Job constructJobModel(Map<String, Object> jobMap) {
+    static Job constructJobModel(Map<String, Object> jobMap) {
         if (jobMap == null) {
             return null;
         }
