@@ -97,5 +97,23 @@
             <artifactId>hk2</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.tests.hk2.cdi.ear</groupId>
+            <artifactId>lib1</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tests.hk2.cdi.ear</groupId>
+            <artifactId>ejb1</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tests.hk2.cdi.ear</groupId>
+            <artifactId>ejb2</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>
