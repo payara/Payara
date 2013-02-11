@@ -54,7 +54,28 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ParameterMap;
 
 /**
+ * This resource is used to view the current state of a specific job.
+ * <h2>Example Interactions</h2>
+ * <h4>View a specific detached job</h4>
  *
+ * <div class="codeblock">
+ * $ curl --user admin:admin123 -v \
+ *   -H Accept:application/vnd.oracle.glassfish+json \
+ *   -H Content-Type:application/vnd.oracle.glassfish+json \
+ *   -H X-Requested-By:MyClient \
+ *   http://localhost:4848/management/jobs/id/1
+ *
+ * HTTP/1.1 200 OK
+ * {
+ *     "exitCode": "COMPLETED",
+ *     "jobId": "1",
+ *     "jobName": "load-sdp",
+ *     "jobState": "COMPLETED",
+ *     "executionDate": "Wed Jan 02 11:36:38 CST 2013",
+ *     "message": "SDP loaded with name nucleusSDP.",
+ *     "user": "admin"
+ * }
+ * </div>
  * @author jdlee
  */
 public class JobResource extends CompositeResource {
@@ -63,28 +84,7 @@ public class JobResource extends CompositeResource {
      * Retrieve information about the specific job identified by the resource URL.
      * <p>
      * <b>Roles: PaasAdmin, AccountAdmin</b>
-     * <h3>Example Interactions</h3>
-     * <h4>View a specific detached job</h4>
-     * 
-     * <div class="codeblock">
-     * curl --user admin:admin123 -v \
-     *   -H Accept:application/vnd.oracle.glassfish+json \
-     *   -H Content-Type:application/vnd.oracle.glassfish+json \
-     *   -H X-Requested-By:MyClient \
-     *   http://localhost:7001/management/jobs/id/1
-     * 
-     * HTTP/1.1 200 OK
-     * {
-     *     "exitCode": "COMPLETED",
-     *     "jobId": "1",
-     *     "jobName": "load-sdp",
-     *     "jobState": "COMPLETED",
-     *     "executionDate": "Wed Jan 02 11:36:38 CST 2013",
-     *     "message": "SDP loaded with name nucleusSDP.",
-     *     "user": "admin"
-     * }
-     * </div>
-     * 
+     *
      * @param jobId
      * @return the {@link Job} entity which contains information about the job id specified.
      */
