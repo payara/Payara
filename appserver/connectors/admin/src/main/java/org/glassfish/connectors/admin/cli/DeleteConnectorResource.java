@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -70,6 +70,13 @@ import java.beans.PropertyVetoException;
  * 
  */
 @TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
+@RestEndpoints({
+        @RestEndpoint(configBean = Resources.class,
+                opType = RestEndpoint.OpType.DELETE,
+                path = "delete-connector-resource",
+                description = "delete-connector-resource")
+})
+
 @ExecuteOn(value={RuntimeType.ALL})
 @Service(name="delete-connector-resource")
 @PerLookup

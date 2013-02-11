@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,9 +47,7 @@ import java.beans.PropertyVetoException;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.*;
 //import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
@@ -68,9 +66,8 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.glassfish.api.admin.AccessRequired;
+
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
-import org.glassfish.api.admin.AdminCommandSecurity;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 
@@ -81,6 +78,12 @@ import org.jvnet.hk2.config.SingleConfigCode;
  *
  */
 @TargetType(value={CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
+@RestEndpoints({
+        @RestEndpoint(configBean=Resources.class,
+                opType=RestEndpoint.OpType.POST,
+                path="create-resource-ref",
+                description="create-resource-ref")
+})
 @org.glassfish.api.admin.ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
 @Service(name="create-resource-ref")
 @PerLookup
