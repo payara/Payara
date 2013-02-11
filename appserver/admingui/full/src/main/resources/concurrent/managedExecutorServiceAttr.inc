@@ -118,7 +118,6 @@
                 
        <sun:property id="taskQueueCapacity" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.taskQueueCapacity}"  helpText="$resource{i18ncon.taskQueueCapacityHelp}">
             <sun:textField id="taskQueueCapacity" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['taskQueueCapacity']}" />      
-            <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
        </sun:property>   
                 
        <sun:property id="descProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.description}">
