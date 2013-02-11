@@ -42,21 +42,24 @@ package org.glassfish.webservices;
 
 
 import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.WebServiceEndpoint;
 
-
+import java.io.IOException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.xml.ws.http.HTTPBinding;
+import org.glassfish.api.logging.LogHelper;
 import org.glassfish.webservices.monitoring.Endpoint;
 import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
 import org.glassfish.webservices.monitoring.WebServiceTesterServlet;
 import org.glassfish.ejb.api.EjbEndpointFacade;
 import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
+import org.glassfish.internal.api.Globals;
 
 /**
  * Servlet responsible for invoking EJB webservice endpoint.
@@ -76,74 +79,81 @@ public class EjbWebServiceServlet extends HttpServlet {
 
     public EjbWebServiceServlet() {
         super();
-        if (org.glassfish.internal.api.Globals.getDefaultHabitat() != null) {
-            secServ = org.glassfish.internal.api.Globals.get(SecurityService.class);
+        if (Globals.getDefaultHabitat() != null) {
+            secServ = Globals.get(SecurityService.class);
         }
     }
 
+    @Override
     protected void service(HttpServletRequest hreq,
                            HttpServletResponse hresp)
-
             throws ServletException, IOException {
-
-        boolean dispatch = true;
 
         String requestUriRaw = hreq.getRequestURI();
         String requestUri = (requestUriRaw.charAt(0) == '/') ?
                 requestUriRaw.substring(1) : requestUriRaw;
         String query = hreq.getQueryString();
+        
+        WebServiceEjbEndpointRegistry wsejbEndpointRegistry =
+                (WebServiceEjbEndpointRegistry) Globals.getDefaultHabitat()
+                    .getService(WSEjbEndpointRegistry.class);
+        EjbRuntimeEndpointInfo ejbEndpoint =
+                wsejbEndpointRegistry.getEjbWebServiceEndpoint(requestUri, hreq.getMethod(), query);
 
-        // check if it is a tester servlet invocation
-        if ("Tester".equalsIgnoreCase(query)) {
-            Endpoint endpoint = WebServiceEngineImpl.getInstance().getEndpoint(hreq.getRequestURI());
-            if((endpoint.getDescriptor().isSecure()) ||
-                    (endpoint.getDescriptor().getMessageSecurityBinding() != null)) {
-                String message = endpoint.getDescriptor().getWebService().getName() +
-                        "is a secured web service; Tester feature is not supported for secured services";
-                (new WsUtil()).writeInvalidMethodType(hresp, message);
-                return;
+        if (ejbEndpoint != null) {
+            /*
+             * We can actually assert that ejbEndpoint is != null,
+             * because this EjbWebServiceServlet would not have been
+             * invoked otherwise
+             */
+            String scheme = hreq.getScheme();
+            WebServiceEndpoint wse = ejbEndpoint.getEndpoint();
+            if ("http".equals(scheme) && wse.isSecure()) {
+                //redirect to correct protocol scheme if needed
+                logger.log(Level.WARNING, LogUtils.INVALID_REQUEST_SCHEME,
+                        new Object[]{wse.getEndpointName(), "https", scheme});
+                URL url = wse.composeEndpointAddress(new WsUtil().getWebServerInfoForDAS().getWebServerRootURL(true));
+                StringBuilder sb = new StringBuilder(url.toExternalForm());
+                if (query != null && query.trim().length() > 0) {
+                    sb.append("?");
+                    sb.append(query);
+                }
+                hresp.sendRedirect(sb.toString());
+            } else {
+                boolean dispatch = true;
+                // check if it is a tester servlet invocation
+                if ("Tester".equalsIgnoreCase(query) && (!(HTTPBinding.HTTP_BINDING.equals(wse.getProtocolBinding())))) {
+                    Endpoint endpoint = WebServiceEngineImpl.getInstance().getEndpoint(hreq.getRequestURI());
+                    if ((endpoint.getDescriptor().isSecure())
+                            || (endpoint.getDescriptor().getMessageSecurityBinding() != null)) {
+                        String message = endpoint.getDescriptor().getWebService().getName()
+                                + "is a secured web service; Tester feature is not supported for secured services";
+                        (new WsUtil()).writeInvalidMethodType(hresp, message);
+                        return;
+                    }
+                    if (Boolean.parseBoolean(endpoint.getDescriptor().getDebugging())) {
+                        dispatch = false;
+                        WebServiceTesterServlet.invoke(hreq, hresp,
+                                endpoint.getDescriptor());
+                    }
+                }
+                if ("wsdl".equalsIgnoreCase(query) && (!(HTTPBinding.HTTP_BINDING.equals(wse.getProtocolBinding())))) {
+                    if (wse.getWsdlExposed() != null && !Boolean.parseBoolean(wse.getWsdlExposed())) {
+                        hresp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    }
+                }
+                if (dispatch) {
+                    dispatchToEjbEndpoint(hreq, hresp, ejbEndpoint);
+                }
             }
-            if ( Boolean.parseBoolean(endpoint.getDescriptor().getDebugging())) {
-                dispatch = false;
-                WebServiceTesterServlet.invoke(hreq, hresp,
-                        endpoint.getDescriptor());
-            }
-        }
-
-        if (dispatch) {
-            WebServiceEjbEndpointRegistry wsejbEndpointRegistry = (WebServiceEjbEndpointRegistry) org.glassfish.internal.api.Globals.getDefaultHabitat().getService(
-                    WSEjbEndpointRegistry.class);
-            EjbRuntimeEndpointInfo ejbEndpoint =
-                    wsejbEndpointRegistry.getEjbWebServiceEndpoint(requestUri, hreq.getMethod(), query);
-
-            if (ejbEndpoint != null) {
-                /*
-                 * We can actually assert that ejbEndpoint is != null,
-                 * because this EjbWebServiceServlet would not have been
-                 * invoked otherwise
-                 */
-                dispatchToEjbEndpoint(hreq, hresp, ejbEndpoint);
-            }
+        } else {
+            hresp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
-
 
     private void dispatchToEjbEndpoint(HttpServletRequest hreq,
                                        HttpServletResponse hresp,
                                        EjbRuntimeEndpointInfo ejbEndpoint) {
-
-        String scheme = hreq.getScheme();
-        String expectedScheme = ejbEndpoint.getEndpoint().isSecure() ?
-                "https" : "http";
-
-        if( !expectedScheme.equalsIgnoreCase(scheme) ) {
-            logger.log(Level.WARNING, LogUtils.INVALID_REQUEST_SCHEME,
-                    new Object[] {ejbEndpoint.getEndpoint().getEndpointName(),
-                        expectedScheme, scheme});
-            return;
-        }
-
-
         EjbEndpointFacade container = ejbEndpoint.getContainer();
         ClassLoader savedClassLoader = null;
 
@@ -170,16 +180,14 @@ public class EjbWebServiceServlet extends HttpServlet {
 
             try {
                 if (secServ != null) {
-                    WebServiceContextImpl context = (WebServiceContextImpl) ((EjbRuntimeEndpointInfo) ejbEndpoint).getWebServiceContext();
+                    WebServiceContextImpl context = (WebServiceContextImpl) ejbEndpoint.getWebServiceContext();
                     authenticated = secServ.doSecurity(hreq, ejbEndpoint, realmName, context);
                 }
 
             } catch(Exception e) {
                 //sendAuthenticationEvents(false, hreq.getRequestURI(), null);
-                String msg = MessageFormat.format(
-                        logger.getResourceBundle().getString(LogUtils.AUTH_FAILED),
-                        ejbEndpoint.getEndpoint().getEndpointName());
-                logger.log(Level.WARNING, msg, e);
+                LogHelper.log(logger, Level.WARNING, LogUtils.AUTH_FAILED,
+                        e, ejbEndpoint.getEndpoint().getEndpointName());
             }
 
             if (!authenticated) {
@@ -205,6 +213,5 @@ public class EjbWebServiceServlet extends HttpServlet {
             // Restore context class loader
             Thread.currentThread().setContextClassLoader(savedClassLoader);
         }
-        return;
     }
 }

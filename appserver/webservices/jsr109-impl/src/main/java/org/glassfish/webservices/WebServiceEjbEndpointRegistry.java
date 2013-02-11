@@ -40,13 +40,19 @@
 
 package org.glassfish.webservices;
 
-import java.util.*;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
 import com.sun.xml.ws.transport.http.servlet.ServletAdapterList;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
 
@@ -70,7 +76,7 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
     private static final Logger logger = LogUtils.getLogger();
 
     // Ejb service endpoint info.  
-    private Hashtable webServiceEjbEndpoints = new Hashtable();
+    private final Map<String, EjbRuntimeEndpointInfo> webServiceEjbEndpoints = new ConcurrentHashMap<String, EjbRuntimeEndpointInfo>();
 
     // Derived set of all ejb web service related context roots.  Used
     // to optimize the check that determines whether an HTTP request is 
@@ -78,13 +84,14 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
     // root, but that context root must not be used by any web application.  
     // So if the context root portion of the request is in this set, we know
     // the call is for an ejb.
-    private Set ejbContextRoots = new HashSet();
+    private Set<String> ejbContextRoots = new HashSet<String>();
     
 
     // This keeps the list for each service
-    private HashMap adapterListMap = new HashMap();
+    private final Map<String, ServletAdapterList> adapterListMap = new HashMap<String, ServletAdapterList>();
 
 
+    @Override
     public void registerEndpoint(WebServiceEndpoint webserviceEndpoint,
                                   EjbEndpointFacade ejbContainer,
                                   Object servant, Class tieClass)  {
@@ -114,7 +121,7 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
         } else {
             engine.createHandler(endpoint.getEndpoint());
             try {
-                endpoint.initRuntimeInfo((ServletAdapterList)adapterListMap.get(uri));
+                endpoint.initRuntimeInfo(adapterListMap.get(uri));
             } catch (Exception e) {
                 logger.log(Level.WARNING,LogUtils.EJB_POSTPROCESSING_ERROR, e);
             }
@@ -122,6 +129,7 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
     }
 
 
+    @Override
     public void unregisterEndpoint(String endpointAddressUri) {
 
         EjbRuntimeEndpointInfo endpoint = null;
@@ -130,7 +138,7 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
             String uriRaw = endpointAddressUri;
             String uri = (uriRaw.charAt(0)=='/') ? uriRaw.substring(1) : uriRaw;
             
-            ServletAdapterList list = (ServletAdapterList)adapterListMap.get(uri);
+            ServletAdapterList list = adapterListMap.get(uri);
             if (list != null) {
             	//bug12540102: remove only the data related to the endpoint that is unregistered
             	//since we are using the uri in the adapterListMap 
@@ -175,8 +183,7 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
         return info;
     }
 
-    public EjbRuntimeEndpointInfo getEjbWebServiceEndpoint
-        (String uriRaw, String method, String query) {
+    public EjbRuntimeEndpointInfo getEjbWebServiceEndpoint(String uriRaw, String method, String query) {
         EjbRuntimeEndpointInfo endpoint = null;
 
         if (uriRaw==null || uriRaw.length()==0) {
@@ -197,26 +204,16 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
                 String contextRoot = getContextRootForUri(uri);
                 if( ejbContextRoots.contains(contextRoot) ) {
                     // Now check for a match with a specific ejb endpoint.
-                    Collection values = webServiceEjbEndpoints.values();
-                    for(Iterator iter = values.iterator(); iter.hasNext();) {
-                        EjbRuntimeEndpointInfo next = (EjbRuntimeEndpointInfo)
-                            iter.next();
-
-                        if( next.getEndpoint().matchesEjbPublishRequest
-                            (uri, query)) {
+                    for (EjbRuntimeEndpointInfo next: webServiceEjbEndpoints.values()) {
+                        if( next.getEndpoint().matchesEjbPublishRequest(uri, query)) {
                             endpoint = next;
                             break;
-                        }       
+                        }
                     }
                 }
-            } else {
-                // In this case the uri must match exactly to be an ejb web
-                // service invocation, so do a direct table lookup.
-                endpoint = (EjbRuntimeEndpointInfo)
-                    webServiceEjbEndpoints.get(uri);
             }
         }
-        return endpoint;
+        return endpoint != null ? endpoint : webServiceEjbEndpoints.get(uri);
     }
 
     public Collection getEjbWebServiceEndpoints() {
@@ -230,15 +227,12 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
         } else {
             return null;
         }
-        
     }
 
     private void regenerateEjbContextRoots() {
         synchronized(webServiceEjbEndpoints) {
-            Set contextRoots = new HashSet();
-            for(Iterator iter = webServiceEjbEndpoints.keySet().iterator();
-                iter.hasNext();) {
-                String uri = (String) iter.next();
+            Set<String> contextRoots = new HashSet<String>();
+            for (String uri : webServiceEjbEndpoints.keySet()) {
                 String contextRoot = getContextRootForUri(uri);
                 if( (contextRoot != null) && !contextRoot.equals("") ) {
                     contextRoots.add(contextRoot);

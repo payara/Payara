@@ -288,7 +288,7 @@ public final class LogUtils {
     public static final String NULL_MESSAGE = LOGMSG_PREFIX + "-00075";
 
     @LogMessageInfo(
-            message = "Invalid request scheme for Endpoint {0}. Expected {1} . Received {2}",
+            message = "Invalid request scheme for Endpoint {0}. Expected '{1}', received '{2}'.",
             comment = "{0} - endpoint name, {1} - URL scheme, {2} - URL scheme",
             level = "WARNING")
     public static final String INVALID_REQUEST_SCHEME = LOGMSG_PREFIX + "-00076";
