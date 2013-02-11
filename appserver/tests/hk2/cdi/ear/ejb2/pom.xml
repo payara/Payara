@@ -91,5 +91,18 @@
             <artifactId>javax.ejb-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.tests.hk2.cdi.ear</groupId>
+            <artifactId>lib1</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tests.hk2.cdi.ear</groupId>
+            <artifactId>ejb1</artifactId>
+            <version>${project.version}</version>
+            <type>ejb</type>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

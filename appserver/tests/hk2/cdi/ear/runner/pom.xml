@@ -74,6 +74,13 @@
     <dependencies>
         <dependency>
             <groupId>org.glassfish.tests.hk2.cdi.ear</groupId>
+            <artifactId>ejb2</artifactId>
+            <type>ejb</type>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tests.hk2.cdi.ear</groupId>
             <artifactId>ejb1</artifactId>
             <type>ejb</type>
             <version>${project.version}</version>

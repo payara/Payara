@@ -51,6 +51,7 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import com.oracle.hk2.devtest.cdi.ear.ejb1.Ejb1Remote;
+import com.oracle.hk2.devtest.cdi.ear.ejb2.Ejb2Remote;
 
 /**
  * 
@@ -65,6 +66,7 @@ public class CDIEarTest extends NucleusStartStopTest {
     private final static String SOURCE_HOME_APP = "/appserver/tests/hk2/" + APP_JAR;
     
     private final static String EJB1_JNDI_NAME = "java:global/app/ejb1/Ejb1";
+    private final static String EJB2_JNDI_NAME = "java:global/app/ejb2/Ejb2";
     
     private final static String WAR1_URL = "http://localhost:8080/war1/war1";
     
@@ -97,13 +99,13 @@ public class CDIEarTest extends NucleusStartStopTest {
         }
     }
     
-    private Ejb1Remote lookupWithFiveSecondSleep() throws NamingException, InterruptedException {
+    private Object lookupWithFiveSecondSleep(String jndiName) throws NamingException, InterruptedException {
         long sleepTime = 5L * 1000L;
         long interval = 100L;
         
         while (sleepTime > 0) {
             try {
-                return (Ejb1Remote) context.lookup(EJB1_JNDI_NAME);
+                return context.lookup(jndiName);
             }
             catch (NamingException ne) {
                 sleepTime -= interval;
@@ -125,14 +127,14 @@ public class CDIEarTest extends NucleusStartStopTest {
     
     @Test
     public void testInjectFromLib1IntoEjb1() throws NamingException, InterruptedException {
-        Ejb1Remote ejb1 = lookupWithFiveSecondSleep();
+        Ejb1Remote ejb1 = (Ejb1Remote) lookupWithFiveSecondSleep(EJB1_JNDI_NAME);
         
         ejb1.isLib1HK2ServiceAvailable(); 
     }
     
     @Test
     public void testInjectFromEjb1IntoEjb1() throws NamingException, InterruptedException {
-        Ejb1Remote ejb1 = lookupWithFiveSecondSleep();
+        Ejb1Remote ejb1 = (Ejb1Remote) lookupWithFiveSecondSleep(EJB1_JNDI_NAME);
         
         ejb1.isEjb1HK2ServiceAvailable();
         
@@ -144,5 +146,26 @@ public class CDIEarTest extends NucleusStartStopTest {
         
         Assert.assertTrue(fromWar1.contains("success"),
                 "Does not contain the word success: " + fromWar1);
+    }
+    
+    @Test
+    public void testInjectFromLib1IntoEjb2() throws NamingException, InterruptedException {
+        Ejb2Remote ejb2 = (Ejb2Remote) lookupWithFiveSecondSleep(EJB2_JNDI_NAME);
+        
+        ejb2.isLib1HK2ServiceAvailable(); 
+    }
+    
+    @Test
+    public void testInjectFromEjb1IntoEjb2() throws NamingException, InterruptedException {
+        Ejb2Remote ejb2 = (Ejb2Remote) lookupWithFiveSecondSleep(EJB2_JNDI_NAME);
+        
+        ejb2.isEjb1HK2ServiceAvailable(); 
+    }
+    
+    @Test
+    public void testInjectFromEjb2IntoEjb2() throws NamingException, InterruptedException {
+        Ejb2Remote ejb2 = (Ejb2Remote) lookupWithFiveSecondSleep(EJB2_JNDI_NAME);
+        
+        ejb2.isEjb2HK2ServiceAvailable(); 
     }
 }

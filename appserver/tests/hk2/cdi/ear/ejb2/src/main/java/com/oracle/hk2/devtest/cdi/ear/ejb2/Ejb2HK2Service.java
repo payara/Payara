@@ -39,42 +39,15 @@
  */
 package com.oracle.hk2.devtest.cdi.ear.ejb2;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Contract;
 
-import com.oracle.hk2.devtest.cdi.ear.ejb1.Ejb1HK2Service;
-import com.oracle.hk2.devtest.cdi.ear.lib1.Lib1HK2Service;
+import com.oracle.hk2.devtest.cdi.ear.lib1.HK2Service;
 
 /**
- * 
  * @author jwells
  *
  */
-@Stateless
-@Remote(Ejb2Remote.class)
-public class Ejb2 implements Ejb2Remote {
-    @Inject
-    private Ejb1HK2Service ejb1Service;
-    
-    @Inject
-    private Lib1HK2Service lib1Service;
-    
-    @Inject
-    private Ejb2HK2Service ejb2Service;
+@Contract
+public interface Ejb2HK2Service extends HK2Service {
 
-    @Override
-    public boolean isEjb2HK2ServiceAvailable() {
-        return (ejb2Service != null);
-    }
-
-    @Override
-    public boolean isEjb1HK2ServiceAvailable() {
-        return (ejb1Service != null);
-    }
-
-    @Override
-    public boolean isLib1HK2ServiceAvailable() {
-        return (lib1Service != null);
-    }
 }
