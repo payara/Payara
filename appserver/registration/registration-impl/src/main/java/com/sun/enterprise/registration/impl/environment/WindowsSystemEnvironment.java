@@ -242,7 +242,7 @@ class WindowsSystemEnvironment extends SystemEnvironment {
                     if (line.length() == 0) {
                         continue;
                     }
-                    if (line.toLowerCase(Locale.US).indexOf(property.toLowerCase()) != -1) {
+                    if (line.toLowerCase(Locale.US).indexOf(property.toLowerCase(Locale.US)) != -1) {
                         continue;
                     }
                     res.append(line).append("\n");
