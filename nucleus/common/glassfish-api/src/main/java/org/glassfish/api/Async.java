@@ -48,8 +48,8 @@ import java.lang.annotation.Target;
 import org.glassfish.api.admin.CommandAspect;
 
 /**
- * Execution artifacts like Service or Admin Command implementations can use
- * this annotation to generate an asynchronous execution of their logic.
+ * Admin Command implementations can use this annotation to indicate asynchronous
+ * execution of their logic.
  *
  * @author Jerome Dochez
  * 

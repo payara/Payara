@@ -63,7 +63,6 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
-import org.glassfish.api.Async;
 import org.glassfish.api.FutureProvider;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.CommandRunner;
@@ -508,32 +507,31 @@ public class AppServerStartup implements ModuleStartup {
             locator.reifyDescriptor(activeDescriptor);
             Class<?> type = activeDescriptor.getImplementationClass();
 
-            if (type.getAnnotation(Async.class)==null) {
-                long start = System.currentTimeMillis();
-                try {
-                    if (logger.isLoggable(level)) {
-                        logger.log(level, "Running Startup services " + type);
-                    }
-
-                    Object startup = locator.getServiceHandle(activeDescriptor).getService();
-
-                    if (logger.isLoggable(level)) {
-                        logger.log(level, "Startup services finished" + startup);
-                    }
-                    // the synchronous service was started successfully,
-                    // let's check that it's not in fact a FutureProvider
-                    if (startup instanceof FutureProvider) {
-                        futures.addAll(((FutureProvider) startup).getFutures());
-                    }
-                } catch(RuntimeException e) {
-                    logger.log(Level.SEVERE, KernelLoggerInfo.startupFailure, e);
-                    events.send(new Event(EventTypes.SERVER_SHUTDOWN), false);
-                    forceShutdown();
-                    return;
-                }
+            long start = System.currentTimeMillis();
+            try {
                 if (logger.isLoggable(level)) {
-                    servicesTiming.put(type, (System.currentTimeMillis() - start));
+                    logger.log(level, "Running Startup services " + type);
                 }
+
+                Object startup = locator.getServiceHandle(activeDescriptor).getService();
+
+                if (logger.isLoggable(level)) {
+                    logger.log(level, "Startup services finished" + startup);
+                }
+                
+                // the synchronous service was started successfully,
+                // let's check that it's not in fact a FutureProvider
+                if (startup instanceof FutureProvider) {
+                    futures.addAll(((FutureProvider) startup).getFutures());
+                }
+            } catch(RuntimeException e) {
+                logger.log(Level.SEVERE, KernelLoggerInfo.startupFailure, e);
+                events.send(new Event(EventTypes.SERVER_SHUTDOWN), false);
+                forceShutdown();
+                return;
+            }
+            if (logger.isLoggable(level)) {
+                servicesTiming.put(type, (System.currentTimeMillis() - start));
             }
         }
 
