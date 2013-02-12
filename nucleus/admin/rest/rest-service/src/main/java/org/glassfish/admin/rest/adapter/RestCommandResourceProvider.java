@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,12 +42,10 @@
 package org.glassfish.admin.rest.adapter;
 
 import com.sun.enterprise.admin.remote.writer.PayloadPartProvider;
-import com.sun.logging.LogDomains;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.ws.rs.core.MediaType;
 import org.glassfish.admin.rest.provider.*;
 import org.glassfish.admin.rest.readers.JsonParameterMapProvider;
@@ -81,7 +79,7 @@ public class RestCommandResourceProvider extends AbstractRestResourceProvider {
             mappings.put("txt", MediaType.TEXT_PLAIN_TYPE);
             mappings.put("multi", new MediaType("multipart", null));
             mappings.put("sse", new MediaType("text", "event-stream"));
-        };
+        }
 
         return mappings;
     }
