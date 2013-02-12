@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -156,13 +156,14 @@ public interface EjbTagNames extends TagNames {
     String INTERCEPTOR_BUSINESS_METHOD = "method";
     String EXCLUDE_DEFAULT_INTERCEPTORS = "exclude-default-interceptors";
     String EXCLUDE_CLASS_INTERCEPTORS = "exclude-class-interceptors";
-    String AROUND_INVOKE_METHOD = "around-invoke";
+    String AROUND_CONSTRUCT = "around-construct";
 
     // around-invoke
+    String AROUND_INVOKE_METHOD = "around-invoke";
     String AROUND_INVOKE_CLASS_NAME = "class";
     String AROUND_INVOKE_METHOD_NAME = "method-name";
 
-    // around-invoke
+    // around-timeout
     String AROUND_TIMEOUT_METHOD = "around-timeout";
 
     // stateful session
