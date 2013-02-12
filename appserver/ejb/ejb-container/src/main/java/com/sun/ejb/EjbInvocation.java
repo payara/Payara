@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,6 +61,7 @@ import javax.transaction.Transaction;
 import javax.xml.rpc.handler.MessageContext;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.WebServiceContext;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.rmi.UnmarshalException;
 import java.util.HashMap;
@@ -487,6 +488,10 @@ public class EjbInvocation
     }
     public Method getBeanMethod() {
         return this.beanMethod;
+    }
+
+    public Constructor getConstructor() {
+        return null;
     }
 
     /**
