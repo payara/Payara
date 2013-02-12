@@ -103,7 +103,7 @@ public interface PasswordAliasStore {
      * @param alias the alias to create or reassign
      * @param password the password to be associated with the alias
      */
-    void putAlias(String alias, char[] password);
+    void put(String alias, char[] password);
     
     /**
      * Adds all alias/password pairs from the specified store to this store.
@@ -127,5 +127,5 @@ public interface PasswordAliasStore {
      * password alias store.
      * @param alias the alias to be removed
      */
-    void removeAlias(String alias);
+    void remove(String alias);
 }

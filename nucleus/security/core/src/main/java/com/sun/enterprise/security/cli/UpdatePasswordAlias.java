@@ -41,6 +41,7 @@
 package com.sun.enterprise.security.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.I18n;
@@ -54,7 +55,6 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import javax.inject.Inject;
-import javax.inject.Named;
 
 /**
  * Update Password Alias Command
@@ -100,8 +100,8 @@ public class UpdatePasswordAlias implements AdminCommand {
     @Param(name="aliaspassword", password=true)
     private String aliasPassword;
 
-    @Inject @Named("domain-passwords")
-    private PasswordAliasStore domainPasswordAliasStore;
+    @Inject
+    private DomainScopedPasswordAliasStore domainPasswordAliasStore;
 
     /**
      * Executes the command with the command parameters passed as Properties
@@ -122,7 +122,7 @@ public class UpdatePasswordAlias implements AdminCommand {
                 return;
             }
 
-            domainPasswordAliasStore.putAlias(aliasName, aliasPassword.toCharArray());
+            domainPasswordAliasStore.put(aliasName, aliasPassword.toCharArray());
         } catch (Exception ex) {
             ex.printStackTrace();
             report.setMessage(localStrings.getLocalString(

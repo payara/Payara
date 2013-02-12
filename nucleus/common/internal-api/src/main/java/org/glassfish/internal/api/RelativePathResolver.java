@@ -40,6 +40,7 @@
 
 package org.glassfish.internal.api;
 
+import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.i18n.StringManagerBase;
 import java.io.File;
@@ -80,7 +81,7 @@ public class RelativePathResolver {
     
     private synchronized static PasswordAliasStore getDomainPasswordAliasStore() {
         if (domainPasswordAliasStore == null) {
-            domainPasswordAliasStore = Globals.getDefaultHabitat().getService(PasswordAliasStore.class, "domain-passwords");
+            domainPasswordAliasStore = Globals.getDefaultHabitat().getService(DomainScopedPasswordAliasStore.class);
         }
         return domainPasswordAliasStore;
     }

@@ -40,6 +40,7 @@
 
 package org.glassfish.config.support;
 
+import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
 import org.glassfish.api.admin.PasswordAliasStore;
 import org.jvnet.hk2.config.ConfigView;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -154,10 +155,10 @@ public class TranslatedConfigView implements ConfigView {
          habitat = h;
     }
     
-    private static PasswordAliasStore domainPasswordAliasStore = null;
-    private static synchronized PasswordAliasStore domainPasswordAliasStore() {
+    private static DomainScopedPasswordAliasStore domainPasswordAliasStore = null;
+    private static synchronized DomainScopedPasswordAliasStore domainPasswordAliasStore() {
         if (domainPasswordAliasStore == null) {
-            domainPasswordAliasStore = habitat.getService(PasswordAliasStore.class, "domain-passwords");
+            domainPasswordAliasStore = habitat.getService(DomainScopedPasswordAliasStore.class);
         }
         return domainPasswordAliasStore;
     }

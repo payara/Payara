@@ -48,6 +48,7 @@ import com.sun.enterprise.security.auth.realm.NoSuchUserException;
 import com.sun.enterprise.security.auth.realm.file.FileRealm;
 import com.sun.enterprise.security.auth.realm.file.FileRealmUser;
 import com.sun.enterprise.security.ssl.SSLUtils;
+import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -56,7 +57,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
-import org.glassfish.api.admin.PasswordAliasStore;
 import org.glassfish.api.admin.ServerEnvironment;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -81,8 +81,8 @@ public class SecureAdminHelperImpl implements SecureAdminHelper {
     @Inject
     private SSLUtils sslUtils;
     
-    @Inject @Named("domain-passwords")
-    private PasswordAliasStore domainPasswordAliasStore;
+    @Inject
+    private DomainScopedPasswordAliasStore domainPasswordAliasStore;
     
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private volatile AdminService as;

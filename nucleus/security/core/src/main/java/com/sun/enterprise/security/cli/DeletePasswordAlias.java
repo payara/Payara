@@ -41,16 +41,15 @@
 package com.sun.enterprise.security.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.PasswordAliasStore;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import javax.inject.Inject;
-import javax.inject.Named;
 
 
 import org.jvnet.hk2.annotations.Service;
@@ -96,8 +95,9 @@ public class DeletePasswordAlias implements AdminCommand, AdminCommandSecurity.P
 
     @Param(name="aliasname", primary=true)
     private String aliasName;
-    @Inject @Named("domain-passwords")
-    private PasswordAliasStore domainPasswordAliasStore;
+    
+    @Inject
+    private DomainScopedPasswordAliasStore domainPasswordAliasStore;
 
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
@@ -130,7 +130,7 @@ public class DeletePasswordAlias implements AdminCommand, AdminCommandSecurity.P
         final ActionReport report = context.getActionReport();
 
         try {
-            domainPasswordAliasStore.removeAlias(aliasName);
+            domainPasswordAliasStore.remove(aliasName);
         } catch (Exception ex) {
             ex.printStackTrace();
             reportFailure(report, ex);

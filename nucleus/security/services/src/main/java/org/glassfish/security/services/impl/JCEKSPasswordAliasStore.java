@@ -39,9 +39,7 @@
  */
 package org.glassfish.security.services.impl;
 
-import com.sun.enterprise.security.store.IdentityManagement;
 import com.sun.enterprise.security.store.PasswordAdapter;
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -112,7 +110,7 @@ public class JCEKSPasswordAliasStore implements PasswordAliasStore {
     }
 
     @Override
-    public void putAlias(String alias, char[] password) {
+    public void put(String alias, char[] password) {
         final CharBuffer charBuffer = CharBuffer.wrap(password);
         final ByteBuffer byteBuffer = utf8.encode(charBuffer);
         try {
@@ -135,13 +133,13 @@ public class JCEKSPasswordAliasStore implements PasswordAliasStore {
     @Override
     public void putAll(Map<String, char[]> settings) {
         for (Map.Entry<String,char[]> entry : settings.entrySet()) {
-            putAlias(entry.getKey(), entry.getValue());
+            put(entry.getKey(), entry.getValue());
         }
         settings.clear();
     }
 
     @Override
-    public void removeAlias(String alias) {
+    public void remove(String alias) {
         try {
             pa.removeAlias(alias);
         } catch (Exception ex) {

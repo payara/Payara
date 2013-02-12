@@ -39,22 +39,26 @@
  */
 package org.glassfish.security.services.impl;
 
+import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
 import com.sun.enterprise.security.store.IdentityManagement;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.File;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.inject.Named;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * Exposes as a service the domain-scoped password alias store.
+ * Exposes as a service the JCEKS implementation of the
+ * domain-scoped password alias store.
  * @author tjquinn
  */
-@Service(name="domain-passwords")
+@Service
+@Named("JCEKS")
 @PerLookup
-public class DomainPasswordAliasStore extends JCEKSPasswordAliasStore {
+public class JCEKSDomainPasswordAliasStore extends JCEKSPasswordAliasStore implements DomainScopedPasswordAliasStore  {
     
     private static final String PASSWORD_ALIAS_KEYSTORE = "domain-passwords";
 

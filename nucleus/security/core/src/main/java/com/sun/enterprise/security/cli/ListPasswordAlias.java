@@ -41,6 +41,7 @@
 package com.sun.enterprise.security.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
 import java.util.Iterator;
 import org.glassfish.api.admin.AccessRequired;
 
@@ -49,7 +50,6 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.I18n;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.PasswordAliasStore;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
@@ -58,7 +58,6 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import javax.inject.Inject;
-import javax.inject.Named;
 
 /**
  * List Password Aliases Command
@@ -101,8 +100,8 @@ public class ListPasswordAlias implements AdminCommand {
     final private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(ListPasswordAlias.class);
 
-    @Inject @Named("domain-passwords")
-    private PasswordAliasStore domainPasswordAliasStore;
+    @Inject
+    private DomainScopedPasswordAliasStore domainPasswordAliasStore;
 
 
     /**
