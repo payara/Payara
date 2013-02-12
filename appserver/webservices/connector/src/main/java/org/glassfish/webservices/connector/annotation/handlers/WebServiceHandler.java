@@ -320,6 +320,19 @@ public class WebServiceHandler extends AbstractHandler {
         WebServiceEndpoint endpoint = wsDesc.getEndpointByName(portComponentName);
         WebService newWS;
         if(endpoint == null) {
+            if (DOLUtils.warType().equals(bundleDesc.getModuleType())) {
+                // http://java.net/jira/browse/GLASSFISH-17204
+                WebComponentDescriptor[] wcByImplName = ((WebBundleDescriptor) bundleDesc).getWebComponentByImplName(implClassFullName);
+                for (WebComponentDescriptor wc : wcByImplName) {
+                    for (WebServiceEndpoint wse : wsDesc.getEndpointsImplementedBy(wc)) {
+                        //URL mapping for annotated service exists - it can be JAX-RPC service
+                        //as well as some servlet or maybe only invalid port-component-name,
+                        //so let user know about possible error
+                        logger.log(Level.SEVERE, LogUtils.WS_URLMAPPING_EXISTS, new Object[]{implClassFullName});
+                        break;
+                    }
+                }
+            }
             // Check if a service with the same name is already present
             // If so, add this endpoint to the existing service
             if (svcNameFromImplClass!=null && svcNameFromImplClass.length()!=0) {
@@ -342,13 +355,6 @@ public class WebServiceHandler extends AbstractHandler {
                 endpoint.setEndpointName(portComponentName);
             } else {
                 endpoint.setEndpointName(((Class) annElem).getName());
-            }
-            if (DOLUtils.warType().equals(bundleDesc.getModuleType())
-                    && !((WebBundleDescriptor) bundleDesc).getUrlPatternToServletNameMap().keySet().contains("/" + newWS.getName())) {
-                //URL mapping for annotated service exists - it can be JAX-RPC service
-                //as well as some servlet or maybe only invalid port-component-name,
-                //so let user know about possible error
-                logger.log(Level.SEVERE, LogUtils.WS_URLMAPPING_EXISTS, new Object[]{endpoint.getEndpointName()});
             }
             newWS.addEndpoint(endpoint);
             wsDesc.setSpecVersion (WebServicesDescriptorNode.SPEC_VERSION);
