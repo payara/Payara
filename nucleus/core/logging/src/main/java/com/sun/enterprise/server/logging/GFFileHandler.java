@@ -74,7 +74,6 @@ import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.ContractsProvided;
@@ -111,7 +110,8 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     @Inject @Optional
     Agent agent;
     
-    private ServiceLocator habitat = Globals.getDefaultBaseServiceLocator();
+    @Inject
+    private ServiceLocator habitat;
     
     // This is a OutputStream to keep track of number of bytes
     // written out to the stream
