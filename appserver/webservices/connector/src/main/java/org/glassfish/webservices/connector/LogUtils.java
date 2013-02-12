@@ -109,4 +109,11 @@ public final class LogUtils {
             level = "INFO")
     public static final String WS_COMP_LINK_NOT_VALID = LOGMSG_PREFIX + "-00204";
 
+    @LogMessageInfo(
+            message = "URL mapping for web service {0} already exists. Is port-component-name in webservices.xml correct?",
+            comment = "{0} - endpoint name",
+            level = "SEVERE",
+            cause = "Invalid port-component-name value in webservices.xml.",
+            action = "Fix port-component-name element in webservices.xml.")
+    public static final String WS_URLMAPPING_EXISTS = LOGMSG_PREFIX + "-00205";
 }

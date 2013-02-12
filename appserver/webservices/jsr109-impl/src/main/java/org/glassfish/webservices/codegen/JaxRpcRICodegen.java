@@ -98,6 +98,7 @@ import com.sun.xml.rpc.spi.tools.ModelInfo;
 import com.sun.xml.rpc.spi.tools.NamespaceMappingInfo;
 import com.sun.xml.rpc.spi.tools.NamespaceMappingRegistryInfo;
 import com.sun.xml.rpc.spi.tools.NoMetadataModelInfo;
+import org.glassfish.webservices.LogUtils;
 
 /**
  * This class is responsible for generating all non portable 
@@ -689,6 +690,10 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         } else {
             moduleClassPath = moduleBasePath +
                 File.pathSeparatorChar + moduleClassPath;
+        }
+        
+        if (!context.getScratchDir("ejb").mkdirs() && logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, LogUtils.DIR_EXISTS, context.getScratchDir("ejb"));
         }
 
         jaxrpcArgs[jaxrpcCnt++] = generateTies ? "-gen:server" : "-gen:client";

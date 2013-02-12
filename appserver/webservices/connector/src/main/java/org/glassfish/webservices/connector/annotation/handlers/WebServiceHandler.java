@@ -94,11 +94,13 @@ public class WebServiceHandler extends AbstractHandler {
      * require to be processed (if present) before it processes it's own
      * annotation type.
      */
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
 
         return getEjbAndWebAnnotationTypes();
     }
 
+    @Override
     public HandlerProcessingResult processAnnotation(AnnotationInfo annInfo)
         throws AnnotationProcessorException
     {
@@ -340,6 +342,13 @@ public class WebServiceHandler extends AbstractHandler {
                 endpoint.setEndpointName(portComponentName);
             } else {
                 endpoint.setEndpointName(((Class) annElem).getName());
+            }
+            if (DOLUtils.warType().equals(bundleDesc.getModuleType())
+                    && !((WebBundleDescriptor) bundleDesc).getUrlPatternToServletNameMap().keySet().contains("/" + newWS.getName())) {
+                //URL mapping for annotated service exists - it can be JAX-RPC service
+                //as well as some servlet or maybe only invalid port-component-name,
+                //so let user know about possible error
+                logger.log(Level.SEVERE, LogUtils.WS_URLMAPPING_EXISTS, new Object[]{endpoint.getEndpointName()});
             }
             newWS.addEndpoint(endpoint);
             wsDesc.setSpecVersion (WebServicesDescriptorNode.SPEC_VERSION);

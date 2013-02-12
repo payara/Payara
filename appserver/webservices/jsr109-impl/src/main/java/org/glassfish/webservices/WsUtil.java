@@ -726,7 +726,7 @@ public class WsUtil {
             if(declaredType.equals("JAXWS")) {
                 jaxwsEndPtFound = true;
             } else if(declaredType.equals("JAXRPC")) {
-                jaxrpcEndPtFound = false;
+                jaxrpcEndPtFound = true;
             } else {
                 logger.log(Level.SEVERE, LogUtils.WS_TYPE_ERROR, new Object[] {ws.getDescription(), declaredType});
             }
