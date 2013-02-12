@@ -45,13 +45,13 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.config.serverbeans.SecureAdminInternalUser;
 import com.sun.enterprise.security.ssl.SSLUtils;
+import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Invocation;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.security.services.impl.DomainPasswordAliasStore;
 
 /**
  * RemoteRestAdminCommand which is sent from a server (DAS or instance).
@@ -73,7 +73,7 @@ public class ServerRemoteRestAdminCommand extends RemoteRestAdminCommand {
 
     private SSLUtils _sslUtils = null;
     
-    private DomainPasswordAliasStore domainPasswordAliasStore = null;
+    private DomainScopedPasswordAliasStore domainPasswordAliasStore = null;
 
     public ServerRemoteRestAdminCommand(ServiceLocator habitat, String name, String host, int port,
             boolean secure, String user, String password, Logger logger)
@@ -89,7 +89,7 @@ public class ServerRemoteRestAdminCommand extends RemoteRestAdminCommand {
         secureAdmin = domain.getSecureAdmin();
         serverEnv = habitat.getService(ServerEnvironment.class);
         this.secure = SecureAdmin.Util.isEnabled(secureAdmin);
-        domainPasswordAliasStore = habitat.getService(DomainPasswordAliasStore.class);
+        domainPasswordAliasStore = habitat.getService(DomainScopedPasswordAliasStore.class);
         setInteractive(false);
     }
 
