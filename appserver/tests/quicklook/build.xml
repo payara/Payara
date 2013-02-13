@@ -363,15 +363,17 @@
     <!-- Generate the TestNG report -->
     <target name="report" depends="initprops">
         <echo message="Generating report at ${test.report}"/>
-                <junitreport todir="${basedir}/test-output">
-                    <fileset dir=".">
-                        <include name="**/test-output/**/*.xml"/>
-                        <!--<exclude name="**/testng-failed.xml"/>-->
-                    </fileset>
-                    <report format="noframes" todir="${basedir}/test-output"/>
-                </junitreport>
+        <mkdir dir="${test.report}"/>
+        <junitreport todir="${test.report}">
+            <fileset dir=".">
+                <include name="${test.report}/**/*.xml"/>
+                <!--<exclude name="**/testng-failed.xml"/>-->
+            </fileset>
+            <report format="noframes" todir="${test.report}"/>
+        </junitreport>
         <echo message="Test Report available at ${test.report}/index.html"/>
     </target>
+    
     <!-- Fail the build unless the expected number of tests has passed -->
     <target name="assert.expected.passed.test.count">
       <taskdef resource="net/sf/antcontrib/antlib.xml">

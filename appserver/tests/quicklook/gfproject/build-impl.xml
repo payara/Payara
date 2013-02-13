@@ -122,18 +122,24 @@
     </taskdef>
     
     
-    <target name="compile-tests"
-	    description="compile the test ng example">
-	    <echo message="compiling test client to ${test.class.output}"/>
+    <target name="compile-tests" description="compile the test ng example">
+        <echo message="compiling test client to ${test.class.output}"/>
+
+        <fileset dir="${basedir}/src/test" id="java.source.id"> 
+            <include name="**/*.java"/> 
+        </fileset>
+        <property name="source.file.list" refid="java.source.id"/> 
+        <echo message="Listing of source files: ${source.file.list}"/> 
 
         <mkdir dir="${test.class.output}"/>
         <javac   debug="true"
-                 fork="true"
                  source="1.5"
-		 target="1.5"
-		 classpathref="class.path"
-                 srcdir="src/test"
+                 target="1.5"
+                 classpathref="class.path"
+                 srcdir="${basedir}/src/test"
+                 sourcepath=""
                  destdir="${test.class.output}">
+            <include name="**/*.java"/> 
         </javac>
     </target>
     
@@ -141,7 +147,6 @@
 	    description="compile the test ng util">
         <mkdir dir="${test.class.output}"/>
         <javac   debug="true"
-                 fork="true"
                  source="1.5"
 		 target="1.5"
 		 classpathref="class.path"
@@ -190,7 +195,6 @@
 	    <delete dir="$class.output}"/>
 	    <mkdir dir="${class.output}"/>
         <javac   debug="true"
-                 fork="true"
                  source="1.5"
 		 target="1.5"
                  classpathref="class.path"
@@ -208,7 +212,6 @@
     <mkdir dir="${class.output}"/>
     <mkdir dir="${dist.dir}"/>
     <javac   debug="true"
-    fork="true"
     source="1.5"
     target="1.5"
     classpathref="class.path"
@@ -256,7 +259,6 @@
     <mkdir dir="${dist.dir}"/>
     <echo message="Now compiling"/>
     <javac   debug="true"
-    fork="true"
     source="1.5"
     target="1.5"
     classpathref="class.path"
@@ -274,7 +276,6 @@
     <mkdir dir="${class.output}"/>
     <mkdir dir="${dist.dir}"/>
     <javac   debug="true"
-    fork="true"
     source="1.5"
     target="1.5"
     classpathref="class.path"
@@ -311,7 +312,6 @@
     <mkdir dir="${class.output}"/>
     <mkdir dir="${dist.dir}"/>
     <javac   debug="true"
-    fork="true"
     source="1.5"
     target="1.5"
     classpathref="class.path"

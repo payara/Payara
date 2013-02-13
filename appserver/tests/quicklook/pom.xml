@@ -61,65 +61,105 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                <artifactId>maven-antrun-extended-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+		<version>1.7</version>
                 <executions>
                     <execution>
                         <id>default-test</id>
                         <phase>test</phase>
                         <configuration>
-                            <tasks>
+                            <target>
+                                <taskdef resource="net/sf/antcontrib/antcontrib.properties"
+                                         classpathref="maven.plugin.classpath" />
                                 <property name="compile_classpath" refid="maven.compile.classpath"/>
                                 <property name="plugin_classpath" refid="maven.plugin.classpath"/>
-
+                                
                                 <echo message="compile classpath: ${compile_classpath}"/>
                                 <echo message="plugin classpath:  ${plugin_classpath}"/>
-                                <if test="${test.gd}">
-                                  <ant dir="." antfile="build.xml" target="all">
-                                    <property name="glassfish.home" value="${glassfish.home}"/>
-                                    <property name="jruby-all.version" value="${jruby-all.version}"/>
-                                    <property name="jruby-all.classifier" value="${jruby-all.classifier}"/>
-                                  </ant>
+                                <if>
+                                    <equals arg1="${test.gd}" arg2="true" />
+                                    <then>
+                                        <ant dir="." antfile="build.xml" target="all">
+                                            <property name="glassfish.home" value="${glassfish.home}"/>
+                                            <property name="jruby-all.version" value="${jruby-all.version}"/>
+                                            <property name="jruby-all.classifier" value="${jruby-all.classifier}"/>
+                                        </ant>                                        
+                                    </then>
                                 </if>
-                         	<if test="${test.wd}">
-                            	    <ant dir="." antfile="build.xml" target="all_wd"/>
-                                    <property name="glassfish.home" value="${glassfish.home}"/>
-                        	</if>
-                                <if test="${test.em}">
-                            	    <ant dir="." antfile="build.xml" target="all_embedded"/>
-                                    <property name="glassfish.home" value="${glassfish.home}"/>
-                        	</if>
-                         	<if test="${test.ri}">
-                            	    <ant dir="." antfile="build.xml" target="all_ri"/>
-                                    <property name="glassfish.home" value="${glassfish.home}"/>
-                        	</if>
-                         	<if test="${test.wd.security}">
-                            	    <ant dir="." antfile="build.xml" target="all_wd_security"/>
-                                    <property name="glassfish.home" value="${glassfish.home}"/>
-                        	</if>
-                         	<if test="${start.wd.security}">
-                            	    <ant dir="." antfile="build.xml" target="start_server_with_security_manager_enabled"/>
-                                    <property name="glassfish.home" value="${glassfish.home}"/>
-                        	</if>
-                         	<if test="${stop.wd.security}">
-                            	    <ant dir="." antfile="build.xml" target="stop_server_with_security_manager_enabled"/>
-                                    <property name="glassfish.home" value="${glassfish.home}"/>
-                        	</if>
-                         	<if test="${test.gd.security}">
-                            	  <ant dir="." antfile="build.xml" target="all_gd_security">
-                                    <property name="glassfish.home" value="${glassfish.home}"/>
-                                    <property name="jruby-all.version" value="${jruby-all.version}"/>
-                                    <property name="jruby-all.classifier" value="${jruby-all.classifier}"/>
-                                  </ant>
-                        	</if>
-                         	<if test="${test.report}">
-                            	  <ant dir="." antfile="build.xml" target="report"/>
-                        	</if>
-                         	<if test="${test.debug}">
-                            	    <ant dir="." antfile="build.xml" target="dev_debug"/>
-                                    <property name="glassfish.home" value="${glassfish.home}"/>
-                        	</if>
-                            </tasks>
+                                <if>
+                                    <equals arg1="${test.wd}" arg2="true" />
+                                    <then>
+                                        <ant dir="." antfile="build.xml" target="all_wd">
+                                            <property name="glassfish.home" value="${glassfish.home}"/>
+                                        </ant>
+                                    </then>
+                                </if>
+                                <if>
+                                    <equals arg1="${test.em}" arg2="true" />
+                                    <then>
+                                        <ant dir="." antfile="build.xml" target="all_embedded">
+                                            <property name="glassfish.home" value="${glassfish.home}"/>
+                                        </ant>
+                                    </then>
+                                </if>
+                                <if>
+                                    <equals arg1="${test.ri}" arg2="true" />
+                                    <then>
+                                        <ant dir="." antfile="build.xml" target="all_ri">
+                                            <property name="glassfish.home" value="${glassfish.home}"/>
+                                        </ant>
+                                    </then>
+                                </if>
+                                <if>
+                                    <equals arg1="${start.wd.security}" arg2="true" />
+                                    <then>
+                                        <ant dir="." antfile="build.xml" target="all_wd_security">
+                                            <property name="glassfish.home" value="${glassfish.home}"/>
+                                        </ant>
+                                    </then>
+                                </if>
+                                <if>
+                                    <equals arg1="${start.wd.security}" arg2="true" />
+                                    <then>
+                                        <ant dir="." antfile="build.xml" target="start_server_with_security_manager_enabled">
+                                            <property name="glassfish.home" value="${glassfish.home}"/>
+                                        </ant>
+                                    </then>
+                                </if>
+                                <if>
+                                    <equals arg1="${stop.wd.security}" arg2="true" />
+                                    <then>
+                                        <ant dir="." antfile="build.xml" target="stop_server_with_security_manager_enabled">
+                                            <property name="glassfish.home" value="${glassfish.home}"/>
+                                        </ant>
+                                    </then>
+                                </if>
+                                <if>
+                                    <equals arg1="${test.gd.security}" arg2="true" />
+                                    <then>
+                                        <ant dir="." antfile="build.xml" target="all_gd_security">
+                                            <property name="glassfish.home" value="${glassfish.home}"/>
+                                            <property name="jruby-all.version" value="${jruby-all.version}"/>
+                                            <property name="jruby-all.classifier" value="${jruby-all.classifier}"/>
+                                        </ant>
+                                    </then>
+                                </if>
+                                <if>
+                                    <isset property="test.report" />
+                                    <then>
+                                        <ant dir="." antfile="build.xml" target="report"/>
+                                    </then>
+                                </if>
+                                <if>
+                                    <equals arg1="${test.debug}" arg2="true" />
+                                    <then>
+                                        <ant dir="." antfile="build.xml" target="dev_debug">
+                                            <property name="glassfish.home" value="${glassfish.home}"/>
+                                        </ant>
+                                    </then>
+                                </if>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>
@@ -127,15 +167,13 @@
                     </execution>
                 </executions>
                 <dependencies>
-
-		    <!-- AMX tests: once the RMI connector works, we can remove
+                    <!-- AMX tests: once the RMI connector works, we can remove
                     <dependency>
                         <groupId>org.glassfish.external</groupId>
                         <artifactId>jmxremote_optional-repackaged</artifactId>
                         <version>4.0-SNAPSHOT</version>
                     </dependency>
-		    -->
-
+              		    -->
                     <dependency>
                         <groupId>commons-codec</groupId>
                         <artifactId>commons-codec</artifactId>
@@ -157,37 +195,43 @@
                         <artifactId>commons-httpclient</artifactId>
                         <version>3.1</version>
                     </dependency>
-                    <!-- dependency>
+<!--                    <dependency>
                         <groupId>org.glassfish.scripting.bundle</groupId>
                         <artifactId>jruby-all</artifactId>
                         <version>${jruby-all.version}</version>
                         <classifier>${jruby-all.classifier}</classifier>
                         <scope>test</scope>
                         <type>zip</type>
-                    </dependency>
-		     		<dependency>
- 	      				<groupId>org.testng</groupId>
- 	      				<artifactId>testng</artifactId>
- 	      				<version>5.7</version>
- 	      				<classifier>jdk15</classifier>
- 	      				<scope>compile</scope>
- 	    	     	</dependency -->
-					<dependency>
-                          <groupId>org.apache.ant</groupId>
-                          <artifactId>ant-apache-regexp</artifactId>
-                          <version>1.8.1</version>
-                          <scope>runtime</scope>
-                    </dependency>
-					<dependency>
-                          <groupId>jakarta-regexp</groupId>
-                          <artifactId>jakarta-regexp</artifactId>
-                          <version>1.4</version>
+                    </dependency>-->
+<!--                    <dependency>
+                        <groupId>org.testng</groupId>
+                        <artifactId>testng</artifactId>
+                        <version>5.7</version>
+                        <classifier>jdk15</classifier>
+                        <scope>compile</scope>
+                    </dependency>-->
+                    <dependency>
+                        <groupId>org.apache.ant</groupId>
+                        <artifactId>ant-apache-regexp</artifactId>
+                        <version>1.8.1</version>
+                        <scope>runtime</scope>
                     </dependency>
                     <dependency>
-                     <groupId>ant-contrib</groupId>
-                     <artifactId>ant-contrib</artifactId>
-                     <version>1.0b3</version>
-                   </dependency>
+                        <groupId>jakarta-regexp</groupId>
+                        <artifactId>jakarta-regexp</artifactId>
+                        <version>1.4</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>ant-contrib</groupId>
+                        <artifactId>ant-contrib</artifactId>
+                        <version>1.0b3</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>ant</groupId>
+                                <artifactId>ant</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
                     <dependency>
                         <groupId>org.apache.ant</groupId>
                         <artifactId>ant-junit</artifactId>
@@ -200,6 +244,13 @@
                         <version>1.8.1</version>
                         <scope>runtime</scope>
                     </dependency>
+                    <dependency>
+                        <groupId>com.sun</groupId>
+                        <artifactId>tools-jar</artifactId>
+                        <version>1</version>
+                        <scope>system</scope>
+                        <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                    </dependency>                     
                 </dependencies>
             </plugin>
         </plugins>
@@ -208,7 +259,7 @@
         <profile>
             <id>report</id>
             <properties>
-                <test.report>true</test.report>
+                <test.report>test-output</test.report>
             </properties>
         </profile>
         <profile>

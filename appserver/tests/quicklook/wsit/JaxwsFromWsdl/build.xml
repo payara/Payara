@@ -74,7 +74,6 @@
             <binding dir="${basedir}/etc" includes="${server.binding}"/>
         </wsimport>
         <javac
-            fork="true"
             srcdir="${basedir}/src"
             destdir="${build.classes.home}"
             includes="**/server/**,**/common/**">
@@ -112,7 +111,6 @@
 
     <target name="build-client" depends="generate-client">
         <javac
-            fork="true"
             srcdir="src"
             failonerror="false"
             destdir="${build.classes.home}"
@@ -123,7 +121,6 @@
 
     <target name="build-client1" depends="generate-client">
         <javac
-            fork="true"
             failonerror="false"
             srcdir="src"
             destdir="${build.classes.home}"
@@ -134,7 +131,6 @@
 
     <target name="build-client2">
         <javac
-            fork="true"
             failonerror="false"
             srcdir="src"
             destdir="${build.classes.home}"
