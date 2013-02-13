@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>web-glue</artifactId>
-    
+
     <name>Web Container glue code</name>
 
     <developers>
@@ -120,7 +120,7 @@
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>core</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>stats77</artifactId>
@@ -172,7 +172,7 @@
             <version>${project.version}</version>
         </dependency>
             -->
-            
+
         <dependency>
             <groupId>org.glassfish.web</groupId>
             <artifactId>javax.servlet.jsp</artifactId>
@@ -241,7 +241,7 @@
             <artifactId>web-embed-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>gf-web-connector</artifactId>
             <version>${project.version}</version>
@@ -278,6 +278,10 @@
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-container-grizzly</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-container-glassfish-cdi</artifactId>
         </dependency>
         <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>
