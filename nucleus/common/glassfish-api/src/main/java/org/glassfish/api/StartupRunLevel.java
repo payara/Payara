@@ -49,7 +49,7 @@ import java.lang.annotation.Target;
 import org.glassfish.hk2.runlevel.RunLevel;
 
 /**
- * The meta annotation representing the {@link Startup} RunLevel.
+ * The meta annotation representing the Startup RunLevel.
  * 
  * @author Jeff Trent
  * @see {@link RunLevelService} in Hk2

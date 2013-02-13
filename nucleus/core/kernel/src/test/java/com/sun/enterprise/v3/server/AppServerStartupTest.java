@@ -119,7 +119,7 @@ public class AppServerStartupTest {
     private static Map<Class, RuntimeException> mapPostConstructExceptions = null;
 
     /**
-     * List of {@link Future}s returned from {@link FutureProvider#getFutures()} by the {@link Startup}
+     * List of {@link Future}s returned from {@link FutureProvider#getFutures()} by the Startup
      * services during progression to the start up run level.
      */
     private static List<TestFuture> listFutures = null;
@@ -524,9 +524,8 @@ public class AppServerStartupTest {
     }
 
     /**
-     * Startup service that implements the old style {@link Startup} interface.
+     * Startup service that implements the old style Startup interface.
      */
-    @SuppressWarnings("deprecation")
     @RunLevel(StartupRunLevel.VAL)
     @Service
     public static class TestStartupService extends TestService implements FutureProvider {
@@ -583,7 +582,7 @@ public class AppServerStartupTest {
     // ----- TestFuture inner classes ----------------------------------------
 
     /**
-     * Future implementation used for test {@link Startup} implementations that
+     * Future implementation used for test Startup implementations that
      * also implement {@link FutureProvider}.
      */
     public static class TestFuture implements Future<Result<Thread>> {
