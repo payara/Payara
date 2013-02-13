@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,25 +40,37 @@
 
 package com.sun.enterprise.server.logging.commands;
 
-import com.sun.common.util.logging.LoggingConfigImpl;
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
-import javax.inject.Inject;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.inject.Inject;
+
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import com.sun.common.util.logging.LoggingConfigImpl;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Clusters;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.Servers;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
 
 
 /**
@@ -136,13 +148,11 @@ public class SetLogAttributes implements AdminCommand {
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
-        boolean isCluster = false;
         boolean isDas = false;
         boolean isInstance = false;
         StringBuffer sbfSuccessMsg = new StringBuffer();
         boolean success = false;
         boolean invalidAttribute = false;
-        boolean isConfig = false;
         String targetConfigName = "";
 
         Map<String, String> m = new HashMap<String, String>();
@@ -176,27 +186,20 @@ public class SetLogAttributes implements AdminCommand {
                 Config config = domain.getConfigNamed(target);
                 if (config != null) {
                     targetConfigName = target;
-                    isConfig = true;
-
-                    Server targetServer = domain.getServerNamed(SystemPropertyConstants.DAS_SERVER_NAME);
-                    if (targetServer != null && targetServer.getConfigRef().equals(target)) {
-                        isDas = true;
-                    }
-                    targetServer = null;
                 } else {
                     Server targetServer = domain.getServerNamed(target);
-
-                    if (targetServer != null && targetServer.isDas()) {
-                        isDas = true;
+                    if (targetServer != null) {
+                        if (targetServer.isDas()) {
+                            isDas = true;                            
+                        } else {
+                            isInstance = true;
+                            targetConfigName = targetServer.getConfigRef();                            
+                        }
                     } else {
                         com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
                         if (cluster != null) {
-                            isCluster = true;
                             targetConfigName = cluster.getConfigRef();
-                        } else if (targetServer != null) {
-                            isInstance = true;
-                            targetConfigName = targetServer.getConfigRef();
-                        }
+                        } 
                     }
 
                     if (isInstance) {
@@ -207,15 +210,11 @@ public class SetLogAttributes implements AdminCommand {
                     }
                 }
 
-                if (isCluster || isInstance) {
+                if (targetConfigName != null && !targetConfigName.isEmpty()) {
                     loggingConfig.updateLoggingProperties(m, targetConfigName);
                     success = true;
                 } else if (isDas) {
                     loggingConfig.updateLoggingProperties(m);
-                    success = true;
-                } else if (isConfig) {
-                    // This loop is for the config which is not part of any target
-                    loggingConfig.updateLoggingProperties(m, targetConfigName);
                     success = true;
                 } else {
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -230,8 +229,8 @@ public class SetLogAttributes implements AdminCommand {
                             "set.log.attribute.success", "These logging attributes are set for {0}.", target));
                     report.setMessage(sbfSuccessMsg.toString());
                     report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        }
-                    }
+                }
+            }
 
         } catch (IOException e) {
             report.setMessage(localStrings.getLocalString("set.log.attribute.failed",

@@ -40,27 +40,40 @@
 
 package com.sun.enterprise.server.logging.commands;
 
-import com.sun.common.util.logging.LoggingConfigImpl;
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.inject.Inject;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import javax.inject.Inject;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
-import java.io.IOException;
-import java.util.*;
-import org.glassfish.api.admin.*;
+import com.sun.common.util.logging.LoggingConfigImpl;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Clusters;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.Servers;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
 
 /**
  * Created by IntelliJ IDEA.
@@ -102,10 +115,8 @@ public class ListLogAttributes implements AdminCommand {
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
-        boolean isCluster = false;
         boolean isDas = false;
         boolean isInstance = false;
-        boolean isConfig = false;
         String targetConfigName = "";
 
         try {
@@ -114,27 +125,22 @@ public class ListLogAttributes implements AdminCommand {
             Config config = domain.getConfigNamed(target);
             if (config != null) {
                 targetConfigName = target;
-                isConfig = true;
-
-                Server targetServer = domain.getServerNamed(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME);
-                if (targetServer.getConfigRef().equals(target)) {
-                    isDas = true;
-                }
             } else {
 
                 Server targetServer = domain.getServerNamed(target);
-
-                if (targetServer != null && targetServer.isDas()) {
-                    isDas = true;
-                } else {
-                    com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-                    if (cluster != null) {
-                        isCluster = true;
-                        targetConfigName = cluster.getConfigRef();
-                    } else if (targetServer != null) {
+                
+                if (targetServer != null) {
+                    if (targetServer.isDas()) {
+                        isDas = true;
+                    } else {
                         isInstance = true;
                         targetConfigName = targetServer.getConfigRef();
                     }
+                } else {
+                    com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
+                    if (cluster != null) {
+                        targetConfigName = cluster.getConfigRef();
+                    } 
                 }
 
                 if (isInstance) {
@@ -145,13 +151,10 @@ public class ListLogAttributes implements AdminCommand {
                 }
             }
 
-            if (isCluster || isInstance) {
+            if (!targetConfigName.isEmpty()) {
                 props = (HashMap<String, String>) loggingConfig.getLoggingProperties(targetConfigName);
             } else if (isDas) {
                 props = (HashMap<String, String>) loggingConfig.getLoggingProperties();
-            } else if (isConfig) {
-                // This loop is for the config which is not part of any target
-                props = (HashMap<String, String>) loggingConfig.getLoggingProperties(targetConfigName);
             } else {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 String msg = localStrings.getLocalString("invalid.target.sys.props",

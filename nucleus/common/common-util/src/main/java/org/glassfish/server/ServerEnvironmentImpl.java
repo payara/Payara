@@ -79,6 +79,7 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
     public static final String kConfigXMLFileName = "domain.xml";
     public static final String kConfigXMLFileNameBackup = "domain.xml.bak";
     public static final String kLoggingPropertiesFileName = "logging.properties";
+    public static final String kDefaultLoggingPropertiesFileName = "default-logging.properties";
     /** folder where the configuration of this instance is stored */
     public static final String kConfigDirName = "config";
     /** init file name */

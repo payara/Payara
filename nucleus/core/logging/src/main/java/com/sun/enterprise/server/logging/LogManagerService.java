@@ -139,25 +139,25 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String fileHandlerFormatterDetail = "";
     String logFormatDateFormatDetail = "";
 
-    private final String SERVER_LOG_FILE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.file";
-    private final String HANDLER_PROPERTY = "handlers";
-    private final String HANDLER_SERVICES_PROPERTY = "handlerServices";
-    private final String CONSOLEHANDLER_FORMATTER_PROPERTY = "java.util.logging.ConsoleHandler.formatter";
-    private final String GFFILEHANDLER_FORMATTER_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.formatter";
-    private final String ROTATIONTIMELIMITINMINUTES_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes";
-    private final String FLUSHFREQUENCY_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.flushFrequency";
-    private final String FILEHANDLER_LIMIT_PROPERTY = "java.util.logging.FileHandler.limit";
-    private final String LOGTOCONSOLE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logtoConsole";
-    private final String ROTATIONLIMITINBYTES_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes";
-    private final String USESYSTEMLOGGING_PROPERTY = "com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging";
-    private final String FILEHANDLER_COUNT_PROPERTY = "java.util.logging.FileHandler.count";
-    private final String RETAINERRORSSTATICTICS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.retainErrorsStasticsForHours";
-    private final String LOG4J_VERSION_PROPERTY = "log4j.logger.org.hibernate.validator.util.Version";
-    private final String MAXHISTORY_FILES_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles";
-    private final String ROTATIONONDATECHANGE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange";
-    private final String FILEHANDLER_PATTERN_PROPERTY = "java.util.logging.FileHandler.pattern";
-    private final String FILEHANDLER_FORMATTER_PROPERTY = "java.util.logging.FileHandler.formatter";
-    private final String LOGFORMAT_DATEFORMAT_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat";
+    private static final String SERVER_LOG_FILE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.file";
+    private static final String HANDLER_PROPERTY = "handlers";
+    private static final String HANDLER_SERVICES_PROPERTY = "handlerServices";
+    private static final String CONSOLEHANDLER_FORMATTER_PROPERTY = "java.util.logging.ConsoleHandler.formatter";
+    private static final String GFFILEHANDLER_FORMATTER_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.formatter";
+    private static final String ROTATIONTIMELIMITINMINUTES_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes";
+    private static final String FLUSHFREQUENCY_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.flushFrequency";
+    private static final String FILEHANDLER_LIMIT_PROPERTY = "java.util.logging.FileHandler.limit";
+    private static final String LOGTOCONSOLE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logtoConsole";
+    private static final String ROTATIONLIMITINBYTES_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes";
+    private static final String USESYSTEMLOGGING_PROPERTY = "com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging";
+    private static final String FILEHANDLER_COUNT_PROPERTY = "java.util.logging.FileHandler.count";
+    private static final String RETAINERRORSSTATICTICS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.retainErrorsStasticsForHours";
+    private static final String LOG4J_VERSION_PROPERTY = "log4j.logger.org.hibernate.validator.util.Version";
+    private static final String MAXHISTORY_FILES_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles";
+    private static final String ROTATIONONDATECHANGE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange";
+    private static final String FILEHANDLER_PATTERN_PROPERTY = "java.util.logging.FileHandler.pattern";
+    private static final String FILEHANDLER_FORMATTER_PROPERTY = "java.util.logging.FileHandler.formatter";
+    private static final String LOGFORMAT_DATEFORMAT_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat";
 
     final static String EXCLUDE_FIELDS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.excludeFields";
     final static String MULTI_LINE_MODE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode";
@@ -224,20 +224,12 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
                 file = new File(dirForLogging, ServerEnvironmentImpl.kLoggingPropertiesFileName);
 
-                if (!file.exists()) {
-                    loggingConfig.copyLoggingPropertiesFile(dirForLogging);
-                    file = new File(dirForLogging, ServerEnvironmentImpl.kLoggingPropertiesFileName);
-                }
             } else if (targetServer.isInstance()) {
                 String pathForLogging = env.getConfigDirPath() + File.separator + targetServer.getConfigRef();
                 File dirForLogging = new File(pathForLogging);
 
                 file = new File(dirForLogging, ServerEnvironmentImpl.kLoggingPropertiesFileName);
 
-                if (!file.exists()) {
-                    loggingConfig.copyLoggingPropertiesFile(dirForLogging);
-                    file = new File(dirForLogging, ServerEnvironmentImpl.kLoggingPropertiesFileName);
-                }
             } else {
                 file = new File(env.getConfigDirPath(), ServerEnvironmentImpl.kLoggingPropertiesFileName);
             }
@@ -446,7 +438,6 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
         }
 
-
         // redirect stderr and stdout, a better way to do this
         //http://blogs.sun.com/nickstephen/entry/java_redirecting_system_out_and
 
@@ -459,22 +450,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         los = new LoggingOutputStream(_elogger, Level.SEVERE);
         LoggingOutputStream.LoggingPrintStream perr = los.new LoggingPrintStream(los);
         System.setErr(perr);
-
-        /*Logger anonymousLogger = Logger.getAnonymousLogger();
-       LoggingOutputStream los = new LoggingOutputStream(anonymousLogger, Level.INFO);
-       PrintStream pout = new PrintStream(los,true);
-       synchronized (pout) {
-           System.setOut(pout);
-       }
-
-
-       los = new LoggingOutputStream(anonymousLogger, Level.SEVERE);
-       PrintStream perr = new PrintStream(los,true);
-       synchronized (perr) {
-           System.setErr(perr);
-       } */
-
-
+                
         // finally listen to changes to the logging.properties file
         if (logging != null) {
             fileMonitoring.monitors(logging, new FileMonitoring.FileChangeListener() {
