@@ -69,6 +69,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     public static final String VERSION_10 = "1.0";
     public static final String VERSION_15 = "1.5";
     public static final String VERSION_16 = "1.6";
+    public static final String VERSION_17 = "1.7";
 
     private String specVersion;
 
@@ -88,8 +89,9 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
 
     public final static String PUBLIC_DTD_ID = PUBLIC_DTD_ID_16;
     public final static String SYSTEM_ID = SYSTEM_ID_16;
-    public final static String SCHEMA_ID = SCHEMA_ID_16;
-    public final static String SPEC_VERSION = VERSION_16;
+    public final static String SCHEMA_ID_17 = "connector_1_7.xsd";
+    public final static String SCHEMA_ID = SCHEMA_ID_17;
+    public final static String SPEC_VERSION = VERSION_17;
 
     private final static List<String> systemIDs = initSystemIDs();
 
@@ -295,7 +297,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
      * @return the DOM tree top node
      */    
     public Node writeDescriptor(Node parent, ConnectorDescriptor conDesc) {
-	conDesc.setSpecVersion(VERSION_15);
+	conDesc.setSpecVersion(VERSION_17);
         Node connectorNode = super.writeDescriptor(parent, conDesc);      
 	appendTextChild(connectorNode, ConnectorTagNames.VENDOR_NAME, conDesc.getVendorName());  
 	appendTextChild(connectorNode, ConnectorTagNames.EIS_TYPE, conDesc.getEisType()); 

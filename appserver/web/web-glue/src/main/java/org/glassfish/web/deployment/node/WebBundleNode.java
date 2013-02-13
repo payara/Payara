@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -75,7 +75,8 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
     
     public final static String SCHEMA_ID_24 = "web-app_2_4.xsd";
     public final static String SCHEMA_ID_25 = "web-app_2_5.xsd";
-    public final static String SCHEMA_ID = "web-app_3_0.xsd";
+    public final static String SCHEMA_ID_30 = "web-app_3_0.xsd";
+    public final static String SCHEMA_ID = "web-app_3_1.xsd";
     private final static List<String> systemIDs = initSystemIDs();
 
 
@@ -84,6 +85,7 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
         systemIDs.add(SCHEMA_ID);
         systemIDs.add(SCHEMA_ID_24);
         systemIDs.add(SCHEMA_ID_25);
+        systemIDs.add(SCHEMA_ID_30);
         return Collections.unmodifiableList(systemIDs);
     }
     

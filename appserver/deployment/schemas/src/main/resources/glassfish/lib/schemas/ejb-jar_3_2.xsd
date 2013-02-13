@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema xmlns="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="http://java.sun.com/xml/ns/javaee"
-            xmlns:javaee="http://java.sun.com/xml/ns/javaee"
+            targetNamespace="http://xmlns.jcp.org/xml/ns/javaee"
+            xmlns:javaee="http://xmlns.jcp.org/xml/ns/javaee"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
@@ -58,15 +58,15 @@
       All EJB deployment descriptors must indicate
       the schema by using the Java EE namespace:
       
-      http://java.sun.com/xml/ns/javaee
+      http://xmlns.jcp.org/xml/ns/javaee
       
       and by indicating the version of the schema by
       using the version element as shown below:
       
-      <ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
+      <ejb-jar xmlns="http://xmlns.jcp.org/xml/ns/javaee"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-      	  http://java.sun.com/xml/ns/javaee/ejb-jar_3_2.xsd"
+      xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+      	  http://xmlns.jcp.org/xml/ns/javaee/ejb-jar_3_2.xsd"
       version="3.2">
       ...
       </ejb-jar>
@@ -75,7 +75,7 @@
       the schema using the xsi:schemaLocation attribute for the
       Java EE namespace with the following location:
       
-      http://java.sun.com/xml/ns/javaee/ejb-jar_3_2.xsd
+      http://xmlns.jcp.org/xml/ns/javaee/ejb-jar_3_2.xsd
       
       ]]>
     </xsd:documentation>
@@ -282,7 +282,7 @@
             names are recognized: acknowledgeMode,
             messageSelector, destinationType, subscriptionDurability,
             destinationLookup, connectionFactoryLookup, subscriptionName,
-            subscriptionScope, and clientId.
+            and clientId.
             
           </xsd:documentation>
         </xsd:annotation>

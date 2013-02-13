@@ -124,11 +124,11 @@ public class ConfigPropertyNode extends DeploymentDescriptorNode {
 	    appendTextChild(configNode, ConnectorTagNames.CONFIG_PROPERTY_NAME, config.getName());  
 	    appendTextChild(configNode, ConnectorTagNames.CONFIG_PROPERTY_TYPE, config.getType());  
 	    appendTextChild(configNode, ConnectorTagNames.CONFIG_PROPERTY_VALUE, config.getValue());  
-	    appendTextChild(configNode, ConnectorTagNames.CONFIG_PROPERTY_CONFIDENTIAL,
-                            String.valueOf(config.isConfidential()));
 	    appendTextChild(configNode, ConnectorTagNames.CONFIG_PROPERTY_IGNORE, String.valueOf(config.isIgnore()));
 	    appendTextChild(configNode, ConnectorTagNames.CONFIG_PROPERTY_SUPPORTS_DYNAMIC_UPDATES,
                             String.valueOf(config.isSupportsDynamicUpdates()));
+	    appendTextChild(configNode, ConnectorTagNames.CONFIG_PROPERTY_CONFIDENTIAL,
+                            String.valueOf(config.isConfidential()));
           }
         }
 	return parent;

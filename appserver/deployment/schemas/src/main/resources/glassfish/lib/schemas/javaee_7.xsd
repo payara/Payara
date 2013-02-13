@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema targetNamespace="http://java.sun.com/xml/ns/javaee"
-            xmlns:javaee="http://java.sun.com/xml/ns/javaee"
+<xsd:schema targetNamespace="http://xmlns.jcp.org/xml/ns/javaee"
+            xmlns:javaee="http://xmlns.jcp.org/xml/ns/javaee"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
@@ -75,7 +75,7 @@
   <xsd:import namespace="http://www.w3.org/XML/1998/namespace"
               schemaLocation="http://www.w3.org/2001/xml.xsd"/>
 
-  <xsd:include schemaLocation="javaee_web_services_client_1_3.xsd"/>
+  <xsd:include schemaLocation="javaee_web_services_client_1_4.xsd"/>
 
   <xsd:group name="descriptionGroup">
     <xsd:annotation>
@@ -172,8 +172,8 @@
                    type="javaee:mail-sessionType"
                    minOccurs="0"
                    maxOccurs="unbounded"/>
-      <xsd:element name="connector-resource"
-                   type="javaee:connector-resourceType"
+      <xsd:element name="connection-factory"
+                   type="javaee:connection-factory-resourceType"
                    minOccurs="0"
                    maxOccurs="unbounded"/>
       <xsd:element name="administered-object"
@@ -306,7 +306,7 @@
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
-      <xsd:element name="resource-adapter-name"
+      <xsd:element name="resource-adapter"
                    type="javaee:string">
         <xsd:annotation>
           <xsd:documentation>
@@ -337,11 +337,11 @@
 
 <!-- **************************************************** -->
 
-  <xsd:complexType name="connector-resourceType">
+  <xsd:complexType name="connection-factory-resourceType">
     <xsd:annotation>
       <xsd:documentation>
 
-        Configuration of a resource, possibly a custom resource.
+        Configuration of a Connector Connection Factory resource.
         
       </xsd:documentation>
     </xsd:annotation>
@@ -369,12 +369,58 @@
         </xsd:annotation>
       </xsd:element>
       <xsd:element name="class-name"
-                   type="javaee:fully-qualified-classType"
+                   type="javaee:fully-qualified-classType">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            The fully qualified domain name of the connection factory 
+            interface class. 
+            
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="resource-adapter"
+                   type="javaee:string">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            Resource adapter name.
+            
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="max-pool-size"
+                   type="javaee:xsdIntegerType"
                    minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>
 
-            The resource type.
+            Maximum number of connections that should be concurrently
+            allocated for a connection pool.
+            
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="min-pool-size"
+                   type="javaee:xsdIntegerType"
+                   minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            Minimum number of connections that should be concurrently
+            allocated for a connection pool.
+            
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="transaction-support"
+                   type="javaee:transaction-supportType"
+                   minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            The level of transaction support the connection factory 
+            needs to support. 
             
           </xsd:documentation>
         </xsd:annotation>
@@ -1341,7 +1387,7 @@
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
-      <xsd:element name="resource-adapter-name"
+      <xsd:element name="resource-adapter"
                    type="javaee:string"
                    minOccurs="0">
         <xsd:annotation>
@@ -1484,7 +1530,7 @@
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
-      <xsd:element name="resource-adapter-name"
+      <xsd:element name="resource-adapter"
                    type="javaee:string"
                    minOccurs="0">
         <xsd:annotation>
@@ -2983,6 +3029,34 @@
     </xsd:annotation>
     <xsd:simpleContent>
       <xsd:restriction base="javaee:string"/>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+
+<!-- **************************************************** -->
+
+  <xsd:complexType name="transaction-supportType">
+    <xsd:annotation>
+      <xsd:documentation>
+
+        The transaction-supportType specifies the level of
+        transaction support provided by the resource adapter. It is
+        used by transaction-support elements.
+        
+        The value must be one of the following:
+        
+        NoTransaction
+        LocalTransaction
+        XATransaction
+        
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:simpleContent>
+      <xsd:restriction base="javaee:string">
+        <xsd:enumeration value="NoTransaction"/>
+        <xsd:enumeration value="LocalTransaction"/>
+        <xsd:enumeration value="XATransaction"/>
+      </xsd:restriction>
     </xsd:simpleContent>
   </xsd:complexType>
 

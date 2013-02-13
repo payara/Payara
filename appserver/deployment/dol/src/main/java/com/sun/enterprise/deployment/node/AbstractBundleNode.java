@@ -123,14 +123,8 @@ public abstract class AbstractBundleNode<T extends RootDeploymentDescriptor>
         if (getDocType()==null) {
             // we are using schemas for this DDs
  
-            // connector schema still use j2ee name space
-            if (descriptor instanceof ConnectorDescriptor) {
-                bundleNode = appendChildNS(parent, getXMLRootTag().getQName(),
-                    TagNames.J2EE_NAMESPACE);    
-            } else {
-                bundleNode = appendChildNS(parent, getXMLRootTag().getQName(),
+            bundleNode = appendChildNS(parent, getXMLRootTag().getQName(),
                     TagNames.JAVAEE_NAMESPACE);    
-            }
             addBundleNodeAttributes((Element) bundleNode, descriptor);
         } else {              
             bundleNode = appendChild(parent, getXMLRootTag().getQName());

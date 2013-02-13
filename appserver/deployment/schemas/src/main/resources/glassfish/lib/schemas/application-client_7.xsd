@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema xmlns="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="http://java.sun.com/xml/ns/javaee"
-            xmlns:javaee="http://java.sun.com/xml/ns/javaee"
+            targetNamespace="http://xmlns.jcp.org/xml/ns/javaee"
+            xmlns:javaee="http://xmlns.jcp.org/xml/ns/javaee"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
@@ -60,15 +60,15 @@
       deployment descriptors must indicate the application
       client schema by using the Java EE namespace:
       
-      http://java.sun.com/xml/ns/javaee
+      http://xmlns.jcp.org/xml/ns/javaee
       
       and indicate the version of the schema by
       using the version element as shown below:
       
-      <application-client xmlns="http://java.sun.com/xml/ns/javaee"
+      <application-client xmlns="http://xmlns.jcp.org/xml/ns/javaee"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
-      	http://java.sun.com/xml/ns/javaee/application-client_7.xsd"
+      xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
+      	http://xmlns.jcp.org/xml/ns/javaee/application-client_7.xsd"
       version="7">
       ...
       </application-client>
@@ -77,7 +77,7 @@
       the schema using the xsi:schemaLocation attribute for Java EE
       namespace with the following location:
       
-      http://java.sun.com/xml/ns/javaee/application-client_7.xsd
+      http://xmlns.jcp.org/xml/ns/javaee/application-client_7.xsd
       
       ]]>
     </xsd:documentation>
@@ -277,8 +277,12 @@
                    type="javaee:mail-sessionType"
                    minOccurs="0"
                    maxOccurs="unbounded"/>
-      <xsd:element name="connector-resource"
-                   type="javaee:connector-resourceType"
+      <xsd:element name="connection-factory"
+                   type="javaee:connection-factory-resourceType"
+                   minOccurs="0"
+                   maxOccurs="unbounded"/>
+      <xsd:element name="administered-object"
+                   type="javaee:administered-objectType"
                    minOccurs="0"
                    maxOccurs="unbounded"/>
     </xsd:sequence>
