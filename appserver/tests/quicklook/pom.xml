@@ -112,7 +112,7 @@
                                     </then>
                                 </if>
                                 <if>
-                                    <equals arg1="${start.wd.security}" arg2="true" />
+                                    <equals arg1="${test.wd.security}" arg2="true" />
                                     <then>
                                         <ant dir="." antfile="build.xml" target="all_wd_security">
                                             <property name="glassfish.home" value="${glassfish.home}"/>
