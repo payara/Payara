@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -84,6 +84,7 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
         registerElementHandler(new XMLElement(EjbTagNames.AROUND_TIMEOUT_METHOD), AroundTimeoutNode.class, "addAroundTimeoutDescriptor");       
         registerElementHandler(new XMLElement(EjbTagNames.POST_ACTIVATE_METHOD), LifecycleCallbackNode.class, "addPostActivateDescriptor");       
         registerElementHandler(new XMLElement(EjbTagNames.PRE_PASSIVATE_METHOD), LifecycleCallbackNode.class, "addPrePassivateDescriptor");       
+        registerElementHandler(new XMLElement(EjbTagNames.AROUND_CONSTRUCT), LifecycleCallbackNode.class, "addAroundConstructDescriptor");       
 
         //jndiEnvironmentRefsGroup
         registerElementHandler(new XMLElement(TagNames.POST_CONSTRUCT), LifecycleCallbackNode.class, "addPostConstructDescriptor");       
@@ -184,6 +185,10 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
         if (descriptor.hasCallbackDescriptor(CallbackType.PRE_PASSIVATE)) {
             writeLifeCycleCallbackDescriptors(interceptorNode, EjbTagNames.PRE_PASSIVATE_METHOD,
                 descriptor.getCallbackDescriptors(CallbackType.PRE_PASSIVATE));
+        }
+        if (descriptor.hasCallbackDescriptor(CallbackType.AROUND_CONSTRUCT)) {
+            writeLifeCycleCallbackDescriptors(interceptorNode, EjbTagNames.AROUND_CONSTRUCT,
+                descriptor.getCallbackDescriptors(CallbackType.AROUND_CONSTRUCT));
         }
 
         // all descriptors (includes DSD, MSD, JMSCFD, JMSDD,AOD, CRD)*

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -130,6 +130,7 @@ public class InterceptorManager {
 
         buildEjbInterceptorChain();
 
+//System.err.println("InterceptorManager: " + toString());
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "InterceptorManager: " + toString());
         }
@@ -381,6 +382,7 @@ public class InterceptorManager {
 
         CallbackChainImpl chain = null;
         switch (eventType) {
+            case AROUND_CONSTRUCT:
             case POST_CONSTRUCT:
             case PRE_PASSIVATE:
             case POST_ACTIVATE:
@@ -455,6 +457,7 @@ public class InterceptorManager {
         int size = CallbackType.values().length;
         callbackChain = new CallbackChainImpl[size];
 
+        initCallbackIndices(interceptorInfo.getAroundConstructInterceptors(), CallbackType.AROUND_CONSTRUCT);
         initCallbackIndices(interceptorInfo.getPostConstructInterceptors(), CallbackType.POST_CONSTRUCT);
         initCallbackIndices(interceptorInfo.getPreDestroyInterceptors(), CallbackType.PRE_DESTROY);
 

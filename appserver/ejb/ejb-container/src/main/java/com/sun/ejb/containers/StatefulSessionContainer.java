@@ -2807,7 +2807,7 @@ public final class StatefulSessionContainer
 
     protected String[] getPre30LifecycleMethodNames() {
         return new String[]{
-                null, "ejbRemove", "ejbPassivate", "ejbActivate"
+                null, null, "ejbRemove", "ejbPassivate", "ejbActivate"
         };
     }
 

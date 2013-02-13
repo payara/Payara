@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,7 @@ import java.lang.reflect.Method;
 
 public class InterceptorInfo {
 
+    private List aroundConstructInterceptors = new LinkedList();
     private List postConstructInterceptors = new LinkedList();
     private List preDestroyInterceptors = new LinkedList();
 
@@ -81,6 +82,14 @@ public class InterceptorInfo {
 
     public Class getTargetClass() {
         return this.targetClass;
+    }
+
+    public void setAroundConstructInterceptors(List interceptors) {
+        aroundConstructInterceptors = interceptors;
+    }
+
+    public List getAroundConstructInterceptors() {
+        return new LinkedList(aroundConstructInterceptors);
     }
 
     public void setPostConstructInterceptors(List interceptors) {

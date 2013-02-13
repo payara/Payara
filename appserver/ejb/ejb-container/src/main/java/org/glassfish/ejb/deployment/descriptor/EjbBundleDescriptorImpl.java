@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1184,6 +1184,23 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     // There is still some redundant DOL processing of the modules that can result in these
     // being called so just treat them as no-ops.
     //
+
+    //@Override
+    public Set<LifecycleCallbackDescriptor> getAroundConstructDescriptors() {
+        return new HashSet<LifecycleCallbackDescriptor>();
+    }
+
+    //@Override
+    public void addAroundConstructDescriptor(LifecycleCallbackDescriptor
+        aroundConstructDesc) {
+        // no-op
+    }
+
+    //@Override
+    public LifecycleCallbackDescriptor
+        getAroundConstructDescriptorByClass(String className) {
+        return null;
+    }
 
     @Override
     public Set<LifecycleCallbackDescriptor> getPostConstructDescriptors() {

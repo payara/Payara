@@ -87,6 +87,7 @@ import javax.ejb.PrePassivate;
 import javax.ejb.RemoveException;
 import javax.ejb.TransactionRequiredLocalException;
 import javax.ejb.TransactionRolledbackLocalException;
+//import javax.interceptor.AroundConstruct;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
@@ -109,6 +110,7 @@ import com.sun.ejb.codegen.EjbOptionalIntfGenerator;
 import com.sun.ejb.codegen.ServiceInterfaceGenerator;
 import com.sun.ejb.containers.interceptors.InterceptorManager;
 import com.sun.ejb.containers.interceptors.SystemInterceptorProxy;
+import com.sun.ejb.containers.interceptors.AroundConstruct;
 import com.sun.ejb.containers.util.MethodMap;
 import com.sun.ejb.monitoring.probes.EjbCacheProbeProvider;
 import com.sun.ejb.monitoring.probes.EjbMonitoringProbeProvider;
@@ -456,9 +458,11 @@ public abstract class BaseContainer
 
     protected InterceptorManager interceptorManager;
 
+    // the order must be the same as CallbackType and getPre30LifecycleMethodNames
     private static final Class[] lifecycleCallbackAnnotationClasses = {
-        PostConstruct.class, PrePassivate.class,
-        PostActivate.class, PreDestroy.class
+        AroundConstruct.class, 
+        PostConstruct.class, PreDestroy.class, 
+        PrePassivate.class, PostActivate.class
     };
     
     private Set<Class> monitoredGeneratedClasses = new HashSet<Class>();
@@ -3306,8 +3310,9 @@ public abstract class BaseContainer
 
     //Overridden in StatefulContainerOnly
     protected String[] getPre30LifecycleMethodNames() {
+        // null to match AroundConstruct
         return new String[] {
-            "ejbCreate", "ejbRemove", "ejbPassivate", "ejbActivate"
+            null, "ejbCreate", "ejbRemove", "ejbPassivate", "ejbActivate"
         };
     };
     

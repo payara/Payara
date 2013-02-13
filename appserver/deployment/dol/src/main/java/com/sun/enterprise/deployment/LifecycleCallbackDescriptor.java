@@ -58,6 +58,7 @@ public class LifecycleCallbackDescriptor extends Descriptor {
 
     public enum CallbackType {
 
+        AROUND_CONSTRUCT,
         POST_CONSTRUCT,
         PRE_DESTROY,
         PRE_PASSIVATE,

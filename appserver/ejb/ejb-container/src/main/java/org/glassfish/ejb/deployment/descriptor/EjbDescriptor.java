@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -148,6 +148,8 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     private Set<ServiceReferenceDescriptor> serviceReferences =
             new HashSet<ServiceReferenceDescriptor>();
 
+    private Set<LifecycleCallbackDescriptor> aroundConstructDescs =
+            new HashSet<LifecycleCallbackDescriptor>();
     private Set<LifecycleCallbackDescriptor> postConstructDescs =
             new HashSet<LifecycleCallbackDescriptor>();
     private Set<LifecycleCallbackDescriptor> preDestroyDescs =
@@ -775,6 +777,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     public Set<LifecycleCallbackDescriptor> getLifecycleCallbackDescriptors() {
         Set<LifecycleCallbackDescriptor> lifecycleMethods =
                 new HashSet<LifecycleCallbackDescriptor>();
+        lifecycleMethods.addAll(getAroundConstructDescriptors());
         lifecycleMethods.addAll(getPostConstructDescriptors());
         lifecycleMethods.addAll(getPreDestroyDescriptors());
         if (getType().equals(EjbSessionDescriptor.TYPE)) {
@@ -1054,6 +1057,16 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
         EjbInterceptor beanClassCallbackInfo = null;
 
         switch (type) {
+            case AROUND_CONSTRUCT:
+
+                if (hasAroundConstructMethod()) {
+                    beanClassCallbackInfo = new EjbInterceptor();
+                    beanClassCallbackInfo.setFromBeanClass(true);
+                    beanClassCallbackInfo.addCallbackDescriptors
+                            (type, getAroundConstructDescriptors());
+                }
+                break;
+
             case POST_CONSTRUCT:
 
                 if (hasPostConstructMethod()) {
@@ -1737,6 +1750,35 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
         ejbReference.setReferringBundleDescriptor(null);
     }
 
+    //@Override
+    public Set<LifecycleCallbackDescriptor> getAroundConstructDescriptors() {
+        return aroundConstructDescs;
+    }
+
+    //@Override
+    public void addAroundConstructDescriptor(LifecycleCallbackDescriptor
+            aroundConstructDesc) {
+        String className = aroundConstructDesc.getLifecycleCallbackClass();
+        boolean found = false;
+        for (LifecycleCallbackDescriptor next :
+                getAroundConstructDescriptors()) {
+            if (next.getLifecycleCallbackClass().equals(className)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            getAroundConstructDescriptors().add(aroundConstructDesc);
+        }
+    }
+
+    //@Override
+    public LifecycleCallbackDescriptor
+            getAroundConstructDescriptorByClass(String className) {
+        return bundleDescriptor.
+                            getAroundConstructDescriptorByClass(className);
+    }
+
     @Override
     public Set<LifecycleCallbackDescriptor> getPostConstructDescriptors() {
         return postConstructDescs;
@@ -2207,6 +2249,10 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     // END WritableJndiNameEnvirnoment methods
 
     // BEGIN methods closely related to WritableJndiNameEnvironment
+
+    public boolean hasAroundConstructMethod() {
+        return (getAroundConstructDescriptors().size() > 0);
+    }
 
     public boolean hasPostConstructMethod() {
         return (getPostConstructDescriptors().size() > 0);
