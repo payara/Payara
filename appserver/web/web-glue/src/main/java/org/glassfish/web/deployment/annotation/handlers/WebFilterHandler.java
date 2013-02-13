@@ -46,6 +46,7 @@ import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
 import com.sun.enterprise.deployment.web.ServletFilter;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.net.URLPattern;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
@@ -73,6 +74,9 @@ import java.util.logging.Level;
 @Service
 @AnnotationHandlerFor(WebFilter.class)
 public class WebFilterHandler extends AbstractWebHandler {
+    protected final static LocalStringManagerImpl localStrings =
+            new LocalStringManagerImpl(WebFilterHandler.class);
+
     public WebFilterHandler() {
     }
 
@@ -101,7 +105,7 @@ public class WebFilterHandler extends AbstractWebHandler {
         if (!javax.servlet.Filter.class.isAssignableFrom(filterClass)) {
             log(Level.SEVERE, ainfo,
                 localStrings.getLocalString(
-                "enterprise.deployment.annotation.handlers.needtoimpl",
+                "web.deployment.annotation.handlers.needtoimpl",
                 "The Class {0} having annotation {1} need to implement the interface {2}.",
                 new Object[] { filterClass.getName(), WebFilter.class.getName(), javax.servlet.Filter.class.getName() }));
             return getDefaultFailedResult();
@@ -131,7 +135,7 @@ public class WebFilterHandler extends AbstractWebHandler {
                     !filterImpl.equals(filterClass.getName())) {
                 log(Level.SEVERE, ainfo,
                     localStrings.getLocalString(
-                    "enterprise.deployment.annotation.handlers.filternamedontmatch",
+                    "web.deployment.annotation.handlers.filternamedontmatch",
                     "The filter '{0}' has implementation '{1}' in xml. It does not match with '{2}' from annotation @{3}.",
                     new Object[] { filterName, filterImpl, filterClass.getName(),
                     WebFilter.class.getName() }));
@@ -213,7 +217,7 @@ public class WebFilterHandler extends AbstractWebHandler {
                     (urlPatterns != null) ? Arrays.toString(urlPatterns) : "";
 
                 throw new IllegalArgumentException(localStrings.getLocalString(
-                        "enterprise.deployment.annotation.handlers.invalidUrlPatterns",
+                        "web.deployment.annotation.handlers.invalidUrlPatterns",
                         "Invalid url patterns: {0}.",
                         urlPatternString));
             }

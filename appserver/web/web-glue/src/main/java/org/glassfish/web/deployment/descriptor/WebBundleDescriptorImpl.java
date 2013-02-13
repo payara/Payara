@@ -352,7 +352,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
             String oldName = getUrlPatternToServletNameMap().put(up, name);
             if (oldName != null && (!oldName.equals(name))) {
                 throw new IllegalArgumentException(localStrings.getLocalString(
-                    "enterprise.deployment.exceptionsameurlpattern",
+                    "web.deployment.exceptionsameurlpattern",
                     "Servlet [{0}] and Servlet [{1}] have the same url pattern: [{2}]",
                     new Object[] { oldName, name, up }));
             }
@@ -388,14 +388,14 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                     (implFile == null || implFile.length() == 0)) {
 
                 throw new IllegalArgumentException(localStrings.getLocalString(
-                        "enterprise.deployment.exceptionconflictwebcompwithoutimpl",
+                        "web.deployment.exceptionconflictwebcompwithoutimpl",
                         "Two or more web fragments define the same Servlet with conflicting implementation class names that are not overridden by the web.xml"));
             }
         } else {
             resultDesc = webComponentDescriptor;
             if (webComponentDescriptor.isConflict()) {
                 throw new IllegalArgumentException(localStrings.getLocalString(
-                        "enterprise.deployment.exceptionconflictwebcomp",
+                        "web.deployment.exceptionconflictwebcomp",
                         "One or more web fragments define the same Servlet in a conflicting way, and the Servlet is not defined in web.xml"));
             } else {
                 this.getWebComponentDescriptors().add(webComponentDescriptor);
@@ -469,7 +469,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
 
         throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionwebapphasnoservicerefbyname",
+                "web.deployment.exceptionwebapphasnoservicerefbyname",
                 "This web app [{0}] has no service reference by the name of [{1}]",
                 new Object[]{getName(), name}));
     }
@@ -494,7 +494,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 if (env instanceof WebBundleDescriptor &&
                         ((WebBundleDescriptor)env).conflictServiceReference) {
                     throw new IllegalArgumentException(localStrings.getLocalString(
-                            "enterprise.deployment.exceptionconflictserviceref",
+                            "web.deployment.exceptionconflictserviceref",
                             "There are more than one service references defined in web fragments with the same name, but not overrided in web.xml"));
                 } else {
                     addServiceReferenceDescriptor(serviceRef);
@@ -537,7 +537,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
 
         throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionwebapphasnoresourceenvrefbyname",
+                "web.deployment.exceptionwebapphasnoresourceenvrefbyname",
                 "This web app [{0}] has no resource environment reference by the name of [{1}]", new Object[]{getName(), name}));
     }
 
@@ -561,7 +561,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 if (env instanceof WebBundleDescriptor &&
                         ((WebBundleDescriptor)env).conflictResourceEnvReference) {
                     throw new IllegalArgumentException(localStrings.getLocalString(
-                            "enterprise.deployment.exceptionconflictresourceenvref",
+                            "web.deployment.exceptionconflictresourceenvref",
                             "There are more than one resource env references defined in web fragments with the same name, but not overrided in web.xml"));
                 } else {
                     addResourceEnvReferenceDescriptor(jdRef);
@@ -806,7 +806,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
 
         throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionwebapphasnoejbrefbyname",
+                "web.deployment.exceptionwebapphasnoejbrefbyname",
                 "This web app [{0}] has no ejb reference by the name of [{1}] ", new Object[]{getName(), name}));
     }
 
@@ -830,7 +830,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
 
         throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionwebapphasnoresourcerefbyname",
+                "web.deployment.exceptionwebapphasnoresourcerefbyname",
                 "This web app [{0}] has no resource reference by the name of [{1}]", new Object[]{getName(), name}));
     }
 
@@ -873,7 +873,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
 
         throw new IllegalArgumentException(localStrings.getLocalString(
-                "exceptionwebapphasnoentitymgrfactoryrefbyname",
+                "web.deployment.exceptionwebapphasnoentitymgrfactoryrefbyname",
                 "This web app [{0}] has no entity manager factory reference by the name of [{1}]",
                 new Object[]{getName(), name}));
     }
@@ -907,7 +907,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 if (env instanceof WebBundleDescriptor &&
                         ((WebBundleDescriptor)env).conflictEntityManagerFactoryReference) {
                     throw new IllegalArgumentException(localStrings.getLocalString(
-                            "enterprise.deployment.exceptionconflictpersistenceunitref",
+                            "web.deployment.exceptionconflictpersistenceunitref",
                             "There are more than one persistence unit references defined in web fragments with the same name, but not overrided in web.xml"));
 
                 } else {
@@ -935,7 +935,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
 
         throw new IllegalArgumentException(localStrings.getLocalString(
-                "exceptionwebapphasnoentitymgrrefbyname",
+                "web.deployment.exceptionwebapphasnoentitymgrrefbyname",
                 "This web app [{0}] has no entity manager reference by the name of [{1}]",
                 new Object[]{getName(), name}));
     }
@@ -970,7 +970,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 if (env instanceof WebBundleDescriptor &&
                     ((WebBundleDescriptor)env).conflictEntityManagerReference) {
                     throw new IllegalArgumentException(localStrings.getLocalString(
-                            "enterprise.deployment.exceptionconflictpersistencecontextref",
+                            "web.deployment.exceptionconflictpersistencecontextref",
                             "There are more than one persistence context references defined in web fragments with the same name, but not overrided in web.xml"));
                 } else {
                     addEntityManagerReferenceDescriptor(emRef);
@@ -1047,7 +1047,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 if (env instanceof WebBundleDescriptor &&
                         ((WebBundleDescriptor)env).conflictEjbReference) {
                     throw new IllegalArgumentException(localStrings.getLocalString(
-                            "enterprise.deployment.exceptionconflictejbref",
+                            "web.deployment.exceptionconflictejbref",
                             "There are more than one ejb references defined in web fragments with the same name, but not overrided in web.xml"));
                 } else {
                     addEjbReferenceDescriptor(ejbRef);
@@ -1088,7 +1088,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 if (env instanceof WebBundleDescriptor &&
                         ((WebBundleDescriptor)env).conflictResourceReference) {
                     throw new IllegalArgumentException(localStrings.getLocalString(
-                            "enterprise.deployment.exceptionconflictresourceref",
+                            "web.deployment.exceptionconflictresourceref",
                             "There are more than one resource references defined in web fragments with the same name, but not overrided in web.xml"));
                 } else {
                     addResourceReferenceDescriptor(resRef);
@@ -1128,7 +1128,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
 
         throw new IllegalArgumentException(localStrings.getLocalString(
-                "exceptionwebapphasnomsgdestrefbyname",
+                "web.deployment.exceptionwebapphasnomsgdestrefbyname",
                 "This web app [{0}] has no message destination reference by the name of [{1}]",
                 new Object[]{getName(), name}));
     }
@@ -1155,7 +1155,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 if (env instanceof WebBundleDescriptor &&
                         ((WebBundleDescriptor)env).conflictMessageDestinationReference) {
                     throw new IllegalArgumentException(localStrings.getLocalString(
-                            "enterprise.deployment.exceptionconflictmessagedestinationref",
+                            "web.deployment.exceptionconflictmessagedestinationref",
                             "There are more than one message destination references defined in web fragments with the same name, but not overrided in web.xml"));
                 } else {
                     addMessageDestinationReferenceDescriptor(mdRef);
@@ -1497,7 +1497,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
 
         throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionwebapphasnoenvpropertybyname",
+                "web.deployment.exceptionwebapphasnoenvpropertybyname",
                 "This web app [{0}] has no environment property by the name of [{1}]",
                 new Object[]{getName(), name}));
     }
@@ -1538,7 +1538,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 if (env instanceof WebBundleDescriptor &&
                         ((WebBundleDescriptor)env).conflictEnvironmentEntry) {
                     throw new IllegalArgumentException(localStrings.getLocalString(
-                            "enterprise.deployment.exceptionconflictenventry",
+                            "web.deployment.exceptionconflictenventry",
                             "There are more than one environment entries defined in web fragments with the same name, but not overrided in web.xml"));
                 } else {
                     addEnvironmentEntry(enve);
@@ -1569,7 +1569,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         if (getLoginConfiguration() == null) {
             if (webBundleDescriptor.conflictLoginConfig) {
                 throw new IllegalArgumentException(localStrings.getLocalString(
-                        "enterprise.deployment.exceptionconflictloginconfig",
+                        "web.deployment.exceptionconflictloginconfig",
                         "There are more than one login-config defined in web fragments with different values"));
             } else {
                 setLoginConfiguration(webBundleDescriptor.getLoginConfiguration());
@@ -1690,13 +1690,13 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                 String className = aServletFilterDesc.getClassName();
                 if (servletFilterDesc.isConflict() && (className == null || className.length() == 0)) {
                     throw new IllegalArgumentException(localStrings.getLocalString(
-                            "enterprise.deployment.exceptionconflictfilterwithoutimpl",
+                            "web.deployment.exceptionconflictfilterwithoutimpl",
                             "Two or more web fragments define the same Filter with conflicting implementation class names that are not overridden by the web.xml"));
                 }
             } else {
                 if (servletFilterDesc.isConflict()) {
                     throw new IllegalArgumentException(localStrings.getLocalString(
-                            "enterprise.deployment.exceptionconflictfilter",
+                            "web.deployment.exceptionconflictfilter",
                             "One or more web fragments define the same Filter in a conflicting way, and the Filter is not defined in web.xml"));
                 } else {
                     getServletFilters().add(servletFilterDesc);
@@ -1972,7 +1972,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                     String oldName = urlPattern2ServletName.put(up, name);
                     if (oldName != null && (!oldName.equals(name))) {
                         throw new RuntimeException(localStrings.getLocalString(
-                                "enterprise.deployment.exceptionsameurlpattern",
+                                "web.deployment.exceptionsameurlpattern",
                                 "Servlet [{0}] and Servlet [{1}] have the same url pattern: [{2}]",
                                 new Object[] { oldName, name, up }));
                     }
@@ -2184,32 +2184,32 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                      if (env instanceof WebBundleDescriptor && javaEEResourceType.equals(JavaEEResourceType.AODD) &&
                              ((WebBundleDescriptor) env).conflictAdminObjectDefinition) {
                          throw new IllegalArgumentException(localStrings.getLocalString(
-                                 "enterprise.deployment.exceptionconflictadministeredobjectdefinition",
+                                 "web.deployment.exceptionconflictadministeredobjectdefinition",
                                  "There are more than one administered object definitions defined in web fragments with the same name, but not overrided in web.xml"));
                      } else if (env instanceof WebBundleDescriptor && javaEEResourceType.equals(JavaEEResourceType.MSD) &&
                              ((WebBundleDescriptor) env).conflictMailSessionDefinition) {
                          throw new IllegalArgumentException(localStrings.getLocalString(
-                                 "enterprise.deployment.exceptionconflictmailsessiondefinition",
+                                 "web.deployment.exceptionconflictmailsessiondefinition",
                                  "There are more than one mail-session definitions defined in web fragments with the same name, but not overrided in web.xml"));
                      } else if (env instanceof WebBundleDescriptor && javaEEResourceType.equals(JavaEEResourceType.DSD) &&
                              ((WebBundleDescriptor) env).conflictDataSourceDefinition) {
                          throw new IllegalArgumentException(localStrings.getLocalString(
-                                 "enterprise.deployment.exceptionconflictdatasourcedefinition",
+                                 "web.deployment.exceptionconflictdatasourcedefinition",
                                  "There are more than one datasource definitions defined in web fragments with the same name, but not overrided in web.xml"));
                      } else if (env instanceof WebBundleDescriptor && javaEEResourceType.equals(JavaEEResourceType.CRD) &&
                              ((WebBundleDescriptor) env).conflictConnectorResourceDefinition) {
                          throw new IllegalArgumentException(localStrings.getLocalString(
-                                 "enterprise.deployment.exceptionconflictconnectorresourcedefinition",
+                                 "web.deployment.exceptionconflictconnectorresourcedefinition",
                                  "There are more than one connector resource definitions defined in web fragments with the same name, but not overrided in web.xml"));
                      } else if (env instanceof WebBundleDescriptor && javaEEResourceType.equals(JavaEEResourceType.JMSCFDD) &&
                              ((WebBundleDescriptor) env).conflictJMSConnectionFactoryDefinition) {
                          throw new IllegalArgumentException(localStrings.getLocalString(
-                                 "enterprise.deployment.exceptionconflictjmsconnectionfactorydefinition",
+                                 "web.deployment.exceptionconflictjmsconnectionfactorydefinition",
                                  "There are more than one jms connection factory definitions defined in web fragments with the same name, but not overrided in web.xml"));
                      } else if (env instanceof WebBundleDescriptor && javaEEResourceType.equals(JavaEEResourceType.JMSDD) &&
                              ((WebBundleDescriptor) env).conflictJMSDestinationDefinition) {
                          throw new IllegalArgumentException(localStrings.getLocalString(
-                                 "enterprise.deployment.exceptionconflictjmsdestinationdefinition",
+                                 "web.deployment.exceptionconflictjmsdestinationdefinition",
                                  "There are more than one jms destination definitions defined in web fragments with the same name, but not overrided in web.xml"));
                      } else {
                          if(desc.getResourceType().equals(JavaEEResourceType.DSD) ||

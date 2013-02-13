@@ -44,6 +44,7 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
 import com.sun.enterprise.deployment.web.AppListenerDescriptor;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -71,6 +72,9 @@ import java.util.logging.Level;
 @Service
 @AnnotationHandlerFor(WebListener.class)
 public class WebListenerHandler extends AbstractWebHandler {
+    protected final static LocalStringManagerImpl localStrings =
+            new LocalStringManagerImpl(WebFilterHandler.class);
+
     public WebListenerHandler() {
     }
 
@@ -105,7 +109,7 @@ public class WebListenerHandler extends AbstractWebHandler {
                 HttpSessionIdListener.class.isAssignableFrom(listenerClass))) {
             log(Level.SEVERE, ainfo,
                 localStrings.getLocalString(
-                "enterprise.deployment.annotation.handlers.needtoimpllistenerinterface",
+                "web.deployment.annotation.handlers.needtoimpllistenerinterface",
                 "The Class {0} having annotation javax.servlet.annotation.WebListener need to implement one of the following interfaces: javax.servlet.ServletContextLisener, javax.servlet.ServletContextAttributeListener, javax.servlet.ServletRequestListener, javax.servletServletRequestAttributeListener, javax.servlet.http.HttpSessionListener, javax.servlet.http.HttpSessionAttributeListener, javax.servlet.http.HttpSessionIdListener.",
                 listenerClass.getName()));
             return getDefaultFailedResult();

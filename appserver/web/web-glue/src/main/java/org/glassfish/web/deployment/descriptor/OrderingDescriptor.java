@@ -102,7 +102,7 @@ public class OrderingDescriptor extends Descriptor {
 
         if (!valid) {
             throw new IllegalStateException(localStrings.getLocalString(
-                    "enterprise.deployment.exceptioninvalidordering",
+                    "web.deployment.exceptioninvalidordering",
                     "The ordering is not valid as it contains the same name and/or others in both before and after."));
         }
 
@@ -322,7 +322,7 @@ public class OrderingDescriptor extends Descriptor {
                 return sortedNodes;
             } else {
                 throw new IllegalStateException(localStrings.getLocalString(
-                        "enterprise.deployment.exceptioninvalidwebfragmentordering",
+                        "web.deployment.exceptioninvalidwebfragmentordering",
                         "The web fragment ordering is not valid and possibly has cycling conflicts."));
             }
         }
@@ -371,7 +371,7 @@ public class OrderingDescriptor extends Descriptor {
         }
         if (hasEdges) {
             throw new IllegalStateException(localStrings.getLocalString(
-                    "enterprise.deployment.exceptioninvalidwebfragmentordering",
+                    "web.deployment.exceptioninvalidwebfragmentordering",
                     "The web fragment ordering is not valid and possibly has cycling conflicts."));
         }
         return sortedNodes;

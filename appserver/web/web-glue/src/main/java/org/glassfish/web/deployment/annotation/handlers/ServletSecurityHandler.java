@@ -49,6 +49,7 @@ import com.sun.enterprise.deployment.web.UserDataConstraint;
 import com.sun.enterprise.deployment.web.WebResourceCollection;
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.web.deployment.descriptor.*;
 
@@ -74,6 +75,9 @@ import java.util.logging.Level;
 @Service
 @AnnotationHandlerFor(ServletSecurity.class)
 public class ServletSecurityHandler extends AbstractWebHandler {
+    protected final static LocalStringManagerImpl localStrings =
+            new LocalStringManagerImpl(ServletSecurityHandler.class);
+
     public ServletSecurityHandler() {
     }
 
@@ -116,7 +120,7 @@ public class ServletSecurityHandler extends AbstractWebHandler {
         if (!HttpServlet.class.isAssignableFrom(webCompClass)) {
             log(Level.SEVERE, ainfo,
                 localStrings.getLocalString(
-                "enterprise.deployment.annotation.handlers.needtoextend",
+                "web.deployment.annotation.handlers.needtoextend",
                 "The Class {0} having annotation {1} need to be a derived class of {2}.",
                 new Object[] { webCompClass.getName(), SecurityConstraint.class.getName(), HttpServlet.class.getName() }));
             return getDefaultFailedResult();
@@ -201,7 +205,7 @@ public class ServletSecurityHandler extends AbstractWebHandler {
         if (rolesAllowed != null && rolesAllowed.length > 0) {
             if (emptyRoleSemantic ==  EmptyRoleSemantic.DENY) {
                  throw new IllegalArgumentException(localStrings.getLocalString(
-                        "enterprise.deployment.annotation.handlers.denyWithRolesAllowed",
+                        "web.deployment.annotation.handlers.denyWithRolesAllowed",
                         "One cannot specify DENY with an non-empty array of rolesAllowed in @ServletSecurity / ServletSecurityElement"));
             }
 

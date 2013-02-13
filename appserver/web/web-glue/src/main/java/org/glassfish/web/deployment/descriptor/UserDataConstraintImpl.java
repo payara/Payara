@@ -98,7 +98,7 @@ public class UserDataConstraintImpl extends Descriptor implements UserDataConstr
 		&& !UserDataConstraint.INTEGRAL_TRANSPORT.equals(transportGuarantee)
 		    && !UserDataConstraint.CONFIDENTIAL_TRANSPORT.equals(transportGuarantee)) {
 		throw new IllegalArgumentException(localStrings.getLocalString(
-									       "enterprise.deployment.exceptiontransportguarentee",
+									       "web.deployment.exceptiontransportguarentee",
 									       "{0} is not a valid transport guarantee", new Object[] {transportGuarantee}));  
 	    }
 	}

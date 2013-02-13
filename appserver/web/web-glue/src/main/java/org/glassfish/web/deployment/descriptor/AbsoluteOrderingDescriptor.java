@@ -66,7 +66,7 @@ public class AbsoluteOrderingDescriptor extends Descriptor {
     public void addName(String name) {
         if (absOrder.add(name) == false) {
             throw new IllegalStateException(localStrings.getLocalString(
-                    "enterprise.deployment.exceptionalreadydefinedinabsoluteordering",
+                    "web.deployment.exceptionalreadydefinedinabsoluteordering",
                     "[{0}] has already been defined in the absolute-ordering.",
                     new Object[] { name }));
         }
@@ -75,7 +75,7 @@ public class AbsoluteOrderingDescriptor extends Descriptor {
     public void addOthers() {
         if (absOrder.add(OTHERS) == false) {
             throw new IllegalStateException(localStrings.getLocalString(
-                    "enterprise.deployment.exceptionalreadydefinedinabsoluteordering",
+                    "web.deployment.exceptionalreadydefinedinabsoluteordering",
                     "[{0}] is already defined in the absolute-ordering.",
                     new Object[] { "<others/>" }));
         }

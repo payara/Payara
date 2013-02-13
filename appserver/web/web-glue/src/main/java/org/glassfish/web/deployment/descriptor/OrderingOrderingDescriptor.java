@@ -61,7 +61,7 @@ public class OrderingOrderingDescriptor extends Descriptor {
     public void addName(String name) {
         if (name == null || name.length() == 0) {
             throw new IllegalStateException(localStrings.getLocalString(
-                    "enterprise.deployment.exceptioninvalidnameinrelativeordering",
+                    "web.deployment.exceptioninvalidnameinrelativeordering",
                     "The empty name is invalid for relative ordering element."));
         }
         names.add(name);

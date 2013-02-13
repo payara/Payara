@@ -45,6 +45,7 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.net.URLPattern;
 import org.glassfish.apf.*;
 import org.glassfish.web.deployment.descriptor.WebComponentDescriptorImpl;
@@ -67,6 +68,9 @@ import java.util.logging.Level;
 @Service
 @AnnotationHandlerFor(WebServlet.class)
 public class WebServletHandler extends AbstractWebHandler {
+    protected final static LocalStringManagerImpl localStrings =
+            new LocalStringManagerImpl(WebFilterHandler.class);
+
     public WebServletHandler() {
     }
 
@@ -144,7 +148,7 @@ public class WebServletHandler extends AbstractWebHandler {
         if (!HttpServlet.class.isAssignableFrom(webCompClass)) {
             log(Level.SEVERE, ainfo,
                 localStrings.getLocalString(
-                "enterprise.deployment.annotation.handlers.needtoextend",
+                "web.deployment.annotation.handlers.needtoextend",
                 "The Class {0} having annotation {1} need to be a derived class of {2}.",
                 new Object[] { webCompClass.getName(), WebServlet.class.getName(), HttpServlet.class.getName() }));
             return getDefaultFailedResult();
@@ -165,10 +169,10 @@ public class WebServletHandler extends AbstractWebHandler {
             String defaultMessage = null;
 
             if (webCompDesc.isServlet()) {
-                messageKey = "enterprise.deployment.annotation.handlers.servletimpldontmatch";
+                messageKey = "web.deployment.annotation.handlers.servletimpldontmatch";
                 defaultMessage = "The servlet '{0}' has implementation '{1}' in xml. It does not match with '{2}' from annotation @{3}.";
             } else {
-                messageKey = "enterprise.deployment.annotation.handlers.servletimpljspdontmatch";
+                messageKey = "web.deployment.annotation.handlers.servletimpljspdontmatch";
                 defaultMessage = "The servlet '{0}' is a jsp '{1}' in xml. It does not match with '{2}' from annotation @{3}.";
             }
             
@@ -204,7 +208,7 @@ public class WebServletHandler extends AbstractWebHandler {
                     (urlPatterns != null) ? Arrays.toString(urlPatterns) : "";
 
                 throw new IllegalArgumentException(localStrings.getLocalString(
-                        "enterprise.deployment.annotation.handlers.invalidUrlPatterns",
+                        "web.deployment.annotation.handlers.invalidUrlPatterns",
                         "Invalid url patterns for {0}: {1}.",
                         new Object[] { webCompClass, urlPatternString }));
             }

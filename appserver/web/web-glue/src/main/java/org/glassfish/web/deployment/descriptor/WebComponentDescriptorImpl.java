@@ -197,7 +197,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
                         String oldName = up2sname.put(s, getCanonicalName());
                         if (oldName != null && (!oldName.equals(name))) {
                             throw new IllegalArgumentException(localStrings.getLocalString(
-                                "enterprise.deployment.exceptionsameurlpattern",
+                                "web.deployment.exceptionsameurlpattern",
                                 "Servlet [{0}] and Servlet [{1}] have the same url pattern: [{2}]",
                                 new Object[] { oldName, name, s }));
                         }
