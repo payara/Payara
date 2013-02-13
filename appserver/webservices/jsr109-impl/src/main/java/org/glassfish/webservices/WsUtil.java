@@ -1742,11 +1742,11 @@ public class WsUtil {
 
         // List of all schema relative imports
         for(Import next : schemaRelativeImports) {
-            addFileAndDecendents(wsdlRoot.toURI().resolve(next.getLocation()).toURL(), cumulative);
+            addFileAndDecendents(wsdlRoot.toURI().resolve(new URI(null, next.getLocation(), null).toASCIIString()).toURL(), cumulative);
         }
         // List of all wsdl relative imports
         for(Import next : wsdlRelativeImports) {
-            addFileAndDecendents(wsdlRoot.toURI().resolve(next.getLocation()).toURL(), cumulative);
+            addFileAndDecendents(wsdlRoot.toURI().resolve(new URI(null, next.getLocation(), null).toASCIIString()).toURL(), cumulative);
         }
     }
 
