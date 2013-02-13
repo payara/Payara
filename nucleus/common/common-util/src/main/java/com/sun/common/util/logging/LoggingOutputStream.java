@@ -152,33 +152,16 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         public void println(Object x) {
             if (!checkLocks()) return;
 
-            StackTraceObjects sTO;
-
-            if ((sTO = (StackTraceObjects) perThreadStObjects.get()) != null) {
-                /*
-                * should not happen, but being safe.
-                * Only case under which we can come here is if there is
-                * code which does synchronized(System.err) and then does
-                * System.err.println(Throwable) without printing stackTrace
-                * other than java.lang.Throwable. We could have done
-                * this check prior to the check on holdsLock, but since
-                * that is the most common path, let us avoid any overhead
-                * println(String) will also do above check and hence there
-                * is no danger of missing out on valid printlns
-                */
-                perThreadStObjects.set(null);
-            }
-
             if (!(x instanceof java.lang.Throwable)) {
                 // No special processing if it is not an exception.
-                super.println(x);
+                println(x.toString());
                 return;
+            } else {
+                StackTraceObjects sTO = new StackTraceObjects((Throwable) x);
+                perThreadStObjects.set(sTO);
+                super.println(sTO.toString());                
             }
 
-            // if we pass all these checks, then we log the stacktrace
-            sTO = new StackTraceObjects((Throwable) x);
-            perThreadStObjects.set(sTO);
-            super.println(sTO.toString());
         }
 
         public PrintStream printf(String str, Object... args) {
