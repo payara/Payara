@@ -62,7 +62,8 @@ import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.api.naming.NamingObjectProxy;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.PostStartup;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.PostStartupRunLevel;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
@@ -89,7 +90,8 @@ import com.sun.logging.LogDomains;
 /**
  */
 @Service(name="ManagedBeanManagerImpl")
-public class ManagedBeanManagerImpl implements ManagedBeanManager, PostStartup, PostConstruct, EventListener {
+@RunLevel(value=PostStartupRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
+public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct, EventListener {
 
      private static final Logger _logger = LogDomains.getLogger(ManagedBeanManagerImpl.class,
             LogDomains.CORE_LOGGER);

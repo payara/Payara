@@ -44,8 +44,9 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.logging.LogDomains;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
-import org.glassfish.internal.api.PostStartup;
+import org.glassfish.internal.api.PostStartupRunLevel;
 import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.glassfish.resourcebase.resources.api.ResourcesBinder;
@@ -69,9 +70,9 @@ import java.util.logging.Logger;
  * startup, create/update/delete of resource/pool
  * @author Jagadish Ramu
  */
-@Singleton
+@RunLevel(value=PostStartupRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
 @Service(name="ApplicationScopedResourcesManager")
-public class ApplicationScopedResourcesManager implements PostStartup, PostConstruct, PreDestroy, ConfigListener {
+public class ApplicationScopedResourcesManager implements PostConstruct, PreDestroy, ConfigListener {
 
     private static final Logger _logger = LogDomains.getLogger(ApplicationScopedResourcesManager.class,LogDomains.RESOURCE_BUNDLE);
 

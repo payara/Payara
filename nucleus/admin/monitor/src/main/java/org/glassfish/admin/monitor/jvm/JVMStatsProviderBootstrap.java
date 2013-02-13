@@ -51,6 +51,7 @@ import org.glassfish.api.monitoring.ContainerMonitoring;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.*;
 
 /**
@@ -58,7 +59,8 @@ import org.glassfish.internal.api.*;
  * @author PRASHANTH ABBAGANI
  */
 @Service
-public class JVMStatsProviderBootstrap implements PostStartup, PostConstruct {
+@RunLevel(value=PostStartupRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
+public class JVMStatsProviderBootstrap implements PostConstruct {
 
     private ServerRuntimeStatsProvider sRuntimeStatsProvider = new ServerRuntimeStatsProvider();
     private JVMClassLoadingStatsProvider clStatsProvider = new JVMClassLoadingStatsProvider();

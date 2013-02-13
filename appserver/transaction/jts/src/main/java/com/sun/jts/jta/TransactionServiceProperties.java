@@ -52,7 +52,6 @@ import com.sun.jts.utils.RecoveryHooks.FailureInducer;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.internal.api.PostStartup;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import com.sun.enterprise.transaction.api.ResourceRecoveryManager;
@@ -66,6 +65,7 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jvnet.hk2.config.types.Property;
 
 /**
@@ -315,7 +315,7 @@ public class TransactionServiceProperties {
                 ProcessEnvironment processEnv = serviceLocator.getService(ProcessEnvironment.class);
                 if( processEnv.getProcessType().isServer()) {
                     // Start ResourceManager if it hadn't started yet
-                    serviceLocator.getService(PostStartup.class,"ResourceManager");
+                    serviceLocator.getAllServices(BuilderHelper.createNameFilter("ResourceManager"));
                     value = properties.getProperty("pending-txn-cleanup-interval");
                     int interval = -1;
                     if (isValueSet(value)) {

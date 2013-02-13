@@ -68,10 +68,8 @@ import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.DescriptorBuilder;
 import org.glassfish.internal.api.Init;
 import org.glassfish.internal.api.InitRunLevel;
-import org.glassfish.internal.api.PostStartup;
 import org.glassfish.internal.api.PostStartupRunLevel;
 import org.glassfish.kernel.event.EventsImpl;
-import org.glassfish.main.core.apiexporter.APIExporter;
 import org.glassfish.main.core.apiexporter.APIExporterImpl;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.junit.After;
@@ -160,13 +158,11 @@ public class AppServerStartupTest {
         config.addActiveDescriptor(descriptor);
 
         bindService(config, InitRunLevelBridge.class);
-        bindService(config, PostStartupRunLevelBridge.class);
 
         bindService(config, TestInitService.class);
         bindService(config, TestInitRunLevelService.class);
         bindService(config, TestStartupService.class);
         bindService(config, TestStartupRunLevelService.class);
-        bindService(config, TestPostStartupService.class);
         bindService(config, TestPostStartupRunLevelService.class);
 
         bindService(config, CommonClassLoaderServiceImpl.class);
@@ -276,7 +272,6 @@ public class AppServerStartupTest {
         Assert.assertTrue(results.isConstructed(TestInitRunLevelService.class, InitRunLevel.VAL));
         Assert.assertTrue(results.isConstructed(TestStartupService.class, StartupRunLevel.VAL));
         Assert.assertTrue(results.isConstructed(TestStartupRunLevelService.class, StartupRunLevel.VAL));
-        Assert.assertTrue(results.isConstructed(TestPostStartupService.class, PostStartupRunLevel.VAL));
         Assert.assertTrue(results.isConstructed(TestPostStartupRunLevelService.class, PostStartupRunLevel.VAL));
 
         as.stop();
@@ -292,7 +287,6 @@ public class AppServerStartupTest {
         Assert.assertTrue(results.isDestroyed(TestInitRunLevelService.class, InitRunLevel.VAL));
         Assert.assertTrue(results.isDestroyed(TestStartupService.class, StartupRunLevel.VAL));
         Assert.assertTrue(results.isDestroyed(TestStartupRunLevelService.class, StartupRunLevel.VAL));
-        Assert.assertTrue(results.isDestroyed(TestPostStartupService.class, PostStartupRunLevel.VAL));
         Assert.assertTrue(results.isDestroyed(TestPostStartupRunLevelService.class, PostStartupRunLevel.VAL));
     }
 
@@ -314,7 +308,6 @@ public class AppServerStartupTest {
         // assert that startup & post-startup services are not constructed since the failure occurs during init
         Assert.assertFalse(results.isConstructed(TestStartupService.class));
         Assert.assertFalse(results.isConstructed(TestStartupRunLevelService.class));
-        Assert.assertFalse(results.isConstructed(TestPostStartupService.class));
         Assert.assertFalse(results.isConstructed(TestPostStartupRunLevelService.class));
     }
 
@@ -338,7 +331,6 @@ public class AppServerStartupTest {
         Assert.assertTrue(results.isConstructed(TestStartupService.class, StartupRunLevel.VAL));
         Assert.assertTrue(results.isConstructed(TestStartupRunLevelService.class, StartupRunLevel.VAL));
         // assert that the post-startup service is not constructed since shutdown occurs during startup
-        Assert.assertFalse(results.isConstructed(TestPostStartupService.class));
         Assert.assertFalse(results.isConstructed(TestPostStartupRunLevelService.class));
     }
 
@@ -349,14 +341,13 @@ public class AppServerStartupTest {
      */
     @Test
     public void testRunLevelServicesWithPostStartupException() {
-        testRunLevelServicesWithException(TestPostStartupService.class);
+        testRunLevelServicesWithException(TestPostStartupRunLevelService.class);
 
         // assert that the run level services have been constructed
         Assert.assertTrue(results.isConstructed(TestInitService.class, InitRunLevel.VAL));
         Assert.assertTrue(results.isConstructed(TestInitRunLevelService.class, InitRunLevel.VAL));
         Assert.assertTrue(results.isConstructed(TestStartupService.class, StartupRunLevel.VAL));
         Assert.assertTrue(results.isConstructed(TestStartupRunLevelService.class, StartupRunLevel.VAL));
-        Assert.assertTrue(results.isConstructed(TestPostStartupService.class, PostStartupRunLevel.VAL));
         Assert.assertTrue(results.isConstructed(TestPostStartupRunLevelService.class, PostStartupRunLevel.VAL));
     }
 
@@ -387,7 +378,6 @@ public class AppServerStartupTest {
         Assert.assertTrue(results.isConstructed(TestStartupService.class, StartupRunLevel.VAL));
         Assert.assertTrue(results.isConstructed(TestStartupRunLevelService.class, StartupRunLevel.VAL));
         // assert that the post-startup service is not constructed since shutdown occurs during startup
-        Assert.assertFalse(results.isConstructed(TestPostStartupService.class));
         Assert.assertFalse(results.isConstructed(TestPostStartupRunLevelService.class));
     }
 
@@ -403,7 +393,6 @@ public class AppServerStartupTest {
         Assert.assertFalse(results.isConstructed(TestInitRunLevelService.class));
         Assert.assertFalse(results.isConstructed(TestStartupService.class));
         Assert.assertFalse(results.isConstructed(TestStartupRunLevelService.class));
-        Assert.assertFalse(results.isConstructed(TestPostStartupService.class));
         Assert.assertFalse(results.isConstructed(TestPostStartupRunLevelService.class));
 
         as.run();
@@ -554,13 +543,6 @@ public class AppServerStartupTest {
     @Service
     @RunLevel(StartupRunLevel.VAL)
     public static class TestStartupRunLevelService extends TestService {
-    }
-
-    /**
-     * Post-startup service that implements the old style {@link PostStartup} interface.
-     */
-    @Service
-    public static class TestPostStartupService extends TestService implements PostStartup {
     }
 
     /**

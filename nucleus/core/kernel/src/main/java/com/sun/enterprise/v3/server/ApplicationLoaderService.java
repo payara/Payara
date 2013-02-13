@@ -74,7 +74,7 @@ import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
-import org.glassfish.internal.api.PostStartup;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ContainerRegistry;
@@ -328,17 +328,17 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         // ApplicationLoaderService needs to be initialized after
         // ManagedBeanManagerImpl. By injecting ManagedBeanManagerImpl,
         // we guarantee the initialization order.
-        habitat.getService(PostStartup.class, "ManagedBeanManagerImpl");
+        habitat.getAllServices(BuilderHelper.createNameFilter("ManagedBeanManagerImpl"));
 
         // ApplicationLoaderService needs to be initialized after
         // ResourceManager. By injecting ResourceManager, we guarantee the
         // initialization order.
         // See https://glassfish.dev.java.net/issues/show_bug.cgi?id=7179
-        habitat.getService(PostStartup.class, "ResourceManager");
+        habitat.getAllServices(BuilderHelper.createNameFilter("ResourceManager"));
 
         // Application scoped resource is loaded after ResourceManager
         // http://java.net/jira/browse/GLASSFISH-19161
-        habitat.getService(PostStartup.class, "ApplicationScopedResourcesManager");
+        habitat.getAllServices(BuilderHelper.createNameFilter("ApplicationScopedResourcesManager"));
 
     }
 

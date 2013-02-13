@@ -42,12 +42,12 @@ package org.glassfish.internal.config;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.config.TransactionListener;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import java.beans.PropertyChangeEvent;
 
-import org.glassfish.api.Async;
 import org.glassfish.internal.api.*;
 
 import javax.inject.Inject;
@@ -59,7 +59,8 @@ import java.util.Collections;
 Listens for unprocessed config changes
  */
 @Service
-public final class UnprocessedConfigListener implements PostStartup, PostConstruct, TransactionListener {
+@RunLevel(value=PostStartupRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
+public final class UnprocessedConfigListener implements PostConstruct, TransactionListener {
     @Inject
     private Transactions mTransactions;
 

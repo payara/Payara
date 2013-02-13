@@ -47,6 +47,7 @@ import com.sun.enterprise.connectors.jms.config.JmsHost;
 import com.sun.enterprise.connectors.jms.system.ActiveJmsResourceAdapter;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.runlevel.RunLevel;
 //import org.jvnet.hk2.config.ConfigSupport;
 //import org.jvnet.hk2.config.SingleConfigCode;
 //import org.jvnet.hk2.config.TransactionFailure;
@@ -55,7 +56,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import org.glassfish.internal.api.PostStartup;
+import org.glassfish.internal.api.PostStartupRunLevel;
 
 import com.sun.enterprise.config.serverbeans.Config;
 
@@ -74,7 +75,8 @@ import org.glassfish.api.admin.ServerEnvironment;
 //import java.util.List;
 
 @Service
-public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
+@RunLevel(value=PostStartupRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
+public class JmsProviderLifecycle implements PostConstruct{
     private static final String JMS_INITIALIZE_ON_DEMAND = "org.glassfish.jms.InitializeOnDemand";
     //Lifecycle properties
     public static final String EMBEDDED="EMBEDDED";
