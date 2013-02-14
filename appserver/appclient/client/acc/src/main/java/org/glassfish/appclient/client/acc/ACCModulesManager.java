@@ -41,12 +41,15 @@
 package org.glassfish.appclient.client.acc;
 
 import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.module.bootstrap.ContextDuplicatePostProcessor;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 import com.sun.enterprise.naming.impl.ClientNamingConfiguratorImpl;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.glassfish.api.admin.ProcessEnvironment;
@@ -56,6 +59,7 @@ import org.glassfish.hk2.api.DynamicConfigurationService;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.hk2.bootstrap.HK2Populator;
+import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
 import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
 import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
 import org.glassfish.hk2.utilities.BuilderHelper;
@@ -170,8 +174,12 @@ public class ACCModulesManager /*implements ModuleStartup*/ {
 
         habitat = serviceLocator;
         
+        ContextDuplicatePostProcessor duplicateProcessor = new ContextDuplicatePostProcessor();
+        List<PopulatorPostProcessor> postProcessors = new LinkedList<PopulatorPostProcessor>();
+        postProcessors.add(duplicateProcessor);
+        
         try {
-        	HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(loader), null);
+        	HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(loader), postProcessors);
         } catch (IOException e) {
         	e.printStackTrace();
         }
