@@ -101,7 +101,7 @@ import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 /**
- * Utility class for convenienve methods
+ * Utility class for convenience methods
  *
  * @author  Jerome Dochez
  * @version 
@@ -455,7 +455,7 @@ public class DOLUtils {
      * @param confDDFiles the sorted configuration files for this archive
      * @param archive the archive
      * @param descriptor the initialized deployment descriptor
-     * @param archivist the main archivist
+     * @param main the main archivist
      * @param warnIfMultipleDDs whether to log warnings if both the GlassFish and the legacy Sun descriptors are present
      */
     public static void readRuntimeDeploymentDescriptor(List<ConfigurationDeploymentDescriptorFile> confDDFiles, ReadableArchive archive, RootDeploymentDescriptor descriptor, Archivist main, final boolean warnIfMultipleDDs) throws IOException, SAXParseException {
