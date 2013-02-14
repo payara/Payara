@@ -1610,11 +1610,16 @@ public abstract class BaseContainer
         return javaGlobalPrefix.toString();
     }
 
+    public void createEjbInstance(Object[] params, EJBContextImpl ctx) throws Exception {
+        Object instance = _constructEJBInstance();
+        ctx.setEJB(instance);
+    }
+
     protected EJBContextImpl createEjbInstanceAndContext() throws Exception {
         EjbBundleDescriptorImpl ejbBundle = ejbDescriptor.getEjbBundleDescriptor();
 
-	Object instance = null;
 	JCDIService.JCDIInjectionContext jcdiCtx = null;
+	Object instance = null;
 
         if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle)) {
 
@@ -1637,7 +1642,36 @@ public abstract class BaseContainer
 	    instance = jcdiCtx.getInstance();
 
 	} else {
-	    instance = _constructEJBInstance();
+            EJBContextImpl ctx = _constructEJBContextImpl(null); 
+
+            EjbInvocation ejbInv = null;
+            boolean success = true;
+            try {
+                // create dummy invocation
+                ejbInv = createEjbInvocation(null, ctx);
+                invocationManager.preInvoke(ejbInv);
+                injectEjbInstance(ctx);
+
+                intercept(CallbackType.AROUND_CONSTRUCT, ctx);
+            } catch(Throwable t) {
+                success = false;
+                throw new InvocationTargetException(t);
+            } finally {
+                try {
+                    if (ejbInv != null) {
+                        // Complete the dummy invocation
+                        invocationManager.postInvoke(ejbInv);
+                    }
+                } catch(Throwable t) {
+                    if (success) {
+                        throw new InvocationTargetException(t);
+                    } else {
+                        _logger.log(Level.WARNING, "", t);
+                    } 
+                }
+            }
+
+	    instance = ctx.getEJB();
 	}
 
 	EJBContextImpl contextImpl = _constructEJBContextImpl(instance);
@@ -1681,7 +1715,9 @@ public abstract class BaseContainer
             interceptorManager.initializeInterceptorInstances(interceptorInstances);
 
         } else {
-            injectionManager.injectInstance(context.getEJB(), ejbDescriptor, false);
+            if (context.getEJB() != null) {
+                injectionManager.injectInstance(context.getEJB(), ejbDescriptor, false);
+            }
 
             interceptorInstances = interceptorManager.createInterceptorInstances();
 

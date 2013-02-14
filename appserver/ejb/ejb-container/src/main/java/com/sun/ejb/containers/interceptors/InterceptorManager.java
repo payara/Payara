@@ -373,23 +373,37 @@ public class InterceptorManager {
     public boolean intercept(CallbackType eventType, EJBContextImpl ctx)
             throws Throwable {
 
-        return intercept(eventType, ctx.getEJB(), ctx.getInterceptorInstances());
+        return intercept(eventType, ctx.getEJB(), ctx.getInterceptorInstances(), ctx);
     }
 
     public boolean intercept(CallbackType eventType, Object targetObject,
                              Object[] interceptorInstances)
             throws Throwable {
+        return intercept(eventType, targetObject, interceptorInstances, null);
+    }
+
+    public boolean intercept(CallbackType eventType, Object targetObject,
+                             Object[] interceptorInstances, EJBContextImpl ctx)
+            throws Throwable {
 
         CallbackChainImpl chain = null;
+        CallbackInvocationContext invContext = null;
         switch (eventType) {
             case AROUND_CONSTRUCT:
+                chain = callbackChain[eventType.ordinal()];
+                invContext = new CallbackInvocationContext(beanClass, 
+                        interceptorInstances, chain, eventType, container, ctx);
+                if (chain != null) {
+                    chain.invokeNext(0, invContext);
+                }
+                break;
             case POST_CONSTRUCT:
             case PRE_PASSIVATE:
             case POST_ACTIVATE:
             case PRE_DESTROY:
                 chain = callbackChain[eventType.ordinal()];
-                CallbackInvocationContext invContext = new
-                    CallbackInvocationContext(targetObject, interceptorInstances, chain);
+                invContext = new CallbackInvocationContext(targetObject, 
+                        interceptorInstances, chain, eventType);
                 if (chain != null) {
                     chain.invokeNext(0, invContext);
                 }

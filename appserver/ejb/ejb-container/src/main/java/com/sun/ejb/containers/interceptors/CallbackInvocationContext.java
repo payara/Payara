@@ -43,9 +43,10 @@ package com.sun.ejb.containers.interceptors;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import javax.interceptor.InvocationContext;
-import javax.ejb.EJBContext;
 
 import com.sun.ejb.containers.EJBContextImpl;
+import com.sun.ejb.containers.BaseContainer;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -63,6 +64,15 @@ public class CallbackInvocationContext implements InvocationContext {
     private CallbackChainImpl callbackChain;
     private Object[] interceptorInstances;
     private Object targetObjectInstance;
+    private CallbackType eventType;
+
+    // For AroundConstruct callback
+    private Class targetObjectClass;
+    private Constructor ctor = null;
+    private Class[] ctorParamTypes = null;
+    private Object[] ctorParams = null;
+    private BaseContainer container = null;
+    private EJBContextImpl ctx = null;
 
     public CallbackInvocationContext(Object targetObjectInstance,
                                      Object[] interceptorInstances,
@@ -72,14 +82,46 @@ public class CallbackInvocationContext implements InvocationContext {
         callbackChain = chain;
     }
 
+    public CallbackInvocationContext(Object targetObjectInstance,
+                                     Object[] interceptorInstances,
+                                     CallbackChainImpl chain,
+                                     CallbackType eventType) {
+        this(targetObjectInstance, interceptorInstances, chain);
+
+        this.eventType = eventType;
+    }
+
+    /**
+     * AroundConstruct
+     */
+    public CallbackInvocationContext(Class targetObjectClass,
+                                     Object[] interceptorInstances,
+                                     CallbackChainImpl chain,
+                                     CallbackType eventType,
+                                     BaseContainer container,
+                                     EJBContextImpl ctx) {
+        this(null, interceptorInstances, chain, eventType);
+
+        this.targetObjectClass = targetObjectClass;
+        this.container = container;
+        this.ctx = ctx;
+
+        Constructor[] ctors = targetObjectClass.getConstructors();
+        for(Constructor ctor0 : ctors) {
+            ctor = ctor0;
+            if(ctor0.getParameterTypes().length > 0) {
+                break;
+            }
+        }
+
+        ctorParamTypes = ctor.getParameterTypes();
+        ctorParams = new Object[ctorParamTypes.length]; // XXXX
+    }
+
     // InvocationContext methods
 
     public Object getTarget() {
         return targetObjectInstance;
-    }
-
-    public void setTarget(Object target) {
-        targetObjectInstance = target;
     }
 
     public Object[] getInterceptorInstances() {
@@ -91,6 +133,9 @@ public class CallbackInvocationContext implements InvocationContext {
     }
 
     public Constructor getConstructor() {
+        if (eventType == CallbackType.AROUND_CONSTRUCT) {
+            return ctor;
+        }
         return null;
     }
 
@@ -100,11 +145,20 @@ public class CallbackInvocationContext implements InvocationContext {
 
     
     public Object[] getParameters() {
-        throw new IllegalStateException("not applicable to Callback methods");
+        if (eventType == CallbackType.AROUND_CONSTRUCT) {
+            return ctorParams;
+        } else {
+            throw new IllegalStateException("not applicable to Callback methods");
+        }
     }
 
     public void setParameters(Object[] params) {
-        throw new IllegalStateException("not applicable to Callback methods");
+        if (eventType == CallbackType.AROUND_CONSTRUCT) {
+            checkSetParameters(params);
+            ctorParams = params;
+        } else {
+            throw new IllegalStateException("not applicable to Callback methods");
+        }
     }
 
 
@@ -127,8 +181,53 @@ public class CallbackInvocationContext implements InvocationContext {
         }
     }
 
+    /**
+      * Called from Interceptor Chain to create the bean instance.
+      */
+    public void invokeBeanConstructor() throws Throwable {
+        if (eventType == CallbackType.AROUND_CONSTRUCT) {
+            container.createEjbInstance(ctorParams, ctx);
+            targetObjectInstance = ctx.getEJB();
+        } // else do nothing? XXX
+    }
 
+    private void checkSetParameters(Object[] params) {
+       if( ctor != null) {
 
-
+            if ((params == null) && (ctorParamTypes.length != 0)) {
+                throw new IllegalArgumentException("Wrong number of parameters for "
+                        + " constructor: " + ctor);
+            }
+            if (ctorParamTypes.length != params.length) {
+                throw new IllegalArgumentException("Wrong number of parameters for "
+                        + " constructor: " + ctor);
+            }
+            int index = 0 ;
+            for (Class type : ctorParamTypes) {
+                if (params[index] == null) {
+                    if (type.isPrimitive()) {
+                        throw new IllegalArgumentException("Parameter type mismatch for constructor "
+                                + ctor + ".  Attempt to set a null value for Arg["
+                            + index + "]. Expected a value of type: " + type.getName());
+                    }
+                } else if (type.isPrimitive()) {
+                    if (! InterceptorUtil.hasCompatiblePrimitiveWrapper(type, params[index].getClass())) {
+                        throw new IllegalArgumentException("Parameter type mismatch for constructor "
+                                + ctor + ".  Arg["
+                            + index + "] type: " + params[index].getClass().getName()
+                            + " is not compatible with the expected type: " + type.getName());
+                    }
+                } else if (! type.isAssignableFrom(params[index].getClass())) {
+                    throw new IllegalArgumentException("Parameter type mismatch for constructor "
+                            + ctor + ".  Arg["
+                        + index + "] type: " + params[index].getClass().getName()
+                        + " does not match the expected type: " + type.getName());
+                }
+                index++;
+            }
+        } else {
+            throw new IllegalStateException("Internal Error: Got null constructor");
+        }
+    }
 }
 

@@ -411,18 +411,10 @@ public abstract class AbstractSingletonContainer
 
         try {
 
-            if (invocationManager.getCurrentInvocation() == null) {
-                // It's a startup load - create a dummy invocation
-                ejbInv = createEjbInvocation(null, _constructEJBContextImpl(null));
-                invocationManager.preInvoke(ejbInv);
-            }
+            // a dummy invocation will be created by the BaseContainer to support
+            // possible AroundConstruct interceptors
             context = (SingletonContextImpl) createEjbInstanceAndContext();
 
-            if (ejbInv != null) {
-                // Complete the dummy invocation
-                invocationManager.postInvoke(ejbInv);
-            }
-            
             Object ejb = context.getEJB();
 
             // this allows JNDI lookups from setSessionContext, ejbCreate

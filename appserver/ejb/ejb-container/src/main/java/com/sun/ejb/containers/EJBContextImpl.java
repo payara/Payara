@@ -632,6 +632,10 @@ public abstract class EJBContextImpl
         return inActivatePassivate;
     } 
 
+    void setEJB(Object o) {
+        ejb = o;
+    } 
+
     protected Object getKey() {
         if ( ejbLocalObjectImpl != null ) {
             return ejbLocalObjectImpl.getKey();

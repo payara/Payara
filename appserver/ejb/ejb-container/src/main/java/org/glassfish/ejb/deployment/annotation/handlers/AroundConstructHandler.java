@@ -42,6 +42,8 @@ package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
+
 //import javax.interceptor.AroundConstruct;
 import com.sun.ejb.containers.interceptors.AroundConstruct;
 
@@ -70,16 +72,7 @@ public class AroundConstructHandler extends AbstractAttributeHandler {
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
-        for(EjbContext next : ejbContexts) {
-            
-            EjbSessionDescriptor ejbSessionDescriptor = 
-                (EjbSessionDescriptor) next.getDescriptor();
-
-            ejbSessionDescriptor.addAroundConstructDescriptor(
-                getAroundConstructDescriptor(ainfo));
-            
-        }
-
+        logger.log(Level.WARNING, "Bean class should not define AroundConstruct interceptor method");
         return getDefaultProcessedResult();        
     }
 

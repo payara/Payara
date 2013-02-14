@@ -106,6 +106,10 @@ public class InterceptorUtil {
          compatiblePrimitiveWrapper.put(short.class, smallerPrimitiveWrappers);
      }
 
+    public static boolean hasCompatiblePrimitiveWrapper(Class type, Class typeTo) {
+        Set<Class> compatibles = compatiblePrimitiveWrapper.get(type);
+        return compatibles.contains(typeTo);
+    }
 
     public static void checkSetParameters(Object[] params, Method method) {
 
