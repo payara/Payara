@@ -57,22 +57,6 @@
                 content="fullResourceLink.jsf"
     />
     
-    <!-- following is for JSR236, may need to move this to its own console plugin -->
-    <integration-point
-        id="concurrentNodes"
-        type="org.glassfish.admingui:navNode"
-        priority="450"
-        parentId="resources"
-        content="concurrent/concurrentNode.jsf"
-    />
-    <integration-point
-        id="concurrentLink"
-        parentId="propSheetSection"
-        type="org.glassfish.admingui:resources"
-        priority="450"
-        content="concurrent/concurrentLink.jsf"
-    />
-    
     <!-- add the property sheet for deployment page, specific for ear app -->
     <integration-point
         id="full_deploy_ear"
