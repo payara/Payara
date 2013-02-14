@@ -276,18 +276,7 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
                 throw ae;
             }
 
-            // recreate the session
-            Map<String, Object> map = new HashMap<String, Object>();
-            Enumeration<String> names = session.getAttributeNames();
-            while (names.hasMoreElements()) {
-                String key = names.nextElement();
-                map.put(key, session.getAttribute(key));
-            }
-            session.invalidate();
-            session = request.getSession(true);
-            for (Map.Entry<String, Object> e : map.entrySet()) {
-                session.setAttribute(e.getKey(), e.getValue());
-            }
+            request.changeSessionId();
 
             if (session != null) {
                 // Get the "extraProperties" section of the response...
