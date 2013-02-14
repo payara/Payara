@@ -82,7 +82,7 @@ public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCo
 
     protected AdminCommandEventBroker eventBroker;
     protected Job attached;
-
+    
     @Inject
     JobManager registry;
 
@@ -101,11 +101,12 @@ public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCo
 
         if (attached == null) {
             //try for completed jobs
-            if (registry.getCompletedJobs() != null)
+            if (registry.getCompletedJobs() != null) {
                 jobInfo = (JobInfo) registry.getCompletedJobForId(jobID);
-             if (jobInfo != null) {
-                 jobName = jobInfo.jobName;
-             }
+            }
+            if (jobInfo != null) {
+                jobName = jobInfo.jobName;
+            }
 
         }
 
@@ -153,13 +154,20 @@ public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCo
             return;
         }
         if (attached != null) {
+            //Very sensitive locking part
             AdminCommandEventBroker attachedBroker = attached.getEventBroker();
-            synchronized (attachedBroker) {
-                onAdminCommandEvent(AdminCommandStateImpl.EVENT_STATE_CHANGED, attached);
-                if (attached.getCommandProgress() != null) {
-                    onAdminCommandEvent(CommandProgress.EVENT_PROGRESSSTATUS_STATE, attached.getCommandProgress());
+            CommandProgress commandProgress = attached.getCommandProgress();
+            if (commandProgress == null) {
+                synchronized (attachedBroker) {
+                    onAdminCommandEvent(AdminCommandStateImpl.EVENT_STATE_CHANGED, attached);
+                    attachedBroker.registerListener(".*", this);
                 }
-                attachedBroker.registerListener(".*", this);
+            } else {
+                synchronized (commandProgress) {
+                    onAdminCommandEvent(AdminCommandStateImpl.EVENT_STATE_CHANGED, attached);
+                    onAdminCommandEvent(CommandProgress.EVENT_PROGRESSSTATUS_STATE, attached.getCommandProgress());
+                    attachedBroker.registerListener(".*", this);
+                }
             }
             synchronized (attached) {
                 while(attached.getState().equals(PREPARED) ||
