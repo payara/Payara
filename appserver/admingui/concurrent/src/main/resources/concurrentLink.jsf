@@ -41,10 +41,10 @@
 -->
 
 <sun:property>
-    <sun:hyperlink toolTip="$resource{i18nconn.tree.concurrentResources.tooltip}"
-                   url="/concurrent/ConcurrentResources.jsf">
+    <sun:hyperlink toolTip="$resource{i18ncon.tree.concurrentResources.tooltip}"
+                   url="/concurrentResources.jsf">
         <sun:image url="/resource/images/JDBC.gif" />
-        <sun:staticText text="$resource{i18nconn.tree.concurrentResources}" />
+        <sun:staticText text="$resource{i18ncon.tree.concurrentResources}" />
     </sun:hyperlink>
     <!beforeCreate
         setResourceBundle(key="i18ncon" bundle="org.glassfish.concurrent.admingui.Strings");
