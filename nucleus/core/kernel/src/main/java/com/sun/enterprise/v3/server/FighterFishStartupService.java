@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,25 +37,63 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package com.sun.enterprise.v3.server;
 
-package org.glassfish.internal.api;
+import java.util.LinkedList;
+import java.util.List;
 
-import org.jvnet.hk2.annotations.Contract;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * Init services are run at server start. They are run after the component manager
- * is initialized but before the Startup services are run. Startup are meant to be
- * public API where users can add their own start up services. This is not the case
- * for Init services which results are expected to be fully constructed at the time
- * the first startup service is ran.
- *
- * One of the thing that an Init service can do is initialize the security manager
- * or logging or even add modules and repositories to GlassFish where Startup services
- * can be loaded from.
+ * This service is here to start fighterfish if it is available.  This
+ * is done to maintain fighterfish compatibility with older versions
+ * of glassfish
  * 
- * @deprecated Use the {@link InitRunLevel} annotation on the Service instead of
- * 		implementing this interface.
+ * @author jwells
+ *
  */
-@Contract
-public interface Init {
+@Service
+@RunLevel(value=StartupRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
+public class FighterFishStartupService {
+    private final static String FIGHTERFISH_START_SERVICE = "org.glassfish.osgijpa.extension.JPAStartupService";
+    
+    @Inject
+    private ServiceLocator locator;
+    
+    private List<ServiceHandle<?>> fighterFishHandles;
+    
+    @SuppressWarnings("unused")
+    @PostConstruct
+    private void postConstruct() {
+        fighterFishHandles = locator.getAllServiceHandles(
+                BuilderHelper.createContractFilter(FIGHTERFISH_START_SERVICE));
+        
+        for (ServiceHandle<?> fighterFishHandle : fighterFishHandles) {
+            fighterFishHandle.getService();
+        }
+        
+    }
+    
+    @SuppressWarnings("unused")
+    @PreDestroy
+    private void preDestroy() {
+        if (fighterFishHandles == null) return;
+        
+        List<ServiceHandle<?>> localHandles = new LinkedList<ServiceHandle<?>>(fighterFishHandles);
+        fighterFishHandles.clear();
+        
+        for (ServiceHandle<?> handle : localHandles) {
+            handle.destroy();
+        }
+    }
+
 }

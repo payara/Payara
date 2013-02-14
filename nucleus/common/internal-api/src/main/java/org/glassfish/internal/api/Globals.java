@@ -43,10 +43,13 @@ package org.glassfish.internal.api;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 import org.jvnet.hk2.annotations.Service;
+import org.glassfish.common.util.Constants;
+import org.glassfish.hk2.api.Rank;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Init;
+import org.glassfish.hk2.runlevel.RunLevel;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * Very sensitive class, anything stored here cannot be garbage collected
@@ -54,13 +57,15 @@ import javax.inject.Inject;
  * @author Jerome Dochez
  */
 @Service(name = "globals")
-public class Globals implements Init {
+@Singleton
+public class Globals {
 
     private static volatile ServiceLocator defaultHabitat;
 
     private static Object staticLock = new Object();
     
     // dochez : remove this once we can get rid of ConfigBeanUtilities class
+    @SuppressWarnings("unused")
     @Inject
     private ConfigBeansUtilities utilities;
     
@@ -100,5 +105,24 @@ public class Globals implements Init {
         }
 
         return defaultHabitat;
+    }
+    
+    /**
+     * The point of this service is to ensure that the Globals
+     * service is properly initialized by the RunLevelService
+     * at the InitRunLevel.  However, Globals itself must be
+     * of scope Singleton because it us used in contexts where
+     * the RunLevelService is not there
+     * 
+     * @author jwells
+     *
+     */
+    @Service
+    @RunLevel(value=InitRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
+    @Rank(Constants.IMPORTANT_RUN_LEVEL_SERVICE)
+    public static class GlobalsInitializer {
+        @SuppressWarnings("unused")
+        @Inject
+        private Globals globals;
     }
 }

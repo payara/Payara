@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,28 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.v3.server;
 
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.glassfish.internal.api.Init;
-import org.glassfish.internal.api.InitRunLevel;
-import org.jvnet.hk2.annotations.Service;
+package org.glassfish.api;
+
+import org.jvnet.hk2.annotations.Contract;
 
 /**
- * Provides a bridge from {@link Init} to the {@link RunLevelService} based
- * approach.
+ * Do NOT use this interface anymore, it no longer does anything
+ *
+ * @deprecated Use the {@link RunLevel} annotation on the Service instead of
+ * 		implementing this interface.
  * 
- * @author Jeff Trent
+ * @author Jerome Dochez
  */
-@SuppressWarnings("deprecation")
-@RunLevel(InitRunLevel.VAL)
-//@Priority(2) // we want to be one of the first ones to run
-@Service
-public class InitRunLevelBridge extends RunLevelBridge {
-
-    // ----- Constructors ----------------------------------------------------
-
-    public InitRunLevelBridge() {
-        super(Init.class);
-    }
+@Deprecated
+@Contract
+public interface Startup {
+  
+    /** 
+     * A startup service may be useful during the lifetime of the application 
+     * server, while others need to process a task and stop running at the 
+     * end of the server startup. 
+     * A startup service should indicate if it needs to be running during the 
+     * START sequence only or during the SERVER lifetime.
+     */
+    public enum Lifecycle { START, SERVER }    
+    
+    /**
+     * Returns the life expectency of the service
+     * @return the life expectency.
+     */
+    public Lifecycle getLifecycle();
 }

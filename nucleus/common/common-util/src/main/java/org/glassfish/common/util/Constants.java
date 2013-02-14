@@ -52,5 +52,12 @@ public class Constants {
      * in their lookup or &#64;Inject point.
      */
     public final static int DEFAULT_IMPLEMENTATION_RANK = 50;
+    
+    /**
+     * This constant should be used as the rank of an important
+     * start level service (one that should be initialized generally
+     * ahead of other services at the same run-level)
+     */
+    public final static int IMPORTANT_RUN_LEVEL_SERVICE = 50;
 
 }
