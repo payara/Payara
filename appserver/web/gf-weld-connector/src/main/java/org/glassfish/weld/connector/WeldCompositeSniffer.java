@@ -46,13 +46,11 @@ import java.util.Enumeration;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 import javax.enterprise.deploy.shared.ModuleType;
-import javax.inject.Inject;
 
 
 /**
@@ -74,6 +72,7 @@ public class WeldCompositeSniffer extends WeldSniffer {
         if ((holder != null) && (holder.app != null)) {
             isWeldApplication = scanLibDir(appRoot, holder.app.getLibraryDirectory(), context);
         }
+
         return isWeldApplication;
     }
 
@@ -98,7 +97,6 @@ public class WeldCompositeSniffer extends WeldSniffer {
     // This method returns true if at least one /lib jar is a Weld archive
     // A more thorough scan is done in WeldDeployer to extract all Weld archives
     // under the /lib directory.
-
     private boolean scanLibDir(ReadableArchive archive, String libLocation, DeploymentContext context) {
         boolean entryPresent = false;
         if (libLocation != null && !libLocation.isEmpty()) {
@@ -111,6 +109,10 @@ public class WeldCompositeSniffer extends WeldSniffer {
                     try {
                         ReadableArchive jarInLib = archive.getSubArchive(entryName);
                         entryPresent = isEntryPresent(jarInLib, WeldUtils.META_INF_BEANS_XML);
+                        if (!entryPresent) {
+                            entryPresent = WeldUtils.hasCDIEnablingAnnotations(context,
+                                                                               jarInLib.getURI());
+                        }
                         jarInLib.close();
                         if (entryPresent) break;
                     } catch (IOException e) {

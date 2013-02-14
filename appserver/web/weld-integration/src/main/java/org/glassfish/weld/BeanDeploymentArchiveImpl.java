@@ -43,17 +43,7 @@ package org.glassfish.weld;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.SEVERE;
-import static org.glassfish.weld.connector.WeldUtils.BEANS_XML_FILENAME;
-import static org.glassfish.weld.connector.WeldUtils.CLASS_SUFFIX;
-import static org.glassfish.weld.connector.WeldUtils.EXPANDED_RAR_SUFFIX;
-import static org.glassfish.weld.connector.WeldUtils.JAR_SUFFIX;
-import static org.glassfish.weld.connector.WeldUtils.META_INF_BEANS_XML;
-import static org.glassfish.weld.connector.WeldUtils.RAR_SUFFIX;
-import static org.glassfish.weld.connector.WeldUtils.SEPARATOR_CHAR;
-import static org.glassfish.weld.connector.WeldUtils.WEB_INF_BEANS_XML;
-import static org.glassfish.weld.connector.WeldUtils.WEB_INF_CLASSES_META_INF_BEANS_XML;
-import static org.glassfish.weld.connector.WeldUtils.WEB_INF_CLASSES;
-import static org.glassfish.weld.connector.WeldUtils.WEB_INF_LIB;
+import static org.glassfish.weld.connector.WeldUtils.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -79,6 +69,7 @@ import javax.enterprise.inject.spi.InjectionTarget;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.weld.connector.WeldUtils;
 import org.glassfish.weld.connector.WeldUtils.BDAType;
 import org.glassfish.weld.ejb.EjbDescriptorImpl;
 import org.jboss.weld.bootstrap.WeldBootstrap;
@@ -336,11 +327,30 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     private void populate(Collection<com.sun.enterprise.deployment.EjbDescriptor> ejbs) {
         try {
+            boolean webinfbda = false;
+
+            boolean hasBeansXml = false;
             if (archive.exists(WEB_INF_BEANS_XML) || archive.exists(WEB_INF_CLASSES_META_INF_BEANS_XML)) {
+                webinfbda = true;
+                hasBeansXml = true;
                 if ( logger.isLoggable( FINE ) ) {
                     logger.log(FINE, "-processing " + archive.getURI() + " as it has " +
                       WEB_INF_BEANS_XML + " or " + WEB_INF_CLASSES_META_INF_BEANS_XML);
                 }
+            } else if (archive.exists(WEB_INF_CLASSES)) { // If WEB-INF/classes exists, check for CDI beans there
+                // Check WEB-INF/classes for CDI-enabling annotations
+                URI webinfclasses =
+                    URI.create("file:" + context.getSourceDir().getAbsolutePath() + File.separatorChar + WEB_INF_CLASSES + File.separatorChar);
+                if (WeldUtils.hasCDIEnablingAnnotations(context, webinfclasses)) {
+                    webinfbda = true;
+                    if ( logger.isLoggable( FINE ) ) {
+                        logger.log(FINE, "-processing " + archive.getURI() + " as it has one or more qualified CDI-annotated beans");
+                    }
+                }
+            }
+
+            if (webinfbda) {
+                context.getTransientAppMetadata();
                 bdaType = BDAType.WAR;
                 Enumeration<String> entries = archive.entries();
                 while (entries.hasMoreElements()) {
@@ -353,8 +363,11 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                         }
                         String className = filenameToClassname(entry);
                         try {
-                            beanClasses.add(getClassLoader().loadClass(className));
-                            moduleClasses.add(getClassLoader().loadClass(className));
+                            Class entryClass = getClassLoader().loadClass(className);
+                            if (hasBeansXml || WeldUtils.hasScopeAnnotation(entryClass)) {
+                                beanClasses.add(entryClass);
+                            }
+                            moduleClasses.add(entryClass);
                         } catch (Throwable t) {
                             logger.log(Level.WARNING, "Error while trying to " +
                             		"load Bean Class" + className + " : " + t.toString());
@@ -409,9 +422,20 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 //                            }
 //                            weblibJarsThatAreBeanArchives.add(weblibJarArchive);
                         } else {
-                            if ( logger.isLoggable( FINE ) ) {
-                                logger.log(FINE, "-WEB-INF/lib: skipping " + archive.getName()
-                                              + " as it doesn't have beans.xml or an extension");
+                            // Check for classes annotated with qualified annotations
+                            URI entryPath =
+                                URI.create("file:" + context.getSourceDir().getAbsolutePath() + File.separatorChar + entry);
+                            if (WeldUtils.hasCDIEnablingAnnotations(context, entryPath)) {
+                                if ( logger.isLoggable( FINE ) ) {
+                                    logger.log(FINE, "-WEB-INF/lib: considering " + entry
+                                            + " as a bean archive and hence added another BDA for it");
+                                }
+                                weblibJarsThatAreBeanArchives.add(weblibJarArchive);
+                            } else {
+                                if ( logger.isLoggable( FINE ) ) {
+                                    logger.log(FINE, "-WEB-INF/lib: skipping " + archive.getName()
+                                                  + " as it doesn't have beans.xml or an extension");
+                                }
                             }
                         }
                     }
@@ -447,9 +471,15 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                             + " as a Bean archive jar since it has META-INF/beans.xml");
                 }
                 bdaType = BDAType.JAR;
-                collectJarInfo(archive, true);
+                    collectJarInfo(archive, true, true);
+            } else if (WeldUtils.hasCDIEnablingAnnotations(context, archive.getURI())) {
+                if ( logger.isLoggable( FINE ) ) {
+                    logger.log(FINE, "-JAR processing: " + archive.getURI()
+                            + " since it contains one or more classes with a scope annotation");
+                }
+                bdaType = BDAType.JAR;
+                collectJarInfo(archive, true, false);
             }
-
 
             // This is causing tck failures, specifically
             // MultiModuleProcessingTest.testProcessedModulesCount
@@ -515,7 +545,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         }
     }
 
-    private void collectJarInfo(ReadableArchive archive, boolean isBeanArchive)
+    private void collectJarInfo(ReadableArchive archive, boolean isBeanArchive, boolean hasBeansXml)
                         throws IOException, ClassNotFoundException {
         if ( logger.isLoggable( FINE ) ) {
             logger.log(FINE, "-collecting jar info for " + archive.getURI());
@@ -523,19 +553,26 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         Enumeration<String> entries = archive.entries();
         while (entries.hasMoreElements()) {
             String entry = entries.nextElement();
-            handleEntry(archive, entry, isBeanArchive);
+            handleEntry(archive, entry, isBeanArchive, hasBeansXml);
         }
     }
 
-    private void handleEntry(ReadableArchive archive, String entry, boolean isBeanArchive) throws ClassNotFoundException {
+    private void handleEntry(ReadableArchive archive,
+                             String          entry,
+                             boolean         isBeanArchive,
+                             boolean         hasBeansXml) throws ClassNotFoundException {
         if (legalClassName(entry)) {
             String className = filenameToClassname(entry);
             try {
                 if (isBeanArchive) {
-                    //If the jar is a bean archive, add the class as Bean class also.
-                    beanClasses.add(getClassLoader().loadClass(className));
+                    Class entryClass = getClassLoader().loadClass(className);
+                    // If the jar is a bean archive, or the individual class should be managed
+                    // based on its annotation(s)
+                    if (hasBeansXml || WeldUtils.hasScopeAnnotation(entryClass)) {
+                        beanClasses.add(entryClass);
+                    }
                 }
-                //add the class as a module class
+                // add the class as a module class
                 moduleClasses.add(getClassLoader().loadClass(className));
             } catch (Throwable t) {
                 logger.log(Level.WARNING,
@@ -556,12 +593,13 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         }
     }
 
+
     private boolean legalClassName( String className ) {
         return className.endsWith(CLASS_SUFFIX) && ! className.startsWith(WEB_INF_LIB);
     }
 
-    private void collectRarInfo(ReadableArchive archive) throws IOException,
-            ClassNotFoundException {
+
+    private void collectRarInfo(ReadableArchive archive) throws IOException, ClassNotFoundException {
         if ( logger.isLoggable( FINE ) ) {
             logger.log(FINE, "-collecting rar info for " + archive.getURI());
         }
@@ -570,9 +608,9 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
             String entry = entries.nextElement();
             if (entry.endsWith(JAR_SUFFIX)){
                 ReadableArchive jarArchive = archive.getSubArchive(entry);
-                collectJarInfo(jarArchive, true);
+                collectJarInfo(jarArchive, true, true);
             } else {
-                handleEntry(archive, entry, true);
+                handleEntry(archive, entry, true, true);
             }
         }
     }
@@ -620,5 +658,6 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     public ClassLoader getModuleClassLoaderForBDA() {
         return moduleClassLoaderForBDA;
     }
+
 
 }

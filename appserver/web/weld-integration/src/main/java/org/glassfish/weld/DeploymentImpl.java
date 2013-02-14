@@ -56,6 +56,7 @@ import javax.enterprise.inject.spi.Extension;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
+import org.glassfish.weld.connector.WeldUtils;
 import org.glassfish.weld.connector.WeldUtils.BDAType;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.ServiceRegistry;
@@ -428,7 +429,8 @@ public class DeploymentImpl implements Deployment {
                         entryName.indexOf(SEPARATOR_CHAR, libDir.length() + 1 ) == -1 ) {
                         try {
                             ReadableArchive jarInLib = archive.getSubArchive(entryName);
-                            if (jarInLib.exists(META_INF_BEANS_XML)) {
+                            if (jarInLib.exists(META_INF_BEANS_XML) || WeldUtils.hasCDIEnablingAnnotations(
+                                    context, jarInLib.getURI())) {
                                 if (libJars == null) {
                                     libJars = new ArrayList<ReadableArchive>();
                                 }

@@ -40,16 +40,16 @@
 
 package org.glassfish.weld.connector;
 
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.archive.ArchiveType;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.internal.deployment.GenericSniffer;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.Enumeration;
-
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.api.deployment.archive.ArchiveType;
-import org.glassfish.internal.deployment.GenericSniffer;
-
-import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
-import javax.enterprise.deploy.shared.ModuleType;
 
 /**
  * Implementation of the Sniffer for Weld.
@@ -85,10 +85,10 @@ public class WeldSniffer extends GenericSniffer {
                     isWeldArchive = scanLibDir(archive, WeldUtils.WEB_INF_LIB);
                 } 
             } 
-        } 
+        }
 
         // TODO This doesn't seem to match the ReadableArchive for a stand-alone ejb-jar.
-        // It might only be true for an ejb-jar wihtin an .ear.  Revisit when officially
+        // It might only be true for an ejb-jar within an .ear.  Revisit when officially
         // adding support for .ears
         String archiveName = archive.getName();
         if (!isWeldArchive && archiveName != null && archiveName.endsWith(WeldUtils.EXPANDED_JAR_SUFFIX)) {
@@ -161,5 +161,13 @@ public class WeldSniffer extends GenericSniffer {
         }
         return false;
     }
+
+
+    @Override
+    public String[] getAnnotationNames(DeploymentContext context) {
+        return WeldUtils.getCDIEnablingAnnotations(context);
+    }
+
+
 }
 

@@ -40,11 +40,25 @@
 
 package org.glassfish.weld.services;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.sun.enterprise.container.common.spi.JCDIService;
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.weld.BeanDeploymentArchiveImpl;
+import org.glassfish.weld.WeldDeployer;
+import org.glassfish.weld.connector.WeldUtils;
+import org.jboss.weld.bootstrap.WeldBootstrap;
+import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
+import org.jboss.weld.manager.api.WeldManager;
+import org.jvnet.hk2.annotations.Service;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.ConversationScoped;
+import javax.enterprise.context.Dependent;
+import javax.enterprise.context.NormalScope;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.context.SessionScoped;
 import javax.enterprise.context.spi.CreationalContext;
@@ -52,30 +66,35 @@ import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionTarget;
+import javax.inject.Inject;
+import javax.inject.Scope;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletContext;
-
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.weld.BeanDeploymentArchiveImpl;
-import org.glassfish.weld.WeldDeployer;
-import org.jboss.weld.bootstrap.WeldBootstrap;
-import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
-import org.jboss.weld.manager.api.WeldManager;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
-
-import com.sun.enterprise.container.common.spi.JCDIService;
-import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
-import com.sun.enterprise.deployment.BundleDescriptor;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.JndiNameEnvironment;
+import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 @Service
-public class JCDIServiceImpl implements JCDIService
-{
+public class JCDIServiceImpl implements JCDIService {
+
+    private static final HashSet<String> validScopes = new HashSet<String>();
+    static {
+        validScopes.add(Scope.class.getName());
+        validScopes.add(NormalScope.class.getName());
+        validScopes.add(RequestScoped.class.getName());
+        validScopes.add(SessionScoped.class.getName());
+        validScopes.add(ApplicationScoped.class.getName());
+        validScopes.add(ConversationScoped.class.getName());
+    }
+
+    private static final HashSet<String> excludedScopes = new HashSet<String>();
+    static {
+        excludedScopes.add(Dependent.class.getName());
+    }
+
+
     @Inject
     private WeldDeployer weldDeployer;
 
@@ -125,10 +144,9 @@ public class JCDIServiceImpl implements JCDIService
     }
 
     public boolean isCDIScoped(Class<?> clazz) {
-        return (clazz.isAnnotationPresent(RequestScoped.class) ||
-                clazz.isAnnotationPresent(ApplicationScoped.class) ||
-                clazz.isAnnotationPresent(SessionScoped.class) ||
-                clazz.isAnnotationPresent(ConversationScoped.class));
+        // Check all the annotations on the specified Class to determine if the class is annotated
+        // with a supported CDI scope
+        return WeldUtils.hasScopeAnnotation(clazz, validScopes, excludedScopes);
     }
 
     public void setELResolver(ServletContext servletContext) throws NamingException {
@@ -191,7 +209,7 @@ public class JCDIServiceImpl implements JCDIService
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE,"getBDAForBeanClass -- search in " + bundleDesc.getModuleName() + " for " + beanClassName);
         }
-        BeanDeploymentArchive topLevelBDA = weldDeployer.getBeanDeploymentArchiveForBundle(bundleDesc);
+            BeanDeploymentArchive topLevelBDA = weldDeployer.getBeanDeploymentArchiveForBundle(bundleDesc);
         if (topLevelBDA.getBeanClasses().contains(beanClassName)){
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, "JCDIServiceImpl.getBDAForBeanClass:: TopLevelBDA " 
