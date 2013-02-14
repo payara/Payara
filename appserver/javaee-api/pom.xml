@@ -107,6 +107,13 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <configuration>
+                        <attach>false</attach>
+                    </configuration>
+                </plugin>
+                <plugin>
                     <groupId>org.glassfish.build</groupId>
                     <artifactId>glassfishbuild-maven-plugin</artifactId>
                     <executions>
@@ -134,8 +141,14 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <configuration>
+                        <attach>false</attach>
                         <doctitle>${project.name}</doctitle>
                         <windowtitle>${project.name}</windowtitle>
+                        <bottom>
+<![CDATA[
+Copyright &#169; 1996-2013, <a href="http://www.oracle.com">Oracle</a> and/or its affiliates. All Rights Reserved. Use is subject to <a href="doc-files/speclicense.html" target="_top">license terms</a>.
+]]>
+                        </bottom>
                     </configuration>
                 </plugin>
             </plugins>
