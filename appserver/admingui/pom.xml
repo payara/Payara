@@ -105,6 +105,7 @@
         <module>plugin-service</module>
         <module>common</module>
         <module>core</module>
+        <module>concurrent</module>
         <module>cluster</module>
         <module>community-theme</module>
         <module>web</module>

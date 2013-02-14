@@ -176,6 +176,11 @@
             to its own package when GLASSFISH-19604 is being worked on.
          -->
        <dependency>
+           <groupId>org.glassfish.main.admingui</groupId>
+	   <artifactId>console-concurrent-plugin</artifactId>
+           <version>${project.version}</version>
+       </dependency> 
+       <dependency>
            <groupId>org.glassfish.main.concurrent</groupId>
 	   <artifactId>concurrent-admin</artifactId>
            <version>${project.version}</version>
