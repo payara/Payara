@@ -56,7 +56,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author Bill Shannon
  * @author Byron Nevins
  *
- * 
+ *
  */
 @Service(name = "stop-local-instance")
 @PerLookup
@@ -165,9 +165,7 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
         programOpts.setInteractive(false);
 
         try {
-            // run the remote stop-domain command and throw away the output
-            RemoteCLICommand cmd = new RemoteCLICommand("_stop-instance", programOpts, env);
-            cmd.executeAndReturnOutput("_stop-instance", "--force", force.toString());
+            runRemoteStop();
             waitForDeath();
         }
         catch (CommandException e) {
@@ -185,6 +183,22 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
         return 0;
     }
 
+    private void runRemoteStop() {
+        try {
+            // run the remote stop-domain command and throw away the output
+            // the calling code has already verified the server is running.
+            // CAREFUL -- intricate code!
+            RemoteCLICommand cmd = new RemoteCLICommand("_stop-instance", programOpts, env);
+            cmd.executeAndReturnOutput("_stop-instance", "--force", force.toString());
+        }
+        catch (CommandException e) {
+            // ReST may have thrown an Exception because the server died faster than the
+            // server could communicate back!   The ReST client misinterprets it
+            // to mean the server is not reachable.  This is a special case.  And it
+            // is NOT an error.
+            // ignore
+        }
+    }
     /**
      * Wait for the server to die.
      */
