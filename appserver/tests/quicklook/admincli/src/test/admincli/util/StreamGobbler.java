@@ -56,6 +56,7 @@ public class StreamGobbler extends Thread
 {
     InputStream is;
     String type;
+    private final StringBuffer stringBuffer = new StringBuffer();
 
     public StreamGobbler(InputStream is, String type)
     {
@@ -65,17 +66,20 @@ public class StreamGobbler extends Thread
 
     public void run()
     {
-        try
-        {
+        try {
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
             String line=null;
-            while ( (line = br.readLine()) != null)
-                line = null;
-//                System.out.println(type + ">" + line);
-            } catch (IOException ioe)
-              {
-                ioe.printStackTrace();
-              }
+            while ( (line = br.readLine()) != null) {
+                stringBuffer.append(type + ">" + line + "\n");
+            }
+        }
+        catch (IOException ioe) {
+            ioe.printStackTrace();
+         }
+    }
+
+    public String getOutput() {
+        return stringBuffer.toString();
     }
 }
