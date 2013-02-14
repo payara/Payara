@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,16 +60,16 @@ import java.util.*;
  */
 
 public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
-        implements WritableJndiNameEnvironment,
-        ResourceReferenceContainer,
-        ResourceEnvReferenceContainer,
-        EjbReferenceContainer,
-        MessageDestinationReferenceContainer,
-        ServiceReferenceContainer {
+    implements WritableJndiNameEnvironment,
+    ResourceReferenceContainer,
+    ResourceEnvReferenceContainer,
+    EjbReferenceContainer,
+    MessageDestinationReferenceContainer,
+    ServiceReferenceContainer {
 
     public static final EventTypes<WebBundleDescriptor> AFTER_SERVLET_CONTEXT_INITIALIZED_EVENT =
-            EventTypes.create("After_Servlet_Context_Initialized",
-                    WebBundleDescriptor.class);
+        EventTypes.create("After_Servlet_Context_Initialized",
+                          WebBundleDescriptor.class);
 
     public boolean conflictLoginConfig = false;
     public boolean conflictDataSourceDefinition = false;
@@ -110,7 +110,7 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     public abstract void addWebComponentDescriptor(WebComponentDescriptor webComponentDescriptor);
 
     protected abstract WebComponentDescriptor combineWebComponentDescriptor(
-            WebComponentDescriptor webComponentDescriptor);
+        WebComponentDescriptor webComponentDescriptor);
 
     public abstract void removeWebComponentDescriptor(WebComponentDescriptor webComponentDescriptor);
 
@@ -123,10 +123,10 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     public abstract Set<ServiceReferenceDescriptor> getServiceReferenceDescriptors();
 
     public abstract void addServiceReferenceDescriptor(ServiceReferenceDescriptor
-            serviceRef);
+                                                           serviceRef);
 
     public abstract void removeServiceReferenceDescriptor(ServiceReferenceDescriptor
-            serviceRef);
+                                                              serviceRef);
 
     public abstract ServiceReferenceDescriptor getServiceReferenceByName(String name);
 
@@ -363,6 +363,8 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     public abstract void setAppListeners(Collection<? extends AppListenerDescriptor> c);
 
     public abstract void addAppListenerDescriptor(AppListenerDescriptor ref);
+
+    public abstract void addAppListenerDescriptorToFirst(AppListenerDescriptor ref);
 
     public abstract void removeAppListenerDescriptor(AppListenerDescriptor ref);
 

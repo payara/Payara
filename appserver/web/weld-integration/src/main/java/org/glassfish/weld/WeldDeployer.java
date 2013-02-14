@@ -494,7 +494,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         if( wDesc != null) {
             wDesc.setExtensionProperty(WELD_EXTENSION, "true");
             // Add the Weld Listener if it does not already exist..
-            wDesc.addAppListenerDescriptor(new AppListenerDescriptorImpl(WELD_LISTENER));
+            wDesc.addAppListenerDescriptorToFirst(new AppListenerDescriptorImpl(WELD_LISTENER));
             // Add Weld Context Listener - this listener will ensure the WeldELContextListener is used
             // for JSP's..
             wDesc.addAppListenerDescriptor(new AppListenerDescriptorImpl(WELD_CONTEXT_LISTENER));

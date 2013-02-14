@@ -1817,7 +1817,13 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
     }
 
-    public void addAppListenerDescriptor(AppListenerDescriptorImpl ref) {
+     public void addAppListenerDescriptorToFirst(AppListenerDescriptor ref) {
+         if (!getAppListeners().contains(ref)) {
+             getAppListeners().add(0, ref);
+         }
+     }
+
+     public void addAppListenerDescriptor(AppListenerDescriptorImpl ref) {
         addAppListenerDescriptor((AppListenerDescriptor) ref);
     }
 
