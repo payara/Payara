@@ -84,7 +84,7 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
     protected String threadPriority = ""+Thread.NORM_PRIORITY;
     protected String contextInfo = null;
     protected String longRunningTasks = Boolean.FALSE.toString();
-    protected String hungAfterSeconds = null;
+    protected String hungAfterSeconds = "0";
     protected String corePoolSize = "0";
     protected String maximumPoolSize = ""+Integer.MAX_VALUE;
     protected String keepAliveSeconds = "60";
@@ -215,9 +215,7 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
             managedExecutorService.setContextInfo(contextInfo);
         }
         managedExecutorService.setThreadPriority(threadPriority);
-        if (hungAfterSeconds != null) {
-            managedExecutorService.setHungAfterSeconds(hungAfterSeconds);
-        }
+        managedExecutorService.setHungAfterSeconds(hungAfterSeconds);
         managedExecutorService.setCorePoolSize(corePoolSize);
         managedExecutorService.setMaximumPoolSize(maximumPoolSize);
         managedExecutorService.setKeepAliveSeconds(keepAliveSeconds);

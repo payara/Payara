@@ -86,7 +86,7 @@ public class CreateManagedExecutorServiceBase {
     @Param(name="longrunningtasks", alias="longRunningTasks", defaultValue="false", optional=true)
     protected Boolean longrunningtasks;
 
-    @Param(name="hungafterseconds", optional=true)
+    @Param(name="hungafterseconds", alias="hungAfterSeconds", defaultValue="0", optional=true)
     protected Integer hungafterseconds;
 
     @Param(name="corepoolsize", alias="corePoolSize", defaultValue="0", optional=true)
@@ -120,10 +120,8 @@ public class CreateManagedExecutorServiceBase {
             threadpriority.toString());
         attrList.put(ResourceConstants.LONG_RUNNING_TASKS, 
             longrunningtasks.toString());
-        if (hungafterseconds != null) {
-            attrList.put(ResourceConstants.HUNG_AFTER_SECONDS, 
-                hungafterseconds.toString());
-        }
+        attrList.put(ResourceConstants.HUNG_AFTER_SECONDS, 
+            hungafterseconds.toString());
         attrList.put(ResourceConstants.CORE_POOL_SIZE, 
             corepoolsize.toString());
         attrList.put(ResourceConstants.MAXIMUM_POOL_SIZE, 

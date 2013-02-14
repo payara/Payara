@@ -133,7 +133,7 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
      * @return possible object is
      *         {@link String }
      */
-    @Attribute(dataType=Integer.class)
+    @Attribute(defaultValue = "0", dataType = Integer.class)
     String getHungAfterSeconds();
 
     /**
