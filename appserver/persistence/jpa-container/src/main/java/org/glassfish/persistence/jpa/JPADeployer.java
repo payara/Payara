@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,7 +63,10 @@ import org.glassfish.persistence.common.Java2DBProcessorHelper;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
+
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceException;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -213,7 +216,6 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
                         ((ExtendedDeploymentContext) context).prepareScratchDirs();
                     } catch (IOException e) {
                         // There is no way to recover if we are not able to create the scratch dirs. Just rethrow the exception.
-                        // TODO when java2db is shifted here, attempt to create scratch dir only if java2db is enabled
                         throw new RuntimeException(e);
                     }
 
@@ -221,8 +223,6 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
                     PersistenceUnitLoader puLoader = new PersistenceUnitLoader(pud, providerContainerContractInfo);
                     // Store the puLoader in context. It is retrieved to execute java2db and to
                     // store the loaded emfs in a JPAApplicationContainer object for cleanup
-                    //TODO - Now since we are creating EM eagerly in prepare(). The DDL files are also available at this point.
-                    //TODO - It makes sense to refactor code from APPLICATION_PREPARED event handler such that (1)java2db happens here (2) EMF created just for java2db should be closed and not saved in transientappmetadata here.
                     context.addTransientAppMetaData(getUniquePuIdentifier(pud), puLoader );
                 }
             }
@@ -249,7 +249,7 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
     private boolean isEMFCreationRequired(DeploymentContext context) {
 /*
   Here are various use cases that needs to be handled.
-  This method handles EMF creation part, APPLOCATION_PREPARED event handle handles java2db and closing of emf
+  This method handles EMF creation part, APPLICATION_PREPARED event handle handles java2db and closing of emf
 
   To summarize,
   -Unconditionally create EMFs on DAS for java2db if it is deploy. We will close this EMF in APPLICATION_PREPARED after java2db if (target!= DAS || enable=false)
@@ -316,7 +316,7 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
 
         if(isDas) {
             if(deploy) {
-                createEMFs = true; // Always create emfs on DAS while deploying to take care of java2db -- TODO - future  optimize by not creating it for pus that do not require java2db
+                createEMFs = true; // Always create emfs on DAS while deploying to take care of java2db and PU validation on deploy
             } else {
                 //We reach here for (!deploy && das) => server restart or enabling a disabled app on DAS
                 boolean isTargetDas = isTargetDas(deployCommandParameters);
@@ -439,8 +439,26 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
                 PersistenceUnitLoader puLoader = context.getTransientAppMetaData(getUniquePuIdentifier(pud), PersistenceUnitLoader.class);
                 if (puLoader != null) { // We have initialized PU
                     boolean saveEMF = true;
-                    if(isDas()) { //We execute Java2DB only on DAS
+                    if(isDas()) { //We do validation and execute Java2DB only on DAS
                         if(deployCommandParameters.origin.isDeploy()) { //APPLICATION_PREPARED will be called for create-application-ref also. We should perform java2db only on first deploy
+
+                            //Create EM to trigger validation on PU
+                            EntityManagerFactory emf = puLoader.getEMF();
+                            EntityManager em = null;
+                            try {
+                                // Create EM to trigger any validations that are lazily performed by the provider
+                                // EM creation also triggers DDL generation by provider.
+                                em = emf.createEntityManager();
+                            } catch (PersistenceException e) {
+                                // Exception indicates something went wrong while performing validation. Clean up and rethrow to fail deployment
+                                emf.close();
+                                throw e;
+                            } finally {
+                                if (em != null) {
+                                    em.close();
+                                }
+                            }
+
                             puLoader.doJava2DB();
 
                             boolean enabled = deployCommandParameters.enabled;

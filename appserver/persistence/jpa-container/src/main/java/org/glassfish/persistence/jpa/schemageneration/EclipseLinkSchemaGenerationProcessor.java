@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,37 +38,25 @@
  * holder.
  */
 
-package org.glassfish.persistence.jpa;
+package org.glassfish.persistence.jpa.schemageneration;
 
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.PersistenceUnitsDescriptor;
 import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
-import org.glassfish.api.deployment.DeploymentContext;
 
 import org.glassfish.persistence.common.*;
 
-import org.glassfish.internal.api.Globals;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.sun.logging.LogDomains;
+import org.glassfish.persistence.jpa.PersistenceUnitInfoImpl;
 
-import javax.naming.NamingException;
-
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.spi.PersistenceUnitInfo;
-import javax.persistence.spi.PersistenceProvider;
 
 import javax.persistence.spi.PersistenceUnitTransactionType;
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.Statement;
-import java.sql.SQLException;
 
 /**
+ * SchemaGenerationProcessor that handles schema generation while
+ * running against EclipseLink in pre JPA 2.1 mode
  * For each persistence unit descriptors that is defined for 
  * an application create the ddl scripts. Additionally if the
  * user has requested the tables to be created or dropped from
@@ -85,10 +73,10 @@ import java.sql.SQLException;
  * generate both create- and dropDDL.jdbc files.
  * @author pramodg
  */
-public class JPAJava2DBProcessor {
+public class EclipseLinkSchemaGenerationProcessor implements SchemaGenerationProcessor {
 
     // Defining the persistence provider class names here that we would use to
-    // check if java2db is supported.
+    // check if schema generation is supported.
     private static final String TOPLINK_PERSISTENCE_PROVIDER_CLASS_NAME_OLD =
         "oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider"; // NOI18N
     private static final String TOPLINK_PERSISTENCE_PROVIDER_CLASS_NAME_NEW =
@@ -105,20 +93,17 @@ public class JPAJava2DBProcessor {
     private static final String CREATE_ONLY             = "create-tables"; //NOI18N
     private static final String DROP_AND_CREATE         = "drop-and-create-tables"; //NOI18N
     private static final String NONE                    = "none"; //NOI18N
+
     private static final String DDL_BOTH_GENERATION     = "both"; //NOI18N
     private static final String DDL_DATABASE_GENERATION = "database"; //NOI18N
     private static final String DDL_SQL_SCRIPT_GENERATION = "sql-script"; //NOI18N
-
-    // Constatns defined in oracle.toplink.essentials.config.TargetServer
-    // and org.eclipse.persistence.jpa.config.TargetServer
-    private static final String  SunAS9 = "SunAS9"; //NOI18N
 
     // property names for Toplink and EclipseLink
     private static final String TOPLINK_DDL_GENERATION     = "toplink.ddl-generation"; // NOI18N
     private static final String ECLIPSELINK_DDL_GENERATION = "eclipselink.ddl-generation"; // NOI18N
 
-    private static final String TOPLINK_DDL_GENERATION_MODE     = "toplink.ddl-generation.output-mode"; // NOI18N
-    private static final String ECLIPSELINK_DDL_GENERATION_MODE = "eclipselink.ddl-generation.output-mode"; // NOI18N
+    private static final String TOPLINK_DDL_GENERATION_OUTPUT_MODE = "toplink.ddl-generation.output-mode"; // NOI18N
+    private static final String ECLIPSELINK_DDL_GENERATION_OUTPUT_MODE = "eclipselink.ddl-generation.output-mode"; // NOI18N
 
     private static final String TOPLINK_APP_LOCATION         = "toplink.application-location"; // NOI18N
     private static final String ECLIPSELINK_APP_LOCATION     = "eclipselink.application-location"; // NOI18N
@@ -129,35 +114,103 @@ public class JPAJava2DBProcessor {
     private static final String TOPLINK_DROP_JDBC_DDL_FILE       = "toplink.drop-ddl-jdbc-file-name"; // NOI18N
     private static final String ECLIPSELINK_DROP_JDBC_DDL_FILE   = "eclipselink.drop-ddl-jdbc-file-name"; // NOI18N
 
-    private static Logger logger = LogDomains.getLogger(JPAJava2DBProcessor.class, LogDomains.PERSISTENCE_LOGGER);
+    private static Logger logger = LogDomains.getLogger(EclipseLinkSchemaGenerationProcessor.class, LogDomains.PERSISTENCE_LOGGER);
 
     /**
      * Holds name of provider specific properties.
      */
     private ProviderPropertyNamesHolder providerPropertyNamesHolder;
 
-    private String ddlMode;
+    private Java2DBProcessorHelper helper;
 
-    private Java2DBProcessorHelper helper = null;
+    private Map<String, String> overrides;
+
+    private boolean isSchemaGenerationPU;
 
     /**
-     * Creates a new instance of JPAJava2DBProcessor using Java2DBProcessorHelper
+     * Creates a new instance of EclipseLinkSchemaGenerationProcessor using Java2DBProcessorHelper
      * @param helper the Java2DBProcessorHelper instance to be used
      * with this processor.
+     * @param bundle The PersistenceUnitDescriptor for pu being deployed
+     * @param isSchemaGenerationRequired whether schema generation is required from the context that the PU is being created
      */
-    public JPAJava2DBProcessor(Java2DBProcessorHelper helper) {
-        this.helper = helper;
-        this.helper.init();
-    }
+    public EclipseLinkSchemaGenerationProcessor(Java2DBProcessorHelper helper, PersistenceUnitDescriptor bundle, boolean isSchemaGenerationRequired) {
 
-    /**
-     * This method does parses all relevant info from the PU
-     * @param bundle the persistence unit descriptor that is being worked on.
-     * @return true if this PU requires java2db processing
-     */
-    public boolean isJava2DbPU(PersistenceUnitDescriptor bundle) {
         String providerClassName = getProviderClassName(bundle);
 
+        if (isSupportedPersistenceProvider(providerClassName) ) {
+            overrides = new HashMap<>();
+
+            initializeProviderPropertyHolder(providerClassName);
+
+
+            if (isSchemaGenerationRequired) {
+                this.helper = helper;
+                this.helper.init();
+
+                String ddlGenerate = getPersistencePropVal(bundle,
+                        providerPropertyNamesHolder.ddlGeneration, NONE);
+                String ddlMode = getPersistencePropVal(bundle,
+                        providerPropertyNamesHolder.ddlGenerationOutputMode, DDL_BOTH_GENERATION);
+
+                // If CLI options are not set, use value from the the ddl-generate property
+                // if defined in persistence.xml
+                boolean userCreateTables = (ddlGenerate.equals(CREATE_ONLY)
+                        || ddlGenerate.equals(DROP_AND_CREATE))
+                        && !ddlMode.equals(NONE);
+
+                boolean createTables = helper.getCreateTables(userCreateTables);
+
+                boolean userDropTables = ddlGenerate.equals(DROP_AND_CREATE)
+                        && (ddlMode.equals(DDL_DATABASE_GENERATION)
+                        || ddlMode.equals(DDL_BOTH_GENERATION));
+
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("Processing request with create tables: " + createTables //NOI18N
+                            + ", drop tables: " + userDropTables); //NOI18N
+                }
+
+                if (createTables || userDropTables) {
+                    helper.setProcessorType("JPA", bundle.getName()); // NOI18N
+                    helper.setDropTablesValue(userDropTables, bundle.getName());
+                    helper.setCreateTablesValue(userCreateTables && !ddlMode.equals(DDL_SQL_SCRIPT_GENERATION),
+                            bundle.getName());
+
+
+                    // For a RESOURCE_LOCAL, managed pu, only non-jta-data-source should be specified.
+                    String dataSourceName =
+                            (PersistenceUnitTransactionType.JTA == PersistenceUnitTransactionType.valueOf(bundle.getTransactionType())) ?
+                                    bundle.getJtaDataSource() : bundle.getNonJtaDataSource();
+                    helper.setJndiName(dataSourceName, bundle.getName());
+                    constructJdbcFileNames(bundle);
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.fine("Processing request to create files - create file: " + //NOI18N
+                                helper.getCreateJdbcFileName(bundle.getName())
+                                + ", drop  file: " + //NOI18N
+                                helper.getDropJdbcFileName(bundle.getName()));
+                    }
+
+                    addSchemaGenerationPropertiesToOverrides(bundle, overrides);
+                    isSchemaGenerationPU = true;
+                }
+
+            } else {
+                // Schema generation is not required in the context. Add properties that suppress it
+                overrides.put(providerPropertyNamesHolder.ddlGenerationOutputMode, NONE);
+            }
+        } else {
+            // Persistence provider is not supported, hence exit from schema generation code
+            if (helper.hasDeployCliOverrides()) {
+                helper.logI18NWarnMessage(
+                        "JPAJava2DBProcessor.nondefaultprovider",
+                        getProviderClassName(bundle),
+                        bundle.getName(), null);
+            }
+        }
+
+    }
+
+    private void initializeProviderPropertyHolder(String providerClassName) {
         // Initialize with EL names for each bundle to handle apps that have
         // multiple pus
         providerPropertyNamesHolder = new ProviderPropertyNamesHolder();
@@ -166,73 +219,25 @@ public class JPAJava2DBProcessor {
         if (TOPLINK_PERSISTENCE_PROVIDER_CLASS_NAME_NEW.equals(providerClassName) ||
                 TOPLINK_PERSISTENCE_PROVIDER_CLASS_NAME_OLD.equals(providerClassName)) {
             // for backward compatibility
-            providerPropertyNamesHolder.appLocation       = TOPLINK_APP_LOCATION;
+            providerPropertyNamesHolder.appLocation = TOPLINK_APP_LOCATION;
             providerPropertyNamesHolder.createJdbcDdlFile = TOPLINK_CREATE_JDBC_DDL_FILE;
-            providerPropertyNamesHolder.dropJdbcDdlFile   = TOPLINK_DROP_JDBC_DDL_FILE;
-            providerPropertyNamesHolder.ddlGeneration     = TOPLINK_DDL_GENERATION;
-            providerPropertyNamesHolder.ddlGenerationMode = TOPLINK_DDL_GENERATION_MODE;
+            providerPropertyNamesHolder.dropJdbcDdlFile = TOPLINK_DROP_JDBC_DDL_FILE;
+            providerPropertyNamesHolder.ddlGeneration = TOPLINK_DDL_GENERATION;
+            providerPropertyNamesHolder.ddlGenerationOutputMode = TOPLINK_DDL_GENERATION_OUTPUT_MODE;
         }
-
-        String ddlGenerate = getPersistencePropVal(bundle,
-                providerPropertyNamesHolder.ddlGeneration, NONE);
-        ddlMode = getPersistencePropVal(bundle,
-                providerPropertyNamesHolder.ddlGenerationMode, DDL_BOTH_GENERATION);
-
-        // If CLI options are not set, use value from the the ddl-generate property
-        // if defined in persistence.xml
-        boolean userCreateTables = (ddlGenerate.equals(CREATE_ONLY)
-                || ddlGenerate.equals(DROP_AND_CREATE))
-                && !ddlMode.equals(NONE);
-
-        boolean createTables = helper.getCreateTables(userCreateTables);
-
-        boolean userDropTables = ddlGenerate.equals(DROP_AND_CREATE)
-                && (ddlMode.equals(DDL_DATABASE_GENERATION)
-                        || ddlMode.equals(DDL_BOTH_GENERATION));
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Processing request with create tables: " + createTables //NOI18N
-                    + ", drop tables: " + userDropTables); //NOI18N
-        }
-
-        if (!createTables && !userDropTables) {
-            // Nothing to do.
-            return false;
-        }
-
-        if (! isSupportedPersistenceProvider(bundle)) {
-            // Persistence provider is not supported, hence exit from java2db code
-            if (helper.hasDeployCliOverrides()) {
-                helper.logI18NWarnMessage(
-                    "JPAJava2DBProcessor.nondefaultprovider",
-                    getProviderClassName(bundle),
-                    bundle.getName(), null);
-            }
-            return false;
-        }
-
-        helper.setProcessorType("JPA", bundle.getName()); // NOI18N
-        helper.setDropTablesValue(userDropTables, bundle.getName());
-        helper.setCreateTablesValue(userCreateTables && !ddlMode.equals(DDL_SQL_SCRIPT_GENERATION), 
-                bundle.getName());
-
-
-        // For a RESOURCE_LOCAL, managed pu, only non-jta-data-source should be specified.
-        String dataSourceName =
-                (PersistenceUnitTransactionType.JTA == PersistenceUnitTransactionType.valueOf(bundle.getTransactionType()) )?
-                        bundle.getJtaDataSource() : bundle.getNonJtaDataSource();
-        helper.setJndiName(dataSourceName, bundle.getName());
-        constructJdbcFileNames(bundle);
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Processing request to create files - create file: " + //NOI18N
-                    helper.getCreateJdbcFileName(bundle.getName())
-                    + ", drop  file: " + //NOI18N
-                    helper.getDropJdbcFileName(bundle.getName())); 
-        }
-
-        addPropertiesToPU(bundle);
-        return true;
     }
+
+    @Override
+    public boolean isDDLExecutionRequired() {
+        // DDL execution is required if this is a schema generation pu
+        return isSchemaGenerationPU;
+    }
+
+    @Override
+    public Map<String, String> getSchemaGenerationOverrides() {
+        return overrides;
+    }
+
 
     /**
      * Construct the name of the create and
@@ -276,24 +281,26 @@ public class JPAJava2DBProcessor {
      * Iterate over all created jdbc ddl files and
      * execute it against the database to have the required objects created.
      */
-    public void createTablesInDB() {
+    @Override
+    public void executeCreateDDL() {
         helper.createOrDropTablesInDB(true, "JPA"); // NOI18N
     }
 
-    /**
-     * Since the ddl files are actually created
-     * by the toplink code, we ensure that the
-     * correct properties are put in the persistence
-     * unit info object.
-     * @param puDescriptor the persistence unit descriptor that is being worked on.
-     */
-    private void addPropertiesToPU(PersistenceUnitDescriptor puDescriptor) {
-        addPropertyToDescriptor(puDescriptor, providerPropertyNamesHolder.appLocation,
+    private void addSchemaGenerationPropertiesToOverrides(PersistenceUnitDescriptor puDescriptor, Map<String, String> overrides) {
+        addPropertyToOverride(puDescriptor, overrides, providerPropertyNamesHolder.appLocation,
                 helper.getGeneratedLocation(puDescriptor.getName()));
-        addPropertyToDescriptor(puDescriptor, providerPropertyNamesHolder.createJdbcDdlFile,
+        addPropertyToOverride(puDescriptor, overrides, providerPropertyNamesHolder.createJdbcDdlFile,
                 helper.getCreateJdbcFileName(puDescriptor.getName()));
-        addPropertyToDescriptor(puDescriptor, providerPropertyNamesHolder.dropJdbcDdlFile,
+        addPropertyToOverride(puDescriptor, overrides, providerPropertyNamesHolder.dropJdbcDdlFile,
                 helper.getDropJdbcFileName(puDescriptor.getName()));
+
+        // The puDescriptor might not have this property if schema generation is triggered by deployment CLI override
+        addPropertyToOverride(puDescriptor, overrides,
+                providerPropertyNamesHolder.ddlGeneration, DROP_AND_CREATE);
+        // If we are doing schema generation, we want DDL scripts to be generated
+        addPropertyToOverride(puDescriptor, overrides,
+                providerPropertyNamesHolder.ddlGenerationOutputMode, DDL_SQL_SCRIPT_GENERATION);
+
     }
 
     /**
@@ -302,11 +309,11 @@ public class JPAJava2DBProcessor {
      * @param propertyName the name of the property.
      * @param propertyValue the value of the property.
      */
-    private void addPropertyToDescriptor(PersistenceUnitDescriptor descriptor,
-            String propertyName, String propertyValue) {
+    private static void addPropertyToOverride(PersistenceUnitDescriptor descriptor, Map<String, String> overrides,
+                                       String propertyName, String propertyValue) {
         String oldPropertyValue = descriptor.getProperties().getProperty(propertyName);
-        if(null == oldPropertyValue) {
-            descriptor.addProperty(propertyName, propertyValue);
+        if(null == oldPropertyValue) { //Do not override any value explicitly specified by the user
+            overrides.put(propertyName, propertyValue);
         }
     }
 
@@ -327,17 +334,12 @@ public class JPAJava2DBProcessor {
     }
 
     /**
-     * The java2db feature is currently implemented only for toplink (the default
-     * persistence povider in glassfish). Hence we check for the name of the
-     * persistence provider class name. It it is not toplink, stop processing.
+     * This processor only supports EclipseLink, the default
+     * persistence povider in glassfish; or Toplink, the default provder for GF 2.x.
      *
-     * @param persistenceUnitDescriptor the persistence unit descriptor that is being worked on.
-     * @return true if persistence provider is toplink.
+     * @return true if persistence provider is EclipseLink or Toplink.
      */
-    private boolean isSupportedPersistenceProvider(
-            final PersistenceUnitDescriptor persistenceUnitDescriptor) {
-
-        String providerClassName = getProviderClassName(persistenceUnitDescriptor);
+    private boolean isSupportedPersistenceProvider(final String providerClassName) {
 
         return providerClassName.equals(TOPLINK_PERSISTENCE_PROVIDER_CLASS_NAME_OLD) ||
                 providerClassName.equals(TOPLINK_PERSISTENCE_PROVIDER_CLASS_NAME_NEW) ||
@@ -366,7 +368,7 @@ public class JPAJava2DBProcessor {
             String createJdbcDdlFile = ECLIPSELINK_CREATE_JDBC_DDL_FILE;
             String dropJdbcDdlFile   = ECLIPSELINK_DROP_JDBC_DDL_FILE;
             String ddlGeneration     = ECLIPSELINK_DDL_GENERATION;
-            String ddlGenerationMode = ECLIPSELINK_DDL_GENERATION_MODE;
+            String ddlGenerationOutputMode = ECLIPSELINK_DDL_GENERATION_OUTPUT_MODE;
     }
 
 }
