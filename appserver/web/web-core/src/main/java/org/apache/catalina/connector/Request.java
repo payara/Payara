@@ -3110,7 +3110,7 @@ public class Request
      * Change the session id of the current session associated with this
      * request and return the new session id. 
      *
-     * @return the original session id
+     * @return the new session id
      *
      * @throws IllegalStateException if there is no session associated
      * with the request
@@ -3147,7 +3147,7 @@ public class Request
             ((HttpResponse)response).addSessionCookieInternal(newCookie);
         }
 
-        return oldSessionId;
+        return newSessionId;
     }
 
     /**
