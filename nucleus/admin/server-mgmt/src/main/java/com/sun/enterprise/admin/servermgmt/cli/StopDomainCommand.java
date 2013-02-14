@@ -166,7 +166,13 @@ public class StopDomainCommand extends LocalDomainCommand {
     protected void doCommand() throws CommandException {
         // run the remote stop-domain command and throw away the output
         RemoteCLICommand cmd = new RemoteCLICommand(getName(), programOpts, env);
-        cmd.executeAndReturnOutput("stop-domain", "--force", force.toString());
+        try {
+            cmd.executeAndReturnOutput("stop-domain", "--force", force.toString());
+        } catch (Exception e) {
+            // The domain server may have died so fast we didn't have time to
+            // get the (always successful!!) return data.  This is NOT AN ERROR!
+            // see: http://java.net/jira/browse/GLASSFISH-19672
+        }
         try {
             waitForDeath();
         } catch (CommandException ex) {
@@ -230,7 +236,7 @@ public class StopDomainCommand extends LocalDomainCommand {
 
             pids = FileUtils.readSmallFile(prevPid).trim();
             String s = ProcessUtils.kill(Integer.parseInt(pids));
-            
+
             if(s != null)
                 logger.finer(s);
         }
