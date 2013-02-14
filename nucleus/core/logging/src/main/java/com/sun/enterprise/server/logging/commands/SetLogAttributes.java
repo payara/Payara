@@ -121,7 +121,7 @@ public class SetLogAttributes implements AdminCommand {
     Clusters clusters;
 
 
-    String[] validAttributes = {"handlers",
+    String[] validAttributes = {"handlers", "handlerServices",
             "java.util.logging.ConsoleHandler.formatter",
             "com.sun.enterprise.server.logging.GFFileHandler.file",
             "com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes",
