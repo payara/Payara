@@ -91,7 +91,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
         }
 
         ClassWriter classWriter = getClassWriter(className, baseClassName, resourcePath);
-        
+
         if (classWriter != null) {
             generateCommandResources(beanName, classWriter);
 
@@ -327,7 +327,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
     private void generateCommandResourceClass(String parentBeanName, CommandResourceMetaData metaData) {
 
         String commandResourceClassName = getClassName(parentBeanName + getBeanName(metaData.resourcePath));
-        
+
         if (alreadyGenerated(commandResourceClassName)) {
             return;
         }
@@ -437,7 +437,10 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
             }
         } else {
-            keyAttributeName = getBeanName(model.key.substring(1, model.key.length()));
+            final int keyLength = model.key.length();
+            String key = model.key.substring(1,
+                    model.key.endsWith(">") ? keyLength -1 : keyLength );
+            keyAttributeName = getBeanName(key);
         }
         return keyAttributeName;
     }
