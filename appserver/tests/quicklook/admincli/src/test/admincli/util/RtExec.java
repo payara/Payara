@@ -76,8 +76,8 @@ public class RtExec {
                 result = true;
             } else {
                 result = false;
-                outputGobbler.getOutput();
-                errorGobbler.getOutput();
+                System.out.println(outputGobbler.getOutput());
+                System.out.println(errorGobbler.getOutput());
             }
         } catch (Throwable t) {
             t.printStackTrace();
