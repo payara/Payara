@@ -136,7 +136,6 @@ public class DomainBuilder {
             if (je == null) {
                 throw new DomainException(_strings.get("missingMandatoryFile", DomainConstants.DOMAIN_XML_FILE));
             }
-            
             // Loads template-info.xml
             je = _templateJar.getJarEntry(TEMPLATE_INFO_XML);
             if (je == null) {
@@ -179,6 +178,8 @@ public class DomainBuilder {
                 }
                 extractedEntries.add(je.getName());
             }
+            File parentDomainDir = FileUtils.safeGetCanonicalFile(new File(_domainConfig.getRepositoryRoot()));
+            createDirectory(parentDomainDir);
         } catch (Exception e) {
             throw new DomainException(e);
         }
@@ -190,7 +191,7 @@ public class DomainBuilder {
      * @throws DomainException If any exception occurs in validation.
      */
     public void validateTemplate() throws DomainException {
-        try	{
+        try	 {
             // Sanity check on the repository.
             RepositoryManager repoManager = new RepositoryManager();
             repoManager.checkRepository(_domainConfig, false);
@@ -217,13 +218,7 @@ public class DomainBuilder {
         // Create domain directories.
         File domainDir = FileUtils.safeGetCanonicalFile(new File(_domainConfig.getRepositoryRoot(),
                 _domainConfig.getDomainName()));
-        try {
-            if (!domainDir.mkdirs()) {
-                throw new RepositoryException(_strings.get("directoryCreationError",	domainDir));
-            }
-        } catch (Exception e) {
-            throw new RepositoryException(_strings.get("directoryCreationError", domainDir), e);
-        }
+        createDirectory(domainDir);
 
         // Extract other jar entries
         try {
@@ -304,9 +299,9 @@ public class DomainBuilder {
             domainSecurity.createPasswordAliasKeystore(new File(configDir, DomainConstants.DOMAIN_PASSWORD_FILE), masterPassword);
 
             // Add customized tokens in domain.xml.
-        /*   CustomTokenClient tokenClient = new CustomTokenClient(_domainConfig, configDir);
+            /*   CustomTokenClient tokenClient = new CustomTokenClient(_domainConfig, configDir);
            Map<String, String> generatedTokens = tokenClient.getSubstitutableTokens();*/
-         
+
             // Perform string substitution.
             if (_domainTempalte.hasStringsubs()) {
                 StringSubstitutor substitutor = _domainTempalte.getStringSubs();
@@ -337,5 +332,22 @@ public class DomainBuilder {
             FileUtils.liquidate(domainDir);
             throw new DomainException(ex);
         }
-    };
+    }
+
+    /**
+     * Creates the given directory structure.
+     * @param dir The directory.
+     * @throws RepositoryException If any error occurs in directory creation.
+     */
+    private void createDirectory(File dir) throws RepositoryException {
+        if (!dir.exists()) {
+            try {
+                if (!dir.mkdirs()) {
+                    throw new RepositoryException(_strings.get("directoryCreationError",	 dir));
+                }
+            } catch (Exception e) {
+                throw new RepositoryException(_strings.get("directoryCreationError", dir), e);
+            }
+        }
+    }
 }
