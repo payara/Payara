@@ -90,6 +90,7 @@
         <admin_client_command_name>asadmin</admin_client_command_name>
         <default_domain_template>appserver-domain.jar</default_domain_template>
         <version_prefix></version_prefix>
+        <version_suffix></version_suffix>
         <major_version>4</major_version>
         <minor_version>0</minor_version>
         <update_version></update_version>
@@ -497,7 +498,6 @@
                 <artifactId>ldapbp</artifactId>
                 <version>1.0</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgi-resource-locator</artifactId>
