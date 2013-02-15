@@ -170,6 +170,10 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
             EjbNode.writeAroundTimeoutDescriptors(interceptorNode,
                 descriptor.getAroundTimeoutDescriptors().iterator());
         }
+        if (descriptor.hasCallbackDescriptor(CallbackType.AROUND_CONSTRUCT)) {
+            writeLifeCycleCallbackDescriptors(interceptorNode, EjbTagNames.AROUND_CONSTRUCT,
+                descriptor.getCallbackDescriptors(CallbackType.AROUND_CONSTRUCT));
+        }
         if (descriptor.hasCallbackDescriptor(CallbackType.POST_CONSTRUCT)) {
             writeLifeCycleCallbackDescriptors(interceptorNode, TagNames.POST_CONSTRUCT,
                 descriptor.getCallbackDescriptors(CallbackType.POST_CONSTRUCT));
@@ -185,10 +189,6 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
         if (descriptor.hasCallbackDescriptor(CallbackType.PRE_PASSIVATE)) {
             writeLifeCycleCallbackDescriptors(interceptorNode, EjbTagNames.PRE_PASSIVATE_METHOD,
                 descriptor.getCallbackDescriptors(CallbackType.PRE_PASSIVATE));
-        }
-        if (descriptor.hasCallbackDescriptor(CallbackType.AROUND_CONSTRUCT)) {
-            writeLifeCycleCallbackDescriptors(interceptorNode, EjbTagNames.AROUND_CONSTRUCT,
-                descriptor.getCallbackDescriptors(CallbackType.AROUND_CONSTRUCT));
         }
 
         // all descriptors (includes DSD, MSD, JMSCFD, JMSDD,AOD, CRD)*
