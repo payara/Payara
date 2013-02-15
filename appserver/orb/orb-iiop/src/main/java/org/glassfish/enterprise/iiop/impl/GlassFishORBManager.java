@@ -504,6 +504,9 @@ public final class GlassFishORBManager {
             if (processType.isServer()) {
                 validateIiopListeners();
                 orbInitProperties.put(ORBConstants.NO_DEFAULT_ACCEPTORS, "true");
+                // 14734893 - IIOP ports don't bind to the network address set for the cluster instance
+                // GLASSFISH-17469   IIOP Listener Network Address Setting Ignored
+                checkORBServerHost(orbInitProperties);
             }
 
             checkConnectionSettings(orbInitProperties);
@@ -734,6 +737,39 @@ public final class GlassFishORBManager {
         orbInitialPort = new Integer(initialPort).intValue();
 
         return initialPort;
+    }
+
+    // Server host property is used only for ORB running in server mode
+    // Return host name (or ip address string) if the SERVER_HOST PROPERTY is set or
+    // network-address attribute is specified in iiop-listener element
+    // Return null otherwise.
+    private String checkORBServerHost(Properties props) {
+        // Host setting in system properties always takes precedence.
+        String serverHost = System.getProperty(ORBConstants.SERVER_HOST_PROPERTY);
+
+        if (serverHost == null) {
+            serverHost = props.getProperty(ORBConstants.SERVER_HOST_PROPERTY );
+        }
+
+
+        if (serverHost == null) {
+            IiopListener il = getClearTextIiopListener() ;
+            if (il != null) {
+                // For this case, use same value as ORBInitialHost,
+                serverHost = il.getAddress();
+            }
+        }
+
+        if (serverHost != null) {
+            // set the property, to be used during ORB initialization
+            // Bug 14734893 - IIOP ports don't bind to the network address set for the cluster instance
+            props.setProperty(ORBConstants.SERVER_HOST_PROPERTY, serverHost);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Setting orb server host to {0}", serverHost);
+            }
+        }
+
+        return serverHost;
     }
 
     private void validateIiopListeners() {
