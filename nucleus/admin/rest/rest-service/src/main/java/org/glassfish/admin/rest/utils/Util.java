@@ -63,7 +63,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import javax.security.auth.Subject;
 import javax.ws.rs.core.PathSegment;
-import javax.ws.rs.client.ClientFactory;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.HttpHeaders;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestLogging;
@@ -292,7 +292,7 @@ public class Util {
 
     public static synchronized Client getJerseyClient() {
         if (client == null) {
-            client = ClientFactory.newClient();
+            client = ClientBuilder.newClient();
         }
 
         return client;
@@ -318,7 +318,7 @@ public class Util {
             }
         }
         if (!parameters.entrySet().isEmpty()) {
-           return ResourceUtil.runCommand("set", parameters, subject); 
+           return ResourceUtil.runCommand("set", parameters, subject);
         } else {
             return new RestActionReporter(); // noop
         }

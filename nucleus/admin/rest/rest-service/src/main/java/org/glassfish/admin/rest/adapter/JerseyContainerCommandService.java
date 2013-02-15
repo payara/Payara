@@ -62,9 +62,9 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.hk2.utilities.Binder;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.internal.api.KernelIdentity;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.internal.inject.ReferencingFactory;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.process.internal.RequestScoped;
@@ -80,15 +80,15 @@ import org.jvnet.hk2.annotations.Service;
 //@RunLevel(value= InitRunLevel.VAL)
 @RunLevel(value= StartupRunLevel.VAL)
 public class JerseyContainerCommandService implements PostConstruct {
-    
+
     @Inject
     protected ServiceLocator habitat;
-    
+
     @Inject
     private KernelIdentity kernelIdentity;
     
     private Future<JerseyContainer> future;
-    
+
     @Override
     public void postConstruct() {
         ExecutorService executor = Executors.newFixedThreadPool(2);
@@ -111,8 +111,8 @@ public class JerseyContainerCommandService implements PostConstruct {
                             });
         executor.shutdown();
     }
-    
-    
+
+
     public JerseyContainer getJerseyContainer() throws EndpointRegistrationException {
         try {
             return future.get();
@@ -126,11 +126,11 @@ public class JerseyContainerCommandService implements PostConstruct {
             return null;
         }
     }
-    
+
     private ServerContext getServerContext() {
         return habitat.getService(ServerContext.class);
     }
-    
+
     private JerseyContainer exposeContext() throws EndpointRegistrationException {
         Set<Class<?>> classes = RestCommandResourceProvider.getResourceClasses();
         // Use common classloader. Jersey artifacts are not visible through
@@ -148,7 +148,7 @@ public class JerseyContainerCommandService implements PostConstruct {
             Thread.currentThread().setContextClassLoader(originalContextClassLoader);
         }
     }
-    
+
     private JerseyContainer getJerseyContainer(ResourceConfig rc) {
         final HttpHandler httpHandler = ContainerFactory.createContainer(HttpHandler.class, rc);
         return new JerseyContainer() {
@@ -158,7 +158,7 @@ public class JerseyContainerCommandService implements PostConstruct {
             }
         };
     }
-    
+
     private Set<? extends Binder> getAdditionalBinders() {
         return Collections.singleton(new AbstractBinder() {
             @Override
@@ -170,5 +170,5 @@ public class JerseyContainerCommandService implements PostConstruct {
             }
         });
     }
-    
+
 }
