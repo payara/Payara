@@ -57,7 +57,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  * @author wnevins
  */
 public class PathsTest {
-    private static String SPECIFIED_INSTALL_DIR = "D:/glassfish3";
+    private static String SPECIFIED_INSTALL_DIR = "D:/glassfish4";
     private static String NODE_NAME = "thenode";
     private static String SPECIFIED_NODES_DIR = SPECIFIED_INSTALL_DIR + "/glassfish/mynodes";
     private static String SPECIFIED_NODE_DIR = SPECIFIED_NODES_DIR + "/" + NODE_NAME;

@@ -66,7 +66,7 @@ public final class DcomInfo {
     private final String remoteNodeRootDirectory;
     // CONFUSING PAIN POINT.  The "installdir" means the parent directory of glassfish
     // installroot means the glassfish dir.  E.g.
-    // installdir == d:/glassfish3  and installroot == d:/glassfish3/glassfish
+    // installdir == d:/glassfish4  and installroot == d:/glassfish4/glassfish
     //
     private final String remoteInstallRoot;
     private final String nadminPath;
@@ -140,7 +140,7 @@ public final class DcomInfo {
 
         if (notFinal2 == null) {
             // no special nodedir -- use the defaults
-            notFinal2 = remoteInstallRoot;  // e.g. "d:/glassfish3/glassfish"
+            notFinal2 = remoteInstallRoot;  // e.g. "d:/glassfish4/glassfish"
             notFinal2 += "/nodes";
         }
         notFinal2 = notFinal2.replace('/', '\\');

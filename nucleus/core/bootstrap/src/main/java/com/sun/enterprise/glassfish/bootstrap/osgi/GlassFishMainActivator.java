@@ -59,7 +59,7 @@ import static com.sun.enterprise.glassfish.bootstrap.osgi.Constants.AUTO_START_P
  * in an existing OSGi runtime. It expects install root and instance root
  * to be set via framework context properties called com.sun.aas.installRoot and com.sun.aas.instanceRoot
  * respectively. The former one refers to the directory where glassfish is installed.
- * (e.g., /tmp/glassfish3/glassfish)
+ * (e.g., /tmp/glassfish4/glassfish)
  * The latter one refers to the domain directory - this is a directory containing
  * configuration information and deployed applications, etc.
  * If instance root is not set, it defaults to $installRoot/domains/domain1/.

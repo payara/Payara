@@ -75,7 +75,7 @@ And here is the resulting config in domain.xml
 bunch-o-nodes
 
   <nodes>
-    <node node-host="chandu" name="ssh_node1" type="SSH" install-dir="/export/home/hudson/devtest-bnlocal/glassfish3-xyz">
+    <node node-host="chandu" name="ssh_node1" type="SSH" install-dir="/export/home/hudson/devtest-bnlocal/glassfish4-xyz">
       <ssh-connector>
         <ssh-auth user-name="hudson"></ssh-auth>
       </ssh-connector>

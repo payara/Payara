@@ -199,7 +199,7 @@ $my_jar xvf ./Product/Packages/metadata.zip
 rm tmp.jar
 chmod ugo+x product-installer.sh
 chmod ugo+x install/bin/engine-wrapper
-echo "InstallHome.directory.INSTALL_HOME=$HOME/glassfish3" > install.properties
+echo "InstallHome.directory.INSTALL_HOME=$HOME/glassfish4" > install.properties
 sh product-installer.sh $ARGS
 rm -rf ${tmp}/*
 exit $?

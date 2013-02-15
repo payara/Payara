@@ -59,7 +59,7 @@ import java.util.logging.Logger;
 public class InstanceRootBuilderUtil {
 
     private static final Logger logger = Logger.getLogger("embedded-glassfish");
-    private static String resourceroot = "glassfish3/glassfish/domains/domain1/";
+    private static String resourceroot = "glassfish4/glassfish/domains/domain1/";
 
     public static void buildInstanceRoot(String instanceroot, String configFileURI) throws Exception {
         ClassLoader cl = InstanceRootBuilderUtil.class.getClassLoader();

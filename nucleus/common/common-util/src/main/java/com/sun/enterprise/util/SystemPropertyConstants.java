@@ -343,7 +343,7 @@ public class SystemPropertyConstants
     }
 
     /** Returns the component identifier associated with the INSTALL_ROOT.
-     *  For example if INSTALL_ROOT is /home/glassfish3/glassfish the
+     *  For example if INSTALL_ROOT is /home/glassfish4/glassfish the
      *  component name will "glassfish".
      * @return String representing the component identifier.
      */

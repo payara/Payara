@@ -56,7 +56,7 @@ import java.util.logging.Logger;
 public class InstallRootBuilder implements BundleActivator {
 
     private static final Logger logger = Logger.getLogger("embedded-glassfish");
-    private static String resourceroot = "glassfish3/glassfish/";
+    private static String resourceroot = "glassfish4/glassfish/";
 
     public void start(BundleContext context) throws Exception {
         String installRoot = context.getProperty("com.sun.aas.installRoot");

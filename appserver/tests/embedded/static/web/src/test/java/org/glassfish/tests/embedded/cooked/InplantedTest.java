@@ -66,7 +66,7 @@ public class InplantedTest {
         File f = new File(System.getProperty("basedir"));
         f = new File(f, "target");
         f = new File(f, "dependency");
-        f = new File(f, "glassfish3");
+        f = new File(f, "glassfish4");
         f = new File(f, "glassfish");
         if (f.exists()) {
             System.out.println("Using gf at " + f.getAbsolutePath());

@@ -46,12 +46,12 @@
 
 
     <target name="regular" description="Non-embedded tasks"> 
-        <glassfish-stop installdir = "/ws/v3/publish/glassfish3/" domain = "domain1" />
-        <glassfish-start installdir = "/ws/v3/publish/glassfish3/" domain = "domain1" />
-        <glassfish-stop installdir = "/ws/v3/publish/glassfish3/" domain = "domain1" />
-        <glassfish-admin installdir = "/ws/v3/publish/glassfish3/" command = "start-domain domain1" />
-	<glassfish-admin installdir = "/ws/v3/publish/glassfish3/" command = "create-http-listener --defaultvs=server --listenerport=9889 --listeneraddress=127.0.0. --listener_id=reg-listener"/>
-        <glassfish-undeploy installdir = "/ws/v3/publish/glassfish3/" name="test"/>
+        <glassfish-stop installdir = "/ws/v3/publish/glassfish4/" domain = "domain1" />
+        <glassfish-start installdir = "/ws/v3/publish/glassfish4/" domain = "domain1" />
+        <glassfish-stop installdir = "/ws/v3/publish/glassfish4/" domain = "domain1" />
+        <glassfish-admin installdir = "/ws/v3/publish/glassfish4/" command = "start-domain domain1" />
+	<glassfish-admin installdir = "/ws/v3/publish/glassfish4/" command = "create-http-listener --defaultvs=server --listenerport=9889 --listeneraddress=127.0.0. --listener_id=reg-listener"/>
+        <glassfish-undeploy installdir = "/ws/v3/publish/glassfish4/" name="test"/>
    </target>
 
    <target name="embedded" description="embedded tasks"> 

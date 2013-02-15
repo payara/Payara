@@ -76,7 +76,7 @@
     <name>Glassfish packages</name>
     
     <properties>
-        <install.dir.name>glassfish3</install.dir.name>
+        <install.dir.name>glassfish4</install.dir.name>
         <stage.dir.name>stage</stage.dir.name>
         <stage.dir>${project.build.directory}/${stage.dir.name}/${install.dir.name}</stage.dir>
         <temp.dir>${stage.dir}</temp.dir>        

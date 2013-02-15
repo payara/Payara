@@ -225,13 +225,13 @@ public class UberJarOSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
 
     private String getDefaultInstallRoot() {
         String userDir = System.getProperty("user.home");
-        return new File(userDir, ".glassfish3-embedded").getAbsolutePath();
+        return new File(userDir, ".glassfish4-embedded").getAbsolutePath();
     }
 
     private String getDefaultInstanceRoot() {
         String userDir = System.getProperty("user.home");
         String fs = File.separator;
-        return new File(userDir, ".glassfish3-embedded" + fs + "domains" + fs + "domain1").getAbsolutePath();
+        return new File(userDir, ".glassfish4-embedded" + fs + "domains" + fs + "domain1").getAbsolutePath();
     }
 
     private boolean isOSGiEnv() {

@@ -47,7 +47,7 @@
     <property environment="env"/>
     
     <property name="install.dir" value="binaries"/>
-    <property name="server.dir" value="${install.dir}/glassfish3"/>
+    <property name="server.dir" value="${install.dir}/glassfish4"/>
     <property name="glassfish.download.dir" value="."/> 
     <property name="glassfish.download" value="${glassfish.download.dir}/glassfish.zip"/>
     <property name="maven.version" value="3.0.4"/>
@@ -148,7 +148,7 @@
 
     <target name="start-server" depends="recreate-domain">
         <echo message="***** Copying updated rest-service.jar"/>
-        <copy file="target/rest-service.jar" todir="binaries/glassfish3/glassfish/modules/" overwrite="false" flatten="true" verbose="true"/>
+        <copy file="target/rest-service.jar" todir="binaries/glassfish4/glassfish/modules/" overwrite="false" flatten="true" verbose="true"/>
         <echo message="***** Starting GlassFish"/>
         <exec executable="${executable}">
             <arg value="start-domain"/>

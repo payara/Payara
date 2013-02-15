@@ -44,7 +44,7 @@ export OPTIONS="-Djava.security.auth.login.config=$CONFIG_FILE"
 echo $OPTIONS
 echo ""
 
-export V3M=/v3/glassfish3/glassfish/modules
+export V3M=/v3/glassfish4/glassfish/modules
 export MAIN=org.glassfish.admin.mejb.test.MEJBTest
 
 java $OPTIONS -cp $V3M/gf-client.jar:$V3M/javax.management.j2ee.jar:target/MEJB.jar:target/test-classes $MAIN

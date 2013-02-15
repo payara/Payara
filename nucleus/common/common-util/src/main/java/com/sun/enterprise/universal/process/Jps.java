@@ -169,7 +169,7 @@ public class Jps {
      <pre>
      2524 sun.tools.jps.Jps
      5324 com.sun.enterprise.glassfish.bootstrap.ASMain
-     4120 D:\glassfish3\glassfish\bin\..\modules\admin-cli.jar
+     4120 D:\glassfish4\glassfish\bin\..\modules\admin-cli.jar
      </pre>
      * If there is a path -- then there is no classname and vice-versa
      * @param s

@@ -52,7 +52,7 @@
     <property environment="env"/>
 
     <property name="install.dir" value="binaries/${TSTAMP}"/>
-    <property name="server.dir" value="${install.dir}/glassfish3"/>
+    <property name="server.dir" value="${install.dir}/glassfish4"/>
     <property name="maven.dir" value="${install.dir}/${maven.version}"/>
     <property name="glassfish.download.dir" value="."/> 
     <property name="glassfish.download" value="${glassfish.download.dir}/glassfish.zip"/>

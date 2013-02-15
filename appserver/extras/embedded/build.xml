@@ -45,7 +45,7 @@
     <property name="rootdir" value="target"/>
     <property name="zipdir" value="${rootdir}/packager_zips"/>
     <property name="jardir" value="${rootdir}/packager_jars"/>
-    <property name="gfdir" value="${jardir}/glassfish3/glassfish"/>
+    <property name="gfdir" value="${jardir}/${install.dir.name}/glassfish"/>
     <property name="modulesdir" value="${gfdir}/modules"/>
     <property name="filedir" value="${rootdir}/packager_files"/>
 
@@ -109,8 +109,8 @@
 
     <target name="addDtds" unless="nucleus.distribution">
         <echo message="adding dtds"/>
-        <jar jarfile="${jardir}/dtds.jar" basedir="${jardir}/glassfish3/glassfish/lib" includes="dtds/**/*"/>
-	<jar jarfile="${jardir}/schemas.jar" basedir="${jardir}/glassfish3/glassfish/lib" includes="schemas/**/*"/>
+        <jar jarfile="${jardir}/dtds.jar" basedir="${jardir}/${install.dir.name}/glassfish/lib" includes="dtds/**/*"/>
+	<jar jarfile="${jardir}/schemas.jar" basedir="${jardir}/${install.dir.name}/glassfish/lib" includes="schemas/**/*"/>
     </target>
     
     <target name="rejar">
@@ -135,7 +135,7 @@
     <target name="addExtraRars" if="full.distribution">
 	<echo message="Adding additional rars"/>
 
-	<!-- Include property files i.e., glassfish3/mq/lib/props/broker/*.properties of mq.zip in jmsra.rar --> 
+	<!-- Include property files i.e., glassfish4/mq/lib/props/broker/*.properties of mq.zip in jmsra.rar --> 
         <unzip dest="${jardir}">
             <fileset dir="${zipdir}">
                 <include name="mq**.zip"/>
@@ -144,20 +144,20 @@
                 <include name="**/props/broker/**"/>
             </patternset>
         </unzip>
-        <move file="${jardir}/glassfish3/mq/lib/props" tofile="${jardir}/glassfish3/glassfish/lib/install/applications/jmsra/props"/>
-        <delete dir="${jardir}/glassfish3/mq"/>
+        <move file="${jardir}/${install.dir.name}/mq/lib/props" tofile="${jardir}/${install.dir.name}/glassfish/lib/install/applications/jmsra/props"/>
+        <delete dir="${jardir}/${install.dir.name}/mq"/>
 
-        <jar jarfile="${jardir}/jmsra.rar" basedir="${jardir}/glassfish3/glassfish" includes="lib/install/applications/jmsra/**/*"/>
+        <jar jarfile="${jardir}/jmsra.rar" basedir="${jardir}/${install.dir.name}/glassfish" includes="lib/install/applications/jmsra/**/*"/>
 
-        <jar jarfile="${jardir}/jaxr-ra.rar" basedir="${jardir}/glassfish3/glassfish" includes="lib/install/applications/jaxr-ra/**/*"/>
+        <jar jarfile="${jardir}/jaxr-ra.rar" basedir="${jardir}/${install.dir.name}/glassfish" includes="lib/install/applications/jaxr-ra/**/*"/>
     </target>
 
     <target name="addRars" depends="addExtraRars" unless="nucleus.distribution">
         <echo message="adding rars"/>
-        <jar jarfile="${jardir}/__cp_jdbc_ra.rar" basedir="${jardir}/glassfish3/glassfish" includes="lib/install/applications/__cp_jdbc_ra/**/*"/>
-        <jar jarfile="${jardir}/__ds_jdbc_ra.rar" basedir="${jardir}/glassfish3/glassfish" includes="lib/install/applications/__ds_jdbc_ra/**/*"/>
-        <jar jarfile="${jardir}/__dm_jdbc_ra.rar" basedir="${jardir}/glassfish3/glassfish" includes="lib/install/applications/__dm_jdbc_ra/**/*"/>
-        <jar jarfile="${jardir}/__xa_jdbc_ra.rar" basedir="${jardir}/glassfish3/glassfish" includes="lib/install/applications/__xa_jdbc_ra/**/*"/>
+        <jar jarfile="${jardir}/__cp_jdbc_ra.rar" basedir="${jardir}/${install.dir.name}/glassfish" includes="lib/install/applications/__cp_jdbc_ra/**/*"/>
+        <jar jarfile="${jardir}/__ds_jdbc_ra.rar" basedir="${jardir}/${install.dir.name}/glassfish" includes="lib/install/applications/__ds_jdbc_ra/**/*"/>
+        <jar jarfile="${jardir}/__dm_jdbc_ra.rar" basedir="${jardir}/${install.dir.name}/glassfish" includes="lib/install/applications/__dm_jdbc_ra/**/*"/>
+        <jar jarfile="${jardir}/__xa_jdbc_ra.rar" basedir="${jardir}/${install.dir.name}/glassfish" includes="lib/install/applications/__xa_jdbc_ra/**/*"/>
 	<copy todir="${rootdir}/temp">
   		<fileset dir="${jardir}">
     			<include name="*.rar"/>
@@ -168,9 +168,9 @@
 
   <target name="addEjbTimer" if="full.distribution">
         <echo message="adding EJBTimer"/>
-	<copy file="${jardir}/glassfish3/glassfish/lib/install/applications/ejb-timer-service-app.war" todir= "${rootdir}/temp"/>
+	<copy file="${jardir}/${install.dir.name}/glassfish/lib/install/applications/ejb-timer-service-app.war" todir= "${rootdir}/temp"/>
 <!--
-        <jar jarfile="${finaljar}" update="true"  basedir="${jardir}/glassfish3/glassfish/lib/install/applications" includes="ejb-timer-service-app.war"/>
+        <jar jarfile="${finaljar}" update="true"  basedir="${jardir}/glassfish4/glassfish/lib/install/applications" includes="ejb-timer-service-app.war"/>
 -->
    </target>
 

@@ -74,7 +74,7 @@ public class CLIBootstrapTest {
         System.setProperty(CLIBootstrap.ENV_VAR_PROP_PREFIX + "PATH",
                 System.getenv("PATH"));
         System.setProperty(CLIBootstrap.ENV_VAR_PROP_PREFIX + "_AS_INSTALL",
-                "/Users/Tim/asgroup/v3/H/publish/glassfish3/glassfish");
+                "/Users/Tim/asgroup/v3/H/publish/glassfish4/glassfish");
     }
 
     @After

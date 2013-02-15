@@ -71,7 +71,7 @@ public class WindowsRemoteScripter {
     /**
      * Run a remote script command.
      * Convenience method which creates one big String from the substrings
-     * @param cmd e.g. "C:/glassfish3/bin/asadmin" "start-local-instance" "i1"
+     * @param cmd e.g. "C:/glassfish4/bin/asadmin" "start-local-instance" "i1"
      * @return The stdout of the command
      */
     public String run(Collection<String> cmdArgs) throws WindowsException {
@@ -89,7 +89,7 @@ public class WindowsRemoteScripter {
 
     /**
      * Run a remote script command
-     * @param cmd e.g. "C:/glassfish3/bin/asadmin start-local-instance i1"
+     * @param cmd e.g. "C:/glassfish4/bin/asadmin start-local-instance i1"
      * @return The stdout of the command
      */
     public String run(String cmd) throws WindowsException {

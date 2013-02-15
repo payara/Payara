@@ -142,7 +142,7 @@ public class Util {
             String userHome = System.getProperty("user.home");
 
             String embeddedServerName = getCurrentEmbeddedServerName();
-            File tempDir = new File(userHome + File.separator + ".glassfish3-"+embeddedServerName+File.separator + "config");
+            File tempDir = new File(userHome + File.separator + ".glassfish4-"+embeddedServerName+File.separator + "config");
             boolean mkDirSuccess = true;
             if (!tempDir.exists()) {
                 mkDirSuccess = tempDir.mkdirs();

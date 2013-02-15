@@ -78,7 +78,7 @@
     </developers>
     
     <properties>
-        <glassfish.install.dir.name>glassfish3</glassfish.install.dir.name>
+        <glassfish.install.dir.name>glassfish4</glassfish.install.dir.name>
         <install.dir.name>${glassfish.install.dir.name}</install.dir.name>
         <stage.dir.name>stage</stage.dir.name>
         <stage.dir>${project.build.directory}/${stage.dir.name}</stage.dir>
