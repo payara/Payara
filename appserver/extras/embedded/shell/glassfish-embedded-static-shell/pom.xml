@@ -121,14 +121,15 @@
                           <goal>run</goal>
                       </goals>
                       <configuration>
-                          <tasks>
-                              <property name="output.file" value="${project.build.finalName}.jar"/>
-                              <property name="output.dir" value="${project.build.directory}"/>
-                              <property name="stage.dir" value="${project.build.directory}/stage"/>
-                              <property name="classpath.file" value="${classpath.file}"/>
-                	      <property name="bundlename" value="org.glassfish.embedded.static-shell"/>
-                              <ant antfile="../fixup.xml"/>
-                          </tasks>
+                          <target>
+                              <ant antfile="../fixup.xml">
+                                  <property name="output.file" value="${project.build.finalName}.jar"/>
+                                  <property name="output.dir" value="${project.build.directory}"/>
+                                  <property name="stage.dir" value="${project.build.directory}/stage"/>
+                                  <property name="classpath.file" value="${classpath.file}"/>
+                                  <property name="bundlename" value="org.glassfish.embedded.static-shell"/>                                  
+                              </ant>
+                          </target>
                       </configuration>
                   </execution>
               </executions>

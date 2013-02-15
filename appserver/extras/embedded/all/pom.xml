@@ -53,8 +53,7 @@
     <version>4.0-SNAPSHOT</version>
     <name>Embedded GlassFish All-In-One</name>
 
-
-      <packaging>jar</packaging>
+    <packaging>jar</packaging>
 
   <build>
     <defaultGoal>install</defaultGoal>
@@ -90,9 +89,11 @@
             </goals>
             <configuration>
               <tasks>
-                <property name="finaljar" value="${project.build.directory}/glassfish-embedded-all.jar"/>
-                <property name="bundlename" value="org.glassfish.main.embedded.all"/>
-                <ant dir="." antfile="../build.xml" target="create.distribution"/>
+                  <ant dir="." antfile="../build.xml" target="create.distribution">
+                      <property name="finaljar" value="${project.build.directory}/glassfish-embedded-all.jar"/>
+                      <property name="bundlename" value="org.glassfish.main.embedded.all"/>
+                      <property name="install.dir.name" value="${install.dir.name}"/>                    
+                  </ant>
               </tasks>
             </configuration>
           </execution>

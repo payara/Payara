@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -45,18 +45,15 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.extras</groupId>
         <artifactId>extras</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
-
     <artifactId>glassfish-embedded-shell</artifactId>
-    <version>4.0-SNAPSHOT</version>
     <name>Embedded GlassFish Shell</name>
-    <packaging>jar</packaging>
-    <modelVersion>4.0.0</modelVersion>
 
 
     <properties>
@@ -96,17 +93,17 @@
           </plugin>
 
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jar-plugin</artifactId>
-                    <configuration>
-                       <archive>
-                            <manifest>
-                                <addClasspath>true</addClasspath>
-                                <classpathLayoutType>custom</classpathLayoutType>
-                                <customClasspathLayout>../../modules/$${artifact.artifactId}$${dashClassifier?}.$${artifact.extension}</customClasspathLayout>
-                            </manifest>
-                        </archive>
-                    </configuration>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jar-plugin</artifactId>
+              <configuration>
+                  <archive>
+                      <manifest>
+                          <addClasspath>true</addClasspath>
+                          <classpathLayoutType>custom</classpathLayoutType>
+                          <customClasspathLayout>../../modules/$${artifact.artifactId}$${dashClassifier?}.$${artifact.extension}</customClasspathLayout>
+                      </manifest>
+                  </archive>
+              </configuration>
           </plugin>
 
           <plugin>
@@ -120,14 +117,16 @@
                           <goal>run</goal>
                       </goals>
                       <configuration>
-                          <tasks>
-                              <property name="output.file" value="${project.build.finalName}.jar"/>
-                              <property name="output.dir" value="${project.build.directory}"/>
-                              <property name="stage.dir" value="${project.build.directory}/stage"/>
-                              <property name="classpath.file" value="${classpath.file}"/>
-		              <property name="bundlename" value="org.glassfish.embedded.shell"/>
-                              <ant antfile="../fixup.xml"/>
-                          </tasks>
+                          <target>
+                              <ant antfile="../fixup.xml">
+                                  <property name="output.file" value="${project.build.finalName}.jar"/>
+                                  <property name="output.dir" value="${project.build.directory}"/>
+                                  <property name="stage.dir" value="${project.build.directory}/stage"/>
+                                  <property name="classpath.file" value="${classpath.file}"/>
+                                  <property name="bundlename" value="org.glassfish.embedded.shell"/>
+                                  <property name="install.dir.name" value="${install.dir.name}"/>                                  
+                              </ant>
+                          </target>
                       </configuration>
                   </execution>
               </executions>
