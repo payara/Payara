@@ -55,7 +55,6 @@
             <directory>${temp.dir}/glassfish</directory>
             <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
             <excludes>
-                <exclude>modules/javax.annotation-api.jar</exclude>
                 <exclude>modules/cli-optional.jar</exclude>
                 <exclude>modules/appserver-cli.jar</exclude>
                 <exclude>bin/*</exclude>
@@ -81,13 +80,6 @@
             <outputDirectory>${install.dir.name}/glassfish/lib/client</outputDirectory>
             <includes>
                 <include>appserver-cli.jar</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>${temp.dir}/glassfish/modules</directory>
-            <outputDirectory>${install.dir.name}/glassfish/modules/endorsed</outputDirectory>
-            <includes>
-                <include>javax.annotation-api.jar</include>
             </includes>
         </fileSet>
         <fileSet>

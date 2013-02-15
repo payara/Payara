@@ -261,10 +261,6 @@
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>backup</artifactId>
             <version>${project.version}</version>

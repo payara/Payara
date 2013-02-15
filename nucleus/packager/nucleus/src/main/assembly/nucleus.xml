@@ -77,12 +77,20 @@
             <outputDirectory>${install.dir.name}/common/templates/gf</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>${temp.dir}/modules</directory>
+            <includes>
+                <include>javax.annotation-api.jar</include>
+            </includes>
+            <outputDirectory>${install.dir.name}/modules/endorsed</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>${temp.dir}</directory>
             <excludes>
                 <exclude>modules/server-mgmt.jar</exclude>
                 <exclude>glassfish/**</exclude>
                 <exclude>modules/flashlight-agent.jar</exclude>
 		<exclude>modules/nucleus-domain.jar</exclude>
+                <exclude>modules/javax.annotation-api.jar</exclude>
                 <exclude>META-INF/**</exclude>
 		<exclude>bin/**</exclude>
             </excludes>

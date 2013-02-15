@@ -251,7 +251,12 @@
             <groupId>org.jvnet.mimepull</groupId>
             <artifactId>mimepull</artifactId>
             <optional>true</optional>
-        </dependency>        
+        </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>
 
