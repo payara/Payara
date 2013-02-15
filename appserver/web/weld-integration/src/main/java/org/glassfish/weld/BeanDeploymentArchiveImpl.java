@@ -339,8 +339,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                 }
             } else if (archive.exists(WEB_INF_CLASSES)) { // If WEB-INF/classes exists, check for CDI beans there
                 // Check WEB-INF/classes for CDI-enabling annotations
-                URI webinfclasses =
-                    URI.create("file:" + context.getSourceDir().getAbsolutePath() + File.separatorChar + WEB_INF_CLASSES + File.separatorChar);
+                URI webinfclasses = new File(context.getSourceDir().getAbsolutePath(), WEB_INF_CLASSES).toURI();
                 if (WeldUtils.hasCDIEnablingAnnotations(context, webinfclasses)) {
                     webinfbda = true;
                     if ( logger.isLoggable( FINE ) ) {
@@ -423,8 +422,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 //                            weblibJarsThatAreBeanArchives.add(weblibJarArchive);
                         } else {
                             // Check for classes annotated with qualified annotations
-                            URI entryPath =
-                                URI.create("file:" + context.getSourceDir().getAbsolutePath() + File.separatorChar + entry);
+                            URI entryPath = new File(context.getSourceDir().getAbsolutePath(), entry).toURI();
                             if (WeldUtils.hasCDIEnablingAnnotations(context, entryPath)) {
                                 if ( logger.isLoggable( FINE ) ) {
                                     logger.log(FINE, "-WEB-INF/lib: considering " + entry
