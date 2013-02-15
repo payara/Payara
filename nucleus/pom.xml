@@ -190,17 +190,17 @@
                 <plugin>
                     <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
                     <artifactId>maven-antrun-extended-plugin</artifactId>
-                    <version> 1.43 </version>
+                    <version>1.43</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
-                    <version> 1.7 </version>
+                    <version>1.7</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
-                    <version> 2.3.4 </version>
+                    <version>2.3.4</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -218,7 +218,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version> 2.6 </version>
+                    <version>2.6</version>
                 </plugin>
                 <plugin>
                     <groupId>org.glassfish.build</groupId>
@@ -228,33 +228,27 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version> 2.8 </version>
+                    <version>2.8</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version> 2.1 </version>
+                    <version>2.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
-                    <version> 2.3 </version>
+                    <version>2.3</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version> 2.4.3 </version>
+                    <version>2.4.3</version>
                     <configuration>
                         <useSystemClassLoader>true</useSystemClassLoader>
                         <forkMode>none</forkMode>
                     </configuration>
                 </plugin>
-
-                <!--
-                     Get the latest version of release plugin.
-                     There is a bug in 2.0-beta-7 where the releaseVersion
-                     and developmentVersion properties are noop.
-                -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
@@ -346,10 +340,10 @@
                     <version>1.1</version>
                 </plugin>
                 <plugin>
-                	<groupId>org.apache.maven.plugins</groupId>
-                	<artifactId>maven-invoker-plugin</artifactId>
-            		<version>1.8</version>
-            	</plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-invoker-plugin</artifactId>
+                    <version>1.8</version>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -448,9 +442,6 @@
                 </configuration>
             </plugin>
 
-            <!-- This is needed so that the bundle generator can
-                 operate on the manifest file
-              -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -478,8 +469,7 @@
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <configuration>
-                    <!-- By default, we don't export anything.
-                    -->
+                    <!-- By default, we don't export anything. -->
                     <Export-Package></Export-Package>
                     <instructions>
                         <!-- Read all the configuration from osgi.bundle file, if it exists.
@@ -499,12 +489,9 @@
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <!-- if project does not contain source, plugin will fail, so add pom.xml.  -->
-                <!-- See:  http://jira.codehaus.org/browse/MSOURCES-44.  -->
                 <configuration>
                     <includePom>true</includePom>
 		    <excludes>
@@ -729,33 +716,18 @@
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.compendium</artifactId>
                 <version>4.2.0</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.felix</groupId>
-                        <artifactId>javax.servlet</artifactId>
-                    </exclusion>
-                </exclusions>
-                <!-- This jar should never be part of runtime. -->
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.core</artifactId>
                 <version>4.2.0</version>
-                <!-- This jar should never be part of runtime. -->
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.enterprise</artifactId>
                 <version>4.2.0</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.felix</groupId>
-                        <artifactId>javax.servlet</artifactId>
-                    </exclusion>
-                </exclusions>
-                <!-- This jar should never be part of runtime. -->
                 <scope>provided</scope>
             </dependency>
             <dependency>
