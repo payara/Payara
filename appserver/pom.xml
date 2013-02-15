@@ -108,19 +108,11 @@
         <jaxb.version>2.2.7-b53</jaxb.version>
         <stax2-api.version>3.1.1</stax2-api.version>
         <javax.xml.registry-api.version>1.0.4</javax.xml.registry-api.version>
-
-        <!-- Versions for EclipseLink artifacts -->
         <eclipselink.version>2.5.0-M7</eclipselink.version>
         <javax-persistence-api.version>2.1.0-M7</javax-persistence-api.version> 
-        <!-- End versions for EclipseLink artifacts -->
-
-        <!-- repackage of org.netbeans.modules:org-netbeans-modules-dbschema RELEASE60 artifact-->
         <dbschema.version>3.1.1</dbschema.version>
-        <!-- osgi version string must start with a number. Manually mapping above dbschema.version to osgi.version here -->
         <dbschema.osgi.version>6.0</dbschema.osgi.version>
-        <!-- repackage of org.netbeans.apisorg-netbeans-modules-schema2beans RELEASE55 artifact -->
         <schema2beans.version>3.1.1</schema2beans.version>
-        <!-- osgi version string must start with a number. Manually mapping above schema2beans.version to osgi.version here -->
         <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
         <mq.version>5.0-010</mq.version>
         <javadb.version>10.8.1.2</javadb.version>
