@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,12 +45,25 @@ import org.jvnet.hk2.config.*;
 import java.util.*;
 
 /**
- * J2EE Applications look up resources registered with the Application server,
- * using portable JNDI names.                    
+ * Applications can lookup resources registered in the server. These can be through portable JNDI names
+ * (eg: resource-ref in standard deployment descriptors like ejb-jar.xml, web.xml etc.,) or by doing direct lookup.
+ *
+ * Each of the resource has valid target for defining the resource-ref. (eg: JdbcResource can be referred from Server,
+ * Cluster, Stand Alone Instance, ServerResource can be referred from Server, Cluster, Stand Alone Instance, Config)
  */
 
-/* @XmlType(name = "", propOrder = {
-    "customResourceOrExternalJndiResourceOrJdbcResourceOrMailResourceOrAdminObjectResourceOrConnectorResourceOrResourceAdapterConfigOrJdbcConnectionPoolOrConnectorConnectionPool"
+/*
+  Some of the resource types (sub types of "Resource" config bean) are :
+  @XmlType(name = "", propOrder = {
+    "CustomResource Or
+    ExternalJndiResource Or
+    JdbcResourceOrMailResource Or
+    AdminObjectResource Or
+    ConnectorResource Or
+    ResourceAdapterConfig Or
+    JdbcConnectionPool Or
+    ConnectorConnectionPool Or
+    ServerResource"
 }) */
 
 
@@ -58,32 +71,27 @@ import java.util.*;
 public interface Resources extends ConfigBeanProxy  {
 
     /**
-     * Gets the value of the customResourceOrExternalJndiResourceOrJdbcResourceOrMailResourceOrAdminObjectResourceOrConnectorResourceOrResourceAdapterConfigOrJdbcConnectionPoolOrConnectorConnectionPool property.
+     * Returns a list of Resources like Custom Resource Or External Jndi Resource Or Jdbc Resource Or Mail Resource Or
+     * Admin Object Resource Or Connector Resource Or Resource Adapter Config Or Jdbc Connection Pool
+     * Or Connector Connection Pool.
      * <p/>
      * <p/>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the customResourceOrExternalJndiResourceOrJdbcResourceOrMailResourceOrAdminObjectResourceOrConnectorResourceOrResourceAdapterConfigOrJdbcConnectionPoolOrConnectorConnectionPool property.
+     * This accessor method returns a reference to the live list, not a snapshot.
+     * Therefore any modification you make to the returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the customResource Or
+     * ExternalJndiResource Or JdbcResource Or MailResource Or AdminObjectResource Or ConnectorResource
+     * Or ResourceAdapterConfig Or JdbcConnectionPool Or ConnectorConnectionPool.
      * <p/>
      * <p/>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getCustomResourceOrExternalJndiResourceOrJdbcResourceOrMailResourceOrAdminObjectResourceOrConnectorResourceOrResourceAdapterConfigOrJdbcConnectionPoolOrConnectorConnectionPool().add(newItem);
+     *    get(CustomResource Or ExternalJndiResource Or JdbcResource Or MailResource Or AdminObjectResource Or
+     *    ConnectorResource Or ResourceAdapterConfig Or JdbcConnectionPool Or ConnectorConnectionPool).add(newItem);
      * </pre>
      * <p/>
      * <p/>
      * <p/>
-     * Objects of the following type(s) are allowed in the list
-     * {@link org.glassfish.resources.config.CustomResource }
-     * {@link org.glassfish.resources.config.ExternalJndiResource }
-     * {@link org.glassfish.connectors.config.JdbcResource }                                       �
-     * {@link org.glassfish.resources.config.MailResource }
-     * {@link org.glassfish.connectors.config.AdminObjectResource }
-     * {@link org.glassfish.connectors.config.ConnectorResource }
-     * {@link org.glassfish.connectors.config.ResourceAdapterConfig }
-     * {@link org.glassfish.connectors.config.JdbcConnectionPool }
-     * {@link org.glassfish.connectors.config.ConnectorConnectionPool }
+     * Any sub type(s) of resource is allowed.
      */
     @Element("*")
     public List<Resource> getResources();
