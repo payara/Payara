@@ -205,6 +205,8 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
                        longestJobId = jobId;
                    if (state> longestState)
                        longestState = state;
+                   if (user > longestUser)
+                       longestUser = user;
                    if (exitCode> longestExitCode)
                        longestExitCode = exitCode;
 
