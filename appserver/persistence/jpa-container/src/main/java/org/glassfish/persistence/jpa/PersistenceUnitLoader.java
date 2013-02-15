@@ -167,7 +167,7 @@ public class PersistenceUnitLoader {
             throw new RuntimeException(e);
         }
 
-        schemaGenerationProcessor = new EclipseLinkSchemaGenerationProcessor(new Java2DBProcessorHelper(providerContainerContractInfo.getDeploymentContext()),
+        schemaGenerationProcessor = new EclipseLinkSchemaGenerationProcessor(providerContainerContractInfo.getDeploymentContext(),
                 pud, providerContainerContractInfo.isJava2DBRequired());
 
         Map<String, Object> overRides = new HashMap<String, Object>(integrationProperties);

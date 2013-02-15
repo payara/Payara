@@ -42,6 +42,7 @@ package org.glassfish.persistence.jpa.schemageneration;
 
 import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
 
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.persistence.common.*;
 
 import java.util.HashMap;
@@ -129,12 +130,11 @@ public class EclipseLinkSchemaGenerationProcessor implements SchemaGenerationPro
 
     /**
      * Creates a new instance of EclipseLinkSchemaGenerationProcessor using Java2DBProcessorHelper
-     * @param helper the Java2DBProcessorHelper instance to be used
-     * with this processor.
+     * @param context The deployment context
      * @param bundle The PersistenceUnitDescriptor for pu being deployed
      * @param isSchemaGenerationRequired whether schema generation is required from the context that the PU is being created
      */
-    public EclipseLinkSchemaGenerationProcessor(Java2DBProcessorHelper helper, PersistenceUnitDescriptor bundle, boolean isSchemaGenerationRequired) {
+    public EclipseLinkSchemaGenerationProcessor(DeploymentContext context, PersistenceUnitDescriptor bundle, boolean isSchemaGenerationRequired) {
 
         String providerClassName = getProviderClassName(bundle);
 
@@ -145,7 +145,7 @@ public class EclipseLinkSchemaGenerationProcessor implements SchemaGenerationPro
 
 
             if (isSchemaGenerationRequired) {
-                this.helper = helper;
+                this.helper = new Java2DBProcessorHelper(context);
                 this.helper.init();
 
                 String ddlGenerate = getPersistencePropVal(bundle,
