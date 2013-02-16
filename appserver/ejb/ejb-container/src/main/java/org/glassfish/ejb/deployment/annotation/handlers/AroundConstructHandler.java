@@ -44,8 +44,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 
-//import javax.interceptor.AroundConstruct;
-import com.sun.ejb.containers.interceptors.AroundConstruct;
+import javax.interceptor.AroundConstruct;
 
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
