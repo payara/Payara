@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -90,13 +90,9 @@
         <sun:property id="SessFileNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.webManager.sessFileNameLabel}" helpText="$resource{i18n_web.webManager.sessFileNameHelp}" >
             <sun:textField id="SessFileName" columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.webManager.sessFileName']}" text="#{pageSession.valueMap['sessionFileName']}" />
         </sun:property>
-        <!-- commented out, refer to issue# 8903 -->
-        <!--
         <sun:property id="SessionIdGenProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.webManager.sessionIdGenLabel}" helpText="$resource{i18n_web.webManager.sessionIdGenHelp}" >
             <sun:textField id="SessionIdGen" columns="$int{50}" text="#{pageSession.valueMap['sessionIdGeneratorClassname']}" />
         </sun:property>
-        -->
-    
     </sun:propertySheetSection>
     </sun:propertySheet>    
 
