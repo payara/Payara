@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import javax.net.ssl.SSLContext;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientRequestContext;
@@ -54,14 +53,14 @@ import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.UriBuilder;
 
-import org.glassfish.jersey.client.JerseyClientBuilder;
+import org.glassfish.jersey.client.JerseyClientFactory;
 import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
 import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 /**
- * This class wraps the Client returned by JerseyClientBuilder. Using this class allows us to encapsulate many of the
+ * This class wraps the Client returned by JerseyClientFactory. Using this class allows us to encapsulate many of the
  * client configuration concerns, such as registering the <code>CsrfProtectionFilter</code>.
  * @author jdlee
  */
@@ -82,7 +81,7 @@ public class ClientWrapper implements Client {
     }
 
     public ClientWrapper(final Map<String, String> headers, String userName, String password) {
-        realClient = JerseyClientBuilder.newClient();
+        realClient = JerseyClientFactory.newClient();
         realClient.register(new MultiPartFeature());
         realClient.register(new JettisonFeature());
         realClient.register(new CsrfProtectionFilter());
@@ -138,8 +137,8 @@ public class ClientWrapper implements Client {
     }
 
     @Override
-    public Client property(String name, Object value) {
-        realClient.property(name, value);
+    public Client setProperty(String name, Object value) {
+        realClient.setProperty(name, value);
         return this;
     }
 
@@ -195,10 +194,5 @@ public class ClientWrapper implements Client {
     public Client replaceWith(Configuration config) {
         realClient.replaceWith(config);
         return this;
-    }
-
-    @Override
-    public SSLContext getSslContext() {
-        return realClient.getSslContext();
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -137,7 +137,7 @@ public abstract class ProxyImpl implements Proxy {
     private void addAuthenticationInfo(Client client, WebTarget resourceBuilder, Server server, ServiceLocator habitat) {
         SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
         //Instruct Jersey to use HostNameVerifier and SSLContext provided by us.
-        client.property(ClientProperties.SSL_CONFIG, new SslConfig(new BasicHostnameVerifier(server.getAdminHost()),
+        client.setProperty(ClientProperties.SSL_CONFIG, new SslConfig(new BasicHostnameVerifier(server.getAdminHost()),
                 habitat.<SSLUtils>getService(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), "TLS" ))); //TODO need to get hardcoded "TLS" from corresponding ServerRemoteAdminCommand constant);
     }
 

@@ -65,6 +65,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.Invocation.Builder;
@@ -88,8 +89,9 @@ import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandModel.ParamModel;
 import org.glassfish.api.admin.Payload.Part;
 import org.glassfish.common.util.admin.AuthTokenManager;
+import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
-import org.glassfish.jersey.client.JerseyClientBuilder;
+import org.glassfish.jersey.client.JerseyClientFactory;
 import org.glassfish.jersey.client.SslConfig;
 import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
 import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
@@ -120,7 +122,6 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.net.NetUtils;
-import javax.ws.rs.ProcessingException;
 
 /**
  * Utility class for executing remote admin commands.
@@ -697,21 +698,21 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     continue;
                 }
                 String paramName = opt.getName();
-
+                
                 List<String> paramValues = new ArrayList<String>(options.get(paramName.toLowerCase(Locale.ENGLISH)));
-                if (!opt.getParam().alias().isEmpty() &&
+                if (!opt.getParam().alias().isEmpty() && 
                         !paramName.equalsIgnoreCase(opt.getParam().alias())) {
                     paramValues.addAll(options.get(opt.getParam().alias().toLowerCase(Locale.ENGLISH)));
                 }
                 if (!opt.getParam().multiple() && paramValues.size() > 1) {
-                    throw new CommandException(strings.get("tooManyOptions",
+                    throw new CommandException(strings.get("tooManyOptions", 
                             paramName));
                 }
                 if (paramValues.isEmpty()) {
                     // perhaps it's set in the environment?
                     String envValue = getFromEnvironment(paramName);
                     if (envValue != null) {
-                        paramValues.add(envValue);
+                        paramValues.add(envValue); 
                     }
                 }
                 if (paramValues.isEmpty()) {
@@ -828,7 +829,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     }
 
     private static Client createClient() {
-        Client c = JerseyClientBuilder.newClient();
+        Client c = JerseyClientFactory.newClient();
         c.register(new MultiPartFeature())
             .register(new CsrfProtectionFilter("CLI"))
             .register(new ActionReportJsonReader())
@@ -896,7 +897,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             Metrix.event("doRestCommand() - about to create target");
             WebTarget target = createTarget(uri);
             Metrix.event("doRestCommand() - about to configure security");
-            target.property(ClientProperties.SSL_CONFIG, new SslConfig(new BasicHostnameVerifier(host), getSslContext()));
+            target.setProperty(ClientProperties.SSL_CONFIG, new SslConfig(new BasicHostnameVerifier(host), getSslContext()));
             /*
              * Any code that wants to trigger a retry will say so explicitly.
              */
@@ -973,7 +974,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 Response response;
                 try {
                     response = invoc.invoke();
-                } catch (ProcessingException ex) {
+                } catch (ClientException ex) {
                     //Rethrow original execaption (not Throwable) for future processing
                     if (ex.getCause() != null && ex.getCause() instanceof Exception) {
                         throw (Exception) ex.getCause();
@@ -1540,7 +1541,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             if (paramName.equals("DEFAULT"))    // operands handled below
                 continue;
             ParamModel opt = commandModel.getModelFor(paramName);
-            if (opt != null &&
+            if (opt != null && 
                     (opt.getType() == File.class ||
                      opt.getType() == File[].class)) {
                 sawFile = true;
@@ -1548,7 +1549,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     final File optionFile = new File(fname);
                     sawDirectory |= optionFile.isDirectory();
                     sawUploadableFile |= optionFile.isFile();
-                }
+                }              
             }
         }
 

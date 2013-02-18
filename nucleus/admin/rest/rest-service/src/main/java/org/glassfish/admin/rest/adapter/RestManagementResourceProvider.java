@@ -179,7 +179,7 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
                 ad = (ActiveDescriptor<JavadocWadlGeneratorConfig>) serviceLocator.reifyDescriptor(ad);
             }
             final Class<?> implementationClass = ad.getImplementationClass();
-            rc.property(ServerProperties.PROPERTY_WADL_GENERATOR_CONFIG, implementationClass.getName());
+            rc.setProperty(ServerProperties.PROPERTY_WADL_GENERATOR_CONFIG, implementationClass.getName());
             classes.add(implementationClass);
         }
 

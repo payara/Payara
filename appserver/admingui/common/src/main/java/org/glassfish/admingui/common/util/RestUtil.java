@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,7 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.ClientFactory;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Cookie;
@@ -108,7 +108,7 @@ public class RestUtil {
 
     public static Client getJerseyClient() {
         if (JERSEY_CLIENT == null) {
-            JERSEY_CLIENT = ClientBuilder.newClient();
+            JERSEY_CLIENT = ClientFactory.newClient();
             JERSEY_CLIENT.register(new CsrfProtectionFilter())
                     .register(new RequiredHeadersFilter())
                     .register(new JacksonFeature());
@@ -924,7 +924,7 @@ public class RestUtil {
         try {
             ServiceLocator habitat = SecurityServicesUtil.getInstance().getHabitat();
             SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
-            client.property(ClientProperties.SSL_CONFIG, new SslConfig(new BasicHostnameVerifier(),
+            client.setProperty(ClientProperties.SSL_CONFIG, new SslConfig(new BasicHostnameVerifier(),
                                                                                           habitat.<SSLUtils>getService(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), null)));
             client.register(CsrfProtectionFilter.class);
 
