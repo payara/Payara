@@ -59,59 +59,6 @@
     </properties>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jaxb2-maven-plugin</artifactId>
-                <version>1.5</version>
-                <executions>
-                    <execution>
-                        <id>templateinfo</id>
-                        <goals>
-                            <goal>xjc</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>src/main/java</outputDirectory>
-                            <schemaDirectory>src/main/resources/xsd/schema</schemaDirectory>
-                            <schemaFiles>template-info.xsd</schemaFiles>
-                            <packageName>com.sun.enterprise.admin.servermgmt.xml.templateinfo</packageName>
-                            <clearOutputDir>false</clearOutputDir>
-                            <staleFile>${project.build.directory}/generated-sources/.jaxb-staleFlag-config</staleFile>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>domaininfo</id>
-                        <goals>
-                            <goal>xjc</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>src/main/java</outputDirectory>
-                            <schemaDirectory>src/main/resources/xsd/schema</schemaDirectory>
-                            <schemaFiles>domain-info.xsd</schemaFiles>
-                            <extension>true</extension>
-                            <packageName>com.sun.enterprise.admin.servermgmt.xml.domaininfo</packageName>
-                            <clearOutputDir>false</clearOutputDir>
-                            <staleFile>${project.build.directory}/generated-sources/.jaxb-staleFlag-app</staleFile>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>stringsubs</id>
-                        <goals>
-                            <goal>xjc</goal>
-                        </goals>
-                        <configuration>
-                            <extension>true</extension>
-                            <outputDirectory>src/main/java</outputDirectory>
-                            <schemaDirectory>src/main/resources/xsd/schema</schemaDirectory>
-                            <schemaFiles>stringsubs.xsd</schemaFiles>
-                            <extension>true</extension>
-                            <packageName>com.sun.enterprise.admin.servermgmt.xml.stringsubs</packageName>
-                            <clearOutputDir>false</clearOutputDir>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
         <resources>
             <resource>
                 <directory>src/main/java</directory>
@@ -129,8 +76,59 @@
                     <include>**/*.xsd</include>
                 </includes>
             </resource>
-        </resources>
+        </resources>        
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>templateinfo</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <configuration>
+                            <schemaDirectory>src/main/resources/xsd/schema</schemaDirectory>
+                            <schemaFiles>template-info.xsd</schemaFiles>
+                            <packageName>com.sun.enterprise.admin.servermgmt.xml.templateinfo</packageName>
+                            <clearOutputDir>false</clearOutputDir>
+                            <staleFile>${project.build.directory}/generated-sources/.jaxb-staleFlag-config</staleFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>domaininfo</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <configuration>
+                            <schemaDirectory>src/main/resources/xsd/schema</schemaDirectory>
+                            <schemaFiles>domain-info.xsd</schemaFiles>
+                            <extension>true</extension>
+                            <packageName>com.sun.enterprise.admin.servermgmt.xml.domaininfo</packageName>
+                            <clearOutputDir>false</clearOutputDir>
+                            <staleFile>${project.build.directory}/generated-sources/.jaxb-staleFlag-app</staleFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>stringsubs</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <configuration>
+                            <extension>true</extension>
+                            <schemaDirectory>src/main/resources/xsd/schema</schemaDirectory>
+                            <schemaFiles>stringsubs.xsd</schemaFiles>
+                            <extension>true</extension>
+                            <packageName>com.sun.enterprise.admin.servermgmt.xml.stringsubs</packageName>
+                            <clearOutputDir>false</clearOutputDir>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
+    
     <dependencies>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
@@ -155,12 +153,10 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>6.5.2</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.annotations</groupId>
             <artifactId>logging-annotation-processor</artifactId>
-            <version>${logging-annotation-processor.version}</version>
         </dependency>
     </dependencies>
 </project>
