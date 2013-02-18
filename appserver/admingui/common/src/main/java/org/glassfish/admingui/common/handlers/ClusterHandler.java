@@ -159,7 +159,7 @@ public class ClusterHandler {
             })
     public static void isConfigName(HandlerContext handlerCtx) {
         String configName = (String) handlerCtx.getInputValue("configName");
-        List config = TargetUtil.getConfig();
+        List config = TargetUtil.getConfigs();
         if(!config.contains(configName)){
             GuiUtil.handleError(handlerCtx, GuiUtil.getMessage("msg.NoSuchConfig"));
             return;
