@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -96,7 +96,7 @@ public class WeldUtils {
     public static enum BDAType { WAR, JAR, UNKNOWN };
 
 
-    private static final List<String> cdiEnablingAnnotations;
+    protected static final List<String> cdiEnablingAnnotations;
     static {
         cdiEnablingAnnotations = new ArrayList<String>();
         cdiEnablingAnnotations.add(Scope.class.getName());
@@ -108,7 +108,7 @@ public class WeldUtils {
         cdiEnablingAnnotations.add(Singleton.class.getName());
     }
 
-    private static final List<String> excludedAnnotationTypes = new ArrayList<String>();
+    protected static final List<String> excludedAnnotationTypes = new ArrayList<String>();
     static {
         // These are excluded because they are not scope annotations, and they cause the recursive
         // analysis of parent annotations to continue infinitely because they reference each other,

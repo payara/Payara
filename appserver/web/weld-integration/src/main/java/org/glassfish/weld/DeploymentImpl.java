@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -429,8 +429,7 @@ public class DeploymentImpl implements Deployment {
                         entryName.indexOf(SEPARATOR_CHAR, libDir.length() + 1 ) == -1 ) {
                         try {
                             ReadableArchive jarInLib = archive.getSubArchive(entryName);
-                            if (jarInLib.exists(META_INF_BEANS_XML) || WeldUtils.hasCDIEnablingAnnotations(
-                                    context, jarInLib.getURI())) {
+                            if (jarInLib.exists(META_INF_BEANS_XML) || WeldUtils.hasCDIEnablingAnnotations(context, jarInLib.getURI())) {
                                 if (libJars == null) {
                                     libJars = new ArrayList<ReadableArchive>();
                                 }
