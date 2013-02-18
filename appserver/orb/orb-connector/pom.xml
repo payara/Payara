@@ -160,7 +160,7 @@
                                <artifactItems>
                                    <artifactItem>
                                        <groupId>org.glassfish.docs.man</groupId>
-                                       <artifactId>orb-orb-connector-manpage</artifactId>
+                                       <artifactId>orb-connector-manpage</artifactId>
                                        <version>${v3-docs.version}</version>
                                        <type>zip</type>
                                        <overWrite>true</overWrite>

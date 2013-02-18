@@ -117,7 +117,7 @@
                                <artifactItems>
                                    <artifactItem>
                                        <groupId>org.glassfish.docs.man</groupId>
-                                       <artifactId>ejb-ejb-container-manpage</artifactId>
+                                       <artifactId>ejb-container-manpage</artifactId>
                                        <version>${v3-docs.version}</version>
                                        <type>zip</type>
                                        <overWrite>true</overWrite>

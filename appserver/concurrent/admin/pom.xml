@@ -51,7 +51,35 @@
     <artifactId>concurrent-admin</artifactId>
     
     <name>Concurrent Admin Module</name>
-
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.glassfish.docs.man</groupId>
+                                    <artifactId>concurrent-admin-manpage</artifactId>
+                                    <version>${v3-docs.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -76,25 +104,25 @@
             <version>${project.version}</version>
         </dependency>
 
-         <dependency>
+        <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
-         </dependency>
+        </dependency>
 
-       <dependency>
+        <dependency>
             <groupId>org.glassfish.main.resourcebase.resources</groupId>
             <artifactId>nucleus-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
 
-         <dependency>
+        <dependency>
             <groupId>org.glassfish.main.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
 
-         <dependency>
+        <dependency>
             <groupId>org.glassfish.main.concurrent</groupId>
             <artifactId>concurrent-config</artifactId>
             <version>${project.version}</version>

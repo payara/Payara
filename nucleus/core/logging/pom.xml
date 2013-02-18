@@ -51,7 +51,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>logging</artifactId>
     
-    <name>Appserver Logging Classes</name>
+    <name>Nucleus Logging Classes</name>
     <description>Glassfish logging classes</description>
 
     <dependencies>
@@ -98,7 +98,7 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>org.glassfish.docs.man</groupId>
-                                    <artifactId>core-logging-manpage</artifactId>
+                                    <artifactId>logging-manpage</artifactId>
                                     <version>${v3-docs.version}</version>
                                     <type>zip</type>
                                     <overWrite>true</overWrite>

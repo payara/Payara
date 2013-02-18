@@ -154,7 +154,7 @@
                                <artifactItems>
                                    <artifactItem>
                                        <groupId>org.glassfish.docs.man</groupId>
-                                       <artifactId>appclient-client-acc-manpage</artifactId>
+                                       <artifactId>gf-client-module-manpage</artifactId>
                                        <version>${v3-docs.version}</version>
                                        <type>zip</type>
                                        <overWrite>true</overWrite>

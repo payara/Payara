@@ -124,7 +124,7 @@
                                <artifactItems>
                                    <artifactItem>
                                        <groupId>org.glassfish.docs.man</groupId>
-                                       <artifactId>admin-cli-optional-manpage</artifactId>
+                                       <artifactId>cli-optional-manpage</artifactId>
                                        <version>${v3-docs.version}</version>
                                        <type>zip</type>
                                        <overWrite>true</overWrite>

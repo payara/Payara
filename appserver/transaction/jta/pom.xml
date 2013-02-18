@@ -97,7 +97,7 @@
                                <artifactItems>
                                    <artifactItem>
                                        <groupId>org.glassfish.docs.man</groupId>
-                                       <artifactId>transaction-jta-manpage</artifactId>
+                                       <artifactId>jta-manpage</artifactId>
                                        <version>${v3-docs.version}</version>
                                        <type>zip</type>
                                        <overWrite>true</overWrite>
