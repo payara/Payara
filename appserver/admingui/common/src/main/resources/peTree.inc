@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -76,10 +76,8 @@ monitoring     web  800
   <sun:form id="treeForm">
     <!beforeCreate
       gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config.json", method="get", result="#{pageSession.configResponse}");
-
-      gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config", result="#{pageSession.configsList}");
-
-          setAttribute(key="configName" value="#{pageSession.configsList[0]}");
+      gf.listConfigs(configs="#{pageSession.configsList}");
+      setAttribute(key="configName" value="#{pageSession.configsList[0]}");
       gf.encodeId(id="${configName}" result="#{requestScope.configNameId}");
     />
     <h:commandButton id="update" style="display: none;">

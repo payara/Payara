@@ -46,7 +46,7 @@
      Output: listOfRows
 -->
 <handler id="gfr.getResourcesTableData">
-    gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/clusters/cluster", result="#{pageSession.clusterList}");
+    gf.listClusters(clusters="#{pageSession.clusterList}");
     gf.listInstances(optionKeys={"standaloneonly"} optionValues={"true"}, instances="#{pageSession.standaloneList}" );
     listAdd(list="#{pageSession.standaloneList}", value="server" index="0");
     setPageSessionAttribute(key="targetList" value={});

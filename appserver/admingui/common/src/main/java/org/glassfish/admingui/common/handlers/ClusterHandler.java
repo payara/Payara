@@ -57,19 +57,15 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
-
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.Map;
-import java.util.List;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
 import org.glassfish.admingui.common.util.TargetUtil;
 import org.glassfish.api.admin.InstanceState;
+
+import java.net.URLEncoder;
+import java.util.*;
+import java.util.logging.Level;
 
 public class ClusterHandler {
     public static final String CLUSTER_RESOURCE_NAME = "org.glassfish.cluster.admingui.Strings";
@@ -447,6 +443,24 @@ public class ClusterHandler {
                     GuiUtil.getCommonMessage("LOG_DELETE_INSTANCE", new Object[]{endpoint, "null"}));
             return ex.getMessage();
         }
+    }
+
+    @Handler(id = "gf.listClusters",
+            output = {
+                    @HandlerOutput(name = "clusters", type = List.class)
+            })
+    public static void listClusters(HandlerContext handlerCtx) {
+        List clusters = TargetUtil.getClusters();
+        handlerCtx.setOutputValue("clusters", clusters);
+    }
+
+    @Handler(id = "gf.listConfigs",
+            output = {
+                    @HandlerOutput(name = "configs", type = List.class)
+            })
+    public static void listConfigs(HandlerContext handlerCtx) {
+        List configs = TargetUtil.getConfigs();
+        handlerCtx.setOutputValue("configs", configs);
     }
 
 

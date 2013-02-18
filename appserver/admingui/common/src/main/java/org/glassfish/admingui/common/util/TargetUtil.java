@@ -45,16 +45,11 @@
 
 package org.glassfish.admingui.common.util;
 
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
 import org.glassfish.admingui.common.handlers.RestUtilHandlers;
+
+import java.net.URLEncoder;
+import java.util.*;
+import java.util.logging.Level;
 
 /**
  *
@@ -106,7 +101,7 @@ public class TargetUtil {
         return clusters;
     }
 
-    public static List getConfig(){
+    public static List getConfigs(){
         List config = new ArrayList();
         try{
             config.addAll(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/configs/config").keySet());
