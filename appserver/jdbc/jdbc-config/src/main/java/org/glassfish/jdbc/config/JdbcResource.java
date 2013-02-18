@@ -42,6 +42,7 @@ package org.glassfish.jdbc.config;
 
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.ResourcePoolReference;
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
 import org.glassfish.admin.cli.resources.ResourceConfigCreator;
 import org.glassfish.api.Param;
@@ -80,9 +81,9 @@ import java.util.List;
 @ReferenceConstraint(skipDuringCreation=true, payload=JdbcResource.class)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=JdbcResource.class)
 public interface JdbcResource extends ConfigBeanProxy, Resource,
-        PropertyBag, BindableResource, Payload {
-    
-    /**              
+        PropertyBag, BindableResource, Payload, ResourcePoolReference {
+
+    /**
      * Gets the value of the poolName property.
      *
      * @return possible object is
@@ -95,14 +96,6 @@ public interface JdbcResource extends ConfigBeanProxy, Resource,
     String getPoolName();
 
     public String name = "connectionpoolid";
-
-    /**
-     * Sets the value of the poolName property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    void setPoolName(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the enabled property.

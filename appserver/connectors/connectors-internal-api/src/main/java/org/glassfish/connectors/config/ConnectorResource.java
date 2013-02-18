@@ -42,6 +42,7 @@ package org.glassfish.connectors.config;
 
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.ResourcePoolReference;
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
 import org.glassfish.admin.cli.resources.ResourceConfigCreator;
 import org.glassfish.api.admin.RestRedirect;
@@ -79,7 +80,7 @@ import java.util.List;
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ConnectorResource.class)
 @ReferenceConstraint(skipDuringCreation=true, payload=ConnectorResource.class)
 public interface ConnectorResource extends ConfigBeanProxy, Resource,
-    PropertyBag, BindableResource, Payload {
+    PropertyBag, BindableResource, Payload, ResourcePoolReference {
 
 
     /**
