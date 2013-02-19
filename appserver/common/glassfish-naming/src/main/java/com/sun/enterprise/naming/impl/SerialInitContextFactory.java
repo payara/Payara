@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -151,7 +151,6 @@ public class SerialInitContextFactory implements InitialContextFactory {
     public Context getInitialContext(Hashtable env) throws NamingException {
         final Hashtable myEnv = env == null ? new Hashtable() : env ;
 
-        boolean membershipChangeForced = false ;
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "getInitialContext: env={0}", env);
@@ -160,18 +159,17 @@ public class SerialInitContextFactory implements InitialContextFactory {
             || propertyIsSet(myEnv, LOAD_BALANCING_PROPERTY) ;
         NamingClusterInfo namingClusterInfo = null;
 
-        if (useLB && !initialized) {
-            synchronized( SerialInitContextFactory.class ) {
-                if (!initialized) {
-                    namingClusterInfo = services.getService(NamingClusterInfo.class);
-                    namingClusterInfo.initGroupInfoService(myEnv, defaultHost, defaultPort, getORB(), services);
-                    membershipChangeForced = true ;
-                    initialized = true ;
-                }
-            }
-        }
 
-        if (useLB || initialized)  {
+        if (useLB)  {
+        	 if (!initialized) {
+                 synchronized( SerialInitContextFactory.class ) {
+                     if (!initialized) {
+                         namingClusterInfo = services.getService(NamingClusterInfo.class);
+                         namingClusterInfo.initGroupInfoService(myEnv, defaultHost, defaultPort, getORB(), services);
+                         initialized = true ;
+                     }
+                 }
+             }
             // If myEnv already contains the IIOP_URL, don't get a new one:
             // this getInitialContext call came from an internal
             // new InitialContext call.
@@ -181,17 +179,8 @@ public class SerialInitContextFactory implements InitialContextFactory {
                     return ctx ;
                 }
 
-                // If the IIOP endpoint list is explicitly set in the env,
-                // update rrPolicy to use that information, otherwise just
-                // rotate rrPolicy to the next element.
                 if(namingClusterInfo == null) {
                     namingClusterInfo = services.getService(NamingClusterInfo.class);
-                }
-                if (myEnv.containsKey( IIOP_ENDPOINTS_PROPERTY ) ||
-                    myEnv.containsKey( LOAD_BALANCING_PROPERTY )) {
-                    synchronized( SerialInitContextFactory.class ) {
-                        namingClusterInfo.setClusterInstanceInfo(myEnv, defaultHost, defaultPort, membershipChangeForced);
-                    }
                 }
 
                 List<String> rrList = namingClusterInfo.getNextRotation();
