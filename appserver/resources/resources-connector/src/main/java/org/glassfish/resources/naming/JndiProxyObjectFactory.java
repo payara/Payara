@@ -136,7 +136,7 @@ public class JndiProxyObjectFactory implements ObjectFactory {
 		    throw new NamingException("JndiProxyObjectFactory: no info in the " +
                     "reference about the target context; contextAddr = " + contextAddr + " " +
                     "env = " + env + " factoryClass = " + jndiFactoryClass);
-	}
+	    }
 
         // Context of the external naming factory
         Context context = contextMap.get(resourceInfo);
@@ -150,14 +150,27 @@ public class JndiProxyObjectFactory implements ObjectFactory {
             }
         }
 
-        if (context == null)
-            throw new NamingException("JndiProxyObjectFactory no InitialContext" + jndiFactoryClass);
-
         // use the name to lookup in the external JNDI naming context
+        Object retObj = null;
         try {
-            return context.lookup(jndiLookupName);
+            retObj = context.lookup(jndiLookupName);
         } catch (NameNotFoundException e) {
+            //Fixing issue: http://java.net/jira/browse/GLASSFISH-15447
             throw new ExternalNameNotFoundException(e);
+        }  catch (javax.naming.NamingException ne) {
+            //Fixing issue: http://java.net/jira/browse/GLASSFISH-15447
+            context = loadInitialContext(jndiFactoryClass, env);
+            if (context == null) {
+                throw new NamingException ("JndiProxyObjectFactory no InitialContext" + jndiFactoryClass);
+            } else {
+                contextMap.put(resourceInfo, context);
+                try {
+                    retObj = context.lookup(jndiLookupName);
+                } catch (NameNotFoundException e) {
+                    throw new ExternalNameNotFoundException(e);
+                }
+            }
         }
+        return retObj;
     }
 }
