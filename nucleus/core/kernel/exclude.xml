@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -49,5 +49,16 @@
         <Class name="com.sun.enterprise.v3.admin.LocalPasswordImpl"/>
         <Method name="postConstruct"/>
         <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE"/>
+    </Match>
+    <!--
+         These methods shut down the server on purpose.
+     -->
+    <Match>
+        <Or>
+            <Class name="com.sun.enterprise.v3.admin.RestartServer"/>
+            <Class name="com.sun.enterprise.v3.admin.StopServer"/>
+        </Or>
+        <Method name="doExecute"/>
+        <Bug pattern="DM_EXIT"/>
     </Match>
 </FindBugsFilter>
