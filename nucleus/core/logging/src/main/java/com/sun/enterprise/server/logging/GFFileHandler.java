@@ -98,6 +98,8 @@ import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 @ContractsProvided({GFFileHandler.class, java.util.logging.Handler.class, LogEventBroadcaster.class})
 public class GFFileHandler extends StreamHandler implements PostConstruct, PreDestroy, LogEventBroadcaster {
 
+    private static final int DEFAULT_ROTATION_LIMIT_BYTES = 2000000;
+
     private final static LocalStringManagerImpl LOCAL_STRINGS = 
         new LocalStringManagerImpl(GFFileHandler.class);
     
@@ -154,6 +156,8 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
             new SimpleDateFormat(LOG_ROTATE_DATE_FORMAT);
 
     private static final String DEFAULT_LOG_FILE_FORMATTER_CLASS_NAME = UniformLogFormatter.class.getName();
+
+    public static final int MINIMUM_ROTATION_LIMIT_VALUE = 500*1000;
 
     private BooleanLatch done = new BooleanLatch();
     private Thread pump;
@@ -316,7 +320,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
                 EarlyLogHandler.earlyMessages.add(lr);
             }
 
-            if (rotationTimeLimitValue != 0) {
+            if (rotationTimeLimitValue > 0) {
 
                 Task rotationTask = new Task() {
                     public Object run() {
@@ -332,7 +336,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         }
 
         // Also honor the size based rotation if configured.
-        Integer rotationLimitAttrValue = 0;
+        Integer rotationLimitAttrValue = DEFAULT_ROTATION_LIMIT_BYTES;
         try {
             propValue = manager.getProperty(cname + ".rotationLimitInBytes");
             if (propValue != null) {
@@ -349,7 +353,9 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         // We set the LogRotation limit here. The rotation limit is the
         // Threshold for the number of bytes in the log file after which
         // it will be rotated.
-        setLimitForRotation(rotationLimitAttrValue);        
+        if (rotationLimitAttrValue >= MINIMUM_ROTATION_LIMIT_VALUE ) {
+            setLimitForRotation(rotationLimitAttrValue);        
+        }
 
         //setLevel(Level.ALL);
         propValue = manager.getProperty(cname + ".flushFrequency");
@@ -603,13 +609,9 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     /**
      * A package private method to set the limit for File Rotation.
      */
-    synchronized void setLimitForRotation(int rotationLimitInBytes) {
-//        if ((rotationLimitInBytes == 0) ||
-//	        (rotationLimitInBytes >= MINIMUM_FILE_ROTATION_VALUE )) {
+    private synchronized void setLimitForRotation(int rotationLimitInBytes) {
         limitForFileRotation = rotationLimitInBytes;
-//        }
     }
-
 
     // NOTE: This private class is copied from java.util.logging.FileHandler
     // A metered stream is a subclass of OutputStream that

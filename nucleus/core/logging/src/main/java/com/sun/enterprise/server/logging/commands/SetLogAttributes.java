@@ -69,6 +69,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
+import com.sun.enterprise.server.logging.GFFileHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
@@ -102,6 +103,10 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 })
 public class SetLogAttributes implements AdminCommand {
 
+    private static final String ROTATION_LIMIT_IN_BYTES = "com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes";
+
+    private static final String ROTATION_TIMELIMIT_IN_MINUTES = "com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes";
+
     @Param(name = "name_value", primary = true, separator = ':')
     Properties properties;
 
@@ -124,13 +129,13 @@ public class SetLogAttributes implements AdminCommand {
     String[] validAttributes = {"handlers", "handlerServices",
             "java.util.logging.ConsoleHandler.formatter",
             "com.sun.enterprise.server.logging.GFFileHandler.file",
-            "com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes",
+            ROTATION_TIMELIMIT_IN_MINUTES,
             "com.sun.enterprise.server.logging.GFFileHandler.flushFrequency",
             "java.util.logging.FileHandler.formatter",
             "com.sun.enterprise.server.logging.GFFileHandler.formatter",
             "java.util.logging.FileHandler.limit",
             "com.sun.enterprise.server.logging.GFFileHandler.logtoConsole",
-            "com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes",
+            ROTATION_LIMIT_IN_BYTES,
             "com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging",
             "com.sun.enterprise.server.logging.GFFileHandler.alarms",
             "java.util.logging.FileHandler.count",
@@ -164,16 +169,23 @@ public class SetLogAttributes implements AdminCommand {
                 boolean vlAttribute = false;
                 for (String attrName : validAttributes) {
                     if (attrName.equals(att_name)) {
+                        try {
+                            validateAttributeValue(att_name, att_value);
+                        } catch (Exception e) {
+                            break;
+                        }
                         m.put(att_name, att_value);
                         vlAttribute = true;
                         sbfSuccessMsg.append(localStrings.getLocalString(
-                                "set.log.attribute.properties", "{0} logging attribute set with value {1}.\n", att_name, att_value));
+                                "set.log.attribute.properties", 
+                                "{0} logging attribute set with value {1}.\n", 
+                                att_name, att_value));
                     }
                 }
 
                 if (!vlAttribute) {
                     report.setMessage(localStrings.getLocalString("set.log.attribute.invalid",
-                            "Invalid logging attribute name found {0}.", att_name));
+                            "Invalid logging attribute name {0} or value {1}.", att_name, att_value));
                     invalidAttribute = true;
                     break;
                 }
@@ -238,4 +250,19 @@ public class SetLogAttributes implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
     }
+
+    private void validateAttributeValue(String attr_name, String attr_value) {
+        if (attr_name.equals(ROTATION_LIMIT_IN_BYTES)) {
+            int rotationSizeLimit = Integer.parseInt(attr_value);
+            if (rotationSizeLimit < GFFileHandler.MINIMUM_ROTATION_LIMIT_VALUE) {
+                throw new IllegalArgumentException();
+            }
+        } else if (attr_name.equals(ROTATION_TIMELIMIT_IN_MINUTES)) {
+            int rotationTimeLimit = Integer.parseInt(attr_value);
+            if (rotationTimeLimit < 0) {
+                throw new IllegalArgumentException();
+            }
+        }
     }
+    
+}
