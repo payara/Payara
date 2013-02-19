@@ -144,6 +144,26 @@ public class DummyUriInfo implements UriInfo {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public URI resolve(URI uri) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public URI resolve(URI baseUri, URI uri) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public URI relativize(URI uri) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public URI relativize(URI from, URI uri) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     private static class UriBuilderImpl extends UriBuilder {
 
         public UriBuilderImpl() {
