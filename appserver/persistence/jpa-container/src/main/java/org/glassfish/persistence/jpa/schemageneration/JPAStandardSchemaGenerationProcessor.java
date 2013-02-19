@@ -43,37 +43,45 @@ package org.glassfish.persistence.jpa.schemageneration;
 import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
 import org.glassfish.api.deployment.DeploymentContext;
 
+import java.util.HashMap;
 import java.util.Map;
 
+
 /**
- * Processor for schema generation
+ * Schema generation processor while using standard JPA based schema generation
  * @author Mitesh Meswani
  */
-public interface SchemaGenerationProcessor {
+public class JPAStandardSchemaGenerationProcessor implements SchemaGenerationProcessor {
+    private static final String SCHEMA_GENERATION_ACTION_PROPERTY = "javax.persistence.schema-generation-action"; //TODO Update the name once EclipseLink updates
+    private static final String SCHEMA_GENERATION_ACTION_NONE = "none";
 
-    /**
-     * initialize the processor
-     */
-    void init(PersistenceUnitDescriptor pud, DeploymentContext deploymentContext);
+    @Override
+    public void init(PersistenceUnitDescriptor pud, DeploymentContext deploymentContext) {
+        // Nothing to init
+    }
 
-    /**
-     * @return overrides that will be supplied to EMF creation for schema generation
-     */
-    Map<String, String> getOverridesForSchemaGeneration();
+    @Override
+    public Map<String, String> getOverridesForSchemaGeneration() {
+        // No override is needed now. When we wire in taking schema generation overrides from deploy CLI, this method will return corresponidng overrides.
+        return null;
+    }
 
-    /**
-     @return overrides that will be supplied to EMF creation for suppressing schema generation
-     */
-    Map<String,String> getOverridesForSuppressingSchemaGeneration();
+    @Override
+    public Map<String, String> getOverridesForSuppressingSchemaGeneration() {
+        Map<String, String> overrides = new HashMap<>();
+        overrides.put(SCHEMA_GENERATION_ACTION_PROPERTY, SCHEMA_GENERATION_ACTION_NONE);
+        return overrides;
+    }
 
-    /**
-     * @return whether ddl needs to be executed by container
-     */
-    boolean isContainerDDLExecutionRequired();
+    @Override
+    public boolean isContainerDDLExecutionRequired() {
+        // DDL execution is done by JPA provider.
+        return false;
+    }
 
-    /**
-     * Execute create DDL statements
-     */
-    void executeCreateDDL();
-
+    @Override
+    public void executeCreateDDL() {
+        // We should never reach here as this processor returns false for isContainerDDLExecutionRequired()
+        throw new UnsupportedOperationException();
+    }
 }

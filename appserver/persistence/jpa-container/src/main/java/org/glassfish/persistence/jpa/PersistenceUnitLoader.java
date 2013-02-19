@@ -44,9 +44,9 @@ import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.PersistenceUnitsDescriptor;
 import com.sun.enterprise.util.i18n.StringManager;
-import org.glassfish.persistence.common.Java2DBProcessorHelper;
 import com.sun.logging.LogDomains;
-import org.glassfish.persistence.jpa.schemageneration.EclipseLinkSchemaGenerationProcessor;
+import org.glassfish.persistence.jpa.schemageneration.SchemaGenerationProcessor;
+import org.glassfish.persistence.jpa.schemageneration.SchemaGenerationProcessorFactory;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.ValidationMode;
@@ -77,7 +77,7 @@ public class PersistenceUnitLoader {
     /**
      * The schemaGenerationProcessor instance for the Java2DB work.
      */
-    private EclipseLinkSchemaGenerationProcessor schemaGenerationProcessor;
+    private SchemaGenerationProcessor schemaGenerationProcessor;
 
     private static Logger logger = LogDomains.getLogger(PersistenceUnitLoader.class, LogDomains.PERSISTENCE_LOGGER);
 
@@ -167,11 +167,21 @@ public class PersistenceUnitLoader {
             throw new RuntimeException(e);
         }
 
-        schemaGenerationProcessor = new EclipseLinkSchemaGenerationProcessor(providerContainerContractInfo.getDeploymentContext(),
-                pud, providerContainerContractInfo.isJava2DBRequired());
+        Map<String, String> schemaGenerationOverrides;
+        schemaGenerationProcessor = SchemaGenerationProcessorFactory.createSchemaGenerationProcessor(pud);
+        if(providerContainerContractInfo.isJava2DBRequired() ) {
+            schemaGenerationProcessor.init(pud, providerContainerContractInfo.getDeploymentContext());
+            schemaGenerationOverrides = schemaGenerationProcessor.getOverridesForSchemaGeneration();
+        } else {
+            // schema generation is not required if this EMF is being created for
+            // -appserver restarting or,
+            // -on an instance or,
+            // -appclient
+            // Suppress schema generation in this case
+            schemaGenerationOverrides = schemaGenerationProcessor.getOverridesForSuppressingSchemaGeneration();
+        }
 
         Map<String, Object> overRides = new HashMap<String, Object>(integrationProperties);
-        Map<String, String> schemaGenerationOverrides = schemaGenerationProcessor.getSchemaGenerationOverrides();
         if(schemaGenerationOverrides != null) {
             overRides.putAll(schemaGenerationOverrides);
         }
@@ -345,7 +355,7 @@ public class PersistenceUnitLoader {
      * the DDL files, then iterate over those files and execute each line in them.
      */
     void doJava2DB() {
-        if (schemaGenerationProcessor.isDDLExecutionRequired()) {
+        if (schemaGenerationProcessor.isContainerDDLExecutionRequired()) {
             final boolean fineMsgLoggable = logger.isLoggable(Level.FINE);
             if(fineMsgLoggable) {
                 logger.fine("<--- To Create Tables"); // NOI18N

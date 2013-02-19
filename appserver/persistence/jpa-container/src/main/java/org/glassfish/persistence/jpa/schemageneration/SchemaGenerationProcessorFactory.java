@@ -41,39 +41,49 @@
 package org.glassfish.persistence.jpa.schemageneration;
 
 import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
-import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.persistence.jpa.PersistenceUnitInfoImpl;
 
-import java.util.Map;
 
 /**
- * Processor for schema generation
- * @author Mitesh Meswani
+ * Factory for creating SchemaGenerationProcessor
+ * @author  Mitesh Meswani
  */
-public interface SchemaGenerationProcessor {
+public class SchemaGenerationProcessorFactory {
 
     /**
-     * initialize the processor
+     * @return EclipseLink specific schema generation iff provider is EclipseLink or Toplink, and user has not specified
+     * any standard JPA schema generation property else return JPAStandardSchemaGenerationProcessor
      */
-    void init(PersistenceUnitDescriptor pud, DeploymentContext deploymentContext);
+    public static SchemaGenerationProcessor createSchemaGenerationProcessor(PersistenceUnitDescriptor pud) {
+        // We use
+
+        String providerClassName = PersistenceUnitInfoImpl.getPersistenceProviderClassNameForPuDesc(pud);
+
+        boolean useJPA21Processor = true;
+
+        if(EclipseLinkSchemaGenerationProcessor.isSupportedPersistenceProvider(providerClassName) ) {
+           if(!containsStandardSchemaGenerationProperty(pud)) {
+               useJPA21Processor = false;
+           }
+        }
+
+        return useJPA21Processor ? new JPAStandardSchemaGenerationProcessor() : new EclipseLinkSchemaGenerationProcessor(providerClassName);
+    }
+
+    private static final String STANDARD_SCHEMA_GENERATION_PREFIX = "javax.persistence.schema-generation";
 
     /**
-     * @return overrides that will be supplied to EMF creation for schema generation
+     * @return true if the given <code>pud</code> contains a JPA standard property for schema generation
      */
-    Map<String, String> getOverridesForSchemaGeneration();
-
-    /**
-     @return overrides that will be supplied to EMF creation for suppressing schema generation
-     */
-    Map<String,String> getOverridesForSuppressingSchemaGeneration();
-
-    /**
-     * @return whether ddl needs to be executed by container
-     */
-    boolean isContainerDDLExecutionRequired();
-
-    /**
-     * Execute create DDL statements
-     */
-    void executeCreateDDL();
+    private static boolean containsStandardSchemaGenerationProperty(PersistenceUnitDescriptor pud) {
+        boolean containsStandardSchemaGenerationProperty = false;
+        for (Object puPropertyName : pud.getProperties().keySet()) {
+            if(puPropertyName instanceof String && String.class.cast(puPropertyName).startsWith(STANDARD_SCHEMA_GENERATION_PREFIX) ) {
+                containsStandardSchemaGenerationProperty = true;
+                break;
+            }
+        }
+        return containsStandardSchemaGenerationProperty;
+    }
 
 }
