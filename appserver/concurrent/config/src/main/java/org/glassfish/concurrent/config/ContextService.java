@@ -40,6 +40,8 @@
 
 package org.glassfish.concurrent.config;
 
+import com.sun.enterprise.config.modularity.annotation.ActivateOnStartup;
+import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
@@ -71,6 +73,8 @@ import java.util.List;
 @ResourceTypeOrder(deploymentOrder=ResourceDeploymentOrder.CONTEXT_SERVICE)
 @ReferenceConstraint(skipDuringCreation=true, payload=ContextService.class)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ContextService.class)
+@CustomConfiguration(baseConfigurationFileName = "context-service-conf.xml")
+@ActivateOnStartup
 public interface ContextService extends ConfigBeanProxy, Resource,
         PropertyBag, BindableResource, Payload  {
 

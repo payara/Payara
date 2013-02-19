@@ -212,7 +212,12 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         ArrayList<ContextSetupProviderImpl.CONTEXT_TYPE> contextTypeArray = new ArrayList<>();
         ContextSetupProviderImpl.CONTEXT_TYPE[] contextTypes = new ContextSetupProviderImpl.CONTEXT_TYPE[] {};
         if (contextInfo == null) {
-            return contextTypes;
+            // by default, if no context info is passed, we propagate all context types
+            contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.CLASSLOADING);
+            contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.NAMING);
+            contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.SECURITY);
+            contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.WORKAREA);
+            return contextTypeArray.toArray(contextTypes);
         }
         StringTokenizer st = new StringTokenizer(contextInfo, ",", false);
         while(st.hasMoreTokens()) {

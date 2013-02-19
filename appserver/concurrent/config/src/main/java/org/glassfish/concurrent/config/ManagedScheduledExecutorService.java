@@ -40,6 +40,8 @@
 
 package org.glassfish.concurrent.config;
 
+import com.sun.enterprise.config.modularity.annotation.ActivateOnStartup;
+import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
@@ -66,7 +68,9 @@ import javax.validation.Payload;
 @ResourceTypeOrder(deploymentOrder=ResourceDeploymentOrder.MANAGED_SCHEDULED_EXECUTOR_SERVICE)
 @ReferenceConstraint(skipDuringCreation=true, payload=ManagedScheduledExecutorService.class)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ManagedScheduledExecutorService.class)
-public interface ManagedScheduledExecutorService extends ConfigBeanProxy, 
+@CustomConfiguration(baseConfigurationFileName = "managed-scheduled-executor-service-conf.xml")
+@ActivateOnStartup
+public interface ManagedScheduledExecutorService extends ConfigBeanProxy,
         Resource, PropertyBag, BindableResource, Payload, 
         ManagedExecutorService {
 

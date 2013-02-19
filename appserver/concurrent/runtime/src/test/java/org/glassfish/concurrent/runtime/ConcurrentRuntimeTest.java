@@ -119,10 +119,10 @@ public class ConcurrentRuntimeTest {
         ResourceInfo resource = new ResourceInfo("test");
         ContextServiceImpl contextService = concurrentRuntime.getContextService(resource, contextServiceConfig);
         ContextSetupProviderImpl contextSetupProvider = (ContextSetupProviderImpl) contextService.getContextSetupProvider();
-        assertFalse((Boolean) Util.getdFieldValue(contextSetupProvider, "classloading"));
-        assertFalse((Boolean) Util.getdFieldValue(contextSetupProvider, "naming"));
-        assertFalse((Boolean) Util.getdFieldValue(contextSetupProvider, "security"));
-        assertFalse((Boolean) Util.getdFieldValue(contextSetupProvider, "workArea"));
+        assertTrue((Boolean) Util.getdFieldValue(contextSetupProvider, "classloading"));
+        assertTrue((Boolean) Util.getdFieldValue(contextSetupProvider, "naming"));
+        assertTrue((Boolean) Util.getdFieldValue(contextSetupProvider, "security"));
+        assertTrue((Boolean) Util.getdFieldValue(contextSetupProvider, "workArea"));
     }
 
     @Test
