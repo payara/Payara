@@ -62,11 +62,6 @@
                 result="#{pageSession.valueMap}");
         setPageSessionAttribute(key="logAttributes", value="#{pageSession.valueMap.data.extraProperties.logAttributes}");
         setPageSessionAttribute(key="defaultLoggingProperties", value="#{pageSession.valueMap.data.extraProperties.defaultLoggingProperties}");
-
-        //TODO: remove this when GLASSFISH-19494 is fixed
-        if ("#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.multiLineMode']}=#{null}") {
-            mapPut(map="#{pageSession.logAttributes}", key="com.sun.enterprise.server.logging.GFFileHandler.multiLineMode" value="false" );
-        }
         gf.isConfigName(configName="#{pageSession.configName}" );
     />
 </event>
@@ -81,6 +76,8 @@
                 onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
                 <!command
                     gf.isConfigName(configName="#{pageSession.configName}" );
+                    convertArrayToCommaString(array="#{pageSession.excludeFields}"  commaString="#{requestScope.tmp}");
+                    mapPut(map="#{pageSession.logAttributes}" key="com.sun.enterprise.server.logging.GFFileHandler.excludeFields" value="#{requestScope.tmp}");
                     prepareSuccessfulMsg();
                     saveLoggingAttributes(attrs="#{pageSession.logAttributes}" config="#{pageSession.configName}");
                     gf.redirect(page="#{request.contextPath}/common/configuration/loggerGeneral.jsf?configName=#{pageSession.configName}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
@@ -134,6 +131,21 @@
                 labels={ "ULF","ODL"}
                 values={"com.sun.enterprise.server.logging.UniformLogFormatter", "com.sun.enterprise.server.logging.ODLLogFormatter"} />
         </sun:property>
+
+        <sun:property id="excludeFields"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.excludeFields}" helpText="$resource{i18nc.log.excludeFieldsHelp}">
+            <sun:listbox id="excludeFields" immediate="#{true}"  rows="$int{6}" multiple="#{true}"
+                labels="#{pageSession.excludeFieldsOptions}" selected="#{pageSession.excludeFields}" >
+                <!beforeCreate
+                    getListBoxOptions(
+                        availableList={ "tid", "userId", "ecid", "timeMillis", "levelValue" },
+                        selectedCommaString="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.excludeFields']}",
+                        availableListResult="#{pageSession.excludeFieldsOptions}",
+                        selectedOptions="#{pageSession.excludeFields}"
+                        addEmptyFirstChoice="true");
+                />
+            </sun:listbox>
+        </sun:property>
+
           
             <sun:property id="FileRotationLimitProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileRotationLimit}" helpText="$resource{i18nc.log.FileRotationLimitHelp}">
                 <sun:textField id="FileRotationLimit" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.log.FileRotationLimit']}" text="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes']}" />

@@ -132,7 +132,7 @@ public class InstanceHandler {
             Map<String, Object> payload = new HashMap<String, Object>();
             payload.put("profiler", (String)handlerCtx.getInputValue("profiler"));
             prepareJvmOptionPayload(payload, target, options);
-            RestUtil.restRequest(endpoint, payload, "POST", null, false, true);
+            RestUtil.restRequest(endpoint, payload, "POST", handlerCtx, false, true);
         } catch (Exception ex) {
             //If this is called during create profile, we want to delete the profile which was created, and stay at the same
             //place for user to fix the jvm options.
@@ -140,7 +140,7 @@ public class InstanceHandler {
             if (!GuiUtil.isEmpty(deleteProfileEndpoint)){
                 Map attrMap = new HashMap();
                 attrMap.put("target", (String) handlerCtx.getInputValue("target"));
-                RestUtil.restRequest(deleteProfileEndpoint, attrMap, "DELETE", null, false, false);
+                RestUtil.restRequest(deleteProfileEndpoint, attrMap, "DELETE", handlerCtx, false, false);
             }
 
             //If the origList is not empty,  we want to restore it. Since POST remove all options first and then add it back. As a
@@ -152,7 +152,7 @@ public class InstanceHandler {
             }
             if ( (origList != null) && origList.size()>0){
                 prepareJvmOptionPayload(payload1, target, origList);
-                RestUtil.restRequest(endpoint, payload1, "POST", null, false, false);
+                RestUtil.restRequest(endpoint, payload1, "POST", handlerCtx, false, false);
             }
             GuiUtil.handleException(handlerCtx, ex);
         }
@@ -178,21 +178,6 @@ public class InstanceHandler {
         StringBuilder builder =  new StringBuilder(str.length() << 2);
         while (ch != StringCharacterIterator.DONE) {
             switch (ch) {
-                case '\t':
-                    builder.append("\\t");
-                    break;
-                case '\n':
-                    builder.append("\\n");
-                    break;
-                case '\r':
-                    builder.append("\\r");
-                    break;
-                case '\b':
-                    builder.append("\\b");
-                    break;
-                case '\f':
-                    builder.append("\\f");
-                    break;
                 case '&':
                 case '<':
                 case '>':
