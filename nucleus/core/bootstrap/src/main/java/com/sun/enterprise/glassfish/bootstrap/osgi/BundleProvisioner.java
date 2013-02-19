@@ -310,7 +310,7 @@ public class BundleProvisioner {
             Bundle bundle = getBundle(jar);
             if (bundle == null) {
                 // this is highly unlikely, but can't be ruled out.
-                logger.log(Level.WARNING, LogFacade.BUNDLE_ALREADY_UNINSTALED, new Object[]{bundle});
+                logger.log(Level.WARNING, LogFacade.BUNDLE_ALREADY_UNINSTALED, new Object[]{jar.getPath()});
                 continue;
             }
             try {
@@ -339,7 +339,7 @@ public class BundleProvisioner {
                 Bundle bundle = getBundle(existingJar);
                 if (bundle == null) {
                     // this is highly unlikely, but can't be ruled out.
-                    logger.log(Level.WARNING, LogFacade.CANT_UPDATE_ALREADY_INSTALLED, new Object[]{bundle});
+                    logger.log(Level.WARNING, LogFacade.CANT_UPDATE_ALREADY_INSTALLED, new Object[]{existingJar.getPath()});
                     continue;
                 }
                 try {
