@@ -997,7 +997,21 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
 
         else if (resourceEnvRef.getJndiName() == null ||
                 resourceEnvRef.getJndiName().length() == 0) {
-            resourceEnvRef.setJndiName(getDefaultResourceJndiName(resourceEnvRef.getName()));
+            if (resourceEnvRef.getRefType() != null) {
+                if (resourceEnvRef.getRefType().equals("javax.enterprise.concurrent.ManagedExecutorService")) {
+                    resourceEnvRef.setLookupName("java:comp/DefaultManagedExecutorService");
+                } else if (resourceEnvRef.getRefType().equals("javax.enterprise.concurrent.ManagedScheduledExecutorService")) {
+                    resourceEnvRef.setLookupName("java:comp/DefaultManagedScheduledExecutorService");
+                } else if (resourceEnvRef.getRefType().equals("javax.enterprise.concurrent.ManagedThreadFactory")) {
+                    resourceEnvRef.setLookupName("java:comp/DefaultManagedThreadFactory");
+                } else if (resourceEnvRef.getRefType().equals("javax.enterprise.concurrent.ContextService")) {
+                    resourceEnvRef.setLookupName("java:comp/DefaultContextService");
+                } else {
+                    resourceEnvRef.setJndiName(getDefaultResourceJndiName(resourceEnvRef.getName()));
+                }
+            }  else {
+                resourceEnvRef.setJndiName(getDefaultResourceJndiName(resourceEnvRef.getName()));
+            }
         }
     }
 
