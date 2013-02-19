@@ -47,8 +47,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import javax.inject.Inject;
 import javax.security.auth.Subject;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
@@ -122,6 +124,8 @@ public class JerseyContainerCommandService implements PostConstruct {
             Throwable orig = ex.getCause();
             if (orig instanceof EndpointRegistrationException) {
                 throw (EndpointRegistrationException) orig;
+            } else {
+                RestLogging.restLogger.log(Level.INFO, RestLogging.INIT_FAILED, orig);
             }
             return null;
         }

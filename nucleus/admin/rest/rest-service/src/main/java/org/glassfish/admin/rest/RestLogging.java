@@ -109,4 +109,9 @@ public class RestLogging {
     public static final String FILE_CREATION_FAILED = "NCLS-REST-00013";
     @LogMessageInfo(message="Directory creation failed: {0}", level="INFO")
     public static final String DIR_CREATION_FAILED = "NCLS-REST-00014";
+    @LogMessageInfo(message="Unexpected exception during initilisation.",
+            cause="The system is unable to init ReST interface",
+            action="Check the logs for more details",
+            level="SEVERE")
+    public static final String INIT_FAILED = "NCLS-REST-00015";
 }
