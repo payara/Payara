@@ -218,4 +218,18 @@
                 priority="30"
                 parentId="standaloneInstanceTabs"
                 content="monitor/standaloneInstanceMonitoringTab.jsf" />
+
+        <!-- target selection if any cluster/standalone instance is presence -->
+        <integration-point
+                id="deployTargetSection"
+                type="org.glassfish.admingui:uploadPropertySheetTargetSection"
+                priority="800"
+                parentId="form"
+                content="/shared/targetSectionForCreate.inc"/>
+        <integration-point
+                id="TargetSectionForResource"
+                type="org.glassfish.admingui:TargetSectionForResource"
+                priority="800"
+                parentId="form"
+                content="/shared/targetSectionForCreate.inc"/>
 </console-config>
