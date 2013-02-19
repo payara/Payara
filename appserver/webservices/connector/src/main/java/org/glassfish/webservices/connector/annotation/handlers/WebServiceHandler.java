@@ -324,7 +324,7 @@ public class WebServiceHandler extends AbstractHandler {
                 // http://java.net/jira/browse/GLASSFISH-17204
                 WebComponentDescriptor[] wcByImplName = ((WebBundleDescriptor) bundleDesc).getWebComponentByImplName(implClassFullName);
                 for (WebComponentDescriptor wc : wcByImplName) {
-                    for (WebServiceEndpoint wse : wsDesc.getEndpointsImplementedBy(wc)) {
+                    if (!wsDesc.getEndpointsImplementedBy(wc).isEmpty()) {
                         //URL mapping for annotated service exists - it can be JAX-RPC service
                         //as well as some servlet or maybe only invalid port-component-name,
                         //so let user know about possible error
@@ -555,10 +555,6 @@ public class WebServiceHandler extends AbstractHandler {
             return (new HandlerChainHandler()).processHandlerChainAnnotation(annInfo, annCtx, origAnnElem, (Class)origAnnElem, true);
         }
         return HandlerProcessingResultImpl.getDefaultResult(getAnnotationType(), ResultType.PROCESSED);
-    }
-
-    private String format(String key, String ... values){
-          return MessageFormat.format(key,values);
     }
 
     /**

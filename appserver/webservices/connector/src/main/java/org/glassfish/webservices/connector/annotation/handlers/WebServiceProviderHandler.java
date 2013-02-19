@@ -354,10 +354,6 @@ public class WebServiceProviderHandler extends AbstractHandler {
         return riDeployment;
     }
     
-    private String format(String key, String ... values){
-          return MessageFormat.format(key,values);
-    }
-
     /**
      * This is for the ejb webservices in war case Incase there is an@Stateless
      * and
