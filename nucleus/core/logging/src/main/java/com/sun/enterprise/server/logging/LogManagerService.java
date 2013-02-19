@@ -178,9 +178,9 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
     private boolean multiLineMode = false;
 
-    private LoggingOutputStream stdoutOutputStream;
+    private LoggingOutputStream stdoutOutputStream=null;
 
-    private LoggingOutputStream stderrOutputStream;
+    private LoggingOutputStream stderrOutputStream=null;
 
     /*
         Returns properties based on the DAS/Cluster/Instance
@@ -701,8 +701,12 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             }
             System.setOut(oStdOutBackup);
             System.setErr(oStdErrBackup);
-            stdoutOutputStream.close();
-            stderrOutputStream.close();
+            if (stdoutOutputStream != null) {
+                stdoutOutputStream.close();
+            }
+            if (stderrOutputStream != null) {
+                stderrOutputStream.close();
+            }
             System.out.println("Completed shutdown of Log manager service");
         } catch (Exception e) {
             e.printStackTrace();
