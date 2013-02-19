@@ -110,7 +110,7 @@ public abstract class AbstractListCommand
             if (headers.length == 0)
                 headers = getTerseHeaders();
         } else if (useLongFormat)
-            headers = getSupportedHeaders();
+            headers = getLongHeaders();
 
         Set<String> validHeaders = new HashSet<String>();
         for (String h : getSupportedHeaders())
@@ -138,6 +138,8 @@ public abstract class AbstractListCommand
     protected abstract String[] getSupportedHeaders();
 
     protected abstract String[] getTerseHeaders();
+
+    protected abstract String[] getLongHeaders();
 
     protected String[] getOutputHeaders() {
         return outputHeaders;

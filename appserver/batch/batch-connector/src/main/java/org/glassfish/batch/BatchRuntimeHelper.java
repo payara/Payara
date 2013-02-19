@@ -93,8 +93,8 @@ public class BatchRuntimeHelper
 
     public int getMaxIdleThreadTimeout() {
         return jobExecutorService != null
-                ? jobExecutorService.getMaxIdleThreadTimeout()
-                : Integer.valueOf(JobExecutorService.MAX_IDLE_THREAD_TIMEOUT);
+                ? jobExecutorService.getMaxIdleThreadTimeoutInSeconds()
+                : Integer.valueOf(JobExecutorService.MAX_IDLE_THREAD_TIMEOUT_IN_SECONDS);
     }
 
     public int getMaxQueueSize() {
@@ -111,8 +111,8 @@ public class BatchRuntimeHelper
 
     public int getMaxRetentionTime() {
         return persistenceStore != null
-                ? persistenceStore.getMaxRetentionTime()
-                : PersistenceStore.MAX_DATA_RETENTION_TIME;
+                ? persistenceStore.getMaxRetentionTimeInSeconds()
+                : PersistenceStore.MAX_DATA_RETENTION_TIME_IN_SECONDS;
     }
 
 }

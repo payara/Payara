@@ -56,7 +56,7 @@ public interface JobExecutorService
 
     public static final String MAX_THREAD_POOL_SIZE = "16";
     public static final String MIN_THREAD_POOL_SIZE = "4";
-    public static final String MAX_IDLE_THREAD_TIMEOUT = "600";
+    public static final String MAX_IDLE_THREAD_TIMEOUT_IN_SECONDS = "600";
     public static final String MAX_QUEUE_SIZE = "1024";
 
     @Attribute(defaultValue = MAX_THREAD_POOL_SIZE, dataType = int.class)
@@ -67,9 +67,9 @@ public interface JobExecutorService
     @Min(0)
     public int getMinThreadPoolSize();
 
-    @Attribute(defaultValue = MAX_IDLE_THREAD_TIMEOUT, dataType = int.class)
+    @Attribute(defaultValue = MAX_IDLE_THREAD_TIMEOUT_IN_SECONDS, dataType = int.class)
     @Min(0)
-    public int getMaxIdleThreadTimeout();
+    public int getMaxIdleThreadTimeoutInSeconds();
 
     @Attribute(defaultValue = MAX_QUEUE_SIZE, dataType = int.class)
     @Min(0)

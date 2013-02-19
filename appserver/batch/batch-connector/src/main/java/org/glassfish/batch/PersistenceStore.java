@@ -56,14 +56,14 @@ public interface PersistenceStore
 
     public static final String DEFAULT_DATA_SOURCE_NAME = "jdbc/__TimerPool";
 
-    public static final int MAX_DATA_RETENTION_TIME = 24 * 60 * 60;
+    public static final int MAX_DATA_RETENTION_TIME_IN_SECONDS = 24 * 60 * 60;
 
 
     @Attribute(defaultValue = DEFAULT_DATA_SOURCE_NAME, dataType = String.class)
     public String getDataSourceName();
 
-    @Attribute(defaultValue = "" + MAX_DATA_RETENTION_TIME, dataType = int.class)
+    @Attribute(defaultValue = "" + MAX_DATA_RETENTION_TIME_IN_SECONDS, dataType = int.class)
     @Min(0)
-    public int getMaxRetentionTime();
+    public int getMaxRetentionTimeInSeconds();
 
 }

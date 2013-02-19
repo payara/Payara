@@ -96,19 +96,22 @@ public class GlassFishBatchRuntimeConfigurator {
             IBatchConfig batchConfig = servicesManager.getBatchRuntimeConfiguration();
             DatabaseConfigurationBean dbBean = new DatabaseConfigurationBean();
             dbBean.setJndiName(dsName);
+            dbBean.setSchema("APP");
             batchConfig.setDatabaseConfigurationBean(dbBean);
 
+/*
+Java2DBProcessorHelper java2DBProcessorHelper = new  Java2DBProcessorHelper(this.getClass().getSimpleName());
+File ddlDir = new File(serverContext.getInstallRoot(), "/lib");
 
-            Java2DBProcessorHelper java2DBProcessorHelper = new  Java2DBProcessorHelper(this.getClass().getSimpleName());
-            File ddlDir = new File(serverContext.getInstallRoot(), "/lib");
+//Temporary fix till batch_{db_vendor}.sql is part of the distribution
+File sqlFile = new File(ddlDir, "batch_derby.sql");
+if (sqlFile.exists()) {
+java2DBProcessorHelper.executeDDLStatement(ddlDir.getCanonicalPath() + CREATE_TABLE_DDL_NAME, dsName);
+} else {
+logger.log(Level.WARNING, sqlFile.getAbsolutePath() + " does NOT exist");
+}
+*/
 
-            //Temporary fix till batch_{db_vendor}.sql is part of the distribution
-            File sqlFile = new File(ddlDir, "batch_derby.sql");
-            if (sqlFile.exists()) {
-                java2DBProcessorHelper.executeDDLStatement(ddlDir.getCanonicalPath() + CREATE_TABLE_DDL_NAME, dsName);
-            } else {
-                logger.log(Level.WARNING, sqlFile.getAbsolutePath() + " does NOT exist");
-            }
             dbInitialized = true;
         } catch (Throwable th) {
             dbInitialized = false;

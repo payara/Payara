@@ -73,7 +73,7 @@ public class BatchSniffer
 
     @Override
     public boolean supportsArchiveType(ArchiveType archiveType) {
-        return archiveType.toString().equals("war") || archiveType.toString().equals("jar");
+        return archiveType.toString().equals("war") || archiveType.toString().equals("ear") || archiveType.toString().equals("jar");
     }
 
     @Override

@@ -48,6 +48,7 @@ import org.jvnet.hk2.annotations.Service;
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
+import javax.batch.runtime.JobInstance;
 import java.util.*;
 
 /**
@@ -61,34 +62,34 @@ import java.util.*;
  */
 @Service(name="list-batch-jobs")
 @PerLookup
-public class ListBatchJobNames
+public class ListBatchJobs
     extends AbstractListCommand {
 
-    private static final String JOB_NAME = "job-name";
+    private static final String JOB_NAME = "jobname";
 
-    private static final String INSTANCE_COUNT = "instance-count";
+    private static final String INSTANCE_COUNT = "instancecount";
 
-    private static final String INSTANCE_ID = "instance-id";
+    private static final String INSTANCE_ID = "instanceid";
 
-    private static final String EXECUTION_ID = "execution-id";
+    private static final String EXECUTION_ID = "executionid";
 
-    private static final String STATUS = "status";
+    private static final String BATCH_STATUS = "batchstatus";
 
-    private static final String EXIT_STATUS = "exit-status";
+    private static final String EXIT_STATUS = "exitstatus";
 
-    private static final String START_TIME = "start-time";
+    private static final String START_TIME = "starttime";
 
-    private static final String END_TIME = "end-time";
+    private static final String END_TIME = "endtime";
 
-    private static final String JOB_PARAMETERS = "job-parameters";
+    private static final String JOB_PARAMETERS = "jobparameters";
 
-    @Param(name = "job-name", optional = true)
+    @Param(name = "jobname", optional = true)
     String jobName;
 
-    @Param(name = "instance-id", optional = true)
+    @Param(name = "instanceid", optional = true)
     String instanceId;
 
-    @Param(name = "execution-id", optional = true)
+    @Param(name = "executionid", optional = true)
     String executionId;
 
     @Override
@@ -110,7 +111,7 @@ public class ListBatchJobNames
     @Override
     protected final String[] getSupportedHeaders() {
         return new String[] {
-                JOB_NAME, INSTANCE_COUNT, INSTANCE_ID, EXECUTION_ID, STATUS,
+                JOB_NAME, INSTANCE_COUNT, INSTANCE_ID, EXECUTION_ID, BATCH_STATUS,
                 START_TIME, END_TIME, EXIT_STATUS, JOB_PARAMETERS
         };
     }
@@ -118,6 +119,11 @@ public class ListBatchJobNames
     @Override
     protected final String[] getTerseHeaders() {
         return new String[] {JOB_NAME, INSTANCE_COUNT};
+    }
+
+    @Override
+    protected String[] getLongHeaders() {
+        return getSupportedHeaders();
     }
 
     private boolean isSimpleMode() {
@@ -144,7 +150,7 @@ public class ListBatchJobNames
                 for (int index =0; index<size; index++) {
                     switch (getOutputHeaders()[index]) {
                         case JOB_NAME:
-                            data[index] = jobName;
+                            data[index] = jName;
                             break;
                         case INSTANCE_COUNT:
                             data[index] = "" + instCount;
@@ -154,7 +160,7 @@ public class ListBatchJobNames
                     }
                 }
                 columnFormatter.addRow(data);
-                jobToInstanceCountMap.put(jobName, instCount);
+                jobToInstanceCountMap.put(jName, instCount);
             }
         }
 
@@ -170,20 +176,20 @@ public class ListBatchJobNames
         } else if (instanceId != null) {
             jobExecutions.addAll(getJobExecutionForInstance(Long.valueOf(instanceId)));
         } else if (jobName != null) {
-            List<Long> instanceIds = jobOperator.getJobInstanceIds(jobName, 0, Integer.MAX_VALUE - 1);
-            if (instanceIds != null) {
-                for (Long instId : instanceIds) {
-                    jobExecutions.addAll(getJobExecutionForInstance(instId));
+            List<JobInstance> exe = jobOperator.getJobInstances(jobName, 0, Integer.MAX_VALUE - 1);
+            if (exe != null) {
+                for (JobInstance ji : exe) {
+                    jobExecutions.addAll(jobOperator.getExecutions(ji));
                 }
             }
         } else {
             Set<String> jobNames = jobOperator.getJobNames();
             if (jobNames != null) {
-                for (String j : jobOperator.getJobNames()) {
-                    List<Long> instIds = jobOperator.getJobInstanceIds(j, 0, Integer.MAX_VALUE - 1);
-                    if (instIds != null) {
-                        for (long instId : instIds) {
-                            jobExecutions.addAll(getJobExecutionForInstance(instId));
+                for (String jn : jobOperator.getJobNames()) {
+                    List<JobInstance> exe = jobOperator.getJobInstances(jn, 0, Integer.MAX_VALUE - 1);
+                    if (exe != null) {
+                        for (JobInstance ji : exe) {
+                            jobExecutions.addAll(jobOperator.getExecutions(ji));
                         }
                     }
                 }
@@ -194,7 +200,20 @@ public class ListBatchJobNames
     }
 
     private static List<JobExecution> getJobExecutionForInstance(long instId) {
-        List<JobExecution> jobExecutionList = BatchRuntime.getJobOperator().getJobExecutions(instId);
+        JobOperator jobOperator = BatchRuntime.getJobOperator();
+        JobInstance jobInstance = null;
+        for (String jn : jobOperator.getJobNames()) {
+            List<JobInstance> exe = jobOperator.getJobInstances(jn, 0, Integer.MAX_VALUE - 1);
+            if (exe != null) {
+                for (JobInstance ji : exe) {
+                    if (ji.getInstanceId() == instId) {
+                        jobInstance = ji;
+                        break;
+                    }
+                }
+            }
+        }
+        List<JobExecution> jobExecutionList = BatchRuntime.getJobOperator().getJobExecutions(jobInstance);
         return jobExecutionList == null
                 ? new ArrayList<JobExecution>() : jobExecutionList;
     }
@@ -204,18 +223,25 @@ public class ListBatchJobNames
 
         int jobParamIndex = -1;
         StringTokenizer st = new StringTokenizer("", "");
+        String[] cfData = new String[getOutputHeaders().length];
+        JobOperator jobOperator = BatchRuntime.getJobOperator();
         for (int index=0; index<getOutputHeaders().length; index++) {
-            String[] cfData = new String[getOutputHeaders().length];
             Object data = null;
             switch (getOutputHeaders()[index]) {
                 case JOB_NAME:
-                    data = jobName;
+                    data = jobOperator.getJobInstance(je.getInstanceId()).getJobName();
+                    break;
+                case INSTANCE_COUNT:
+                    data = jobOperator.getJobInstanceCount(jobOperator.getJobInstance(je.getInstanceId()).getJobName());
                     break;
                 case INSTANCE_ID:
                     data = je.getInstanceId();
                     break;
-                case STATUS:
-                    data = je.getStatus();
+                case EXECUTION_ID:
+                    data = je.getExecutionId();
+                    break;
+                case BATCH_STATUS:
+                    data = je.getBatchStatus();
                     break;
                 case EXIT_STATUS:
                     data = je.getExitStatus();
@@ -229,10 +255,10 @@ public class ListBatchJobNames
                 case JOB_PARAMETERS:
                     data = je.getJobParameters() == null ? new Properties() : je.getJobParameters();
                     jobParamIndex = index;
-                    ColumnFormatter cf = new ColumnFormatter();
+                    ColumnFormatter cf = new ColumnFormatter(new String[] {"KEY", "VALUE"});
                     for (Map.Entry e : ((Properties) data).entrySet())
                         cf.addRow(new String[] {e.getKey().toString(), e.getValue().toString()});
-                    st = new StringTokenizer(cf.toString());
+                    st = new StringTokenizer(cf.toString(), "\n");
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown header: " + getOutputHeaders()[index]);
@@ -241,10 +267,10 @@ public class ListBatchJobNames
             cfData[index] = (jobParamIndex != index)
                     ? data.toString()
                     : (st.hasMoreTokens()) ? st.nextToken() : "";
-            columnFormatter.addRow(cfData);
         }
+        columnFormatter.addRow(cfData);
 
-        String[] cfData = new String[getOutputHeaders().length];
+        cfData = new String[getOutputHeaders().length];
         for (int i=0; i<getOutputHeaders().length; i++)
             cfData[i] = "";
         while (st.hasMoreTokens()) {
@@ -253,5 +279,35 @@ public class ListBatchJobNames
         }
 
         return jobInfo;
+    }
+
+    private static class JobExecutionHolder {
+        JobExecution jobExecution;
+
+        String jobName;
+
+        public JobExecutionHolder() {
+        }
+
+        public JobExecutionHolder(JobExecution jobExecution, String jobName) {
+            this.jobExecution = jobExecution;
+            this.jobName = jobName;
+        }
+
+        public JobExecution getJobExecution() {
+            return jobExecution;
+        }
+
+        public void setJobExecution(JobExecution jobExecution) {
+            this.jobExecution = jobExecution;
+        }
+
+        public String getJobName() {
+            return jobName;
+        }
+
+        public void setJobName(String jobName) {
+            this.jobName = jobName;
+        }
     }
 }

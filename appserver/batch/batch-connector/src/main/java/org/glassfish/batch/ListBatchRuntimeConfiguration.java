@@ -62,13 +62,13 @@ public class ListBatchRuntimeConfiguration
 
     private static final String MIN_THREAD_POOL_SIZE = "min-thread-pool-size";
 
-    private static final String MAX_IDLE_THREAD_TIMEOUT = "max-idle-thread-timeout";
+    private static final String MAX_IDLE_THREAD_TIMEOUT_IN_SECONDS = "max-idle-thread-timeout-in-seconds";
 
     private static final String MAX_QUEUE_SIZE = "max-queue-size";
 
     private static final String DATA_SOURCE_NAME = "data-source-name";
 
-    private static final String MAX_DATA_RETENTION_TIME = "max-data-retention-time";
+    private static final String MAX_DATA_RETENTION_TIME_IN_SECONDS = "max-data-retention-time-in-seconds";
 
     @Inject
     BatchRuntimeHelper helper;
@@ -80,10 +80,10 @@ public class ListBatchRuntimeConfiguration
 
         map.put(MAX_THREAD_POOL_SIZE, helper.getMaxThreadPoolSize());
         map.put(MIN_THREAD_POOL_SIZE, helper.getMinThreadPoolSize());
-        map.put(MAX_IDLE_THREAD_TIMEOUT, helper.getMaxIdleThreadTimeout());
+        map.put(MAX_IDLE_THREAD_TIMEOUT_IN_SECONDS, helper.getMaxIdleThreadTimeout());
         map.put(MAX_QUEUE_SIZE, helper.getMaxQueueSize());
         map.put(DATA_SOURCE_NAME, helper.getDataSourceName());
-        map.put(MAX_DATA_RETENTION_TIME, helper.getMaxRetentionTime());
+        map.put(MAX_DATA_RETENTION_TIME_IN_SECONDS, helper.getMaxRetentionTime());
         extraProps.put("list-batch-runtime-configuration", map);
 
         ColumnFormatter columnFormatter = new ColumnFormatter(getDisplayHeaders());
@@ -96,7 +96,7 @@ public class ListBatchRuntimeConfiguration
                 case MIN_THREAD_POOL_SIZE:
                     data[index] = helper.getMinThreadPoolSize();
                     break;
-                case MAX_IDLE_THREAD_TIMEOUT:
+                case MAX_IDLE_THREAD_TIMEOUT_IN_SECONDS:
                     data[index] = helper.getMaxIdleThreadTimeout();
                     break;
                 case MAX_QUEUE_SIZE:
@@ -105,7 +105,7 @@ public class ListBatchRuntimeConfiguration
                 case DATA_SOURCE_NAME:
                     data[index] = helper.getDataSourceName();
                     break;
-                case MAX_DATA_RETENTION_TIME:
+                case MAX_DATA_RETENTION_TIME_IN_SECONDS:
                     data[index] = helper.getMaxRetentionTime();
                     break;
                 default:
@@ -119,15 +119,21 @@ public class ListBatchRuntimeConfiguration
     @Override
     protected final String[] getSupportedHeaders() {
         return new String[] {
-                MAX_THREAD_POOL_SIZE, MIN_THREAD_POOL_SIZE,
-                MAX_IDLE_THREAD_TIMEOUT, MAX_QUEUE_SIZE,
-                DATA_SOURCE_NAME, MAX_DATA_RETENTION_TIME
+                MIN_THREAD_POOL_SIZE, MAX_THREAD_POOL_SIZE,
+                MAX_IDLE_THREAD_TIMEOUT_IN_SECONDS, MAX_QUEUE_SIZE,
+                DATA_SOURCE_NAME, MAX_DATA_RETENTION_TIME_IN_SECONDS
         };
     }
 
     @Override
     protected final String[] getTerseHeaders() {
-        return getSupportedHeaders();
+        return new String[] {
+                MIN_THREAD_POOL_SIZE, MAX_THREAD_POOL_SIZE, MAX_QUEUE_SIZE, DATA_SOURCE_NAME
+        };
     }
 
+    @Override
+    protected String[] getLongHeaders() {
+        return getSupportedHeaders();
+    }
 }
