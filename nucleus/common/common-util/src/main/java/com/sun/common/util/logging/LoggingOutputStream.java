@@ -43,10 +43,16 @@ package com.sun.common.util.logging;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Formatter;
 import java.util.Locale;
+import java.util.Vector;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 /**
@@ -58,12 +64,19 @@ import java.util.logging.Logger;
  */
 public class LoggingOutputStream extends ByteArrayOutputStream {
 
+    private static final int MAX_RECORDS = 5000;
+
     private String lineSeparator;
 
     private Logger logger;
     private Level level;
 
     private ThreadLocal reentrant = new ThreadLocal();
+    
+    private BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<LogRecord>(MAX_RECORDS);
+
+    private BooleanLatch done = new BooleanLatch();
+    private Thread pump;
 
     /**
      * Constructor
@@ -76,7 +89,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         this.logger = logger;
         this.level = level;
         lineSeparator = System.getProperty("line.separator");
-
+        initializePump();
     }
 
     /**
@@ -87,30 +100,89 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
      */
     public void flush() throws IOException {
 
-        String record = null;
+        String logMessage = null;
         synchronized (this) {
             super.flush();
-            record = this.toString();
+            logMessage = this.toString();
             super.reset();
         }
-        if (record != null) {
-            if (record.length() == 0 || record.equals(lineSeparator)) {
+        if (logMessage != null) {
+            if (logMessage.length() == 0 || logMessage.equals(lineSeparator)) {
                 // avoid empty records
                 return;
             }
+            LogRecord logRecord = new LogRecord(level, logMessage);
+            pendingRecords.add(logRecord);            
+        }
+    }
+
+    private void initializePump() {
+        pump = new Thread() {
+            public void run() {
+                while (!done.isSignalled()) {
+                    try {
+                        log();
+                    } catch (Exception e) {
+                        // GLASSFISH-19125
+                        // Continue the loop without exiting
+                    }
+                }
+            }
+        };
+        pump.setDaemon(true);
+        pump.start();        
+    }
+
+    /**
+     * Retrieves the LogRecord from our Queue and log them
+     */
+    public void log() {
+
+        LogRecord record;
+        
+        // take is blocking so we take one record off the queue
+        try {
+            record = pendingRecords.take();
             if (reentrant.get() != null) {
                 return;
             }
             try {
                 reentrant.set(this);
-                logger.logp(level, "", "", record);
+                logger.log(record);
             } finally {
                 reentrant.set(null);
             }
+        } catch (InterruptedException e) {
+            return;
         }
+
+        // now try to read more.  we end up blocking on the above take call if nothing is in the queue
+        Vector<LogRecord> v = new Vector<LogRecord>();
+        final int size = pendingRecords.size();
+        int msgs = pendingRecords.drainTo(v, size);
+        for (int j = 0; j < msgs; j++) {
+            logger.log(v.get(j));
+        }
+
     }
+    
+    public void close() throws IOException {
+        done.tryReleaseShared(1);
+        pump.interrupt();
 
-
+        // Drain and log the remaining messages
+        final int size = pendingRecords.size();
+        if (size > 0) {
+            Collection<LogRecord> records = new ArrayList<LogRecord>(size);
+            pendingRecords.drainTo(records, size);
+            for (LogRecord record : records) {
+                logger.log(record);
+            }
+        }
+        
+        super.close();
+    }
+    
 /*
  * LoggingPrintStream creates a PrintStream with a
  * LoggingByteArrayOutputStream as its OutputStream. Once it is
@@ -413,6 +485,5 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             }
         }
     }
-
-
+    
 }

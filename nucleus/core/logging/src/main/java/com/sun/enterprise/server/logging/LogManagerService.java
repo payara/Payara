@@ -178,6 +178,10 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
     private boolean multiLineMode = false;
 
+    private LoggingOutputStream stdoutOutputStream;
+
+    private LoggingOutputStream stderrOutputStream;
+
     /*
         Returns properties based on the DAS/Cluster/Instance
       */
@@ -442,13 +446,13 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         //http://blogs.sun.com/nickstephen/entry/java_redirecting_system_out_and
 
         Logger _ologger = LogFacade.STDOUT_LOGGER;
-        LoggingOutputStream los = new LoggingOutputStream(_ologger, Level.INFO);
-        LoggingOutputStream.LoggingPrintStream pout = los.new LoggingPrintStream(los);
+        stdoutOutputStream = new LoggingOutputStream(_ologger, Level.INFO);
+        LoggingOutputStream.LoggingPrintStream pout = stdoutOutputStream.new LoggingPrintStream(stdoutOutputStream);
         System.setOut(pout);
 
         Logger _elogger = LogFacade.STDERR_LOGGER;
-        los = new LoggingOutputStream(_elogger, Level.SEVERE);
-        LoggingOutputStream.LoggingPrintStream perr = los.new LoggingPrintStream(los);
+        stderrOutputStream = new LoggingOutputStream(_elogger, Level.SEVERE);
+        LoggingOutputStream.LoggingPrintStream perr = stderrOutputStream.new LoggingPrintStream(stderrOutputStream);
         System.setErr(perr);
                 
         // finally listen to changes to the logging.properties file
@@ -697,8 +701,10 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             }
             System.setOut(oStdOutBackup);
             System.setErr(oStdErrBackup);
+            stdoutOutputStream.close();
+            stderrOutputStream.close();
             System.out.println("Completed shutdown of Log manager service");
-        } catch (MultiException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

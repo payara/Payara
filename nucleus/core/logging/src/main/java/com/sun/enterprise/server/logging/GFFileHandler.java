@@ -81,6 +81,7 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.appserv.server.util.Version;
+import com.sun.common.util.logging.BooleanLatch;
 import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
