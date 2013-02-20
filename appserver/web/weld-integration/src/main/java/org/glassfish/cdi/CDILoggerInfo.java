@@ -116,7 +116,7 @@ public class CDILoggerInfo {
                      level = "FINE")
     public static final String COLLECTING_JAR_INFO = CDI_LOGMSG_PREFIX + "-013";
 
-    @LogMessageInfo( message = "Error reading archive.  {0.}",
+    @LogMessageInfo( message = "Error reading archive.  {0}",
                      level = "FINE")
     public static final String ERROR_READING_ARCHIVE = CDI_LOGMSG_PREFIX + "-014";
 
@@ -173,5 +173,35 @@ public class CDILoggerInfo {
     @LogMessageInfo( message = "Exception thrown while scanning for library jars. {0}",
                      level = "FINE")
     public static final String EXCEPTION_SCANNING_JARS = CDI_LOGMSG_PREFIX + "-027";
+
+    @LogMessageInfo( message = "Processing {0} as it has one or more qualified CDI-annotated beans",
+                     level = "FINE")
+    public static final String PROCESSING_CDI_ENABLED_ARCHIVE = CDI_LOGMSG_PREFIX + "-028";
+
+    @LogMessageInfo( message = "JAR processing: {0} since it contains one or more classes with a scope annotation",
+                     level = "FINE")
+    public static final String PROCESSING_BECAUSE_SCOPE_ANNOTATION = CDI_LOGMSG_PREFIX + "-029";
+
+    @LogMessageInfo( message = "BDAImpl::ensureWebLibJarVisibility - {0} being associated with {1}",
+                     level = "FINE")
+    public static final String ENSURE_WEB_LIB_JAR_VISIBILITY_ASSOCIATION = CDI_LOGMSG_PREFIX + "-030";
+
+    @LogMessageInfo( message = "BDAImpl::ensureWebLibJarVisibility - updating {0}",
+                     level = "FINE")
+    public static final String ENSURE_WEB_LIB_JAR_VISIBILITY_ASSOCIATION_UPDATING = CDI_LOGMSG_PREFIX + "-031";
+
+    @LogMessageInfo( message = "BDAImpl::ensureWebLibJarVisibility - updating {0} to include {1}",
+                     level = "FINE")
+    public static final String ENSURE_WEB_LIB_JAR_VISIBILITY_ASSOCIATION_INCLUDING = CDI_LOGMSG_PREFIX + "-032";
+
+    @LogMessageInfo( message = "Error reading archive : {0}",
+                     level = "SEVERE",
+                     cause = "MalformedURLException reading entry from the archive.",
+                     action = "Verify the archive is not corrupt.")
+    public static final String SEVERE_ERROR_READING_ARCHIVE = CDI_LOGMSG_PREFIX + "-033";
+
+    @LogMessageInfo( message = "TCL is null. Using DeploymentImpl's classloader",
+                     level = "FINE")
+    public static final String TCL_NULL = CDI_LOGMSG_PREFIX + "-034";
 
 }
