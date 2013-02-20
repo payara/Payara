@@ -72,7 +72,8 @@ import org.jvnet.hk2.config.TransactionFailure;
  * @author Jerome Dochez
  */
 public class ApplicationInfo extends ModuleInfo {
-    private final static String APP_SERVICE_LOCATOR_PREFIX = "JavaEEApp.";
+    /** The prefix that will be given to the service locator, followed by the name of the application */
+    public final static String APP_SERVICE_LOCATOR_PREFIX = "JavaEEApp.";
 
     final private Collection<ModuleInfo> modules = new ArrayList<ModuleInfo>();
 
@@ -90,8 +91,8 @@ public class ApplicationInfo extends ModuleInfo {
     private ClassLoader appClassLoader;
     private boolean isLoaded = false;
     
-    private final ServiceLocator appServiceLocator;
-
+    private ServiceLocator appServiceLocator;
+    private DeploymentFailedListener deploymentFailedListener;
 
     /**
      * Creates a new instance of an ApplicationInfo
@@ -104,8 +105,32 @@ public class ApplicationInfo extends ModuleInfo {
                            String name) {
         super(events, name, new LinkedHashSet<EngineRef>(), null);
         this.source = source;
-        appServiceLocator = ServiceLocatorFactory.getInstance().create(
-                APP_SERVICE_LOCATOR_PREFIX + name);
+    }
+    
+    private void createServiceLocator() {
+        String locatorName = APP_SERVICE_LOCATOR_PREFIX + name;
+        ServiceLocatorFactory slf = ServiceLocatorFactory.getInstance();
+        
+        if (slf.find(locatorName) != null) {
+            slf.destroy(locatorName);
+        }
+        
+        appServiceLocator = slf.create(locatorName);
+        deploymentFailedListener = new DeploymentFailedListener(source);
+        events.register(deploymentFailedListener);
+        
+    }
+    
+    private void disposeServiceLocator() {
+        if (deploymentFailedListener != null) {
+            events.unregister(deploymentFailedListener);
+            deploymentFailedListener = null;
+        }
+        
+        if (appServiceLocator != null) {
+            ServiceLocatorFactory.getInstance().destroy(appServiceLocator);
+            appServiceLocator = null;
+        }
     }
 
     public void add(EngineRef ref) {
@@ -448,7 +473,7 @@ public class ApplicationInfo extends ModuleInfo {
         }
         
         // Will destroy all underlying services
-        ServiceLocatorFactory.getInstance().destroy(appServiceLocator);
+        disposeServiceLocator();
 
         if (events!=null) {
             events.send(new EventListener.Event<DeploymentContext>(Deployment.APPLICATION_CLEANED, context), false);
@@ -503,6 +528,8 @@ public class ApplicationInfo extends ModuleInfo {
      * @throws IOException On failure to read the service files
      */
     private void populateApplicationServiceLocator() throws IOException {
+        createServiceLocator();
+        
         ServiceLoader<PopulatorPostProcessor> postProcessors =
                 ServiceLoader.load(PopulatorPostProcessor.class, appClassLoader);
         
@@ -535,5 +562,26 @@ public class ApplicationInfo extends ModuleInfo {
                     WEB_LOADER_FILES),
                     allProcessors);  
         }
+    }
+    
+    private class DeploymentFailedListener implements EventListener {
+        private final ReadableArchive archive;
+        
+        private DeploymentFailedListener(ReadableArchive archive) {
+            this.archive = archive;
+        }
+
+        @Override
+        public void event(Event event) {
+            if( ! event.is(Deployment.DEPLOYMENT_FAILURE) ) return;
+            
+            DeploymentContext dc = Deployment.DEPLOYMENT_FAILURE.getHook(event);
+            
+            if (!archive.equals(dc.getSource())) return;
+            
+            // Will destroy all underlying services
+            disposeServiceLocator();
+        }
+        
     }
 }
