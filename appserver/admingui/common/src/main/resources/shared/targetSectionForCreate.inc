@@ -42,25 +42,53 @@
 
 <!-- shared/targetSectionForCreate.inc -->
 
-"<hr/>
 <sun:propertySheet id="targetSection">
     <!beforeCreate
-    //if( $session{supportCluster}) {
-            setPageSessionAttribute(key="targetList" value={"server"} );
-            gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/clusters/cluster", result="#{requestScope.clusterList}");
-            gf.listCombine(list="#{pageSession.targetList}",  list2="#{requestScope.clusterList}");
-            gf.convertListToOptionArray(list="#{pageSession.targetList}", optionArray="#{pageSession.availableTargets}");
-            setPageSessionAttribute(key="selectedTargets" value=["server"] );
-        //}
-        />
-    <sun:propertySheetSection id="targetSectionId" visible="#{true}"
-	    label="$resource{i18n.common.TargetTableTitle} (TBD)" rendered="#{true}" >
-	<sun:property id="addRemoveProp" noWrap="#{true}" overlapLabel="#{false}">
+        gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/clusters/cluster", result="#{requestScope.clusterList}");
+        gf.listInstances(optionKeys={"standaloneonly"} optionValues={"true"}, instances="#{pageSession.targetList}" );
+        gf.listCombine(list="#{pageSession.targetList}",  list2="#{requestScope.clusterList}");
+        listAdd(list="#{pageSession.targetList}", value="server" index="0");
+
+        setAttribute(key="one" value="$int{1}");
+	    setAttribute(key="targetSize" value="#{pageSession.targetList.size()}");
+        //println("=========== #{requestScope.targetSize}");
+        //println("===========#{pageSession.targetList}");
+
+        if( #{requestScope.targetSize}=#{requestScope.one} ){
+            setPageSessionAttribute(key="showTargetSection",  value="#{false}");
+            if (#{pageSession.setDefaultTarget}){
+                setPageSessionAttribute(key="selectedTargets" value=["server"] );
+            }
+        }
+        if( #{requestScope.targetSize}>#{requestScope.one} ){
+            setPageSessionAttribute(key="showTargetSection",  value="#{true}");
+            //when issue#12596 is fixed.  we should not preselect target.
+            //Because for the edit case, it has been set previously.
+            //for create case, we should leave it blank and warn user to select one.
+            if (#{pageSession.setDefaultTarget}){
+                gf.containedIn(list="#{pageSession.targetList}" testStr="#{pageSession.targetValue}" contain=>$attribute{selectedTargetExists});
+                if (!#{requestScope.selectedTargetExists}) {
+		    convertListToArray(list={}, array="#{pageSession.selectedTargets}");
+                }
+                if (#{selectedTargetExists}) {
+                    listAdd(value="#{pageSession.targetValue}" result=>$attribute{selectedTargetsList});
+                    convertListToArray(list="#{selectedTargetsList}", array="#{pageSession.selectedTargets}");
+                }
+            }
+        }
+        setPageSessionAttribute(key="useCheckBox" value="#{true}");
+        setPageSessionAttribute(key="useString" value="#{false}");
+
+        gf.convertListToOptionArray(list="#{pageSession.targetList}", optionArray="#{pageSession.availableTargets}");
+    />
+    <sun:propertySheetSection id="targetSectionId" visible="#{pageSession.showTargetSection}" label="$resource{i18n.common.TargetTableTitle}"  >
+        <sun:property id="addRemoveProp" noWrap="#{true}" overlapLabel="#{false}">
 #include "/common/shared/commonAddRemove.inc"
-	</sun:property>
+        </sun:property>
         <!afterCreate
             getClientId(component="$this{component}" clientId="#{pageSession.targetSectionId}");
         />
     </sun:propertySheetSection>
+
 </sun:propertySheet>
 
