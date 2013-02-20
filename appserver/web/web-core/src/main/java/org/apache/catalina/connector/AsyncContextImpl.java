@@ -96,6 +96,26 @@ class AsyncContextImpl implements AsyncContext {
     )
     public static final String ERROR_INVOKE_ASYNCLISTENER = "AS-WEB-CORE-00323";
 
+    @LogMessageInfo(
+            message = "Asynchronous dispatch already in progress, must call ServletRequest.startAsync first",
+            level = "WARNING"
+    )
+    public static final String ASYNC_DISPATCH_ALREADY_IN_PROGRESS_EXCEPTION = "AS-WEB-CORE-00324";
+
+    @LogMessageInfo(
+            message = "Must not call AsyncContext.addListener after the container-initiated dispatch during " +
+                    "which ServletRequest.startAsync was called has returned to the container",
+            level = "WARNING"
+    )
+    public static final String ASYNC_CONTEXT_ADD_LISTENER_EXCEPTION = "AS-WEB-CORE-00325";
+
+    @LogMessageInfo(
+            message = "Must not call AsyncContext.setTimeout after the container-initiated dispatch during " +
+                    "which ServletRequest.startAsync was called has returned to the container",
+            level = "WARNING"
+    )
+    public static final String ASYNC_CONTEXT_SET_TIMEOUT_EXCEPTION = "AS-WEB-CORE-00326";
+
 
     // Default timeout for async operations
     private static final long DEFAULT_ASYNC_TIMEOUT_MILLIS = 30000L;
@@ -103,9 +123,6 @@ class AsyncContextImpl implements AsyncContext {
     // Thread pool for async dispatches
     private static final ExecutorService pool =
         Executors.newCachedThreadPool(new AsyncPoolThreadFactory());
-
-    private static final StringManager STRING_MANAGER =
-        StringManager.getManager(Constants.Package);
 
     // The original (unwrapped) request
     private Request origRequest;
@@ -200,8 +217,8 @@ class AsyncContextImpl implements AsyncContext {
             if (isDispatchInProgress.compareAndSet(false, true)) {
                 pool.execute(new Handler(this, dispatcher));
             } else {
-                throw new IllegalStateException(
-                    STRING_MANAGER.getString("async.dispatchInProgress"));
+                String msg = rb.getString(ASYNC_DISPATCH_ALREADY_IN_PROGRESS_EXCEPTION);
+                throw new IllegalStateException(msg);
             }
         } else {
             // Should never happen, because any unmapped paths will be 
@@ -222,8 +239,8 @@ class AsyncContextImpl implements AsyncContext {
             if (isDispatchInProgress.compareAndSet(false, true)) {
                 pool.execute(new Handler(this, dispatcher));
             } else {
-                throw new IllegalStateException(
-                    STRING_MANAGER.getString("async.dispatchInProgress"));
+                String msg = rb.getString(ASYNC_DISPATCH_ALREADY_IN_PROGRESS_EXCEPTION);
+                throw new IllegalStateException(msg);
             }
         } else {
             // Should never happen, because any unmapped paths will be 
@@ -244,8 +261,8 @@ class AsyncContextImpl implements AsyncContext {
             if (isDispatchInProgress.compareAndSet(false, true)) {
                 pool.execute(new Handler(this, dispatcher));
             } else {
-                throw new IllegalStateException(
-                    STRING_MANAGER.getString("async.dispatchInProgress"));
+                String msg = rb.getString(ASYNC_DISPATCH_ALREADY_IN_PROGRESS_EXCEPTION);
+                throw new IllegalStateException(msg);
             }
         } else {
             // Should never happen, because any unmapped paths will be 
@@ -319,8 +336,8 @@ class AsyncContextImpl implements AsyncContext {
         }
 
         if (!isOkToConfigure.get()) {
-            throw new IllegalStateException(
-                STRING_MANAGER.getString("async.addListenerIllegalState"));
+            String msg = rb.getString(ASYNC_CONTEXT_ADD_LISTENER_EXCEPTION);
+            throw new IllegalStateException(msg);
         }
 
         synchronized(asyncListenerContexts) {
@@ -348,8 +365,8 @@ class AsyncContextImpl implements AsyncContext {
     @Override
     public void setTimeout(long timeout) {
         if (!isOkToConfigure.get()) {
-            throw new IllegalStateException(
-                STRING_MANAGER.getString("async.setTimeoutIllegalState"));
+            String msg = rb.getString(ASYNC_CONTEXT_SET_TIMEOUT_EXCEPTION);
+            throw new IllegalStateException(msg);
         }
         asyncTimeoutMillis = timeout;
 //        origRequest.setAsyncTimeout(timeout);
