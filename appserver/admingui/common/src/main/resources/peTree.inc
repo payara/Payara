@@ -75,7 +75,6 @@ monitoring     web  800
 
   <sun:form id="treeForm">
     <!beforeCreate
-      gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config.json", method="get", result="#{pageSession.configResponse}");
       gf.listConfigs(configs="#{pageSession.configsList}");
       setAttribute(key="configName" value="#{pageSession.configsList[0]}");
       gf.encodeId(id="${configName}" result="#{requestScope.configNameId}");
