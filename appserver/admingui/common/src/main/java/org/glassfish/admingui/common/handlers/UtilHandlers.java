@@ -70,12 +70,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.text.DecimalFormat;
+import java.text.StringCharacterIterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -83,8 +83,6 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import javax.faces.component.UIViewRoot;
-import org.glassfish.internal.embedded.ScatteredArchive.Builder.type;
-
 
 /**
  *
@@ -1030,14 +1028,66 @@ public class UtilHandlers {
         handlerCtx.setOutputValue("string", sb.toString());
     }
     
-    public static String escapePropertyValue(String value) {
-//        String[] chars = {"&","<",">","(",")","{","}",":","/","\\","\'","\""};
-        String[] chars = {":"};
-        for (String c : chars) {
-            value = value.replaceAll(c, "\\\\"+c);
+
+
+    /* This is copied from within javaToJSON() */
+    public static String escapePropertyValue(String str){
+        String chStr;
+        int len;
+        StringCharacterIterator it = new StringCharacterIterator(str);
+        char ch = it.first();
+        StringBuilder builder =  new StringBuilder(str.length() << 2);
+        while (ch != StringCharacterIterator.DONE) {
+            switch (ch) {
+                case '\t':
+                    builder.append("\\t");
+                    break;
+                case '\n':
+                    builder.append("\\n");
+                    break;
+                case '\r':
+                    builder.append("\\r");
+                    break;
+                case '\b':
+                    builder.append("\\b");
+                    break;
+                case '\f':
+                    builder.append("\\f");
+                    break;
+                case '&':
+                case '<':
+                case '>':
+                case '(':
+                case ')':
+                case '{':
+                case '}':
+                case ':':
+                case '/':
+                case '\\':
+                case '\'':
+                case '"':
+                    builder.append("\\");
+                    builder.append(ch);
+                    break;
+                default:
+                    // Check if we should unicode escape this...
+                    if ((ch > 0x7e) || (ch < 0x20)) {
+                        builder.append("\\u");
+                        chStr = Integer.toHexString(ch);
+                        len = chStr.length();
+                        for (int idx=4; idx > len; idx--) {
+                            // Add leading 0's
+                            builder.append('0');
+                        }
+                        builder.append(chStr);
+                    } else {
+                        builder.append(ch);
+                    }
+                    break;
+            }
+            ch = it.next();
         }
-        
-        return value;
+        return builder.toString();
     }
 
     private static final String PATH_SEPARATOR = "${path.separator}";

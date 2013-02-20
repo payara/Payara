@@ -59,7 +59,6 @@ import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
 
-import java.text.StringCharacterIterator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -162,58 +161,11 @@ public class InstanceHandler {
         payload.put("target", target);
         for (Map oneRow : options) {
             String str = (String) oneRow.get(PROPERTY_VALUE);
-            String str1 = handleEscapeChar(str);         //refer to GLASSFISH-19069
+            String str1 = UtilHandlers.escapePropertyValue(str);         //refer to GLASSFISH-19069
             ArrayList kv = getKeyValuePair(str1);
             payload.put((String)kv.get(0), kv.get(1));
         }
     }
-
-
-    /* This is copied from within javaToJSON() */
-    private static String handleEscapeChar(String str){
-        String chStr;
-        int len;
-        StringCharacterIterator it = new StringCharacterIterator(str);
-        char ch = it.first();
-        StringBuilder builder =  new StringBuilder(str.length() << 2);
-        while (ch != StringCharacterIterator.DONE) {
-            switch (ch) {
-                case '&':
-                case '<':
-                case '>':
-                case '(':
-                case ')':
-                case '{':
-                case '}':
-                case ':':
-                case '/':
-                case '\\':
-                case '\'':
-                case '"':
-                    builder.append("\\");
-                    builder.append(ch);
-                    break;
-                default:
-                    // Check if we should unicode escape this...
-                    if ((ch > 0x7e) || (ch < 0x20)) {
-                        builder.append("\\u");
-                        chStr = Integer.toHexString(ch);
-                        len = chStr.length();
-                        for (int idx=4; idx > len; idx--) {
-                            // Add leading 0's
-                            builder.append('0');
-                        }
-                        builder.append(chStr);
-                    } else {
-                        builder.append(ch);
-                    }
-                    break;
-            }
-            ch = it.next();
-        }
-        return builder.toString();
-    }
-
 
     public static ArrayList getKeyValuePair(String str) {
         ArrayList list = new ArrayList(2);
