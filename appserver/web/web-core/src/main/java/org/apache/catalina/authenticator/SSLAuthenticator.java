@@ -179,10 +179,6 @@ public class SSLAuthenticator
         if ((certs == null) || (certs.length < 1)) {
             if (debug >= 1)
                 log(rb.getString(NO_CERTIFICATE_INCLUDED_INFO));
-            /* S1AS 4878272
-            hres.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                           sm.getString("authenticator.certificates"));
-            */
             // BEGIN S1AS 4878272
             hres.sendError(HttpServletResponse.SC_BAD_REQUEST);
             response.setDetailMessage(rb.getString(NO_CLIENT_CERTIFICATE_CHAIN));
@@ -195,10 +191,6 @@ public class SSLAuthenticator
         if (principal == null) {
             if (debug >= 1)
                 log("Realm.authenticate() returned false");
-            /* S1AS 4878272
-            hres.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-                           sm.getString("authenticator.unauthorized"));
-            */
             // BEGIN S1AS 4878272
             hres.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             response.setDetailMessage(rb.getString(CANNOT_AUTHENTICATE_WITH_CREDENTIALS));

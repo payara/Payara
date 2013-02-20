@@ -287,15 +287,6 @@ public class SingleSignOn
      *  that prevents this component from being used
      */
     public void start() throws LifecycleException {
-
-        // Validate and update our current component state
-        /** CR 6411114 (Lifecycle implementation moved to ValveBase)
-        if (started)
-            throw new LifecycleException
-                (sm.getString("authenticator.alreadyStarted"));
-        lifecycle.fireLifecycleEvent(START_EVENT, null);
-        started = true;
-        */
         // START CR 6411114
         if (started)            // Ignore multiple starts
             return;
@@ -317,15 +308,6 @@ public class SingleSignOn
      *  that needs to be reported
      */
     public void stop() throws LifecycleException {
-
-        // Validate and update our current component state
-        /** CR 6411114 (Lifecycle implementation moved to ValveBase)
-        if (!started)
-            throw new LifecycleException
-                (sm.getString("authenticator.notStarted"));
-        lifecycle.fireLifecycleEvent(STOP_EVENT, null);
-        started = false;
-        */
         // START CR 6411114
         if (!started)       // Ignore stop if not started
             return;
