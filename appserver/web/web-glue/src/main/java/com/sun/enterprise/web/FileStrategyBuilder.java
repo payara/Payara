@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,7 +56,7 @@ public class FileStrategyBuilder extends BasePersistenceStrategyBuilder {
     @LogMessageInfo(
             message = "Enabling file-based persistence for web module [{0}]''s sessions",
             level = "INFO")
-    public static final String FILE_PERSISTENCE = "AS-WEB-00280";
+    public static final String FILE_PERSISTENCE = "AS-WEB-GLUE-00280";
 
     public void initializePersistenceStrategy(
             Context ctx,

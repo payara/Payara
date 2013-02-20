@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -182,7 +182,7 @@ public class VirtualServer extends StandardHost
     @LogMessageInfo(
             message = "The web module {0} has been designated as the default-web-module for virtual server {1}",
             level = "FINE")
-    public static final String VS_DEFAULT_WEB_MODULE = "AS-WEB-00100";
+    public static final String VS_DEFAULT_WEB_MODULE = "AS-WEB-GLUE-00100";
 
     @LogMessageInfo(
             message = "Error looking up the configuration information of the default-web-module {0} for virtual server {1}",
@@ -190,185 +190,185 @@ public class VirtualServer extends StandardHost
             cause = "The web module specified is either not found or disabled or does not specify this virtual server, " +
                     "or there was an error loading its deployment descriptors",
             action = "Verify if the virtual server's default web module is valid")
-    public static final String VS_DEFAULT_WEB_MODULE_NOT_FOUND = "AS-WEB-00101";
+    public static final String VS_DEFAULT_WEB_MODULE_NOT_FOUND = "AS-WEB-GLUE-00101";
 
     @LogMessageInfo(
             message = "The default-web-module {0} is either disabled or does not specify virtual server {1}",
             level = "SEVERE",
             cause = "The default web module is disabled or does not specify virtual server",
             action = "Verify if the default web module is enabled and specify virtual server")
-    public static final String VS_DEFAULT_WEB_MODULE_DISABLED = "AS-WEB-00102";
+    public static final String VS_DEFAULT_WEB_MODULE_DISABLED = "AS-WEB-GLUE-00102";
 
     @LogMessageInfo(
             message = "Virtual server {0} has invalid authentication realm {1}",
             level = "SEVERE",
             cause = "The realm {1} could not be found",
             action = "Verify if the realm {1} exits for virtual server {0}")
-    public static final String INVALID_AUTH_REALM = "AS-WEB-00103";
+    public static final String INVALID_AUTH_REALM = "AS-WEB-GLUE-00103";
 
     @LogMessageInfo(
             message = "Invalid sso-cookie-secure configuration {0} for virtual server {1}",
             level = "INFO")
-    public static final String INVALID_SSO_COOKIE_SECURE = "AS-WEB-00104";
+    public static final String INVALID_SSO_COOKIE_SECURE = "AS-WEB-GLUE-00104";
 
     @LogMessageInfo(
             message = "Realm {0} is not an instance of {1}, and will be ignored",
             level = "SEVERE",
             cause = "The realm {0} is either NULL or is not an instance of {1}",
             action = "Verify if the realm {0} is an instance of {1}")
-    public static final String IGNORE_INVALID_REALM = "AS-WEB-00105";
+    public static final String IGNORE_INVALID_REALM = "AS-WEB-GLUE-00105";
 
     @LogMessageInfo(
             message = "Virtual server {0} has a property with missing name or value",
             level = "WARNING")
-    public static final String NULL_VIRTUAL_SERVER_PROPERTY = "AS-WEB-00106";
+    public static final String NULL_VIRTUAL_SERVER_PROPERTY = "AS-WEB-GLUE-00106";
 
     @LogMessageInfo(
             message = "Invalid redirect property value {0} for virtual server {1}: More than one {2} component",
             level = "WARNING")
-    public static final String REDIRECT_MULTIPLE_ELEMENT = "AS-WEB-00107";
+    public static final String REDIRECT_MULTIPLE_ELEMENT = "AS-WEB-GLUE-00107";
 
     @LogMessageInfo(
             message = "Invalid redirect property value {0} for virtual server {1}: Missing url or url-prefix component",
             level = "WARNING")
-    public static final String REDIRECT_MISSING_URL_OR_URL_PREFIX = "AS-WEB-00108";
+    public static final String REDIRECT_MISSING_URL_OR_URL_PREFIX = "AS-WEB-GLUE-00108";
 
     @LogMessageInfo(
             message = "Invalid redirect property value {0} for virtual server {1}: Both url and url-prefix specified",
             level = "WARNING")
 
-    public static final String REDIRECT_BOTH_URL_AND_URL_PREFIX = "AS-WEB-00109";
+    public static final String REDIRECT_BOTH_URL_AND_URL_PREFIX = "AS-WEB-GLUE-00109";
 
     @LogMessageInfo(
             message = "Invalid redirect property value {0} for virtual server {1}: escape must be equal to yes or no",
             level = "WARNING")
-    public static final String REDIRECT_INVALID_ESCAPE = "AS-WEB-00110";
+    public static final String REDIRECT_INVALID_ESCAPE = "AS-WEB-GLUE-00110";
 
     @LogMessageInfo(
             message = "Invalid send-error property value {0} for virtual server {1}: More than one {2} component",
             level = "WARNING")
-    public static final String SEND_ERROR_MULTIPLE_ELEMENT = "AS-WEB-00111";
+    public static final String SEND_ERROR_MULTIPLE_ELEMENT = "AS-WEB-GLUE-00111";
 
     @LogMessageInfo(
             message = "Invalid send-error property value {0} for virtual server {1}: Missing path component",
             level = "WARNING")
-    public static final String SEND_ERROR_MISSING_PATH = "AS-WEB-00112";
+    public static final String SEND_ERROR_MISSING_PATH = "AS-WEB-GLUE-00112";
 
     @LogMessageInfo(
             message = "Unable to add listener of type {0} to virtual server {1}",
             level = "SEVERE",
             cause = "The listener is not an instance of ContainerListener or LifecycleListener",
             action = "Verify if the listener type is supported")
-    public static final String INVALID_LISTENER = "AS-WEB-00113";
+    public static final String INVALID_LISTENER = "AS-WEB-GLUE-00113";
 
     @LogMessageInfo(
             message = " Unable to load extension class {0} from web module {1}",
             level = "SEVERE",
             cause = "An exception occurred loading extension class",
             action = "Check the exception for the error")
-    public static final String UNABLE_TO_LOAD_EXTENSION = "AS-WEB-00114";
+    public static final String UNABLE_TO_LOAD_EXTENSION = "AS-WEB-GLUE-00114";
 
     @LogMessageInfo(
             message = "Object of type classname {0} not an instance of Valve or GlassFishValve",
             level = "WARNING")
-    public static final String NOT_A_VALVE = "AS-WEB-00115";
+    public static final String NOT_A_VALVE = "AS-WEB-GLUE-00115";
 
     @LogMessageInfo(
             message = "Error adding HttpProbes. NetworkListener {0}'s HttpCodecFilter is {1}",
             level = "SEVERE",
             cause = "HttpCodecFilter is either NULL or empty",
             action = "Verify the NetworkListener is valid")
-    public static final String CODE_FILTERS_NULL = "AS-WEB-00116";
+    public static final String CODE_FILTERS_NULL = "AS-WEB-GLUE-00116";
 
     @LogMessageInfo(
             message = "Error adding HttpProbes",
             level = "SEVERE",
             cause = "An exception occurred adding HttpProbes",
             action = "Check the exception for the error")
-    public static final String ADD_HTTP_PROBES_ERROR = "AS-WEB-00117";
+    public static final String ADD_HTTP_PROBES_ERROR = "AS-WEB-GLUE-00117";
 
     @LogMessageInfo(
             message = "Disabling Single Sign On (SSO) for virtual server {0} as configured",
             level = "FINE")
-    public static final String DISABLE_SSO= "AS-WEB-00118";
+    public static final String DISABLE_SSO= "AS-WEB-GLUE-00118";
 
     @LogMessageInfo(
             message = "Enabling Single Sign On (SSO) for virtual server {0} as configured",
             level = "FINE")
-    public static final String ENABLE_SSO = "AS-WEB-00119";
+    public static final String ENABLE_SSO = "AS-WEB-GLUE-00119";
 
     @LogMessageInfo(
             message = "SSO entry max idle time set to {0} for virtual server {1}",
             level = "FINE")
-    public static final String SSO_MAX_INACTIVE_SET= "AS-WEB-00120";
+    public static final String SSO_MAX_INACTIVE_SET= "AS-WEB-GLUE-00120";
 
     @LogMessageInfo(
             message = "SSO expire thread interval set to {0} for virtual server {1}",
             level = "FINE")
-    public static final String SSO_REAP_INTERVAL_SET = "AS-WEB-00121";
+    public static final String SSO_REAP_INTERVAL_SET = "AS-WEB-GLUE-00121";
 
     @LogMessageInfo(
             message = "Allowing access to {0} from {1}",
             level = "FINE")
-    public static final String ALLOW_ACCESS = "AS-WEB-00122";
+    public static final String ALLOW_ACCESS = "AS-WEB-GLUE-00122";
 
     @LogMessageInfo(
             message = "Denying access to {0} from {1}",
             level = "FINE")
-    public static final String DENY_ACCESS = "AS-WEB-00123";
+    public static final String DENY_ACCESS = "AS-WEB-GLUE-00123";
 
     @LogMessageInfo(
             message = "Virtual server {0} enabled context {1}",
             level = "FINE")
-    public static final String VS_ENABLED_CONTEXT = "AS-WEB-00124";
+    public static final String VS_ENABLED_CONTEXT = "AS-WEB-GLUE-00124";
 
     @LogMessageInfo(
             message = "Unable to delete {0}",
             level = "WARNING")
-    public static final String UNABLE_TO_DELETE = "AS-WEB-00125";
+    public static final String UNABLE_TO_DELETE = "AS-WEB-GLUE-00125";
 
     @LogMessageInfo(
             message = "Unable to reconfigure access log valve",
             level = "SEVERE",
             cause = "An exception occurred during access log valve reconfiguration",
             action = "Check the exception for error")
-    public static final String UNABLE_RECONFIGURE_ACCESS_LOG = "AS-WEB-00126";
+    public static final String UNABLE_RECONFIGURE_ACCESS_LOG = "AS-WEB-GLUE-00126";
 
     @LogMessageInfo(
             message = "Virtual server {0} added context {1}",
             level = "FINE")
-    public static final String VS_ADDED_CONTEXT = "AS-WEB-00127";
+    public static final String VS_ADDED_CONTEXT = "AS-WEB-GLUE-00127";
 
     @LogMessageInfo(
             message = "Application {0} is not found",
             level = "SEVERE",
             cause = "The deployed application is not found",
             action = "Check if the application is valid")
-    public static final String APP_NOT_FOUND = "AS-WEB-00128";
+    public static final String APP_NOT_FOUND = "AS-WEB-GLUE-00128";
 
     @LogMessageInfo(
             message = "Cannot create context for undeployment",
             level = "SEVERE",
             cause = "An IOException occurred during undeployment",
             action = "Check the exception for error")
-    public static final String REMOVE_CONTEXT_ERROR = "AS-WEB-00129";
+    public static final String REMOVE_CONTEXT_ERROR = "AS-WEB-GLUE-00129";
 
     @LogMessageInfo(
             message = "Successfully removed context {0}",
             level = "FINE")
-    public static final String REMOVED_CONTEXT = "AS-WEB-00130";
+    public static final String REMOVED_CONTEXT = "AS-WEB-GLUE-00130";
 
     @LogMessageInfo(
             message = "Modifying web.xml {0}",
             level = "FINE")
-    public static final String MODIFYING_WEB_XML = "AS-WEB-00131";
+    public static final String MODIFYING_WEB_XML = "AS-WEB-GLUE-00131";
 
     @LogMessageInfo(
             message = "Error adding HttpProbes. NetworkListener {0}'s GrizzlyProxy is NULL",
             level = "SEVERE",
             cause = "GrizzlyProxy is NULL",
             action = "Verify the NetworkListener is valid")
-    public static final String PROXY_NULL = "AS-WEB-00132";
+    public static final String PROXY_NULL = "AS-WEB-GLUE-00132";
 
 
     // ------------------------------------------------------------ Constructor

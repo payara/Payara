@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,12 +68,12 @@ public class ResourceInjectorImpl implements ResourceInjector {
     @LogMessageInfo(
             message = "Exception during invocation of PreDestroy-annotated method on JSP tag handler [{0}]",
             level = "WARNING")
-    public static final String EXCEPTION_DURING_JSP_TAG_HANDLER_PREDESTROY = "AS-WEB-00281";
+    public static final String EXCEPTION_DURING_JSP_TAG_HANDLER_PREDESTROY = "AS-WEB-GLUE-00281";
 
     @LogMessageInfo(
             message = "ServerContext is null for ResourceInjector",
             level = "INFO")
-    public static final String NO_SERVERT_CONTEXT = "AS-WEB-00282";
+    public static final String NO_SERVERT_CONTEXT = "AS-WEB-GLUE-00282";
 
     private InjectionManager injectionMgr;
     private JndiNameEnvironment desc;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -91,32 +91,32 @@ final class WebModuleListener
     @LogMessageInfo(
             message = "Lifecycle event data object [{0}] is not a WebModule",
             level = "WARNING")
-    public static final String CLASS_CAST_EXCEPTION = "AS-WEB-00336";
+    public static final String CLASS_CAST_EXCEPTION = "AS-WEB-GLUE-00336";
 
     @LogMessageInfo(
             message = "jsp-config property for {0} ",
             level = "FINE")
-    public static final String JSP_CONFIG_PROPERTY = "AS-WEB-00337";
+    public static final String JSP_CONFIG_PROPERTY = "AS-WEB-GLUE-00337";
 
     @LogMessageInfo(
             message = "sysClasspath for {0} ",
             level = "FINE")
-    public static final String SYS_CLASSPATH = "AS-WEB-00338";
+    public static final String SYS_CLASSPATH = "AS-WEB-GLUE-00338";
 
     @LogMessageInfo(
             message = "Error creating cache manager and configuring the servlet caching subsystem",
             level = "WARNING")
-    public static final String CACHE_MRG_EXCEPTION = "AS-WEB-00339";
+    public static final String CACHE_MRG_EXCEPTION = "AS-WEB-GLUE-00339";
 
     @LogMessageInfo(
             message = "Cache Manager started",
             level = "FINE")
-    public static final String CACHE_MANAGER_STARTED = "AS-WEB-00340";
+    public static final String CACHE_MANAGER_STARTED = "AS-WEB-GLUE-00340";
 
     @LogMessageInfo(
             message = "Cache Manager stopped",
             level = "FINE")
-    public static final String CACHE_MANAGER_STOPPED = "AS-WEB-00341";
+    public static final String CACHE_MANAGER_STOPPED = "AS-WEB-GLUE-00341";
 
     /**
      * Descriptor object associated with this web application.

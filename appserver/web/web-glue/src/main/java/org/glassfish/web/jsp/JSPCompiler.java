@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -327,17 +327,17 @@ public final class JSPCompiler {
     @LogMessageInfo(
             message = "Beginning JSP Precompile...",
             level = "INFO")
-    public static final String START_MESSAGE = "AS-WEB-00352";
+    public static final String START_MESSAGE = "AS-WEB-GLUE-00352";
 
     @LogMessageInfo(
             message = "Finished JSP Precompile...",
             level = "INFO")
-    public static final String FINISH_MESSAGE = "AS-WEB-00353";
+    public static final String FINISH_MESSAGE = "AS-WEB-GLUE-00353";
 
     @LogMessageInfo(
             message = "Cannot delete file: {0}",
             level = "FINE")
-    public static final String CANNOT_DELETE_FILE = "AS-WEB-00354";
+    public static final String CANNOT_DELETE_FILE = "AS-WEB-GLUE-00354";
 
 	////////////////////////////////////////////////////////////////////////////
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -84,27 +84,27 @@ public class WebModuleContextConfig extends ContextConfig {
     @LogMessageInfo(
             message = "Configured an authenticator for method {0}",
             level = "FINEST")
-    public static final String AUTHENTICATOR_CONFIGURED = "AS-WEB-00331";
+    public static final String AUTHENTICATOR_CONFIGURED = "AS-WEB-GLUE-00331";
 
     @LogMessageInfo(
             message = "[{0}] failed to unbind namespace",
             level = "WARNING")
-    public static final String UNBIND_NAME_SPACE_ERROR = "AS-WEB-00332";
+    public static final String UNBIND_NAME_SPACE_ERROR = "AS-WEB-GLUE-00332";
 
     @LogMessageInfo(
             message = "No Realm with name [{0}] configured to authenticate against",
             level = "WARNING")
-    public static final String MISSING_REALM = "AS-WEB-00333";
+    public static final String MISSING_REALM = "AS-WEB-GLUE-00333";
 
     @LogMessageInfo(
             message = "Cannot configure an authenticator for method {0}",
             level = "WARNING")
-    public static final String AUTHENTICATOR_MISSING = "AS-WEB-00334";
+    public static final String AUTHENTICATOR_MISSING = "AS-WEB-GLUE-00334";
 
     @LogMessageInfo(
             message = "Cannot instantiate an authenticator of class {0}",
             level = "WARNING")
-    public static final String AUTHENTICATOR_INSTANTIATE_ERROR = "AS-WEB-00335";
+    public static final String AUTHENTICATOR_INSTANTIATE_ERROR = "AS-WEB-GLUE-00335";
 
 
     public final static int CHILDREN = 0;

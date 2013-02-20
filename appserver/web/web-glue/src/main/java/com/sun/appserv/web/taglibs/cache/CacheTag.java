@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -126,12 +126,12 @@ public class CacheTag extends BodyTagSupport
     @LogMessageInfo(
             message = "CacheTag[{0}]: Timeout = {1}",
             level = "FINE")
-    private static final String CACHETAG_TIMEOUT = "AS-WEB-00215";
+    private static final String CACHETAG_TIMEOUT = "AS-WEB-GLUE-00215";
 
     @LogMessageInfo(
             message = "Cache not found in the specified scope",
             level = "INFO")
-    private static final String TAGLIBS_CACHE_NO_CACHE = "AS-WEB-00216";
+    private static final String TAGLIBS_CACHE_NO_CACHE = "AS-WEB-GLUE-00216";
 
 
     // ---------------------------------------------------------------------

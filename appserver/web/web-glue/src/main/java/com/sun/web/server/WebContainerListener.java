@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -72,14 +72,14 @@ public final class WebContainerListener
     @LogMessageInfo(
             message = "ContainerEvent: {0}",
             level = "FINEST")
-    public static final String CONTAINER_EVENT = "AS-WEB-00347";
+    public static final String CONTAINER_EVENT = "AS-WEB-GLUE-00347";
 
     @LogMessageInfo(
             message = "Exception during invocation of InjectionManager.destroyManagedObject on {0} of web module {1}",
             level = "SEVERE",
             cause = "An exception occurred during destroyManagedObject",
             action = "Check the exception for the error")
-    public static final String EXCEPTION_DURING_DESTROY_MANAGED_OBJECT = "AS-WEB-00348";
+    public static final String EXCEPTION_DURING_DESTROY_MANAGED_OBJECT = "AS-WEB-GLUE-00348";
 
     static private HashSet<String> beforeEvents = new HashSet<String>();
     static private HashSet<String> afterEvents = new HashSet<String>();

@@ -88,29 +88,29 @@ public final class J2EEInstanceListener implements InstanceListener {
     @LogMessageInfo(
             message = "*** InstanceEvent: {0}",
             level = "FINEST")
-    public static final String INSTANCE_EVENT = "AS-WEB-00342";
+    public static final String INSTANCE_EVENT = "AS-WEB-GLUE-00342";
 
     @LogMessageInfo(
             message = "Obtained securityContext implementation class {0}",
             level = "FINE")
-    public static final String SECURITY_CONTEXT_OBTAINED = "AS-WEB-00343";
+    public static final String SECURITY_CONTEXT_OBTAINED = "AS-WEB-GLUE-00343";
 
     @LogMessageInfo(
             message = "Failed to obtain securityContext implementation class",
             level = "FINE")
-    public static final String SECURITY_CONTEXT_FAILED = "AS-WEB-00344";
+    public static final String SECURITY_CONTEXT_FAILED = "AS-WEB-GLUE-00344";
 
     @LogMessageInfo(
             message = "Exception during processing of event of type {0} for web module {1}",
             level = "SEVERE",
             cause = "An exception occurred during processing event type",
             action = "Check the exception for the error")
-    public static final String EXCEPTION_DURING_HANDLE_EVENT = "AS-WEB-00345";
+    public static final String EXCEPTION_DURING_HANDLE_EVENT = "AS-WEB-GLUE-00345";
 
     @LogMessageInfo(
             message = "No ServerContext in WebModule [{0}]",
             level = "WARNING")
-    public static final String NO_SERVER_CONTEXT = "AS-WEB-00346";
+    public static final String NO_SERVER_CONTEXT = "AS-WEB-GLUE-00346";
 
     private InvocationManager im;
     private JavaEETransactionManager tm;

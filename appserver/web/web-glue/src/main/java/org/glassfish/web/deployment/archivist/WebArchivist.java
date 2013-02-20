@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -97,7 +97,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
     @LogMessageInfo(
             message = "Error in parsing default-web.xml",
             level = "WARNING")
-    private static final String ERROR_PARSING = "AS-WEB-00368";
+    private static final String ERROR_PARSING = "AS-WEB-GLUE-00368";
 
 
     private static final String DEFAULT_WEB_XML = "default-web.xml";

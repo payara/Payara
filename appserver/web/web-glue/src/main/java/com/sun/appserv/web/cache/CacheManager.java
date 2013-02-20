@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -75,12 +75,12 @@ public class CacheManager {
     @LogMessageInfo(
             message = "Exception in creating cache",
             level = "WARNING")
-    private static final String CACHE_MANAGER_EXCEPTION_CREATING_CACHE = "AS-WEB-00200";
+    private static final String CACHE_MANAGER_EXCEPTION_CREATING_CACHE = "AS-WEB-GLUE-00200";
 
     @LogMessageInfo(
             message = "Exception initializing cache-helper {0}; please check your helper class implementation",
             level = "INFO")
-    private static final String CACHE_MANAGER_EXCEPTION_INITIALIZING_CACHE_HELPER = "AS-WEB-00201";
+    private static final String CACHE_MANAGER_EXCEPTION_INITIALIZING_CACHE_HELPER = "AS-WEB-GLUE-00201";
 
     // default max maximum number of entries in the cache
     int maxEntries = DEFAULT_CACHE_MAX_ENTRIES;

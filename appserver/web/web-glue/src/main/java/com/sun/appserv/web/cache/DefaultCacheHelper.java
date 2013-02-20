@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -71,12 +71,12 @@ public class DefaultCacheHelper implements CacheHelper {
     @LogMessageInfo(
             message = "Illegal CacheKeyGenerator",
             level = "WARNING")
-    private static final String CACHE_DEFAULT_HELP_ILLEGAL_KET_GENERATOR = "AS-WEB-00202";
+    private static final String CACHE_DEFAULT_HELP_ILLEGAL_KET_GENERATOR = "AS-WEB-GLUE-00202";
 
     @LogMessageInfo(
             message = "DefaultCacheHelper: cannot find all the required key fields in the request {0}",
             level = "FINE")
-    private static final String REQUIRED_KEY_FIELDS_NOT_FOUND = "AS-WEB-00203";
+    private static final String REQUIRED_KEY_FIELDS_NOT_FOUND = "AS-WEB-GLUE-00203";
 
     ServletContext context;
 

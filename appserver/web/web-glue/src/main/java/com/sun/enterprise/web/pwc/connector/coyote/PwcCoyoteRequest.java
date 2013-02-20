@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,12 +78,12 @@ public class PwcCoyoteRequest extends Request {
             message = "Unable to set request encoding [{0}] determined from sun-web.xml " +
                     "deployment descriptor of web application [{1}]",
             level = "WARNING")
-    public static final String UNABLE_TO_SET_ENCODING = "AS-WEB-00297";
+    public static final String UNABLE_TO_SET_ENCODING = "AS-WEB-GLUE-00297";
 
     @LogMessageInfo(
             message = "POST data too large",
             level = "WARNING")
-    public static final String POST_TOO_LARGE = "AS-WEB-00298";
+    public static final String POST_TOO_LARGE = "AS-WEB-GLUE-00298";
 
     // Have we already determined request encoding from sun-web.xml?
     private boolean sunWebXmlChecked = false;

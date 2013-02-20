@@ -77,7 +77,7 @@ public class FilterMappingNode extends DeploymentDescriptorNode<ServletFilterMap
     @LogMessageInfo(
             message = "Invalid URL Pattern: [{0}]",
             level = "INFO")
-    protected static final String ENTERPRISE_DEPLOYMENT_INVALID_URL_PATTERN = "AS-WEB-00373";
+    protected static final String ENTERPRISE_DEPLOYMENT_INVALID_URL_PATTERN = "AS-WEB-GLUE-00373";
 
     /**
      * @return the descriptor instance to associate with this XMLNode

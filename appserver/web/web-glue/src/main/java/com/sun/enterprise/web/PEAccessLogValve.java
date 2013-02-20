@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -96,52 +96,52 @@ public final class PEAccessLogValve
             level = "SEVERE",
             cause = "An exception occurred writing to access log file",
             action = "Check the exception for the error")
-    public static final String ACCESS_LOG_UNABLE_TO_WRITE = "AS-WEB-00283";
+    public static final String ACCESS_LOG_UNABLE_TO_WRITE = "AS-WEB-GLUE-00283";
 
     @LogMessageInfo(
             message = "Setting accesslog directory for virtual server '{0}' to {1}",
             level = "FINE")
-    public static final String ACCESS_LOG_DIRECTORY_SET = "AS-WEB-00284";
+    public static final String ACCESS_LOG_DIRECTORY_SET = "AS-WEB-GLUE-00284";
 
     @LogMessageInfo(
             message = "Invalid accessLogWriterInterval value [{0}]",
             level = "WARNING")
-    public static final String INVALID_ACCESS_LOG_WRITER_INTERVAL = "AS-WEB-00285";
+    public static final String INVALID_ACCESS_LOG_WRITER_INTERVAL = "AS-WEB-GLUE-00285";
 
     @LogMessageInfo(
             message = "Invalid accessLogBufferSize value [{0}]",
             level = "WARNING")
-    public static final String INVALID_ACCESS_LOG_BUFFER_SIZE = "AS-WEB-00286";
+    public static final String INVALID_ACCESS_LOG_BUFFER_SIZE = "AS-WEB-GLUE-00286";
 
     @LogMessageInfo(
             message = "Unable to parse max-history-files access log configuration [{0}]",
             level = "WARNING")
-    public static final String INVALID_MAX_HISTORY_FILES = "AS-WEB-00287";
+    public static final String INVALID_MAX_HISTORY_FILES = "AS-WEB-GLUE-00287";
 
     @LogMessageInfo(
             message = "Unable to create {0}",
             level = "WARNING")
-    public static final String UNABLE_TO_CREATE = "AS-WEB-00288";
+    public static final String UNABLE_TO_CREATE = "AS-WEB-GLUE-00288";
 
     @LogMessageInfo(
             message = "Unable to rename access log file {0} to {1}",
             level = "WARNING")
-    public static final String UNABLE_TO_RENAME_LOG_FILE = "AS-WEB-00289";
+    public static final String UNABLE_TO_RENAME_LOG_FILE = "AS-WEB-GLUE-00289";
 
     @LogMessageInfo(
             message = "Unable to remove access log file {0}",
             level = "WARNING")
-    public static final String UNABLE_TO_REMOVE_LOG_FILE = "AS-WEB-00290";
+    public static final String UNABLE_TO_REMOVE_LOG_FILE = "AS-WEB-GLUE-00290";
 
     @LogMessageInfo(
             message = "Access logger has already been started",
             level = "WARNING")
-    public static final String ACCESS_LOG_ALREADY_STARTED = "AS-WEB-00291";
+    public static final String ACCESS_LOG_ALREADY_STARTED = "AS-WEB-GLUE-00291";
 
     @LogMessageInfo(
             message = "Access logger has not yet been started",
             level = "WARNING")
-    public static final String ACCESS_LOG_NOT_STARTED = "AS-WEB-00292";
+    public static final String ACCESS_LOG_NOT_STARTED = "AS-WEB-GLUE-00292";
 
 
     // Predefined patterns

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,7 +63,7 @@ public class CacheUtil {
     @LogMessageInfo(
             message = "Illegal value ([{0}]) for scope attribute of cache tag",
             level = "WARNING")
-    private static final String ILLEGAL_SCOPE = "AS-WEB-00365";
+    private static final String ILLEGAL_SCOPE = "AS-WEB-GLUE-00365";
 
     private static final String PAGE_SCOPE = "page";   
     private static final String REQUEST_SCOPE = "request";   

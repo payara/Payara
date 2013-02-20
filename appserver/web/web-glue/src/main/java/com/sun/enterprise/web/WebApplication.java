@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,33 +78,33 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
             level = "SEVERE",
             cause = "An exception occurred writing to access log file",
             action = "Check the exception for the error")
-    public static final String WEBAPP_UNKNOWN_ERROR = "AS-WEB-00323";
+    public static final String WEBAPP_UNKNOWN_ERROR = "AS-WEB-GLUE-00323";
 
     @LogMessageInfo(
             message = "Loading application [{0}] at [{1}]",
             level = "INFO")
-    public static final String LOADING_APP = "AS-WEB-00324";
+    public static final String LOADING_APP = "AS-WEB-GLUE-00324";
 
     @LogMessageInfo(
             message = "App config customization specified to ignore descriptor's {0} {1} " +
                     "so it will not be present for the application",
             level = "FINER")
-    public static final String IGNORE_DESCRIPTOR = "AS-WEB-00325";
+    public static final String IGNORE_DESCRIPTOR = "AS-WEB-GLUE-00325";
 
     @LogMessageInfo(
             message = "Overriding descriptor {0}",
             level = "FINER")
-    public static final String OVERIDE_DESCRIPTOR = "AS-WEB-00326";
+    public static final String OVERIDE_DESCRIPTOR = "AS-WEB-GLUE-00326";
 
     @LogMessageInfo(
             message = "Creating new {0}",
             level = "FINER")
-    public static final String CREATE_DESCRIPTOR = "AS-WEB-00327";
+    public static final String CREATE_DESCRIPTOR = "AS-WEB-GLUE-00327";
 
     @LogMessageInfo(
             message = "Exception during Coherence*Web shutdown for application [{0}]",
             level = "WARNING")
-    public static final String EXCEPTION_SHUTDOWN_COHERENCE_WEB = "AS-WEB-00328";
+    public static final String EXCEPTION_SHUTDOWN_COHERENCE_WEB = "AS-WEB-GLUE-00328";
 
     private final WebContainer container;
     private final WebModuleConfig wmInfo;

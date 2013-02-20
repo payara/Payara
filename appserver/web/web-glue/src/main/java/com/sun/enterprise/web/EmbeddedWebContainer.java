@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,12 +78,12 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
             level = "SEVERE",
             cause = "An exception occurred during instantiation of ContainerListener of type {0}",
             action = "Check the Exception for error")
-    public static final String UNABLE_TO_INSTANTIATE_CONTAINER_LISTENER = "AS-WEB-00044";
+    public static final String UNABLE_TO_INSTANTIATE_CONTAINER_LISTENER = "AS-WEB-GLUE-00044";
 
     @LogMessageInfo(
             message = "Creating connector for address='{0}' port='{1}' protocol='{2}'",
             level = "FINE")
-    public static final String CREATE_CONNECTOR = "AS-WEB-00045";
+    public static final String CREATE_CONNECTOR = "AS-WEB-GLUE-00045";
 
     @Inject
     private ServiceLocator services;

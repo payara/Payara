@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -80,14 +80,14 @@ public class WebConfigListener implements ConfigListener, MapperUpdateListener {
     @LogMessageInfo(
             message = "Web container config changed {0} {1} {2}",
             level = "FINE")
-    public static final String CHANGE_INVOKED = "AS-WEB-00299";
+    public static final String CHANGE_INVOKED = "AS-WEB-GLUE-00299";
 
     @LogMessageInfo(
             message = "Exception processing HttpService configuration change",
             level = "SEVERE",
             cause = "An exception occurred during configuration change ",
             action = "Check the exception for error")
-    public static final String EXCEPTION_WEB_CONFIG = "AS-WEB-00300";
+    public static final String EXCEPTION_WEB_CONFIG = "AS-WEB-GLUE-00300";
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     public HttpService httpService;

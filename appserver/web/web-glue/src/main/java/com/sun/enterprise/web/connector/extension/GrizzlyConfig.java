@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -75,17 +75,17 @@ public class GrizzlyConfig implements MonitoringLevelListener{
     @LogMessageInfo(
             message = "Exception when initializing monitoring for network-listener [{0}]",
             level = "WARNING")
-    public static final String INIT_MONITORING_EXCEPTION = "AS-WEB-00270";
+    public static final String INIT_MONITORING_EXCEPTION = "AS-WEB-GLUE-00270";
 
     @LogMessageInfo(
             message = "InvokeGrizzly method={0} objectName={1}",
             level = "FINE")
-    public static final String INVOKE_GRIZZLY = "AS-WEB-00271";
+    public static final String INVOKE_GRIZZLY = "AS-WEB-GLUE-00271";
 
     @LogMessageInfo(
             message = "Exception while invoking mebean server operation [{0}]",
             level = "WARNING")
-    public static final String INVOKE_MBEAN_EXCEPTION = "AS-WEB-00272";
+    public static final String INVOKE_MBEAN_EXCEPTION = "AS-WEB-GLUE-00272";
 
     /**
      * Is monitoring already started.

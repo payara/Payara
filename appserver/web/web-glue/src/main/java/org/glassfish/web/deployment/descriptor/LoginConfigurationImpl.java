@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -65,12 +65,12 @@ public class LoginConfigurationImpl extends Descriptor implements LoginConfigura
             message = "An authentication method was not defined in the web.xml descriptor. " +
                     "Using default BASIC for login configuration.",
             level = "WARNING")
-    public static final String AUTH_METHOD_NOT_FOUND = "AS-WEB-00350";
+    public static final String AUTH_METHOD_NOT_FOUND = "AS-WEB-GLUE-00350";
 
     @LogMessageInfo(
             message = "[{0}] is not a valid authentication method",
             level = "WARNING")
-    public static final String EXCEPTION_AUTH_METHOD = "AS-WEB-00351";
+    public static final String EXCEPTION_AUTH_METHOD = "AS-WEB-GLUE-00351";
 
     /** teh client authenticates using http basic authentication. */
     public static final String AUTHENTICATION_METHOD_BASIC = LoginConfiguration.BASIC_AUTHENTICATION;

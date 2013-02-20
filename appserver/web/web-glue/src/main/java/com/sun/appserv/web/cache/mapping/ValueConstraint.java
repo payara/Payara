@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -65,42 +65,42 @@ public class ValueConstraint {
     @LogMessageInfo(
             message = "''greater'' expression requires a numeric value; please check your value {0}",
             level = "WARNING")
-    private static final String GREATER_EXP_REQ_NUMERIC = "AS-WEB-00357";
+    private static final String GREATER_EXP_REQ_NUMERIC = "AS-WEB-GLUE-00357";
 
     @LogMessageInfo(
             message = "''lesser'' expression requires a numeric value; please check your value [{0}]",
             level = "WARNING")
-    private static final String LESSER_EXP_REQ_NUMERIC = "AS-WEB-00358";
+    private static final String LESSER_EXP_REQ_NUMERIC = "AS-WEB-GLUE-00358";
 
     @LogMessageInfo(
             message = "illegal value [{0}] expr [{1}]",
             level = "WARNING")
-    private static final String ILLEGAL_VALUE_EXP = "AS-WEB-00359";
+    private static final String ILLEGAL_VALUE_EXP = "AS-WEB-GLUE-00359";
 
     @LogMessageInfo(
             message = "illegal in-range constraint; specify a valid range (xxx-yyy) value [{0}]",
             level = "WARNING")
-    private static final String ILLEGAL_VALUE_RANGE = "AS-WEB-00360";
+    private static final String ILLEGAL_VALUE_RANGE = "AS-WEB-GLUE-00360";
 
     @LogMessageInfo(
             message = "missing separator in the ''in-range'' constraint; [{0}]",
             level = "WARNING")
-    private static final String MISSING_RANGE_SEP = "AS-WEB-00361";
+    private static final String MISSING_RANGE_SEP = "AS-WEB-GLUE-00361";
 
     @LogMessageInfo(
             message = "''in-range'' constraint requires numeric values for the lower bound [{0}]",
             level = "WARNING")
-    private static final String LOWER_RANGE_REQ_NUMBER = "AS-WEB-00362";
+    private static final String LOWER_RANGE_REQ_NUMBER = "AS-WEB-GLUE-00362";
 
     @LogMessageInfo(
             message = "''in-range'' constraint requires a value for the upper bound of the range; check your value [{0}]",
             level = "WARNING")
-    private static final String RANGE_REQ_UPPER_BOUND= "AS-WEB-00363";
+    private static final String RANGE_REQ_UPPER_BOUND= "AS-WEB-GLUE-00363";
 
     @LogMessageInfo(
             message = "''in-range'' constraint requires numeric values for the upper bound [{0}]",
             level = "WARNING")
-    private static final String UPPER_RANGE_REQ_NUMBER = "AS-WEB-00364";
+    private static final String UPPER_RANGE_REQ_NUMBER = "AS-WEB-GLUE-00364";
 
     // field values to match 
     private String matchValue = null; 

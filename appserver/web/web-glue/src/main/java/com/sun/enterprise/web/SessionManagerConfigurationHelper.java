@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,24 +63,24 @@ public class SessionManagerConfigurationHelper {
     @LogMessageInfo(
             message = "Web App Distributable {0}: {1}",
             level = "FINEST")
-    public static final String WEB_APP_DISTRIBUTABLE = "AS-WEB-00308";
+    public static final String WEB_APP_DISTRIBUTABLE = "AS-WEB-GLUE-00308";
 
     @LogMessageInfo(
             message = "AvailabilityGloballyEnabled = {0}",
             level = "FINEST")
-    public static final String AVAILABILITY_GLOBALLY_ENABLED = "AS-WEB-00309";
+    public static final String AVAILABILITY_GLOBALLY_ENABLED = "AS-WEB-GLUE-00309";
 
     @LogMessageInfo(
             message = "instance-level persistence-type = {0} instance-level persistenceFrequency = {1} " +
                     "instance-level persistenceScope = {2}",
             level = "FINEST")
-    public static final String INSTANCE_LEVEL_INFO = "AS-WEB-00310";
+    public static final String INSTANCE_LEVEL_INFO = "AS-WEB-GLUE-00310";
 
     @LogMessageInfo(
             message = "webAppLevelPersistenceType = {0} webAppLevelPersistenceFrequency = {1} " +
                     "webAppLevelPersistenceScope = {2}",
             level = "FINEST")
-    public static final String WEB_APP_LEVEL_INFO = "AS-WEB-00311";
+    public static final String WEB_APP_LEVEL_INFO = "AS-WEB-GLUE-00311";
 
     @LogMessageInfo(
             message = "IN WebContainer>>ConfigureSessionManager after web level check" +
@@ -88,24 +88,24 @@ public class SessionManagerConfigurationHelper {
                     "AFTER_WEB_PERSISTENCE_FREQUENCY IS = {1} " +
                     "AFTER_WEB_PERSISTENCE_SCOPE IS = {2}",
             level = "FINEST")
-    public static final String AFTER_WEB_LEVEL_CHECK_INFO = "AS-WEB-00312";
+    public static final String AFTER_WEB_LEVEL_CHECK_INFO = "AS-WEB-GLUE-00312";
 
     @LogMessageInfo(
             message = "Is {0} a system app: {1}",
             level = "FINEST")
-    public static final String IS_SYSTEM_APP = "AS-WEB-00313";
+    public static final String IS_SYSTEM_APP = "AS-WEB-GLUE-00313";
 
     @LogMessageInfo(
             message = "SessionConfigurationHelper: Is AppDistributable {0}",
             level = "FINEST")
-    public static final String IS_APP_DISTRIBUTABLE = "AS-WEB-00314";
+    public static final String IS_APP_DISTRIBUTABLE = "AS-WEB-GLUE-00314";
 
     @LogMessageInfo(
             message = "Invalid Session Management Configuration for non-distributable app [{0}] - " +
                     "defaulting to memory: persistence-type = [{1}] / persistenceFrequency = [{2}] / " +
                     "persistenceScope = [{3}]",
             level = "INFO")
-    public static final String INVALID_SESSION_MANAGER_CONFIG = "AS-WEB-00315";
+    public static final String INVALID_SESSION_MANAGER_CONFIG = "AS-WEB-GLUE-00315";
 
     @LogMessageInfo(
             message = "IN WebContainer>>ConfigureSessionManager before builder factory" +
@@ -113,7 +113,7 @@ public class SessionManagerConfigurationHelper {
                     "FINAL_PERSISTENCE_FREQUENCY IS = {1} " +
                     "FINAL_PERSISTENCE_SCOPE IS = {2}",
             level = "FINEST")
-    public static final String CONFIGURE_SESSION_MANAGER_FINAL = "AS-WEB-00316";
+    public static final String CONFIGURE_SESSION_MANAGER_FINAL = "AS-WEB-GLUE-00316";
 
 
 protected WebModule _ctx = null;

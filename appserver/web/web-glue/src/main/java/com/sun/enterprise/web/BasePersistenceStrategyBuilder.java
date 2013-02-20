@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -66,52 +66,52 @@ public abstract class BasePersistenceStrategyBuilder
     @LogMessageInfo(
             message = "mgr reapInterval set = {0}",
             level = "FINEST")
-    public static final String MANAGER_REAP_INTERVAL_SET = "AS-WEB-00239";
+    public static final String MANAGER_REAP_INTERVAL_SET = "AS-WEB-GLUE-00239";
 
     @LogMessageInfo(
             message = "no instance level value set for mgr reapInterval",
             level = "FINEST")
-    public static final String NO_INSTANCE_LEVEL_VALUE_SET_MGR_REAP_INTERVAL = "AS-WEB-00240";
+    public static final String NO_INSTANCE_LEVEL_VALUE_SET_MGR_REAP_INTERVAL = "AS-WEB-GLUE-00240";
 
     @LogMessageInfo(
             message = "maxSessions set = {0}",
             level = "FINEST")
-    public static final String MAX_SESSIONS_SET = "AS-WEB-00241";
+    public static final String MAX_SESSIONS_SET = "AS-WEB-GLUE-00241";
 
     @LogMessageInfo(
             message = "no instance level value set for maxSessions",
             level = "FINEST")
-    public static final String NO_INSTANCE_LEVEL_VALUE_SET_MAX_SESSIONS = "AS-WEB-00242";
+    public static final String NO_INSTANCE_LEVEL_VALUE_SET_MAX_SESSIONS = "AS-WEB-GLUE-00242";
 
     @LogMessageInfo(
             message = "sessionFilename set = {0}",
             level = "FINEST")
-    public static final String SESSION_FILENAME_SET = "AS-WEB-00243";
+    public static final String SESSION_FILENAME_SET = "AS-WEB-GLUE-00243";
 
     @LogMessageInfo(
             message = "sessionIdGeneratorClassname set = {0}",
             level = "FINEST")
-    public static final String SESSION_ID_GENERATOR_CLASSNAME_SET = "AS-WEB-00244";
+    public static final String SESSION_ID_GENERATOR_CLASSNAME_SET = "AS-WEB-GLUE-00244";
 
     @LogMessageInfo(
             message = "storeReapInterval set = {0}",
             level = "FINEST")
-    public static final String STORE_REAP_INTERVAL_SET = "AS-WEB-00245";
+    public static final String STORE_REAP_INTERVAL_SET = "AS-WEB-GLUE-00245";
 
     @LogMessageInfo(
             message = "directory set = {0}",
             level = "FINEST")
-    public static final String DIRECTORY_SET = "AS-WEB-00246";
+    public static final String DIRECTORY_SET = "AS-WEB-GLUE-00246";
 
     @LogMessageInfo(
             message = "sessionMaxInactiveInterval set = {0}",
             level = "FINEST")
-    public static final String SESSION_MAX_INACTIVE_INTERVAL_SET = "AS-WEB-00247";
+    public static final String SESSION_MAX_INACTIVE_INTERVAL_SET = "AS-WEB-GLUE-00247";
 
     @LogMessageInfo(
             message = "no instance level value set for sessionMaxInactiveInterval",
             level = "FINEST")
-    public static final String NO_INSTANCE_LEVEL_VALUE_SET_SESSION_MAX_INACTIVE_INTERVAL = "AS-WEB-00248";
+    public static final String NO_INSTANCE_LEVEL_VALUE_SET_SESSION_MAX_INACTIVE_INTERVAL = "AS-WEB-GLUE-00248";
 
     protected String directory = null;
     // START GLASSFISH-15745

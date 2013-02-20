@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -76,17 +76,17 @@ public class VirtualServerPipeline extends StandardPipeline {
     @LogMessageInfo(
             message = "Virtual server {0} has been turned off",
             level = "FINE")
-    public static final String VS_VALVE_OFF = "AS-WEB-00320";
+    public static final String VS_VALVE_OFF = "AS-WEB-GLUE-00320";
 
     @LogMessageInfo(
             message = "Virtual server {0} has been disabled",
             level = "FINE")
-    public static final String VS_VALVE_DISABLED = "AS-WEB-00321";
+    public static final String VS_VALVE_DISABLED = "AS-WEB-GLUE-00321";
 
     @LogMessageInfo(
             message = "Invalid redirect URL [{0}]: Impossible to URL encode",
             level = "WARNING")
-    public static final String INVALID_REDIRECTION_LOCATION = "AS-WEB-00322";
+    public static final String INVALID_REDIRECTION_LOCATION = "AS-WEB-GLUE-00322";
 
     private VirtualServer vs;
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -71,21 +71,21 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
             level = "SEVERE",
             cause = "The pattern is either null or does not contain '%'",
             action = "Check the pattern for validity")
-    public static final String ACCESS_LOG_VALVE_INVALID_ACCESS_LOG_PATTERN = "AS-WEB-00236";
+    public static final String ACCESS_LOG_VALVE_INVALID_ACCESS_LOG_PATTERN = "AS-WEB-GLUE-00236";
 
     @LogMessageInfo(
             message = "Missing end delimiter in access log pattern: {0}",
             level = "SEVERE",
             cause = "An end delimiter ismissing in the access log pattern",
             action = "Check the pattern for validity")
-    public static final String MISSING_ACCESS_LOG_PATTERN_END_DELIMITER = "AS-WEB-00237";
+    public static final String MISSING_ACCESS_LOG_PATTERN_END_DELIMITER = "AS-WEB-GLUE-00237";
 
     @LogMessageInfo(
             message = "Invalid component: {0} in access log pattern: {1}",
             level = "SEVERE",
             cause = "Access log pattern containds invalid component",
             action = "Check the pattern for validity")
-    public static final String INVALID_ACCESS_LOG_PATTERN_COMPONENT = "AS-WEB-00238";
+    public static final String INVALID_ACCESS_LOG_PATTERN_COMPONENT = "AS-WEB-GLUE-00238";
 
     private static final String QUOTE = "\"";
 

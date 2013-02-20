@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -69,37 +69,37 @@ public class ServerConfigLookup {
     @LogMessageInfo(
             message = "AvailabilityService was not defined - check domain.xml",
             level = "FINEST")
-    public static final String AVAILABILITY_SERVICE_NOT_DEFINED = "AS-WEB-00301";
+    public static final String AVAILABILITY_SERVICE_NOT_DEFINED = "AS-WEB-GLUE-00301";
 
     @LogMessageInfo(
             message = "WebContainerAvailability not defined - check domain.xml",
             level = "FINEST")
-    public static final String WEB_CONTAINER_AVAILABILITY_NOT_DEFINED = "AS-WEB-00302";
+    public static final String WEB_CONTAINER_AVAILABILITY_NOT_DEFINED = "AS-WEB-GLUE-00302";
 
     @LogMessageInfo(
             message = "globalAvailability = {0}",
             level = "FINEST")
-    public static final String GLOBAL_AVAILABILITY= "AS-WEB-00303";
+    public static final String GLOBAL_AVAILABILITY= "AS-WEB-GLUE-00303";
 
     @LogMessageInfo(
             message = "webContainerAvailability = {0}",
             level = "FINEST")
-    public static final String WEB_CONTAINER_AVAILABILITY = "AS-WEB-00304";
+    public static final String WEB_CONTAINER_AVAILABILITY = "AS-WEB-GLUE-00304";
 
     @LogMessageInfo(
             message = "webModuleAvailability = {0}",
             level = "FINEST")
-    public static final String WEB_MODULE_AVAILABILITY = "AS-WEB-00305";
+    public static final String WEB_MODULE_AVAILABILITY = "AS-WEB-GLUE-00305";
 
     @LogMessageInfo(
             message = "SERVER.XML persistenceType= {0}",
             level = "FINEST")
-    public static final String PERSISTENCE_TYPE = "AS-WEB-00306";
+    public static final String PERSISTENCE_TYPE = "AS-WEB-GLUE-00306";
 
     @LogMessageInfo(
             message = "SERVER.XML persistenceType missing",
             level = "FINEST")
-    public static final String PERSISTENCE_TYPE_MISSING = "AS-WEB-00307";
+    public static final String PERSISTENCE_TYPE_MISSING = "AS-WEB-GLUE-00307";
 
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)

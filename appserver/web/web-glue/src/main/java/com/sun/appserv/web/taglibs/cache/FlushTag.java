@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,12 +78,12 @@ public class FlushTag extends TagSupport {
     @LogMessageInfo(
             message = "FlushTag: clear [{0}]",
             level = "FINE")
-    private static final String FLUSH_TAG_CLEAR_KEY = "AS-WEB-00217";
+    private static final String FLUSH_TAG_CLEAR_KEY = "AS-WEB-GLUE-00217";
 
     @LogMessageInfo(
             message = "FlushTag: clear cache",
             level = "FINE")
-    private static final String FLUSH_TAG_CLEAR_CACHE = "AS-WEB-00218";
+    private static final String FLUSH_TAG_CLEAR_CACHE = "AS-WEB-GLUE-00218";
 
     // ---------------------------------------------------------------------
     // Tag logic

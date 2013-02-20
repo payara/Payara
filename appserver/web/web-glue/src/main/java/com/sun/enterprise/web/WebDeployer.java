@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -81,14 +81,14 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
     @LogMessageInfo(
             message = "Unable to load configuration of web module [{0}]",
             level = "WARNING")
-    public static final String UNABLE_TO_LOAD_CONFIG = "AS-WEB-00329";
+    public static final String UNABLE_TO_LOAD_CONFIG = "AS-WEB-GLUE-00329";
 
     @LogMessageInfo(
             message = "Failed to precompile JSP pages of web module [{0}]",
             level = "SEVERE",
             cause = "An exception occurred precompiling JSP pages",
             action = "Check the exception for the error")
-    public static final String JSPC_FAILED = "AS-WEB-00330";
+    public static final String JSPC_FAILED = "AS-WEB-GLUE-00330";
 
     @Inject
     ServerContext sc;

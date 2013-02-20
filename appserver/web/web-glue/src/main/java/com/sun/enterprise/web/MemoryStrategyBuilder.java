@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,14 +59,14 @@ public class MemoryStrategyBuilder extends BasePersistenceStrategyBuilder {
     @LogMessageInfo(
             message = "Enabling no persistence for web module [{0}]''s sessions: persistence-type = [{1}]",
             level = "FINE")
-    public static final String NO_PERSISTENCE = "AS-WEB-00249";
+    public static final String NO_PERSISTENCE = "AS-WEB-GLUE-00249";
 
     @LogMessageInfo(
             message = "Unable to load session uuid generator [{0}]",
             level = "SEVERE",
             cause = "An exception occurred during loading session uuid generator",
             action = "Check the Exception for the error")
-    public static final String UNABLE_TO_LOAD_SESSION_UUID_GENERATOR = "AS-WEB-00250";
+    public static final String UNABLE_TO_LOAD_SESSION_UUID_GENERATOR = "AS-WEB-GLUE-00250";
 
     public void initializePersistenceStrategy(
             Context ctx,

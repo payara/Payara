@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -75,17 +75,17 @@ public class TomcatDeploymentConfig {
     @LogMessageInfo(
             message = "Security role name {0} used in an <auth-constraint> without being defined in a <security-role>",
             level = "WARNING")
-    public static final String ROLE_AUTH = "AS-WEB-00317";
+    public static final String ROLE_AUTH = "AS-WEB-GLUE-00317";
 
     @LogMessageInfo(
             message = "Security role name {0} used in a <run-as> without being defined in a <security-role>",
             level = "WARNING")
-    public static final String ROLE_RUNAS = "AS-WEB-00318";
+    public static final String ROLE_RUNAS = "AS-WEB-GLUE-00318";
 
     @LogMessageInfo(
             message = "Security role name {0} used in a <role-link> without being defined in a <security-role>",
             level = "WARNING")
-    public static final String ROLE_LINK = "AS-WEB-00319";
+    public static final String ROLE_LINK = "AS-WEB-GLUE-00319";
 
 
     /**

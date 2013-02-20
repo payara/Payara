@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -80,12 +80,12 @@ public class AdHocContextValve implements GlassFishValve {
     @LogMessageInfo(
             message = "Error processing request received on ad-hoc path {0}",
             level = "WARNING")
-    private static final String ADHOC_SERVLET_SERVICE_ERROR = "AS-WEB-00366";
+    private static final String ADHOC_SERVLET_SERVICE_ERROR = "AS-WEB-GLUE-00366";
 
     @LogMessageInfo(
             message = "No ad-hoc servlet configured to process ad-hoc path {0}",
             level = "WARNING")
-    private static final String NO_ADHOC_SERVLET = "AS-WEB-00367";
+    private static final String NO_ADHOC_SERVLET = "AS-WEB-GLUE-00367";
 
     // The web module with which this valve is associated
     private WebModule context;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,7 +62,7 @@ public class Field {
     @LogMessageInfo(
             message = "Incorrect scope value [{0}] for web application cache field name [{1}]",
             level = "WARNING")
-    public static final String CACHE_MAPPING_INCORRECT_SCOPE = "AS-WEB-00356";
+    public static final String CACHE_MAPPING_INCORRECT_SCOPE = "AS-WEB-GLUE-00356";
 
     // field name and scope 
     protected String name; 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -72,28 +72,28 @@ public final class CacheModule {
     @LogMessageInfo(
             message = "Configuring cache for web application",
             level = "FINE")
-    public static final String CONFIGURE_CACHE = "AS-WEB-00251";
+    public static final String CONFIGURE_CACHE = "AS-WEB-GLUE-00251";
 
     @LogMessageInfo(
             message = "Added a caching filter for servlet-name = {0} url-pattern = {1}",
             level = "FINE")
-    public static final String CACHING_FILTER_ADDED = "AS-WEB-00252";
+    public static final String CACHING_FILTER_ADDED = "AS-WEB-GLUE-00252";
 
     @LogMessageInfo(
             message = "Added a key-field : name = {0} scope = {1}",
             level = "FINE")
-    public static final String KEY_FIELD_ADDED = "AS-WEB-00253";
+    public static final String KEY_FIELD_ADDED = "AS-WEB-GLUE-00253";
 
     @LogMessageInfo(
             message = "Added a constraint: {0}",
             level = "FINE")
-    public static final String CONSTRAINT_ADDED = "AS-WEB-00254";
+    public static final String CONSTRAINT_ADDED = "AS-WEB-GLUE-00254";
 
     @LogMessageInfo(
             message = "Added a constraint-field name = {0} scope = {1}" +
                     "cache-on-match = {2} cache-on-match-failure = {3}",
             level = "FINE")
-    public static final String CONSTRAINT_FIELD_ADDED = "AS-WEB-00255";
+    public static final String CONSTRAINT_FIELD_ADDED = "AS-WEB-GLUE-00255";
 
     private static String trim(String str) {
         if (str != null)
