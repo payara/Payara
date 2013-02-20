@@ -115,43 +115,15 @@ public class ListLogAttributes implements AdminCommand {
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
-        boolean isDas = false;
-        boolean isInstance = false;
-        String targetConfigName = "";
-
+        
         try {
             HashMap<String, String> props = null;
-
-            Config config = domain.getConfigNamed(target);
-            if (config != null) {
-                targetConfigName = target;
-            } else {
-
-                Server targetServer = domain.getServerNamed(target);
-                
-                if (targetServer != null) {
-                    if (targetServer.isDas()) {
-                        isDas = true;
-                    } else {
-                        isInstance = true;
-                        targetConfigName = targetServer.getConfigRef();
-                    }
-                } else {
-                    com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-                    if (cluster != null) {
-                        targetConfigName = cluster.getConfigRef();
-                    } 
-                }
-
-                if (isInstance) {
-                    Cluster clusterForInstance = targetServer.getCluster();
-                    if (clusterForInstance != null) {
-                        targetConfigName = clusterForInstance.getConfigRef();
-                    }
-                }
-            }
-
-            if (!targetConfigName.isEmpty()) {
+            
+            TargetInfo targetInfo = new TargetInfo(domain, target);
+            String targetConfigName = targetInfo.getConfigName();
+            boolean isDas = targetInfo.isDas();
+            
+            if (targetConfigName != null && !targetConfigName.isEmpty()) {
                 props = (HashMap<String, String>) loggingConfig.getLoggingProperties(targetConfigName);
             } else if (isDas) {
                 props = (HashMap<String, String>) loggingConfig.getLoggingProperties();

@@ -103,6 +103,8 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 })
 public class SetLogAttributes implements AdminCommand {
 
+    private static final String LINE_SEP = System.getProperty("line.separator");
+
     private static final String ROTATION_LIMIT_IN_BYTES = "com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes";
 
     private static final String ROTATION_TIMELIMIT_IN_MINUTES = "com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes";
@@ -153,12 +155,9 @@ public class SetLogAttributes implements AdminCommand {
     public void execute(AdminCommandContext context) {
 
         final ActionReport report = context.getActionReport();
-        boolean isDas = false;
-        boolean isInstance = false;
-        StringBuffer sbfSuccessMsg = new StringBuffer();
+        StringBuffer sbfSuccessMsg = new StringBuffer(LINE_SEP);
         boolean success = false;
         boolean invalidAttribute = false;
-        String targetConfigName = "";
 
         Map<String, String> m = new HashMap<String, String>();
         try {
@@ -178,8 +177,8 @@ public class SetLogAttributes implements AdminCommand {
                         vlAttribute = true;
                         sbfSuccessMsg.append(localStrings.getLocalString(
                                 "set.log.attribute.properties", 
-                                "{0} logging attribute set with value {1}.\n", 
-                                att_name, att_value));
+                                "{0} logging attribute set with value {1}.", 
+                                att_name, att_value)).append(LINE_SEP);
                     }
                 }
 
@@ -193,57 +192,36 @@ public class SetLogAttributes implements AdminCommand {
 
             if (invalidAttribute) {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            } else {
-
-                Config config = domain.getConfigNamed(target);
-                if (config != null) {
-                    targetConfigName = target;
-                } else {
-                    Server targetServer = domain.getServerNamed(target);
-                    if (targetServer != null) {
-                        if (targetServer.isDas()) {
-                            isDas = true;                            
-                        } else {
-                            isInstance = true;
-                            targetConfigName = targetServer.getConfigRef();                            
-                        }
-                    } else {
-                        com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-                        if (cluster != null) {
-                            targetConfigName = cluster.getConfigRef();
-                        } 
-                    }
-
-                    if (isInstance) {
-                        Cluster clusterForInstance = targetServer.getCluster();
-                        if (clusterForInstance != null) {
-                            targetConfigName = clusterForInstance.getConfigRef();
-                        }
-                    }
-                }
-
-                if (targetConfigName != null && !targetConfigName.isEmpty()) {
-                    loggingConfig.updateLoggingProperties(m, targetConfigName);
-                    success = true;
-                } else if (isDas) {
-                    loggingConfig.updateLoggingProperties(m);
-                    success = true;
-                } else {
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    String msg = localStrings.getLocalString("invalid.target.sys.props",
-                            "Invalid target: {0}. Valid default target is a server named ''server'' (default) or cluster name.", target);
-                    report.setMessage(msg);
-                    return;
-                }
-
-                if (success) {
-                    sbfSuccessMsg.append(localStrings.getLocalString(
-                            "set.log.attribute.success", "These logging attributes are set for {0}.", target));
-                    report.setMessage(sbfSuccessMsg.toString());
-                    report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                }
+                return;
             }
+            
+            TargetInfo targetInfo = new TargetInfo(domain, target);
+            String targetConfigName = targetInfo.getConfigName();
+            boolean isDas = targetInfo.isDas();
+            
+            if (targetConfigName != null && !targetConfigName.isEmpty()) {
+                loggingConfig.updateLoggingProperties(m, targetConfigName);
+                success = true;
+            } else if (isDas) {
+                loggingConfig.updateLoggingProperties(m);
+                success = true;
+            } 
 
+            if (success) {
+                String effectiveTarget = (isDas ? SystemPropertyConstants.DAS_SERVER_NAME : targetConfigName);
+                sbfSuccessMsg.append(localStrings.getLocalString(
+                        "set.log.attribute.success", 
+                        "These logging attributes are set for {0}.", effectiveTarget )).append(LINE_SEP);
+                report.setMessage(sbfSuccessMsg.toString());
+                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+            } else {
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                String msg = localStrings.getLocalString("invalid.target.sys.props",
+                        "Invalid target: {0}. Valid default target is a server named ''server'' (default) or cluster name.", target);
+                report.setMessage(msg);
+                return;
+            }
+            
         } catch (IOException e) {
             report.setMessage(localStrings.getLocalString("set.log.attribute.failed",
                     "Could not set logging attributes for {0}.", target));
