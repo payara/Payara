@@ -41,6 +41,7 @@ package com.sun.enterprise.v3.admin.commands;
 import com.sun.enterprise.admin.progress.ProgressStatusClient;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.enterprise.v3.admin.JobAuthorizationAttributeProcessor;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Collection;
@@ -74,8 +75,11 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
     @Inject
     private JobManager jobManagerService;
 
-    protected final List<AccessRequired.AccessCheck> accessChecks = new ArrayList<AccessRequired.AccessCheck>();
-
+    /**
+     * Associates an access check with each candidate JobInfo we might report on.
+     */
+    private final Map<AccessRequired.AccessCheck,JobInfo> jobAccessChecks = new HashMap<AccessRequired.AccessCheck,JobInfo>();
+    
     private final String JOBS_FILE = "jobs.xml";
 
     @Param(optional = true, primary = true)
@@ -104,18 +108,30 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
     final private static StringManager localStrings =
             StringManager.getManager(ListJobsCommand.class);
 
-    @Override
-    public void execute(AdminCommandContext context) {
-
-
-
-        List<JobInfo> jobInfoList = new ArrayList<JobInfo>();
+    protected JobInfos getCompletedJobs() {
+        return jobManagerService.getCompletedJobs();
+    }
+    
+    protected JobInfo getCompletedJobForId(final String jobID) {
+        return (JobInfo) jobManagerService.getCompletedJobForId(jobID);
+    }
+    
+    protected boolean isSingleJobOK(final Job singleJob) {
+        return (singleJob != null);
+    }
+    
+    protected boolean isJobEligible(final Job job) {
+        return !skipJob(job.getName());
+    }
+    
+    private List<JobInfo> chooseJobs() {
+        List<JobInfo> jobsToReport = new ArrayList<JobInfo>();
 
         if (jobID != null) {
             Job oneJob = jobManagerService.get(jobID);
             JobInfo info = null;
 
-            if (oneJob != null) {
+            if (isSingleJobOK(oneJob)) {
                 List<String> userList =  SubjectUtil.getUsernamesFromSubject(oneJob.getSubject());
                 ActionReport actionReport = oneJob.getActionReport();
                 String message = actionReport == null ? "" : actionReport.getMessage();
@@ -127,20 +143,20 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
                 info = new JobInfo(oneJob.getId(),oneJob.getName(),oneJob.getCommandExecutionDate(),exitCode,userList.get(0),message,oneJob.getJobsFile(),oneJob.getState().name(),0);
 
             }  else {
-                if (jobManagerService.getCompletedJobs() != null) {
-                    info = (JobInfo) jobManagerService.getCompletedJobForId(jobID);
+                if (getCompletedJobs() != null) {
+                    info = getCompletedJobForId(jobID);
                 }
             }
 
           if (info != null && !skipJob(info.jobName)) {
-              jobInfoList.add(info);
+              jobsToReport.add(info);
           }
 
         }  else {
 
             for (Iterator<Job> iterator = jobManagerService.getJobs(); iterator.hasNext(); ) {
                 Job job = iterator.next();
-                if (!skipJob(job.getName())) {
+                if (isJobEligible(job)) {
                     List<String> userList =  SubjectUtil.getUsernamesFromSubject(job.getSubject());
                     ActionReport actionReport = job.getActionReport();
 
@@ -149,21 +165,26 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
                         message = ProgressStatusClient.composeMessageForPrint(job.getCommandProgress());
                     }
                     String exitCode = actionReport == null ? "" : actionReport.getActionExitCode().name();
-                    jobInfoList.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),exitCode,userList.get(0),message,job.getJobsFile(),job.getState().name(),0));
+                    jobsToReport.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),exitCode,userList.get(0),message,job.getJobsFile(),job.getState().name(),0));
                 }
             }
 
-            JobInfos completedJobs = jobManagerService.getCompletedJobs();
+            JobInfos completedJobs = getCompletedJobs();
             if (completedJobs != null ) {
                 for (JobInfo info : completedJobs.getJobInfoList()) {
                     if (!skipJob(info.jobName)) {
-                        jobInfoList.add(info);
+                        jobsToReport.add(info);
                     }
                 }
             }
         }
-
-        display(jobInfoList,context);
+        return jobsToReport;
+    }
+        
+    @Override
+    public void execute(AdminCommandContext context) {
+        pruneInaccessibleJobs();
+        display(jobAccessChecks.values(),context);
 
     }
 
@@ -174,11 +195,24 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
 
     @Override
     public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
-        accessChecks.add(new AccessRequired.AccessCheck("jobs/job/$jobID","READ"));
-        return accessChecks;
+        final List<JobInfo> jobInfoList = chooseJobs();
+        for (JobInfo jobInfo : jobInfoList) {
+            jobAccessChecks.put(new AccessRequired.AccessCheck(
+                    JobAuthorizationAttributeProcessor.JOB_RESOURCE_NAME_PREFIX + jobInfo.jobId,"read"), jobInfo);
+        }
+        return jobAccessChecks.keySet();
     }
 
-    public void display(List<JobInfo> jobInfoList, AdminCommandContext context) {
+    private void pruneInaccessibleJobs() {
+        for (Iterator<Map.Entry<AccessRequired.AccessCheck,JobInfo>> it = jobAccessChecks.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<AccessRequired.AccessCheck,JobInfo> entry = it.next();
+            if ( ! entry.getKey().isSuccessful()) {
+                it.remove();
+            }
+        }
+    }
+    
+    public void display(Collection<JobInfo> jobInfoList, AdminCommandContext context) {
         report = context.getActionReport();
 
 

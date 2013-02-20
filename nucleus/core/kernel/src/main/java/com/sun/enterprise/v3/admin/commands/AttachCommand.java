@@ -74,7 +74,8 @@ import static org.glassfish.api.admin.AdminCommandState.State.COMPLETED;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n(AttachCommand.COMMAND_NAME)
 @ManagedJob
-public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCommandSecurity.AccessCheckProvider {
+@AccessRequired(resource="jobs/job/$jobID", action="attach")
+public class AttachCommand implements AdminCommand, AdminCommandListener {
 
     
     public static final String COMMAND_NAME = "attach";
@@ -88,8 +89,6 @@ public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCo
 
     @Param(primary=true, optional=false, multiple=false)
     protected String jobID;
-
-    protected final List<AccessRequired.AccessCheck> accessChecks = new ArrayList<AccessRequired.AccessCheck>();
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -129,12 +128,6 @@ public class AttachCommand implements AdminCommand, AdminCommandListener,AdminCo
         }
     }
 
-
-    @Override
-    public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
-        accessChecks.add(new AccessRequired.AccessCheck("jobs/job/$jobID","READ"));
-        return accessChecks;
-    }
 
     protected void purgeJob(String jobid) {
         try {

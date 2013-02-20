@@ -49,6 +49,7 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AuthorizationPreprocessor;
 import org.glassfish.api.admin.Job;
 import org.glassfish.api.admin.JobManager;
+import org.glassfish.api.admin.progress.JobInfo;
 import org.glassfish.security.services.common.SubjectUtil;
 import org.jvnet.hk2.annotations.Service;
 
@@ -64,7 +65,10 @@ public class JobAuthorizationAttributeProcessor implements AuthorizationPreproce
 
     private final static String USER_ATTRIBUTE_NAME = "user";
     
-    private final static Pattern JOB_PATTERN = Pattern.compile("(?:jobs/job(?:/(\\d*))?)");
+    public final static String JOB_RESOURCE_NAME_PREFIX_NO_SLASH = "jobs/job";
+    public final static String JOB_RESOURCE_NAME_PREFIX = JOB_RESOURCE_NAME_PREFIX_NO_SLASH + '/';
+    
+    public final static Pattern JOB_PATTERN = Pattern.compile("(?:" + JOB_RESOURCE_NAME_PREFIX_NO_SLASH + "(?:/(\\d*))?)");
     
     @Inject
     private JobManager jobManager;
@@ -84,9 +88,26 @@ public class JobAuthorizationAttributeProcessor implements AuthorizationPreproce
         }
         final String jobID = m.group(1);
         final Job job = jobManager.get(jobID);
-
-        final String userID = SubjectUtil.getUsernamesFromSubject(job.getSubject()).get(0);
+        String userID = null;
         
-        resourceAttributes.put(USER_ATTRIBUTE_NAME, userID);
+        /*
+         * This logic might run before any validation in the command has run,
+         * in which case the job ID would be invalid and the job manager and/or
+         * the completed jobs store might not know about the job.
+         */
+        if (job != null) {
+            userID = SubjectUtil.getUsernamesFromSubject(job.getSubject()).get(0);
+        } else {
+            if (jobManager.getCompletedJobs() != null) {
+                    final JobInfo jobInfo = (JobInfo) jobManager.getCompletedJobForId(jobID);
+                    if (jobInfo != null) {
+                        userID = jobInfo.user;
+                    }
+                }
+        } 
+            
+        if (userID != null) {
+            resourceAttributes.put(USER_ATTRIBUTE_NAME, userID);
+        }
     }
 }
