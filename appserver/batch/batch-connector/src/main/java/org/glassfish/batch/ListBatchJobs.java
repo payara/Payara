@@ -280,34 +280,4 @@ public class ListBatchJobs
 
         return jobInfo;
     }
-
-    private static class JobExecutionHolder {
-        JobExecution jobExecution;
-
-        String jobName;
-
-        public JobExecutionHolder() {
-        }
-
-        public JobExecutionHolder(JobExecution jobExecution, String jobName) {
-            this.jobExecution = jobExecution;
-            this.jobName = jobName;
-        }
-
-        public JobExecution getJobExecution() {
-            return jobExecution;
-        }
-
-        public void setJobExecution(JobExecution jobExecution) {
-            this.jobExecution = jobExecution;
-        }
-
-        public String getJobName() {
-            return jobName;
-        }
-
-        public void setJobName(String jobName) {
-            this.jobName = jobName;
-        }
-    }
 }

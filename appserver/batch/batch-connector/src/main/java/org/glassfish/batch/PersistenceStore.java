@@ -60,7 +60,7 @@ public interface PersistenceStore
 
 
     @Attribute(defaultValue = DEFAULT_DATA_SOURCE_NAME, dataType = String.class)
-    public String getDataSourceName();
+    public String getDataSourceJndiName();
 
     @Attribute(defaultValue = "" + MAX_DATA_RETENTION_TIME_IN_SECONDS, dataType = int.class)
     @Min(0)

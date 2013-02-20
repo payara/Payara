@@ -60,7 +60,7 @@ public abstract class AbstractListCommand
     implements AdminCommand {
 
     @Inject
-    GlassFishBatchRuntimeConfigurator glassFishBatchRuntimeConfigurator;
+    BatchRuntimeHelper helper;
 
     @Inject
     protected Logger logger;
@@ -92,8 +92,7 @@ public abstract class AbstractListCommand
 
         try {
             calculateHeaders();
-            if (!glassFishBatchRuntimeConfigurator.isInitialized())
-                glassFishBatchRuntimeConfigurator.initializeBatchRuntime();
+            helper.checkAndInitializeBatchRuntime();
             executeCommand(context, extraProperties);
             actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         } catch (Exception ex) {

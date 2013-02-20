@@ -82,7 +82,7 @@ public class ListBatchRuntimeConfiguration
         map.put(MIN_THREAD_POOL_SIZE, helper.getMinThreadPoolSize());
         map.put(MAX_IDLE_THREAD_TIMEOUT_IN_SECONDS, helper.getMaxIdleThreadTimeout());
         map.put(MAX_QUEUE_SIZE, helper.getMaxQueueSize());
-        map.put(DATA_SOURCE_NAME, helper.getDataSourceName());
+        map.put(DATA_SOURCE_NAME, helper.getDataSourceJndiName());
         map.put(MAX_DATA_RETENTION_TIME_IN_SECONDS, helper.getMaxRetentionTime());
         extraProps.put("list-batch-runtime-configuration", map);
 
@@ -103,7 +103,7 @@ public class ListBatchRuntimeConfiguration
                     data[index] = helper.getMaxQueueSize();
                     break;
                 case DATA_SOURCE_NAME:
-                    data[index] = helper.getDataSourceName();
+                    data[index] = helper.getDataSourceJndiName();
                     break;
                 case MAX_DATA_RETENTION_TIME_IN_SECONDS:
                     data[index] = helper.getMaxRetentionTime();

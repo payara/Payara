@@ -39,24 +39,30 @@
  */
 package org.glassfish.batch;
 
-import org.glassfish.hk2.api.PerLookup;
+import com.ibm.batch.container.config.DatabaseConfigurationBean;
+import com.ibm.batch.container.config.GlassfishThreadPoolConfigurationBean;
+import com.ibm.batch.container.config.IBatchConfig;
+import com.ibm.batch.container.services.ServicesManager;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
+import javax.ejb.Singleton;
 import javax.inject.Inject;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Helper class to get values for Batch Runtime. Follows
- *  zero-config rules by using default values when the
- *  batch-runtime config object is not present in
- *  domain.xml
+ * zero-config rules by using default values when the
+ * batch-runtime config object is not present in
+ * domain.xml
  *
  * @author Mahesh Kannan
- *
  */
 @Service
-@PerLookup
+@Singleton
+@RunLevel(value = 15)
 public class BatchRuntimeHelper
     implements PostConstruct {
 
@@ -64,55 +70,159 @@ public class BatchRuntimeHelper
     @Optional
     BatchRuntime batchRuntimeConfiguration;
 
+    private DatabaseConfigurationBeanProxy databaseConfigurationBeanProxy;
+
+    private GlassFishThreadPoolConfigurationBeanProxy glassFishThreadPoolConfigurationBeanProxy;
+
     private JobExecutorService jobExecutorService;
 
     private PersistenceStore persistenceStore;
 
-    @Override
-    public void postConstruct() {
-        if (batchRuntimeConfiguration != null) {
-            jobExecutorService = batchRuntimeConfiguration.getJobExecutorService();
-            persistenceStore = batchRuntimeConfiguration.getPersistenceStore();
+    private AtomicBoolean initialized = new AtomicBoolean(false);
+
+    public void checkAndInitializeBatchRuntime() {
+        if (!initialized.get()) {
+            synchronized (this) {
+                if (!initialized.get()) {
+                     /*
+                    Java2DBProcessorHelper java2DBProcessorHelper = new  Java2DBProcessorHelper(this.getClass().getSimpleName());
+                    File ddlDir = new File(serverContext.getInstallRoot(), "/lib");
+
+                    //Temporary fix till batch_{db_vendor}.sql is part of the distribution
+                    File sqlFile = new File(ddlDir, "batch_derby.sql");
+                    if (sqlFile.exists()) {
+                    java2DBProcessorHelper.executeDDLStatement(ddlDir.getCanonicalPath() + CREATE_TABLE_DDL_NAME, dsName);
+                    } else {
+                    logger.log(Level.WARNING, sqlFile.getAbsolutePath() + " does NOT exist");
+                    }
+                    */
+                    initialized.set(true);
+                }
+            }
         }
     }
-    public int getVersion() {
-        return 0;
+
+    @Override
+    public void postConstruct() {
+        registerProxies();
     }
 
-    public int getMaxThreadPoolSize() {
+    public void registerProxies() {
+        try {
+            if (batchRuntimeConfiguration != null) {
+                jobExecutorService = batchRuntimeConfiguration.getJobExecutorService();
+                persistenceStore = batchRuntimeConfiguration.getPersistenceStore();
+            }
+
+            ServicesManager servicesManager = ServicesManager.getInstance();
+            IBatchConfig batchConfig = servicesManager.getBatchRuntimeConfiguration();
+
+            databaseConfigurationBeanProxy = new DatabaseConfigurationBeanProxy(this);
+            batchConfig.setDatabaseConfigurationBean(databaseConfigurationBeanProxy);
+
+            glassFishThreadPoolConfigurationBeanProxy = new GlassFishThreadPoolConfigurationBeanProxy(this);
+            batchConfig.setGlassfishThreadPoolConfigurationBean(glassFishThreadPoolConfigurationBeanProxy);
+
+        } catch (Throwable th) {
+            //TODO: Log
+        }
+    }
+
+    /*package*/
+    int getMaxThreadPoolSize() {
         return jobExecutorService != null
                 ? jobExecutorService.getMaxThreadPoolSize()
                 : Integer.valueOf(JobExecutorService.MAX_THREAD_POOL_SIZE);
     }
 
-    public int getMinThreadPoolSize() {
+    /*package*/
+    int getMinThreadPoolSize() {
         return jobExecutorService != null
                 ? jobExecutorService.getMinThreadPoolSize()
                 : Integer.valueOf(JobExecutorService.MIN_THREAD_POOL_SIZE);
     }
 
-    public int getMaxIdleThreadTimeout() {
+    /*package*/
+    int getMaxIdleThreadTimeout() {
         return jobExecutorService != null
                 ? jobExecutorService.getMaxIdleThreadTimeoutInSeconds()
                 : Integer.valueOf(JobExecutorService.MAX_IDLE_THREAD_TIMEOUT_IN_SECONDS);
     }
 
-    public int getMaxQueueSize() {
+    /*package*/
+    int getMaxQueueSize() {
         return jobExecutorService != null
                 ? jobExecutorService.getMaxQueueSize()
                 : Integer.valueOf(JobExecutorService.MAX_QUEUE_SIZE);
     }
 
-    public String getDataSourceName() {
+    /*package*/
+    String getDataSourceJndiName() {
         return persistenceStore != null
-                ? persistenceStore.getDataSourceName()
+                ? persistenceStore.getDataSourceJndiName()
                 : PersistenceStore.DEFAULT_DATA_SOURCE_NAME;
     }
 
-    public int getMaxRetentionTime() {
+    /*package*/
+    int getMaxRetentionTime() {
         return persistenceStore != null
                 ? persistenceStore.getMaxRetentionTimeInSeconds()
                 : PersistenceStore.MAX_DATA_RETENTION_TIME_IN_SECONDS;
     }
 
+    private static class DatabaseConfigurationBeanProxy
+        extends DatabaseConfigurationBean {
+
+        private BatchRuntimeHelper helper;
+
+        DatabaseConfigurationBeanProxy(BatchRuntimeHelper helper) {
+            this.helper = helper;
+        }
+
+        @Override
+        public String getSchema() {
+            helper.checkAndInitializeBatchRuntime();
+            return "APP";
+        }
+
+        @Override
+        public String getJndiName() {
+            helper.checkAndInitializeBatchRuntime();
+            return helper.getDataSourceJndiName();
+        }
+    }
+
+    private static class GlassFishThreadPoolConfigurationBeanProxy
+        extends GlassfishThreadPoolConfigurationBean {
+
+        private BatchRuntimeHelper helper;
+
+        GlassFishThreadPoolConfigurationBeanProxy(BatchRuntimeHelper helper) {
+            this.helper = helper;
+        }
+
+        @Override
+        public int getMaxQueueSize() {
+            helper.checkAndInitializeBatchRuntime();
+            return helper.getMaxQueueSize();
+        }
+
+        @Override
+        public int getMinThreadPoolSize() {
+            helper.checkAndInitializeBatchRuntime();
+            return helper.getMinThreadPoolSize();
+        }
+
+        @Override
+        public int getMaxThreadPoolSize() {
+            helper.checkAndInitializeBatchRuntime();
+            return helper.getMaxThreadPoolSize();
+        }
+
+        @Override
+        public int getIdleThreadTimeout() {
+            helper.checkAndInitializeBatchRuntime();
+            return helper.getMaxIdleThreadTimeout();
+        }
+    }
 }
