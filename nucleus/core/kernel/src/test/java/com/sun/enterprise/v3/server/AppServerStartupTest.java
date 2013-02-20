@@ -60,7 +60,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.hk2.runlevel.RunLevelController;
-import org.glassfish.hk2.runlevel.RunLevelControllerIndicator;
 import org.glassfish.hk2.runlevel.internal.RunLevelContext;
 import org.glassfish.hk2.runlevel.utilities.RunLevelControllerImpl;
 import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
@@ -186,11 +185,6 @@ public class AppServerStartupTest {
                 descriptorBuilder.to(interfaces[j]);
             }
             clazz = clazz.getSuperclass();
-        }
-
-        final RunLevelControllerIndicator runLevelControllerIndicator = service.getAnnotation(RunLevelControllerIndicator.class);
-        if (runLevelControllerIndicator != null) {
-            descriptorBuilder.has(RunLevelControllerIndicator.RUNLEVEL_CONTROLLER_NAME_META_TAG, runLevelControllerIndicator.value());
         }
 
         final Named named = service.getAnnotation(Named.class);
