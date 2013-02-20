@@ -104,55 +104,6 @@
                 </executions>
             </plugin>
         </plugins>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <configuration>
-                        <attach>false</attach>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.glassfish.build</groupId>
-                    <artifactId>glassfishbuild-maven-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>unpack-sources</id>
-                            <phase>process-resources</phase>
-                            <configuration>
-                                <attachSources>true</attachSources>
-                                <excludeArtifactIds>tools-jar</excludeArtifactIds>
-                                <excludes>javax/help/**</excludes>
-                                <includes>javax/**</includes>
-                                <excludeTransitive>true</excludeTransitive>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>attach-all-artifacts</id>
-                            <phase>verify</phase>
-                            <configuration>
-                                <pomFile>${project.build.outputDirectory}/pom.xml</pomFile>
-                            </configuration> 
-                        </execution>                        
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <configuration>
-                        <attach>false</attach>
-                        <doctitle>${project.name}</doctitle>
-                        <windowtitle>${project.name}</windowtitle>
-                        <bottom>
-<![CDATA[
-Copyright &#169; 1996-2013, <a href="http://www.oracle.com">Oracle</a> and/or its affiliates. All Rights Reserved. Use is subject to <a href="doc-files/speclicense.html" target="_top">license terms</a>.
-]]>
-                        </bottom>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>        
     </build>    
     
     <profiles>
@@ -169,6 +120,83 @@ Copyright &#169; 1996-2013, <a href="http://www.oracle.com">Oracle</a> and/or it
                 <module>javax.javaee-api</module>
                 <!--<module>javax.javaee-endorsed-api</module>-->
             </modules>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-doc-files</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <resources>
+                                        <resource>
+                                            <directory>../doc-files</directory>
+                                        </resource>
+                                    </resources>
+                                    <outputDirectory>${project.build.directory}/apidocs/doc-files</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-source-plugin</artifactId>
+                            <configuration>
+                                <attach>false</attach>
+                            </configuration>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.glassfish.build</groupId>
+                            <artifactId>glassfishbuild-maven-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <id>unpack-sources</id>
+                                    <phase>process-resources</phase>
+                                    <configuration>
+                                        <attachSources>true</attachSources>
+                                        <excludeArtifactIds>tools-jar</excludeArtifactIds>
+                                        <excludes>javax/help/**</excludes>
+                                        <includes>javax/**</includes>
+                                        <excludeTransitive>true</excludeTransitive>
+                                    </configuration>
+                                </execution>
+                                <execution>
+                                    <id>attach-all-artifacts</id>
+                                    <phase>verify</phase>
+                                    <configuration>
+                                        <pomFile>${project.build.outputDirectory}/pom.xml</pomFile>
+                                    </configuration> 
+                                </execution>                        
+                            </executions>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-javadoc-plugin</artifactId>
+                            <configuration>
+                                <attach>false</attach>
+                                <doctitle>${project.name}</doctitle>
+                                <windowtitle>${project.name}</windowtitle>
+                                <bottom>
+<![CDATA[Copyright &#169; 1996-2013,
+    <a href="http://www.oracle.com">Oracle</a>
+    and/or its affiliates. All Rights Reserved.
+    Use is subject to
+    <a href="{@docRoot}/doc-files/speclicense.html" target="_top">license terms</a>.
+]]>
+                                </bottom>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>                
+            </build>
         </profile>
     </profiles>
 </project>
