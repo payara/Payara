@@ -163,5 +163,10 @@
             <version>3.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.annotations</groupId>
+            <artifactId>logging-annotation-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>
