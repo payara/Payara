@@ -40,6 +40,7 @@
 
 package org.glassfish.concurrent.runtime;
 
+import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.security.integration.AppServSecurityContext;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.concurrent.runtime.deployer.ContextServiceConfig;
@@ -49,6 +50,7 @@ import org.glassfish.concurrent.runtime.deployer.ManagedThreadFactoryConfig;
 import org.glassfish.enterprise.concurrent.*;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.jvnet.hk2.annotations.Service;
 
@@ -84,6 +86,12 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
 
     @Inject
     InvocationManager invocationManager;
+
+    @Inject
+    Deployment deployment;
+
+    @Inject
+    Applications applications;
 
     /**
      * Returns the ConcurrentRuntime instance.
@@ -201,8 +209,9 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
 
     private ContextServiceImpl createContextService(String jndiName, String contextInfo) {
         ContextSetupProviderImpl.CONTEXT_TYPE[] contextTypes = parseContextInfo(contextInfo);
-        ContextSetupProviderImpl contextSetupProvider = new ContextSetupProviderImpl(invocationManager, securityContext,
-                contextTypes);
+        ContextSetupProviderImpl contextSetupProvider =
+                new ContextSetupProviderImpl(invocationManager, securityContext, deployment, applications,
+                                             contextTypes);
         ContextServiceImpl obj = new ContextServiceImpl(jndiName, contextSetupProvider,
                 new TransactionSetupProviderImpl());
         return obj;

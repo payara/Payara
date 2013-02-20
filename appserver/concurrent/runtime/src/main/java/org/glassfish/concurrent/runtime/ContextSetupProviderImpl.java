@@ -40,12 +40,14 @@
 
 package org.glassfish.concurrent.runtime;
 
+import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.security.integration.AppServSecurityContext;
 import com.sun.enterprise.util.Utility;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.enterprise.concurrent.spi.ContextHandle;
 import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
+import org.glassfish.internal.deployment.Deployment;
 
 import javax.enterprise.concurrent.ContextService;
 import java.util.Map;
@@ -54,6 +56,8 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     private transient AppServSecurityContext securityContext;
     private transient InvocationManager invocationManager;
+    private transient Deployment deployment;
+    private transient Applications applications;
 
     static final long serialVersionUID = 1L;
 
@@ -61,9 +65,15 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     private boolean classloading, security, naming, workArea;
 
-    public ContextSetupProviderImpl(InvocationManager invocationManager, AppServSecurityContext securityContext, CONTEXT_TYPE... contextTypes) {
+    public ContextSetupProviderImpl(InvocationManager invocationManager,
+                                    AppServSecurityContext securityContext,
+                                    Deployment deployment,
+                                    Applications applications,
+                                    CONTEXT_TYPE... contextTypes) {
         this.invocationManager = invocationManager;
         this.securityContext = securityContext;
+        this.deployment = deployment;
+        this.applications = applications;
         for (CONTEXT_TYPE contextType: contextTypes) {
             switch(contextType) {
                 case CLASSLOADING:
@@ -115,8 +125,17 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             // TODO: log a warning message saying that we got passed an unknown ContextHandle
             return null;
         }
-        // TODO: check whether the application component submitting the task is still running. Throw IllegalStateException if not.
         InvocationContext handle = (InvocationContext) contextHandle;
+        String moduleName = null;
+
+        if (handle.getInvocation() != null) {
+            moduleName = handle.getInvocation().getModuleName();
+        }
+        // Check whether the application component submitting the task is still running. Throw IllegalStateException if not.
+        if (!isApplicationEnabled(moduleName)) {
+            throw new IllegalStateException("Module " + moduleName + " is disabled");
+        }
+
         ClassLoader resetClassLoader = null;
         AppServSecurityContext resetSecurityContext = null;
         if (handle.getContextClassLoader() != null) {
@@ -150,10 +169,19 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
     }
 
+    private boolean isApplicationEnabled(String moduleId) {
+        if (moduleId != null) {
+           return deployment.isAppEnabled(applications.getApplication(moduleId));
+        }
+        return false;
+    }
+
     private void readObject(java.io.ObjectInputStream in) {
         //TODO- re-initialize these fields
         securityContext = null;
         invocationManager = null;
+        deployment = null;
+        applications = null;
     }
 }
 
