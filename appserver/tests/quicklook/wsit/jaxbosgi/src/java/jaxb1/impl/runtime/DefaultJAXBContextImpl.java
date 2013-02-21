@@ -40,7 +40,6 @@
 
 package jaxb1.impl.runtime;
 
-import javax.xml.bind.DatatypeConverter;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -49,7 +48,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.Validator;
 
 import com.sun.xml.bind.Messages;
-import com.sun.xml.bind.DatatypeConverterImpl;
 
 /**
  * This class provides the default implementation of JAXBContext.  It
@@ -80,7 +78,7 @@ public class DefaultJAXBContextImpl extends JAXBContext {
         this( GrammarInfoFacade.createGrammarInfoFacade( contextPath, classLoader ) );
 
         // initialize datatype converter with ours
-        DatatypeConverter.setDatatypeConverter(DatatypeConverterImpl.theInstance);
+        // DatatypeConverter.setDatatypeConverter(DatatypeConverterImpl.theInstance); NOT ALLOWED any more for the security reasons
     }
     
     /**

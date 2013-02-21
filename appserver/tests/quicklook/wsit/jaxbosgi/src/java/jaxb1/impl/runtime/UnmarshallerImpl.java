@@ -42,7 +42,6 @@ package jaxb1.impl.runtime;
 
 import java.io.IOException;
 
-import javax.xml.bind.DatatypeConverter;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.UnmarshallerHandler;
 import javax.xml.bind.helpers.AbstractUnmarshallerImpl;
@@ -56,7 +55,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.sun.xml.bind.DatatypeConverterImpl;
 import com.sun.xml.bind.unmarshaller.DOMScanner;
 import com.sun.xml.bind.unmarshaller.InterningXMLReader;
 import com.sun.xml.bind.validator.DOMLocator;
@@ -86,7 +84,7 @@ public class UnmarshallerImpl extends AbstractUnmarshallerImpl
         this.grammarInfo = gi;
 
         // initialize datatype converter with ours
-        DatatypeConverter.setDatatypeConverter(DatatypeConverterImpl.theInstance);
+        // DatatypeConverter.setDatatypeConverter(DatatypeConverterImpl.theInstance); NOT ALLOWED any more for the security reasons
     }
     
     public void setValidating(boolean validating) throws JAXBException {

@@ -48,7 +48,6 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
-import javax.xml.bind.DatatypeConverter;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.MarshalException;
 import javax.xml.bind.PropertyException;
@@ -67,7 +66,6 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.LocatorImpl;
 
-import com.sun.xml.bind.DatatypeConverterImpl;
 import com.sun.xml.bind.JAXBAssertionError;
 import com.sun.xml.bind.marshaller.CharacterEscapeHandler;
 import com.sun.xml.bind.marshaller.DataWriter;
@@ -108,7 +106,7 @@ public class MarshallerImpl extends AbstractMarshallerImpl
     
     public MarshallerImpl( DefaultJAXBContextImpl c ) {
         // initialize datatype converter with ours
-        DatatypeConverter.setDatatypeConverter(DatatypeConverterImpl.theInstance);
+        // DatatypeConverter.setDatatypeConverter(DatatypeConverterImpl.theInstance); NOT ALLOWED any more for the security reasons
         
         context = c;
     }

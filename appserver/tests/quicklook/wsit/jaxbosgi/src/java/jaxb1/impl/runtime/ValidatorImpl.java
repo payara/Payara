@@ -40,7 +40,6 @@
 
 package jaxb1.impl.runtime;
 
-import javax.xml.bind.DatatypeConverter;
 import javax.xml.bind.PropertyException;
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
@@ -50,7 +49,6 @@ import javax.xml.bind.helpers.DefaultValidationEventHandler;
 
 import org.xml.sax.SAXException;
 
-import com.sun.xml.bind.DatatypeConverterImpl;
 import com.sun.xml.bind.validator.Messages;
 
 /*
@@ -78,7 +76,7 @@ public class ValidatorImpl implements Validator
     
     public ValidatorImpl( DefaultJAXBContextImpl c ) {
         // initialize datatype converter with ours
-        DatatypeConverter.setDatatypeConverter(DatatypeConverterImpl.theInstance);
+        // DatatypeConverter.setDatatypeConverter(DatatypeConverterImpl.theInstance); NOT ALLOWED any more for the security reasons
         
         jaxbContext = c;
     }
