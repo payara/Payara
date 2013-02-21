@@ -57,6 +57,7 @@ import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
 
 import javax.validation.Payload;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Min;
 import java.beans.PropertyVetoException;
 import java.util.List;
 
@@ -103,6 +104,7 @@ public interface ManagedThreadFactory extends ConfigBeanProxy, Resource,
      *         {@link String }
      */
     @Attribute(defaultValue=""+Thread.NORM_PRIORITY, dataType=Integer.class)
+    @Min(value=0)
     String getThreadPriority();
 
     /**

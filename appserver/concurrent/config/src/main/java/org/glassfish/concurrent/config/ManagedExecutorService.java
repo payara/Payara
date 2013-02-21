@@ -57,6 +57,7 @@ import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
 
 import javax.validation.Payload;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Min;
 import java.beans.PropertyVetoException;
 import java.util.List;
 
@@ -103,6 +104,7 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
      *         {@link String }
      */
     @Attribute(defaultValue=""+Thread.NORM_PRIORITY, dataType=Integer.class)
+    @Min(value=0)
     String getThreadPriority();
 
 
@@ -138,6 +140,7 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
      *         {@link String }
      */
     @Attribute(defaultValue = "0", dataType = Integer.class)
+    @Min(value=0)
     String getHungAfterSeconds();
 
     /**
@@ -154,6 +157,7 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
      * @return possible object is {@link String }
      */
     @Attribute(defaultValue = "0", dataType = Integer.class)
+    @Min(value=0)
     String getCorePoolSize();
 
     /**
@@ -169,6 +173,7 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
      * @return possible object is {@link String }
      */
     @Attribute(defaultValue = ""+Integer.MAX_VALUE, dataType = Integer.class)
+    @Min(value=0)
     String getMaximumPoolSize();
 
     /**
@@ -184,6 +189,7 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
      * @return possible object is {@link String }
      */
     @Attribute(defaultValue = "60", dataType = Integer.class)
+    @Min(value=0)
     String getKeepAliveSeconds();
 
     /**
@@ -199,6 +205,7 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
      * @return possible object is {@link String }
      */
     @Attribute(defaultValue = "0", dataType = Integer.class)
+    @Min(value=0)
     String getThreadLifetimeSeconds();
 
     /**
@@ -214,6 +221,7 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
      * @return possible object is {@link String }
      */
     @Attribute(defaultValue = ""+Integer.MAX_VALUE, dataType = Integer.class)
+    @Min(value=0)
     String getTaskQueueCapacity();
 
     /**
