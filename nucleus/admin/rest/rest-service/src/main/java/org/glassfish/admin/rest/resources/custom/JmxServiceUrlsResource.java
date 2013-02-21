@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
- * 
+ *
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
- * 
+ *
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
- * 
+ *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
  * exception as provided by Oracle in the GPL Version 2 section of the License
  * file that accompanied this code.
- * 
+ *
  * Modifications:
  * If applicable, add the following below the License Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
  * If you wish your version of this file to be governed by only the CDDL or
  * only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -40,8 +40,10 @@
 
 package org.glassfish.admin.rest.resources.custom;
 
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Inject;
 import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -61,10 +63,9 @@ import org.jvnet.hk2.config.Dom;
  * @author jasonlee
  */
 public class JmxServiceUrlsResource {
-    
-        @Context
+    @Context
     protected ServiceLocator habitat;
-        
+
     public void setEntity(Dom p) {
         // ugly no-op hack. For now.
     }
@@ -74,7 +75,7 @@ public class JmxServiceUrlsResource {
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
     public ActionReportResult getJmxServiceUrl() {
         try {
-            MBeanServer mBeanServer = habitat.getService(MBeanServer.class);
+            MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
             JMXServiceURL[] urls = (JMXServiceURL[]) mBeanServer.getAttribute(getBootAMXMBeanObjectName(), "JMXServiceURLs");
             List<String> jmxUrls = new ArrayList<String>();
             for (JMXServiceURL url : urls) {
