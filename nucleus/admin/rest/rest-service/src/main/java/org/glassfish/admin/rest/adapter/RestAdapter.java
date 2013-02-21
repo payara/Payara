@@ -172,8 +172,8 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                 }
 
                 String context = getContextRoot();
-                RestLogging.restLogger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
                 if ((context != null) && (!"".equals(context)) && (adapter == null)) {
+                    RestLogging.restLogger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
                     adapter = exposeContext();
                     RestLogging.restLogger.log(Level.INFO, RestLogging.REST_INTERFACE_INITIALIZED, context);
                 }

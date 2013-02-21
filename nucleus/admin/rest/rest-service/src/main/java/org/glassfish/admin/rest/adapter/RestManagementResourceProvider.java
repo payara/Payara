@@ -63,6 +63,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.glassfish.admin.rest.JavadocWadlGeneratorConfig;
 import org.glassfish.admin.rest.RestLogging;
+import org.glassfish.admin.rest.resources.GeneratorResource;
 import org.glassfish.admin.restconnector.Constants;
 import org.glassfish.jersey.server.ServerProperties;
 
@@ -113,7 +114,9 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
         addCompositeResources(r, habitat);
 
         // uncomment if you need to run the generator:
-//        r.add(GeneratorResource.class);
+        if ("true".equals(System.getenv("REST_DEBUG"))) {
+            r.add(GeneratorResource.class);
+        }
         r.add(StatusGenerator.class);
 //        r.add(ClientGenerator.class);
 //        r.add(ModelResource.class);

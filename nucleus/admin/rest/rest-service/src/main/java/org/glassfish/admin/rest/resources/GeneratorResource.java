@@ -48,6 +48,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import org.glassfish.admin.rest.RestLogging;
+import org.glassfish.admin.rest.adapter.LocatorBridge;
 
 
 import org.glassfish.admin.rest.generator.ResourcesGenerator;
@@ -78,8 +79,8 @@ public class GeneratorResource {
         String retVal = "Code Generation done at : " + outputDir;
 
         try {
-            Domain entity = habitat.getService(Domain.class);
-            Dom dom = Dom.unwrap(entity);
+            LocatorBridge locatorBridge = habitat.getService(LocatorBridge.class);
+            Dom dom = Dom.unwrap(locatorBridge.getRemoteLocator().<Domain>getService(Domain.class));
             DomDocument document = dom.document;
             ConfigModel rootModel = dom.document.getRoot().model;
 

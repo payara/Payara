@@ -68,10 +68,7 @@ public class TextClassWriter implements ClassWriter {
         File file = new File(generationDir, className + ".java");
         boolean success = file.createNewFile();
         if (!success) {
-            file = new File(generationDir, className + Long.toString(System.currentTimeMillis())+ ".java");
-            if (!file.createNewFile()) {
-                throw new IOException("Unable to create file: " + file.getAbsolutePath()); //i18n
-            }
+            // Ignore. The generated files will be the same
         }
         FileWriter fstream = new FileWriter(file);
         writer = new BufferedWriter(fstream);
@@ -96,7 +93,7 @@ public class TextClassWriter implements ClassWriter {
         writer.write("/*\n");
         writer.write(" * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.\n");
         writer.write(" *\n");
-        writer.write(" * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.\n");
+        writer.write(" * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.\n");
         writer.write(" *\n");
         writer.write(" * The contents of this file are subject to the terms of either the GNU\n");
         writer.write(" * General Public License Version 2 only (\"GPL\") or the Common Development\n");
@@ -144,7 +141,7 @@ public class TextClassWriter implements ClassWriter {
 
 
     @Override
-    public void createCommandResourceConstructor(String commandResourceClassName, String commandName, String httpMethod, boolean linkedToParent, 
+    public void createCommandResourceConstructor(String commandResourceClassName, String commandName, String httpMethod, boolean linkedToParent,
         CommandResourceMetaData.ParameterMetaData[] commandParams, String commandDisplayName, String commandAction) {
         try {
             writer.write("   public " + commandResourceClassName + "() {\n");

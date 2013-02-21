@@ -41,7 +41,6 @@ package org.glassfish.admin.rest.resources;
 
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.admin.rest.RestService;
 import org.glassfish.admin.rest.provider.MethodMetaData;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.results.OptionsResult;
@@ -75,6 +74,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.File;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -93,6 +93,8 @@ import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.api.ActionReport.ExitCode;
 
 import static org.glassfish.admin.rest.utils.Util.eleminateHypen;
+import java.net.URLDecoder;
+import java.util.logging.Logger;
 
 /**
  * @author Ludovic Champenois ludo@java.net
@@ -442,8 +444,11 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
      */
     public void setBeanByKey(List<Dom> parentList, String id, String tag) {
         this.tagName = tag;
-
-        childID = id;
+        try {
+            childID = URLDecoder.decode(id, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            childID = id;
+        }
         if (parentList != null) { // Believe it or not, this can happen
             for (Dom c : parentList) {
                 String keyAttributeName = null;
@@ -466,7 +471,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
                 }
 
                 String keyvalue = c.attribute(keyAttributeName.toLowerCase(Locale.US));
-                if (keyvalue.equals(id)) {
+                if (keyvalue.equals(childID)) {
                     setEntity((ConfigBean) c);
                 }
             }

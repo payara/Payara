@@ -304,6 +304,9 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         cw.visitEnd();
         try {
             defineClass(this.getClass(), cw.toByteArray());
+            if ("true".equals(System.getenv("REST_DEBUG"))) {
+                debug(className, cw.toByteArray());
+            }
         } catch (Exception ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
@@ -509,18 +512,17 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         FileOutputStream fos = null;
         try {
             String rootPath = System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY)
-                    + File.separator + "lib" + File.separator;
-
-            String fileName = rootPath + clsName + ".class";
-
-            File file = new File(fileName);
-            if (file.getParentFile().mkdirs()) {
-                fos = new FileOutputStream(file);
-                fos.write(classData);
-                fos.flush();
-            } else {
-                RestLogging.restLogger.log(Level.INFO, RestLogging.DIR_CREATION_FAILED, file.getParent());
+                    + File.separator + "lib" + File.separator + "rest" + File.separator;
+            File parentDir = new File(rootPath);
+            if (!parentDir.exists()) {
+                if (!parentDir.mkdirs()) {
+                    throw new RuntimeException("Unable to create parent directory for generated class file logging");
+                }
             }
+
+            fos = new FileOutputStream(new File(parentDir, clsName + ".class"));
+            fos.write(classData);
+            fos.flush();
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {

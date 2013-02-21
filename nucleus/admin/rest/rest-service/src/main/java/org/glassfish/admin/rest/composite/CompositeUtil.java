@@ -292,8 +292,7 @@ public class CompositeUtil {
     }
 
     private Object processJsonArray(Type param0, JSONArray array) throws JSONException {
-//                    List values = new ArrayList();
-        Type type = null;
+        Type type;
         boolean isArray = false;
         if (ParameterizedType.class.isAssignableFrom(param0.getClass())) {
             type = ((ParameterizedType) param0).getActualTypeArguments()[0];
