@@ -96,12 +96,14 @@ public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
             if (serverDir == null || !serverDir.isDirectory()) {
                 throw new CommandException(strings.get("bad.node.dir",serverDir));
             }
-            String serverName = getServerDirs().getServerName();
-            HostAndPort adminAddress = getAdminAddress(serverName);
-
-            if (isRunning(adminAddress.getHost(), adminAddress.getPort()))
-                throw new CommandException(strings.get("instance.is.running",
-                        serverName));
+            
+            ArrayList<String> serverNames = getInstanceDirs(serverDir);
+            for (String serverName: serverNames) {
+                HostAndPort adminAddress = getAdminAddress(serverName);
+                if (isRunning(adminAddress.getHost(), adminAddress.getPort()))
+                    throw new CommandException(strings.get("instance.is.running",
+                            serverName));
+            }
 
             oldPassword = passwords.get("AS_ADMIN_MASTERPASSWORD");
             if (oldPassword == null) {
