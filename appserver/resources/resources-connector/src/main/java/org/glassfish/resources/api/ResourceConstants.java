@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -122,7 +122,7 @@ public interface ResourceConstants {
      */
     public static String DATASOURCE_DEFINITION_JNDINAME_PREFIX="__datasource_definition/";
     public static String MAILSESSION_DEFINITION_JNDINAME_PREFIX="__mailsession_definition/";
-    public static String CONNECTOR_RESOURCE_DEFINITION_JNDINAME_PREFIX="__connector_resource_definition/";
+    public static String CONNECTION_FACTORY_DEFINITION_JNDINAME_PREFIX="__connection_factory_definition/";
     public static String JMS_CONNECTION_FACTORY_DEFINITION_JNDINAME_PREFIX = "__jms_connection_factory_definition/";
     public static String JMS_DESTINATION_DEFINITION_JNDINAME_PREFIX = "__jms_destination_definition/";
     public static String ADMINISTERED_OBJECT_DEFINITION_JNDINAME_PREFIX="__administered_object_definition/";

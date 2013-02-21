@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -170,7 +170,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
                                "addMessageDestination");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addResourceDescriptor");
-        registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.CONNECTION_FACTORY), ConnectionFactoryDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.ADMINISTERED_OBJECT), AdministeredObjectDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addResourceDescriptor");
@@ -313,7 +313,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         // message-destination*
         writeMessageDestinations(appNode, application.getMessageDestinations().iterator());
 
-        // all descriptors (includes DSD, MSD, JMSCFD, JMSDD,AOD, CRD)*
+        // all descriptors (includes DSD, MSD, JMSCFD, JMSDD,AOD, CFD)*
         writeResourceDescriptors(appNode, application.getAllResourcesDescriptors().iterator());
 
         return appNode;

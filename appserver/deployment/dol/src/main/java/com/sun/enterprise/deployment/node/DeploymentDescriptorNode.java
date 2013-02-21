@@ -964,7 +964,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
 
         DataSourceDefinitionNode dataSourceDefinitionNode = new DataSourceDefinitionNode();
         MailSessionNode mailSessionNode = new MailSessionNode();
-        ConnectorResourceDefinitionNode connectorResourceDefinitionNode = new ConnectorResourceDefinitionNode();
+        ConnectionFactoryDefinitionNode connectionFactoryDefinitionNode = new ConnectionFactoryDefinitionNode();
         AdministeredObjectDefinitionNode administeredObjectDefinitionNode = new AdministeredObjectDefinitionNode();
         JMSConnectionFactoryDefinitionNode jmsConnectionFactoryDefinitionNode = new JMSConnectionFactoryDefinitionNode();
         JMSDestinationDefinitionNode jmsDestinationDefinitionNode = new JMSDestinationDefinitionNode();
@@ -978,9 +978,9 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
             } else if(descriptor.getResourceType().equals(JavaEEResourceType.MSD)) {
                 MailSessionDescriptor next = (MailSessionDescriptor)descriptor;
                 mailSessionNode.writeDescriptor(parentNode, TagNames.MAIL_SESSION, next);
-            } else if(descriptor.getResourceType().equals(JavaEEResourceType.CRD)) {
-                ConnectorResourceDefinitionDescriptor next = (ConnectorResourceDefinitionDescriptor)descriptor;
-                connectorResourceDefinitionNode.writeDescriptor(parentNode, TagNames.CONNECTOR_RESOURCE, next);
+            } else if(descriptor.getResourceType().equals(JavaEEResourceType.CFD)) {
+                ConnectionFactoryDefinitionDescriptor next = (ConnectionFactoryDefinitionDescriptor)descriptor;
+                connectionFactoryDefinitionNode.writeDescriptor(parentNode, TagNames.CONNECTION_FACTORY, next);
             } else if(descriptor.getResourceType().equals(JavaEEResourceType.AODD)) {
                 AdministeredObjectDefinitionDescriptor next = (AdministeredObjectDefinitionDescriptor)descriptor;
                 administeredObjectDefinitionNode.writeDescriptor(parentNode, TagNames.ADMINISTERED_OBJECT, next);

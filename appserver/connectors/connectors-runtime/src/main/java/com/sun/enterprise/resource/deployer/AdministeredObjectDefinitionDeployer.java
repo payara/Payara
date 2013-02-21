@@ -265,7 +265,7 @@ public class AdministeredObjectDefinitionDeployer implements ResourceDeployer {
         }
 
         public String getResAdapter() {
-            return desc.getResourceAdapterName();
+            return desc.getResourceAdapter();
         }
 
         public void setResAdapter(String value) throws PropertyVetoException {

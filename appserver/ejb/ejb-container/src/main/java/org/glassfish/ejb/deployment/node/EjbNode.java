@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,7 +49,7 @@ import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
 import com.sun.enterprise.deployment.RoleReference;
 import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
 import com.sun.enterprise.deployment.node.AdministeredObjectDefinitionNode;
-import com.sun.enterprise.deployment.node.ConnectorResourceDefinitionNode;
+import com.sun.enterprise.deployment.node.ConnectionFactoryDefinitionNode;
 import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
 import com.sun.enterprise.deployment.node.JMSConnectionFactoryDefinitionNode;
 import com.sun.enterprise.deployment.node.JMSDestinationDefinitionNode;
@@ -99,7 +99,7 @@ public abstract class EjbNode<S extends EjbDescriptor> extends DisplayableCompon
                                                              ResourceRefNode.class, "addResourceReferenceDescriptor");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addResourceDescriptor");
-        registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.CONNECTION_FACTORY), ConnectionFactoryDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.ADMINISTERED_OBJECT), AdministeredObjectDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addResourceDescriptor");

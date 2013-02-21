@@ -56,7 +56,7 @@ public class AdministeredObjectDefinitionDescriptor extends ResourceDescriptor {
     private String name ;
     private String interfaceName;
     private String className;
-    private String resourceAdapterName;
+    private String resourceAdapter;
     private Properties properties = new Properties();
     
     private String resourceId;
@@ -92,12 +92,12 @@ public class AdministeredObjectDefinitionDescriptor extends ResourceDescriptor {
         this.className = className;
     }
 
-    public String getResourceAdapterName() {
-        return resourceAdapterName;
+    public String getResourceAdapter() {
+        return resourceAdapter;
     }
 
-    public void setResourceAdapterName(String resourceAdapterName) {
-        this.resourceAdapterName = resourceAdapterName;
+    public void setResourceAdapter(String resourceAdapter) {
+        this.resourceAdapter = resourceAdapter;
     }
 
     public String getResourceId() {
@@ -149,7 +149,7 @@ public class AdministeredObjectDefinitionDescriptor extends ResourceDescriptor {
             !(
                 DOLUtils.equals(getInterfaceName(), other.getInterfaceName()) &&
                 DOLUtils.equals(getClassName(), other.getClassName()) &&
-                DOLUtils.equals(getResourceAdapterName(), other.getResourceAdapterName()) &&
+                DOLUtils.equals(getResourceAdapter(), other.getResourceAdapter()) &&
                 properties.equals(other.properties)
             );
     }

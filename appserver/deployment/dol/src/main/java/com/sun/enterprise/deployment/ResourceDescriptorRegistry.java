@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,14 +61,14 @@ public class ResourceDescriptorRegistry implements Serializable {
     This map contains the list of descriptors for where a particular annotation is not applicable. In future update
     this list for non applicable descriptor.
 
-    e.g. ConnectorResourceDescriptor and AdminObjectDescriptor is not allowed to define at Application Client Descriptor.
+    e.g. ConnectionFactoryDescriptor and AdminObjectDescriptor is not allowed to define at Application Client Descriptor.
      */
     static {
         invalidResourceTypeScopes.put(JavaEEResourceType.MSD,new HashSet<Class>());
         invalidResourceTypeScopes.put(JavaEEResourceType.DSD,new HashSet<Class>());
         invalidResourceTypeScopes.put(JavaEEResourceType.JMSCFDD,new HashSet<Class>());
         invalidResourceTypeScopes.put(JavaEEResourceType.JMSDD,new HashSet<Class>());
-        invalidResourceTypeScopes.put(JavaEEResourceType.CRD,new HashSet<Class>(Arrays.asList(new Class[]{ApplicationClientDescriptor.class})));
+        invalidResourceTypeScopes.put(JavaEEResourceType.CFD,new HashSet<Class>(Arrays.asList(new Class[]{ApplicationClientDescriptor.class})));
         invalidResourceTypeScopes.put(JavaEEResourceType.AODD,new HashSet<Class>(Arrays.asList(new Class[]{ApplicationClientDescriptor.class})));
 
     }
@@ -80,7 +80,7 @@ public class ResourceDescriptorRegistry implements Serializable {
             = new HashMap<JavaEEResourceType,Set<ResourceDescriptor>>();
 
     /**
-     * This method returns all descriptors assosiated with the app.
+     * This method returns all descriptors associated with the app.
      * @return
      */
     public Set<ResourceDescriptor> getAllResourcesDescriptors() {
@@ -88,7 +88,7 @@ public class ResourceDescriptorRegistry implements Serializable {
         Collections.unmodifiableSet(allResourceDescriptors);
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.DSD));
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.MSD));
-        allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.CRD));
+        allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.CFD));
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.AODD));
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.JMSCFDD));
         allResourceDescriptors.addAll(this.getResourceDescriptors(JavaEEResourceType.JMSDD));

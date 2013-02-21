@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -677,10 +677,10 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     @Override
     public Set<ResourceDescriptor> getResourceDescriptors(JavaEEResourceType type) {
         switch(type) {
-            case CRD:
+            case CFD:
                 throw new UnsupportedOperationException(localStrings.getLocalString(
-                            "enterprise.deployment.exceptionappclientnotsupportconnectorresourcedefinition",
-                            "The application client [{0}] do not support connector resource definitions",
+                            "enterprise.deployment.exceptionappclientnotsupportconnectionfactorydefinition",
+                            "The application client [{0}] do not support connection factory definitions",
                                 new Object[] {getName()}));
             case AODD:
                 throw new UnsupportedOperationException(localStrings.getLocalString(
@@ -695,10 +695,10 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     @Override
     public void addResourceDescriptor(ResourceDescriptor descriptor) {
 
-        if(descriptor.getResourceType().equals(JavaEEResourceType.CRD)){
+        if(descriptor.getResourceType().equals(JavaEEResourceType.CFD)){
             throw new UnsupportedOperationException(localStrings.getLocalString(
-            			    "enterprise.deployment.exceptionappclientnotsupportconnectorresourcedefinition",
-            			    "The application client [{0}] do not support connector resource definitions",
+            			    "enterprise.deployment.exceptionappclientnotsupportconnectionfactorydefinition",
+            			    "The application client [{0}] do not support connection factory definitions",
             		            new Object[] {getName()}));
         } else if (descriptor.getResourceType().equals(JavaEEResourceType.AODD)) {
             throw new UnsupportedOperationException(localStrings.getLocalString(
@@ -714,10 +714,10 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
 
     @Override
     public void removeResourceDescriptor(ResourceDescriptor descriptor) {
-        if(descriptor.getResourceType().equals(JavaEEResourceType.CRD)){
+        if(descriptor.getResourceType().equals(JavaEEResourceType.CFD)){
             throw new UnsupportedOperationException(localStrings.getLocalString(
-            			    "enterprise.deployment.exceptionappclientnotsupportconnectorresourcedefinition",
-            			    "The application client [{0}] do not support connector resource definitions",
+            			    "enterprise.deployment.exceptionappclientnotsupportconnectionfactorydefinition",
+            			    "The application client [{0}] do not support connection factory definitions",
             		            new Object[] {getName()}));
 
         } else if (descriptor.getResourceType().equals(JavaEEResourceType.AODD)) {

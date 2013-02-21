@@ -314,10 +314,10 @@ public class ComponentEnvManagerImpl
         Set<ResourceDescriptor> msds =env.getResourceDescriptors(JavaEEResourceType.MSD);
         Set<ResourceDescriptor> jmsddds = env.getResourceDescriptors(JavaEEResourceType.JMSDD);
         if(!(env instanceof ApplicationClientDescriptor)) {
-            Set<ResourceDescriptor> ccrdds = env.getResourceDescriptors(JavaEEResourceType.CRD);
-            allDescriptors.addAll(ccrdds);
+            Set<ResourceDescriptor> cfdds = env.getResourceDescriptors(JavaEEResourceType.CFD);
+            allDescriptors.addAll(cfdds);
         } else {
-            _logger.fine("Do not support connector-resource in client module.");
+            _logger.fine("Do not support connection-factory in client module.");
         }
         if(!(env instanceof ApplicationClientDescriptor)) {
            Set<ResourceDescriptor> aodd = env.getResourceDescriptors(JavaEEResourceType.AODD);
@@ -428,9 +428,9 @@ public class ComponentEnvManagerImpl
                         }
                     }
                     break;
-                case CRD:
-                    ConnectorResourceDefinitionDescriptor connectorResourceDefinitionDescriptor = (ConnectorResourceDefinitionDescriptor)descriptor;
-                    undepoyResource(connectorResourceDefinitionDescriptor);
+                case CFD:
+                    ConnectionFactoryDefinitionDescriptor connectionFactoryDefinitionDescriptor = (ConnectionFactoryDefinitionDescriptor)descriptor;
+                    undepoyResource(connectionFactoryDefinitionDescriptor);
                     break;
                 case JMSCFDD:
                     JMSConnectionFactoryDefinitionDescriptor jmsConnectionFactoryDefinitionDescriptor = (JMSConnectionFactoryDefinitionDescriptor)descriptor;

@@ -2202,11 +2202,11 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                          throw new IllegalArgumentException(localStrings.getLocalString(
                                  "web.deployment.exceptionconflictdatasourcedefinition",
                                  "There are more than one datasource definitions defined in web fragments with the same name, but not overrided in web.xml"));
-                     } else if (env instanceof WebBundleDescriptor && javaEEResourceType.equals(JavaEEResourceType.CRD) &&
-                             ((WebBundleDescriptor) env).conflictConnectorResourceDefinition) {
+                     } else if (env instanceof WebBundleDescriptor && javaEEResourceType.equals(JavaEEResourceType.CFD) &&
+                             ((WebBundleDescriptor) env).conflictConnectionFactoryDefinition) {
                          throw new IllegalArgumentException(localStrings.getLocalString(
-                                 "web.deployment.exceptionconflictconnectorresourcedefinition",
-                                 "There are more than one connector resource definitions defined in web fragments with the same name, but not overrided in web.xml"));
+                                 "web.deployment.exceptionconflictconnectionfactorydefinition",
+                                 "There are more than one connection factory definitions defined in web fragments with the same name, but not overrided in web.xml"));
                      } else if (env instanceof WebBundleDescriptor && javaEEResourceType.equals(JavaEEResourceType.JMSCFDD) &&
                              ((WebBundleDescriptor) env).conflictJMSConnectionFactoryDefinition) {
                          throw new IllegalArgumentException(localStrings.getLocalString(
@@ -2220,7 +2220,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
                      } else {
                          if(desc.getResourceType().equals(JavaEEResourceType.DSD) ||
                                  desc.getResourceType().equals(JavaEEResourceType.MSD) ||
-                                 desc.getResourceType().equals(JavaEEResourceType.CRD) ||
+                                 desc.getResourceType().equals(JavaEEResourceType.CFD) ||
                                  desc.getResourceType().equals(JavaEEResourceType.AODD) ||
                                  desc.getResourceType().equals(JavaEEResourceType.JMSCFDD) ||
                                  desc.getResourceType().equals(JavaEEResourceType.JMSDD))

@@ -47,7 +47,7 @@ import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
 import com.sun.enterprise.deployment.node.AdministeredObjectDefinitionNode;
-import com.sun.enterprise.deployment.node.ConnectorResourceDefinitionNode;
+import com.sun.enterprise.deployment.node.ConnectionFactoryDefinitionNode;
 import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
 import com.sun.enterprise.deployment.node.JMSConnectionFactoryDefinitionNode;
 import com.sun.enterprise.deployment.node.JMSDestinationDefinitionNode;
@@ -68,7 +68,6 @@ import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
-import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.ejb.deployment.EjbTagNames;
 import org.w3c.dom.Node;
 
@@ -91,7 +90,7 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
         registerElementHandler(new XMLElement(TagNames.PRE_DESTROY), LifecycleCallbackNode.class, "addPreDestroyDescriptor");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addResourceDescriptor");
-        registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.CONNECTION_FACTORY), ConnectionFactoryDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.ADMINISTERED_OBJECT), AdministeredObjectDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addResourceDescriptor");

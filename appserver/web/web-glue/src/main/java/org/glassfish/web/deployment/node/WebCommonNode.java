@@ -119,7 +119,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
         registerElementHandler(new XMLElement(TagNames.POST_CONSTRUCT), LifecycleCallbackNode.class, "addPostConstructDescriptor");
         registerElementHandler(new XMLElement(TagNames.PRE_DESTROY), LifecycleCallbackNode.class, "addPreDestroyDescriptor");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addResourceDescriptor");
-        registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addResourceDescriptor");
+        registerElementHandler(new XMLElement(TagNames.CONNECTION_FACTORY), ConnectionFactoryDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.JMS_CONNECTION_FACTORY), JMSConnectionFactoryDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.JMS_DESTINATION), JMSDestinationDefinitionNode.class, "addResourceDescriptor");
         registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addResourceDescriptor");
@@ -408,7 +408,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
         // pre-destroy
         writeLifeCycleCallbackDescriptors(jarNode, TagNames.PRE_DESTROY, webBundleDesc.getPreDestroyDescriptors());
 
-        // all descriptors (includes DSD, MSD, JMSCFD, JMSDD,AOD, CRD)*
+        // all descriptors (includes DSD, MSD, JMSCFD, JMSDD,AOD, CFD)*
         writeResourceDescriptors(jarNode, webBundleDesc.getAllResourcesDescriptors().iterator());
 
         // message-destination*

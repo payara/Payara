@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,26 +42,32 @@ package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.util.DOLUtils;
 import java.util.Properties;
+import javax.resource.spi.TransactionSupport.TransactionSupportLevel;
 
 import static org.glassfish.deployment.common.JavaEEResourceType.*;
 
 /**
  * @author Dapeng Hu
  */
-public class ConnectorResourceDefinitionDescriptor extends ResourceDescriptor {
+public class ConnectionFactoryDefinitionDescriptor extends ResourceDescriptor {
     private static final long serialVersionUID = 9173518958930316558L;
 
     // the <description> element will be processed by base class
     private String name ;
     private String className;
+    private String resourceAdapter;
+    private String transactionSupport=TransactionSupportLevel.NoTransaction.toString();
+    private boolean isTransactionSupportSet = false;
+    private int maxPoolSize=-1;
+    private int minPoolSize=-1;
     private Properties properties = new Properties();
     
     private static final String JAVA_URL = "java:";
     private static final String JAVA_COMP_URL = "java:comp/";
     
-	public ConnectorResourceDefinitionDescriptor() {
+	public ConnectionFactoryDefinitionDescriptor() {
         super();
-        super.setResourceType(CRD);
+        super.setResourceType(CFD);
 	}
 	
     public String getName() {
@@ -79,7 +85,44 @@ public class ConnectorResourceDefinitionDescriptor extends ResourceDescriptor {
 
 	public void setClassName(String className) {
 		this.className = className;
-	}
+    }
+
+    public String getResourceAdapter() {
+        return resourceAdapter;
+    }
+
+    public void setResourceAdapter(String resourceAdapter) {
+        this.resourceAdapter = resourceAdapter;
+    }
+
+    public String getTransactionSupport() {
+        return transactionSupport;
+    }
+
+    public void setTransactionSupport( String transactionSupport) {
+        isTransactionSupportSet=true;
+        this.transactionSupport = transactionSupport;
+    }
+
+    public int getMaxPoolSize() {
+        return maxPoolSize;
+    }
+
+    public void setMaxPoolSize(int maxPoolSize) {
+        this.maxPoolSize = maxPoolSize;
+    }
+
+    public int getMinPoolSize() {
+        return minPoolSize;
+    }
+
+    public void setMinPoolSize(int minPoolSize) {
+        this.minPoolSize = minPoolSize;
+    }
+
+    public boolean isTransactionSupportSet() {
+        return isTransactionSupportSet;
+    }
 
 	public void addProperty(String key, String value){
         properties.put(key, value);
@@ -93,8 +136,8 @@ public class ConnectorResourceDefinitionDescriptor extends ResourceDescriptor {
     }
 
     public boolean equals(Object object) {
-        if (object instanceof ConnectorResourceDefinitionDescriptor) {
-        	ConnectorResourceDefinitionDescriptor reference = (ConnectorResourceDefinitionDescriptor) object;
+        if (object instanceof ConnectionFactoryDefinitionDescriptor) {
+        	ConnectionFactoryDefinitionDescriptor reference = (ConnectionFactoryDefinitionDescriptor) object;
             return getJavaName(this.getName()).equals(getJavaName(reference.getName()));
         }
         return false;
@@ -113,11 +156,11 @@ public class ConnectorResourceDefinitionDescriptor extends ResourceDescriptor {
         return theName;
     }
 
-    public void addConnectorResourcePropertyDescriptor(ResourcePropertyDescriptor propertyDescriptor){
+    public void addConnectionFactoryPropertyDescriptor(ResourcePropertyDescriptor propertyDescriptor){
         properties.put(propertyDescriptor.getName(), propertyDescriptor.getValue());
     }
 
-    public boolean isConflict(ConnectorResourceDefinitionDescriptor other) {
+    public boolean isConflict(ConnectionFactoryDefinitionDescriptor other) {
         return (getName().equals(other.getName())) &&
             !(
                 DOLUtils.equals(getClassName(), other.getClassName()) &&

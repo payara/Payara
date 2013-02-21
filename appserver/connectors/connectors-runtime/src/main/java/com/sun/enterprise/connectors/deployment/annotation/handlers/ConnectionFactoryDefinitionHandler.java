@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,7 +53,7 @@ import org.jvnet.hk2.annotations.Service;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.AroundTimeout;
 import javax.interceptor.Interceptors;
-import javax.resource.ConnectorResourceDefinition;
+import javax.resource.ConnectionFactoryDefinition;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -65,22 +65,22 @@ import java.util.logging.Level;
  * @author Dapeng Hu
  */
 @Service
-@AnnotationHandlerFor(ConnectorResourceDefinition.class)
-public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler {
+@AnnotationHandlerFor(ConnectionFactoryDefinition.class)
+public class ConnectionFactoryDefinitionHandler extends AbstractResourceHandler {
 
     
-    public ConnectorResourceDefinitionHandler() {
+    public ConnectionFactoryDefinitionHandler() {
     }
 
 
     @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
-        ConnectorResourceDefinition connectorResourceDefnAn = (ConnectorResourceDefinition)ainfo.getAnnotation();
-        return processAnnotation(connectorResourceDefnAn, ainfo, rcContexts);
+        ConnectionFactoryDefinition connectorFactoryDefnAn = (ConnectionFactoryDefinition)ainfo.getAnnotation();
+        return processAnnotation(connectorFactoryDefnAn, ainfo, rcContexts);
     }
 
-    protected HandlerProcessingResult processAnnotation(ConnectorResourceDefinition connectorResourceDefnAn, AnnotationInfo aiInfo,
+    protected HandlerProcessingResult processAnnotation(ConnectionFactoryDefinition connectorFactoryDefnAn, AnnotationInfo aiInfo,
                                                         ResourceContainerContext[] rcContexts)  
               throws AnnotationProcessorException {
         
@@ -93,10 +93,10 @@ public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler 
             if (!canProcessAnnotation(annotatedClass, ejbClass, warClass, context)){
                 return getDefaultProcessedResult();
             }
-            Set<ResourceDescriptor> crdDescs = context.getResourceDescriptors(JavaEEResourceType.CRD);
-            ConnectorResourceDefinitionDescriptor desc = createDescriptor(connectorResourceDefnAn);
-            if(isDefinitionAlreadyPresent(crdDescs, desc)){
-                merge(crdDescs, connectorResourceDefnAn);
+            Set<ResourceDescriptor> cfdDescs = context.getResourceDescriptors(JavaEEResourceType.CFD);
+            ConnectionFactoryDefinitionDescriptor desc = createDescriptor(connectorFactoryDefnAn);
+            if(isDefinitionAlreadyPresent(cfdDescs, desc)){
+                merge(cfdDescs, connectorFactoryDefnAn);
             }else{
                 context.addResourceDescriptor(desc);
             }
@@ -124,7 +124,7 @@ public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler 
                     context instanceof EjbContext ||
                     context instanceof EjbInterceptorContext )) {
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Ignoring @ConnectorResourceDefinition annotation processing as the class is" +
+                    logger.log(Level.FINEST, "Ignoring @ConnectionFactoryDefinition annotation processing as the class is" +
                             "an EJB class and context is not one of EJBContext");
                 }
                 return false;
@@ -135,7 +135,7 @@ public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler 
             EjbDescriptor[] ejbDescriptor = ejbBundleDescriptor.getEjbByClassName(annotatedClass.getName());
             if (ejbDescriptor == null || ejbDescriptor.length == 0) {
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Ignoring @ConnectorResourceDefinition annotation processing as the class " +
+                    logger.log(Level.FINEST, "Ignoring @ConnectionFactoryDefinition annotation processing as the class " +
                             "[ " + annotatedClass + " ] is" +
                             "not an EJB class and the context is EJBContext");
                 }
@@ -145,7 +145,7 @@ public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler 
             if (!(context instanceof WebBundleContext || context instanceof WebComponentsContext
                     || context instanceof WebComponentContext )) {
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Ignoring @ConnectorResourceDefinition annotation processing as the class is" +
+                    logger.log(Level.FINEST, "Ignoring @ConnectionFactoryDefinition annotation processing as the class is" +
                             "an Web class and context is not one of WebContext");
                 }
                 return false;
@@ -160,14 +160,14 @@ public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler 
                     EjbDescriptor[] ejbDescs = ejbBundleDesc.getEjbByClassName(annotatedClass.getName());
                     if(ejbDescs != null && ejbDescs.length > 0){
                         if (logger.isLoggable(Level.FINEST)) {
-                            logger.log(Level.FINEST, "Ignoring @ConnectorResourceDefinition annotation processing as the class " +
+                            logger.log(Level.FINEST, "Ignoring @ConnectionFactoryDefinition annotation processing as the class " +
                                     "[ " + annotatedClass + " ] is" +
                                     "not an Web class and the context is WebContext");
                         }
                         return false;
                     }else if(ejbBundleDesc.getInterceptorByClassName(annotatedClass.getName()) != null){
                             if (logger.isLoggable(Level.FINEST)) {
-                                logger.log(Level.FINEST, "Ignoring @ConnectorResourceDefinition annotation processing " +
+                                logger.log(Level.FINEST, "Ignoring @ConnectionFactoryDefinition annotation processing " +
                                         "as the class " +
                                         "[ " + annotatedClass + " ] is" +
                                         "not an Web class and the context is WebContext");
@@ -182,7 +182,7 @@ public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler 
                                         annotation.annotationType().equals(AroundTimeout.class) ||
                                         annotation.annotationType().equals(Interceptors.class)) {
                                     if (logger.isLoggable(Level.FINEST)) {
-                                        logger.log(Level.FINEST, "Ignoring @ConnectorResourceDefinition annotation processing " +
+                                        logger.log(Level.FINEST, "Ignoring @ConnectionFactoryDefinition annotation processing " +
                                                 "as the class " +
                                                 "[ " + annotatedClass + " ] is" +
                                                 "not an Web class, an interceptor and the context is WebContext");
@@ -199,9 +199,9 @@ public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler 
     }
 
     
-    private boolean isDefinitionAlreadyPresent(Set<ResourceDescriptor> crdDescs,  ConnectorResourceDefinitionDescriptor desc) {
+    private boolean isDefinitionAlreadyPresent(Set<ResourceDescriptor> cfdDescs,  ConnectionFactoryDefinitionDescriptor desc) {
         boolean result = false ;
-        for(ResourceDescriptor descriptor : crdDescs){
+        for(ResourceDescriptor descriptor : cfdDescs){
             if(descriptor.equals(desc)){
                 result = true;
                 break;
@@ -210,15 +210,11 @@ public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler 
         return result;
     }
 
-    private void merge(Set<ResourceDescriptor> crdDescs, ConnectorResourceDefinition defn) {
+    private void merge(Set<ResourceDescriptor> cfdDescs, ConnectionFactoryDefinition defn) {
 
-        for (ResourceDescriptor orgDesc : crdDescs) {
-            ConnectorResourceDefinitionDescriptor desc = (ConnectorResourceDefinitionDescriptor)orgDesc;
+        for (ResourceDescriptor orgDesc : cfdDescs) {
+            ConnectionFactoryDefinitionDescriptor desc = (ConnectionFactoryDefinitionDescriptor)orgDesc;
             if (desc.getName().equals(defn.name())) {
-
-                if (desc.getClassName() == null) {
-                    desc.setClassName(defn.className());
-                }
 
                 if (desc.getDescription() == null) {
                     if (defn.description() != null && !defn.description().equals("")) {
@@ -226,8 +222,26 @@ public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler 
                     }
                 }
 
-                //TODO: add more properties here
-                
+                if (desc.getClassName() == null || desc.getClassName().trim().equals("")) {
+                    desc.setClassName(defn.className());
+                }
+
+                if (desc.getResourceAdapter() == null || desc.getResourceAdapter().trim().equals("")) {
+                    desc.setResourceAdapter(defn.resourceAdapter());
+                }
+
+                if (!desc.isTransactionSupportSet()) {
+                    desc.setTransactionSupport(defn.transactionSupport().toString());
+                }
+
+                if (desc.getMaxPoolSize() < 0) {
+                    desc.setMaxPoolSize(defn.maxPoolSize());
+                }
+
+                if (desc.getMinPoolSize() < 0) {
+                    desc.setMinPoolSize(defn.minPoolSize());
+                }
+
                 Properties properties = desc.getProperties();
                 String[] defnProperties = defn.properties();
 
@@ -251,19 +265,21 @@ public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler 
 
     }
 
-    private ConnectorResourceDefinitionDescriptor createDescriptor(ConnectorResourceDefinition defn) {
+    private ConnectionFactoryDefinitionDescriptor createDescriptor(ConnectionFactoryDefinition defn) {
 
-        ConnectorResourceDefinitionDescriptor desc = new ConnectorResourceDefinitionDescriptor();
+        ConnectionFactoryDefinitionDescriptor desc = new ConnectionFactoryDefinitionDescriptor();
         desc.setMetadataSource(MetadataSource.ANNOTATION);
 
         desc.setName(defn.name());
+        desc.setResourceAdapter(defn.resourceAdapter());
         desc.setClassName(defn.className());
+        desc.setTransactionSupport(defn.transactionSupport().toString());
+        desc.setMaxPoolSize(defn.maxPoolSize());
+        desc.setMinPoolSize(defn.minPoolSize());
 
         if (defn.description() != null && !defn.description().equals("")) {
             desc.setDescription(defn.description());
         }
-
-        //TODO: add more properties here
 
         if (defn.properties() != null) {
             Properties properties = desc.getProperties();

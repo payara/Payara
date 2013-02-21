@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,36 +39,44 @@
  */
 package com.sun.enterprise.deployment.node;
 
-import com.sun.enterprise.deployment.ConnectorResourceDefinitionDescriptor;
+import com.sun.enterprise.deployment.ConnectionFactoryDefinitionDescriptor;
 import com.sun.enterprise.deployment.xml.TagNames;
 import org.w3c.dom.Node;
 
 import java.util.Map;
 
-public class ConnectorResourceDefinitionNode extends DeploymentDescriptorNode<ConnectorResourceDefinitionDescriptor> {
-    public final static XMLElement tag = new XMLElement(TagNames.CONNECTOR_RESOURCE);
+public class ConnectionFactoryDefinitionNode extends DeploymentDescriptorNode<ConnectionFactoryDefinitionDescriptor> {
+    public final static XMLElement tag = new XMLElement(TagNames.CONNECTION_FACTORY);
     
-    private ConnectorResourceDefinitionDescriptor descriptor = null;
+    private ConnectionFactoryDefinitionDescriptor descriptor = null;
     
-    public ConnectorResourceDefinitionNode() {
+    public ConnectionFactoryDefinitionNode() {
         registerElementHandler(new XMLElement(TagNames.RESOURCE_PROPERTY), ResourcePropertyNode.class,
-                "addConnectorResourcePropertyDescriptor");
+                "addConnectionFactoryPropertyDescriptor");
     }
 
     protected Map<String, String> getDispatchTable() {
         // no need to be synchronized for now
         Map<String, String> table = super.getDispatchTable();
-        table.put(TagNames.CONNECTOR_RESOURCE_NAME, "setName");
-        table.put(TagNames.CONNECTOR_RESOURCE_CLASS_NAME, "setClassName");
+        table.put(TagNames.CONNECTION_FACTORY_NAME, "setName");
+        table.put(TagNames.CONNECTION_FACTORY_CLASS_NAME, "setClassName");
+        table.put(TagNames.CONNECTION_FACTORY_ADAPTER, "setResourceAdapter");
+        table.put(TagNames.CONNECTION_FACTORY_TRANSACTION_SUPPORT, "setTransactionSupport");
+        table.put(TagNames.CONNECTION_FACTORY_MAX_POOL_SIZE, "setMaxPoolSize");
+        table.put(TagNames.CONNECTION_FACTORY_MIN_POOL_SIZE, "setMinPoolSize");
 
         return table;
     }
     
-    public Node writeDescriptor(Node parent, String nodeName, ConnectorResourceDefinitionDescriptor desc) {
+    public Node writeDescriptor(Node parent, String nodeName, ConnectionFactoryDefinitionDescriptor desc) {
         Node node = appendChild(parent, nodeName);
-        appendTextChild(node, TagNames.CONNECTOR_RESOURCE_DESCRIPTION, desc.getDescription());
-        appendTextChild(node, TagNames.CONNECTOR_RESOURCE_NAME, desc.getName());
-        appendTextChild(node, TagNames.CONNECTOR_RESOURCE_CLASS_NAME, desc.getClassName());
+        appendTextChild(node, TagNames.CONNECTION_FACTORY_DESCRIPTION, desc.getDescription());
+        appendTextChild(node, TagNames.CONNECTION_FACTORY_NAME, desc.getName());
+        appendTextChild(node, TagNames.CONNECTION_FACTORY_ADAPTER, desc.getResourceAdapter());
+        appendTextChild(node, TagNames.CONNECTION_FACTORY_CLASS_NAME, desc.getClassName());
+        appendTextChild(node, TagNames.CONNECTION_FACTORY_TRANSACTION_SUPPORT, desc.getTransactionSupport());
+        appendTextChild(node, TagNames.CONNECTION_FACTORY_MAX_POOL_SIZE, desc.getMaxPoolSize());
+        appendTextChild(node, TagNames.CONNECTION_FACTORY_MIN_POOL_SIZE, desc.getMinPoolSize());
         
         ResourcePropertyNode propertyNode = new ResourcePropertyNode();
         propertyNode.writeDescriptor(node, desc);
@@ -76,9 +84,9 @@ public class ConnectorResourceDefinitionNode extends DeploymentDescriptorNode<Co
         return node;
     }
     
-    public ConnectorResourceDefinitionDescriptor getDescriptor() {
+    public ConnectionFactoryDefinitionDescriptor getDescriptor() {
         if(descriptor == null){
-            descriptor = new ConnectorResourceDefinitionDescriptor();
+            descriptor = new ConnectionFactoryDefinitionDescriptor();
         }
         return descriptor;
     }

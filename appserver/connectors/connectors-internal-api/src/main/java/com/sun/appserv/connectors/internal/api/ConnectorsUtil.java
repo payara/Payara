@@ -573,17 +573,17 @@ public class ConnectorsUtil {
                     prefixPart1 = ConnectorConstants.RESOURCE_JNDINAME_PREFIX;
                     prefixPart2 = ConnectorConstants.MAILSESSION_DEFINITION_JNDINAME_PREFIX;
                     break;
-                case CRD :
+                case CFD :
                     prefixPart1 = ConnectorConstants.RESOURCE_JNDINAME_PREFIX;
-                    prefixPart2 = ConnectorConstants.CONNECTOR_RESOURCE_DEFINITION_JNDINAME_PREFIX;
+                    prefixPart2 = ConnectorConstants.CONNECTION_FACTORY_DEFINITION_JNDINAME_PREFIX;
                     break;
                 case DSDPOOL:
                     prefixPart1 = ConnectorConstants.POOLS_JNDINAME_PREFIX;
                     prefixPart2 = ConnectorConstants.DATASOURCE_DEFINITION_JNDINAME_PREFIX;
                     break;
-                case CRDPOOL:
+                case CFDPOOL:
                     prefixPart1 = ConnectorConstants.POOLS_JNDINAME_PREFIX;
-                    prefixPart2 = ConnectorConstants.CONNECTOR_RESOURCE_DEFINITION_JNDINAME_PREFIX;
+                    prefixPart2 = ConnectorConstants.CONNECTION_FACTORY_DEFINITION_JNDINAME_PREFIX;
                     break;
                 case JMSCFDD:
                     prefixPart1 = ConnectorConstants.RESOURCE_JNDINAME_PREFIX;

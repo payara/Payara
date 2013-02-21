@@ -229,8 +229,8 @@ public class AdministeredObjectDefinitionHandler extends AbstractResourceHandler
                     desc.setClassName(defn.className());
                 }
 
-                if (desc.getResourceAdapterName() == null || desc.getResourceAdapterName().equals("")) {
-                    desc.setResourceAdapterName(defn.resourceAdapterName());
+                if (desc.getResourceAdapter() == null || desc.getResourceAdapter().equals("")) {
+                    desc.setResourceAdapter(defn.resourceAdapter());
                 }
                 
                 Properties properties = desc.getProperties();
@@ -264,7 +264,7 @@ public class AdministeredObjectDefinitionHandler extends AbstractResourceHandler
         desc.setName(defn.name());
         desc.setInterfaceName(defn.interfaceName());
         desc.setClassName(defn.className());
-        desc.setResourceAdapterName(defn.resourceAdapterName());
+        desc.setResourceAdapter(defn.resourceAdapter());
 
         if (defn.description() != null && !defn.description().equals("")) {
             desc.setDescription(defn.description());

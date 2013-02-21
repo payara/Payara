@@ -43,7 +43,7 @@ package com.sun.enterprise.resource.deployer;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
-import com.sun.enterprise.deployment.ConnectorResourceDefinitionDescriptor;
+import com.sun.enterprise.deployment.ConnectionFactoryDefinitionDescriptor;
 import com.sun.logging.LogDomains;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.glassfish.connectors.config.ConnectorResource;
@@ -73,13 +73,13 @@ import static org.glassfish.deployment.common.JavaEEResourceType.*;
  * @author Dapeng Hu
  */
 @Service
-@ResourceDeployerInfo(ConnectorResourceDefinitionDescriptor.class)
-public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
+@ResourceDeployerInfo(ConnectionFactoryDefinitionDescriptor.class)
+public class ConnectionFactoryDefinitionDeployer implements ResourceDeployer {
 
     @Inject
     private Provider<org.glassfish.resourcebase.resources.util.ResourceManagerFactory> resourceManagerFactoryProvider;
 
-    private static Logger _logger = LogDomains.getLogger(ConnectorResourceDefinitionDeployer.class, LogDomains.RSR_LOGGER);
+    private static Logger _logger = LogDomains.getLogger(ConnectionFactoryDefinitionDeployer.class, LogDomains.RSR_LOGGER);
     final static String PROPERTY_PREFIX = "org.glassfish.connector-connection-pool.";
 
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
@@ -88,12 +88,12 @@ public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
     
     public void deployResource(Object resource) throws Exception {
 
-        final ConnectorResourceDefinitionDescriptor desc = (ConnectorResourceDefinitionDescriptor) resource;
-        String poolName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), CRDPOOL);
+        final ConnectionFactoryDefinitionDescriptor desc = (ConnectionFactoryDefinitionDescriptor) resource;
+        String poolName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), CFDPOOL);
         String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(),desc.getResourceType());
 
         if(_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "ConnectorResourceDefinitionDeployer.deployResource() : pool-name ["+poolName+"], " +
+            _logger.log(Level.FINE, "ConnectionFactoryDefinitionDeployer.deployResource() : pool-name ["+poolName+"], " +
                     " resource-name ["+resourceName+"]");
         }
 
@@ -136,8 +136,8 @@ public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
         return resourceManagerFactoryProvider.get().getResourceDeployer(resource);
     }
 
-    private ConnectorResourceProperty convertProperty(String name, String value) {
-        return new ConnectorResourceProperty(name, value);
+    private ConnectionFactoryProperty convertProperty(String name, String value) {
+        return new ConnectionFactoryProperty(name, value);
     }
 
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
@@ -146,13 +146,13 @@ public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
 
     public void undeployResource(Object resource) throws Exception {
 
-        final ConnectorResourceDefinitionDescriptor desc = (ConnectorResourceDefinitionDescriptor) resource;
+        final ConnectionFactoryDefinitionDescriptor desc = (ConnectionFactoryDefinitionDescriptor) resource;
 
-        String poolName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), CRDPOOL);
+        String poolName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), CFDPOOL);
         String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(),desc.getResourceType());
 
         if(_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "ConnectorResourceDefinitionDeployer.undeployResource() : pool-name ["+poolName+"], " +
+            _logger.log(Level.FINE, "ConnectionFactoryDefinitionDeployer.undeployResource() : pool-name ["+poolName+"], " +
                     " resource-name ["+resourceName+"]");
         }
 
@@ -167,19 +167,19 @@ public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
     }
 
     public void redeployResource(Object resource) throws Exception {
-        throw new UnsupportedOperationException("redeploy() not supported for connector-resource-definition type");
+        throw new UnsupportedOperationException("redeploy() not supported for connection-factory-definition type");
     }
 
     public void enableResource(Object resource) throws Exception {
-        throw new UnsupportedOperationException("enable() not supported for connector-resource-definition type");
+        throw new UnsupportedOperationException("enable() not supported for connection-factory-definition type");
     }
 
     public void disableResource(Object resource) throws Exception {
-        throw new UnsupportedOperationException("disable() not supported for connector-resource-definition type");
+        throw new UnsupportedOperationException("disable() not supported for connection-factory-definition type");
     }
 
     public boolean handles(Object resource) {
-        return resource instanceof ConnectorResourceDefinitionDescriptor;
+        return resource instanceof ConnectionFactoryDefinitionDescriptor;
     }
 
     /**
@@ -215,13 +215,13 @@ public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
         }        
     }
 
-    class ConnectorResourceProperty extends FakeConfigBean implements Property {
+    class ConnectionFactoryProperty extends FakeConfigBean implements Property {
 
         private String name;
         private String value;
         private String description;
 
-        ConnectorResourceProperty(String name, String value) {
+        ConnectionFactoryProperty(String name, String value) {
             this.name = name;
             this.value = value;
         }
@@ -335,10 +335,10 @@ public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
     }
     class MyConnectorConnectionPool extends FakeConfigBean implements ConnectorConnectionPool {
 
-        private ConnectorResourceDefinitionDescriptor desc;
+        private ConnectionFactoryDefinitionDescriptor desc;
         private String name;
 
-        public MyConnectorConnectionPool(ConnectorResourceDefinitionDescriptor desc, String name) {
+        public MyConnectorConnectionPool(ConnectionFactoryDefinitionDescriptor desc, String name) {
             this.desc = desc;
             this.name = name;
         }
@@ -358,9 +358,9 @@ public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
         }
 
         public String getSteadyPoolSize() {
-            String minPoolSize = desc.getProperty(PROPERTY_PREFIX+"steady-pool-size");
-            if(minPoolSize!=null && !minPoolSize.equals("")){
-                return minPoolSize;
+            int minPoolSize = desc.getMinPoolSize();
+            if(minPoolSize >= 0){
+                return Integer.toString(minPoolSize);
             }else{
                 return "8";
             }
@@ -371,9 +371,9 @@ public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
         }
 
         public String getMaxPoolSize() {
-            String maxPoolSize = desc.getProperty(PROPERTY_PREFIX+"max-pool-size");
-            if (maxPoolSize != null && !maxPoolSize.equals("")) {
-                return maxPoolSize;
+            int maxPoolSize = desc.getMaxPoolSize();
+            if (maxPoolSize >= 0) {
+                return Integer.toString(maxPoolSize);
             }else{
                 return "32";
             }
@@ -436,12 +436,7 @@ public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
         }
 
         public String getResourceAdapterName() {
-            String resourceAdapterName = desc.getProperty(PROPERTY_PREFIX+"resource-adapter-name");
-            if (resourceAdapterName != null && !resourceAdapterName.equals("")) {
-                return resourceAdapterName;
-            }else{
-                return null;
-            }
+            return desc.getResourceAdapter();
         }
 
         public void setResourceAdapterName(String value) throws PropertyVetoException {
@@ -470,12 +465,7 @@ public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
         }
 
         public String getTransactionSupport() {
-            String transactionSupport = desc.getProperty(PROPERTY_PREFIX+"transaction-support");
-            if (transactionSupport != null && !transactionSupport.equals("")) {
-                return transactionSupport;
-            }else{
-                return "NoTransaction";
-            }
+            return desc.getTransactionSupport();
         }
 
         public void setTransactionSupport(String value) throws PropertyVetoException {
@@ -635,24 +625,24 @@ public class ConnectorResourceDefinitionDeployer implements ResourceDeployer {
 
         public List<Property> getProperty() {
             Properties p = desc.getProperties();
-            List<Property> connectorResourceProperties = new ArrayList<Property>();
+            List<Property> connectionFactoryProperties = new ArrayList<Property>();
             for (Entry<Object, Object> entry : p.entrySet()) {
                 String key = (String) entry.getKey();
                 if(key.startsWith(PROPERTY_PREFIX)){
                     continue;
                 }
                 String value = (String) entry.getValue();
-                ConnectorResourceProperty dp = convertProperty(key, value);
-                connectorResourceProperties.add(dp);
+                ConnectionFactoryProperty dp = convertProperty(key, value);
+                connectionFactoryProperties.add(dp);
             }
 
-            return connectorResourceProperties;
+            return connectionFactoryProperties;
         }
  
 
         public Property getProperty(String name) {
             String value = desc.getProperty(name);
-            return new ConnectorResourceProperty(name, value);
+            return new ConnectionFactoryProperty(name, value);
         }
 
         public String getPropertyValue(String name) {

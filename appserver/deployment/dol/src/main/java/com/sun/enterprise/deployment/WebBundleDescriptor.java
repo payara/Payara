@@ -74,7 +74,7 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     public boolean conflictLoginConfig = false;
     public boolean conflictDataSourceDefinition = false;
     public boolean conflictMailSessionDefinition = false;
-    public boolean conflictConnectorResourceDefinition = false;
+    public boolean conflictConnectionFactoryDefinition = false;
     public boolean conflictAdminObjectDefinition = false;
     public boolean conflictJMSConnectionFactoryDefinition = false;
     public boolean conflictJMSDestinationDefinition = false;

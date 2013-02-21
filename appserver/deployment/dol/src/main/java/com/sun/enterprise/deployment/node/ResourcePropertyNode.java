@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,8 +74,8 @@ public class ResourcePropertyNode extends DeploymentDescriptorNode<ResourcePrope
 
         if (desc instanceof MailSessionDescriptor) {
             properties = ((MailSessionDescriptor) desc).getProperties();
-        } else if (desc instanceof ConnectorResourceDefinitionDescriptor) {
-            properties = ((ConnectorResourceDefinitionDescriptor) desc).getProperties();
+        } else if (desc instanceof ConnectionFactoryDefinitionDescriptor) {
+            properties = ((ConnectionFactoryDefinitionDescriptor) desc).getProperties();
         } else if (desc instanceof DataSourceDefinitionDescriptor) {
             properties = ((DataSourceDefinitionDescriptor) desc).getProperties();
         } else if (desc instanceof JMSConnectionFactoryDefinitionDescriptor) {

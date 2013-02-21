@@ -68,7 +68,7 @@ public class AdministeredObjectDefinitionNode extends DeploymentDescriptorNode<A
         table.put(TagNames.ADMINISTERED_OBJECT_NAME, "setName");
         table.put(TagNames.ADMINISTERED_OBJECT_INTERFACE_NAME, "setInterfaceName");
         table.put(TagNames.ADMINISTERED_OBJECT_CLASS_NAME, "setClassName");
-        table.put(TagNames.ADMINISTERED_OBJECT_ADAPTER_NAME, "setResourceAdapterName");
+        table.put(TagNames.ADMINISTERED_OBJECT_ADAPTER, "setResourceAdapter");
 
         return table;
     }
@@ -79,7 +79,7 @@ public class AdministeredObjectDefinitionNode extends DeploymentDescriptorNode<A
         appendTextChild(node, TagNames.ADMINISTERED_OBJECT_NAME, desc.getName());
         appendTextChild(node, TagNames.ADMINISTERED_OBJECT_INTERFACE_NAME, desc.getInterfaceName());
         appendTextChild(node, TagNames.ADMINISTERED_OBJECT_CLASS_NAME, desc.getClassName());
-        appendTextChild(node, TagNames.ADMINISTERED_OBJECT_ADAPTER_NAME, desc.getResourceAdapterName());
+        appendTextChild(node, TagNames.ADMINISTERED_OBJECT_ADAPTER, desc.getResourceAdapter());
         
         ResourcePropertyNode propertyNode = new ResourcePropertyNode();
         propertyNode.writeDescriptor(node, desc);

@@ -117,18 +117,21 @@ public interface TagNames {
     public static final String RESOURCE_PROPERTY_VALUE = "value";
     public static final String RESOURCE_PROPERTY = "property";
 
-    public static final String CONNECTOR_RESOURCE = "connector-resource";
-    public static final String CONNECTOR_RESOURCE_DESCRIPTION = "description";
-    public static final String CONNECTOR_RESOURCE_NAME = "name";
-    public static final String CONNECTOR_RESOURCE_CLASS_NAME = "class-name";
-    public static final String CONNECTOR_RESOURCE_ADAPTER_NAME = "resource-adapter-name";
+    public static final String CONNECTION_FACTORY = "connection-factory";
+    public static final String CONNECTION_FACTORY_DESCRIPTION = "description";
+    public static final String CONNECTION_FACTORY_NAME = "name";
+    public static final String CONNECTION_FACTORY_CLASS_NAME = "class-name";
+    public static final String CONNECTION_FACTORY_ADAPTER = "resource-adapter";
+    public static final String CONNECTION_FACTORY_TRANSACTION_SUPPORT = "transaction-support";
+    public static final String CONNECTION_FACTORY_MAX_POOL_SIZE = "max-pool-size";
+    public static final String CONNECTION_FACTORY_MIN_POOL_SIZE = "min-pool-size";
 
     public static final String ADMINISTERED_OBJECT = "administered-object";
     public static final String ADMINISTERED_OBJECT_DESCRIPTION = "description";
     public static final String ADMINISTERED_OBJECT_NAME = "name";
     public static final String ADMINISTERED_OBJECT_INTERFACE_NAME = "interface-name";
     public static final String ADMINISTERED_OBJECT_CLASS_NAME = "class-name";
-    public static final String ADMINISTERED_OBJECT_ADAPTER_NAME = "resource-adapter-name";
+    public static final String ADMINISTERED_OBJECT_ADAPTER = "resource-adapter";
     public static final String ADMINISTERED_OBJECT_PROPERTY = "property";
     public static final String ADMINISTERED_OBJECT_PROPERTY_NAME = "name";
     public static final String ADMINISTERED_OBJECT_PROPERTY_VALUE = "value";
