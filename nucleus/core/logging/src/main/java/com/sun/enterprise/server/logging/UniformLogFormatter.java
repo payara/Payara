@@ -414,8 +414,8 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
                     logMessage = sw.toString();
                     sw.close();
                 } else {
-                    // case 2: Log an error message (using original severity)
-                    logMessage = "The log message is empty or null. Please log an issue against the component in the logger field.";
+                    // GLASSFISH-18816: Suppress noise.
+                    logMessage = "";
                 }
                 logEvent.setMessage(logMessage);
                 recordBuffer.append(logMessage);

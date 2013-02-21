@@ -107,6 +107,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             super.reset();
         }
         if (logMessage != null) {
+            logMessage = logMessage.trim();
             if (logMessage.length() == 0 || logMessage.equals(lineSeparator)) {
                 // avoid empty records
                 return;

@@ -188,6 +188,9 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
             
             // creating message from log record using resource bundle and appending parameters
             String message = getLogMessage(record);
+            if (message == null || message.isEmpty()) {
+                return "";
+            }
             boolean multiLine = multiLineMode || isMultiLine(message);
 
             // Starting formatting message
@@ -313,17 +316,6 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
                 recordBuffer.append(FIELD_END_MARKER);
                 recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
             }
-
-            // Adding extra Attributes - produce ID
-            /*
-            if (getProductId()!=null) {
-                recordBuffer.append(FIELD_BEGIN_MARKER);
-                recordBuffer.append("PRODUCTID: ");
-                recordBuffer.append(getProductId());
-                recordBuffer.append(FIELD_END_MARKER);
-                recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
-            }
-            */
 
             // Adding extra Attributes - class name and method name for FINE and higher level messages
             Level level = record.getLevel();
