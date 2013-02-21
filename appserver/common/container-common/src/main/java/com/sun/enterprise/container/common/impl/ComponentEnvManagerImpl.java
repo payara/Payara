@@ -94,7 +94,7 @@ public class ComponentEnvManagerImpl
     private static final String JAVA_GLOBAL_PREFIX = "java:global/";
 
     @Inject
-    private ServiceLocator habitat;
+    private ServiceLocator locator;
 
     @Inject
     private Logger _logger;
@@ -345,7 +345,7 @@ public class ComponentEnvManagerImpl
             String resourceId = getResourceId(env, descriptor);
             descriptor.setResourceId(resourceId);
 
-            CommonResourceProxy proxy = habitat.getService(CommonResourceProxy.class);
+            CommonResourceProxy proxy = locator.getService(CommonResourceProxy.class);
             proxy.setDescriptor(descriptor);
 
             String logicalJndiName = descriptorToLogicalJndiName(descriptor);
@@ -355,7 +355,7 @@ public class ComponentEnvManagerImpl
     }
 
     private ResourceDeployer getResourceDeployer(Object resource) {
-        return habitat.<ResourceManagerFactory>getService(ResourceManagerFactory.class).getResourceDeployer(resource);
+        return locator.getService(ResourceManagerFactory.class).getResourceDeployer(resource);
     }
 
 
@@ -521,7 +521,7 @@ public class ComponentEnvManagerImpl
                 // TODO handle non-default ORBs
                 value = namingUtils.createLazyNamingObjectFactory(name, physicalJndiName, false);
             } else if (resourceRef.isWebServiceContext()) {
-                WebServiceReferenceManager wsRefMgr = habitat.getService(WebServiceReferenceManager.class);
+                WebServiceReferenceManager wsRefMgr = locator.getService(WebServiceReferenceManager.class);
                 if (wsRefMgr != null )  {
                     value = wsRefMgr.getWSContextObject();
                 } else {
@@ -688,7 +688,7 @@ public class ComponentEnvManagerImpl
                     value = namingUtils.createLazyNamingObjectFactory(name, managedBeanDesc.getAppJndiName(), false);
                 }
             } else {
-                // we lookup first in the InitialContext, if not found we look up in the habitat.
+                // lookup in the InitialContext
                 value = new NamingObjectFactory() {
                     // It might be mapped to a managed bean, so turn off caching to ensure that a
                     // new instance is created each time.
@@ -698,20 +698,7 @@ public class ComponentEnvManagerImpl
                     }
 
                     public Object create(Context ic) throws NamingException {
-                        try {
-                            return delegate.create(ic);
-                        } catch(NamingException e) {
-                            ActiveDescriptor<?> ad = habitat.getBestDescriptor(
-                                    BuilderHelper.createNameAndContractFilter(
-                                            next.getRefType(), next.getMappedName()));
-                            if (ad == null) throw e;
-                            
-                            Object ref = habitat.getServiceHandle(ad).getService();
-                            if (ref!=null) {
-                                return ref;
-                            }
-                            throw e;
-                        }
+                        return delegate.create(ic);
                     }
                 };
             }
@@ -970,7 +957,7 @@ public class ComponentEnvManagerImpl
             Object result = null;
 
             if (ejbRefMgr==null) {
-                ejbRefMgr = habitat.getService(EjbNamingReferenceManager.class);
+                ejbRefMgr = locator.getService(EjbNamingReferenceManager.class);
             }
 
             if (ejbRefMgr != null) {
@@ -1097,7 +1084,7 @@ public class ComponentEnvManagerImpl
                 throws NamingException {
             Object result = null;
 
-            wsRefMgr = habitat.getService(WebServiceReferenceManager.class);
+            wsRefMgr = locator.getService(WebServiceReferenceManager.class);
             if (wsRefMgr != null )  {
                 result = wsRefMgr.resolveWSReference(serviceRef,ctx);
             } else {
@@ -1146,7 +1133,7 @@ public class ComponentEnvManagerImpl
             if (ejbRefMgr == null) {
                 synchronized (this) {
                     if (ejbRefMgr == null) {
-                        ejbRefMgr = habitat.getService(EjbNamingReferenceManager.class);
+                        ejbRefMgr = locator.getService(EjbNamingReferenceManager.class);
                         cacheable = ejbRefMgr.isEjbReferenceCacheable(ejbRef);
                     }
                 }
