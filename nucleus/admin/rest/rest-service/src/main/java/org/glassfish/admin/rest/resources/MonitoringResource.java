@@ -141,6 +141,7 @@ public class MonitoringResource {
                 } else {
                     //No monitoring data, so nothing to list
                     responseBuilder.status(NOT_FOUND);
+                    ar.setFailure();
                     responseBuilder.entity(new ActionReportResult(ar));
                 }
 
