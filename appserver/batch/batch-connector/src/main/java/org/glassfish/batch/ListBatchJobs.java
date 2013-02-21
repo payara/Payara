@@ -39,9 +39,13 @@
  */
 package org.glassfish.batch;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
+import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.*;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
@@ -58,30 +62,39 @@ import java.util.*;
  * jobName --------> instanceId --------> executionId
  *
  * @author Mahesh Kannan
- *
  */
-@Service(name="list-batch-jobs")
+@Service(name = "list-batch-jobs")
 @PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@I18n("list.batch.jobs")
+@ExecuteOn(value = {RuntimeType.DAS})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@RestEndpoints({
+        @RestEndpoint(configBean = Domain.class,
+                opType = RestEndpoint.OpType.GET,
+                path = "list-batch-jobs",
+                description = "List Batch Jobs")
+})
 public class ListBatchJobs
-    extends AbstractListCommand {
+        extends AbstractListCommand {
 
-    private static final String JOB_NAME = "jobname";
+    private static final String JOB_NAME = "jobName";
 
-    private static final String INSTANCE_COUNT = "instancecount";
+    private static final String INSTANCE_COUNT = "instanceCount";
 
-    private static final String INSTANCE_ID = "instanceid";
+    private static final String INSTANCE_ID = "instanceId";
 
-    private static final String EXECUTION_ID = "executionid";
+    private static final String EXECUTION_ID = "executionId";
 
-    private static final String BATCH_STATUS = "batchstatus";
+    private static final String BATCH_STATUS = "batchStatus";
 
-    private static final String EXIT_STATUS = "exitstatus";
+    private static final String EXIT_STATUS = "exitStatus";
 
-    private static final String START_TIME = "starttime";
+    private static final String START_TIME = "startTime";
 
-    private static final String END_TIME = "endtime";
+    private static final String END_TIME = "endTime";
 
-    private static final String JOB_PARAMETERS = "jobparameters";
+    private static final String JOB_PARAMETERS = "jobParameters";
 
     @Param(name = "jobname", optional = true)
     String jobName;
@@ -102,7 +115,7 @@ public class ListBatchJobs
         } else {
             extraProps.put("simple-mode", false);
             for (JobExecution je : findJobExecutions()) {
-                handleJob(je, columnFormatter);
+                extraProps.put(je.getExecutionId(), handleJob(je, columnFormatter));
             }
         }
         context.getActionReport().setMessage(columnFormatter.toString());
@@ -110,7 +123,7 @@ public class ListBatchJobs
 
     @Override
     protected final String[] getSupportedHeaders() {
-        return new String[] {
+        return new String[]{
                 JOB_NAME, INSTANCE_COUNT, INSTANCE_ID, EXECUTION_ID, BATCH_STATUS,
                 START_TIME, END_TIME, EXIT_STATUS, JOB_PARAMETERS
         };
@@ -118,7 +131,7 @@ public class ListBatchJobs
 
     @Override
     protected final String[] getTerseHeaders() {
-        return new String[] {JOB_NAME, INSTANCE_COUNT};
+        return new String[]{JOB_NAME, INSTANCE_COUNT};
     }
 
     @Override
@@ -147,7 +160,7 @@ public class ListBatchJobs
                 int size = getOutputHeaders().length;
                 String[] data = new String[size];
                 int instCount = BatchRuntime.getJobOperator().getJobInstanceCount(jName);
-                for (int index =0; index<size; index++) {
+                for (int index = 0; index < size; index++) {
                     switch (getOutputHeaders()[index]) {
                         case JOB_NAME:
                             data[index] = jName;
@@ -166,6 +179,7 @@ public class ListBatchJobs
 
         return jobToInstanceCountMap;
     }
+
     private List<JobExecution> findJobExecutions() {
         List<JobExecution> jobExecutions = new ArrayList<JobExecution>();
         JobOperator jobOperator = BatchRuntime.getJobOperator();
@@ -225,7 +239,7 @@ public class ListBatchJobs
         StringTokenizer st = new StringTokenizer("", "");
         String[] cfData = new String[getOutputHeaders().length];
         JobOperator jobOperator = BatchRuntime.getJobOperator();
-        for (int index=0; index<getOutputHeaders().length; index++) {
+        for (int index = 0; index < getOutputHeaders().length; index++) {
             Object data = null;
             switch (getOutputHeaders()[index]) {
                 case JOB_NAME:
@@ -255,9 +269,9 @@ public class ListBatchJobs
                 case JOB_PARAMETERS:
                     data = je.getJobParameters() == null ? new Properties() : je.getJobParameters();
                     jobParamIndex = index;
-                    ColumnFormatter cf = new ColumnFormatter(new String[] {"KEY", "VALUE"});
+                    ColumnFormatter cf = new ColumnFormatter(new String[]{"KEY", "VALUE"});
                     for (Map.Entry e : ((Properties) data).entrySet())
-                        cf.addRow(new String[] {e.getKey().toString(), e.getValue().toString()});
+                        cf.addRow(new String[]{e.getKey().toString(), e.getValue().toString()});
                     st = new StringTokenizer(cf.toString(), "\n");
                     break;
                 default:
@@ -271,7 +285,7 @@ public class ListBatchJobs
         columnFormatter.addRow(cfData);
 
         cfData = new String[getOutputHeaders().length];
-        for (int i=0; i<getOutputHeaders().length; i++)
+        for (int i = 0; i < getOutputHeaders().length; i++)
             cfData[i] = "";
         while (st.hasMoreTokens()) {
             cfData[jobParamIndex] = st.nextToken();

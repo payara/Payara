@@ -45,10 +45,7 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 
 import javax.inject.Inject;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -111,14 +108,13 @@ public abstract class AbstractListCommand
         } else if (useLongFormat)
             headers = getLongHeaders();
 
-        Set<String> validHeaders = new HashSet<String>();
+        Map<String, String> validHeaders = new HashMap<>();
         for (String h : getSupportedHeaders())
-            validHeaders.add(h.toLowerCase(Locale.US));
+            validHeaders.put(h.toLowerCase(Locale.US), h);
         for (int i=0; i<headers.length; i++) {
-            if (!validHeaders.contains(headers[i].toLowerCase(Locale.US))) {
+            headers[i] = validHeaders.get(headers[i].toLowerCase(Locale.US));
+            if (headers[i] == null)
                 throw new IllegalArgumentException("IllegalArgument " + headers[i]);
-            }
-            headers[i] = headers[i].toLowerCase(Locale.US);
         }
 
         outputHeaders = headers;
