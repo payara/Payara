@@ -56,6 +56,8 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
  *
  * @author Ludovic Champenois
  */
+// TODO: Delete this once we're sure it's no longer needed
+@Deprecated
 public class RestConfigChangeListener implements ConfigListener {
 //    private Reloader r;
     private ServerContext sc;
