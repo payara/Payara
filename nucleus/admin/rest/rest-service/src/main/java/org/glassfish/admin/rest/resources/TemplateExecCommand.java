@@ -155,9 +155,7 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
     }
 
     protected ActionReportResult executeCommandLegacyFormat(ParameterMap data) {
-        RestActionReporter actionReport =
-                ResourceUtil.runCommand(commandName, data, locatorBridge.getRemoteLocator(),
-                ResourceUtil.getResultType(requestHeaders), getSubject());
+        RestActionReporter actionReport = ResourceUtil.runCommand(commandName, data, getSubject());
         ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
         if (exitCode == ActionReport.ExitCode.FAILURE) {
             throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR)
@@ -177,9 +175,7 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
     }
 
     protected CommandResult executeCommand(ParameterMap data) {
-        RestActionReporter actionReport =
-                ResourceUtil.runCommand(commandName, data, locatorBridge.getRemoteLocator(),
-                ResourceUtil.getResultType(requestHeaders), getSubject());
+        RestActionReporter actionReport = ResourceUtil.runCommand(commandName, data, getSubject());
         ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
         if (exitCode == ActionReport.ExitCode.FAILURE) {
             throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR)

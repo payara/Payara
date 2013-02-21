@@ -218,41 +218,41 @@ public class ResourceUtil {
 
     /**
      * Executes the specified __asadmin command.
+     * @param commandName
+     * @param parameters
+     * @param subject
+     * @return
+     */
+    public static RestActionReporter runCommand(String commandName,
+                                                ParameterMap parameters,
+                                                Subject subject) {
+        CommandRunner cr = Globals.getDefaultHabitat().getService(CommandRunner.class);
+        RestActionReporter ar = new RestActionReporter();
+        final CommandInvocation commandInvocation =
+                cr.getCommandInvocation(commandName, ar, subject);
+        commandInvocation.parameters(parameters).execute();
+        addCommandLog(ar, commandName, parameters);
+
+        return ar;
+    }
+
+    /**
+     * Executes the specified __asadmin command.
      *
-     * @deprecated
      * @param commandName the command to execute
      * @param parameters the command parameters
-     * @param habitat the habitat
+     * @param subject Subject
      * @return ActionReport object with command execute status details.
      */
-    @Deprecated
     public static RestActionReporter runCommand(String commandName,
                                                 Map<String, String> parameters,
-                                                ServiceLocator habitat,
-                                                String resultType) {
+                                                Subject subject) {
         ParameterMap p = new ParameterMap();
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
             p.set(entry.getKey(), entry.getValue());
         }
 
-        return runCommand(commandName, p, habitat, resultType);
-    }
-
-    @Deprecated
-    private static RestActionReporter runCommand(String commandName,
-                                                ParameterMap parameters,
-                                                ServiceLocator habitat,
-                                                String resultType) {
-        return runCommand(commandName, parameters, habitat, resultType, null);
-    }
-
-    @Deprecated
-    public static RestActionReporter runCommand(String commandName,
-                                                ParameterMap parameters,
-                                                ServiceLocator habitat,
-                                                String resultType,
-                                                Subject subject) {
-        return runCommand(commandName, parameters, subject);
+        return runCommand(commandName, p, subject);
     }
 
     public static EventOutput runCommandWithSse(final String commandName,
@@ -277,18 +277,6 @@ public class ResourceUtil {
                         });
     }
 
-    public static RestActionReporter runCommand(String commandName,
-                                                ParameterMap parameters,
-                                                Subject subject) {
-        CommandRunner cr = Globals.getDefaultHabitat().getService(CommandRunner.class);
-        RestActionReporter ar = new RestActionReporter();
-        final CommandInvocation commandInvocation =
-                cr.getCommandInvocation(commandName, ar, subject);
-        commandInvocation.parameters(parameters).execute();
-        addCommandLog(ar, commandName, parameters);
-
-        return ar;
-    }
 
     public static void addCommandLog(RestActionReporter ar, String commandName, ParameterMap parameters) {
         List<String> logs = (List<String>) ar.getExtraProperties().get("commandLog");
@@ -565,7 +553,7 @@ public class ResourceUtil {
         if (model == null) {
             return null;
         }
-        
+
         return model.getParameters();
     }
 

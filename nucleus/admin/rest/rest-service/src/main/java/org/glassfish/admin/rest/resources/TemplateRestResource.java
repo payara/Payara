@@ -552,7 +552,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
      */
     private RestActionReporter runCommand(String commandName, HashMap<String, String> data) {
         if (commandName != null) {
-            return ResourceUtil.runCommand(commandName, data, locatorBridge.getRemoteLocator(), ResourceUtil.getResultType(requestHeaders));//processed
+            return ResourceUtil.runCommand(commandName, data, getSubject());
         }
 
         return null;//not processed

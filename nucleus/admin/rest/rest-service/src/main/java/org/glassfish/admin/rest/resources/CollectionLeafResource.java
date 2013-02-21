@@ -281,7 +281,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
             if (null != commandName) {
                 String typeOfResult = ResourceUtil.getResultType(requestHeaders);
                 RestActionReporter actionReport = ResourceUtil.runCommand(commandName,
-                    data, locatorBridge.getRemoteLocator(), typeOfResult);
+                    data, getSubject());
 
                 ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
                 if (exitCode != ActionReport.ExitCode.FAILURE) {

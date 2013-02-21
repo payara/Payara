@@ -248,7 +248,7 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
         data.put("DEFAULT", propertiesString);
         data.put("target", (parent == null) ? getParent(uriInfo) : parent);
 
-        RestActionReporter actionReport = ResourceUtil.runCommand("create-system-properties", data, locatorBridge.getRemoteLocator(), "");
+        RestActionReporter actionReport = ResourceUtil.runCommand("create-system-properties", data, getSubject());
         ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
         ActionReportResult results = new ActionReportResult(commandName, actionReport, new OptionsResult());
 
@@ -261,11 +261,11 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
     }
 
     protected Response deleteProperty(String parent, String propName) {
-        HashMap<String, String> data = new HashMap<String, String>();
-        data.put("DEFAULT", propName);
-        data.put("target", (parent == null) ? getParent(uriInfo) : parent);
+        ParameterMap pm = new ParameterMap();
+        pm.add("DEFAULT", propName);
+        pm.add("target", (parent == null) ? getParent(uriInfo) : parent);
 
-        RestActionReporter actionReport = ResourceUtil.runCommand("delete-system-property", data, locatorBridge.getRemoteLocator(), "");
+        RestActionReporter actionReport = ResourceUtil.runCommand("delete-system-property", pm, getSubject());
         ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
         ActionReportResult results = new ActionReportResult(commandName, actionReport, new OptionsResult());
 

@@ -131,8 +131,7 @@ public abstract class TemplateListOfResource extends AbstractResource {
                 } else {
                     resourceToCreate += data.get("DEFAULT");
                 }
-                String typeOfResult = ResourceUtil.getResultType(requestHeaders);
-                RestActionReporter actionReport = ResourceUtil.runCommand(commandName, data, locatorBridge.getRemoteLocator(), typeOfResult);
+                RestActionReporter actionReport = ResourceUtil.runCommand(commandName, data, getSubject());
 
                 ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
                 if (exitCode != ActionReport.ExitCode.FAILURE) {
@@ -327,8 +326,7 @@ public abstract class TemplateListOfResource extends AbstractResource {
             }
 
             if (null != commandName) {
-                String typeOfResult = ResourceUtil.getResultType(requestHeaders);
-                RestActionReporter actionReport = ResourceUtil.runCommand(commandName, data, locatorBridge.getRemoteLocator(), typeOfResult);
+                RestActionReporter actionReport = ResourceUtil.runCommand(commandName, data, getSubject());
 
                 ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
                 if (exitCode != ActionReport.ExitCode.FAILURE) {

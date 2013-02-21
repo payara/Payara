@@ -477,8 +477,7 @@ public class CompositeUtil {
      * @return
      */
     public ActionReporter executeCommand(Subject subject, String command, ParameterMap parameters, Status status, boolean includeFailureMessage, boolean throwOnWarning) {
-        RestActionReporter ar = ResourceUtil.runCommand(command, parameters,
-                Globals.getDefaultHabitat(), "", subject); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
+        RestActionReporter ar = ResourceUtil.runCommand(command, parameters, subject);
         ExitCode code = ar.getActionExitCode();
         if (code.equals(ExitCode.FAILURE) || (code.equals(ExitCode.WARNING) && throwOnWarning)) {
             if (includeFailureMessage) {
