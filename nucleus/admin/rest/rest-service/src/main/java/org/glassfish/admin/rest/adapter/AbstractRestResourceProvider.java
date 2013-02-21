@@ -38,10 +38,8 @@
  * holder.
  */
 
-
 package org.glassfish.admin.rest.adapter;
 
-import org.glassfish.admin.rest.RestConfigChangeListener;
 import org.glassfish.admin.rest.resources.ReloadResource;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.common.util.admin.RestSessionManager;
@@ -66,8 +64,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Base class for various ReST resource providers
- *
+ * Base class for various REST resource providers
  */
 public abstract class AbstractRestResourceProvider implements RestResourceProvider, Serializable {
     // content of this class has been copied from RestAdapter.java
@@ -105,13 +102,8 @@ public abstract class AbstractRestResourceProvider implements RestResourceProvid
         final Reloader r = new Reloader();
 
         ResourceConfig rc = new ResourceConfig(classes);
-
-        //rc.services = habitat.getDefault();
-
         UriConnegFilter.enableFor(rc, getMimeMappings(), null);
-
         rc.register(CsrfProtectionFilter.class);
-
 
 //        TODO - JERSEY2
 //        RestConfig restConf = ResourceUtil.getRestConfig(habitat);
@@ -162,11 +154,6 @@ public abstract class AbstractRestResourceProvider implements RestResourceProvid
         }
 
         rc.property(MessageProperties.LEGACY_WORKERS_ORDERING, true);
-
-        //add a rest config listener for possible reload of Jersey
-        new RestConfigChangeListener(habitat, r, rc, sc);
-
         return rc;
     }
-
 }
