@@ -135,7 +135,6 @@ import org.jvnet.hk2.config.types.Property;
 import org.xml.sax.EntityResolver;
 
 import com.sun.appserv.server.util.Version;
-import com.sun.common.util.logging.LoggingConfigImpl;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.config.serverbeans.Configs;
@@ -488,9 +487,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     private JCDIService jcdiService;
 
     @Inject
-    private LoggingConfigImpl logConfig;
-
-    @Inject
     CommandRunner runner;
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -735,25 +731,10 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             }
         }
 
-        logServiceFile = null;
-        Map<String, String> logProps = null;
-        try {
-            logProps = logConfig.getLoggingProperties();
-            if (logProps != null) {
-                logServiceFile = logProps.get("com.sun.enterprise.server.logging.GFFileHandler.file");
-
-                if (logServiceFile.contains("${com.sun.aas.instanceRoot}")) {
-                    String instanceRoot = System.getProperty("com.sun.aas.instanceRoot");
-                    String f = logServiceFile.replace("${com.sun.aas.instanceRoot}", instanceRoot);
-                    logServiceFile = f;
-                }
-
-                logLevel = logProps.get("org.apache.catalina.level");
-            }
-        } catch (IOException ioe) {
-            logger.log(Level.SEVERE, UNABLE_TO_DETERMINE_SERVER_LOG_LOCATION, ioe);
+        Level level = Logger.getLogger("org.apache.catalina.level").getLevel();
+        if (level != null) {
+            logLevel = level.getName();
         }
-
         _embedded = habitat.getService(EmbeddedWebContainer.class);
         _embedded.setWebContainer(this);
         _embedded.setLogServiceFile(logServiceFile);
