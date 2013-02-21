@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,17 +41,16 @@
 package org.glassfish.web.admin.cli;
 
 import java.beans.PropertyVetoException;
+import java.text.MessageFormat;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.glassfish.internal.api.Target;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.grizzly.config.dom.PortUnification;
 import org.glassfish.grizzly.config.dom.Protocol;
-import org.glassfish.grizzly.config.dom.ProtocolFilter;
 import org.glassfish.grizzly.config.dom.ProtocolFinder;
 import org.glassfish.grizzly.config.dom.Protocols;
 import org.glassfish.api.ActionReport;
@@ -63,6 +62,8 @@ import org.glassfish.config.support.TargetType;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -86,8 +87,6 @@ import org.jvnet.hk2.config.TransactionFailure;
         })
 })
 public class CreateProtocolFinder implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings =
-        new LocalStringManagerImpl(CreateProtocolFinder.class);
     @Param(name = "name", primary = true)
     String name;
     @Param(name = "protocol", optional = false)
@@ -105,6 +104,12 @@ public class CreateProtocolFinder implements AdminCommand {
     private ActionReport report;
     @Inject
     ServiceLocator services;
+    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
+
+    @LogMessageInfo(
+            message = "{0} create failed.  Given class is not a ProtocolFinder: {1}.",
+            level = "INFO")
+    protected static final String CREATE_PORTUNIF_FAIL_NOTFINDER = "AS-WEB-ADMIN-00021";
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -118,14 +123,11 @@ public class CreateProtocolFinder implements AdminCommand {
         final Protocol protocol = protocols.findProtocol(protocolName);
         final Protocol target = protocols.findProtocol(targetName);
         try {
-            validate(protocol, "create.http.fail.protocolnotfound",
-                "The specified protocol {0} is not yet configured", protocolName);
-            validate(target, "create.http.fail.protocolnotfound",
-                "The specified protocol {0} is not yet configured", targetName);
+            validate(protocol, CreateHttp.CREATE_HTTP_FAIL_PROTOCOL_NOT_FOUND, protocolName);
+            validate(target, CreateHttp.CREATE_HTTP_FAIL_PROTOCOL_NOT_FOUND, targetName);
             final Class<?> finderClass = Thread.currentThread().getContextClassLoader().loadClass(classname);
             if(!org.glassfish.grizzly.portunif.ProtocolFinder.class.isAssignableFrom(finderClass)) {
-                report.setMessage(localStrings.getLocalString("create.portunif.fail.notfinder",
-                    "{0} create failed.  Given class is not a ProtocolFinder: {1}", name, classname));
+                report.setMessage(MessageFormat.format(rb.getString(CREATE_PORTUNIF_FAIL_NOTFINDER), name, classname));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -162,8 +164,10 @@ public class CreateProtocolFinder implements AdminCommand {
             return;
         } catch (Exception e) {
             e.printStackTrace();
-            report.setMessage(localStrings.getLocalString("create.portunif.fail", "{0} create failed: {1}", name,
-                e.getMessage() == null ? "No reason given" : e.getMessage()));
+            report.setMessage(MessageFormat.format(
+                    rb.getString(CreateProtocolFilter.CREATE_PORTUNIF_FAIL),
+                    name,
+                    e.getMessage() == null ? "No reason given" : e.getMessage()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;
@@ -173,7 +177,7 @@ public class CreateProtocolFinder implements AdminCommand {
     private void validate(ConfigBeanProxy check, String key, String defaultFormat, String... arguments)
         throws ValidationFailureException {
         if (check == null) {
-            report.setMessage(localStrings.getLocalString(key, defaultFormat, arguments));
+            report.setMessage(MessageFormat.format(rb.getString(key), arguments));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             throw new ValidationFailureException();
         }

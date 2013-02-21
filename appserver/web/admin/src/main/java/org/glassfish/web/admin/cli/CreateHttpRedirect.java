@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,6 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.grizzly.config.dom.HttpRedirect;
 import org.glassfish.grizzly.config.dom.Protocol;
@@ -59,12 +58,17 @@ import org.glassfish.internal.api.Target;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
+
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 
 
 /**
@@ -99,9 +103,6 @@ import org.jvnet.hk2.config.TransactionFailure;
 })
 public class CreateHttpRedirect implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
-        new LocalStringManagerImpl(CreateHttp.class);
-
     @Param(name = "protocolname", primary = true)
     String protocolName;
 
@@ -123,6 +124,13 @@ public class CreateHttpRedirect implements AdminCommand {
     @Inject
     Domain domain;
 
+    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
+
+    @LogMessageInfo(
+            message = "An http-redirect element for {0} already exists. Cannot add duplicate http-redirect.",
+            level = "INFO")
+    private static final String CREATE_HTTP_REDIRECT_FAIL_DUPLICATE = "AS-WEB-ADMIN-00016";
+
     // ----------------------------------------------- Methods from AdminCommand
 
 
@@ -143,14 +151,12 @@ public class CreateHttpRedirect implements AdminCommand {
             }
         }
         if (protocol == null) {
-            report.setMessage(localStrings.getLocalString("create.http.redirect.fail.protocolnotfound",
-                "The specified protocol {0} is not yet configured. Please create one", protocolName));
+            report.setMessage(MessageFormat.format(rb.getString(CreateHttp.CREATE_HTTP_FAIL_PROTOCOL_NOT_FOUND), protocolName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
         if (protocol.getHttpRedirect() != null) {
-            report.setMessage(localStrings.getLocalString("create.http.redirect.fail.duplicate",
-                "An http-redirect element for {0} already exists. Cannot add duplicate http-redirect", protocolName));
+            report.setMessage(MessageFormat.format(rb.getString(CREATE_HTTP_REDIRECT_FAIL_DUPLICATE), protocolName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
@@ -166,9 +172,8 @@ public class CreateHttpRedirect implements AdminCommand {
                 }
             }, protocol);
         } catch (TransactionFailure e) {
-            report.setMessage(localStrings.getLocalString("create.http.fail",
-                "Failed to create http-redirect for {0}: " + (e.getMessage() == null ? "No reason given." : e.getMessage()),
-                protocolName));
+            report.setMessage(MessageFormat.format(rb.getString(CreateHttp.CREATE_HTTP_REDIRECT_FAIL), protocolName) +
+                    (e.getMessage() == null ? "No reason given." : e.getMessage()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;

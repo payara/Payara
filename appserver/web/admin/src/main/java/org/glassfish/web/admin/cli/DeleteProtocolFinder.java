@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,13 +40,14 @@
 
 package org.glassfish.web.admin.cli;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.glassfish.internal.api.Target;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.grizzly.config.dom.PortUnification;
 import org.glassfish.grizzly.config.dom.Protocol;
@@ -61,6 +62,7 @@ import org.glassfish.config.support.TargetType;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -85,8 +87,9 @@ import org.jvnet.hk2.config.TransactionFailure;
         })
 })
 public class DeleteProtocolFinder implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings =
-        new LocalStringManagerImpl(DeleteProtocolFinder.class);
+
+    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
+
     @Param(name = "name", primary = true)
     String name;
     @Param(name = "protocol", optional = false)
@@ -112,8 +115,7 @@ public class DeleteProtocolFinder implements AdminCommand {
         try {
             final Protocols protocols = config.getNetworkConfig().getProtocols();
             final Protocol protocol = protocols.findProtocol(protocolName);
-            validate(protocol, "create.http.fail.protocolnotfound",
-                "The specified protocol {0} is not yet configured", protocolName);
+            validate(protocol, CreateHttp.CREATE_HTTP_FAIL_PROTOCOL_NOT_FOUND, protocolName);
             PortUnification pu = getPortUnification(protocol);
             ConfigSupport.apply(new ConfigCode() {
                 @Override
@@ -145,8 +147,11 @@ public class DeleteProtocolFinder implements AdminCommand {
             return;
         } catch (Exception e) {
             e.printStackTrace();
-            report.setMessage(localStrings.getLocalString("delete.fail", "{0} delete failed: {1}", name,
-                e.getMessage() == null ? "No reason given" : e.getMessage()));
+            report.setMessage(
+                    MessageFormat.format(
+                            rb.getString(DeleteProtocolFilter.DELETE_FAIL),
+                            name,
+                            e.getMessage() == null ? "No reason given" : e.getMessage()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;
@@ -157,8 +162,11 @@ public class DeleteProtocolFinder implements AdminCommand {
     private PortUnification getPortUnification(Protocol protocol) {
         PortUnification pu = protocol.getPortUnification();
         if (pu == null) {
-            report.setMessage(localStrings.getLocalString("not.found", "No {0} element found for {1}",
-                "port-unification", protocol.getName()));
+            report.setMessage(
+                    MessageFormat.format(
+                            rb.getString(DeleteProtocolFilter.NOT_FOUND),
+                            "port-unification",
+                            protocol.getName()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
         return pu;
@@ -177,10 +185,10 @@ public class DeleteProtocolFinder implements AdminCommand {
         }
     }
 
-    private void validate(ConfigBeanProxy check, String key, String defaultFormat, String... arguments)
+    private void validate(ConfigBeanProxy check, String key, String... arguments)
         throws ValidationFailureException {
         if (check == null) {
-            report.setMessage(localStrings.getLocalString(key, defaultFormat, arguments));
+            report.setMessage(MessageFormat.format(rb.getString(key), arguments));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             throw new ValidationFailureException();
         }

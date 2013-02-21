@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,7 @@
  */
 package org.glassfish.web.admin.monitor;
 
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.sun.enterprise.config.serverbeans.Config;
@@ -85,6 +86,8 @@ public class HttpServiceStatsProviderBootstrap implements PostConstruct {
     public static final Logger logger =
             Logger.getLogger(WEB_ADMIN_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 
+    public static final ResourceBundle rb = logger.getResourceBundle();
+
     @LogMessageInfo(
             message = "Unable to register StatsProvider {0} with Monitoring Infrastructure. " +
                     "No monitoring data will be collected for {1} and {2}",
@@ -105,7 +108,7 @@ public class HttpServiceStatsProviderBootstrap implements PostConstruct {
                     HttpServiceStatsProvider.class.getName(),
                     "http service", "virtual server"};
             logger.log(Level.SEVERE, UNABLE_TO_REGISTER_STATS_PROVIDERS, params);
-            throw new ConfigurationException(logger.getResourceBundle().getString(NULL_CONFIG));
+            throw new ConfigurationException(rb.getString(NULL_CONFIG));
         }
 
         HttpService httpService = config.getHttpService();

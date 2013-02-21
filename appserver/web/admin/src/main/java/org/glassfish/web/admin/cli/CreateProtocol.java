@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,6 @@ package org.glassfish.web.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.Protocol;
@@ -61,12 +60,17 @@ import org.glassfish.internal.api.Target;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
+
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 
 /**
  * Command to create protocol element within network-config
@@ -86,8 +90,6 @@ import org.jvnet.hk2.config.TransactionFailure;
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class CreateProtocol implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings =
-        new LocalStringManagerImpl(CreateProtocol.class);
     @Param(name = "protocolname", primary = true)
     String protocolName;
     // TODO:
@@ -105,6 +107,18 @@ public class CreateProtocol implements AdminCommand {
     Domain domain;
     @Inject
     ServiceLocator services;
+
+    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
+
+    @LogMessageInfo(
+            message = "{0} protocol already exists. Cannot add duplicate protocol.",
+            level = "INFO")
+    private static final String CREATE_PROTOCOL_FAIL_DUPLICATE = "AS-WEB-ADMIN-00017";
+
+    @LogMessageInfo(
+            message = "Failed to create protocol {0}.",
+            level = "INFO")
+    private static final String CREATE_PROTOCOL_FAIL = "AS-WEB-ADMIN-00018";
 
     /**
      * Executes the command with the command parameters passed as Properties where the keys are the paramter names and
@@ -125,10 +139,7 @@ public class CreateProtocol implements AdminCommand {
         for (Protocol protocol : protocols.getProtocol()) {
             if (protocolName != null &&
                 protocolName.equalsIgnoreCase(protocol.getName())) {
-                report.setMessage(localStrings.getLocalString(
-                    "create.protocol.fail.duplicate",
-                    "{0} protocol already exists. " +
-                        "Cannot add duplicate protocol", protocolName));
+                report.setMessage(MessageFormat.format(rb.getString(CREATE_PROTOCOL_FAIL_DUPLICATE), protocolName));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -137,14 +148,12 @@ public class CreateProtocol implements AdminCommand {
         try {
             create(protocols, protocolName, securityEnabled);
         } catch (TransactionFailure e) {
-            report.setMessage(localStrings.getLocalString("create.protocol.fail",
-                "Failed to create protocol {0} ", protocolName));
+            report.setMessage(MessageFormat.format(rb.getString(CREATE_PROTOCOL_FAIL), protocolName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;
         } catch (Exception e) {
-            report.setMessage(localStrings.getLocalString("create.protocol.fail",
-                "Failed to create protocol {0} ", protocolName));
+            report.setMessage(MessageFormat.format(rb.getString(CREATE_PROTOCOL_FAIL), protocolName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;

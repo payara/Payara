@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,6 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -58,7 +57,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.internal.api.Target;
 import javax.inject.Inject;
 import javax.inject.Named;
-
+import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -66,7 +65,10 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import java.text.MessageFormat;
 import java.util.List;
+import java.util.ResourceBundle;
+
 import org.glassfish.api.admin.*;
 
 /**
@@ -90,8 +92,7 @@ import org.glassfish.api.admin.*;
 })
 public class DeleteHttpRedirect implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings =
-        new LocalStringManagerImpl(CreateHttp.class);
+    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
 
     @Param(name = "protocolname", primary = true)
     String protocolName;
@@ -130,9 +131,7 @@ public class DeleteHttpRedirect implements AdminCommand {
                 }
             }
             if (protocolToBeRemoved == null) {
-                report.setMessage(localStrings.getLocalString(
-                        "delete.http.notexists", "{0} http doesn't exist",
-                        protocolName));
+                report.setMessage(MessageFormat.format(rb.getString(DeleteHttp.DELETE_HTTP_NOTEXISTS), protocolName));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -142,10 +141,10 @@ public class DeleteHttpRedirect implements AdminCommand {
                     protocolToBeRemoved.findNetworkListeners();
             for (NetworkListener nwlsnr : nwlsnrList) {
                 if (protocolToBeRemoved.getName().equals(nwlsnr.getProtocol())) {
-                    report.setMessage(localStrings.getLocalString(
-                            "delete.protocol.beingused",
-                            "{0} protocol is being used in the network listener {1}",
-                            protocolName, nwlsnr.getName()));
+                    report.setMessage(
+                            MessageFormat.format(
+                                    rb.getString(DeleteProtocol.DELETE_PROTOCOL_BEING_USED),
+                                    protocolName, nwlsnr.getName()));
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
                 }
@@ -158,9 +157,9 @@ public class DeleteHttpRedirect implements AdminCommand {
             }, protocolToBeRemoved);
 
         } catch (TransactionFailure e) {
-            report.setMessage(localStrings.getLocalString(
-                    "delete.http.fail", "Deletion of http {0} failed",
-                    protocolName) + "  " + e.getLocalizedMessage());
+            report.setMessage(
+                    MessageFormat.format(rb.getString(DeleteHttp.DELETE_HTTP_FAIL), protocolName) +
+                    e.getLocalizedMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;

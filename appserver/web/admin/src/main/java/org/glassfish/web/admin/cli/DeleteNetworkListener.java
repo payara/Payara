@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,14 +41,14 @@
 package org.glassfish.web.admin.cli;
 
 import java.beans.PropertyVetoException;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 
 import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.internal.api.Target;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
@@ -65,6 +65,8 @@ import org.glassfish.config.support.TargetType;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -82,8 +84,19 @@ import org.jvnet.hk2.config.TransactionFailure;
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class DeleteNetworkListener implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings =
-        new LocalStringManagerImpl(DeleteNetworkListener.class);
+
+    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
+
+    @LogMessageInfo(
+            message = "{0} Network Listener doesn't exist.",
+            level = "INFO")
+    protected static final String DELETE_NETWORK_LISTENER_NOT_EXISTS = "AS-WEB-ADMIN-00030";
+
+    @LogMessageInfo(
+            message = "Deletion of NetworkListener {0} failed.",
+            level = "INFO")
+    protected static final String DELETE_NETWORK_LISTENER_FAIL = "AS-WEB-ADMIN-00031";
+
     @Param(name = "networkListenerName", primary = true)
     String networkListenerName;
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
@@ -129,8 +142,7 @@ public class DeleteNetworkListener implements AdminCommand {
             }
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         } catch (TransactionFailure e) {
-            report.setMessage(localStrings.getLocalString("delete.networkListener.fail",
-                "Deletion of NetworkListener {0} failed", networkListenerName) + "  " + e.getLocalizedMessage());
+            report.setMessage(MessageFormat.format(rb.getString(DELETE_NETWORK_LISTENER_FAIL), networkListenerName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
         }
@@ -143,8 +155,7 @@ public class DeleteNetworkListener implements AdminCommand {
             }
         }
         if (listenerToBeRemoved == null) {
-            report.setMessage(localStrings.getLocalString("delete.network.listener.notexists",
-                "{0} Network Listener doesn't exist", networkListenerName));
+            report.setMessage(MessageFormat.format(rb.getString(DELETE_NETWORK_LISTENER_NOT_EXISTS), networkListenerName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return false;
         }

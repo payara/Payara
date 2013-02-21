@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,12 +41,14 @@
 package org.glassfish.web.admin.cli;
 
 import java.beans.PropertyVetoException;
+import java.text.MessageFormat;
 import java.util.List;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.grizzly.config.dom.Http;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
@@ -68,6 +70,8 @@ import org.glassfish.internal.api.Target;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -85,8 +89,24 @@ import org.jvnet.hk2.config.TransactionFailure;
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})  
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class CreateNetworkListener implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings =
-        new LocalStringManagerImpl(CreateNetworkListener.class);
+
+    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.logger.getResourceBundle();
+
+    @LogMessageInfo(
+            message = "Network Listener named {0} already exists.",
+            level = "INFO")
+    private static final String CREATE_NETWORK_LISTENER_FAIL_DUPLICATE = "AS-WEB-ADMIN-00010";
+
+    @LogMessageInfo(
+            message = "Protocol {0} has neither a protocol nor a port-unification configured.",
+            level = "INFO")
+    private static final String CREATE_NETWORK_LISTENER_FAIL_BAD_PROTOCOL = "AS-WEB-ADMIN-00011";
+
+    @LogMessageInfo(
+            message = "{0} create failed:",
+            level = "INFO")
+    private static final String CREATE_NETWORK_LISTENER_FAIL = "AS-WEB-ADMIN-00012";
+
     @Param(name = "address", optional = true)
     String address;
     @Param(name = "listenerport", optional = false, alias="Port")
@@ -130,30 +150,24 @@ public class CreateNetworkListener implements AdminCommand {
         // ensure we don't have one of this name already
         for (NetworkListener networkListener : nls.getNetworkListener()) {
             if (networkListener.getName().equals(listenerName)) {
-                report.setMessage(localStrings.getLocalString(
-                    "create.network.listener.fail.duplicate",
-                    "Network Listener named {0} already exists.",
-                    listenerName));
+                report.setMessage(MessageFormat.format(rb.getString(CREATE_NETWORK_LISTENER_FAIL_DUPLICATE), listenerName));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
         }
         if (!verifyUniquePort(networkConfig)) {
-            report.setMessage(localStrings.getLocalString("port.in.use",
-                "Port [{0}] is already taken for address [{1}], please choose another port.", port, address));
+            report.setMessage(MessageFormat.format(rb.getString(CreateHttpListener.PORT_IN_USE), port, address));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
         Protocol prot = networkConfig.findProtocol(protocol);
         if (prot == null) {
-            report.setMessage(localStrings.getLocalString("create.http.fail.protocolnotfound",
-                "The specified protocol {0} is not yet configured", protocol));
+            report.setMessage(MessageFormat.format(CreateHttp.CREATE_HTTP_FAIL_PROTOCOL_NOT_FOUND, protocol));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
         if (prot.getHttp() == null && prot.getPortUnification() == null) {
-            report.setMessage(localStrings.getLocalString("create.network.listener.fail.bad.protocol",
-                "Protocol {0} has neither a protocol nor a port-unification configured", protocol));
+            report.setMessage(MessageFormat.format(rb.getString(CREATE_NETWORK_LISTENER_FAIL_BAD_PROTOCOL), protocol));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
@@ -177,9 +191,8 @@ public class CreateNetworkListener implements AdminCommand {
             }, nls, findVirtualServer(prot));
         } catch (TransactionFailure e) {
             e.printStackTrace();
-            report.setMessage(
-                localStrings.getLocalString("create.network.listener.fail", "{0} create failed: "
-                    + (e.getMessage() == null ? "No reason given" : e.getMessage()), listenerName));
+            report.setMessage(MessageFormat.format(rb.getString(CREATE_NETWORK_LISTENER_FAIL), listenerName) +
+                    (e.getMessage() == null ? "No reason given" : e.getMessage()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;

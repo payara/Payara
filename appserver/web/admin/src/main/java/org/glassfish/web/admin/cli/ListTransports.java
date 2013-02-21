@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,7 +45,6 @@ import java.util.List;
 import org.glassfish.internal.api.Target;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.grizzly.config.dom.Transport;
 import org.glassfish.api.ActionReport;
@@ -77,8 +76,6 @@ import org.glassfish.hk2.api.PerLookup;
         description="list-transports")
 })
 public class ListTransports implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings
-        = new LocalStringManagerImpl(ListTransports.class);
     @Param(name = "target", primary = true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     String target;
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)

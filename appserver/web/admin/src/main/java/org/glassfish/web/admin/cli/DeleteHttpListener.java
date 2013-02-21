@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,16 +41,16 @@
 package org.glassfish.web.admin.cli;
 
 import java.beans.PropertyVetoException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
 import org.glassfish.internal.api.Target;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -71,6 +71,8 @@ import org.glassfish.config.support.TargetType;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -87,7 +89,19 @@ import org.jvnet.hk2.config.TransactionFailure;
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class DeleteHttpListener implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteHttpListener.class);
+
+    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
+
+    @LogMessageInfo(
+            message = "Specified http listener, {0}, doesn''t exist.",
+            level = "INFO")
+    protected static final String DELETE_HTTP_LISTENER_NOT_EXISTS = "AS-WEB-ADMIN-00028";
+
+    @LogMessageInfo(
+            message = "{0} delete failed.",
+            level = "INFO")
+    protected static final String DELETE_HTTP_LISTENER_FAIL = "AS-WEB-ADMIN-00029";
+
     @Param(name = "listener_id", primary = true)
     String listenerId;
     @Param(name = "secure", optional = true)
@@ -117,8 +131,7 @@ public class DeleteHttpListener implements AdminCommand {
         ActionReport report = context.getActionReport();
         networkConfig = config.getNetworkConfig();
         if (!exists()) {
-            report.setMessage(localStrings.getLocalString("delete.http.listener.notexists", "{0} doesn't exist",
-                listenerId));
+            report.setMessage(MessageFormat.format(rb.getString(DELETE_HTTP_LISTENER_NOT_EXISTS), listenerId));
             report.setActionExitCode(ExitCode.FAILURE);
             return;
         }
@@ -132,8 +145,7 @@ public class DeleteHttpListener implements AdminCommand {
             cleanUp(name);
             report.setActionExitCode(ExitCode.SUCCESS);
         } catch (TransactionFailure e) {
-            report.setMessage(localStrings.getLocalString("delete.http.listener.fail", "failed",
-                listenerId));
+            report.setMessage(MessageFormat.format(rb.getString(DELETE_HTTP_LISTENER_FAIL), listenerId));
             report.setActionExitCode(ExitCode.FAILURE);
             report.setFailureCause(e);
         }

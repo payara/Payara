@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,24 +40,21 @@
 
 package org.glassfish.web.admin.monitor.statistics;
 
+import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
-import org.glassfish.external.statistics.Statistic;
 import org.glassfish.external.statistics.CountStatistic; 
-import org.glassfish.external.statistics.RangeStatistic; 
-import org.glassfish.external.statistics.TimeStatistic;
-import org.glassfish.external.statistics.Stats;
-import org.glassfish.external.statistics.StringStatistic;
+import org.glassfish.external.statistics.RangeStatistic;
 import org.glassfish.admin.monitor.cli.MonitorContract;
 import org.glassfish.flashlight.datatree.TreeNode;
 import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
 import org.glassfish.api.Param;
 import java.util.List;
-import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.ResourceBundle;
 
 /** 
  *
@@ -90,8 +87,7 @@ public class WebModuleVirtualServerStatsImpl implements MonitorContract {
     @Inject
     private MonitoringRuntimeDataRegistry mrdr;
 
-    private static final LocalStringManagerImpl localStrings = 
-        new LocalStringManagerImpl(WebModuleVirtualServerStatsImpl.class);
+    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
 
     private final String name = "webmodule";
 
@@ -106,16 +102,14 @@ public class WebModuleVirtualServerStatsImpl implements MonitorContract {
 
         if (mrdr == null) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(localStrings.getLocalString("mrdr.null", 
-                "MonitoringRuntimeDataRegistry is null"));
+            report.setMessage(rb.getString(HTTPListenerStatsImpl.MRDR_NULL));
             return report;
         }
 
         TreeNode serverNode = mrdr.get("server");
         if (serverNode == null) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(localStrings.getLocalString("mrdr.null", 
-                "MonitoringRuntimeDataRegistry server node is null"));
+            report.setMessage(rb.getString(HTTPListenerStatsImpl.MRDR_NULL));
             return report;
         }
 

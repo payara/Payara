@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,12 +41,12 @@
 package org.glassfish.web.admin.cli;
 
 import java.beans.PropertyVetoException;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 
 import org.glassfish.internal.api.Target;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.Transport;
@@ -60,6 +60,8 @@ import org.glassfish.config.support.TargetType;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -86,8 +88,19 @@ import org.jvnet.hk2.config.TransactionFailure;
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class CreateTransport implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings =
-        new LocalStringManagerImpl(CreateTransport.class);
+
+    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
+
+    @LogMessageInfo(
+            message = "{0} transport already exists. Cannot add duplicate transport.",
+            level = "INFO")
+    protected static final String CREATE_TRANSPORT_FAIL_DUPLICATE = "AS-WEB-ADMIN-00022";
+
+    @LogMessageInfo(
+            message = "Failed to create transport {0}.",
+            level = "INFO")
+    protected static final String CREATE_TRANSPORT_FAIL = "AS-WEB-ADMIN-00023";
+
     @Param(name = "transportname", primary = true)
     String transportName;
     @Param(name = "acceptorthreads", alias="acceptorThreads", optional = true, defaultValue = "-1")
@@ -145,9 +158,7 @@ public class CreateTransport implements AdminCommand {
         for (Transport transport : transports.getTransport()) {
             if (transportName != null &&
                 transportName.equalsIgnoreCase(transport.getName())) {
-                report.setMessage(localStrings.getLocalString(
-                    "create.transport.fail.duplicate",
-                    "{0} transport already exists. Cannot add duplicate transport"));
+                report.setMessage(MessageFormat.format(rb.getString(CREATE_TRANSPORT_FAIL_DUPLICATE), transportName));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -181,9 +192,7 @@ public class CreateTransport implements AdminCommand {
                 }
             }, transports);
         } catch (TransactionFailure e) {
-            report.setMessage(
-                localStrings.getLocalString("create.transport.fail",
-                    "Failed to create transport {0} ", transportName));
+            report.setMessage(MessageFormat.format(rb.getString(CREATE_TRANSPORT_FAIL), transportName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;

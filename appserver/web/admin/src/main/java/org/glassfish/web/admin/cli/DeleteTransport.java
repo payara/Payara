@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,13 +40,13 @@
 
 package org.glassfish.web.admin.cli;
 
+import java.text.MessageFormat;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.glassfish.internal.api.Target;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -64,6 +64,8 @@ import org.glassfish.config.support.TargetType;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -81,9 +83,23 @@ import org.jvnet.hk2.config.TransactionFailure;
 @org.glassfish.api.admin.ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class DeleteTransport implements AdminCommand {
-    
-    final private static LocalStringManagerImpl localStrings =
-        new LocalStringManagerImpl(DeleteTransport.class);
+
+    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
+
+    @LogMessageInfo(
+            message = "{0} transport is being used in the network listener {1}.",
+            level = "INFO")
+    protected static final String DELETE_TRANSPORT_BEINGUSED = "AS-WEB-ADMIN-00040";
+
+    @LogMessageInfo(
+            message = "Deletion of Transport {0} failed.",
+            level = "INFO")
+    protected static final String DELETE_TRANSPORT_FAIL = "AS-WEB-ADMIN-00041";
+
+    @LogMessageInfo(
+            message = "{0} transport doesn''t exist.",
+            level = "INFO")
+    protected static final String DELETE_TRANSPORT_NOT_EXISTS = "AS-WEB-ADMIN-00042";
 
     @Param(name="transportname", primary=true)
     String transportName;
@@ -127,9 +143,7 @@ public class DeleteTransport implements AdminCommand {
             }
 
             if (transportToBeRemoved == null) {
-                report.setMessage(localStrings.getLocalString(
-                    "delete.transport.notexists", "{0} transport doesn't exist",
-                    transportName));
+                report.setMessage(MessageFormat.format(rb.getString(DELETE_TRANSPORT_NOT_EXISTS), transportName));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -141,12 +155,13 @@ public class DeleteTransport implements AdminCommand {
                 transportToBeRemoved.findNetworkListeners();
             for (NetworkListener nwlsnr : nwlsnrList) {
               if (transportToBeRemoved.getName().equals(nwlsnr.getTransport())) {
-                    report.setMessage(localStrings.getLocalString(
-                        "delete.transport.beingused",
-                        "{0} transport is being used in the network listener {1}",
-                        transportName, nwlsnr.getName()));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
+                  report.setMessage(
+                          MessageFormat.format(
+                                  rb.getString(DELETE_TRANSPORT_BEINGUSED),
+                                  transportName,
+                                  nwlsnr.getName()));
+                  report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                  return;
               }
             }
 
@@ -158,9 +173,8 @@ public class DeleteTransport implements AdminCommand {
             }, transports);
             
         } catch(TransactionFailure e) {
-            report.setMessage(localStrings.getLocalString(
-                "delete.transport.fail", "Deletion of Transport {0} failed",
-                transportName) + "  " + e.getLocalizedMessage());
+            report.setMessage(MessageFormat.format(rb.getString(DELETE_TRANSPORT_FAIL), transportName) +
+                    "  " + e.getLocalizedMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,8 +41,10 @@
 package org.glassfish.web.admin.cli;
 
 import java.beans.PropertyVetoException;
+import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ResourceBundle;
 
 import org.glassfish.api.admin.config.ModelBinding;
 import org.glassfish.internal.api.Target;
@@ -50,7 +52,6 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -65,6 +66,8 @@ import org.glassfish.config.support.CommandTarget;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -82,7 +85,32 @@ import org.jvnet.hk2.config.types.Property;
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class CreateVirtualServer implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateVirtualServer.class);
+
+    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
+
+    @LogMessageInfo(
+            message = "Please use only networklisteners.",
+            level = "INFO")
+    protected static final String CREATE_VIRTUAL_SERVER_BOTH_HTTP_NETWORK = "AS-WEB-ADMIN-00024";
+
+    @LogMessageInfo(
+            message = "Virtual Server named {0} already exists.",
+            level = "INFO")
+    protected static final String CREATE_VIRTUAL_SERVER_DUPLICATE = "AS-WEB-ADMIN-00025";
+
+    @LogMessageInfo(
+            message = "{0} create failed.",
+            level = "INFO")
+    protected static final String CREATE_VIRTUAL_SERVER_FAIL = "AS-WEB-ADMIN-00026";
+
+    @LogMessageInfo(
+            message = "The create-virtual-server command creates the named virtual server. " +
+                    "Virtualization in the Application Server allows multiple URL domains to be served " +
+                    "by a single HTTP server process that is listening on multiple host addresses. " +
+                    "If the application is available at two virtual servers, they still share the same physical resource pools.",
+            level = "INFO")
+    protected static final String CREATE_VIRTUAL_SERVER = "AS-WEB-ADMIN-00027";
+
     @Param(name = "hosts", defaultValue = "${com.sun.aas.hostName}")
     String hosts;
     @Param(name = "httplisteners", optional = true)
@@ -123,8 +151,7 @@ public class CreateVirtualServer implements AdminCommand {
         }
         final ActionReport report = context.getActionReport();
         if (networkListeners != null && httpListeners != null) {
-            report.setMessage(localStrings.getLocalString("create.virtual.server.both.http.network",
-                "Please use only networklisteners", virtualServerId));
+            report.setMessage(MessageFormat.format(rb.getString(CREATE_VIRTUAL_SERVER_BOTH_HTTP_NETWORK), virtualServerId));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
@@ -136,8 +163,7 @@ public class CreateVirtualServer implements AdminCommand {
         // ensure we don't already have one of this name
         for (VirtualServer virtualServer : httpService.getVirtualServer()) {
             if (virtualServer.getId().equals(virtualServerId)) {
-                report.setMessage(localStrings.getLocalString("create.virtual.server.duplicate",
-                    "Virtual Server named {0} already exists.", virtualServerId));
+                report.setMessage(MessageFormat.format(rb.getString(CREATE_VIRTUAL_SERVER_DUPLICATE), virtualServerId));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -186,8 +212,7 @@ public class CreateVirtualServer implements AdminCommand {
             }, httpService);
 
         } catch (TransactionFailure e) {
-            report.setMessage(
-                localStrings.getLocalString("create.virutal.server.fail", "{0} create failed ", virtualServerId));
+            report.setMessage(MessageFormat.format(rb.getString(CREATE_VIRTUAL_SERVER_FAIL), virtualServerId));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
         }

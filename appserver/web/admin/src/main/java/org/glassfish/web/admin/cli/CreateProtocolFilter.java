@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,13 +41,13 @@
 package org.glassfish.web.admin.cli;
 
 import java.beans.PropertyVetoException;
+import java.text.MessageFormat;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.glassfish.internal.api.Target;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.grizzly.config.dom.ProtocolChain;
@@ -63,6 +63,8 @@ import org.glassfish.config.support.TargetType;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -86,8 +88,6 @@ import org.jvnet.hk2.config.TransactionFailure;
         })
 })
 public class CreateProtocolFilter implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings =
-        new LocalStringManagerImpl(CreateProtocolFilter.class);
     @Param(name = "name", primary = true)
     String name;
     @Param(name = "protocol", optional = false)
@@ -104,6 +104,18 @@ public class CreateProtocolFilter implements AdminCommand {
     @Inject
     ServiceLocator services;
 
+    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
+    @LogMessageInfo(
+            message = "{0} create failed: {1}.",
+            level = "INFO")
+    protected static final String CREATE_PORTUNIF_FAIL = "AS-WEB-ADMIN-00019";
+
+    @LogMessageInfo(
+            message = "{0} create failed.  Given class is not a ProtocolFilter: {1}.",
+            level = "INFO")
+    protected static final String CREATE_PORTUNIF_FAIL_NOTFILTER = "AS-WEB-ADMIN-00020";
+
+
     @Override
     public void execute(AdminCommandContext context) {
         Target targetUtil = services.getService(Target.class);
@@ -115,12 +127,10 @@ public class CreateProtocolFilter implements AdminCommand {
         try {
             final Protocols protocols = config.getNetworkConfig().getProtocols();
             final Protocol protocol = protocols.findProtocol(protocolName);
-            validate(protocol, "create.http.fail.protocolnotfound",
-                "The specified protocol {0} is not yet configured", protocolName);
+            validate(protocol, CreateHttp.CREATE_HTTP_FAIL_PROTOCOL_NOT_FOUND, protocolName);
             final Class<?> filterClass = Thread.currentThread().getContextClassLoader().loadClass(classname);
             if (!org.glassfish.grizzly.filterchain.Filter.class.isAssignableFrom(filterClass)) {
-                report.setMessage(localStrings.getLocalString("create.portunif.fail.notfilter",
-                    "{0} create failed.  Given class is not a ProtocolFilter: {1}", name, classname));
+                report.setMessage(MessageFormat.format(rb.getString(CREATE_PORTUNIF_FAIL_NOTFILTER), name, classname));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -147,8 +157,10 @@ public class CreateProtocolFilter implements AdminCommand {
             return;
         } catch (Exception e) {
             e.printStackTrace();
-            report.setMessage(localStrings.getLocalString("create.portunif.fail", "{0} create failed: {1}", name,
-                e.getMessage() == null ? "No reason given" : e.getMessage()));
+            report.setMessage(MessageFormat.format(
+                    rb.getString(CREATE_PORTUNIF_FAIL),
+                    name,
+                    e.getMessage() == null ? "No reason given" : e.getMessage()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;
@@ -190,10 +202,10 @@ public class CreateProtocolFilter implements AdminCommand {
         return handler;
     }
 
-    private void validate(ConfigBeanProxy check, String key, String defaultFormat, String... arguments)
+    private void validate(ConfigBeanProxy check, String key, String... arguments)
         throws ValidationFailureException {
         if (check == null) {
-            report.setMessage(localStrings.getLocalString(key, defaultFormat, arguments));
+            report.setMessage(MessageFormat.format(rb.getString(key), arguments));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             throw new ValidationFailureException();
         }

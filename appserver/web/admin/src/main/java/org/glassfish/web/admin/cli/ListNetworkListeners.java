@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,7 +45,6 @@ import java.util.List;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.HttpService;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.api.ActionReport;
@@ -78,8 +77,6 @@ import org.glassfish.hk2.api.PerLookup;
         description="list-network-listeners")
 })
 public class ListNetworkListeners implements AdminCommand {
-    final private static LocalStringManagerImpl localStrings
-        = new LocalStringManagerImpl(ListNetworkListeners.class);
     @Param(name = "target", primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
