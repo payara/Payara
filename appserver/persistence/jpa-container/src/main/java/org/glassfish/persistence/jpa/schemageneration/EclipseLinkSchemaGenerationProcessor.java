@@ -123,7 +123,7 @@ public class EclipseLinkSchemaGenerationProcessor implements SchemaGenerationPro
 
     private Java2DBProcessorHelper helper;
 
-    private Map<String, String> overrides;
+    private Map<String, Object> overrides;
 
     private boolean isSchemaGenerationPU;
 
@@ -193,13 +193,13 @@ public class EclipseLinkSchemaGenerationProcessor implements SchemaGenerationPro
 
 
     @Override
-    public Map<String, String> getOverridesForSchemaGeneration() {
+    public Map<String, Object> getOverridesForSchemaGeneration() {
         return overrides;
     }
 
     @Override
-    public Map<String, String> getOverridesForSuppressingSchemaGeneration() {
-        Map<String, String> overridesForSuppressingSchemaGeneration = new HashMap<>();
+    public Map<String, Object> getOverridesForSuppressingSchemaGeneration() {
+        Map<String, Object> overridesForSuppressingSchemaGeneration = new HashMap<>();
         overridesForSuppressingSchemaGeneration.put(providerPropertyNamesHolder.ddlGenerationOutputMode, NONE);
         return overridesForSuppressingSchemaGeneration;
     }
@@ -275,7 +275,7 @@ public class EclipseLinkSchemaGenerationProcessor implements SchemaGenerationPro
         helper.createOrDropTablesInDB(true, "JPA"); // NOI18N
     }
 
-    private void addSchemaGenerationPropertiesToOverrides(PersistenceUnitDescriptor puDescriptor, Map<String, String> overrides) {
+    private void addSchemaGenerationPropertiesToOverrides(PersistenceUnitDescriptor puDescriptor, Map<String, Object> overrides) {
         addPropertyToOverride(puDescriptor, overrides, providerPropertyNamesHolder.appLocation,
                 helper.getGeneratedLocation(puDescriptor.getName()));
         addPropertyToOverride(puDescriptor, overrides, providerPropertyNamesHolder.createJdbcDdlFile,
@@ -298,7 +298,7 @@ public class EclipseLinkSchemaGenerationProcessor implements SchemaGenerationPro
      * @param propertyName the name of the property.
      * @param propertyValue the value of the property.
      */
-    private static void addPropertyToOverride(PersistenceUnitDescriptor descriptor, Map<String, String> overrides,
+    private static void addPropertyToOverride(PersistenceUnitDescriptor descriptor, Map<String, Object> overrides,
                                        String propertyName, String propertyValue) {
         String oldPropertyValue = descriptor.getProperties().getProperty(propertyName);
         if(null == oldPropertyValue) { //Do not override any value explicitly specified by the user

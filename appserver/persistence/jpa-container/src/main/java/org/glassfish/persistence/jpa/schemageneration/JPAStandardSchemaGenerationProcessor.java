@@ -43,6 +43,7 @@ package org.glassfish.persistence.jpa.schemageneration;
 import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
 import org.glassfish.api.deployment.DeploymentContext;
 
+import java.io.CharArrayReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,7 +53,10 @@ import java.util.Map;
  * @author Mitesh Meswani
  */
 public class JPAStandardSchemaGenerationProcessor implements SchemaGenerationProcessor {
-    private static final String SCHEMA_GENERATION_ACTION_PROPERTY = "javax.persistence.schema-generation-action"; //TODO Update the name once EclipseLink updates
+    private static final String SCHEMA_GENERATION_DATABASE_ACTION_PROPERTY = "javax.persistence.schema-generation.database.action";
+    private static final String SCHEMA_GENERATION_SCRIPTS_ACTION_PROPERTY = "javax.persistence.schema-generation.scripts.action";
+    private static final String SQL_LOAD_SCRIPT_SOURCE = "javax.persistence.sql_load-script-source";
+
     private static final String SCHEMA_GENERATION_ACTION_NONE = "none";
 
     @Override
@@ -61,15 +65,19 @@ public class JPAStandardSchemaGenerationProcessor implements SchemaGenerationPro
     }
 
     @Override
-    public Map<String, String> getOverridesForSchemaGeneration() {
-        // No override is needed now. When we wire in taking schema generation overrides from deploy CLI, this method will return corresponidng overrides.
+    public Map<String, Object> getOverridesForSchemaGeneration() {
+        // No override is needed now. When we wire in taking schema generation overrides from deploy CLI, this method will return corresponding overrides.
         return null;
     }
 
     @Override
-    public Map<String, String> getOverridesForSuppressingSchemaGeneration() {
-        Map<String, String> overrides = new HashMap<>();
-        overrides.put(SCHEMA_GENERATION_ACTION_PROPERTY, SCHEMA_GENERATION_ACTION_NONE);
+    public Map<String, Object> getOverridesForSuppressingSchemaGeneration() {
+        Map<String, Object> overrides = new HashMap<>();
+
+        overrides.put(SCHEMA_GENERATION_DATABASE_ACTION_PROPERTY, SCHEMA_GENERATION_ACTION_NONE); // suppress database action
+        overrides.put(SCHEMA_GENERATION_SCRIPTS_ACTION_PROPERTY, SCHEMA_GENERATION_ACTION_NONE);  // suppress script action
+        overrides.put(SQL_LOAD_SCRIPT_SOURCE, new CharArrayReader(new char[0])); // suppress execution of load scripts
+
         return overrides;
     }
 

@@ -167,7 +167,7 @@ public class PersistenceUnitLoader {
             throw new RuntimeException(e);
         }
 
-        Map<String, String> schemaGenerationOverrides;
+        Map<String, Object> schemaGenerationOverrides;
         schemaGenerationProcessor = SchemaGenerationProcessorFactory.createSchemaGenerationProcessor(pud);
         if(providerContainerContractInfo.isJava2DBRequired() ) {
             schemaGenerationProcessor.init(pud, providerContainerContractInfo.getDeploymentContext());

@@ -59,12 +59,12 @@ public interface SchemaGenerationProcessor {
     /**
      * @return overrides that will be supplied to EMF creation for schema generation
      */
-    Map<String, String> getOverridesForSchemaGeneration();
+    Map<String, Object> getOverridesForSchemaGeneration();
 
     /**
      @return overrides that will be supplied to EMF creation for suppressing schema generation
      */
-    Map<String,String> getOverridesForSuppressingSchemaGeneration();
+    Map<String,Object> getOverridesForSuppressingSchemaGeneration();
 
     /**
      * @return whether ddl needs to be executed by container
