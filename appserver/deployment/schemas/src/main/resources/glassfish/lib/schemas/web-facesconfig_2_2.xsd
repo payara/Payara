@@ -2745,7 +2745,11 @@
         <xsd:annotation>
           <xsd:documentation>
             <![CDATA[[
-            <p>The document id of the called flow.</p>
+            <p class="changed_added_2_2">The document id of the called flow.
+            If this element appears in a &lt;navigation-case&gt; nested within 
+            a &lt;flow-definition&gt;, it must be ignored because navigation
+            cases within flows may only navigate among the view nodes of that 
+            flow.</p>
             
             ]]>
           </xsd:documentation>
@@ -2778,8 +2782,7 @@
     <xsd:sequence>
       <xsd:group ref="javaee:descriptionGroup"/>
       <xsd:element name="from-view-id"
-                   type="javaee:faces-config-from-view-idType"
-                   minOccurs="0"/>
+                   type="javaee:faces-config-from-view-idType"/>
       <xsd:element name="navigation-case"
                    type="javaee:faces-config-navigation-caseType"
                    minOccurs="0"
@@ -2969,10 +2972,6 @@
       </xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
-      <xsd:element name="view-param"
-                   type="javaee:faces-config-redirect-viewParamType"
-                   minOccurs="0"
-                   maxOccurs="unbounded"/>
       <xsd:element name="redirect-param"
                    type="javaee:faces-config-redirect-redirectParamType"
                    minOccurs="0"
