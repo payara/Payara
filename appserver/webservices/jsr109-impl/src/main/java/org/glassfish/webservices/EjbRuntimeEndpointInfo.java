@@ -63,12 +63,12 @@ import javax.xml.ws.soap.MTOMFeature;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.logging.LogHelper;
 
 
 /**
@@ -171,10 +171,8 @@ public class EjbRuntimeEndpointInfo {
                             wsCtxt = new WebServiceContextImpl();
                         }
                     } catch (Throwable t) {
-                        String msg = MessageFormat.format(
-                                logger.getResourceBundle().getString(LogUtils.CANNOT_INITIALIZE),
-                                endpoint.getName());
-                        logger.log(Level.SEVERE, msg, t);
+                        LogHelper.log(logger, Level.SEVERE,
+                                LogUtils.CANNOT_INITIALIZE, t, endpoint.getName());
                         return null;
                     }
                 }
@@ -290,10 +288,8 @@ public class EjbRuntimeEndpointInfo {
                     adapter = adapterList.createAdapter(endpoint.getName(), urlPattern, wsep);
                     handlersConfigured=true;
                 } catch (Throwable t) {
-                        String msg = MessageFormat.format(
-                                logger.getResourceBundle().getString(LogUtils.CANNOT_INITIALIZE),
-                                endpoint.getName());
-                        logger.log(Level.SEVERE, msg, t);
+                        LogHelper.log(logger, Level.SEVERE,
+                                LogUtils.CANNOT_INITIALIZE, t, endpoint.getName());
                     adapter = null;
                 }
             }
@@ -326,7 +322,9 @@ public class EjbRuntimeEndpointInfo {
                     javax.naming.InitialContext ic = new javax.naming.InitialContext();
                     wsc = (WebServiceContextImpl) ic.lookup("java:comp/env/" + r.getName());
                 } catch (Throwable t) {
-                    logger.log(Level.SEVERE, LogUtils.EXCEPTION_THROWN, t);
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE, LogUtils.EXCEPTION_THROWN, t);
+                    }
                 }
                 if(wsc != null) {
                     wsc.setContextDelegate(wsCtxt.getContextDelegate());

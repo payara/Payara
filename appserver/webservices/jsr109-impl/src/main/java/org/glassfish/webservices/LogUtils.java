@@ -200,9 +200,7 @@ public final class LogUtils {
 
     @LogMessageInfo(
             message = "WS00050: Following exception was thrown",
-            level = "SEVERE",
-            cause = "unknown",
-            action = "unknown")
+            level = "WARNING")
     public static final String EXCEPTION_THROWN = LOGMSG_PREFIX + "-00050";
 
     @LogMessageInfo(
