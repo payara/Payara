@@ -64,7 +64,7 @@ class CallbackChainImpl {
         if (index < size) {
             result = interceptors[index].intercept(invContext);
         } else {
-            invContext.invokeBeanConstructor();
+            invContext.invokeSpecial();
         }
 
         return result;

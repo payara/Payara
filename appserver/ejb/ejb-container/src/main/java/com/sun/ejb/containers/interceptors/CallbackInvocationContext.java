@@ -184,7 +184,7 @@ public class CallbackInvocationContext implements InvocationContext {
     /**
       * Called from Interceptor Chain to create the bean instance.
       */
-    public void invokeBeanConstructor() throws Throwable {
+    public void invokeSpecial() throws Throwable {
         if (eventType == CallbackType.AROUND_CONSTRUCT) {
             container.createEjbInstance(ctorParams, ctx);
             targetObjectInstance = ctx.getEJB();
