@@ -185,12 +185,7 @@ final class StandardEngineValve
         // Select the Host to be used for this Request
         Host host = request.getHost();
         if (host == null) {
-            /* S1AS 4878272
-            ((HttpServletResponse) response.getResponse()).sendError
-                (HttpServletResponse.SC_BAD_REQUEST,
-                 sm.getString("standardEngine.noHost",
-                              request.getRequest().getServerName()));
-            */
+
             // BEGIN S1AS 4878272
             ((HttpServletResponse) response.getResponse()).sendError
                 (HttpServletResponse.SC_BAD_REQUEST);

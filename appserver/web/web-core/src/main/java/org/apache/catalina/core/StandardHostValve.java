@@ -624,11 +624,6 @@ final class StandardHostValve
         // Select the Context to be used for this Request
         Context context = request.getContext();
         if (context == null) {
-            /* S1AS 4878272
-            ((HttpServletResponse) response.getResponse()).sendError
-                (HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                 sm.getString("standardHost.noContext"));
-            */
             // BEGIN S1AS 4878272
             ((HttpServletResponse) response.getResponse()).sendError
                 (HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

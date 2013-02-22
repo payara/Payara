@@ -198,10 +198,6 @@ final class StandardWrapperValve extends ValveBase {
 
         // Check for the application being marked unavailable
         if (!context.getAvailable()) {
-            /* S1AS 4878272
-            hres.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE,
-                           sm.getString("standardContext.isUnavailable"));
-            */
             // BEGIN S1AS 4878272
             hres.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
             response.setDetailMessage(rb.getString(APP_UNAVAILABLE));
@@ -219,22 +215,12 @@ final class StandardWrapperValve extends ValveBase {
                 long available = wrapper.getAvailable();
                 if ((available > 0L) && (available < Long.MAX_VALUE)) {
                     hres.setDateHeader("Retry-After", available);
-                    /* S1AS 4878272
-                    hres.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE,
-                               sm.getString("standardWrapper.isUnavailable",
-                                            wrapper.getName()));
-                    */
                     // BEGIN S1AS 4878272
                     hres.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
 
                     response.setDetailMessage(msg);
                     // END S1AS 4878272
                 } else if (available == Long.MAX_VALUE) {
-                    /* S1AS 4878272
-                    hres.sendError(HttpServletResponse.SC_NOT_FOUND,
-                               sm.getString("standardWrapper.notFound",
-                                            wrapper.getName()));
-                    */
                     // BEGIN S1AS 4878272
                     hres.sendError(HttpServletResponse.SC_NOT_FOUND);
                     msg = MessageFormat.format(rb.getString(SERVLET_NOT_FOUND), wrapper.getName());
@@ -252,11 +238,6 @@ final class StandardWrapperValve extends ValveBase {
             }
         } catch (UnavailableException e) {
             if (e.isPermanent()) {
-                /* S1AS 4878272
-                hres.sendError(HttpServletResponse.SC_NOT_FOUND,
-                           sm.getString("standardWrapper.notFound",
-                                        wrapper.getName()));
-                */
                 // BEGIN S1AS 4878272
                 hres.sendError(HttpServletResponse.SC_NOT_FOUND);
 
@@ -266,11 +247,6 @@ final class StandardWrapperValve extends ValveBase {
                 // END S1AS 4878272
             } else {
                 hres.setDateHeader("Retry-After", e.getUnavailableSeconds());
-                /* S1AS 4878272
-                hres.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE,
-                           sm.getString("standardWrapper.isUnavailable",
-                                        wrapper.getName()));
-                */
                 // BEGIN S1AS 4878272
                 hres.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                 String msg = MessageFormat.format(rb.getString(SERVLET_UNAVAILABLE), wrapper.getName());
@@ -360,22 +336,12 @@ final class StandardWrapperValve extends ValveBase {
             long available = wrapper.getAvailable();
             if ((available > 0L) && (available < Long.MAX_VALUE)) {
                 hres.setDateHeader("Retry-After", available);
-                /* S1AS 4878272
-                hres.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE,
-                           sm.getString("standardWrapper.isUnavailable",
-                                        wrapper.getName()));
-                */
                 // BEGIN S1AS 4878272
                 hres.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                 String msgServletUnavailable = MessageFormat.format(rb.getString(SERVLET_UNAVAILABLE), wrapper.getName());
                 response.setDetailMessage(msgServletUnavailable);
                 // END S1AS 4878272
             } else if (available == Long.MAX_VALUE) {
-                /* S1AS 4878272
-                hres.sendError(HttpServletResponse.SC_NOT_FOUND,
-                            sm.getString("standardWrapper.notFound",
-                                         wrapper.getName()));
-                */
                 // BEGIN S1AS 4878272
                 hres.sendError(HttpServletResponse.SC_NOT_FOUND);
                 String msgServletNotFound = MessageFormat.format(rb.getString(SERVLET_NOT_FOUND), wrapper.getName());

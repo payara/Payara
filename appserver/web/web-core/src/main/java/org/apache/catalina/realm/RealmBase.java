@@ -1028,11 +1028,6 @@ public abstract class RealmBase
             if (roles.length == 0) {
                 if(constraint.getAuthConstraint()) {
 
-                    /* S1AS 4878272
-                    ((HttpServletResponse) response.getResponse()).sendError
-                        (HttpServletResponse.SC_FORBIDDEN,
-                         sm.getString("realmBase.forbidden"));
-                    */
                     // BEGIN S1AS 4878272
                     ((HttpServletResponse) response.getResponse()).sendError
                         (HttpServletResponse.SC_FORBIDDEN);
@@ -1051,11 +1046,6 @@ public abstract class RealmBase
                 if (log.isLoggable(Level.FINE))
                     log.log(Level.FINE, "  No user authenticated, cannot grant access");
 
-                /* S1AS 4878272
-                ((HttpServletResponse) response.getResponse()).sendError
-                    (HttpServletResponse.SC_FORBIDDEN,
-                     sm.getString("realmBase.notAuthenticated"));
-                */
                 // BEGIN S1AS 4878272
                 ((HttpServletResponse) response.getResponse()).sendError
                     (HttpServletResponse.SC_FORBIDDEN);

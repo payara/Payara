@@ -4760,6 +4760,7 @@ public class StandardContext
         //      if (!reloadable)
         //          throw new IllegalStateException
         //              (sm.getString("standardContext.notReloadable"));
+        //standardContext.notReloadable=PWC1287: Reloading is disabled on this Context
         if (log.isLoggable(Level.INFO)) {
             log.log(Level.INFO, RELOADING_STARTED);
         }

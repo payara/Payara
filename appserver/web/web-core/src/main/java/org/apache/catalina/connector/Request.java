@@ -304,17 +304,6 @@ public class Request
     )
     public static final String BREAKING_BACKGROUND_LOCK_EXCEPTION = "AS-WEB-CORE-00381";
 
-    /*
-    // Reserved msg for future use
-    @LogMessageInfo(
-            message = "Parameters were not parsed because the size of the posted data was too big. " +
-                    "Use the maxPostSize attribute of the connector to resolve this if the application should accept large POSTs.",
-            level = "WARNING"
-    )
-    public static final String LARGE_SIZE_DATA_EXCEPTION = "AS-WEB-CORE-00382";
-    */
-
-
     // ----------------------------------------------------------- Statics
     /**
      * Descriptive information about this Request implementation.
@@ -3550,6 +3539,10 @@ public class Request
 //            int maxPostSize = ((Connector) connector).getMaxPostSize();
 //            if (maxPostSize > 0 && len > maxPostSize) {
 //                log(sm.getString("coyoteRequest.postTooLarge"));
+
+                  //coyoteRequest.postTooLarge=PWC4004: Parameters were not parsed because the size of the posted data was too big.
+                  // Use the maxPostSize attribute of the connector to resolve this if the application should accept large POSTs.
+//
 //                throw new IllegalStateException("Post too large");
 //            }
 //            try {
