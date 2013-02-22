@@ -59,7 +59,14 @@
                         convertToFalse="#{pageSession.convertToFalseList}"
                         onlyUseAttrs="#{pageSession.onlyUseAttrs}"
                     );
-
+                    if(#{pageSession.has2Objects}){
+                        gf.createEntity(endpoint="#{pageSession.selfUrl2}"
+                            attrs="#{pageSession.valueMap2}"
+                            skipAttrs="#{pageSession.skipAttrsList2}"
+                            convertToFalse="#{pageSession.convertToFalseList2}"
+                            onlyUseAttrs="#{pageSession.onlyUseAttrs2}"
+                        );
+                    }
                     getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
                     getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});
                     removeEmptyProps(props="#{newList}" modifiedProps="#{newList}");
