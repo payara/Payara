@@ -530,6 +530,7 @@ public class ContextConfig
         if (stream == null) {
             /* PWC 6296257
             log.info(sm.getString("contextConfig.applicationMissing") + " " + context);
+            //contextConfig.applicationMissing=PWC3013: Missing application web.xml, using defaults only
             */
             // START PWC 6296257
             if (log.isLoggable(Level.FINE)) {

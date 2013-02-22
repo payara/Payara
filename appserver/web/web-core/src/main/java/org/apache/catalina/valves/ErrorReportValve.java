@@ -484,9 +484,6 @@ public class ErrorReportValve
         if (serverInfo != null && !serverInfo.isEmpty()) {
             sb.append(serverInfo).append(" - ");
         }
-        /* 6412710
-        sb.append(sm.getString("errorReportValve.errorReport"));
-        */
         // START SJSAS 6412710
 
         String errorReport = rb.getString(ERROR_REPORT_INFO);
@@ -499,10 +496,6 @@ public class ErrorReportValve
         sb.append("--></style> ");
         sb.append("</head><body>");
         sb.append("<h1>");
-        /* SJSAS 6412710
-        sb.append(sm.getString("errorReportValve.statusHeader",
-                               "" + statusCode, message)).append("</h1>");
-        */
         // START SJSAS 6412710
 
         mf.applyPattern(rb.getString(HTTP_STATUS_INFO));
@@ -513,9 +506,6 @@ public class ErrorReportValve
         sb.append("<hr/>");
         sb.append("<p><b>type</b> ");
         if (throwable != null) {
-            /* SJSAS 6412710
-            sb.append(sm.getString("errorReportValve.exceptionReport"));
-            */
             // START SJJAS 6412710
 
             String exceptionReport = rb.getString(EXCEPTION_REPORT_INFO);
@@ -523,9 +513,6 @@ public class ErrorReportValve
             sb.append(exceptionReport);
             // END SJSAS 6412710
         } else {
-            /* SJSAS 6412710
-            sb.append(sm.getString("errorReportValve.statusReport"));
-            */
             // START SJSAS 6412710
             String statusReport = rb.getString(STATUS_REPORT_INFO);
 
@@ -534,9 +521,7 @@ public class ErrorReportValve
         }
         sb.append("</p>");
         sb.append("<p><b>");
-        /* SJSAS 6412710
-        sb.append(sm.getString("errorReportValve.message"));
-        */
+
         // START SJSAS 6412710
         String messageInfo = rb.getString(MESSAGE_INFO);
         sb.append(messageInfo);
@@ -544,9 +529,6 @@ public class ErrorReportValve
         sb.append("</b>");
         sb.append(message).append("</p>");
         sb.append("<p><b>");
-        /* SJSAS 6412710
-        sb.append(sm.getString("errorReportValve.description"));
-        */
         // START SJSAS 6412710
         String description = rb.getString(DESCRIPTION_INFO);
         sb.append(description);
@@ -563,9 +545,6 @@ public class ErrorReportValve
                 .getPartialServletStackTrace(throwable);
             */
             sb.append("<p><b>");
-            /* SJSAS 6412710
-            sb.append(sm.getString("errorReportValve.exception"));
-            */
             // START SJSAS 6412710
             String exception = rb.getString(EXCEPTION_INFO);
             sb.append(exception);
@@ -590,9 +569,6 @@ public class ErrorReportValve
                     .getPartialServletStackTrace(rootCause);
                 */
                 sb.append("<p><b>");
-                /* SJSAS 6412710
-                sb.append(sm.getString("errorReportValve.rootCause"));
-                */
                 // START SJSAS 6412710
                 String rootCauseInfo = rb.getString(ROOT_CAUSE_INFO);
                 sb.append(rootCauseInfo);
@@ -632,18 +608,11 @@ public class ErrorReportValve
             }
 
             sb.append("<p><b>");
-            /* SJSAS 6412710
-            sb.append(sm.getString("errorReportValve.note"));
-            */
             // START SJSAS 6412710
             String note = rb.getString(NOTE_INFO);
             sb.append(note);
             // END SJAS 6412710
             sb.append("</b> <u>");
-            /* SJSAS 6412710
-            sb.append(sm.getString("errorReportValve.rootCauseInLogs",
-                                   ServerInfo.getServerInfo()));
-            */
             // START SJSAS 6412710
             mf.applyPattern(rb.getString(EXCEPTION_AND_ROOT_CAUSE_AVAILABLE_INFO));
             String rootCauseInLog = mf.format(new Object[] {serverInfo});

@@ -546,13 +546,6 @@ public final class JDBCAccessLogValve
      */
     public void start() throws LifecycleException {
 
-        /** CR 6411114 (Lifecycle implementation moved to ValveBase)
-        if (started)
-            throw new LifecycleException
-                (sm.getString("accessLogValve.alreadyStarted"));
-        lifecycle.fireLifecycleEvent(START_EVENT, null);
-        started = true;
-        */
         // START CR 6411114
         if (started)            // Ignore multiple starts
             return;
@@ -604,13 +597,6 @@ public final class JDBCAccessLogValve
      */
     public void stop() throws LifecycleException {
 
-        /** CR 6411114 (Lifecycle implementation moved to ValveBase)
-        if (!started)
-            throw new LifecycleException
-                (sm.getString("accessLogValve.notStarted"));
-        lifecycle.fireLifecycleEvent(STOP_EVENT, null);
-        started = false;
-        */
         // START CR 6411114
         if (!started)       // Ignore stop if not started
             return;

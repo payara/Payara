@@ -2181,6 +2181,7 @@ public class StandardSession
             } catch (NotSerializableException e) {
                 log(sm.getString("standardSession.notSerializable",
                                  saveNames.get(i), id), e);
+                //standardSession.notSerializable=PWC2785: Cannot serialize session attribute {0} for session {1}
                 stream.writeObject(NOT_SERIALIZED);
                 if (debug >= 2)
                     log("  storing attribute '" + saveNames.get(i) +
