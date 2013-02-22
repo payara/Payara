@@ -54,7 +54,9 @@
 <!define name="content">
     <event>
         <!beforeCreate
-            gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-lifecycle-modules" method="get" result="#{requestScope.resp}");
+            createMap(result="#{requestScope.attrsMap}");
+            mapPut(map="#{requestScope.attrsMap}"  key="target" value="domain");
+            gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-lifecycle-modules" attrs="#{requestScope.attrsMap}" method="get" result="#{requestScope.resp}");
             gf.getLifecyclesInfo(children="#{requestScope.resp.data.children}", result=>$attribute{listOfRows} );
             gf.onlyDASExist(onlyDAS="#{pageSession.onlyDASExist}");
             setPageSessionAttribute(key="tableTitle" value="$resource{i18n.deployTable.lifeCycle}");
@@ -73,7 +75,7 @@
                  "<br />
 #include "/common/applications/lifecyclesTable.inc"
 
-	<sun:hidden id="helpKey" value="$resource{help_common.lifecycles}" />ß
+	<sun:hidden id="helpKey" value="$resource{help_common.lifecycles}" />
     </sun:form>
 </define>
 </composition>

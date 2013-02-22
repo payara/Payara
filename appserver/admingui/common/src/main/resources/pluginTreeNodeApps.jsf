@@ -57,8 +57,8 @@
     <ui:event type="beforeCreate">
         createMap(result="#{requestScope.attrsMap}");
         mapPut(map="#{requestScope.attrsMap}"  key="target" value="domain");
-	gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-components" attrs="#{requestScope.attrsMap}" method="get" result="#{requestScope.resp}");
-	setAttribute(key="children" value="#{requestScope.resp.data.properties}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-components" attrs="#{requestScope.attrsMap}" method="get" result="#{requestScope.resp}");
+        setAttribute(key="children" value="#{requestScope.resp.data.properties}");
     </ui:event>
 </dynamicTreeNode>
 
@@ -74,7 +74,9 @@
 	childExpanded="false"
 	childURL="/common/applications/lifecycleEdit.jsf?appName=#{$this{valueBinding}.text}">
     <ui:event type="beforeCreate">
-	gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-lifecycle-modules" method="get" result="#{requestScope.resp}");
-	setAttribute(key="children" value="#{requestScope.resp.data.children}");
+	    createMap(result="#{requestScope.attrsMap}");
+        mapPut(map="#{requestScope.attrsMap}"  key="target" value="domain");gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-lifecycle-modules" attrs="#{requestScope.attrsMap}" method="get" result="#{requestScope.resp}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-lifecycle-modules" attrs="#{requestScope.attrsMap}" method="get" result="#{requestScope.resp}");
+	    setAttribute(key="children" value="#{requestScope.resp.data.children}");
     </ui:event>
 </dynamicTreeNode>
