@@ -66,53 +66,53 @@ public final class LogUtils {
     }
 
     @LogMessageInfo(
-            message = "WS10010: Web service endpoint deployment events listener registered successfully.",
+            message = "Web service endpoint deployment events listener registered successfully.",
             level = "INFO")
     public static final String ENDPOINT_EVENT_LISTENER_REGISTERED = LOGMSG_PREFIX + "-10010";
 
     @LogMessageInfo(
-            message = "WS10020: High availability environment configuration injected into Metro high availability provider.",
+            message = "High availability environment configuration injected into Metro high availability provider.",
             level = "INFO")
     public static final String METRO_HA_ENVIRONEMT_INITIALIZED = LOGMSG_PREFIX + "-10020";
 
     @LogMessageInfo(
-            message = "WS10011: Endpoint deployment even received.",
+            message = "Endpoint deployment even received.",
             level = "FINEST")
     public static final String ENDPOINT_EVENT_DEPLOYED = LOGMSG_PREFIX + "-10011";
 
     @LogMessageInfo(
-            message = "WS10012: Endpoint undeployment even received.",
+            message = "Endpoint undeployment even received.",
             level = "FINEST")
     public static final String ENDPOINT_EVENT_UNDEPLOYED = LOGMSG_PREFIX + "-10012";
 
     @LogMessageInfo(
-            message = "WS10001: Loading WS-TX Services. Please wait.",
+            message = "Loading WS-TX Services. Please wait.",
             level = "INFO")
     public static final String WSTX_SERVICE_LOADING = LOGMSG_PREFIX + "-10001";
 
     @LogMessageInfo(
-            message = "WS10002: WS-TX Services successfully started.",
+            message = "WS-TX Services successfully started.",
             level = "INFO")
     public static final String WSTX_SERVICE_STARTED = LOGMSG_PREFIX + "-10002";
 
     @LogMessageInfo(
-            message = "WS10003: WS-TX Services application was deployed explicitly.",
+            message = "WS-TX Services application was deployed explicitly.",
             level = "WARNING")
     public static final String WSTX_SERVICE_DEPLOYED_EXPLICITLY = LOGMSG_PREFIX + "-10003";
 
     @LogMessageInfo(
-            message = "WS10004: Cannot deploy or load WS-TX Services: {0}",
+            message = "Cannot deploy or load WS-TX Services: {0}",
             comment = "{0} - cause",
             level = "WARNING")
     public static final String WSTX_SERVICE_CANNOT_DEPLOY = LOGMSG_PREFIX + "-10004";
 
     @LogMessageInfo(
-            message = "WS19999: Caught unexpected exception.",
+            message = "Caught unexpected exception.",
             level = "WARNING")
     public static final String WSTX_SERVICE_UNEXPECTED_EXCEPTION = LOGMSG_PREFIX + "-19999";
 
     @LogMessageInfo(
-            message = "WS19998: Exception occurred retrieving port configuration for WSTX service.",
+            message = "Exception occurred retrieving port configuration for WSTX service.",
             level = "FINEST")
     public static final String WSTX_SERVICE_PORT_CONFIGURATION_EXCEPTION = LOGMSG_PREFIX + "-19998";
 }

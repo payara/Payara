@@ -66,14 +66,14 @@ public final class LogUtils {
     }
     
     @LogMessageInfo(
-            message = "WS00001: Failed to load deployment descriptor, aborting",
+            message = "Failed to load deployment descriptor, aborting.",
             level = "SEVERE",
             cause = "unknown",
             action = "unknown")
     public static final String FAILED_LOADING_DD = LOGMSG_PREFIX + "-00001";
 
     @LogMessageInfo(
-            message = "WS00002: WebService wsdl file {0} not found in archive {1}",
+            message = "WebService wsdl file {0} not found in archive {1}.",
             comment = "{0} - file URI, {1} - archive name",
             level = "SEVERE",
             cause = "unknown",
@@ -81,19 +81,19 @@ public final class LogUtils {
     public static final String WSDL_NOT_FOUND = LOGMSG_PREFIX + "-00002";
 
     @LogMessageInfo(
-            message = "WS00003: Exception while processing catalog {0} Reason : {1}",
+            message = "Exception while processing catalog {0} Reason : {1}.",
             comment = "{0} - absolute path to the catalog, {1} - message from exception",
             level = "INFO")
     public static final String CATALOG_ERROR = LOGMSG_PREFIX + "-00003";
 
     @LogMessageInfo(
-            message = "WS00004: Unable to create new File {0}",
+            message = "Unable to create new File {0}.",
             comment = "{0} - file name",
             level = "INFO")
     public static final String FILECREATION_ERROR = LOGMSG_PREFIX + "-00004";
 
     @LogMessageInfo(
-            message = "WS00006: WebService {0} has a JAXWS and a JAXRPC endpoint; this is not supported now",
+            message = "WebService {0} has a JAXWS and a JAXRPC endpoint; this is not supported now.",
             comment = "{0} - web service FQN class name",
             level = "SEVERE",
             cause = "unknown",
@@ -101,18 +101,18 @@ public final class LogUtils {
     public static final String JAXWS_JAXRPC_ERROR = LOGMSG_PREFIX + "-00006";
 
     @LogMessageInfo(
-            message = "WS00011: Runtime settings error.  Cannot find servlet-impl-class for endpoint {0}",
+            message = "Runtime settings error. Cannot find servlet-impl-class for endpoint {0}.",
             comment = "{0} - web service endpoint name",
             level = "INFO")
     public static final String DEPLOYMENT_BACKEND_CANNOT_FIND_SERVLET = LOGMSG_PREFIX + "-00011";
 
     @LogMessageInfo(
-            message = "WS00012: Cannot proceed with JaxrpcCodegen",
+            message = "Cannot proceed with JaxrpcCodegen.",
             level = "INFO")
     public static final String JAXRPC_CODEGEN_FAIL = LOGMSG_PREFIX + "-00012";
 
     @LogMessageInfo(
-            message = "WS00013: Parsing error line {0}, uri {1}",
+            message = "Parsing error line {0}, uri {1}.",
             comment = "{0} - number, {1} - URI location",
             level = "SEVERE",
             cause = "unknown",
@@ -120,7 +120,7 @@ public final class LogUtils {
     public static final String PARSING_ERROR = LOGMSG_PREFIX + "-00013";
 
     @LogMessageInfo(
-            message = "WS00014: Error parsing WSDL {0}",
+            message = "Error parsing WSDL {0}.",
             comment = "{0} - message from exception",
             level = "SEVERE",
             cause = "unknown",
@@ -128,25 +128,25 @@ public final class LogUtils {
     public static final String WSDL_PARSING_ERROR = LOGMSG_PREFIX + "-00014";
 
     @LogMessageInfo(
-            message = "WS00018: Webservice Endpoint deployed {0}\\n listening at address at {1}",
+            message = "Webservice Endpoint deployed {0}\\n listening at address at {1}.",
             comment = "{0} -web service endpoint name, {1} - web service endpoint URL",
             level = "INFO")
     public static final String ENDPOINT_REGISTRATION = LOGMSG_PREFIX + "-00018";
 
     @LogMessageInfo(
-            message = "WS00019: EJB Endpoint deployed {0}\\n  listening at address at {1}",
+            message = "EJB Endpoint deployed {0}\\n  listening at address at {1}",
             comment = "{0} -web service endpoint name, {1} - web service endpoint URL",
             level = "INFO")
     public static final String EJB_ENDPOINT_REGISTRATION = LOGMSG_PREFIX + "-00019";
 
     @LogMessageInfo(
-            message = "WS00020: File {0} not found",
+            message = "File {0} not found.",
             comment = "{0} - file name",
             level = "INFO")
     public static final String CATALOG_RESOLVER_ERROR = LOGMSG_PREFIX + "-00020";
 
     @LogMessageInfo(
-            message = "WS00021: MTOM is valid only for SOAP Bindings; Ignoring Enable-MTOM for port {0}",
+            message = "MTOM is valid only for SOAP Bindings; Ignoring Enable-MTOM for port {0}.",
             comment = "{0} - web service port name",
             level = "SEVERE",
             cause = "unknown",
@@ -154,14 +154,14 @@ public final class LogUtils {
     public static final String INVALID_MTOM = LOGMSG_PREFIX + "-00021";
 
     @LogMessageInfo(
-            message = "WS00033: Implicit mapping not supported; ignoring for now; Remove *. specified in the url-pattern",
+            message = "Implicit mapping not supported; ignoring for now; Remove *. specified in the url-pattern.",
             level = "SEVERE",
             cause = "unknown",
             action = "unknown")
     public static final String ENTERPRISE_WEBSERVICE_IMPLICIT_MAPPING_NOT_SUPPORTED = LOGMSG_PREFIX + "-00033";
 
     @LogMessageInfo(
-            message = "WS00034: Two web services are being deployed with the same endpoint URL {0}; The service that gets loaded last will always be the one that is active for this URL",
+            message = "Two web services are being deployed with the same endpoint URL {0}; The service that gets loaded last will always be the one that is active for this URL.",
             comment = "{0} - URL",
             level = "SEVERE",
             cause = "unknown",
@@ -169,29 +169,29 @@ public final class LogUtils {
     public static final String ENTERPRISE_WEBSERVICE_DUPLICATE_SERVICE = LOGMSG_PREFIX + "-00034";
 
     @LogMessageInfo(
-            message = "WS00043: Exception while tracing request: {0}",
+            message = "Exception while tracing request: {0}.",
             comment = "{0} - message from exception",
             level = "WARNING")
     public static final String EXCEPTION_TRACING_REQUEST = LOGMSG_PREFIX + "-00043";
 
     @LogMessageInfo(
-            message = "WS00044: Exception while tracing response: {0}",
+            message = "Exception while tracing response: {0}.",
             comment = "{0} - message from exception",
             level = "WARNING")
     public static final String EXCEPTION_TRACING_RESPONSE = LOGMSG_PREFIX + "-00044";
 
     @LogMessageInfo(
-            message = "WS00047: JAXWS WebServiceDispatcher {0} entering for {1} and query string {2}",
+            message = "JAXWS WebServiceDispatcher {0} entering for {1} and query string {2}.",
             level = "FINE")
     public static final String WEBSERVICE_DISPATCHER_INFO = LOGMSG_PREFIX + "-00047";
 
     @LogMessageInfo(
-            message = "WS00048: ejb endpoint exception",
+            message = "Ejb endpoint exception.",
             level = "WARNING")
     public static final String EJB_ENDPOINT_EXCEPTION = LOGMSG_PREFIX + "-00048";
 
     @LogMessageInfo(
-            message = "WS00049: Unable to find adapter for endpoint {0}",
+            message = "Unable to find adapter for endpoint {0}.",
             comment = "{0} - endpoint name",
             level = "SEVERE",
             cause = "unknown",
@@ -199,30 +199,30 @@ public final class LogUtils {
     public static final String UNABLE_FIND_ADAPTER = LOGMSG_PREFIX + "-00049";
 
     @LogMessageInfo(
-            message = "WS00050: Following exception was thrown",
+            message = "Following exception was thrown:",
             level = "WARNING")
     public static final String EXCEPTION_THROWN = LOGMSG_PREFIX + "-00050";
 
     @LogMessageInfo(
-            message = "WS00051: Client not authorized for invocation of {0}",
+            message = "Client not authorized for invocation of {0}.",
             comment = "{0} - method name",
             level = "INFO")
     public static final String CLIENT_UNAUTHORIZED = LOGMSG_PREFIX + "-00051";
 
     @LogMessageInfo(
-            message = "WS00052: The following error was thrown by ServletPreHandler which is the first handler in the handler chain {0}",
+            message = "The following error was thrown by ServletPreHandler which is the first handler in the handler chain {0}.",
             comment = "{0} - message from exception",
             level = "WARNING")
     public static final String PRE_WEBHANDLER_ERROR = LOGMSG_PREFIX + "-00052";
 
     @LogMessageInfo(
-            message = "WS00053: The following error was thrown by ServletPostHandler which is the last handler in the handler chain {0}",
+            message = "The following error was thrown by ServletPostHandler which is the last handler in the handler chain {0}.",
             comment = "{0} - message from exception",
             level = "WARNING")
     public static final String POST_WEBHANDLER_ERROR = LOGMSG_PREFIX + "-00053";
 
     @LogMessageInfo(
-            message = "WS00054: Error registering endpoint {0}",
+            message = "Error registering endpoint {0}.",
             comment = "{0} - message from exception",
             level = "SEVERE",
             cause = "unknown",
@@ -230,7 +230,7 @@ public final class LogUtils {
     public static final String ENDPOINT_REGISTRATION_ERROR = LOGMSG_PREFIX + "-00054";
 
     @LogMessageInfo(
-            message = "WS00055: Error unregistering endpoint {0}",
+            message = "Error unregistering endpoint {0}.",
             comment = "{0} - message from exception",
             level = "SEVERE",
             cause = "unknown",
@@ -238,12 +238,12 @@ public final class LogUtils {
     public static final String ENDPOINT_UNREGISTRATION_ERROR = LOGMSG_PREFIX + "-00055";
 
     @LogMessageInfo(
-            message = "WS00056: Deployment cannot proceed as the ejb has a null endpoint address uri. Potential cause may be webservice endpoints not supported in embedded ejb case.",
+            message = "Deployment cannot proceed as the ejb has a null endpoint address uri. Potential cause may be webservice endpoints not supported in embedded ejb case.",
             level = "INFO")
     public static final String EJB_ENDPOINTURI_ERROR = LOGMSG_PREFIX + "-00056";
 
     @LogMessageInfo(
-            message = "WS00057: WebService {0} type is declared as {1} but should be either as a JAX-WS or JAX-RPC",
+            message = "WebService {0} type is declared as {1} but should be either as a JAX-WS or JAX-RPC.",
             comment = "{0} - web service name, {1} - type",
             level = "SEVERE",
             cause = "unknown",
@@ -251,13 +251,13 @@ public final class LogUtils {
     public static final String WS_TYPE_ERROR = LOGMSG_PREFIX + "-00057";
 
     @LogMessageInfo(
-            message = "Unsupported method request = [{0}] for endpoint {1} at {2}",
+            message = "Unsupported method request = [{0}] for endpoint {1} at {2}.",
             comment = "{0} - method name, {1} - endpoint name, {2} - URL",
             level = "WARNING")
     public static final String UNSUPPORTED_METHOD_REQUEST = LOGMSG_PREFIX + "-00070";
 
     @LogMessageInfo(
-            message = "invocation error on ejb endpoint {0} at {1} : {2}",
+            message = "invocation error on ejb endpoint {0} at {1} : {2}.",
             comment = "{0} - endpoint name, {1} - URL, {2} - message from exception",
             level = "WARNING")
     public static final String ERROR_ON_EJB = LOGMSG_PREFIX + "-00071";
@@ -276,12 +276,12 @@ public final class LogUtils {
     public static final String ERROR_EREI = LOGMSG_PREFIX + "-00073";
 
     @LogMessageInfo(
-            message = "Missing internal monitoring info to trace {0}",
+            message = "Missing internal monitoring info to trace {0}.",
             level = "FINE")
     public static final String MISSING_MONITORING_INFO = LOGMSG_PREFIX + "-00074";
 
     @LogMessageInfo(
-            message = "null message POSTed to ejb endpoint {0} at {1}",
+            message = "null message POSTed to ejb endpoint {0} at {1}.",
             level = "FINE")
     public static final String NULL_MESSAGE = LOGMSG_PREFIX + "-00075";
 

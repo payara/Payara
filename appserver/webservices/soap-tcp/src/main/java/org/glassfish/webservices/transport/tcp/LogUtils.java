@@ -87,7 +87,7 @@ public final class LogUtils {
     public static final String SOAPTCP_ENDPOINT_ADDED = LOGMSG_PREFIX + "-00004";
 
     @LogMessageInfo(
-            message = "WS00050:  Following exception was thrown",
+            message = "Following exception was thrown",
             level = "INFO")
     public static final String EXCEPTION_THROWN = LOGMSG_PREFIX + "-00050";
 

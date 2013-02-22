@@ -65,7 +65,7 @@ public final class LogUtils {
     }
     
     @LogMessageInfo(
-            message = "WS00046:  Invalid Deployment Descriptors element {0} value {1}",
+            message = "Invalid Deployment Descriptors element {0} value {1}.",
             comment = "{0} - prefix, {1} - localname",
             level = "SEVERE",
             cause = "unknown",
@@ -73,12 +73,12 @@ public final class LogUtils {
     public static final String INVALID_DESC_MAPPING_FAILURE = LOGMSG_PREFIX + "-00046";
 
     @LogMessageInfo(
-            message = "WS00050: Following exception was thrown",
+            message = "Following exception was thrown",
             level = "FINE")
     public static final String EXCEPTION_THROWN = LOGMSG_PREFIX + "-00050";
 
     @LogMessageInfo(
-            message = "WS00057: JAX-WS RI specific descriptor ({1}) is found in the archive {0} and \\n"
+            message = "JAX-WS RI specific descriptor ({1}) is found in the archive {0} and \\n"
                     + "hence Enterprise Web Service (109) deployment is disabled for this archive"
                     + " to avoid duplication of services.",
             comment = "{0} - archive name, {1} - descriptor path",
@@ -86,25 +86,25 @@ public final class LogUtils {
     public static final String DEPLOYMENT_DISABLED = LOGMSG_PREFIX + "-00057";
 
     @LogMessageInfo(
-            message = "handler class {0} specified in deployment descriptor not found",
+            message = "Handler class {0} specified in deployment descriptor not found.",
             comment = "{0} - class name",
             level = "WARNING")
     public static final String DDHANDLER_NOT_FOUND = LOGMSG_PREFIX + "-00201";
 
     @LogMessageInfo(
-            message = "handler class {0} specified in handler file {1} cannot be loaded",
+            message = "Handler class {0} specified in handler file {1} cannot be loaded.",
             comment = "{0} - class name, {1} - file name",
             level = "WARNING")
     public static final String HANDLER_FILE_HANDLER_NOT_FOUND = LOGMSG_PREFIX + "-00202";
 
     @LogMessageInfo(
-            message = "Warning : Web service endpoint {0} is not tied to a component",
+            message = "Warning : Web service endpoint {0} is not tied to a component.",
             comment = "{0} - endpoint name",
             level = "INFO")
     public static final String WS_NOT_TIED_TO_COMPONENT = LOGMSG_PREFIX + "-00203";
 
     @LogMessageInfo(
-            message = "Warning: Web service endpoint {0} component link {1} is not valid",
+            message = "Warning: Web service endpoint {0} component link {1} is not valid.",
             comment = "{0} - endpoint name, {1} - link name",
             level = "INFO")
     public static final String WS_COMP_LINK_NOT_VALID = LOGMSG_PREFIX + "-00204";
