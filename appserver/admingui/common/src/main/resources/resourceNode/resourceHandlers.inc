@@ -101,14 +101,18 @@
         setAttribute(key="resourceTargetSize" value="#{resourceTargets.size()}");
         //get Target Enable info
         if (#{requestScope.targetSize}=#{requestScope.one}) {
-            //"resourceTargetSize=0" means that there is no target associated with the resource.
             setPageSessionAttribute(key="onlyDASExist" value="#{true}");
             if (#{resourceTargetSize} = #{zero}) {
                setAttribute(key="enabledVal" value="#{oneRow['enabled']}");
             }
-            if (#{resourceTargetSize} > #{zero}) {
-                gf.getEntityAttrs(endpoint="#{sessionScope.REST_URL}/servers/server/server/resource-ref/#{oneRow['encodedName']}" valueMap="#{requestScope.refAttrs}");
-                setAttribute(key="enabledVal" value="#{refAttrs.enabled}");
+            setAttribute(key="enabledVal" value="#{oneRow['enabled']}");
+            //if the resource itself is disabled, only happen when user uses CLI to set the resource to false, instead of settng resource-ref to false,
+            //it will be disabled, we don't even need to check the resource-ref status
+            if ("#{requestScope.enabledVal} = true"){
+                if (#{resourceTargetSize} > #{zero}) {
+                    gf.getEntityAttrs(endpoint="#{sessionScope.REST_URL}/servers/server/server/resource-ref/#{oneRow['encodedName']}" valueMap="#{requestScope.refAttrs}");
+                    setAttribute(key="enabledVal" value="#{refAttrs.enabled}");
+                }
             }
             if ("#{enabledVal}=true") {
                 setAttribute(key="enableURL" value="/resource/images/enabled.png");

@@ -53,6 +53,12 @@
                         convertArrayToCommaString(array="#{pageSession.contextInfo}"  commaString="#{requestScope.tmp}");
                         mapPut(map="#{pageSession.valueMap}" key="contextInfo" value="#{requestScope.tmp}");
                     }
+                    //when user set the enabled status to true, need to ensure that the resource itself is set to true.
+                    if(#{pageSession.has2Objects}){
+                        if("#{pageSession.valueMap2.enabled} = true"){
+                            mapPut(map="#{pageSession.valueMap}", key="enabled", value="true");
+                        }
+                    }
                     gf.createEntity(endpoint="#{pageSession.selfUrl}"
                         attrs="#{pageSession.valueMap}"
                         skipAttrs="#{pageSession.skipAttrsList}"
@@ -60,12 +66,26 @@
                         onlyUseAttrs="#{pageSession.onlyUseAttrs}"
                     );
                     if(#{pageSession.has2Objects}){
-                        gf.createEntity(endpoint="#{pageSession.selfUrl2}"
-                            attrs="#{pageSession.valueMap2}"
-                            skipAttrs="#{pageSession.skipAttrsList2}"
-                            convertToFalse="#{pageSession.convertToFalseList2}"
-                            onlyUseAttrs="#{pageSession.onlyUseAttrs2}"
-                        );
+                        gf.checkIfEndPointExist(endpoint="#{pageSession.selfUrl2}" exists="#{requestScope.exist}" );
+                        if("! #{requestScope.exist}"){
+                             createMap(result="#{requestScope.refsMap}")
+                             mapPut(map="#{requestScope.refsMap}" key="id" value="#{pageSession.encodedName}")
+                             mapPut(map="#{requestScope.refsMap}" key="enabled" value="#{pageSession.valueMap2['enabled']}")
+                             gf.createEntity(endpoint="#{sessionScope.REST_URL}/servers/server/server/resource-ref",
+                                 attrs="#{requestScope.refsMap}"
+                                 skipAttrs="#{pageSession.skipAttrsList2}"
+                                 convertToFalse="#{pageSession.convertToFalseList2}"
+                                 onlyUseAttrs="#{pageSession.onlyUseAttrs2}"
+                             );
+                        }
+                        if ("#{requestScope.exist}"){
+                            gf.createEntity(endpoint="#{pageSession.selfUrl2}"
+                                attrs="#{pageSession.valueMap2}"
+                                skipAttrs="#{pageSession.skipAttrsList2}"
+                                convertToFalse="#{pageSession.convertToFalseList2}"
+                                onlyUseAttrs="#{pageSession.onlyUseAttrs2}"
+                            );
+                        }
                     }
                     getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
                     getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});

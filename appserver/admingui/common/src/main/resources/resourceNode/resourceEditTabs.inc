@@ -71,6 +71,10 @@
                     gf.checkIfEndPointExist(endpoint="#{pageSession.resourceRefUrl}" exists="#{requestScope.hasAssociatedTarget}");
                     if (#{hasAssociatedTarget}) {
                         gf.getEntityAttrs(endpoint="#{pageSession.resourceRefUrl}",  valueMap="#{pageSession.resourceRef}");
+                        // if the resource itself is set to disabled, the real status should be disabled.
+                        if( "#{pageSession.valueMap.enabled} = false"){
+                            mapPut(map="#{pageSession.resourceRef}", key="enabled", value="#{pageSession.valueMap.enabled}");
+                        }
                     }
                     if (!#{hasAssociatedTarget}) {
                         createMap(result="#{pageSession.resourceRef}");
@@ -85,6 +89,10 @@
                     gf.checkIfEndPointExist(endpoint="#{pageSession.selfUrl2}" exists="#{requestScope.hasAssociatedTarget}");
                     if (#{hasAssociatedTarget}) {
                         gf.getEntityAttrs(endpoint="#{pageSession.selfUrl2}", valueMap="#{pageSession.valueMap2}");
+                        // if the resource itself is set to disabled, the real status should show disabled.
+                        if( "#{pageSession.valueMap.enabled} = false"){
+                            mapPut(map="#{pageSession.valueMap2}", key="enabled", value="#{pageSession.valueMap.enabled}");
+                        }
                     }
                     if (!#{hasAssociatedTarget}) {
                         createMap(result="#{pageSession.valueMap2}");
