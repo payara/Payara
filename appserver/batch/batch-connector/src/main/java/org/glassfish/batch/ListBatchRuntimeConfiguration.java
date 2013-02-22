@@ -39,8 +39,12 @@
  */
 package org.glassfish.batch;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
-import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.I18n;
+import org.glassfish.api.admin.*;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
@@ -55,6 +59,16 @@ import java.util.*;
  */
 @Service(name="list-batch-runtime-configuration")
 @PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@I18n("list.batch.runtime.configuration")
+@ExecuteOn(value = {RuntimeType.DAS})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@RestEndpoints({
+        @RestEndpoint(configBean = Domain.class,
+                opType = RestEndpoint.OpType.GET,
+                path = "list-batch-runtime-configuration",
+                description = "List Batch Runtime Configuration")
+})
 public class ListBatchRuntimeConfiguration
     extends AbstractListCommand {
 

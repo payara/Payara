@@ -114,8 +114,10 @@ public class ListBatchJobs
             extraProps.put("list-batch-jobs", findSimpleJobInfo(columnFormatter));
         } else {
             extraProps.put("simple-mode", false);
+            List<Map<String, Object>> jobExecutions = new ArrayList<>();
+            extraProps.put("list-batch-jobs", jobExecutions);
             for (JobExecution je : findJobExecutions()) {
-                extraProps.put(je.getExecutionId(), handleJob(je, columnFormatter));
+                jobExecutions.add(handleJob(je, columnFormatter));
             }
         }
         context.getActionReport().setMessage(columnFormatter.toString());
@@ -149,8 +151,8 @@ public class ListBatchJobs
     }
 
     private Map<String, Integer> findSimpleJobInfo(ColumnFormatter columnFormatter) {
-        Map<String, Integer> jobToInstanceCountMap = new HashMap<String, Integer>();
-        Set<String> jobNames = new HashSet<String>();
+        Map<String, Integer> jobToInstanceCountMap = new HashMap<>();
+        Set<String> jobNames = new HashSet<>();
         if (jobName != null)
             jobNames.add(jobName);
         else
@@ -181,7 +183,7 @@ public class ListBatchJobs
     }
 
     private List<JobExecution> findJobExecutions() {
-        List<JobExecution> jobExecutions = new ArrayList<JobExecution>();
+        List<JobExecution> jobExecutions = new ArrayList<>();
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         if (executionId != null) {
             JobExecution jobExecution = jobOperator.getJobExecution(Long.valueOf(executionId));
@@ -233,7 +235,7 @@ public class ListBatchJobs
     }
 
     private Map<String, Object> handleJob(JobExecution je, ColumnFormatter columnFormatter) {
-        Map<String, Object> jobInfo = new HashMap<String, Object>();
+        Map<String, Object> jobInfo = new HashMap<>();
 
         int jobParamIndex = -1;
         StringTokenizer st = new StringTokenizer("", "");
