@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,7 +68,7 @@ import org.glassfish.admingui.common.util.RestUtil;
  * @author Ana
  */
 public class MonitoringHandlers {
-    @Handler(id = "getMonitorLevels",
+    @Handler(id = "gf.getMonitorLevels",
     input = {
         @HandlerInput(name = "endpoint", type = String.class, required = true)},
     output = {
@@ -78,48 +78,27 @@ public class MonitoringHandlers {
         String endpoint = (String) handlerCtx.getInputValue("endpoint");
         List result = new ArrayList();
         try {
-            String monitoringServiceEndPoint = endpoint + "/monitoring-service";
-            Map<String, Object> attrs = RestUtil.getEntityAttrs(monitoringServiceEndPoint + "/container-monitoring", "entitiy");
-
-            if (attrs != null) {
-                for (Map.Entry<String, Object> e : attrs.entrySet()){
-                    Map oneRow = new HashMap();
-                    String cname = null;
-                    String pname = e.getKey();
-                    ListIterator ci = containerDispList.listIterator();
-                    ListIterator vi = containerNameList.listIterator();
-                    while (ci.hasNext() && vi.hasNext()) {
-                        String dispName = (String) ci.next();
-                        String value = (String) vi.next();
-                        if (pname.equals(value)) {
-                            cname = dispName;
-                        }
-                    }
-                    oneRow.put("monCompName", (cname == null) ? pname : cname);
-                    oneRow.put("level", e.getValue());
-                    oneRow.put("selected", false);
-                    result.add(oneRow);
-                }
-            }
-
-            String monitoringLevelsEndPoint = monitoringServiceEndPoint + "/module-monitoring-levels";
-            attrs = RestUtil.getEntityAttrs(monitoringLevelsEndPoint, "entity");
+            String monitoringLevelsEndPoint = endpoint + "/monitoring-service/module-monitoring-levels";
+            Map<String, Object> attrs = RestUtil.getEntityAttrs(monitoringLevelsEndPoint, "entity");
             for(Map.Entry<String,Object> e : attrs.entrySet()){
                 Map oneRow = new HashMap();
                 String name = null;
+                String moduleName=e.getKey();
                 ListIterator ni = monDisplayList.listIterator();
                 ListIterator vi = monNamesList.listIterator();
                 while (ni.hasNext() && vi.hasNext()) {
                     String dispName = (String) ni.next();
                     String value = (String) vi.next();
-                    if ((e.getKey().equals(value))) {
+                    if ((moduleName.equals(value))) {
                         name = dispName;
+                        break;
                     }
                 }
                 if (name == null) {
-                    name = e.getKey();
+                    name = moduleName;
                 }
                 oneRow.put("monCompName", name);
+                oneRow.put("attrName", moduleName);
                 oneRow.put("level", e.getValue());
                 oneRow.put("selected", false);
                 result.add(oneRow);
@@ -328,47 +307,20 @@ public class MonitoringHandlers {
     @Handler(id = "updateMonitorLevels",
     input = {
         @HandlerInput(name = "allRows", type = List.class, required = true),
-        @HandlerInput(name = "endpoint", type = String.class),
-        @HandlerInput(name = "containerEndpoint", type = String.class)})
+        @HandlerInput(name = "endpoint", type = String.class)})
     public static void updateMonitorLevels(HandlerContext handlerCtx) {
         String endpoint = (String) handlerCtx.getInputValue("endpoint");
-        String containerEndpoint = (String) handlerCtx.getInputValue("containerEndpoint");
-        List<Map<String, String>> allRows = (List<Map<String, String>>) handlerCtx.getInputValue("allRows");
-        String objectNameStr = null;
+        List<Map> allRows = (List<Map>) handlerCtx.getInputValue("allRows");
+        Map payload = new HashMap();
         for (Map<String, String> oneRow : allRows) {
-            String name = oneRow.get("monCompName");
-            String value = null;
-            ListIterator ni = monDisplayList.listIterator();
-            ListIterator vi = monNamesList.listIterator();
-            while (ni.hasNext() && vi.hasNext()) {
-                String dispName = (String) ni.next();
-                String mvalue = (String) vi.next();
-                if (name.equals(dispName)) {
-                    value = mvalue;
-                    objectNameStr = endpoint;
-                }
-            }
-            if (value == null) {
-                ListIterator ci = containerDispList.listIterator();
-                ListIterator cni = containerNameList.listIterator();
-                while (ci.hasNext() && cni.hasNext()) {
-                    String cDispName = (String) ci.next();
-                    String cName = (String) cni.next();
-                    if (name.equals(cDispName)) {
-                        value = "Level";
-                        objectNameStr = containerEndpoint + "/" + cName;
-                    }
-                }
-            }
-            Map<String, Object> attrMap = new HashMap<String, Object>();
-            attrMap.put((value == null) ? name : value, oneRow.get("level"));
-            String entityUrl = (objectNameStr == null) ? containerEndpoint + "/" + name : objectNameStr;
-            RestResponse response = RestUtil.sendUpdateRequest(entityUrl, attrMap, null, null, null);
-            if (!response.isSuccess()) {
-                GuiUtil.getLogger().severe("Update monitor level failed.  parent=" + endpoint + "; attrsMap =" + attrMap);
-                GuiUtil.handleError(handlerCtx, GuiUtil.getMessage("msg.error.checkLog"));
-                return;
-            }
+            payload.put(oneRow.get("attrName"), oneRow.get("level"));
+        }
+        try{
+            RestUtil.restRequest( endpoint , payload, "post" , null, false);
+        }catch (Exception ex){
+            GuiUtil.getLogger().severe(GuiUtil.getCommonMessage("msg.error.save.monitor.modules" ,  new Object[]{endpoint, payload}));
+            GuiUtil.handleError(handlerCtx, GuiUtil.getMessage("msg.error.checkLog"));
+            return;
         }
     }
 
@@ -816,38 +768,38 @@ public class MonitoringHandlers {
         levels.add("LOW");
         levels.add("HIGH");
     }
-    //monitoring component names
-    public static final String JVM = GuiUtil.getMessage("monitoring.Jvm");
+    //monitoring modulemonitoring.module names
+    public static final String JVM = GuiUtil.getCommonMessage("monitoring.module.Jvm");
 
-    public static final String WEB_CONTAINER = GuiUtil.getMessage("monitoring.Web");
+    public static final String WEB_CONTAINER = GuiUtil.getCommonMessage("monitoring.module.Web");
 
-    public static final String HTTP_SERVICE = GuiUtil.getMessage("monitoring.Http");
+    public static final String HTTP_SERVICE = GuiUtil.getCommonMessage("monitoring.module.Http");
 
-    public static final String THREAD_POOL = GuiUtil.getMessage("monitoring.ThreadPool");
+    public static final String THREAD_POOL = GuiUtil.getCommonMessage("monitoring.module.ThreadPool");
 
-    public static final String JDBC_CONNECTION_POOL = GuiUtil.getMessage("monitoring.Jdbc");
+    public static final String JDBC_CONNECTION_POOL = GuiUtil.getCommonMessage("monitoring.module.Jdbc");
 
-    public static final String CONNECTOR_CONNECTION_POOL = GuiUtil.getMessage("monitoring.Connector");
+    public static final String CONNECTOR_CONNECTION_POOL = GuiUtil.getCommonMessage("monitoring.module.Connector");
 
-    public static final String EJB_CONTAINER = GuiUtil.getMessage("monitoring.Ejb");
+    public static final String EJB_CONTAINER = GuiUtil.getCommonMessage("monitoring.module.Ejb");
 
-    public static final String TRANSACTION_SERVICE = GuiUtil.getMessage("monitoring.TransactionService");
+    public static final String TRANSACTION_SERVICE = GuiUtil.getCommonMessage("monitoring.module.TransactionService");
 
-    public static final String ORB = GuiUtil.getMessage("monitoring.Orb");
+    public static final String ORB = GuiUtil.getCommonMessage("monitoring.module.Orb");
 
-    public static final String CONNECTOR_SERVICE = GuiUtil.getMessage("monitoring.ConnectorService");
+    public static final String CONNECTOR_SERVICE = GuiUtil.getCommonMessage("monitoring.module.ConnectorService");
 
-    public static final String JMS_SERVICE = GuiUtil.getMessage("monitoring.JmsService");
+    public static final String JMS_SERVICE = GuiUtil.getCommonMessage("monitoring.module.JmsService");
 
-    public static final String WEB_SERVICES_CONTAINER = GuiUtil.getMessage("monitoring.WebServices");
+    public static final String WEB_SERVICES_CONTAINER = GuiUtil.getCommonMessage("monitoring.module.WebServices");
 
-    public static final String JPA = GuiUtil.getMessage("monitoring.Jpa");
+    public static final String JPA = GuiUtil.getCommonMessage("monitoring.module.Jpa");
 
-    public static final String SECURITY = GuiUtil.getMessage("monitoring.Security");
+    public static final String SECURITY = GuiUtil.getCommonMessage("monitoring.module.Security");
 
-    public static final String JERSEY = GuiUtil.getMessage("monitoring.Jersey");
+    public static final String JERSEY = GuiUtil.getCommonMessage("monitoring.module.Jersey");
 
-    public static final String DEPLOYMENT = GuiUtil.getMessage("monitoring.Deployment");
+    public static final String DEPLOYMENT = GuiUtil.getCommonMessage("monitoring.module.Deployment");
 
     final private static List monDisplayList = new ArrayList();
 
