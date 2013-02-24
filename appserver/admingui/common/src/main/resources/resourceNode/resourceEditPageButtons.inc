@@ -53,12 +53,10 @@
                         convertArrayToCommaString(array="#{pageSession.contextInfo}"  commaString="#{requestScope.tmp}");
                         mapPut(map="#{pageSession.valueMap}" key="contextInfo" value="#{requestScope.tmp}");
                     }
-                    //when user set the enabled status to true, need to ensure that the resource itself is set to true.
-                    if(#{pageSession.has2Objects}){
-                        if("#{pageSession.valueMap2.enabled} = true"){
-                            mapPut(map="#{pageSession.valueMap}", key="enabled", value="true");
-                        }
-                    }
+
+                    //control enable status in the ref link. always ensure that the resource itself is true. This will be called for DAS only case.
+                    mapPut(map="#{pageSession.valueMap}", key="enabled", value="true");
+
                     gf.createEntity(endpoint="#{pageSession.selfUrl}"
                         attrs="#{pageSession.valueMap}"
                         skipAttrs="#{pageSession.skipAttrsList}"

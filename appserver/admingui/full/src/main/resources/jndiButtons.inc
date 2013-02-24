@@ -49,25 +49,26 @@
                 updateJndiResourceAttrs(attrMap="#{attrMap}", classnameOption="#{classnameOption}", resType="#{requestScope.resType}" );
                 mapPut(map="#{pageSession.valueMap}" key="resType" value="#{requestScope.resType}")
 
-                if(#{pageSession.hasPropertySheet}){
-                    gf.updateEntity(endpoint="#{pageSession.selfUrl}"  attrs="#{pageSession.valueMap}"
-                        skipAttrs="#{pageSession.skipAttrsList}"
-                        convertToFalse="#{pageSession.convertToFalseList}"
+                //control enable status in the ref link. always ensure that the resource itself is true. This will be called for DAS only case.
+                mapPut(map="#{pageSession.valueMap}", key="enabled", value="true");
+
+                gf.updateEntity(endpoint="#{pageSession.selfUrl}"  attrs="#{pageSession.valueMap}"
+                    skipAttrs="#{pageSession.skipAttrsList}"
+                    convertToFalse="#{pageSession.convertToFalseList}"
+                );
+                if(#{pageSession.has2Objects}){
+                    gf.updateEntity(endpoint="#{pageSession.selfUrl2}"  attrs="#{pageSession.valueMap2}"
+                        skipAttrs="#{pageSession.skipAttrsList2}"
+                        convertToFalse="#{pageSession.convertToFalseList2}"
                     );
-                    if(#{pageSession.has2Objects}){
-                        gf.updateEntity(endpoint="#{pageSession.selfUrl2}"  attrs="#{pageSession.valueMap2}"
-                            skipAttrs="#{pageSession.skipAttrsList2}"
-                            convertToFalse="#{pageSession.convertToFalseList2}"
-                        );
-                    }
                 }
-                if (#{pageSession.hasPropertyTable}){
-                    getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
-                    getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});
-                    removeEmptyProps(props="#{newList}" modifiedProps="#{newList}");
-                    javaToJSON(obj="#{newList}" json="#{requestScope.tmpJSON}");
-                    gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="POST" data="#{requestScope.tmpJSON}" result="#{requestScope.restResponse}");
-                }
+
+                getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
+                getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});
+                removeEmptyProps(props="#{newList}" modifiedProps="#{newList}");
+                javaToJSON(obj="#{newList}" json="#{requestScope.tmpJSON}");
+                gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="POST" data="#{requestScope.tmpJSON}" result="#{requestScope.restResponse}");
+
                 prepareSuccessfulMsg();
                 gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                 />
@@ -94,7 +95,7 @@
                     //We need to create source-ref of the selected targets .
                     convertArrayToCommaString(array="#{pageSession.selectedTargets}" commaString="#{requestScope.cs}")
                     convertStringtoList(str="#{requestScope.cs}" result="#{requestScope.targetList}");
-                    println("===========#{requestScope.targetList}");
+                    //println("===========#{requestScope.targetList}");
                     setAttribute(key="nTargets" value="#{requestScope.targetList.size()}");
                     dec(number="#{requestScope.nTargets}" value="#{requestScope.endRef}");
                     forLoop(end="#{requestScope.endRef}"  varName="nn"){
