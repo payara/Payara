@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -207,7 +207,7 @@ public class ListSubComponentsCommand implements AdminCommand {
 
         List<String> subModuleInfos = new ArrayList<String>();    
         if (!app.isVirtual()) {
-            subModuleInfos = getSubModulesForEar(app);
+            subModuleInfos = getSubModulesForEar(app, type);
         }
 
         int[] longestValue = new int[2];
@@ -276,9 +276,11 @@ public class ListSubComponentsCommand implements AdminCommand {
     }
 
     // list sub components for ear
-    private List<String> getSubModulesForEar(com.sun.enterprise.deployment.Application application) {
+    private List<String> getSubModulesForEar(com.sun.enterprise.deployment.Application application, String type) {
         List<String> moduleInfoList = new ArrayList<String>();
-        for (ModuleDescriptor moduleDesc : application.getModules()) { 
+        Collection<ModuleDescriptor<BundleDescriptor>> modules = 
+            getSubModuleListForEar(application, type);
+        for (ModuleDescriptor moduleDesc : modules) { 
             String moduleInfo = moduleDesc.getArchiveUri() + ":" + 
                 moduleDesc.getModuleType(); 
              if (moduleDesc.getModuleType().equals(DOLUtils.warType())) {
@@ -299,25 +301,8 @@ public class ListSubComponentsCommand implements AdminCommand {
         } else {
             // for ear case, get modules
             Collection<ModuleDescriptor<BundleDescriptor>> modules = 
-                new ArrayList<ModuleDescriptor<BundleDescriptor>>();
-            if (type == null) {
-                modules = application.getModules();
-            } else if (type.equals("servlets")) {
-                modules = application.getModuleDescriptorsByType(
-                    DOLUtils.warType());
-            } else if (type.equals("ejbs")) {    
-                modules = application.getModuleDescriptorsByType(
-                    DOLUtils.ejbType());
-                // ejb in war case
-                Collection<ModuleDescriptor<BundleDescriptor>> webModules = 
-                    application.getModuleDescriptorsByType(DOLUtils.warType());
-                for (ModuleDescriptor webModule : webModules) {
-                    if (webModule.getDescriptor().getExtensionsDescriptors(EjbBundleDescriptor.class).size() > 0) {
-                        modules.add(webModule);
-                    }
-                }
-            }
- 
+                getSubModuleListForEar(application, type);
+
             for (ModuleDescriptor module : modules) {
 
                 StringBuffer sb = new StringBuffer();
@@ -331,6 +316,30 @@ public class ListSubComponentsCommand implements AdminCommand {
             }
         }
         return subComponentList;
+    }
+
+    private Collection<ModuleDescriptor<BundleDescriptor>> getSubModuleListForEar(com.sun.enterprise.deployment.Application application, String type) {
+        Collection<ModuleDescriptor<BundleDescriptor>> modules = 
+            new ArrayList<ModuleDescriptor<BundleDescriptor>>();
+        if (type == null) {
+            modules = application.getModules();
+        } else if (type.equals("servlets")) {
+            modules = application.getModuleDescriptorsByType(
+                DOLUtils.warType());
+        } else if (type.equals("ejbs")) {    
+            modules = application.getModuleDescriptorsByType(
+                DOLUtils.ejbType());
+            // ejb in war case
+            Collection<ModuleDescriptor<BundleDescriptor>> webModules = 
+                application.getModuleDescriptorsByType(DOLUtils.warType());
+            for (ModuleDescriptor webModule : webModules) {
+                if (webModule.getDescriptor().getExtensionsDescriptors(EjbBundleDescriptor.class).size() > 0) {
+                    modules.add(webModule);
+                }
+            }
+        }
+
+        return modules;
     }
 
     private Map<String, String> getModuleLevelComponents(BundleDescriptor bundle, 
