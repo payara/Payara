@@ -130,7 +130,6 @@ public class InterceptorManager {
 
         buildEjbInterceptorChain();
 
-//System.err.println("InterceptorManager: " + toString());
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "InterceptorManager: " + toString());
         }
@@ -391,8 +390,13 @@ public class InterceptorManager {
         switch (eventType) {
             case AROUND_CONSTRUCT:
                 chain = callbackChain[eventType.ordinal()];
-                invContext = new CallbackInvocationContext(beanClass, 
-                        interceptorInstances, chain, eventType, container, ctx);
+                if (container != null) {
+                    invContext = new CallbackInvocationContext(beanClass, 
+                            interceptorInstances, chain, eventType, container, ctx);
+                } else {
+                    invContext = new CallbackInvocationContext(beanClass, 
+                            interceptorInstances, chain, eventType, interceptorInfo);
+                }
                 if (chain != null) {
                     chain.invokeNext(0, invContext);
                 }
@@ -415,7 +419,9 @@ public class InterceptorManager {
         return true;
     }
 
-
+    Object getTargetInstance() {
+        return interceptorInfo.getTargetObjectInstance();
+    }
 
     private void buildEjbInterceptorChain()
             throws Exception {
@@ -740,12 +746,15 @@ public class InterceptorManager {
         for (Class clazz : interceptorClasses) {
             sbldr.append("\n\t\t").append(clazz.getName());
         }
-        sbldr.append("\n\tCallback Interceptors: ");
-        for (int i = 0; i < lcAnnotationClasses.length; i++) {
-            CallbackChainImpl chain = callbackChain[i];
-            sbldr.append("\n\t").append(i)
-                    .append(": ").append(lcAnnotationClasses[i]);
-            sbldr.append("\n\t\t").append(chain.toString());
+        if (lcAnnotationClasses != null) {
+            // lcAnnotationClasses are available for EJBs only
+            sbldr.append("\n\tCallback Interceptors: ");
+            for (int i = 0; i < lcAnnotationClasses.length; i++) {
+                CallbackChainImpl chain = callbackChain[i];
+                sbldr.append("\n\t").append(i)
+                        .append(": ").append(lcAnnotationClasses[i]);
+                sbldr.append("\n\t\t").append(chain.toString());
+            }
         }
         sbldr.append("\n");
         sbldr.append("##########################################################\n");

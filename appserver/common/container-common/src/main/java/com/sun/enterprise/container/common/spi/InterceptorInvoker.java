@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,6 +53,8 @@ public interface InterceptorInvoker {
     public Object getTargetInstance();
 
     public Object[] getInterceptorInstances();
+
+    public void invokeAroundConstruct() throws Exception;
 
     public void invokePostConstruct() throws Exception;
 

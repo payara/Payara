@@ -47,6 +47,7 @@ import javax.interceptor.InvocationContext;
 import com.sun.ejb.containers.EJBContextImpl;
 import com.sun.ejb.containers.BaseContainer;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
+import com.sun.enterprise.container.common.spi.util.InterceptorInfo;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -73,6 +74,7 @@ public class CallbackInvocationContext implements InvocationContext {
     private Object[] ctorParams = null;
     private BaseContainer container = null;
     private EJBContextImpl ctx = null;
+    private InterceptorInfo interceptorInfo = null;
 
     public CallbackInvocationContext(Object targetObjectInstance,
                                      Object[] interceptorInstances,
@@ -98,13 +100,10 @@ public class CallbackInvocationContext implements InvocationContext {
                                      Object[] interceptorInstances,
                                      CallbackChainImpl chain,
                                      CallbackType eventType,
-                                     BaseContainer container,
-                                     EJBContextImpl ctx) {
+                                     InterceptorInfo interceptorInfo) {
         this(null, interceptorInstances, chain, eventType);
 
         this.targetObjectClass = targetObjectClass;
-        this.container = container;
-        this.ctx = ctx;
 
         Constructor[] ctors = targetObjectClass.getConstructors();
         for(Constructor ctor0 : ctors) {
@@ -116,6 +115,23 @@ public class CallbackInvocationContext implements InvocationContext {
 
         ctorParamTypes = ctor.getParameterTypes();
         ctorParams = new Object[ctorParamTypes.length]; // XXXX
+
+        this.interceptorInfo = interceptorInfo;
+    }
+
+    /**
+     * AroundConstruct
+     */
+    public CallbackInvocationContext(Class targetObjectClass,
+                                     Object[] interceptorInstances,
+                                     CallbackChainImpl chain,
+                                     CallbackType eventType,
+                                     BaseContainer container,
+                                     EJBContextImpl ctx) {
+        this(targetObjectClass, interceptorInstances, chain, eventType, null);
+
+        this.container = container;
+        this.ctx = ctx;
     }
 
     // InvocationContext methods
@@ -186,8 +202,13 @@ public class CallbackInvocationContext implements InvocationContext {
       */
     public void invokeSpecial() throws Throwable {
         if (eventType == CallbackType.AROUND_CONSTRUCT) {
-            container.createEjbInstance(ctorParams, ctx);
-            targetObjectInstance = ctx.getEJB();
+            if (container == null) {
+                targetObjectInstance = targetObjectClass.newInstance();
+                interceptorInfo.setTargetObjectInstance(targetObjectInstance);
+            } else {
+                container.createEjbInstance(ctorParams, ctx);
+                targetObjectInstance = ctx.getEJB();
+            }
         } // else do nothing? XXX
     }
 

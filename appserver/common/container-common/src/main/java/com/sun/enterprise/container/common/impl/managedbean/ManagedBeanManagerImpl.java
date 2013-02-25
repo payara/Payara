@@ -478,23 +478,25 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
             JavaEEInterceptorBuilder interceptorBuilder = (JavaEEInterceptorBuilder)
                 desc.getInterceptorBuilder();
 
-            // This is the managed bean class instance
-            Object managedBean = managedBeanClass.newInstance();
-
             InterceptorInvoker interceptorInvoker =
-                    interceptorBuilder.createInvoker(managedBean);
+                    interceptorBuilder.createInvoker(null);
 
             // This is the object passed back to the caller.
             callerObject = (T) interceptorInvoker.getProxy();
 
             Object[] interceptorInstances = interceptorInvoker.getInterceptorInstances();
 
-            inject(managedBean, desc);
-
             // Inject interceptor instances
             for(int i = 0; i < interceptorInstances.length; i++) {
                 inject(interceptorInstances[i], desc);
             }
+
+            interceptorInvoker.invokeAroundConstruct();
+
+            // This is the managed bean class instance
+            Object managedBean = interceptorInvoker.getTargetInstance();
+
+            inject(managedBean, desc);
 
             interceptorInvoker.invokePostConstruct();
 
