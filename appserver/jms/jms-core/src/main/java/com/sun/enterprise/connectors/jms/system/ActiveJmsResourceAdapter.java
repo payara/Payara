@@ -394,18 +394,23 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
     @Override
     public void destroy() {
-        JmsService jmsService = getJmsService();
-        if (connectorRuntime.isServer() && grizzlyListenerInit && jmsService != null
-                && EMBEDDED.equalsIgnoreCase(jmsService.getType())) {
-            GrizzlyService grizzlyService = null;
-            try {
-                grizzlyService = Globals.get(GrizzlyService.class);
-            } catch (RunLevelException rle) {
-                // if GrizzlyService was shut down already, skip removing the proxy.
+        try {
+            JmsService jmsService = getJmsService();
+            if (connectorRuntime.isServer() && grizzlyListenerInit && jmsService != null
+                    && EMBEDDED.equalsIgnoreCase(jmsService.getType())) {
+                GrizzlyService grizzlyService = null;
+                try {
+                    grizzlyService = Globals.get(GrizzlyService.class);
+                } catch (RunLevelException rle) {
+                    // if GrizzlyService was shut down already, skip removing the proxy.
+                }
+                if (grizzlyService != null)
+                    grizzlyService.removeNetworkProxy(JMS_SERVICE);
+                grizzlyListenerInit = false;
             }
-            if (grizzlyService != null)
-                grizzlyService.removeNetworkProxy(JMS_SERVICE);
-            grizzlyListenerInit = false;
+        } catch (Throwable th) {
+            _logger.log(Level.WARNING, "Error occurs when shutting down JMSRA: " + th.getMessage());
+            throw new RuntimeException(th);
         }
         super.destroy();
     }
@@ -2408,8 +2413,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     private JmsService getJmsService(){
-        Config c = habitat.getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
-                return c.getExtensionByType(JmsService.class);
+        return habitat.getService(JmsService.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
     }
 
     private ServerContext getServerContext(){
