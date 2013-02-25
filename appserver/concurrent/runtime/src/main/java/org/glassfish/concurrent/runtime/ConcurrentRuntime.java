@@ -149,11 +149,9 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getCorePoolSize(),
                 config.getMaximumPoolSize(),
                 config.getKeepAliveSeconds(), TimeUnit.SECONDS,
-                0, //config.getTaskQueueCapacity(),
+                config.getTaskQueueCapacity(),
                 createContextService(config.getJndiName() + "-contextservice", config.getContextInfo()),
-                AbstractManagedExecutorService.RejectPolicy.ABORT,
-                AbstractManagedExecutorService.RunLocation.LOCAL,
-                false);
+                AbstractManagedExecutorService.RejectPolicy.ABORT);
         if (managedExecutorServiceMap == null) {
             managedExecutorServiceMap = new HashMap();
         }
@@ -181,9 +179,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getKeepAliveSeconds(), TimeUnit.SECONDS,
                 config.getTaskQueueCapacity(),
                 createContextService(config.getJndiName() + "-contextservice", config.getContextInfo()),
-                AbstractManagedExecutorService.RejectPolicy.ABORT,
-                AbstractManagedExecutorService.RunLocation.LOCAL,
-                false);
+                AbstractManagedExecutorService.RejectPolicy.ABORT);
         if (managedScheduledExecutorServiceMap == null) {
             managedScheduledExecutorServiceMap = new HashMap();
         }
@@ -253,7 +249,6 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
 
     @Override
     public void postConstruct() {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override

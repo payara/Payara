@@ -43,6 +43,7 @@ package org.glassfish.concurrent.runtime;
 import org.glassfish.enterprise.concurrent.spi.TransactionHandle;
 import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
 
+import javax.enterprise.concurrent.ManagedTask;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -54,9 +55,9 @@ import javax.transaction.TransactionManager;
 public class TransactionSetupProviderImpl implements TransactionSetupProvider {
 
     @Override
-    public TransactionHandle beforeProxyMethod(boolean useParentTransaction) {
-        // suspend current transaction if not using parent transaction
-        if (!useParentTransaction) {
+    public TransactionHandle beforeProxyMethod(String transactionExecutionProperty) {
+        // suspend current transaction if not using transaction of execution thread
+        if (! ManagedTask.USE_TRANSACTION_OF_EXECUTION_THREAD.equals(transactionExecutionProperty)) {
             try {
                 Context ctx = new InitialContext();
                 TransactionManager tm = (TransactionManager) ctx.lookup("java:comp/TransactionManager");
@@ -72,7 +73,7 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
     }
 
     @Override
-    public void afterProxyMethod(TransactionHandle handle, boolean useParentTransaction) {
+    public void afterProxyMethod(TransactionHandle handle, String transactionExecutionProperty) {
         // resume transaction if any
         if (handle instanceof TransactionHandleImpl) {
             Transaction suspendedTxn = ((TransactionHandleImpl)handle).getTransaction();

@@ -123,8 +123,8 @@
         <websocket-api.version>1.0-b12</websocket-api.version>
         <tyrus.version>1.0-b11</tyrus.version>
         <json.version>1.0-b02</json.version>
-        <concurrent-api.version>1.0-b01</concurrent-api.version>
-        <concurrent.version>1.0-b02</concurrent.version>
+        <concurrent-api.version>1.0-b04</concurrent-api.version>
+        <concurrent.version>1.0-b03</concurrent.version>
         <javax.batch-api.version>1.0-b10</javax.batch-api.version>
         <javax.batch-runtime.version>1.0-b10</javax.batch-runtime.version>
 	<javax.xml.soap-api.version>1.3.5</javax.xml.soap-api.version>
