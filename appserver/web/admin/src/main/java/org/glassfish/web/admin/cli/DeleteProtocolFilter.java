@@ -167,7 +167,7 @@ public class DeleteProtocolFilter implements AdminCommand {
 
     private ProtocolChain getChain(ProtocolChainInstanceHandler handler) throws TransactionFailure {
         ProtocolChain chain = handler.getProtocolChain();
-        if (chain == null) {
+        if ((chain == null) && (report != null)) {
             report.setMessage(
                     MessageFormat.format(rb.getString(NOT_FOUND),
                             "protocol-chain",
@@ -192,7 +192,7 @@ public class DeleteProtocolFilter implements AdminCommand {
 
     private ProtocolChainInstanceHandler getHandler(Protocol protocol) throws TransactionFailure {
         ProtocolChainInstanceHandler handler = protocol.getProtocolChainInstanceHandler();
-        if (handler == null) {
+        if ((handler == null) && (report != null)) {
             report.setMessage(
                     MessageFormat.format(rb.getString(NOT_FOUND),
                             "protocol-chain-instance-handler",
@@ -218,7 +218,7 @@ public class DeleteProtocolFilter implements AdminCommand {
 
     private void validate(ConfigBeanProxy check, String key, String... arguments)
         throws ValidationFailureException {
-        if (check == null) {
+        if ((check == null) && (report != null)) {
             report.setMessage(MessageFormat.format(rb.getString(key), arguments));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             throw new ValidationFailureException();

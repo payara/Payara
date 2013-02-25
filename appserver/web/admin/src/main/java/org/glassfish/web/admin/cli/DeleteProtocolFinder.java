@@ -187,7 +187,7 @@ public class DeleteProtocolFinder implements AdminCommand {
 
     private void validate(ConfigBeanProxy check, String key, String... arguments)
         throws ValidationFailureException {
-        if (check == null) {
+        if ((check == null) && (report != null)) {
             report.setMessage(MessageFormat.format(rb.getString(key), arguments));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             throw new ValidationFailureException();

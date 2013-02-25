@@ -187,7 +187,7 @@ public class DeleteVirtualServer implements AdminCommand {
     }
     
     private boolean exists() {
-        if(vsid == null)
+        if ((vsid == null) || (httpService == null))
             return false;
         
         List<VirtualServer> list = httpService.getVirtualServer();
@@ -202,13 +202,15 @@ public class DeleteVirtualServer implements AdminCommand {
     }
 
     private String getReferencingListener() {
-        List<NetworkListener> list = networkConfig.getNetworkListeners().getNetworkListener();
+        if (networkConfig != null) {
+            List<NetworkListener> list = networkConfig.getNetworkListeners().getNetworkListener();
         
-        for(NetworkListener listener: list) {
-            String virtualServer = listener.findHttpProtocol().getHttp().getDefaultVirtualServer();
+            for(NetworkListener listener: list) {
+                String virtualServer = listener.findHttpProtocol().getHttp().getDefaultVirtualServer();
          
-            if(virtualServer != null && virtualServer.equals(vsid)) {
-                return listener.getName();
+                if(virtualServer != null && virtualServer.equals(vsid)) {
+                    return listener.getName();
+                }
             }
         }
         return null;

@@ -152,16 +152,22 @@ public class DeleteHttpListener implements AdminCommand {
     }
 
     private boolean exists() {
-        return networkConfig.getNetworkListener(listenerId) != null;
+        if (networkConfig != null) {
+            return networkConfig.getNetworkListener(listenerId) != null;
+        } else {
+            return false;
+        }
     }
 
     private void cleanUp(String name) throws TransactionFailure {
         boolean found = false;
-        for (NetworkListener candidate : networkConfig.getNetworkListeners().getNetworkListener()) {
-            found |= candidate.getProtocol().equals(name);
-        }
-        if (!found) {
-            ConfigSupport.apply(new DeleteProtocol(name), networkConfig.getProtocols());
+        if (networkConfig != null) {
+            for (NetworkListener candidate : networkConfig.getNetworkListeners().getNetworkListener()) {
+                found |= candidate.getProtocol().equals(name);
+            }
+            if (!found) {
+                ConfigSupport.apply(new DeleteProtocol(name), networkConfig.getProtocols());
+            }
         }
     }
 
