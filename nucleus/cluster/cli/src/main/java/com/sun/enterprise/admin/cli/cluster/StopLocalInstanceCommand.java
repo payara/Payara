@@ -163,12 +163,16 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
          * most likely means we're talking to the wrong server.
          */
         programOpts.setInteractive(false);
+        Exception remoteException = null;
 
         try {
-            runRemoteStop();
+            remoteException = runRemoteStop();
             waitForDeath();
         }
         catch (CommandException e) {
+            if(remoteException != null)
+                logger.warning("Remote Exception: " + e);
+
             // 1.  We can't access the server at all
             // 2.  We timed-out waiting for it to die
             if(!kill)
@@ -183,20 +187,40 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
         return 0;
     }
 
-    private void runRemoteStop() {
+    /**
+     * run the remote stop-domain command and throw away the output
+     * the calling code has already verified the server is running.
+     * Careful changing this code, starting and stopping can be an intricate dance.
+     * Note how we are catching *ALL* Exceptions.  This is because the ReST code
+     * does NOT catch unchecked exceptions.  The key idea here is that:
+     * 1.  we first verify the server is indeed running
+     * 2. we tell the server to stop.  This is a special case.  IO streams might be
+     *    broken, all sorts of things that are 'bad' for normal commands can happen.
+     *    But we don't care!  We only care that the server is now dead:
+     * 3. Verify the server is NOT running any longer.
+     * When this method is called , (1) is already true.  We do (2) here and ignore
+     * all errors.  Then we return to the caller which will do (3)
+     *
+     * @return Exception in case the server didn't stop we can log the exception...
+     */
+    private Exception runRemoteStop() {
+        // 2 catch blocks just to make things crystal clear.
         try {
-            // run the remote stop-domain command and throw away the output
-            // the calling code has already verified the server is running.
-            // CAREFUL -- intricate code!
             RemoteCLICommand cmd = new RemoteCLICommand("_stop-instance", programOpts, env);
             cmd.executeAndReturnOutput("_stop-instance", "--force", force.toString());
+            return null;
         }
         catch (CommandException e) {
-            // ReST may have thrown an Exception because the server died faster than the
+            // ReST may have thrown a checked Exception because the server died faster than the
             // server could communicate back!   The ReST client misinterprets it
             // to mean the server is not reachable.  This is a special case.  And it
             // is NOT an error.
-            // ignore
+            return e;
+        }
+        catch(Exception e) {
+            // Perhaps Jersey or who-knows-what threw a unchecked Exception.
+            // We don't care.  See the huge javadoc comment above...
+            return e;
         }
     }
     /**
