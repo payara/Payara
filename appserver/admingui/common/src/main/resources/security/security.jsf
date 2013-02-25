@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -50,35 +50,43 @@
         <!beforeCreate
         getRequestValue(key="configName" value=>$page{configName} default="server-config");
         setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/common/security/security.jsf?configName=#{pageSession.configName}");
-        setPageSessionAttribute(key="childType" value="security-service");
+        setPageSessionAttribute(key="selfUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/security-service");
 
-        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}");
-        setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/security-service");
-        setPageSessionAttribute(key="rest-api" value="true");
         gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}.json", valueMap="#{pageSession.valueMap}");
         gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="GET" result="#{requestScope.propTable}");
         setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
-        
-        //For Security Manager
-        setPageSessionAttribute(key="additionalSaveHandler" value="saveSecurityManagerValue");
-        setPageSessionAttribute(key="additionalSaveHandlerArgs" value="value:%23{pageSession.securityManagerStatus},configName:%23{pageSession.configName}"); 
         setPageSessionAttribute(key="convertToFalseList" value={"auditEnabled","activateDefaultPrincipalToRoleMapping"})
-        
-        //set the following for including buttons.inc
-        setPageSessionAttribute(key="edit" value="#{true}" );
-        setPageSessionAttribute(key="showDefaultButton" value="#{false}" );
-        setPageSessionAttribute(key="showCancelButton" value="#{false}" );
-        setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
-        setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
-        />   
+        />
     </event>
             <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
 
-        <!-- Page Title -->
-        <sun:title id="propertyContentPage" title="$resource{i18nc.security.Security}" helpText="$resource{i18nc.security.SecurityPageHelp}">
-#include "/common/shared/editPageButtons.inc"
-        </sun:title>
+    <sun:title id="propertyContentPage" title="$resource{i18nc.security.Security}" helpText="$resource{i18nc.security.SecurityPageHelp}">
+        <!facet pageButtonsTop>
+            <sun:panelGroup id="topButtons">
+                <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
+                        onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+                    <!command
+                        convertArrayToCommaString(array="#{pageSession.selectedAuditModules}"  commaString="#{requestScope.tmp}");
+                        mapPut(map="#{pageSession.valueMap}" key="auditModules" value="#{requestScope.tmp}");
+                        gf.createEntity(endpoint="#{pageSession.selfUrl}"
+                            attrs="#{pageSession.valueMap}"
+                            skipAttrs="#{pageSession.skipAttrsList}"
+                            convertToFalse="#{pageSession.convertToFalseList}"
+                        );
+                        saveSecurityManagerValue(configName="#{pageSession.configName}" value="#{pageSession.securityManagerStatus}");
+                        // Save properties...
+                        removeEmptyProps(props="#{pageSession.tableList}" modifiedProps="#{pageSession.tableList}");
+                        javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
+                        gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
+                        prepareSuccessfulMsg();
+                        gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                    />
+                </sun:button>
+
+            </sun:panelGroup>
+        </facet>
+    </sun:title>
 #include "/common/security/securityAttrs.inc"
 #include "/common/shared/propertyDescTable.inc"
 
