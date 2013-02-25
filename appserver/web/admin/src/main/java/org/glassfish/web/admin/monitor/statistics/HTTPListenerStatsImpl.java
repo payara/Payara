@@ -82,8 +82,8 @@ public class HTTPListenerStatsImpl implements MonitorContract {
             level = "INFO")
     protected static final String MRDR_NULL = "AS-WEB-ADMIN-00046";
 
-    private final String name = "httplistener";
-    private final String displayFormat = "%1$-4s %2$-4s %3$-6.2f %4$-4s";
+    private final static String name = "httplistener";
+    private final static String displayFormat = "%1$-4s %2$-4s %3$-6.2f %4$-4s";
 
     public String getName() {
         return name;
