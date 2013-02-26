@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,32 +38,23 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
-
-
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import java.util.logging.Logger;
+package javax.transaction;
 
 /**
- * Transactional annotation Interceptor class for Supports transaction type,
- *  ie javax.transaction.Transactional.TxType.SUPPORT
- * If called outside a transaction context, managed bean method execution will then
- *  continue outside a transaction context.
- * If called inside a transaction context, the managed bean method execution will then continue
- *  inside this transaction context.
- *
- * @author Paul Parkinson
+ * This exception indicates that the request carried an invalid transaction
+ * context. For example, this exception could be raised if an error
+ * occurred when trying to register a resource.
  */
-@Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.SUPPORTS)
-public class TransactionalInterceptorSupports extends TransactionalInterceptorBase {
+public class InvalidTransactionException extends java.rmi.RemoteException 
+{
+	public InvalidTransactionException()
+	{
+		super();
+	}
 
-    @AroundInvoke
-    public Object transactional(InvocationContext ctx) throws Exception {
-        Logger logger = Logger.getLogger(ctx.getTarget().getClass().getName());
-        logger.info("In SUPPORTS TransactionalInterceptor");
-        return proceed(ctx);
-    }
+	public InvalidTransactionException(String msg)
+	{
+		super(msg);
+	}
 }
+

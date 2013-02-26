@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,32 +38,31 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
-
-
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import java.util.logging.Logger;
+package javax.transaction;
 
 /**
- * Transactional annotation Interceptor class for Supports transaction type,
- *  ie javax.transaction.Transactional.TxType.SUPPORT
- * If called outside a transaction context, managed bean method execution will then
- *  continue outside a transaction context.
- * If called inside a transaction context, the managed bean method execution will then continue
- *  inside this transaction context.
- *
- * @author Paul Parkinson
+ * The transaction manager supports a synchronization mechanism
+ * that allows the interested party to be notified before and
+ * after the transaction completes. Using the registerSynchronization
+ * method, the application server registers a Synchronization object
+ * for the transaction currently associated with the target Transaction
+ * object.
  */
-@Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.SUPPORTS)
-public class TransactionalInterceptorSupports extends TransactionalInterceptorBase {
+public interface Synchronization {
 
-    @AroundInvoke
-    public Object transactional(InvocationContext ctx) throws Exception {
-        Logger logger = Logger.getLogger(ctx.getTarget().getClass().getName());
-        logger.info("In SUPPORTS TransactionalInterceptor");
-        return proceed(ctx);
-    }
+    /**
+     * The beforeCompletion method is called by the transaction manager prior
+     * to the start of the two-phase transaction commit process. This call is
+     * executed with the transaction context of the transaction that is being
+     * committed.
+     */
+    public void beforeCompletion();
+
+    /**
+     * This method is called by the transaction
+     * manager after the transaction is committed or rolled back.
+     *
+     * @param status The status of the transaction completion.
+     */
+	public void afterCompletion(int status);
 }

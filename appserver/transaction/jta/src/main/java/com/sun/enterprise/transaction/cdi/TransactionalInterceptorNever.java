@@ -45,12 +45,12 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.transaction.InvalidTransactionException;
-import javax.transaction.cdi.TransactionalException;
+import javax.transaction.TransactionalException;
 import java.util.logging.Logger;
 
 /**
  * Transactional annotation Interceptor class for Never transaction type,
- *  ie javax.transaction.cdi.Transactional.TxType.NEVER
+ *  ie javax.transaction.Transactional.TxType.NEVER
  * If called outside a transaction context, managed bean method execution will then
  *  continue outside a transaction context.
  * If called inside a transaction context, InvalidTransactionException will be thrown
@@ -58,7 +58,7 @@ import java.util.logging.Logger;
  * @author Paul Parkinson
  */
 @Interceptor
-@javax.transaction.cdi.Transactional(javax.transaction.cdi.Transactional.TxType.NEVER)
+@javax.transaction.Transactional(javax.transaction.Transactional.TxType.NEVER)
 public class TransactionalInterceptorNever extends TransactionalInterceptorBase {
 
     @AroundInvoke

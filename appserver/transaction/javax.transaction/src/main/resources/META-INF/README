@@ -1,0 +1,9 @@
+The empty MANIFEST.MF is needed because of the way we have configured maven-jar-plugin 
+and maven-bundle-plugin to interact with each other. We may be able to avoid it now, 
+but that will require some effort. I have filed [1] and hopefully I will have some time 
+to fix it in future. 
+
+Thanks,
+Sahoo
+
+[1] https://glassfish.dev.java.net/issues/show_bug.cgi?id=11422 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,32 +38,48 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
-
-
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import java.util.logging.Logger;
+package javax.transaction;
 
 /**
- * Transactional annotation Interceptor class for Supports transaction type,
- *  ie javax.transaction.Transactional.TxType.SUPPORT
- * If called outside a transaction context, managed bean method execution will then
- *  continue outside a transaction context.
- * If called inside a transaction context, the managed bean method execution will then continue
- *  inside this transaction context.
- *
- * @author Paul Parkinson
+ * The SystemException is thrown by the transaction manager to 
+ * indicate that it has encountered an unexpected error condition
+ * that prevents future transaction services from proceeding.
  */
-@Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.SUPPORTS)
-public class TransactionalInterceptorSupports extends TransactionalInterceptorBase {
+public class SystemException extends java.lang.Exception {
 
-    @AroundInvoke
-    public Object transactional(InvocationContext ctx) throws Exception {
-        Logger logger = Logger.getLogger(ctx.getTarget().getClass().getName());
-        logger.info("In SUPPORTS TransactionalInterceptor");
-        return proceed(ctx);
+
+    /**
+     * The error code with which to create the SystemException.
+     *
+     * @serial The error code for the exception
+     */
+    public int errorCode;
+
+    public SystemException()
+    {
+    	super();
+    }    
+    
+    /**
+     * Create a SystemException with a given string.
+     *
+     * @param s The string message for the exception
+     */
+    public SystemException(String s)
+    {
+    	super(s);
     }
+    
+    /**
+     * Create a SystemException with a given error code.
+     *
+     * @param errcode The error code for the exception
+     */
+    public SystemException(int errcode)
+    {
+    	super();
+    	errorCode = errcode;
+    }
+
+
 }
