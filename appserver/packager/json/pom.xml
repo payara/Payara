@@ -126,6 +126,11 @@
             <artifactId>javax.json</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jsonp-jaxrs</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>
 
