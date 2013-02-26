@@ -125,7 +125,10 @@ public class LoggingAnnotationsTest {
 
         LOGGER.addHandler(uniformFormatHandler);
         LOGGER.addHandler(odlFormatHandler);
-        LOGGER.addHandler(consoleHandler);        
+        Boolean enableConsoleHandler = Boolean.getBoolean(LoggingAnnotationsTest.class.getName() + ".enableConsoleHandler");
+        if (enableConsoleHandler) {
+            LOGGER.addHandler(consoleHandler);        
+        }
         LOGGER.setUseParentHandlers(false);
         LOGGER.setLevel(Level.FINE);
     }
