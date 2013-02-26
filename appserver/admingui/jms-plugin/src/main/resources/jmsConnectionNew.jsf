@@ -63,6 +63,8 @@
             
             mapPut(map="#{pageSession.valueMap}", key="resourceAdapterName", value="jmsra");
             mapPut(map="#{pageSession.valueMap2}", key="enabled", value="true");
+            mapPut(map="#{pageSession.valueMap}", key="steadyPoolSize", value="1");
+            mapPut(map="#{pageSession.valueMap}", key="maxPoolSize", value="250");
 
             //set the following for including buttons.inc
             setPageSessionAttribute(key="edit" value="#{false}" );
