@@ -358,6 +358,11 @@
                 <version>${weld.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.jboss.weld.se</groupId>
+                <artifactId>weld-se</artifactId>
+                <version>${weld.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.sun.pkg</groupId>
                 <artifactId>pkg-client</artifactId>
                 <version>${uc-pkg-client.version}</version>
