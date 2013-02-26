@@ -132,6 +132,14 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         return contextService;
     }
 
+    public void shutdownContextService(String jndiName) {
+        synchronized(this) {
+            if (contextServiceMap != null) {
+                contextServiceMap.remove(jndiName);
+            }
+        }
+    }
+
     public synchronized ManagedExecutorServiceImpl getManagedExecutorService(ResourceInfo resource, ManagedExecutorServiceConfig config) {
         String jndiName = config.getJndiName();
         if (managedExecutorServiceMap != null && managedExecutorServiceMap.containsKey(jndiName)) {
@@ -157,6 +165,18 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
         managedExecutorServiceMap.put(jndiName, mes);
         return mes;
+    }
+
+    public void shutdownManagedExecutorService(String jndiName) {
+        ManagedExecutorServiceImpl mes = null;
+        synchronized(this) {
+            if (managedExecutorServiceMap != null) {
+                mes = managedExecutorServiceMap.remove(jndiName);
+            }
+        }
+        if (mes != null) {
+            mes.shutdown();
+        }
     }
 
     public synchronized ManagedScheduledExecutorServiceImpl getManagedScheduledExecutorService(ResourceInfo resource,
@@ -187,6 +207,18 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         return mes;
     }
 
+    public void shutdownScheduledManagedExecutorService(String jndiName) {
+        ManagedScheduledExecutorServiceImpl mses = null;
+        synchronized(this) {
+            if (managedScheduledExecutorServiceMap != null) {
+                mses = managedScheduledExecutorServiceMap.remove(jndiName);
+            }
+        }
+        if (mses != null) {
+            mses.shutdown();
+        }
+    }
+
     public synchronized ManagedThreadFactoryImpl getManagedThreadFactory(ResourceInfo resource, ManagedThreadFactoryConfig config) {
         String jndiName = config.getJndiName();
         if (managedThreadFactoryMap != null && managedThreadFactoryMap.containsKey(jndiName)) {
@@ -201,6 +233,18 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
         managedThreadFactoryMap.put(jndiName, managedThreadFactory);
         return managedThreadFactory;
+    }
+
+    public void shutdownManagedThreadFactory(String jndiName) {
+        ManagedThreadFactoryImpl mtf = null;
+        synchronized(this) {
+            if (managedThreadFactoryMap != null) {
+                mtf = managedThreadFactoryMap.remove(jndiName);
+            }
+        }
+        if (mtf != null) {
+            mtf.stop();
+        }
     }
 
     private ContextServiceImpl createContextService(String jndiName, String contextInfo) {

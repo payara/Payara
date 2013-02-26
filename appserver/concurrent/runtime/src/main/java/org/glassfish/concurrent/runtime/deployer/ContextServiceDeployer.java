@@ -138,6 +138,8 @@ public class ContextServiceDeployer implements ResourceDeployer {
         ContextService contextServiceRes = (ContextService) resource;
         ResourceInfo resourceInfo = new ResourceInfo(contextServiceRes.getJndiName(), applicationName, moduleName);
         namingService.unpublishObject(resourceInfo, contextServiceRes.getJndiName());
+        // stop the runtime object
+        concurrentRuntime.shutdownContextService(contextServiceRes.getJndiName());
     }
 
     @Override

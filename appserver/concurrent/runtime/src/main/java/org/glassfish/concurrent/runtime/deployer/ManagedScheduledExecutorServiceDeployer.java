@@ -135,9 +135,11 @@ public class ManagedScheduledExecutorServiceDeployer implements ResourceDeployer
 
     @Override
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
-        ManagedScheduledExecutorService ManagedScheduledExecutorServiceRes = (ManagedScheduledExecutorService) resource;
-        ResourceInfo resourceInfo = new ResourceInfo(ManagedScheduledExecutorServiceRes.getJndiName(), applicationName, moduleName);
-        namingService.unpublishObject(resourceInfo, ManagedScheduledExecutorServiceRes.getJndiName());
+        ManagedScheduledExecutorService managedscheduledexecutorserviceRes = (ManagedScheduledExecutorService) resource;
+        ResourceInfo resourceInfo = new ResourceInfo(managedscheduledexecutorserviceRes.getJndiName(), applicationName, moduleName);
+        namingService.unpublishObject(resourceInfo, managedscheduledexecutorserviceRes.getJndiName());
+        // stop the runtime object
+        concurrentRuntime.shutdownScheduledManagedExecutorService(managedscheduledexecutorserviceRes.getJndiName());
     }
 
     @Override

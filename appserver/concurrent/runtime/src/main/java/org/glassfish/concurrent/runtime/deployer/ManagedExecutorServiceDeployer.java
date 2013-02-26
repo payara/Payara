@@ -119,25 +119,27 @@ public class ManagedExecutorServiceDeployer implements ResourceDeployer {
 
     @Override
     public void deployResource(Object resource) throws Exception {
-        ManagedExecutorService ManagedExecutorServiceResource =
+        ManagedExecutorService managedExecutorServiceResource =
                 (ManagedExecutorService) resource;
-        ResourceInfo resourceInfo = ResourceUtil.getResourceInfo(ManagedExecutorServiceResource);
+        ResourceInfo resourceInfo = ResourceUtil.getResourceInfo(managedExecutorServiceResource);
         deployResource(resource, resourceInfo.getApplicationName(), resourceInfo.getModuleName());
     }
 
     @Override
     public void undeployResource(Object resource) throws Exception {
-        ManagedExecutorService ManagedExecutorServiceResource =
+        ManagedExecutorService managedExecutorServiceResource =
                 (ManagedExecutorService) resource;
-        ResourceInfo resourceInfo = ResourceUtil.getResourceInfo(ManagedExecutorServiceResource);
+        ResourceInfo resourceInfo = ResourceUtil.getResourceInfo(managedExecutorServiceResource);
         undeployResource(resource, resourceInfo.getApplicationName(), resourceInfo.getModuleName());
     }
 
     @Override
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
-        ManagedExecutorService ManagedExecutorServiceRes = (ManagedExecutorService) resource;
-        ResourceInfo resourceInfo = new ResourceInfo(ManagedExecutorServiceRes.getJndiName(), applicationName, moduleName);
-        namingService.unpublishObject(resourceInfo, ManagedExecutorServiceRes.getJndiName());
+        ManagedExecutorService managedExecutorServiceRes = (ManagedExecutorService) resource;
+        ResourceInfo resourceInfo = new ResourceInfo(managedExecutorServiceRes.getJndiName(), applicationName, moduleName);
+        namingService.unpublishObject(resourceInfo, managedExecutorServiceRes.getJndiName());
+        // stop the runtime object
+        concurrentRuntime.shutdownManagedExecutorService(managedExecutorServiceRes.getJndiName());
     }
 
     @Override

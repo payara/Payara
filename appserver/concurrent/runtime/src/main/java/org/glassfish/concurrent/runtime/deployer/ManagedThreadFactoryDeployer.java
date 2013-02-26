@@ -135,9 +135,11 @@ public class ManagedThreadFactoryDeployer implements ResourceDeployer {
 
     @Override
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
-        ManagedThreadFactory ManagedThreadFactoryRes = (ManagedThreadFactory) resource;
-        ResourceInfo resourceInfo = new ResourceInfo(ManagedThreadFactoryRes.getJndiName(), applicationName, moduleName);
-        namingService.unpublishObject(resourceInfo, ManagedThreadFactoryRes.getJndiName());
+        ManagedThreadFactory managedThreadFactoryRes = (ManagedThreadFactory) resource;
+        ResourceInfo resourceInfo = new ResourceInfo(managedThreadFactoryRes.getJndiName(), applicationName, moduleName);
+        namingService.unpublishObject(resourceInfo, managedThreadFactoryRes.getJndiName());
+        // stop the runtime object
+        concurrentRuntime.shutdownManagedThreadFactory(managedThreadFactoryRes.getJndiName());
     }
 
     @Override
