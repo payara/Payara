@@ -286,6 +286,7 @@ public class JobManagerService implements JobManager,PostConstruct {
                 if (jaxbContext == null)
                     jaxbContext = JAXBContext.newInstance(JobInfos.class);
                 Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+
                 if (jobsFile != null && jobsFile.exists())  {
                     JobInfos jobInfos = (JobInfos)unmarshaller.unmarshal(jobsFile);
                     return jobInfos;
@@ -305,15 +306,19 @@ public class JobManagerService implements JobManager,PostConstruct {
      */
     @Override
     public  JobInfos purgeCompletedJobForId(String jobId) {
+        JobInfos completedJobInfos = getCompletedJobs();
         synchronized (jobsFile) {
             CopyOnWriteArrayList<JobInfo> jobList = new CopyOnWriteArrayList<JobInfo>();
-            if (getCompletedJobs()!= null)
-                jobList.addAll(getCompletedJobs().getJobInfoList());
-            for (JobInfo jobInfo: jobList ) {
-                if (jobInfo.jobId.equals(jobId)) {
-                    jobList.remove(jobInfo);
-                }
 
+            if (completedJobInfos != null)   {
+                jobList.addAll(completedJobInfos.getJobInfoList());
+
+                for (JobInfo jobInfo: jobList ) {
+                    if (jobInfo.jobId.equals(jobId)) {
+                        jobList.remove(jobInfo);
+                    }
+
+                }
             }
 
             JobInfos jobInfos = new JobInfos();

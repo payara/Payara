@@ -59,6 +59,8 @@ public class JobCreatorService  implements JobCreator {
     @Inject
     private ServerEnvironment serverEnvironment;
 
+    @Inject JobManagerService jobManagerService;
+
     private static final String JOBS_FILE = "jobs.xml";
     /**
      * This will create a new job with the name of command and a new unused id for the job
@@ -73,19 +75,12 @@ public class JobCreatorService  implements JobCreator {
         AdminCommandInstanceImpl job = null;
         if (isManagedJob) {
             job =  new AdminCommandInstanceImpl(id,name,scope,subject,true);
-            job.setJobsFile(getJobsFile());
+            job.setJobsFile(jobManagerService.jobsFile);
         } else {
             job =  new AdminCommandInstanceImpl(name,scope,subject,false);
         }
         return job;
     }
 
-    /**
-     *  This returns the jobs file for commands
-     * @return the location of the jobs.xml file
-     */
-    public File getJobsFile() {
-        return
-        new File(serverEnvironment.getConfigDirPath(),JOBS_FILE);
-    }
+
 }

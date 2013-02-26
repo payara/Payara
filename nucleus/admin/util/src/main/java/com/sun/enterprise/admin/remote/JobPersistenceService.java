@@ -57,6 +57,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 
 
@@ -86,16 +87,28 @@ public class JobPersistenceService implements JobPersistence {
     @Override
     public  void persist(Object obj) {
         JobInfo jobInfo = (JobInfo)obj;
+
+        jobInfos = jobManager.getCompletedJobs();
+
+        doPersist(jobInfos,jobInfo);
+
+    }
+
+    public void doPersist(JobInfos jobInfos, JobInfo jobInfo) {
         File file = jobInfo.getJobsFile();
         synchronized (file) {
-            jobInfos = jobManager.getCompletedJobs();
+
             if (jobInfos == null)
                 jobInfos = new JobInfos();
+
             try {
                 JAXBContext jaxbContext = JAXBContext.newInstance(JobInfos.class);
                 jaxbMarshaller = jaxbContext.createMarshaller();
                 jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-                jobInfos.getJobInfoList().add(jobInfo);
+
+                CopyOnWriteArrayList<JobInfo> jobList = new CopyOnWriteArrayList<JobInfo>(jobInfos.getJobInfoList());
+                jobInfos.setJobInfoList(jobList);
+                jobList.add(jobInfo);
                 jaxbMarshaller.marshal(jobInfos, file);
                 jobManager.purgeJob(jobInfo.jobId);
 
@@ -104,7 +117,6 @@ public class JobPersistenceService implements JobPersistence {
 
             }
         }
-
     }
 
 
