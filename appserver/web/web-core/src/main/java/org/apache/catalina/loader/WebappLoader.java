@@ -131,7 +131,7 @@ public class WebappLoader
             cause = "Could not register loader",
             action = "Verify Object name"
     )
-    public static final String REGISTERING_LOADER_EXCEPTION = "AS-WEB-CORE-00475";
+    public static final String REGISTERING_LOADER_EXCEPTION = "AS-WEB-CORE-00288";
 
     @LogMessageInfo(
             message = "Error registering jndi stream handler",
@@ -142,19 +142,19 @@ public class WebappLoader
                      "checkSetFactory method doesn't allow" +
                      "the operation"
     )
-    public static final String REGISTERING_JNDI_STREAM_HANDLER_EXCEPTION = "AS-WEB-CORE-00476";
+    public static final String REGISTERING_JNDI_STREAM_HANDLER_EXCEPTION = "AS-WEB-CORE-00289";
 
     @LogMessageInfo(
             message = "Loader has already been started",
             level = "WARNING"
     )
-    public static final String LOADER_ALREADY_STARTED_EXCEPTION = "AS-WEB-CORE-00477";
+    public static final String LOADER_ALREADY_STARTED_EXCEPTION = "AS-WEB-CORE-00290";
 
     @LogMessageInfo(
             message = "No resources for {0}",
             level = "INFO"
     )
-    public static final String NO_RESOURCE_INFO = "AS-WEB-CORE-00478";
+    public static final String NO_RESOURCE_INFO = "AS-WEB-CORE-00291";
 
     @LogMessageInfo(
             message = "LifecycleException",
@@ -162,13 +162,13 @@ public class WebappLoader
             cause = "Could not construct a class loader",
             action = "Verify if there is any lifecycle exception"
     )
-    public static final String LIFECYCLE_EXCEPTION = "AS-WEB-CORE-00479";
+    public static final String LIFECYCLE_EXCEPTION = "AS-WEB-CORE-00292";
 
     @LogMessageInfo(
             message = "Loader has not yet been started",
             level = "WARNING"
     )
-    public static final String LOADER_NOT_STARTED_EXCEPTION = "AS-WEB-CORE-00480";
+    public static final String LOADER_NOT_STARTED_EXCEPTION = "AS-WEB-CORE-00293";
 
     @LogMessageInfo(
             message = "Cannot set reloadable property to {0}",
@@ -176,31 +176,31 @@ public class WebappLoader
             cause = "Could not set reloadable property",
             action = "Verify the value for the property"
     )
-    public static final String SET_RELOADABLE_PROPERTY_EXCEPTION = "AS-WEB-CORE-00481";
+    public static final String SET_RELOADABLE_PROPERTY_EXCEPTION = "AS-WEB-CORE-00294";
 
     @LogMessageInfo(
             message = "WebappLoader[{0}]: {1}",
             level = "WARNING"
     )
-    public static final String WEB_APP_LOADER_EXCEPTION = "AS-WEB-CORE-00482";
+    public static final String WEB_APP_LOADER_EXCEPTION = "AS-WEB-CORE-00295";
 
     @LogMessageInfo(
             message = "No work dir for {0}",
             level = "INFO"
     )
-    public static final String NO_WORK_DIR_INFO = "AS-WEB-CORE-00483";
+    public static final String NO_WORK_DIR_INFO = "AS-WEB-CORE-00296";
 
     @LogMessageInfo(
             message = "Failed to create destination directory to copy resources",
             level = "WARNING"
     )
-    public static final String FAILED_CREATE_DEST_DIR = "AS-WEB-CORE-00484";
+    public static final String FAILED_CREATE_DEST_DIR = "AS-WEB-CORE-00297";
 
     @LogMessageInfo(
             message = "Failed to copy resources",
             level = "WARNING"
     )
-    public static final String FAILED_COPY_RESOURCE = "AS-WEB-CORE-00485";
+    public static final String FAILED_COPY_RESOURCE = "AS-WEB-CORE-00298";
 
     @LogMessageInfo(
             message = "Failed to create work directory to {0}",
@@ -208,7 +208,7 @@ public class WebappLoader
             cause = "Coud not create work directory",
             action = "Verify the PATH "
     )
-    public static final String FAILED_CREATE_WORK_DIR_EXCEPTION = "AS-WEB-CORE-00486";
+    public static final String FAILED_CREATE_WORK_DIR_EXCEPTION = "AS-WEB-CORE-00299";
 
 
     // --------------------------------------------------------- Constructors

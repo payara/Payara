@@ -96,7 +96,7 @@ final class ApplicationFilterConfig implements FilterConfig, Serializable {
         cause = "Could not release allocated filter instance",
         action = "Verify the privilege"
     )
-    public static final String DO_AS_PRIVILEGE = "AS-WEB-CORE-00024";
+    public static final String DO_AS_PRIVILEGE = "AS-WEB-CORE-00098";
  
     // ----------------------------------------------------------- Constructors
 

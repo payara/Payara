@@ -92,7 +92,7 @@ public class ResponseFacade
             message = "Null response object",
             level = "WARNING"
     )
-    public static final String NULL_RESPONSE_OBJECT = "AS-WEB-CORE-00406";
+    public static final String NULL_RESPONSE_OBJECT = "AS-WEB-CORE-00082";
 
 
 

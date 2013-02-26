@@ -96,7 +96,7 @@ public class RequestFacade
                       "doFilter method",
             level = "WARNING"
     )
-    public static final String CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION = "AS-WEB-CORE-00390";
+    public static final String CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION = "AS-WEB-CORE-00074";
         
         
     // ----------------------------------------------------------- DoPrivileged

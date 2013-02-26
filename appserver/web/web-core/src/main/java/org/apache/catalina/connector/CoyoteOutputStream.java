@@ -81,7 +81,7 @@ public class CoyoteOutputStream
             message = "Cannot set a null WriteListener object",
             level = "WARNING"
     )
-    public static final String NULL_WRITE_LISTENER_EXCEPTION = "AS-WEB-CORE-00342";
+    public static final String NULL_WRITE_LISTENER_EXCEPTION = "AS-WEB-CORE-00043";
 
 
     // ----------------------------------------------------- Instance Variables

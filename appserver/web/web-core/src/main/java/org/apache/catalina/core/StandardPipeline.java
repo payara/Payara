@@ -110,13 +110,13 @@ public class StandardPipeline
         message = "Pipeline has already been started",
         level = "WARNING"
     )
-    public static final String PIPLINE_STARTED = "AS-WEB-CORE-00200";
+    public static final String PIPLINE_STARTED = "AS-WEB-CORE-00232";
 
     @LogMessageInfo(
         message = "Pipeline has not been started",
         level = "WARNING"
     )
-    public static final String PIPLINE_NOT_STARTED = "AS-WEB-CORE-00201";
+    public static final String PIPLINE_NOT_STARTED = "AS-WEB-CORE-00233";
 
     @LogMessageInfo(
         message = "Exception occurred when stopping GlassFishValve in StandardPipeline.setBasic",
@@ -125,7 +125,7 @@ public class StandardPipeline
         action = "Verify if stop() is the last one called on a given instance of this component, " +
                  "and it should send STOP_EVENT to any registered listeners"
     )
-    public static final String SET_BASIC_STOP_EXCEPTION = "AS-WEB-CORE-00202";
+    public static final String SET_BASIC_STOP_EXCEPTION = "AS-WEB-CORE-00234";
 
     @LogMessageInfo(
         message = "Exception occurred when starting GlassFishValve in StandardPipeline.setBasic",
@@ -135,7 +135,7 @@ public class StandardPipeline
                  "methods of this component are utilized, and it should " +
                  "send START_EVENT to any registered listeners"
     )
-    public static final String SET_BASIC_START_EXCEPTION = "AS-WEB-CORE-00203";
+    public static final String SET_BASIC_START_EXCEPTION = "AS-WEB-CORE-00235";
 
     @LogMessageInfo(
         message = "Exception occurred when starting GlassFishValve in StandardPipline.addValve",
@@ -143,7 +143,7 @@ public class StandardPipeline
         cause = "Specific valve could not be associated with current container",
         action = "Verify the availability of current valve"
     )
-    public static final String ADD_VALVE_EXCEPTION = "AS-WEB-CORE-00204";
+    public static final String ADD_VALVE_EXCEPTION = "AS-WEB-CORE-00236";
 
     @LogMessageInfo(
         message = "Unable to add valve {0}",
@@ -152,19 +152,19 @@ public class StandardPipeline
         action = "Verify if this is a GlassFish-style valve that was compiled against" +
                  " the old org.apache.catalina.Valve interface"
     )
-    public static final String ADD_TOMCAT_STYLE_VALVE_EXCEPTION = "AS-WEB-CORE-00205";
+    public static final String ADD_TOMCAT_STYLE_VALVE_EXCEPTION = "AS-WEB-CORE-00237";
 
     @LogMessageInfo(
         message = "No more Valves in the Pipeline processing this request",
         level = "WARNING"
     )
-    public static final String NO_VALVES_IN_PIPELINE_EXCEPTION = "AS-WEB-CORE-00206";
+    public static final String NO_VALVES_IN_PIPELINE_EXCEPTION = "AS-WEB-CORE-00238";
 
     @LogMessageInfo(
         message = "HttpUpgradeHandler handler cannot be null",
         level = "WARNING"
     )
-    public static final String PROTOCOL_HANDLER_REQUIRED_EXCEPTION = "AS-WEB-CORE-00207";
+    public static final String PROTOCOL_HANDLER_REQUIRED_EXCEPTION = "AS-WEB-CORE-00239";
 
     @LogMessageInfo(
         message = "Exception occurred when stopping GlassFishValve in StandardPipeline.removeValve",
@@ -173,19 +173,19 @@ public class StandardPipeline
         action = "Verify if stop() is the last one called on a given instance of this component, " +
                  "and it should send STOP_EVENT to any registered listeners"
     )
-    public static final String REMOVE_VALVE_EXCEPTION = "AS-WEB-CORE-00208";
+    public static final String REMOVE_VALVE_EXCEPTION = "AS-WEB-CORE-00240";
 
     @LogMessageInfo(
         message = "StandardPipeline[{0}]: {1}",
         level = "INFO"
     )
-    public static final String STANDARD_PIPELINE_INFO = "AS-WEB-CORE-00209";
+    public static final String STANDARD_PIPELINE_INFO = "AS-WEB-CORE-00241";
 
     @LogMessageInfo(
         message = "StandardPipeline[null]: {0}",
         level = "INFO"
     )
-    public static final String STANDARD_PIPELINE_NULL_INFO = "AS-WEB-CORE-00210";
+    public static final String STANDARD_PIPELINE_NULL_INFO = "AS-WEB-CORE-00242";
 
     // ----------------------------------------------------------- Constructors
 

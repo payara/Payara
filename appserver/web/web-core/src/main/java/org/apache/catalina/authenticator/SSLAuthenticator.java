@@ -89,25 +89,25 @@ public class SSLAuthenticator
             message = "Looking up certificates",
             level = "INFO"
     )
-    public static final String LOOK_UP_CERTIFICATE_INFO = "AS-WEB-CORE-00310";
+    public static final String LOOK_UP_CERTIFICATE_INFO = "AS-WEB-CORE-00017";
 
     @LogMessageInfo(
             message = "No certificates included with this request",
             level = "INFO"
     )
-    public static final String NO_CERTIFICATE_INCLUDED_INFO = "AS-WEB-CORE-00311";
+    public static final String NO_CERTIFICATE_INCLUDED_INFO = "AS-WEB-CORE-00018";
 
     @LogMessageInfo(
             message = "No client certificate chain in this request",
             level = "WARNING"
     )
-    public static final String NO_CLIENT_CERTIFICATE_CHAIN = "AS-WEB-CORE-00312";
+    public static final String NO_CLIENT_CERTIFICATE_CHAIN = "AS-WEB-CORE-00019";
 
     @LogMessageInfo(
             message = "Cannot authenticate with the provided credentials",
             level = "WARNING"
     )
-    public static final String CANNOT_AUTHENTICATE_WITH_CREDENTIALS = "AS-WEB-CORE-00313";
+    public static final String CANNOT_AUTHENTICATE_WITH_CREDENTIALS = "AS-WEB-CORE-00020";
 
 
     // ------------------------------------------------------------- Properties

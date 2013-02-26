@@ -93,25 +93,25 @@ public class StandardService
          message = "This service has already been started",
          level = "INFO"
      )
-     public static final String SERVICE_STARTED = "AS-WEB-CORE-00220";
+     public static final String SERVICE_STARTED = "AS-WEB-CORE-00251";
 
      @LogMessageInfo(
          message = "Starting service {0}",
          level = "INFO"
      )
-     public static final String STARTING_SERVICE = "AS-WEB-CORE-00221";
+     public static final String STARTING_SERVICE = "AS-WEB-CORE-00252";
 
      @LogMessageInfo(
          message = "Stopping service {0}",
          level = "INFO"
      )
-     public static final String STOPPING_SERVICE = "AS-WEB-CORE-00222";
+     public static final String STOPPING_SERVICE = "AS-WEB-CORE-00253";
 
      @LogMessageInfo(
          message = "This service has already been initialized",
          level = "INFO"
      )
-     public static final String SERVICE_HAS_BEEN_INIT = "AS-WEB-CORE-00223";
+     public static final String SERVICE_HAS_BEEN_INIT = "AS-WEB-CORE-00254";
 
      @LogMessageInfo(
          message = "Error registering Service at domain {0}",
@@ -119,7 +119,7 @@ public class StandardService
          cause = "Could not register service",
          action = "Verify the domain name and service name"
      )
-     public static final String ERROR_REGISTER_SERVICE_EXCEPTION = "AS-WEB-CORE-00224";
+     public static final String ERROR_REGISTER_SERVICE_EXCEPTION = "AS-WEB-CORE-00255";
 
      @LogMessageInfo(
          message = "Service initializing at {0} failed",
@@ -127,7 +127,7 @@ public class StandardService
          cause = "Could not pre-startup initialization",
          action = "Verify if server was already initialized"
      )
-     public static final String FAILED_SERVICE_INIT_EXCEPTION = "AS-WEB-CORE-00225";
+     public static final String FAILED_SERVICE_INIT_EXCEPTION = "AS-WEB-CORE-00256";
 
     // ----------------------------------------------------- Instance Variables
 

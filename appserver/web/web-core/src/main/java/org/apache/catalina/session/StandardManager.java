@@ -98,13 +98,13 @@ public class StandardManager
             message = "createSession: Too many active sessions",
             level = "WARNING"
     )
-    public static final String TOO_MANY_ACTIVE_SESSION_EXCEPTION = "AS-WEB-CORE-00650";
+    public static final String TOO_MANY_ACTIVE_SESSION_EXCEPTION = "AS-WEB-CORE-00381";
 
     @LogMessageInfo(
             message = " Loading persisted sessions from {0}",
             level = "FINE"
     )
-    public static final String LOADING_PERSISTED_SESSION = "AS-WEB-CORE-00651";
+    public static final String LOADING_PERSISTED_SESSION = "AS-WEB-CORE-00382";
 
     @LogMessageInfo(
             message = "IOException while loading persisted sessions: {0}",
@@ -112,7 +112,7 @@ public class StandardManager
             cause = "Could not creates an ObjectInputStream",
             action = "Verify if there are IO exceptions"
     )
-    public static final String LOADING_PERSISTED_SESSION_IO_EXCEPTION = "AS-WEB-CORE-00652";
+    public static final String LOADING_PERSISTED_SESSION_IO_EXCEPTION = "AS-WEB-CORE-00383";
 
     @LogMessageInfo(
             message = "ClassNotFoundException while loading persisted sessions: {0}",
@@ -120,13 +120,13 @@ public class StandardManager
             cause = "Could not deserialize and create StandardSession instance ",
             action = "Verify the class for an object being restored can be found"
     )
-    public static final String CLASS_NOT_FOUND_EXCEPTION = "AS-WEB-CORE-00653";
+    public static final String CLASS_NOT_FOUND_EXCEPTION = "AS-WEB-CORE-00384";
 
     @LogMessageInfo(
             message = "Saving persisted sessions to {0}",
             level = "FINE"
     )
-    public static final String SAVING_PERSISTED_SESSION = "AS-WEB-CORE-00654";
+    public static final String SAVING_PERSISTED_SESSION = "AS-WEB-CORE-00385";
 
     @LogMessageInfo(
             message = "IOException while saving persisted sessions: {0}",
@@ -134,7 +134,7 @@ public class StandardManager
             cause = "Could not creates an ObjectOutputStream instance",
             action = "Verify if there are any I/O exceptions"
     )
-    public static final String SAVING_PERSISTED_SESSION_IO_EXCEPTION = "AS-WEB-CORE-00655";
+    public static final String SAVING_PERSISTED_SESSION_IO_EXCEPTION = "AS-WEB-CORE-00386";
 
     @LogMessageInfo(
             message = "Exception loading sessions from persistent storage",
@@ -142,7 +142,7 @@ public class StandardManager
             cause = "Could not load any currently active sessions",
             action = "Verify if the serialized class is valid and if there are any I/O exceptions"
     )
-    public static final String LOADING_SESSIONS_EXCEPTION = "AS-WEB-CORE-00656";
+    public static final String LOADING_SESSIONS_EXCEPTION = "AS-WEB-CORE-00387";
 
     @LogMessageInfo(
             message = "Exception unloading sessions to persistent storage",
@@ -150,7 +150,7 @@ public class StandardManager
             cause = "Could not save any currently active sessions",
             action = "Verify if there are any I/O exceptions"
     )
-    public static final String UNLOADING_SESSIONS_EXCEPTION = "AS-WEB-CORE-00657";
+    public static final String UNLOADING_SESSIONS_EXCEPTION = "AS-WEB-CORE-00388";
 
     // ---------------------------------------------------- Security Classes
     private class PrivilegedDoLoadFromFile

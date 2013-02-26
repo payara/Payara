@@ -90,7 +90,7 @@ public class CoyoteReader
             message = "Failed to skip {0} characters in the underlying buffer of CoyoteReader on readLine().",
             level = "WARNING"
     )
-    public static final String FAILED_SKIP_CHARS_IN_BUFFER = "AS-WEB-CORE-00345";
+    public static final String FAILED_SKIP_CHARS_IN_BUFFER = "AS-WEB-CORE-00044";
 
     // ----------------------------------------------------- Instance Variables
 

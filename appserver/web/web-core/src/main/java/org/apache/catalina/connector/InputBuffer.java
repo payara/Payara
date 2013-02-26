@@ -97,25 +97,25 @@ public class InputBuffer extends Reader
             message = "Stream closed",
             level = "WARNING"
     )
-    public static final String STREAM_CLOSED = "AS-WEB-CORE-00350";
+    public static final String STREAM_CLOSED = "AS-WEB-CORE-00045";
 
     @LogMessageInfo(
             message = "Already set read listener",
             level = "WARNING"
     )
-    public static final String ALREADY_SET_READ_LISTENER = "AS-WEB-CORE-00351";
+    public static final String ALREADY_SET_READ_LISTENER = "AS-WEB-CORE-00046";
 
     @LogMessageInfo(
             message = "Cannot set ReaderListener for non-async or non-upgrade request",
             level = "WARNING"
     )
-    public static final String NON_ASYNC_UPGRADE_EXCEPTION = "AS-WEB-CORE-00352";
+    public static final String NON_ASYNC_UPGRADE_EXCEPTION = "AS-WEB-CORE-00047";
 
     @LogMessageInfo(
             message = "Error in invoking ReadListener.onDataAvailable",
             level = "WARNING"
      )
-    public static final String READ_LISTENER_ON_DATA_AVAILABLE_ERROR = "AS-WEB-CORE-00353";
+    public static final String READ_LISTENER_ON_DATA_AVAILABLE_ERROR = "AS-WEB-CORE-00048";
 
     // -------------------------------------------------------------- Constants
 

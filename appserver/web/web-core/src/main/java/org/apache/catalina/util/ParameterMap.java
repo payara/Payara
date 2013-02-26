@@ -95,7 +95,7 @@ public final class ParameterMap<K,V> extends LinkedHashMap<K,V> {
             message = "Map is currently locked",
             level = "WARNING"
     )
-    public static final String MAP_IS_LOCKED_EXCEPTION = "AS-WEB-CORE-00835";
+    public static final String MAP_IS_LOCKED_EXCEPTION = "AS-WEB-CORE-00489";
 
     // ----------------------------------------------------------- Constructors
 

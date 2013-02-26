@@ -101,13 +101,13 @@ public class StandardHost
          message = "Host name is required",
          level = "WARNING"
      )
-     public static final String HOST_NAME_REQUIRED_EXCEPTION = "AS-WEB-CORE-00155";
+     public static final String HOST_NAME_REQUIRED_EXCEPTION = "AS-WEB-CORE-00198";
 
      @LogMessageInfo(
          message = "Child of a Host must be a Context",
          level = "WARNING"
      )
-     public static final String CHILD_MUST_BE_CONTEXT_EXCEPTION = "AS-WEB-CORE-00156";
+     public static final String CHILD_MUST_BE_CONTEXT_EXCEPTION = "AS-WEB-CORE-00199";
 
      @LogMessageInfo(
          message = "MAPPING configuration error for request URI {0}",
@@ -115,25 +115,25 @@ public class StandardHost
          cause = "No context has been selected",
          action = "Verify the uri or default context"
      )
-     public static final String MAPPING_CONF_REQUEST_URI_EXCEPTION = "AS-WEB-CORE-00157";
+     public static final String MAPPING_CONF_REQUEST_URI_EXCEPTION = "AS-WEB-CORE-00200";
 
      @LogMessageInfo(
          message = "ErrorPage must not be null",
          level = "WARNING"
      )
-     public static final String ERROR_PAGE_CANNOT_BE_NULL_EXCEPTION = "AS-WEB-CORE-00158";
+     public static final String ERROR_PAGE_CANNOT_BE_NULL_EXCEPTION = "AS-WEB-CORE-00201";
 
      @LogMessageInfo(
          message = "XML validation enabled",
          level = "FINE"
      )
-     public static final String XML_VALIDATION_ENABLED = "AS-WEB-CORE-00159";
+     public static final String XML_VALIDATION_ENABLED = "AS-WEB-CORE-00202";
 
      @LogMessageInfo(
          message = "Create Host deployer for direct deployment ( non-jmx )",
          level = "INFO"
      )
-     public static final String CREATE_HOST_DEPLOYER_INFO = "AS-WEB-CORE-00160";
+     public static final String CREATE_HOST_DEPLOYER_INFO = "AS-WEB-CORE-00203";
 
      @LogMessageInfo(
          message = "Error creating deployer ",
@@ -141,7 +141,7 @@ public class StandardHost
          cause = "Could not instantiate deployer",
          action = "Verify access permission"
      )
-     public static final String ERROR_CREATING_DEPLOYER_EXCEPTION = "AS-WEB-CORE-00161";
+     public static final String ERROR_CREATING_DEPLOYER_EXCEPTION = "AS-WEB-CORE-00204";
 
      @LogMessageInfo(
          message = "Error registering host {0}",
@@ -149,7 +149,7 @@ public class StandardHost
          cause = "Initialization failed",
          action = "Verify domain and host name"
      )
-     public static final String ERROR_REGISTERING_HOST_EXCEPTION = "AS-WEB-CORE-00162";
+     public static final String ERROR_REGISTERING_HOST_EXCEPTION = "AS-WEB-CORE-00205";
 
      @LogMessageInfo(
          message = "Couldn't load specified error report valve class: {0}",
@@ -157,7 +157,7 @@ public class StandardHost
          cause = "Could not load instance of host valve",
          action = "Verify access permission"
      )
-     public static final String LOAD_SPEC_ERROR_REPORT_EXCEPTION = "AS-WEB-CORE-00163";
+     public static final String LOAD_SPEC_ERROR_REPORT_EXCEPTION = "AS-WEB-CORE-00206";
 
     
     // ----------------------------------------------------------- Constructors

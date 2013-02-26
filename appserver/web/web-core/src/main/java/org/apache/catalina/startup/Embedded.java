@@ -145,7 +145,7 @@ public class Embedded  extends StandardService {
             message = "No engines have been defined yet",
             level = "WARNING"
     )
-    public static final String NO_ENGINES_DEFINED = "AS-WEB-CORE-00740";
+    public static final String NO_ENGINES_DEFINED = "AS-WEB-CORE-00431";
 
     @LogMessageInfo(
             message = "Engine.start exception",
@@ -155,7 +155,7 @@ public class Embedded  extends StandardService {
             action = "Verify if start() be called before any of the public " +
                      "methods of this component are utilized"
     )
-    public static final String ENGINE_START_EXCEPTION = "AS-WEB-CORE-00741";
+    public static final String ENGINE_START_EXCEPTION = "AS-WEB-CORE-00432";
 
     @LogMessageInfo(
             message = "Couldn't load SSL server socket factory.",
@@ -163,7 +163,7 @@ public class Embedded  extends StandardService {
             cause = "Could not instantiate ServerSocketFactory",
             action = "Verify access permission to this class"
     )
-    public static final String COULD_NOT_LOAD_SSL_SERVER_SOCKET_FACTORY_EXCEPTION = "AS-WEB-CORE-00742";
+    public static final String COULD_NOT_LOAD_SSL_SERVER_SOCKET_FACTORY_EXCEPTION = "AS-WEB-CORE-00433";
 
     @LogMessageInfo(
             message = "Couldn't create connector.",
@@ -171,7 +171,7 @@ public class Embedded  extends StandardService {
             cause = "Could not instantiate connector",
             action = "Verify access permission to this class"
     )
-    public static final String COULD_NOT_CREATE_CONNECTOR_EXCEPTION = "AS-WEB-CORE-00743";
+    public static final String COULD_NOT_CREATE_CONNECTOR_EXCEPTION = "AS-WEB-CORE-00434";
 
     @LogMessageInfo(
             message = "Connector.stop",
@@ -179,7 +179,7 @@ public class Embedded  extends StandardService {
             cause = "Could not remove the specified Connector from the set associated from this Service",
             action = "Verify if connector has already been stopped or removed"
     )
-    public static final String CONNECTOR_STOP_EXCEPTION = "AS-WEB-CORE-00744";
+    public static final String CONNECTOR_STOP_EXCEPTION = "AS-WEB-CORE-00435";
 
     @LogMessageInfo(
             message = "Engine.stop exception",
@@ -187,25 +187,25 @@ public class Embedded  extends StandardService {
             cause = "Could not terminate the active use of the public methods of this component",
             action = "Verify if stop() is the last one called on a given instance of this component"
     )
-    public static final String  ENGINE_STOP_EXCEPTION = "AS-WEB-CORE-00745";
+    public static final String  ENGINE_STOP_EXCEPTION = "AS-WEB-CORE-00436";
 
     @LogMessageInfo(
             message = "Specified Authenticator is not a Valve",
             level = "WARNING"
     )
-    public static final String AUTH_IS_NOT_VALVE_EXCEPTION = "AS-WEB-CORE-00746";
+    public static final String AUTH_IS_NOT_VALVE_EXCEPTION = "AS-WEB-CORE-00437";
 
     @LogMessageInfo(
             message = "Embedded service has already been started",
             level = "WARNING"
     )
-    public static final String SERVICE_BEEN_STARTED_EXCEPTION = "AS-WEB-CORE-00747";
+    public static final String SERVICE_BEEN_STARTED_EXCEPTION = "AS-WEB-CORE-00438";
 
     @LogMessageInfo(
             message = "Embedded service has not yet been started",
             level = "WARNING"
     )
-    public static final String SERVICE_NOT_BEEN_STARTED_EXCEPTION = "AS-WEB-CORE-00748";
+    public static final String SERVICE_NOT_BEEN_STARTED_EXCEPTION = "AS-WEB-CORE-00439";
     // ----------------------------------------------------------- Constructors
 
 

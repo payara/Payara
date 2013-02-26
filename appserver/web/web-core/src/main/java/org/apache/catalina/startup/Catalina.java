@@ -104,7 +104,7 @@ public class Catalina extends Embedded {
             message = "Error processing command line arguments",
             level = "WARNING"
     )
-    public static final String ERROR_PROCESSING_COMMAND_LINE_EXCEPTION = "AS-WEB-CORE-00695";
+    public static final String ERROR_PROCESSING_COMMAND_LINE_EXCEPTION = "AS-WEB-CORE-00399";
 
     @LogMessageInfo(
             message = "Catalina.stop: ",
@@ -112,19 +112,19 @@ public class Catalina extends Embedded {
             cause = "Could not stop server",
             action = "Verify if the input file exist or if there are any I/O exceptions, parsing exceptions"
     )
-    public static final String CATALINA_STOP_EXCEPTION = "AS-WEB-CORE-00696";
+    public static final String CATALINA_STOP_EXCEPTION = "AS-WEB-CORE-00400";
 
     @LogMessageInfo(
             message = "Can't load server.xml from {0}",
             level = "WARNING"
     )
-    public static final String CANNOT_LOAD_SERVER_XML_EXCEPTION = "AS-WEB-CORE-00697";
+    public static final String CANNOT_LOAD_SERVER_XML_EXCEPTION = "AS-WEB-CORE-00401";
 
     @LogMessageInfo(
             message = "Catalina.start: ",
             level = "WARNING"
     )
-    public static final String CATALINA_START_WARNING_EXCEPTION = "AS-WEB-CORE-00698";
+    public static final String CATALINA_START_WARNING_EXCEPTION = "AS-WEB-CORE-00402";
 
     @LogMessageInfo(
             message = "Catalina.start: ",
@@ -132,25 +132,25 @@ public class Catalina extends Embedded {
             cause = "Could not initialize the server",
             action = "Verify if the server has already been initialized"
     )
-    public static final String CATALINA_START_SEVERE_EXCEPTION = "AS-WEB-CORE-00699";
+    public static final String CATALINA_START_SEVERE_EXCEPTION = "AS-WEB-CORE-00403";
 
     @LogMessageInfo(
             message = "Initialization processed in {0} ms",
             level = "INFO"
     )
-    public static final String INIT_PROCESSED_EXCEPTION = "AS-WEB-CORE-00700";
+    public static final String INIT_PROCESSED_EXCEPTION = "AS-WEB-CORE-00404";
 
     @LogMessageInfo(
             message = "Error loading configuration",
             level = "WARNING"
     )
-    public static final String ERROR_LOADING_CONFIGURATION_EXCEPTION = "AS-WEB-CORE-00701";
+    public static final String ERROR_LOADING_CONFIGURATION_EXCEPTION = "AS-WEB-CORE-00405";
 
     @LogMessageInfo(
             message = "Server startup in {0} ms",
             level = "WARNING"
     )
-    public static final String SERVER_STARTUP_INFO = "AS-WEB-CORE-00702";
+    public static final String SERVER_STARTUP_INFO = "AS-WEB-CORE-00406";
     // --------------------------------------------------- Instance Variables
 
 

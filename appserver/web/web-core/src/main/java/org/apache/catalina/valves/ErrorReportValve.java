@@ -102,67 +102,67 @@ public class ErrorReportValve
             message = "status.setContentType",
             level = "WARNING"
     )
-    public static final String SET_CONTENT_TYPE_EXCEPTION = "AS-WEB-CORE-00855";
+    public static final String SET_CONTENT_TYPE_EXCEPTION = "AS-WEB-CORE-00492";
 
     @LogMessageInfo(
             message = "Error report",
             level = "INFO"
     )
-    public static final String ERROR_REPORT_INFO = "AS-WEB-CORE-00856";
+    public static final String ERROR_REPORT_INFO = "AS-WEB-CORE-00493";
 
     @LogMessageInfo(
             message = "HTTP Status {0} - {1}",
             level = "INFO"
     )
-    public static final String HTTP_STATUS_INFO = "AS-WEB-CORE-00857";
+    public static final String HTTP_STATUS_INFO = "AS-WEB-CORE-00494";
 
     @LogMessageInfo(
             message = "Exception report",
             level = "INFO"
     )
-    public static final String EXCEPTION_REPORT_INFO = "AS-WEB-CORE-00858";
+    public static final String EXCEPTION_REPORT_INFO = "AS-WEB-CORE-00495";
 
     @LogMessageInfo(
             message = "Status report",
             level = "INFO"
     )
-    public static final String STATUS_REPORT_INFO = "AS-WEB-CORE-00859";
+    public static final String STATUS_REPORT_INFO = "AS-WEB-CORE-00496";
 
     @LogMessageInfo(
             message = "Message",
             level = "INFO"
     )
-    public static final String MESSAGE_INFO = "AS-WEB-CORE-00860";
+    public static final String MESSAGE_INFO = "AS-WEB-CORE-00497";
 
     @LogMessageInfo(
             message = "Description",
             level = "INFO"
     )
-    public static final String DESCRIPTION_INFO = "AS-WEB-CORE-00861";
+    public static final String DESCRIPTION_INFO = "AS-WEB-CORE-00498";
 
     @LogMessageInfo(
             message = "Exception",
             level = "INFO"
     )
-    public static final String EXCEPTION_INFO = "AS-WEB-CORE-00862";
+    public static final String EXCEPTION_INFO = "AS-WEB-CORE-00499";
 
     @LogMessageInfo(
             message = "Root cause",
             level = "INFO"
     )
-    public static final String ROOT_CAUSE_INFO = "AS-WEB-CORE-00863";
+    public static final String ROOT_CAUSE_INFO = "AS-WEB-CORE-00500";
 
     @LogMessageInfo(
             message = "Note",
             level = "INFO"
     )
-    public static final String NOTE_INFO = "AS-WEB-CORE-00864";
+    public static final String NOTE_INFO = "AS-WEB-CORE-00501";
 
     @LogMessageInfo(
             message = "The full stack traces of the exception and its root causes are available in the {0} logs.",
             level = "INFO"
     )
-    public static final String EXCEPTION_AND_ROOT_CAUSE_AVAILABLE_INFO = "AS-WEB-CORE-00865";
+    public static final String EXCEPTION_AND_ROOT_CAUSE_AVAILABLE_INFO = "AS-WEB-CORE-00502";
 
 
     /**

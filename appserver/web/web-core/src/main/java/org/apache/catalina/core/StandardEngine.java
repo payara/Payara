@@ -83,19 +83,19 @@ public class StandardEngine
         message = "Child of an Engine must be a Host",
         level = "WARNING"
     )
-    public static final String CHILD_OF_ENGINE_MUST_BE_HOST_EXPECTION = "AS-WEB-CORE-00140";
+    public static final String CHILD_OF_ENGINE_MUST_BE_HOST_EXPECTION = "AS-WEB-CORE-00194";
 
     @LogMessageInfo(
         message = "Engine cannot have a parent Container",
         level = "WARNING"
     )
-    public static final String CANNOT_HAVE_PARENT_CONTAINER_EXCEPTION = "AS-WEB-CORE-00141";
+    public static final String CANNOT_HAVE_PARENT_CONTAINER_EXCEPTION = "AS-WEB-CORE-00195";
 
     @LogMessageInfo(
         message = "Error registering",
         level = "WARNING"
     )
-    public static final String ERROR_REGISTERING_EXCEPTION = "AS-WEB-CORE-00142";
+    public static final String ERROR_REGISTERING_EXCEPTION = "AS-WEB-CORE-00196";
 
 
 

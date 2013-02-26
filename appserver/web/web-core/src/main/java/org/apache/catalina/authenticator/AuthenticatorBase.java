@@ -119,13 +119,13 @@ public abstract class AuthenticatorBase
             message = "Configuration error:  Must be attached to a Context",
             level = "WARNING"
     )
-    public static final String CONFIG_ERROR_MUST_ATTACH_TO_CONTEXT = "AS-WEB-CORE-00280";
+    public static final String CONFIG_ERROR_MUST_ATTACH_TO_CONTEXT = "AS-WEB-CORE-00001";
 
     @LogMessageInfo(
             message = "Authenticator[{0}]: {1}",
             level = "INFO"
     )
-    public static final String AUTHENTICATOR_INFO = "AS-WEB-CORE-00281";
+    public static final String AUTHENTICATOR_INFO = "AS-WEB-CORE-00002";
 
     @LogMessageInfo(
             message = "Exception getting debug value",
@@ -133,7 +133,7 @@ public abstract class AuthenticatorBase
             cause = "Could not get the method or invoke underlying method",
             action = "Verify the existence of such method and access permission"
     )
-    public static final String GETTING_DEBUG_VALUE_EXCEPTION = "AS-WEB-CORE-00282";
+    public static final String GETTING_DEBUG_VALUE_EXCEPTION = "AS-WEB-CORE-00003";
 
 
 

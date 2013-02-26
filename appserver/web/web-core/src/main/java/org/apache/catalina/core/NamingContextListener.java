@@ -94,31 +94,31 @@ public class NamingContextListener
         message = "Creation of the naming context failed: {0}",
         level = "WARNING"
     )
-    public static final String CREATION_NAMING_CONTEXT_FAILED = "AS-WEB-CORE-00046";
+    public static final String CREATION_NAMING_CONTEXT_FAILED = "AS-WEB-CORE-00120";
 
     @LogMessageInfo(
         message = "Failed to bind object: {0}",
         level = "WARNING"
     )
-    public static final String BIND_OBJECT_FAILED = "AS-WEB-CORE-00047";
+    public static final String BIND_OBJECT_FAILED = "AS-WEB-CORE-00121";
 
     @LogMessageInfo(
         message = "Environment entry {0} has an invalid type",
         level = "WARNING"
     )
-    public static final String ENV_ENTRY_INVALID_TYPE = "AS-WEB-CORE-00048";
+    public static final String ENV_ENTRY_INVALID_TYPE = "AS-WEB-CORE-00122";
 
     @LogMessageInfo(
         message = "Environment entry {0} has an invalid value",
         level = "WARNING"
     )
-    public static final String ENV_ENTRY_INVALID_VALUE = "AS-WEB-CORE-00049";
+    public static final String ENV_ENTRY_INVALID_VALUE = "AS-WEB-CORE-00123";
 
     @LogMessageInfo(
         message = "Failed to unbind object: {0}",
         level = "WARNING"
     )
-    public static final String UNBIND_OBJECT_FAILED = "AS-WEB-CORE-00050";
+    public static final String UNBIND_OBJECT_FAILED = "AS-WEB-CORE-00124";
 
 
 

@@ -94,7 +94,7 @@ public class CatalinaProperties {
             message = "Failed to load catalina.properties",
             level = "WARNING"
     )
-    public static final String FAILED_LOAD_CATALINA_PROPERTIES_EXCEPTION = "AS-WEB-CORE-00707";
+    public static final String FAILED_LOAD_CATALINA_PROPERTIES_EXCEPTION = "AS-WEB-CORE-00407";
     // ------------------------------------------------------- Public Methods
 
     /**

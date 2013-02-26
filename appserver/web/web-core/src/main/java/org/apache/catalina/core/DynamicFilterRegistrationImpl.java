@@ -59,7 +59,7 @@ public class DynamicFilterRegistrationImpl
         message = "Unable to configure {0} for filter {1} of servlet context {2}, because this servlet context has already been initialized",
         level = "WARNING"
     )
-    public static final String DYNAMIC_FILTER_REGISTRATION_ALREADY_INIT = "AS-WEB-CORE-00041";
+    public static final String DYNAMIC_FILTER_REGISTRATION_ALREADY_INIT = "AS-WEB-CORE-00115";
 
     /**
      * Constructor

@@ -99,7 +99,7 @@ public class ApplicationContext implements ServletContext {
                   "annotated with WebListener",
         level = "INFO"
     )
-    public static final String UNSUPPORTED_OPERATION_EXCEPTION = "AS-WEB-CORE-00011";
+    public static final String UNSUPPORTED_OPERATION_EXCEPTION = "AS-WEB-CORE-00083";
 
     @LogMessageInfo(
         message = "Exception thrown by attributes event listener",
@@ -107,13 +107,13 @@ public class ApplicationContext implements ServletContext {
         cause = "Could not modify attribute",
         action = "Verify name and value from Servlet Context"
     )
-    public static final String ATTRIBUTES_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00012";
+    public static final String ATTRIBUTES_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00084";
 
     @LogMessageInfo(
         message = "Name cannot be null",
         level = "INFO"
     )
-    public static final String ILLEGAL_ARGUMENT_EXCEPTION = "AS-WEB-CORE-00013";
+    public static final String ILLEGAL_ARGUMENT_EXCEPTION = "AS-WEB-CORE-00085";
 
 
     /**

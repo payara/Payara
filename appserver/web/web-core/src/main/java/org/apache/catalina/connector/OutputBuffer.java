@@ -99,19 +99,19 @@ public class OutputBuffer extends Writer
             message = "The WriteListener has already been set.",
             level = "WARNING"
     )
-    public static final String WRITE_LISTENER_BEEN_SET = "AS-WEB-CORE-00355";
+    public static final String WRITE_LISTENER_BEEN_SET = "AS-WEB-CORE-00049";
 
     @LogMessageInfo(
             message = "Cannot set WriteListener for non-async or non-upgrade request",
             level = "WARNING"
     )
-    public static final String NON_ASYNC_UPGRADE_EXCEPTION = "AS-WEB-CORE-00356";
+    public static final String NON_ASYNC_UPGRADE_EXCEPTION = "AS-WEB-CORE-00050";
 
     @LogMessageInfo(
             message = "Error in invoking WriteListener.onWritePossible",
             level = "WARNING"
     )
-    public static final String WRITE_LISTENER_ON_WRITE_POSSIBLE_ERROR = "AS-WEB-CORE-00357";
+    public static final String WRITE_LISTENER_ON_WRITE_POSSIBLE_ERROR = "AS-WEB-CORE-00051";
 
     // -------------------------------------------------------------- Constants
 

@@ -95,55 +95,55 @@ public class StandardHostDeployer implements Deployer {
         message = "Context path is required",
         level = "WARNING"
     )
-    public static final String CONTEXT_PATH_REQUIRED_EXCEPTION = "AS-WEB-CORE-00170";
+    public static final String CONTEXT_PATH_REQUIRED_EXCEPTION = "AS-WEB-CORE-00207";
 
     @LogMessageInfo(
         message = "Invalid context path: {0}",
         level = "WARNING"
     )
-    public static final String INVALID_CONTEXT_PATH_EXCEPTION = "AS-WEB-CORE-00171";
+    public static final String INVALID_CONTEXT_PATH_EXCEPTION = "AS-WEB-CORE-00208";
 
     @LogMessageInfo(
         message = "Context path {0} is already in use",
         level = "WARNING"
     )
-    public static final String CONTEXT_PATH_ALREADY_USED_EXCEPTION = "AS-WEB-CORE-00172";
+    public static final String CONTEXT_PATH_ALREADY_USED_EXCEPTION = "AS-WEB-CORE-00209";
 
     @LogMessageInfo(
         message = "URL to web application archive is required",
         level = "WARNING"
     )
-    public static final String URL_WEB_APP_ARCHIVE_REQUIRED_EXCEPTION = "AS-WEB-CORE-00173";
+    public static final String URL_WEB_APP_ARCHIVE_REQUIRED_EXCEPTION = "AS-WEB-CORE-00210";
 
     @LogMessageInfo(
         message = "Installing web application at context path {0} from URL {1}",
         level = "INFO"
     )
-    public static final String INSTALLING_WEB_APP_INFO = "AS-WEB-CORE-00174";
+    public static final String INSTALLING_WEB_APP_INFO = "AS-WEB-CORE-00211";
 
     @LogMessageInfo(
         message = "Invalid URL for web application archive: {0}",
         level = "WARNING"
     )
-    public static final String INVALID_URL_WEB_APP_EXCEPTION = "AS-WEB-CORE-00175";
+    public static final String INVALID_URL_WEB_APP_EXCEPTION = "AS-WEB-CORE-00212";
 
     @LogMessageInfo(
         message = "Only web applications in the Host web application directory can be installed, invalid URL: {0}",
         level = "WARNING"
     )
-    public static final String HOST_WEB_APP_DIR_CAN_BE_INSTALLED_EXCEPTION = "AS-WEB-CORE-00176";
+    public static final String HOST_WEB_APP_DIR_CAN_BE_INSTALLED_EXCEPTION = "AS-WEB-CORE-00213";
 
     @LogMessageInfo(
         message = "Context path {0} must match the directory or WAR file name: {1}",
         level = "WARNING"
     )
-    public static final String CONSTEXT_PATH_MATCH_DIR_WAR_NAME_EXCEPTION = "AS-WEB-CORE-00177";
+    public static final String CONSTEXT_PATH_MATCH_DIR_WAR_NAME_EXCEPTION = "AS-WEB-CORE-00214";
 
     @LogMessageInfo(
         message = "Error installing",
         level = "WARNING"
     )
-    public static final String ERROR_INSTALLING_EXCEPTION = "AS-WEB-CORE-00178";
+    public static final String ERROR_INSTALLING_EXCEPTION = "AS-WEB-CORE-00215";
 
     @LogMessageInfo(
         message = "Error deploying application at context path {0}",
@@ -151,43 +151,43 @@ public class StandardHostDeployer implements Deployer {
         cause = "Could not initiate life cycle listener",
         action = "Verify the access permission"
     )
-    public static final String ERROR_DEPLOYING_APP_CONTEXT_PATH_EXCEPTION = "AS-WEB-CORE-00179";
+    public static final String ERROR_DEPLOYING_APP_CONTEXT_PATH_EXCEPTION = "AS-WEB-CORE-00216";
 
     @LogMessageInfo(
         message = "URL to configuration file is required",
         level = "WARNING"
     )
-    public static final String URL_CONFIG_FILE_REQUIRED_EXCEPTION = "AS-WEB-CORE-00180";
+    public static final String URL_CONFIG_FILE_REQUIRED_EXCEPTION = "AS-WEB-CORE-00217";
 
     @LogMessageInfo(
         message = "Use of configuration file is not allowed",
         level = "WARNING"
     )
-    public static final String USE_CONFIG_FILE_NOT_ALLOWED = "AS-WEB-CORE-00181";
+    public static final String USE_CONFIG_FILE_NOT_ALLOWED = "AS-WEB-CORE-00218";
 
     @LogMessageInfo(
         message = "Processing Context configuration file URL {0}",
         level = "INFO"
     )
-    public static final String PROCESSING_CONTEXT_CONFIG_INFO = "AS-WEB-CORE-00182";
+    public static final String PROCESSING_CONTEXT_CONFIG_INFO = "AS-WEB-CORE-00219";
 
     @LogMessageInfo(
         message = "Installing web application from URL {0}",
         level = "INFO"
     )
-    public static final String INSTALLING_WEB_APP_FROM_URL_INFO = "AS-WEB-CORE-00183";
+    public static final String INSTALLING_WEB_APP_FROM_URL_INFO = "AS-WEB-CORE-00220";
 
     @LogMessageInfo(
         message = "Context path {0} is not currently in use",
         level = "WARNING"
     )
-    public static final String CONTEXT_PATH_NOT_IN_USE = "AS-WEB-CORE-00184";
+    public static final String CONTEXT_PATH_NOT_IN_USE = "AS-WEB-CORE-00221";
 
     @LogMessageInfo(
         message = "Removing web application at context path {0}",
         level = "INFO"
     )
-    public static final String REMOVING_WEB_APP_INFO = "AS-WEB-CORE-00185";
+    public static final String REMOVING_WEB_APP_INFO = "AS-WEB-CORE-00222";
 
     @LogMessageInfo(
         message = "Error removing application at context path {0}",
@@ -195,13 +195,13 @@ public class StandardHostDeployer implements Deployer {
         cause = "Could not remove an existing child Container",
         action = "Verify if there are any I/O errors"
     )
-    public static final String ERROR_REMOVING_APP_EXCEPTION = "AS-WEB-CORE-00186";
+    public static final String ERROR_REMOVING_APP_EXCEPTION = "AS-WEB-CORE-00223";
 
     @LogMessageInfo(
         message = "Starting web application at context path {0}",
         level = "INFO"
     )
-    public static final String STARTING_WEB_APP_INFO = "AS-WEB-CORE-00187";
+    public static final String STARTING_WEB_APP_INFO = "AS-WEB-CORE-00224";
 
     @LogMessageInfo(
         message = "Starting web application at context path {0} failed",
@@ -211,13 +211,13 @@ public class StandardHostDeployer implements Deployer {
                  "methods of this component are utilized, and it should " +
                  "send START_EVENT to any registered listeners"
     )
-    public static final String STARTING_WEB_APP_FAILED_EXCEPTION = "AS-WEB-CORE-00188";
+    public static final String STARTING_WEB_APP_FAILED_EXCEPTION = "AS-WEB-CORE-00225";
 
     @LogMessageInfo(
         message = "Stopping web application at context path {0}",
         level = "INFO"
     )
-    public static final String STOPPING_WEB_APP_INFO = "AS-WEB-CORE-00189";
+    public static final String STOPPING_WEB_APP_INFO = "AS-WEB-CORE-00226";
 
     @LogMessageInfo(
         message = "Stopping web application at context path {0} failed",
@@ -226,13 +226,13 @@ public class StandardHostDeployer implements Deployer {
         action = "Verify if stop() is the last one called on a given instance of this component, " +
                  "and it should send STOP_EVENT to any registered listeners"
     )
-    public static final String STOPPING_WEB_APP_FAILED_EXCEPTION = "AS-WEB-CORE-00190";
+    public static final String STOPPING_WEB_APP_FAILED_EXCEPTION = "AS-WEB-CORE-00227";
 
     @LogMessageInfo(
         message = "Failed to remove file {0}",
         level = "WARNING"
     )
-    public static final String FAILED_REMOVE_FILE = "AS-WEB-CORE-00191";
+    public static final String FAILED_REMOVE_FILE = "AS-WEB-CORE-00228";
 
     // ----------------------------------------------------------- Constructors
 

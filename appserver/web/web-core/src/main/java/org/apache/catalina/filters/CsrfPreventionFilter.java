@@ -97,7 +97,7 @@ public class CsrfPreventionFilter extends FilterBase {
             message = "Unable to create Random source using class [{0}]",
             level = "WARNING"
     )
-    public static final String UNABLE_CREATE_RANDOM_SOURCE_EXCEPTION = "AS-WEB-CORE-00460";
+    public static final String UNABLE_CREATE_RANDOM_SOURCE_EXCEPTION = "AS-WEB-CORE-00286";
 
     private String randomClass = SecureRandom.class.getName();
 

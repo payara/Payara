@@ -65,19 +65,19 @@ public class FilterRegistrationImpl implements FilterRegistration {
         message = "Unable to configure {0} for filter {1} of servlet context {2}, because this servlet context has already been initialized",
         level = "WARNING"
     )
-    public static final String FILTER_REGISTRATION_ALREADY_INIT = "AS-WEB-CORE-00043";
+    public static final String FILTER_REGISTRATION_ALREADY_INIT = "AS-WEB-CORE-00117";
 
     @LogMessageInfo(
         message = "Unable to configure mapping for filter {0} of servlet context {1}, because servlet names are null or empty",
         level = "WARNING"
     )
-    public static final String FILTER_REGISTRATION_MAPPING_SERVLET_NAME_EXCEPTION = "AS-WEB-CORE-00044";
+    public static final String FILTER_REGISTRATION_MAPPING_SERVLET_NAME_EXCEPTION = "AS-WEB-CORE-00118";
 
     @LogMessageInfo(
         message = "Unable to configure mapping for filter {0} of servlet context {1}, because URL patterns are null or empty",
         level = "WARNING"
     )
-    public static final String FILTER_REGISTRATION_MAPPING_URL_PATTERNS_EXCEPTION = "AS-WEB-CORE-00045";
+    public static final String FILTER_REGISTRATION_MAPPING_URL_PATTERNS_EXCEPTION = "AS-WEB-CORE-00119";
 
     /**
      * Constructor

@@ -91,13 +91,13 @@ public abstract class StoreBase
             message = "StoreBase has already been started",
             level = "WARNING"
     )
-    public static final String STORE_BASE_STARTED_EXCEPTION = "AS-WEB-CORE-00680";
+    public static final String STORE_BASE_STARTED_EXCEPTION = "AS-WEB-CORE-00396";
 
     @LogMessageInfo(
             message = "StoreBase has not been started",
             level = "WARNING"
     )
-    public static final String STORE_BASE_NOT_STARTED_EXCEPTION = "AS-WEB-CORE-00681";
+    public static final String STORE_BASE_NOT_STARTED_EXCEPTION = "AS-WEB-CORE-00397";
 
     // ----------------------------------------------------- Instance Variables
 

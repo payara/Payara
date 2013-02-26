@@ -100,7 +100,7 @@ public abstract class PersistentManagerBase
             cause = "Could not find session associated with given ID",
             action = "Verify the session ID"
     )
-    public static final String CHECKING_IS_LOADED_EXCEPTION = "AS-WEB-CORE-00625";
+    public static final String CHECKING_IS_LOADED_EXCEPTION = "AS-WEB-CORE-00357";
 
     @LogMessageInfo(
             message = "Exception clearing the Store",
@@ -108,13 +108,13 @@ public abstract class PersistentManagerBase
             cause = "Could not instantiate PrivilegedStoreClear()",
             action = "Verify if specified action's run() could remove all sessions from store"
     )
-    public static final String CLEARING_STORE_EXCEPTION = "AS-WEB-CORE-00626";
+    public static final String CLEARING_STORE_EXCEPTION = "AS-WEB-CORE-00358";
 
     @LogMessageInfo(
             message = "createSession: Too many active sessions",
             level = "WARNING"
     )
-    public static final String CREATE_SESSION_EXCEPTION = "AS-WEB-CORE-00627";
+    public static final String CREATE_SESSION_EXCEPTION = "AS-WEB-CORE-00359";
 
     @LogMessageInfo(
             message = "Exception in the Store during load",
@@ -122,13 +122,13 @@ public abstract class PersistentManagerBase
             cause = "Could not instantiate PrivilegedStoreKeys()",
             action = "Verify if specified action's run() does not throw exception"
     )
-    public static final String STORE_LOADING_EXCEPTION = "AS-WEB-CORE-00628";
+    public static final String STORE_LOADING_EXCEPTION = "AS-WEB-CORE-00360";
 
     @LogMessageInfo(
             message = "Loading {0} persisted sessions",
             level = "FINE"
     )
-    public static final String LOADING_PERSISTED_SESSIONS = "AS-WEB-CORE-00629";
+    public static final String LOADING_PERSISTED_SESSIONS = "AS-WEB-CORE-00361";
 
     @LogMessageInfo(
             message = "Failed load session from store",
@@ -136,7 +136,7 @@ public abstract class PersistentManagerBase
             cause = "Could not restore sessions from store to manager's list",
             action = "Verify if the sessions are valid"
     )
-    public static final String FAILED_LOAD_SESSION_EXCEPTION = "AS-WEB-CORE-00630";
+    public static final String FAILED_LOAD_SESSION_EXCEPTION = "AS-WEB-CORE-00362";
 
     @LogMessageInfo(
             message = "Can't load sessions from store",
@@ -145,7 +145,7 @@ public abstract class PersistentManagerBase
             action = "Verify if there is no exception to get the array containing the session " +
                      "identifiers of all Sessions currently saved in this Store"
     )
-    public static final String CANNOT_LOAD_SESSION_EXCEPTION = "AS-WEB-CORE-00631";
+    public static final String CANNOT_LOAD_SESSION_EXCEPTION = "AS-WEB-CORE-00363";
 
     @LogMessageInfo(
             message = "Exception in the Store during removeSession",
@@ -154,7 +154,7 @@ public abstract class PersistentManagerBase
             action = "Verify if the specified action's run() could remove the session with the " +
                      "specified session identifier from this Store"
     )
-    public static final String STORE_REMOVE_SESSION_EXCEPTION = "AS-WEB-CORE-00632";
+    public static final String STORE_REMOVE_SESSION_EXCEPTION = "AS-WEB-CORE-00364";
 
     @LogMessageInfo(
             message = "Exception removing session",
@@ -162,13 +162,13 @@ public abstract class PersistentManagerBase
             cause = "Could not remove specified session identifier from store",
             action = "Verify if there is no I/O error occur"
     )
-    public static final String REMOVING_SESSION_EXCEPTION = "AS-WEB-CORE-00633";
+    public static final String REMOVING_SESSION_EXCEPTION = "AS-WEB-CORE-00365";
 
     @LogMessageInfo(
             message = "Saving {0} persisted sessions",
             level = "FINE"
     )
-    public static final String SAVING_PERSISTED_SESSION = "AS-WEB-CORE-00634";
+    public static final String SAVING_PERSISTED_SESSION = "AS-WEB-CORE-00366";
 
     @LogMessageInfo(
             message = "Exception in the Store during swapIn",
@@ -177,7 +177,7 @@ public abstract class PersistentManagerBase
             action = "Verify if action's run() can load and return the Session associated with the specified session " +
                      "identifier from this Store, without removing it"
     )
-    public static final String STORE_SWAP_IN_EXCEPTION = "AS-WEB-CORE-00635";
+    public static final String STORE_SWAP_IN_EXCEPTION = "AS-WEB-CORE-00367";
 
     @LogMessageInfo(
             message = "Error deserializing Session {0}: {1}",
@@ -186,7 +186,7 @@ public abstract class PersistentManagerBase
                      "associated with the specified session identifier from this Store",
             action = "Verify if ClassNotFoundException occur"
     )
-    public static final String DESERILIZING_SESSION_EXCEPTION = "AS-WEB-CORE-00636";
+    public static final String DESERILIZING_SESSION_EXCEPTION = "AS-WEB-CORE-00368";
 
     @LogMessageInfo(
             message = "Session swapped in is invalid or expired",
@@ -194,13 +194,13 @@ public abstract class PersistentManagerBase
             cause = "Session swapped in is invalid or expired",
             action = "Verify if current session is valid"
     )
-    public static final String INVALID_EXPIRED_SESSION_EXCEPTION = "AS-WEB-CORE-00637";
+    public static final String INVALID_EXPIRED_SESSION_EXCEPTION = "AS-WEB-CORE-00369";
 
     @LogMessageInfo(
             message = "Swapping session {0} in from Store",
             level = "FINE"
     )
-    public static final String SWAPPING_SESSION_FROM_STORE = "AS-WEB-CORE-00638";
+    public static final String SWAPPING_SESSION_FROM_STORE = "AS-WEB-CORE-00370";
 
     @LogMessageInfo(
             message = "Exception in the Store during writeSession",
@@ -208,7 +208,7 @@ public abstract class PersistentManagerBase
             cause = "Could not write the provided session to the Store",
             action = "Verify if there are any I/O errors occur"
     )
-    public static final String STORE_WRITE_SESSION_EXCEPTION = "AS-WEB-CORE-00639";
+    public static final String STORE_WRITE_SESSION_EXCEPTION = "AS-WEB-CORE-00371";
 
     @LogMessageInfo(
             message = "Error serializing Session {0}: {1}",
@@ -216,13 +216,13 @@ public abstract class PersistentManagerBase
             cause = "Could not save the specified Session into this Store",
             action = "Verify if there are any I/O errors occur"
     )
-    public static final String SERIALIZING_SESSION_EXCEPTION = "AS-WEB-CORE-00640";
+    public static final String SERIALIZING_SESSION_EXCEPTION = "AS-WEB-CORE-00372";
 
     @LogMessageInfo(
             message = "Manager has already been started",
             level = "INFO"
     )
-    public static final String MANAGER_STARTED_INFO = "AS-WEB-CORE-00641";
+    public static final String MANAGER_STARTED_INFO = "AS-WEB-CORE-00373";
 
     @LogMessageInfo(
             message = "No Store configured, persistence disabled",
@@ -230,13 +230,13 @@ public abstract class PersistentManagerBase
             cause = "Could not prepare for the beginning of active use of the public methods of this component",
             action = "Verify if Store has been configured"
     )
-    public static final String NO_STORE_CONFIG_EXCEPTION = "AS-WEB-CORE-00642";
+    public static final String NO_STORE_CONFIG_EXCEPTION = "AS-WEB-CORE-00374";
 
     @LogMessageInfo(
             message = "Manager has not yet been started",
             level = "INFO"
     )
-    public static final String  MANAGER_NOT_STARTED_INFO = "AS-WEB-CORE-00643";
+    public static final String  MANAGER_NOT_STARTED_INFO = "AS-WEB-CORE-00375";
 
     @LogMessageInfo(
             message = "Invalid session timeout setting {0}",
@@ -244,31 +244,31 @@ public abstract class PersistentManagerBase
             cause = "Could not set session timeout from given parameter",
             action = "Verify the number format for session timeout setting"
     )
-    public static final String INVALID_SESSION_TIMEOUT_SETTING_EXCEPTION = "AS-WEB-CORE-00644";
+    public static final String INVALID_SESSION_TIMEOUT_SETTING_EXCEPTION = "AS-WEB-CORE-00376";
 
     @LogMessageInfo(
             message = "Swapping session {0} to Store, idle for {1} seconds",
             level = "FINE"
     )
-    public static final String SWAPPING_SESSION_TO_STORE = "AS-WEB-CORE-00645";
+    public static final String SWAPPING_SESSION_TO_STORE = "AS-WEB-CORE-00377";
 
     @LogMessageInfo(
             message = "Too many active sessions, {0}, looking for idle sessions to swap out",
             level = "FINE"
     )
-    public static final String TOO_MANY_ACTIVE_SESSION = "AS-WEB-CORE-00646";
+    public static final String TOO_MANY_ACTIVE_SESSION = "AS-WEB-CORE-00378";
 
     @LogMessageInfo(
             message = "Swapping out session {0}, idle for {1} seconds too many sessions active",
             level = "FINE"
     )
-    public static final String SWAP_OUT_SESSION = "AS-WEB-CORE-00647";
+    public static final String SWAP_OUT_SESSION = "AS-WEB-CORE-00379";
 
     @LogMessageInfo(
             message = " Backing up session {0} to Store, idle for {1} seconds",
             level = "FINE"
     )
-    public static final String BACKUP_SESSION_TO_STORE = "AS-WEB-CORE-00648";
+    public static final String BACKUP_SESSION_TO_STORE = "AS-WEB-CORE-00380";
 
     // ---------------------------------------------------- Security Classes
     private class PrivilegedStoreClear

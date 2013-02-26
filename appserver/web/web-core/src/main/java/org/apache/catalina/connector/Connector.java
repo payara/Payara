@@ -104,7 +104,7 @@ public class Connector
             message = "The connector has already been initialized",
             level = "INFO"
     )
-    public static final String CONNECTOR_BEEN_INIT = "AS-WEB-CORE-00328";
+    public static final String CONNECTOR_BEEN_INIT = "AS-WEB-CORE-00028";
 
     @LogMessageInfo(
             message = "Error registering connector ",
@@ -112,37 +112,37 @@ public class Connector
             cause = "Could not register connector",
             action = "Verify domain name and type"
     )
-    public static final String ERROR_REGISTER_CONNECTOR_EXCEPTION = "AS-WEB-CORE-00329";
+    public static final String ERROR_REGISTER_CONNECTOR_EXCEPTION = "AS-WEB-CORE-00029";
 
     @LogMessageInfo(
             message = "Failed to instanciate HttpHandler ",
             level = "WARNING"
     )
-    public static final String FAILED_INSTANCIATE_HTTP_HANDLER_EXCEPTION = "AS-WEB-CORE-00330";
+    public static final String FAILED_INSTANCIATE_HTTP_HANDLER_EXCEPTION = "AS-WEB-CORE-00030";
 
     @LogMessageInfo(
             message = "mod_jk invalid Adapter implementation: {0} ",
             level = "WARNING"
     )
-    public static final String INVALID_ADAPTER_IMPLEMENTATION_EXCEPTION = "AS-WEB-CORE-00331";
+    public static final String INVALID_ADAPTER_IMPLEMENTATION_EXCEPTION = "AS-WEB-CORE-00031";
 
     @LogMessageInfo(
             message = "Protocol handler instantiation failed: {0}",
             level = "WARNING"
     )
-    public static final String PROTOCOL_HANDLER_INIT_FAILED_EXCEPTION = "AS-WEB-CORE-00332";
+    public static final String PROTOCOL_HANDLER_INIT_FAILED_EXCEPTION = "AS-WEB-CORE-00032";
 
     @LogMessageInfo(
             message = "The connector has already been started",
             level = "INFO"
     )
-    public static final String CONNECTOR_BEEN_STARTED = "AS-WEB-CORE-00333";
+    public static final String CONNECTOR_BEEN_STARTED = "AS-WEB-CORE-00033";
 
     @LogMessageInfo(
             message = "Protocol handler start failed: {0}",
             level = "WARNING"
     )
-    public static final String PROTOCOL_HANDLER_START_FAILED_EXCEPTION = "AS-WEB-CORE-00334";
+    public static final String PROTOCOL_HANDLER_START_FAILED_EXCEPTION = "AS-WEB-CORE-00034";
 
     @LogMessageInfo(
             message = "Coyote connector has not been started",
@@ -150,13 +150,13 @@ public class Connector
             cause = "Could not stop processing requests via this Connector",
             action = "Verify if the connector has not been started"
     )
-    public static final String CONNECTOR_NOT_BEEN_STARTED = "AS-WEB-CORE-00335";
+    public static final String CONNECTOR_NOT_BEEN_STARTED = "AS-WEB-CORE-00035";
 
     @LogMessageInfo(
             message = "Protocol handler destroy failed: {0}",
             level = "WARNING"
     )
-    public static final String PROTOCOL_HANDLER_DESTROY_FAILED_EXCEPTION = "AS-WEB-CORE-00336";
+    public static final String PROTOCOL_HANDLER_DESTROY_FAILED_EXCEPTION = "AS-WEB-CORE-00036";
 
     // ---------------------------------------------- Adapter Configuration --//
     

@@ -118,43 +118,43 @@ public class Response
             message = "Error during finishResponse",
             level = "WARNING"
     )
-    public static final String ERROR_DURING_FINISH_RESPONSE = "AS-WEB-CORE-00395";
+    public static final String ERROR_DURING_FINISH_RESPONSE = "AS-WEB-CORE-00075";
 
     @LogMessageInfo(
             message = "getWriter() has already been called for this response",
             level = "WARNING"
     )
-    public static final String GET_WRITER_BEEN_CALLED_EXCEPTION = "AS-WEB-CORE-00396";
+    public static final String GET_WRITER_BEEN_CALLED_EXCEPTION = "AS-WEB-CORE-00076";
 
     @LogMessageInfo(
             message = "getOutputStream() has already been called for this response",
             level = "WARNING"
     )
-    public static final String GET_OUTPUT_STREAM_BEEN_CALLED_EXCEPTION = "AS-WEB-CORE-00397";
+    public static final String GET_OUTPUT_STREAM_BEEN_CALLED_EXCEPTION = "AS-WEB-CORE-00077";
 
     @LogMessageInfo(
             message = "Cannot reset buffer after response has been committed",
             level = "WARNING"
     )
-    public static final String CANNOT_RESET_BUFFER_EXCEPTION = "AS-WEB-CORE-00398";
+    public static final String CANNOT_RESET_BUFFER_EXCEPTION = "AS-WEB-CORE-00078";
 
     @LogMessageInfo(
             message = "Cannot change buffer size after data has been written",
             level = "WARNING"
     )
-    public static final String CANNOT_CHANGE_BUFFER_SIZE_EXCEPTION = "AS-WEB-CORE-00399";
+    public static final String CANNOT_CHANGE_BUFFER_SIZE_EXCEPTION = "AS-WEB-CORE-00079";
 
     @LogMessageInfo(
             message = "Cannot call sendError() after the response has been committed",
             level = "WARNING"
     )
-    public static final String CANNOT_CALL_SEND_ERROR_EXCEPTION = "AS-WEB-CORE-00400";
+    public static final String CANNOT_CALL_SEND_ERROR_EXCEPTION = "AS-WEB-CORE-00080";
 
     @LogMessageInfo(
             message = "Cannot call sendRedirect() after the response has been committed",
             level = "WARNING"
     )
-    public static final String CANNOT_CALL_SEND_REDIRECT_EXCEPTION = "AS-WEB-CORE-00401";
+    public static final String CANNOT_CALL_SEND_REDIRECT_EXCEPTION = "AS-WEB-CORE-00081";
 
 
     /**

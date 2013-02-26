@@ -165,13 +165,13 @@ public class WebdavServlet
             message = "JAXP initialization failed",
             level = "WARNING"
     )
-    public static final String JAXP_INTI_FAILED = "AS-WEB-CORE-00580";
+    public static final String JAXP_INTI_FAILED = "AS-WEB-CORE-00335";
 
     @LogMessageInfo(
             message = "Ignored external entity, publicID: {0}, systemID: {1}",
             level = "INFO"
     )
-    public static final String IGNORED_EXTERNAL_ENTITY_INFO = "AS-WEB-CORE-00581";
+    public static final String IGNORED_EXTERNAL_ENTITY_INFO = "AS-WEB-CORE-00336";
     // -------------------------------------------------------------- Constants
 
 

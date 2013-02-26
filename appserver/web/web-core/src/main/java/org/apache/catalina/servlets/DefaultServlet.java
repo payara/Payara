@@ -165,37 +165,37 @@ public class DefaultServlet
             message = "Only skipped [{0}] bytes when [{1}] were requested",
             level = "WARNING"
     )
-    public static final String SKIP_BYTES_EXCEPTION = "AS-WEB-CORE-00550";
+    public static final String SKIP_BYTES_EXCEPTION = "AS-WEB-CORE-00323";
 
     @LogMessageInfo(
             message = "Directory Listing For {0}",
             level = "INFO"
     )
-    public static final String DIR_TITLE_INFO = "AS-WEB-CORE-00551";
+    public static final String DIR_TITLE_INFO = "AS-WEB-CORE-00324";
 
     @LogMessageInfo(
             message = "Up To {0}",
             level = "INFO"
     )
-    public static final String DIR_PARENT_INFO = "AS-WEB-CORE-00552";
+    public static final String DIR_PARENT_INFO = "AS-WEB-CORE-00325";
 
     @LogMessageInfo(
             message = "Filename",
             level = "INFO"
     )
-    public static final String DIR_FILENAME_INFO = "AS-WEB-CORE-00553";
+    public static final String DIR_FILENAME_INFO = "AS-WEB-CORE-00326";
 
     @LogMessageInfo(
             message = "Size",
             level = "INFO"
     )
-    public static final String DIR_SIZE_INFO = "AS-WEB-CORE-00554";
+    public static final String DIR_SIZE_INFO = "AS-WEB-CORE-00327";
 
     @LogMessageInfo(
             message = "Last Modified",
             level = "INFO"
     )
-    public static final String DIR_LAST_MODIFIED_INFO = "AS-WEB-CORE-00555";
+    public static final String DIR_LAST_MODIFIED_INFO = "AS-WEB-CORE-00328";
 
 
 

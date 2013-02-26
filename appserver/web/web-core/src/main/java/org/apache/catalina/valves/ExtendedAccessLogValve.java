@@ -185,13 +185,13 @@ public final class ExtendedAccessLogValve
             cause = "Could not rename log file",
             action = "Verify access permission and new file name"
     )
-    public static final String FAILED_RENAME_LOG_FILE = "AS-WEB-CORE-00870";
+    public static final String FAILED_RENAME_LOG_FILE = "AS-WEB-CORE-00503";
 
     @LogMessageInfo(
             message = "at least this wasn't swallowed",
             level = "INFO"
     )
-    public static final String NOT_SWALLOWED_INFO = "AS-WEB-CORE-00871";
+    public static final String NOT_SWALLOWED_INFO = "AS-WEB-CORE-00504";
 
     @LogMessageInfo(
             message = "Failed to create directory {0}",
@@ -199,13 +199,13 @@ public final class ExtendedAccessLogValve
             cause = "Could not create directory",
             action = "Verify access permission"
     )
-    public static final String FAILED_CREATE_DIR = "AS-WEB-CORE-00872";
+    public static final String FAILED_CREATE_DIR = "AS-WEB-CORE-00505";
 
     @LogMessageInfo(
             message = "fields was just empty or whitespace",
             level = "INFO"
     )
-    public static final String FIELD_EMPTY_INFO = "AS-WEB-CORE-00873";
+    public static final String FIELD_EMPTY_INFO = "AS-WEB-CORE-00506";
 
     @LogMessageInfo(
             message = "unable to decode with rest of chars being: {0}",
@@ -213,7 +213,7 @@ public final class ExtendedAccessLogValve
             cause = "Could not decode rest of chars",
             action = "Verify the current pattern"
     )
-    public static final String UNABLE_DECODE_REST_CHARS = "AS-WEB-CORE-00874";
+    public static final String UNABLE_DECODE_REST_CHARS = "AS-WEB-CORE-00507";
 
     @LogMessageInfo(
             message = "No closing ) found for in decode",
@@ -221,7 +221,7 @@ public final class ExtendedAccessLogValve
             cause = "could not find closing bracket",
             action = "Verify if the parameter includes closing bracket"
     )
-    public static final String NO_CLOSING_BRACKET_FOUND = "AS-WEB-CORE-00875";
+    public static final String NO_CLOSING_BRACKET_FOUND = "AS-WEB-CORE-00508";
 
     @LogMessageInfo(
             message = "The next characters couldn't be decoded: {0}",
@@ -229,7 +229,7 @@ public final class ExtendedAccessLogValve
             cause = "Could not decode characters",
             action = "Verify the pattern"
     )
-    public static final String CHARACTER_CANNOT_DECODED = "AS-WEB-CORE-00876";
+    public static final String CHARACTER_CANNOT_DECODED = "AS-WEB-CORE-00509";
 
     @LogMessageInfo(
             message = "End of line reached before decoding x- param",
@@ -237,7 +237,7 @@ public final class ExtendedAccessLogValve
             cause = "Could not decode, since end of line reached",
             action = "Verify the String index"
     )
-    public static final String END_LINE_REACHED = "AS-WEB-CORE-00877";
+    public static final String END_LINE_REACHED = "AS-WEB-CORE-00510";
 
     @LogMessageInfo(
             message = "x param in wrong format. Needs to be 'x-#(...)' read the docs!",
@@ -245,7 +245,7 @@ public final class ExtendedAccessLogValve
             cause = "Could not decode, since x param in wrong format",
             action = "Verify the format of parameter"
     )
-    public static final String WRONG_X_PARAM_FORMAT = "AS-WEB-CORE-00878";
+    public static final String WRONG_X_PARAM_FORMAT = "AS-WEB-CORE-00511";
 
     @LogMessageInfo(
             message = "x param in wrong format. No closing ')'!",
@@ -253,7 +253,7 @@ public final class ExtendedAccessLogValve
             cause = "Could not decode, since x param has no closing bracket",
             action = "Verify the format of parameter"
     )
-    public static final String X_PARAM_NO_CLOSING_BRACKET = "AS-WEB-CORE-00879";
+    public static final String X_PARAM_NO_CLOSING_BRACKET = "AS-WEB-CORE-00512";
 
     @LogMessageInfo(
             message = "x param for servlet request, couldn't decode value: {0}",
@@ -261,7 +261,7 @@ public final class ExtendedAccessLogValve
             cause = "Could not decode value, since no x param type matched",
             action = "Verify the current fieldInfo"
     )
-    public static final String X_PARAM_CANNOT_DECODE_VALUE = "AS-WEB-CORE-00880";
+    public static final String X_PARAM_CANNOT_DECODE_VALUE = "AS-WEB-CORE-00513";
 
     // --------------------------------------------------------- Constructors
 

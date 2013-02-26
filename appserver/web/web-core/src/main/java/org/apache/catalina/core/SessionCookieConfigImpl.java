@@ -70,7 +70,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
                   "because this servlet context has already been initialized",
         level = "WARNING"
     )
-    public static final String SESSION_COOKIE_CONFIG_ALREADY_INIT = "AS-WEB-CORE-00055";
+    public static final String SESSION_COOKIE_CONFIG_ALREADY_INIT = "AS-WEB-CORE-00129";
 
 
     /**

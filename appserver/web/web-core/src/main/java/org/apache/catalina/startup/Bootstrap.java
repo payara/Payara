@@ -112,7 +112,7 @@ public final class Bootstrap {
             cause = "Could not create class loader",
             action = "Verify the availability of current repository "
     )
-    public static final String CLASS_LOADER_CREATION_EXCEPTION = "AS-WEB-CORE-00690";
+    public static final String CLASS_LOADER_CREATION_EXCEPTION = "AS-WEB-CORE-00398";
 
     // ----------------------------------------------------------- Variables
 

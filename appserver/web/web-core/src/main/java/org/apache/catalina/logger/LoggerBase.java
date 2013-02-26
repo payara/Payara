@@ -105,7 +105,7 @@ public class LoggerBase
              cause = "Unknown container for implementation of StandardEngine interface",
              action = "Verify the current container"
      )
-     public static final String UNKNOWN_CONTAINER_EXCEPTION = "AS-WEB-CORE-00495";
+     public static final String UNKNOWN_CONTAINER_EXCEPTION = "AS-WEB-CORE-00302";
 
      @LogMessageInfo(
              message = "Null engine !! {0}",
@@ -113,13 +113,13 @@ public class LoggerBase
              cause = "Could not get engine",
              action = "Verify current container"
      )
-     public static final String NULL_ENGINE_EXCEPTION = "AS-WEB-CORE-00496";
+     public static final String NULL_ENGINE_EXCEPTION = "AS-WEB-CORE-00303";
 
      @LogMessageInfo(
              message = "Unable to create javax.management.ObjectName for Logger",
              level = "WARNING"
      )
-     public static final String UNABLE_CREATE_OBJECT_NAME_FOR_LOGGER_EXCEPTION = "AS-WEB-CORE-00497";
+     public static final String UNABLE_CREATE_OBJECT_NAME_FOR_LOGGER_EXCEPTION = "AS-WEB-CORE-00304";
 
      @LogMessageInfo(
              message = "Can't register logger {0}",
@@ -127,7 +127,7 @@ public class LoggerBase
              cause = "Could not register logger",
              action = "Verify registration is called after configure()"
      )
-     public static final String CANNOT_REGISTER_LOGGER_EXCEPTION = "AS-WEB-CORE-00498";
+     public static final String CANNOT_REGISTER_LOGGER_EXCEPTION = "AS-WEB-CORE-00305";
 
     // ----------------------------------------------------- Instance Variables
 

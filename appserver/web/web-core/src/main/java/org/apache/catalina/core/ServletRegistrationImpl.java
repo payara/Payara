@@ -62,13 +62,13 @@ public class ServletRegistrationImpl implements ServletRegistration {
                    "because this servlet context has already been initialized",
         level = "WARNING"
     )
-    public static final String SERVLET_REGISTRATION_ALREADY_INIT = "AS-WEB-CORE-00053";
+    public static final String SERVLET_REGISTRATION_ALREADY_INIT = "AS-WEB-CORE-00127";
 
     @LogMessageInfo(
         message = "Unable to configure mapping for servlet {0} of servlet context {1}, because URL patterns are null or empty",
         level = "WARNING"
     )
-    public static final String SERVLET_REGISTRATION_MAPPING_URL_PATTERNS_EXCEPTION = "AS-WEB-CORE-00054";
+    public static final String SERVLET_REGISTRATION_MAPPING_URL_PATTERNS_EXCEPTION = "AS-WEB-CORE-00128";
 
     /**
      * Constructor

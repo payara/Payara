@@ -105,13 +105,13 @@ public final class ApplicationDispatcher
         message = "Cannot forward after response has been committed",
         level = "INFO"
     )
-    public static final String ILLEGAL_STATE_EXCEPTION = "AS-WEB-CORE-00014";
+    public static final String ILLEGAL_STATE_EXCEPTION = "AS-WEB-CORE-00086";
 
     @LogMessageInfo(
         message = "Servlet {0} is currently unavailable",
         level = "WARNING"
     )
-    public static final String UNAVAILABLE_SERVLET = "AS-WEB-CORE-00015";
+    public static final String UNAVAILABLE_SERVLET = "AS-WEB-CORE-00087";
 
     @LogMessageInfo(
         message = "Allocate exception for servlet {0}",
@@ -119,19 +119,19 @@ public final class ApplicationDispatcher
         cause = "Could not allocate servlet instance",
         action = "Verify the configuration of wrapper"
     )
-    public static final String ALLOCATE_SERVLET_EXCEPTION = "AS-WEB-CORE-00016";
+    public static final String ALLOCATE_SERVLET_EXCEPTION = "AS-WEB-CORE-00088";
 
     @LogMessageInfo(
         message = "Exceeded maximum depth for nested request dispatches: {0}",
         level = "INFO"
     )
-    public static final String MAX_DISPATCH_DEPTH_REACHED = "AS-WEB-CORE-00017";
+    public static final String MAX_DISPATCH_DEPTH_REACHED = "AS-WEB-CORE-00089";
 
     @LogMessageInfo(
         message = "Servlet.service() for servlet {0} threw exception",
         level = "WARNING"
     )
-    public static final String SERVLET_SERVICE_EXCEPTION = "AS-WEB-CORE-00018";
+    public static final String SERVLET_SERVICE_EXCEPTION = "AS-WEB-CORE-00090";
 
     @LogMessageInfo(
         message = "Release filters exception for servlet {0}",
@@ -139,7 +139,7 @@ public final class ApplicationDispatcher
         cause = "Could not release filter chain",
         action = "Verify the availability of current filter chain"
     )
-    public static final String RELEASE_FILTERS_EXCEPTION = "AS-WEB-CORE-00019";
+    public static final String RELEASE_FILTERS_EXCEPTION = "AS-WEB-CORE-00091";
 
     @LogMessageInfo(
         message = "Deallocate exception for servlet {0}",
@@ -147,13 +147,13 @@ public final class ApplicationDispatcher
         cause = "Could not deallocate the allocated servlet instance",
         action = "Verify the availability of servlet instance"
     )
-    public static final String DEALLOCATE_SERVLET_EXCEPTION = "AS-WEB-CORE-00020";
+    public static final String DEALLOCATE_SERVLET_EXCEPTION = "AS-WEB-CORE-00092";
 
     @LogMessageInfo(
         message = "ApplicationDispatcher[{0}]: {1}",
         level = "INFO"
     )
-    public static final String APPLICATION_DISPATCHER_INFO = "AS-WEB-CORE-00021";
+    public static final String APPLICATION_DISPATCHER_INFO = "AS-WEB-CORE-00093";
 
     @LogMessageInfo(
         message = "ApplicationDispatcher[{0}]: {1}",
@@ -161,7 +161,7 @@ public final class ApplicationDispatcher
         cause = "Could not get logger from parent context",
         action = "Verify if logger is null"
     )
-    public static final String APPLICATION_DISPATCHER_WARNING = "AS-WEB-CORE-00022";
+    public static final String APPLICATION_DISPATCHER_WARNING = "AS-WEB-CORE-00094";
 
     // This attribute corresponds to a String[] which acts like a stack
     // containing the last two pushed elements

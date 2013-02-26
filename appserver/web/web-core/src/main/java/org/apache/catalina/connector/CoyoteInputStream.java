@@ -86,13 +86,13 @@ public class CoyoteInputStream
             message = "Cannot use this object outside a servlet's service method or outside a filter's doFilter method",
             level = "WARNING"
     )
-    public static final String OBJECT_INVALID_SCOPE_EXCEPTION = "AS-WEB-CORE-00340";
+    public static final String OBJECT_INVALID_SCOPE_EXCEPTION = "AS-WEB-CORE-00041";
 
     @LogMessageInfo(
             message = "Cannot set a null ReadListener object",
             level = "WARNING"
     )
-    public static final String NULL_READ_LISTENER_EXCEPTION = "AS-WEB-CORE-00341";
+    public static final String NULL_READ_LISTENER_EXCEPTION = "AS-WEB-CORE-00042";
 
     // ----------------------------------------------------- Instance Variables
 

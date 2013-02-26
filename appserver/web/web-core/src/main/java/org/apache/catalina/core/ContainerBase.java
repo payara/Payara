@@ -169,7 +169,7 @@ public abstract class ContainerBase
         cause = "Could not stop previous loader",
         action = "Verify previous loader"
     )
-    public static final String CONTAINER_BASE_SET_LOADER_STOP = "AS-WEB-CORE-00025";
+    public static final String CONTAINER_BASE_SET_LOADER_STOP = "AS-WEB-CORE-00099";
 
     @LogMessageInfo(
         message = "ContainerBase.setLoader: start:",
@@ -177,7 +177,7 @@ public abstract class ContainerBase
         cause = "Could not start new loader",
         action = "Verify the configuration of container"
     )
-    public static final String CONTAINER_BASE_SET_LOADER_START = "AS-WEB-CORE-00026";
+    public static final String CONTAINER_BASE_SET_LOADER_START = "AS-WEB-CORE-00100";
 
     @LogMessageInfo(
         message = "ContainerBase.setLogger: stop: ",
@@ -185,7 +185,7 @@ public abstract class ContainerBase
         cause = "Could not stop previous logger",
         action = "Verify previous logger"
     )
-    public static final String CONTAINER_BASE_SET_LOGGER_STOP = "AS-WEB-CORE-00027";
+    public static final String CONTAINER_BASE_SET_LOGGER_STOP = "AS-WEB-CORE-00101";
 
     @LogMessageInfo(
         message = "ContainerBase.setLogger: start: ",
@@ -193,7 +193,7 @@ public abstract class ContainerBase
         cause = "Could not start new logger",
         action = "Verify the configuration of container"
     )
-    public static final String CONTAINER_BASE_SET_LOGGER_START = "AS-WEB-CORE-00028";
+    public static final String CONTAINER_BASE_SET_LOGGER_START = "AS-WEB-CORE-00102";
 
     @LogMessageInfo(
         message = "ContainerBase.setManager: stop: ",
@@ -201,7 +201,7 @@ public abstract class ContainerBase
         cause = "Could not stop previous manager",
         action = "Verify previous manager"
     )
-    public static final String CONTAINER_BASE_SET_MANAGER_STOP = "AS-WEB-CORE-00029";
+    public static final String CONTAINER_BASE_SET_MANAGER_STOP = "AS-WEB-CORE-00103";
 
     @LogMessageInfo(
         message = "ContainerBase.setManager: start: ",
@@ -209,7 +209,7 @@ public abstract class ContainerBase
         cause = "Could not start new manager",
         action = "Verify the configuration of container"
     )
-    public static final String CONTAINER_BASE_SET_MANAGER_START = "AS-WEB-CORE-00030";
+    public static final String CONTAINER_BASE_SET_MANAGER_START = "AS-WEB-CORE-00104";
 
     @LogMessageInfo(
         message = "ContainerBase.setRealm: stop: ",
@@ -217,7 +217,7 @@ public abstract class ContainerBase
         cause = "Could not stop previous realm",
         action = "Verify previous realm"
     )
-    public static final String CONTAINER_BASE_SET_REALM_STOP = "AS-WEB-CORE-00031";
+    public static final String CONTAINER_BASE_SET_REALM_STOP = "AS-WEB-CORE-00105";
 
     @LogMessageInfo(
         message = "ContainerBase.setRealm: start: ",
@@ -225,13 +225,13 @@ public abstract class ContainerBase
         cause = "Could not start new realm",
         action = "Verify the configuration of container"
     )
-    public static final String CONTAINER_BASE_SET_REALM_START = "AS-WEB-CORE-00032";
+    public static final String CONTAINER_BASE_SET_REALM_START = "AS-WEB-CORE-00106";
 
     @LogMessageInfo(
         message = "addChild: Child name {0} is not unique",
         level = "WARNING"
     )
-    public static final String DUPLICATE_CHILD_NAME_EXCEPTION = "AS-WEB-CORE-00033";
+    public static final String DUPLICATE_CHILD_NAME_EXCEPTION = "AS-WEB-CORE-00107";
 
     @LogMessageInfo(
         message = "ContainerBase.addChild: start: ",
@@ -239,7 +239,7 @@ public abstract class ContainerBase
         cause = "Could not start new child container",
         action = "Verify the configuration of parent container"
     )
-    public static final String CONTAINER_BASE_ADD_CHILD_START = "AS-WEB-CORE-00034";
+    public static final String CONTAINER_BASE_ADD_CHILD_START = "AS-WEB-CORE-00108";
 
     @LogMessageInfo(
         message = "ContainerBase.removeChild: stop: ",
@@ -247,13 +247,13 @@ public abstract class ContainerBase
         cause = "Could not stop existing child container",
         action = "Verify existing child container"
     )
-    public static final String CONTAINER_BASE_REMOVE_CHILD_STOP = "AS-WEB-CORE-00035";
+    public static final String CONTAINER_BASE_REMOVE_CHILD_STOP = "AS-WEB-CORE-00109";
 
     @LogMessageInfo(
         message = "Container {0} has already been started",
         level = "INFO"
     )
-    public static final String CONTAINER_STARTED = "AS-WEB-CORE-00036";
+    public static final String CONTAINER_STARTED = "AS-WEB-CORE-00110";
 
     @LogMessageInfo(
         message = "Container {0} has not been started",
@@ -261,7 +261,7 @@ public abstract class ContainerBase
         cause = "Current container has not been started",
         action = "Verify the current container"
     )
-    public static final String CONTAINER_NOT_STARTED_EXCEPTION = "AS-WEB-CORE-00037";
+    public static final String CONTAINER_NOT_STARTED_EXCEPTION = "AS-WEB-CORE-00111";
 
     @LogMessageInfo(
         message = "Error stopping container {0}",
@@ -269,7 +269,7 @@ public abstract class ContainerBase
         cause = "Could not stop child container",
         action = "Verify the existence of current child container"
     )
-    public static final String ERROR_STOPPING_CONTAINER = "AS-WEB-CORE-00038";
+    public static final String ERROR_STOPPING_CONTAINER = "AS-WEB-CORE-00112";
 
     @LogMessageInfo(
         message = "Error unregistering ",
@@ -277,7 +277,7 @@ public abstract class ContainerBase
         cause = "Could not unregister current container",
         action = "Verify if the container has been registered"
     )
-    public static final String ERROR_UNREGISTERING = "AS-WEB-CORE-00039";
+    public static final String ERROR_UNREGISTERING = "AS-WEB-CORE-00113";
 
     @LogMessageInfo(
         message = "Exception invoking periodic operation: ",
@@ -285,7 +285,7 @@ public abstract class ContainerBase
         cause = "Could not set the context ClassLoader",
         action = "Verify the security permission"
     )
-    public static final String EXCEPTION_INVOKES_PERIODIC_OP = "AS-WEB-CORE-00040";
+    public static final String EXCEPTION_INVOKES_PERIODIC_OP = "AS-WEB-CORE-00114";
 
 
 

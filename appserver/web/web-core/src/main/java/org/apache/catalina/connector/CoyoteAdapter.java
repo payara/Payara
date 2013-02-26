@@ -110,13 +110,13 @@ public class CoyoteAdapter extends HttpHandler {
             cause = "Could not process the request in the container",
             action = "Verify certificate chain retrieved from the request header and the correctness of request"
     )
-    public static final String REQUEST_PROCESSING_EXCEPTION = "AS-WEB-CORE-00410";
+    public static final String REQUEST_PROCESSING_EXCEPTION = "AS-WEB-CORE-00037";
 
     @LogMessageInfo(
             message = "HTTP listener on port {0} has been disabled",
             level = "FINE"
     )
-    public static final String HTTP_LISTENER_DISABLED = "AS-WEB-CORE-00411";
+    public static final String HTTP_LISTENER_DISABLED = "AS-WEB-CORE-00038";
 
     @LogMessageInfo(
             message = "Error parsing client cert chain into array of java.security.cert.X509Certificate instances",
@@ -124,13 +124,13 @@ public class CoyoteAdapter extends HttpHandler {
             cause = "Could not get the SSL client certificate chain",
             action = "Verify certificate chain and the request"
     )
-    public static final String PARSING_CLIENT_CERT_EXCEPTION = "AS-WEB-CORE-00412";
+    public static final String PARSING_CLIENT_CERT_EXCEPTION = "AS-WEB-CORE-00039";
 
     @LogMessageInfo(
             message = "No Host matches server name {0}",
             level = "INFO"
     )
-    public static final String NO_HOST_MATCHES_SERVER_NAME_INFO = "AS-WEB-CORE-00413";
+    public static final String NO_HOST_MATCHES_SERVER_NAME_INFO = "AS-WEB-CORE-00040";
 
     // -------------------------------------------------------------- Constants
     private static final String POWERED_BY = "Servlet/3.0 JSP/2.2 " +

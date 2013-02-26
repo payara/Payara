@@ -138,7 +138,7 @@ public class MultipartStream {
             message = "Failed to skip {0} bytes in the underlying buffer of MultipartStream on close().",
             level = "WANING"
     )
-    public static final String FAILED_SKIP_BYTES_MULTIPART_STREAM_CLOSE_EXCEPTION = "AS-WEB-CORE-00450";
+    public static final String FAILED_SKIP_BYTES_MULTIPART_STREAM_CLOSE_EXCEPTION = "AS-WEB-CORE-00284";
 
     /**
      * Internal class, which is used to invoke the

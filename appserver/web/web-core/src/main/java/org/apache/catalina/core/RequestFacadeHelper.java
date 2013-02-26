@@ -74,13 +74,13 @@ public class RequestFacadeHelper {
         message = "Must not use request object outside the scope of a servlet's service or a filter's doFilter method",
         level = "WARNING"
     )
-    public static final String VALIDATE_REQUEST_EXCEPTION = "AS-WEB-CORE-00051";
+    public static final String VALIDATE_REQUEST_EXCEPTION = "AS-WEB-CORE-00125";
 
     @LogMessageInfo(
         message = "Null response object",
         level = "WARNING"
     )
-    public static final String VALIDATE_RESPONSE_EXCEPTION = "AS-WEB-CORE-00052";
+    public static final String VALIDATE_RESPONSE_EXCEPTION = "AS-WEB-CORE-00126";
 
     public RequestFacadeHelper(Request request) {
         this.request = request;

@@ -77,7 +77,7 @@ public class SetPropertyRule extends Rule {
             message = "[SetPropertyRule]{0} Setting property {1} to {2} did not find a matching property.",
             level = "WARNING"
     )
-    public static final String PROPERTY_RULE_NOT_FIND_MATCHING_PROPERTY = "AS-WEB-CORE-00931";
+    public static final String PROPERTY_RULE_NOT_FIND_MATCHING_PROPERTY = "AS-WEB-CORE-00534";
 
 
     // ----------------------------------------------------------- Constructors

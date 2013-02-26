@@ -101,61 +101,61 @@ final class StandardWrapperValve extends ValveBase {
         message = "This application is not currently available",
         level = "WARNING"
     )
-    public static final String APP_UNAVAILABLE = "AS-WEB-CORE-00250";
+    public static final String APP_UNAVAILABLE = "AS-WEB-CORE-00274";
 
     @LogMessageInfo(
         message = "Servlet {0} is currently unavailable",
         level = "WARNING"
     )
-    public static final String SERVLET_UNAVAILABLE  = "AS-WEB-CORE-00251";
+    public static final String SERVLET_UNAVAILABLE  = "AS-WEB-CORE-00275";
 
     @LogMessageInfo(
         message = "Servlet {0} is not available",
         level = "WARNING"
     )
-    public static final String SERVLET_NOT_FOUND = "AS-WEB-CORE-00252";
+    public static final String SERVLET_NOT_FOUND = "AS-WEB-CORE-00276";
 
     @LogMessageInfo(
         message = "Allocate exception for servlet {0}",
         level = "WARNING"
     )
-    public static final String SERVLET_ALLOCATE_EXCEPTION = "AS-WEB-CORE-00253";
+    public static final String SERVLET_ALLOCATE_EXCEPTION = "AS-WEB-CORE-00277";
 
     @LogMessageInfo(
         message = "Exception for sending acknowledgment of a request: {0}",
         level = "WARNING"
     )
-    public static final String SEND_ACKNOWLEDGEMENT_EXCEPTION = "AS-WEB-CORE-00254";
+    public static final String SEND_ACKNOWLEDGEMENT_EXCEPTION = "AS-WEB-CORE-00278";
 
     @LogMessageInfo(
         message = "Servlet.service() for servlet {0} threw exception",
         level = "WARNING"
     )
-    public static final String SERVLET_SERVICE_EXCEPTION = "AS-WEB-CORE-00255";
+    public static final String SERVLET_SERVICE_EXCEPTION = "AS-WEB-CORE-00279";
 
     @LogMessageInfo(
         message = "Release filters exception for servlet {0}",
         level = "WARNING"
     )
-    public static final String RELEASE_FILTERS_EXCEPTION = "AS-WEB-CORE-00256";
+    public static final String RELEASE_FILTERS_EXCEPTION = "AS-WEB-CORE-00280";
 
     @LogMessageInfo(
         message = "Deallocate exception for servlet {0}",
         level = "WARNING"
     )
-    public static final String DEALLOCATE_EXCEPTION = "AS-WEB-CORE-00257";
+    public static final String DEALLOCATE_EXCEPTION = "AS-WEB-CORE-00281";
 
     @LogMessageInfo(
         message = "Servlet {0} threw unload() exception",
         level = "WARNING"
     )
-    public static final String SERVLET_UNLOAD_EXCEPTION = "AS-WEB-CORE-00258";
+    public static final String SERVLET_UNLOAD_EXCEPTION = "AS-WEB-CORE-00282";
 
     @LogMessageInfo(
         message = "StandardWrapperValve[{0}]: {1}",
         level = "INFO"
     )
-    public static final String STANDARD_WRAPPER_VALVE = "AS-WEB-CORE-00259";
+    public static final String STANDARD_WRAPPER_VALVE = "AS-WEB-CORE-00283";
 
     // --------------------------------------------------------- Public Methods
 

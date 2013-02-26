@@ -105,7 +105,7 @@ class PartItem
             message = "file data is empty.",
             level = "INFO"
     )
-    public static final String FILE_DATA_IS_EMPTY_INFO = "AS-WEB-CORE-00455";
+    public static final String FILE_DATA_IS_EMPTY_INFO = "AS-WEB-CORE-00285";
 
     // ----------------------------------------------------------- Data members
 

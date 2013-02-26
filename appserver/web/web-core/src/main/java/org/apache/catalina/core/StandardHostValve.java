@@ -104,19 +104,19 @@ final class StandardHostValve
         message = "Remote Client Aborted Request, IOException: {0}",
         level = "FINE"
     )
-    public static final String REMOTE_CLIENT_ABORTED_EXCEPTION = "AS-WEB-CORE-00195";
+    public static final String REMOTE_CLIENT_ABORTED_EXCEPTION = "AS-WEB-CORE-00229";
 
     @LogMessageInfo(
         message = "The error-page {0} does not exist",
         level = "WARNING"
     )
-    public static final String ERROR_PAGE_NOT_EXIST = "AS-WEB-CORE-00196";
+    public static final String ERROR_PAGE_NOT_EXIST = "AS-WEB-CORE-00230";
 
     @LogMessageInfo(
         message = "No Context configured to process this request",
         level = "WARNING"
     )
-    public static final String NO_CONTEXT_TO_PROCESS = "AS-WEB-CORE-00197";
+    public static final String NO_CONTEXT_TO_PROCESS = "AS-WEB-CORE-00231";
 
 
     // ----------------------------------------------------- Instance Variables

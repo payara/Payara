@@ -160,7 +160,7 @@ public final class AccessLogValve
             cause = "Could not create a new directory",
             action = "Verify if file is directory, and access permission"
     )
-    public static final String CREATING_DIR_EXCEPTION = "AS-WEB-CORE-00850";
+    public static final String CREATING_DIR_EXCEPTION = "AS-WEB-CORE-00491";
 
     // ----------------------------------------------------------- Constructors
 

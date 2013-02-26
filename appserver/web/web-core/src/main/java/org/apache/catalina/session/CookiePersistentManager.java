@@ -71,7 +71,7 @@ public class CookiePersistentManager extends StandardManager {
                       "that is not of type String (required for cookie-based persistence)",
             level = "WARNING"
     )
-    public static final String SET_SESSION_ATTRIBUTE_EXCEPTION = "AS-WEB-CORE-00590";
+    public static final String SET_SESSION_ATTRIBUTE_EXCEPTION = "AS-WEB-CORE-00337";
 
     // The name of the cookies that carry session state
     private String cookieName;

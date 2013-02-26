@@ -106,12 +106,12 @@ class ApplicationDispatcherForward {
     @LogMessageInfo(
             message = "Exception processing {0}",
             level = "WARNING")
-    public static final String EXCEPTION_PROCESSING = "AS-WEB-CORE-00001";
+    public static final String EXCEPTION_PROCESSING = "AS-WEB-CORE-00095";
 
     @LogMessageInfo(
             message = "Exception sending default error page",
             level = "WARNING")
-    public static final String EXCEPTION_SENDING_DEFAULT_ERROR_PAGE = "AS-WEB-CORE-00002";
+    public static final String EXCEPTION_SENDING_DEFAULT_ERROR_PAGE = "AS-WEB-CORE-00096";
 
 
     private static final StringManager sm =

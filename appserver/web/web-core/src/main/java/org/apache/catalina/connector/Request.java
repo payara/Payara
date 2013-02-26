@@ -162,43 +162,43 @@ public class Request
             message = "getReader() has already been called for this request",
             level = "WARNING"
     )
-    public static final String GETREADER_BEEN_CALLED_EXCEPTION = "AS-WEB-CORE-00360";
+    public static final String GETREADER_BEEN_CALLED_EXCEPTION = "AS-WEB-CORE-00052";
 
     @LogMessageInfo(
             message = "getInputStream() has already been called for this request",
             level = "WARNING"
     )
-    public static final String GETINPUTSTREAM_BEEN_CALLED_EXCEPTION = "AS-WEB-CORE-00361";
+    public static final String GETINPUTSTREAM_BEEN_CALLED_EXCEPTION = "AS-WEB-CORE-00053";
 
     @LogMessageInfo(
             message = "Unable to determine client remote address from proxy (returns null)",
             level = "WARNING"
     )
-    public static final String UNABLE_DETERMINE_CLIENT_ADDRESS = "AS-WEB-CORE-00362";
+    public static final String UNABLE_DETERMINE_CLIENT_ADDRESS = "AS-WEB-CORE-00054";
 
     @LogMessageInfo(
             message = "Unable to resolve IP address {0} into host name",
             level = "WARNING"
     )
-    public static final String UNABLE_RESOLVE_IP_EXCEPTION = "AS-WEB-CORE-00363";
+    public static final String UNABLE_RESOLVE_IP_EXCEPTION = "AS-WEB-CORE-00055";
 
     @LogMessageInfo(
             message = "Exception thrown by attributes event listener",
             level = "WARNING"
     )
-    public static final String ATTRIBUTE_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00364";
+    public static final String ATTRIBUTE_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00056";
 
     @LogMessageInfo(
             message = "Cannot call setAttribute with a null name",
             level ="WARNING"
     )
-    public static final String NULL_ATTRIBUTE_NAME_EXCEPTION = "AS-WEB-CORE-00365";
+    public static final String NULL_ATTRIBUTE_NAME_EXCEPTION = "AS-WEB-CORE-00057";
 
     @LogMessageInfo(
             message = "Unable to determine canonical name of file [{0}] specified for use with sendfile",
             level = "WARNING"
     )
-    public static final String UNABLE_DETERMINE_CANONICAL_NAME = "AS-WEB-CORE-00366";
+    public static final String UNABLE_DETERMINE_CANONICAL_NAME = "AS-WEB-CORE-00058";
 
     @LogMessageInfo(
             message = "Unable to set request character encoding to {0} from context {1}, " +
@@ -206,7 +206,7 @@ public class Request
                       "has already been called",
             level = "WARNING"
     )
-    public static final String UNABLE_SET_REQUEST_CHARS = "AS-WEB-CORE-00367";
+    public static final String UNABLE_SET_REQUEST_CHARS = "AS-WEB-CORE-00059";
 
     @LogMessageInfo(
             message = "Attempt to re-login while the user identity already exists",
@@ -214,19 +214,19 @@ public class Request
             cause = "Could not re-login",
             action = "Verify if user has already login"
     )
-    public static final String ATTEMPT_RELOGIN_EXCEPTION = "AS-WEB-CORE-00368";
+    public static final String ATTEMPT_RELOGIN_EXCEPTION = "AS-WEB-CORE-00060";
 
     @LogMessageInfo(
             message = "changeSessionId has been called without a session",
             level = "WARNING"
     )
-    public static final String CHANGE_SESSION_ID_BEEN_CALLED_EXCEPTION = "AS-WEB-CORE-00369";
+    public static final String CHANGE_SESSION_ID_BEEN_CALLED_EXCEPTION = "AS-WEB-CORE-00061";
 
     @LogMessageInfo(
             message = "Cannot create a session after the response has been committed",
             level = "WARNING"
     )
-    public static final String CANNOT_CREATE_SESSION_EXCEPTION = "AS-WEB-CORE-00370";
+    public static final String CANNOT_CREATE_SESSION_EXCEPTION = "AS-WEB-CORE-00062";
 
     @LogMessageInfo(
             message = "Invalid URI encoding; using HTTP default",
@@ -234,7 +234,7 @@ public class Request
             cause = "Could not set URI converter",
             action = "Verify URI encoding, using HTTP default"
     )
-    public static final String INVALID_URI_ENCODING = "AS-WEB-CORE-00371";
+    public static final String INVALID_URI_ENCODING = "AS-WEB-CORE-00063";
 
     @LogMessageInfo(
             message = "Invalid URI character encoding; trying ascii",
@@ -242,13 +242,13 @@ public class Request
             cause = "Could not encode URI character",
             action = "Verify URI encoding, trying ascii"
     )
-    public static final String INVALID_URI_CHAR_ENCODING = "AS-WEB-CORE-00372";
+    public static final String INVALID_URI_CHAR_ENCODING = "AS-WEB-CORE-00064";
 
     @LogMessageInfo(
             message = "Request is within the scope of a filter or servlet that does not support asynchronous operations",
             level = "WARNING"
     )
-    public static final String REQUEST_WITHIN_SCOPE_OF_FILTER_OR_SERVLET_EXCEPTION = "AS-WEB-CORE-00373";
+    public static final String REQUEST_WITHIN_SCOPE_OF_FILTER_OR_SERVLET_EXCEPTION = "AS-WEB-CORE-00065";
 
     @LogMessageInfo(
             message = "ServletRequest.startAsync called again without any asynchronous dispatch, " +
@@ -256,31 +256,31 @@ public class Request
                       "scope of the same dispatch",
             level = "WARNING"
     )
-    public static final String START_ASYNC_CALLED_AGAIN_EXCEPTION = "AS-WEB-CORE-00374";
+    public static final String START_ASYNC_CALLED_AGAIN_EXCEPTION = "AS-WEB-CORE-00066";
 
     @LogMessageInfo(
             message = "Response already closed",
             level = "WARNING"
     )
-    public static final String ASYNC_ALREADY_COMPLETE_EXCEPTION = "AS-WEB-CORE-00375";
+    public static final String ASYNC_ALREADY_COMPLETE_EXCEPTION = "AS-WEB-CORE-00067";
 
     @LogMessageInfo(
             message = "ServletRequest.startAsync called outside the scope of an async dispatch",
             level = "WARNING"
     )
-    public static final String START_ASYNC_CALLED_OUTSIDE_SCOPE_EXCEPTION = "AS-WEB-CORE-00376";
+    public static final String START_ASYNC_CALLED_OUTSIDE_SCOPE_EXCEPTION = "AS-WEB-CORE-00068";
 
     @LogMessageInfo(
             message = "The request has not been put into asynchronous mode, must call ServletRequest.startAsync first",
             level = "WARNING"
     )
-    public static final String REQUEST_NOT_PUT_INTO_ASYNC_MODE_EXCEPTION = "AS-WEB-CORE-00377";
+    public static final String REQUEST_NOT_PUT_INTO_ASYNC_MODE_EXCEPTION = "AS-WEB-CORE-00069";
 
     @LogMessageInfo(
             message = "Request already released from asynchronous mode",
             level = "WARNING"
     )
-    public static final String REQUEST_ALREADY_RELEASED_EXCEPTION = "AS-WEB-CORE-00378";
+    public static final String REQUEST_ALREADY_RELEASED_EXCEPTION = "AS-WEB-CORE-00070";
 
     @LogMessageInfo(
             message = "Unable to perform error dispatch",
@@ -288,7 +288,7 @@ public class Request
             cause = "Could not perform post-request processing as required by this Valve",
             action = "Verify if I/O exception or servlet exception occur"
     )
-    public static final String UNABLE_PERFORM_ERROR_DISPATCH = "AS-WEB-CORE-00379";
+    public static final String UNABLE_PERFORM_ERROR_DISPATCH = "AS-WEB-CORE-00071";
 
     @LogMessageInfo(
             message = "Request.{0} is called without multipart configuration.  " +
@@ -296,13 +296,13 @@ public class Request
                       "multipart-config element to web.xml",
             level = "WARNING"
     )
-    public static final String REQUEST_CALLED_WITHOUT_MULTIPART_CONFIG_EXCEPTION = "AS-WEB-CORE-00380";
+    public static final String REQUEST_CALLED_WITHOUT_MULTIPART_CONFIG_EXCEPTION = "AS-WEB-CORE-00072";
 
     @LogMessageInfo(
             message = "This should not happen-breaking background lock: sess = {0}",
             level = "WARNING"
     )
-    public static final String BREAKING_BACKGROUND_LOCK_EXCEPTION = "AS-WEB-CORE-00381";
+    public static final String BREAKING_BACKGROUND_LOCK_EXCEPTION = "AS-WEB-CORE-00073";
 
     // ----------------------------------------------------------- Statics
     /**

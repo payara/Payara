@@ -112,54 +112,54 @@ public final class StandardServer
          level = "SEVERE",
          cause = "This service was already initialized",
          action = "Verify if the service is not already initialized")
-     public static final String LIFECYCLE_EXCEPTION_DURING_SERVICE_INIT = "AS-WEB-CORE-00003";
+     public static final String LIFECYCLE_EXCEPTION_DURING_SERVICE_INIT = "AS-WEB-CORE-00243";
 
      @LogMessageInfo(
          message = "Exception StandardServer.await: create[{0}]",
          level = "SEVERE",
          cause = "An I/O error occurred when opening the socket",
          action = "Verify the port number and try again")
-     public static final String STANDARD_SERVER_AWAIT_CREATE_EXCEPTION = "AS-WEB-CORE-00004";
+     public static final String STANDARD_SERVER_AWAIT_CREATE_EXCEPTION = "AS-WEB-CORE-00244";
 
      @LogMessageInfo(
          message = "StandardServer.accept security exception: {0}",
          level = "WARNING",
          cause = "Could not get connection",
          action = "Verify the connection settings and try again")
-     public static final String STANDARD_SERVER_ACCEPT_SECURITY_EXCEPTION = "AS-WEB-CORE-00005";
+     public static final String STANDARD_SERVER_ACCEPT_SECURITY_EXCEPTION = "AS-WEB-CORE-00245";
 
      @LogMessageInfo(
          message = "StandardServer.await: accept: {0}",
          level = "SEVERE",
          cause = "Could not get input stream",
          action = "Verify the input stream and try again")
-     public static final String STANDARD_SERVER_AWAIT_ACCEPT_EXCEPTION = "AS-WEB-CORE-00006";
+     public static final String STANDARD_SERVER_AWAIT_ACCEPT_EXCEPTION = "AS-WEB-CORE-00246";
 
      @LogMessageInfo(
          message = "StandardServer.await: read: {0}",
          level = "WARNING",
          cause = "Could not read from input stream",
          action = "Verify the input stream and try again")
-     public static final String STANDARD_SERVER_AWAIT_READ_EXCEPTION = "AS-WEB-CORE-00007";
+     public static final String STANDARD_SERVER_AWAIT_READ_EXCEPTION = "AS-WEB-CORE-00247";
 
      @LogMessageInfo(
          message = "StandardServer.await: Invalid command {0} received",
          level = "WARNING",
          cause = "Invalid command",
          action = "Verify the command")
-     public static final String STANDARD_SERVER_AWAIT_INVALID_COMMAND_RECEIVED_EXCEPTION = "AS-WEB-CORE-00008";
+     public static final String STANDARD_SERVER_AWAIT_INVALID_COMMAND_RECEIVED_EXCEPTION = "AS-WEB-CORE-00248";
 
      @LogMessageInfo(
          message = "This service has already been initialized",
          level = "INFO")
-     public static final String STANDARD_SERVER_INITIALIZE_INITIALIZED = "AS-WEB-CORE-00009";
+     public static final String STANDARD_SERVER_INITIALIZE_INITIALIZED = "AS-WEB-CORE-00249";
 
      @LogMessageInfo(
          message = "Error registering: {0}",
          level = "SEVERE",
          cause = "Could not register ObjectName: \"Catalina:type=Server\"",
          action = "Verify the configuration and try again")
-     public static final String ERROR_REGISTERING = "AS-WEB-CORE-00010";
+     public static final String ERROR_REGISTERING = "AS-WEB-CORE-00250";
      //--------------------------------------------------------------
    
 

@@ -113,49 +113,49 @@ public abstract class RealmBase
             cause = "Could not convert the char array to byte array with respect to given charset",
             action = "Verify the current charset"
     )
-    public static final String ILLEGAL_DIGEST_ENCODING_EXCEPTION = "AS-WEB-CORE-00520";
+    public static final String ILLEGAL_DIGEST_ENCODING_EXCEPTION = "AS-WEB-CORE-00312";
 
     @LogMessageInfo(
             message = "Access to the requested resource has been denied",
             level = "WARNING"
     )
-    public static final String ACCESS_RESOURCE_DENIED = "AS-WEB-CORE-00521";
+    public static final String ACCESS_RESOURCE_DENIED = "AS-WEB-CORE-00313";
 
     @LogMessageInfo(
             message = "Configuration error: Cannot perform access control without an authenticated principal",
             level = "WARNING"
     )
-    public static final String CONFIG_ERROR_NOT_AUTHENTICATED = "AS-WEB-CORE-00522";
+    public static final String CONFIG_ERROR_NOT_AUTHENTICATED = "AS-WEB-CORE-00314";
 
     @LogMessageInfo(
             message = "Username {0} has role {1}",
             level = "FINE"
     )
-    public static final String USERNAME_HAS_ROLE = "AS-WEB-CORE-00523";
+    public static final String USERNAME_HAS_ROLE = "AS-WEB-CORE-00315";
 
     @LogMessageInfo(
             message = "Username {0} does NOT have role {1}",
             level = "FINE"
     )
-    public static final String USERNAME_NOT_HAVE_ROLE = "AS-WEB-CORE-00524";
+    public static final String USERNAME_NOT_HAVE_ROLE = "AS-WEB-CORE-00316";
 
     @LogMessageInfo(
             message = "This Realm has already been started",
             level = "INFO"
     )
-    public static final String REALM_BEEN_STARTED = "AS-WEB-CORE-00525";
+    public static final String REALM_BEEN_STARTED = "AS-WEB-CORE-00317";
 
     @LogMessageInfo(
             message = "Invalid message digest algorithm {0} specified",
             level = "WARNING"
     )
-    public static final String INVALID_ALGORITHM_EXCEPTION = "AS-WEB-CORE-00526";
+    public static final String INVALID_ALGORITHM_EXCEPTION = "AS-WEB-CORE-00318";
 
     @LogMessageInfo(
             message = "This Realm has not yet been started",
             level = "INFO"
     )
-    public static final String REALM_NOT_BEEN_STARTED = "AS-WEB-CORE-00527";
+    public static final String REALM_NOT_BEEN_STARTED = "AS-WEB-CORE-00319";
 
     @LogMessageInfo(
             message = "Error digesting user credentials",
@@ -163,7 +163,7 @@ public abstract class RealmBase
             cause = "Could not digest user credentials",
             action = "Verify the current credential"
     )
-    public static final String ERROR_DIGESTING_USER_CREDENTIAL_EXCEPTION = "AS-WEB-CORE-00528";
+    public static final String ERROR_DIGESTING_USER_CREDENTIAL_EXCEPTION = "AS-WEB-CORE-00320";
 
     @LogMessageInfo(
             message = "Couldn't get MD5 digest",
@@ -172,7 +172,7 @@ public abstract class RealmBase
             action = "Verify if it supports a MessageDigestSpi implementation " +
                      "for the specified algorithm"
     )
-    public static final String CANNOT_GET_MD5_DIGEST_EXCEPTION = "AS-WEB-CORE-00529";
+    public static final String CANNOT_GET_MD5_DIGEST_EXCEPTION = "AS-WEB-CORE-00321";
 
 
     //START SJSAS 6202703

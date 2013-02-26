@@ -123,7 +123,7 @@ public final class Tool {
             cause = "Did not set 'catalina.home'",
             action = "Verify that 'catalina.home' was passed"
     )
-    public static final String MUST_SET_SYS_PROPERTY = "AS-WEB-CORE-00795";
+    public static final String MUST_SET_SYS_PROPERTY = "AS-WEB-CORE-00470";
 
     @LogMessageInfo(
             message = "Class loader creation threw exception",
@@ -131,7 +131,7 @@ public final class Tool {
             cause = "Could not create a new class loader",
             action = "Verify directory paths"
     )
-    public static final String CLASS_LOADER_CREATION_EXCEPTION = "AS-WEB-CORE-00796";
+    public static final String CLASS_LOADER_CREATION_EXCEPTION = "AS-WEB-CORE-00471";
 
     @LogMessageInfo(
             message = "Exception creating instance of {0}",
@@ -139,7 +139,7 @@ public final class Tool {
             cause = "Could not load application class",
             action = "Verify the class name"
     )
-    public static final String CREATING_INSTANCE_EXCEPTION = "AS-WEB-CORE-00797";
+    public static final String CREATING_INSTANCE_EXCEPTION = "AS-WEB-CORE-00472";
 
     @LogMessageInfo(
             message = "Exception locating main() method",
@@ -147,7 +147,7 @@ public final class Tool {
             cause = "Could not locate the static main() method of the application class",
             action = "Verify the access permission"
     )
-    public static final String LOCATING_MAIN_METHOD_EXCEPTION = "AS-WEB-CORE-00798";
+    public static final String LOCATING_MAIN_METHOD_EXCEPTION = "AS-WEB-CORE-00473";
 
     @LogMessageInfo(
             message = "Exception calling main() method",
@@ -155,13 +155,13 @@ public final class Tool {
             cause = "Could not invoke main() method",
             action = "Verify the underlying method is inaccessible, and parameter values"
     )
-    public static final String CALLING_MAIN_METHOD_EXCEPTION = "AS-WEB-CORE-00799";
+    public static final String CALLING_MAIN_METHOD_EXCEPTION = "AS-WEB-CORE-00474";
 
     @LogMessageInfo(
             message = "Usage:  java org.apache.catalina.startup.Tool [<options>] <class> [<arguments>]",
             level = "INFO"
     )
-    public static final String USAGE_INFO = "AS-WEB-CORE-00800";
+    public static final String USAGE_INFO = "AS-WEB-CORE-00475";
 
 
     // ------------------------------------------------------- Static Variables

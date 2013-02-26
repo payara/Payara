@@ -106,19 +106,19 @@ public abstract class ManagerBase implements Manager {
             cause = "Could not construct and seed a new random number generator",
             action = "Verify if the current random number generator class is "
     )
-    public static final String INIT_RANDOM_NUMBER_GENERATOR_EXCEPTION = "AS-WEB-CORE-00618";
+    public static final String INIT_RANDOM_NUMBER_GENERATOR_EXCEPTION = "AS-WEB-CORE-00351";
 
     @LogMessageInfo(
             message = "Seeding random number generator class {0}",
             level = "FINE"
     )
-    public static final String SEEDING_RANDOM_NUMBER_GENERATOR_CLASS = "AS-WEB-CORE-00619";
+    public static final String SEEDING_RANDOM_NUMBER_GENERATOR_CLASS = "AS-WEB-CORE-00352";
 
     @LogMessageInfo(
             message = "Failed to close randomIS.",
             level = "WARNING"
     )
-    public static final String FAILED_CLOSE_RANDOMIS_EXCEPTION = "AS-WEB-CORE-00620";
+    public static final String FAILED_CLOSE_RANDOMIS_EXCEPTION = "AS-WEB-CORE-00353";
 
     @LogMessageInfo(
             message = "Error registering ",
@@ -126,19 +126,19 @@ public abstract class ManagerBase implements Manager {
             cause = "Could not construct an object name",
             action = "Verify the format of domain, path, host. And make sure they are no null"
     )
-    public static final String ERROR_REGISTERING_EXCEPTION = "AS-WEB-CORE-00621";
+    public static final String ERROR_REGISTERING_EXCEPTION = "AS-WEB-CORE-00354";
 
     @LogMessageInfo(
             message = "setAttribute: Non-serializable attribute with name {0}",
             level = "WARNING"
     )
-    public static final String NON_SERIALIZABLE_ATTRIBUTE_EXCEPTION = "AS-WEB-CORE-00622";
+    public static final String NON_SERIALIZABLE_ATTRIBUTE_EXCEPTION = "AS-WEB-CORE-00355";
 
     @LogMessageInfo(
             message = "Session not found {0}",
             level = "INFO"
     )
-    public static final String SESSION_NOT_FOUND = "AS-WEB-CORE-00623";
+    public static final String SESSION_NOT_FOUND = "AS-WEB-CORE-00356";
 
     // ----------------------------------------------------- Instance Variables
 

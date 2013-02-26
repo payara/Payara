@@ -90,25 +90,25 @@ public final class EngineConfig
             message = "Lifecycle event data object {0} is not an Engine",
             level = "WARNING"
     )
-    public static final String LIFECYCLE_EVENT_DATA_IS_NOT_ENGINE_EXCEPTION = "AS-WEB-CORE-00755";
+    public static final String LIFECYCLE_EVENT_DATA_IS_NOT_ENGINE_EXCEPTION = "AS-WEB-CORE-00440";
 
     @LogMessageInfo(
             message = "EngineConfig: {0}",
             level = "WARNING"
     )
-    public static final String ENGINE_CONFIG = "AS-WEB-CORE-00756";
+    public static final String ENGINE_CONFIG = "AS-WEB-CORE-00441";
 
     @LogMessageInfo(
             message = "EngineConfig: Processing START",
             level = "INFO"
     )
-    public static final String ENGINE_CONFIG_PROCESSING_START_INFO = "AS-WEB-CORE-00757";
+    public static final String ENGINE_CONFIG_PROCESSING_START_INFO = "AS-WEB-CORE-00442";
 
     @LogMessageInfo(
             message = "EngineConfig: Processing STOP",
             level = "INFO"
     )
-    public static final String ENGINE_CONFIG_PROCESSING_STOP_INFO = "AS-WEB-CORE-00758";
+    public static final String ENGINE_CONFIG_PROCESSING_STOP_INFO = "AS-WEB-CORE-00443";
 
 
     // ----------------------------------------------------- Instance Variables

@@ -89,49 +89,49 @@ public class JDBCStore extends StoreBase {
             message = "SQL Error {0}",
             level = "FINE"
     )
-    public static final String SQL_ERROR = "AS-WEB-CORE-00605";
+    public static final String SQL_ERROR = "AS-WEB-CORE-00343";
 
     @LogMessageInfo(
             message = "Loading Session {0} from database {1}",
             level = "FINE"
     )
-    public static final String LOADING_SESSION = "AS-WEB-CORE-00606";
+    public static final String LOADING_SESSION = "AS-WEB-CORE-00344";
 
     @LogMessageInfo(
             message = "Removing Session {0} at database {1}",
             level = "FINE"
     )
-    public static final String REMOVING_SESSION = "AS-WEB-CORE-00607";
+    public static final String REMOVING_SESSION = "AS-WEB-CORE-00345";
 
     @LogMessageInfo(
             message = "Saving Session {0} to database {1}",
             level = "FINE"
     )
-    public static final String SAVING_SESSION = "AS-WEB-CORE-00608";
+    public static final String SAVING_SESSION = "AS-WEB-CORE-00346";
 
     @LogMessageInfo(
             message = "The database connection is null or was found to be closed. Trying to re-open it.",
             level = "FINE"
     )
-    public static final String DATABASE_CONNECTION_CLOSED = "AS-WEB-CORE-00609";
+    public static final String DATABASE_CONNECTION_CLOSED = "AS-WEB-CORE-00347";
 
     @LogMessageInfo(
             message = "The re-open on the database failed. The database could be down.",
             level = "FINE"
     )
-    public static final String RE_OPEN_DATABASE_FAILED = "AS-WEB-CORE-00610";
+    public static final String RE_OPEN_DATABASE_FAILED = "AS-WEB-CORE-00348";
 
     @LogMessageInfo(
             message = "A SQL exception occurred {0}",
             level = "FINE"
     )
-    public static final String SQL_EXCEPTION = "AS-WEB-CORE-00611";
+    public static final String SQL_EXCEPTION = "AS-WEB-CORE-00349";
 
     @LogMessageInfo(
             message = "JDBC driver class not found {0}",
             level = "FINE"
     )
-    public static final String JDBC_DRIVER_CLASS_NOT_FOUND = "AS-WEB-CORE-00612";
+    public static final String JDBC_DRIVER_CLASS_NOT_FOUND = "AS-WEB-CORE-00350";
 
     /**
      * The descriptive information about this implementation.

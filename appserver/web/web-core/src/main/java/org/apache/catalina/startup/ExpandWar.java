@@ -92,25 +92,25 @@ public class ExpandWar {
             message = "Application base directory {0} does not exist",
             level = "WARNING"
     )
-    public static final String APP_NOT_EXIST_EXCEPTION = "AS-WEB-CORE-00760";
+    public static final String APP_NOT_EXIST_EXCEPTION = "AS-WEB-CORE-00444";
 
     @LogMessageInfo(
             message = "Unable to create the directory [{0}]",
             level = "WARNING"
     )
-    public static final String UNABLE_CREATE_DIRECTORY_EXCEPTION = "AS-WEB-CORE-00761";
+    public static final String UNABLE_CREATE_DIRECTORY_EXCEPTION = "AS-WEB-CORE-00445";
 
     @LogMessageInfo(
             message = "The archive [{0}] is malformed and will be ignored: an entry contains an illegal path [{1}]",
             level = "WARNING"
     )
-    public static final String ARCHIVE_IS_MALFORMED_EXCEPTION = "AS-WEB-CORE-00762";
+    public static final String ARCHIVE_IS_MALFORMED_EXCEPTION = "AS-WEB-CORE-00446";
 
     @LogMessageInfo(
             message = "Failed to set last-modified time of the file {0}",
             level = "WARNING"
     )
-    public static final String FAILED_SET_LAST_MODIFIED_TIME_EXCEPTION = "AS-WEB-CORE-00763";
+    public static final String FAILED_SET_LAST_MODIFIED_TIME_EXCEPTION = "AS-WEB-CORE-00447";
 
     @LogMessageInfo(
             message = "Error copying {0} to {1}",
@@ -118,7 +118,7 @@ public class ExpandWar {
             cause = "Could not copy file",
             action = "Verify if channel is not available for file transfer"
     )
-    public static final String ERROR_COPYING_EXCEPTION = "AS-WEB-CORE-00764";
+    public static final String ERROR_COPYING_EXCEPTION = "AS-WEB-CORE-00448";
 
     @LogMessageInfo(
             message = "[{0}] could not be completely deleted. The presence of the remaining files may cause problems",
@@ -126,7 +126,7 @@ public class ExpandWar {
             cause = "Could not completely delete specified directory",
             action = "Verify the access permission to specified directory"
     )
-    public static final String DELETE_DIR_EXCEPTION = "AS-WEB-CORE-00765";
+    public static final String DELETE_DIR_EXCEPTION = "AS-WEB-CORE-00449";
 
     /**
      * Expand the WAR file found at the specified URL into an unpacked

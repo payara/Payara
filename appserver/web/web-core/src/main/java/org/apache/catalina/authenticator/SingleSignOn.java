@@ -118,73 +118,73 @@ public class SingleSignOn
             message = "Started",
             level = "INFO"
     )
-    public static final String START_COMPONENT_INFO = "AS-WEB-CORE-00295";
+    public static final String START_COMPONENT_INFO = "AS-WEB-CORE-00005";
 
     @LogMessageInfo(
             message = "Stopped",
             level = "INFO"
     )
-    public static final String STOP_COMPONENT_INFO = "AS-WEB-CORE-00296";
+    public static final String STOP_COMPONENT_INFO = "AS-WEB-CORE-00006";
 
     @LogMessageInfo(
             message = "Process session destroyed on {0}",
             level = "INFO"
     )
-    public static final String PROCESS_SESSION_DESTROYED_INFO = "AS-WEB-CORE-00297";
+    public static final String PROCESS_SESSION_DESTROYED_INFO = "AS-WEB-CORE-00007";
 
     @LogMessageInfo(
             message = "Process request for '{0}'",
             level = "INFO"
     )
-    public static final String PROCESS_REQUEST_INFO = "AS-WEB-CORE-00298";
+    public static final String PROCESS_REQUEST_INFO = "AS-WEB-CORE-00008";
 
     @LogMessageInfo(
             message = "Principal {0} has already been authenticated",
             level = "INFO"
     )
-    public static final String PRINCIPAL_BEEN_AUTHENTICATED_INFO = "AS-WEB-CORE-00299";
+    public static final String PRINCIPAL_BEEN_AUTHENTICATED_INFO = "AS-WEB-CORE-00009";
 
     @LogMessageInfo(
             message = "Checking for SSO cookie",
             level = "INFO"
     )
-    public static final String CHECK_SSO_COOKIE_INFO = "AS-WEB-CORE-00300";
+    public static final String CHECK_SSO_COOKIE_INFO = "AS-WEB-CORE-00010";
 
     @LogMessageInfo(
             message = "SSO cookie is not present",
             level = "INFO"
     )
-    public static final String SSO_COOKIE_NOT_PRESENT_INFO = "AS-WEB-CORE-00301";
+    public static final String SSO_COOKIE_NOT_PRESENT_INFO = "AS-WEB-CORE-00011";
 
     @LogMessageInfo(
             message = "Checking for cached principal for {0}",
             level = "INFO"
     )
-    public static final String CHECK_CACHED_PRINCIPAL_INFO = "AS-WEB-CORE-00302";
+    public static final String CHECK_CACHED_PRINCIPAL_INFO = "AS-WEB-CORE-00012";
 
     @LogMessageInfo(
             message = "Found cached principal {0} with auth type {1}",
             level = "INFO"
     )
-    public static final String FOUND_CACHED_PRINCIPAL_AUTH_TYPE_INFO = "AS-WEB-CORE-00303";
+    public static final String FOUND_CACHED_PRINCIPAL_AUTH_TYPE_INFO = "AS-WEB-CORE-00013";
 
     @LogMessageInfo(
             message = "No cached principal found, erasing SSO cookie",
             level = "INFO"
     )
-    public static final String NO_CACHED_PRINCIPAL_FOUND_INFO = "AS-WEB-CORE-00304";
+    public static final String NO_CACHED_PRINCIPAL_FOUND_INFO = "AS-WEB-CORE-00014";
 
     @LogMessageInfo(
             message = "Associate sso id {0} with session {1}",
             level = "INFO"
     )
-    public static final String ASSOCIATE_SSO_WITH_SESSION_INFO = "AS-WEB-CORE-00305";
+    public static final String ASSOCIATE_SSO_WITH_SESSION_INFO = "AS-WEB-CORE-00015";
 
     @LogMessageInfo(
             message = "Registering sso id {0} for user {1} with auth type {2}",
             level = "INFO"
     )
-    public static final String REGISTERING_SSO_INFO = "AS-WEB-CORE-00306";
+    public static final String REGISTERING_SSO_INFO = "AS-WEB-CORE-00016";
 
     /**
      * Descriptive information about this Valve implementation.

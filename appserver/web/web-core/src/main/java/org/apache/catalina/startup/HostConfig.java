@@ -98,13 +98,13 @@ public class HostConfig
             cause = "Could not process the START event for an associated Host",
             action = "Verify Lifecycle event data object"
     )
-    public static final String LIFECYCLE_OBJECT_NOT_HOST_EXCEPTION = "AS-WEB-CORE-00770";
+    public static final String LIFECYCLE_OBJECT_NOT_HOST_EXCEPTION = "AS-WEB-CORE-00450";
 
     @LogMessageInfo(
             message = "Deploying configuration descriptor {0}",
             level = "FINE"
     )
-    public static final String DEPLOYING_CONFIG_DESCRIPTOR = "AS-WEB-CORE-00771";
+    public static final String DEPLOYING_CONFIG_DESCRIPTOR = "AS-WEB-CORE-00451";
 
     @LogMessageInfo(
             message = "Error deploying configuration descriptor {0}",
@@ -112,7 +112,7 @@ public class HostConfig
             cause = "Could not deploy configuration descriptor",
             action = "Verify the URL that points to context configuration file and the context path"
     )
-    public static final String ERROR_DEPLOYING_CONFIG_DESCRIPTOR_EXCEPTION = "AS-WEB-CORE-00772";
+    public static final String ERROR_DEPLOYING_CONFIG_DESCRIPTOR_EXCEPTION = "AS-WEB-CORE-00452";
 
     @LogMessageInfo(
             message = "The war name [{0}] is invalid. The archive will be ignored.",
@@ -120,19 +120,19 @@ public class HostConfig
             cause = "Could not deploy war file",
             action = "Verify the name war file"
     )
-    public static final String INVALID_WAR_NAME_EXCEPTION = "AS-WEB-CORE-00773";
+    public static final String INVALID_WAR_NAME_EXCEPTION = "AS-WEB-CORE-00453";
 
     @LogMessageInfo(
             message = "Expanding web application archive {0}",
             level = "FINE"
     )
-    public static final String EXPANDING_WEB_APP = "AS-WEB-CORE-00774";
+    public static final String EXPANDING_WEB_APP = "AS-WEB-CORE-00454";
 
     @LogMessageInfo(
             message = "Exception while expanding web application archive {0}",
             level = "WARNING"
     )
-    public static final String EXPANDING_WEB_APP_EXCEPTION = "AS-WEB-CORE-00775";
+    public static final String EXPANDING_WEB_APP_EXCEPTION = "AS-WEB-CORE-00455";
 
     @LogMessageInfo(
             message = "Exception while expanding web application archive {0}",
@@ -140,13 +140,13 @@ public class HostConfig
             cause = "Could not expand web application archive",
             action = "Verify the URL, and if any I/O errors orrur"
     )
-    public static final String EXPANDING_WEB_APP_ARCHIVE_EXCEPTION = "AS-WEB-CORE-00776";
+    public static final String EXPANDING_WEB_APP_ARCHIVE_EXCEPTION = "AS-WEB-CORE-00456";
 
     @LogMessageInfo(
             message = "Deploying web application archive {0}",
             level = "INFO"
     )
-    public static final String DEPLOYING_WEB_APP_ARCHIVE = "AS-WEB-CORE-00777";
+    public static final String DEPLOYING_WEB_APP_ARCHIVE = "AS-WEB-CORE-00457";
 
     @LogMessageInfo(
             message = "Error deploying web application archive {0}",
@@ -155,13 +155,13 @@ public class HostConfig
             action = "Verify the context path and if specified context path " +
                      "is already attached to an existing web application"
     )
-    public static final String ERROR_DEPLOYING_WEB_APP_ARCHIVE_EXCEPTION = "AS-WEB-CORE-00778";
+    public static final String ERROR_DEPLOYING_WEB_APP_ARCHIVE_EXCEPTION = "AS-WEB-CORE-00458";
 
     @LogMessageInfo(
             message = "Deploying web application directory {0}",
             level = "FINE"
     )
-    public static final String DEPLOYING_WEB_APP_DIR = "AS-WEB-CORE-00779";
+    public static final String DEPLOYING_WEB_APP_DIR = "AS-WEB-CORE-00459";
 
     @LogMessageInfo(
             message = "Error deploying web application directory {0}",
@@ -170,7 +170,7 @@ public class HostConfig
             action = "Verify the context path and if specified context path " +
                      "is already attached to an existing web application"
     )
-    public static final String ERROR_DEPLOYING_WEB_APP_DIR = "AS-WEB-CORE-00780";
+    public static final String ERROR_DEPLOYING_WEB_APP_DIR = "AS-WEB-CORE-00460";
 
     @LogMessageInfo(
             message = "Error undeploying Jar file {0}",
@@ -178,49 +178,49 @@ public class HostConfig
             cause = "Could not remove an existing web application, attached to the specified context path",
             action = "Verify the context path of the application"
     )
-    public static final String ERROR_UNDEPLOYING_JAR_FILE_EXCEPTION = "AS-WEB-CORE-00781";
+    public static final String ERROR_UNDEPLOYING_JAR_FILE_EXCEPTION = "AS-WEB-CORE-00461";
 
     @LogMessageInfo(
             message = "HostConfig: restartContext [{0}]",
             level = "INFO"
     )
-    public static final String RESTART_CONTEXT_INFO = "AS-WEB-CORE-00782";
+    public static final String RESTART_CONTEXT_INFO = "AS-WEB-CORE-00462";
 
     @LogMessageInfo(
             message = "Error during context [{0}] stop",
             level = "WARNING"
     )
-    public static final String ERROR_DURING_CONTEXT_STOP_EXCEPTION = "AS-WEB-CORE-00783";
+    public static final String ERROR_DURING_CONTEXT_STOP_EXCEPTION = "AS-WEB-CORE-00463";
 
     @LogMessageInfo(
             message = "Error during context [{0}] restart",
             level = "WARNING"
     )
-    public static final String ERROR_DURING_CONTEXT_RESTART_EXCEPTION = "AS-WEB-CORE-00784";
+    public static final String ERROR_DURING_CONTEXT_RESTART_EXCEPTION = "AS-WEB-CORE-00464";
 
     @LogMessageInfo(
             message = "HostConfig: Processing START",
             level = "FINE"
     )
-    public static final String PROCESSING_START = "AS-WEB-CORE-00785";
+    public static final String PROCESSING_START = "AS-WEB-CORE-00465";
 
     @LogMessageInfo(
             message = "HostConfig: Processing STOP",
             level = "FINE"
     )
-    public static final String PROCESSING_STOP = "AS-WEB-CORE-00786";
+    public static final String PROCESSING_STOP = "AS-WEB-CORE-00466";
 
     @LogMessageInfo(
             message = "Undeploying deployed web applications",
             level = "FINE"
     )
-    public static final String UNDEPLOYING_WEB_APP = "AS-WEB-CORE-00787";
+    public static final String UNDEPLOYING_WEB_APP = "AS-WEB-CORE-00467";
 
     @LogMessageInfo(
             message = "Undeploying context [{0}]",
             level = "FINE"
     )
-    public static final String UNDEPLOYING_CONTEXT = "AS-WEB-CORE-00788";
+    public static final String UNDEPLOYING_CONTEXT = "AS-WEB-CORE-00468";
 
     @LogMessageInfo(
             message = "Error undeploying web application at context path {0}",
@@ -228,7 +228,7 @@ public class HostConfig
             cause = "Could not remove an existing web application, attached to the specified context path",
             action = "Verify the context path of the application"
     )
-    public static final String ERROR_UNDEPLOYING_WEB_APP_EXCEPTION = "AS-WEB-CORE-00789";
+    public static final String ERROR_UNDEPLOYING_WEB_APP_EXCEPTION = "AS-WEB-CORE-00469";
 
     // ----------------------------------------------------- Instance Variables
 

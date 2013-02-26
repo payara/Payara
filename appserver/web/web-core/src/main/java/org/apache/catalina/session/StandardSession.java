@@ -115,43 +115,43 @@ public class StandardSession
             message = "Session id change event listener threw exception",
             level = "WARNING"
     )
-    public static final String SESSION_ID_CHANGE_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00665";
+    public static final String SESSION_ID_CHANGE_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00389";
 
     @LogMessageInfo(
             message = "Session event listener threw exception",
             level = "WARNING"
     )
-    public static final String SESSION_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00666";
+    public static final String SESSION_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00390";
 
     @LogMessageInfo(
             message = "Session already invalidated",
             level = "WARNING"
     )
-    public static final String SESSION_INVALIDATED_EXCEPTION = "AS-WEB-CORE-00667";
+    public static final String SESSION_INVALIDATED_EXCEPTION = "AS-WEB-CORE-00391";
 
     @LogMessageInfo(
             message = "Session attribute event listener threw exception",
             level = "WARNING"
     )
-    public static final String SESSION_ATTRIBUTE_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00668";
+    public static final String SESSION_ATTRIBUTE_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00392";
 
     @LogMessageInfo(
             message = "setAttribute: name parameter cannot be null",
             level = "WARNING"
     )
-    public static final String NAME_PARAMETER_CANNOT_BE_NULL_EXCEPTION = "AS-WEB-CORE-00669";
+    public static final String NAME_PARAMETER_CANNOT_BE_NULL_EXCEPTION = "AS-WEB-CORE-00393";
 
     @LogMessageInfo(
             message = "Session binding event listener threw exception",
             level = "WARNING"
     )
-    public static final String SESSION_BINDING_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00670";
+    public static final String SESSION_BINDING_EVENT_LISTENER_EXCEPTION = "AS-WEB-CORE-00394";
 
     @LogMessageInfo(
             message = " Cannot serialize session attribute {0} for session {1}",
             level = "WARNING"
     )
-    public static final String CANNOT_SERIALIZE_SESSION_EXCEPTION = "AS-WEB-CORE-00671";
+    public static final String CANNOT_SERIALIZE_SESSION_EXCEPTION = "AS-WEB-CORE-00395";
     // ----------------------------------------------------------- Constructors
 
     /**

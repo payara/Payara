@@ -89,7 +89,7 @@ public class URLEncoder {
             message = "UTF8 not supported",
             level = "WARNING"
     )
-    public static final String UTF8_NOT_SUPPORTED_EXCEPTION = "AS-WEB-CORE-00840";
+    public static final String UTF8_NOT_SUPPORTED_EXCEPTION = "AS-WEB-CORE-00490";
 
     static final char[] hexadecimal =
     {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',

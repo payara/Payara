@@ -95,7 +95,7 @@ public class FormAuthenticator
             message = "Unexpected error forwarding or redirecting to login page",
             level = "WARNING"
     )
-    public static final String UNEXPECTED_ERROR_FORWARDING_TO_LOGIN_PAGE = "AS-WEB-CORE-00290";
+    public static final String UNEXPECTED_ERROR_FORWARDING_TO_LOGIN_PAGE = "AS-WEB-CORE-00004";
 
 
     // -------------------------------------------------- Instance Variables

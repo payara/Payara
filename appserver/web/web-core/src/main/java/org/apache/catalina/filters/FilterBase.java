@@ -88,7 +88,7 @@ public abstract class FilterBase implements Filter {
             message = "The property \"{0}\" is not defined for filters of type \"{1}\"",
             level = "WARNING"
     )
-    public static final String PROPERTY_NOT_DEFINED_EXCEPTION = "AS-WEB-CORE-00465";
+    public static final String PROPERTY_NOT_DEFINED_EXCEPTION = "AS-WEB-CORE-00287";
 
     protected abstract Logger getLogger();
 

@@ -135,31 +135,31 @@ public class JAASRealm
              message = "Setting JAAS app name {0}",
              level = "INFO"
      )
-     public static final String SETTING_JAAS_INFO = "AS-WEB-CORE-00510";
+     public static final String SETTING_JAAS_INFO = "AS-WEB-CORE-00306";
 
      @LogMessageInfo(
              message = "Login exception authenticating username {0}",
              level = "FINE"
      )
-     public static final String LOGIN_EXCEPTION_AUTHENTICATING_USERNAME = "AS-WEB-CORE-00511";
+     public static final String LOGIN_EXCEPTION_AUTHENTICATING_USERNAME = "AS-WEB-CORE-00307";
 
      @LogMessageInfo(
              message = "Username {0} NOT authenticated due to failed login",
              level = "FINE"
      )
-     public static final String USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN = "AS-WEB-CORE-00512";
+     public static final String USERNAME_NOT_AUTHENTICATED_FAILED_LOGIN = "AS-WEB-CORE-00308";
 
      @LogMessageInfo(
              message = "Username {0} NOT authenticated due to expired account",
              level = "FINE"
      )
-     public static final String USERNAME_NOT_AUTHENTICATED_EXPIRED_ACCOUNT = "AS-WEB-CORE-00513";
+     public static final String USERNAME_NOT_AUTHENTICATED_EXPIRED_ACCOUNT = "AS-WEB-CORE-00309";
 
      @LogMessageInfo(
              message = "Username {0} NOT authenticated due to expired credential",
              level = "FINE"
      )
-     public static final String USERNAME_NOT_AUTHENTICATED_EXPIRED_CREDENTIAL = "AS-WEB-CORE-00514";
+     public static final String USERNAME_NOT_AUTHENTICATED_EXPIRED_CREDENTIAL = "AS-WEB-CORE-00310";
 
      @LogMessageInfo(
              message = "error ",
@@ -167,7 +167,7 @@ public class JAASRealm
              cause = "Could not authenticate by using the current username",
              action = "Verify the username and credential"
      )
-     public static final String AUTHENTICATION_ERROR = "AS-WEB-CORE-00515";
+     public static final String AUTHENTICATION_ERROR = "AS-WEB-CORE-00311";
 
 
     // ----------------------------------------------------- Instance Variables

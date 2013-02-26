@@ -63,7 +63,7 @@ public class DynamicServletRegistrationImpl
                   "because this servlet context has already been initialized",
         level = "WARNING"
     )
-    public static final String DYNAMIC_SERVLET_REGISTRATION_ALREADY_INIT = "AS-WEB-CORE-00042";
+    public static final String DYNAMIC_SERVLET_REGISTRATION_ALREADY_INIT = "AS-WEB-CORE-00116";
 
     /**
      * Constructor

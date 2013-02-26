@@ -104,31 +104,31 @@ public class ContextConfig
             message = "Lifecycle event data object {0} is not a Context",
             level = "WARNING"
     )
-    public static final String EVENT_DATA_IS_NOT_CONTEXT_EXCEPTION = "AS-WEB-CORE-00710";
+    public static final String EVENT_DATA_IS_NOT_CONTEXT_EXCEPTION = "AS-WEB-CORE-00408";
 
     @LogMessageInfo(
             message = "alt-dd file {0} not found",
             level = "WARNING"
     )
-    public static final String ALT_DD_FILE_NOT_FOUND_EXCEPTION = "AS-WEB-CORE-00711";
+    public static final String ALT_DD_FILE_NOT_FOUND_EXCEPTION = "AS-WEB-CORE-00409";
 
     @LogMessageInfo(
             message = "Missing application web.xml, using defaults only {0}",
             level = "FINE"
     )
-    public static final String MISSING_APP_WEB_XML_FINE = "AS-WEB-CORE-00712";
+    public static final String MISSING_APP_WEB_XML_FINE = "AS-WEB-CORE-00410";
 
     @LogMessageInfo(
             message = "Parse error in application web.xml at line {0} and column {1}",
             level = "WARNING"
     )
-    public static final String PARSE_ERROR_IN_APP_WEB_XML_EXCEPTION = "AS-WEB-CORE-00713";
+    public static final String PARSE_ERROR_IN_APP_WEB_XML_EXCEPTION = "AS-WEB-CORE-00411";
 
     @LogMessageInfo(
             message = "Parse error in application web.xml",
             level = "WARNING"
     )
-    public static final String PARSE_ERROR_IN_APP_WEB_XML = "AS-WEB-CORE-00714";
+    public static final String PARSE_ERROR_IN_APP_WEB_XML = "AS-WEB-CORE-00412";
 
     @LogMessageInfo(
             message = "Error closing application web.xml",
@@ -137,43 +137,43 @@ public class ContextConfig
                     "associated with the stream.",
             action = "Verify if any I/O errors occur"
     )
-    public static final String ERROR_CLOSING_APP_WEB_XML_EXCEPTION = "AS-WEB-CORE-00715";
+    public static final String ERROR_CLOSING_APP_WEB_XML_EXCEPTION = "AS-WEB-CORE-00413";
 
     @LogMessageInfo(
             message = "No Realm has been configured to authenticate against",
             level = "WARNING"
     )
-    public static final String NO_REALM_BEEN_CONFIGURED_EXCEPTION = "AS-WEB-CORE-00716";
+    public static final String NO_REALM_BEEN_CONFIGURED_EXCEPTION = "AS-WEB-CORE-00414";
 
     @LogMessageInfo(
             message = "Cannot configure an authenticator for method {0}",
             level = "WARNING"
     )
-    public static final String CANNOT_CONFIG_AUTHENTICATOR_EXCEPTION = "AS-WEB-CORE-00717";
+    public static final String CANNOT_CONFIG_AUTHENTICATOR_EXCEPTION = "AS-WEB-CORE-00415";
 
     @LogMessageInfo(
             message = "Cannot instantiate an authenticator of class {0}",
             level = "WARNING"
     )
-    public static final String CANNOT_INSTANTIATE_AUTHENTICATOR_EXCEPTION = "AS-WEB-CORE-00718";
+    public static final String CANNOT_INSTANTIATE_AUTHENTICATOR_EXCEPTION = "AS-WEB-CORE-00416";
 
     @LogMessageInfo(
             message = "Configured an authenticator for method {0}",
             level = "FINE"
     )
-    public static final String CONFIGURED_AUTHENTICATOR_FINE = "AS-WEB-CORE-00719";
+    public static final String CONFIGURED_AUTHENTICATOR_FINE = "AS-WEB-CORE-00417";
 
     @LogMessageInfo(
             message = "No default web.xml",
             level = "INFO"
     )
-    public static final String NO_DEFAULT_WEB_XML_INFO = "AS-WEB-CORE-00720";
+    public static final String NO_DEFAULT_WEB_XML_INFO = "AS-WEB-CORE-00418";
 
     @LogMessageInfo(
             message = "Missing default web.xml, using application web.xml only {0} {1}",
             level = "WARNING"
     )
-    public static final String MISSING_DEFAULT_WEB_XML_EXCEPTION = "AS-WEB-CORE-00721";
+    public static final String MISSING_DEFAULT_WEB_XML_EXCEPTION = "AS-WEB-CORE-00419";
 
     @LogMessageInfo(
             message = "Parse error in default web.xml at line {0} and column {1}",
@@ -181,7 +181,7 @@ public class ContextConfig
             cause = "Could not parse the content of the specified input source using this Digester",
             action = "Verify the input parameter, if any I/O errors occur"
     )
-    public static final String PARSE_ERROR_IN_DEFAULT_WEB_XML_EXCEPTION = "AS-WEB-CORE-00722";
+    public static final String PARSE_ERROR_IN_DEFAULT_WEB_XML_EXCEPTION = "AS-WEB-CORE-00420";
 
     @LogMessageInfo(
             message = "Parse error in default web.xml",
@@ -189,7 +189,7 @@ public class ContextConfig
             cause = "Could not parse the content of the specified input source using this Digester",
             action = "Verify the input parameter, if any I/O errors occur"
     )
-    public static final String PARSE_ERROR_IN_DEFAULT_WEB_XML = "AS-WEB-CORE-00723";
+    public static final String PARSE_ERROR_IN_DEFAULT_WEB_XML = "AS-WEB-CORE-00421";
 
     @LogMessageInfo(
             message = "Error closing default web.xml",
@@ -198,13 +198,13 @@ public class ContextConfig
                     "associated with the stream.",
             action = "Verify if any I/O errors occur"
     )
-    public static final String ERROR_CLOSING_DEFAULT_WEB_XML_EXCEPTION = "AS-WEB-CORE-00724";
+    public static final String ERROR_CLOSING_DEFAULT_WEB_XML_EXCEPTION = "AS-WEB-CORE-00422";
 
     @LogMessageInfo(
             message = "ContextConfig: Initializing",
             level = "FINE"
     )
-    public static final String CONTEXT_CONFIG_INIT_FINE = "AS-WEB-CORE-00726";
+    public static final String CONTEXT_CONFIG_INIT_FINE = "AS-WEB-CORE-00423";
 
     @LogMessageInfo(
             message = "Exception fixing docBase",
@@ -212,46 +212,46 @@ public class ContextConfig
             cause = "Could not adjust docBase",
             action = "Verify if any I/O errors occur"
     )
-    public static final String FIXING_DOC_BASE_EXCEPTION = "AS-WEB-CORE-00727";
+    public static final String FIXING_DOC_BASE_EXCEPTION = "AS-WEB-CORE-00424";
 
     @LogMessageInfo(
             message = "ContextConfig: Processing START",
             level = "FINEST"
     )
-    public static final String PROCESSING_START_FINEST = "AS-WEB-CORE-00728";
+    public static final String PROCESSING_START_FINEST = "AS-WEB-CORE-00425";
 
     @LogMessageInfo(
             message = "ContextConfig: Processing STOP",
             level = "FINEST"
     )
-    public static final String PROCESSING_STOP_FINEST = "AS-WEB-CORE-00729";
+    public static final String PROCESSING_STOP_FINEST = "AS-WEB-CORE-00426";
 
     @LogMessageInfo(
             message = "Security role name {0} used in an <auth-constraint> " +
                       "without being defined in a <security-role> in context [{1}]",
             level = "INFO"
     )
-    public static final String SECURITY_ROLE_NAME_USED_IN_AUTH_WITHOUT_DEFINITION = "AS-WEB-CORE-00730";
+    public static final String SECURITY_ROLE_NAME_USED_IN_AUTH_WITHOUT_DEFINITION = "AS-WEB-CORE-00427";
 
     @LogMessageInfo(
             message = "Security role name {0} used in a <run-as> " +
                       "without being defined in a <security-role> in context [{1}]",
             level = "INFO"
     )
-    public static final String SECURITY_ROLE_NAME_USED_IN_RUNAS_WITHOUT_DEFINITION = "AS-WEB-CORE-00731";
+    public static final String SECURITY_ROLE_NAME_USED_IN_RUNAS_WITHOUT_DEFINITION = "AS-WEB-CORE-00428";
 
     @LogMessageInfo(
             message = "Security role name {0} used in a <role-link> " +
                       "without being defined in a <security-role> in context [{1}]",
             level = "INFO"
     )
-    public static final String SECURITY_ROLE_NAME_USED_IN_LINK_WITHOUT_DEFINITION = "AS-WEB-CORE-00732";
+    public static final String SECURITY_ROLE_NAME_USED_IN_LINK_WITHOUT_DEFINITION = "AS-WEB-CORE-00429";
 
     @LogMessageInfo(
             message = "No web.xml, using defaults {0}",
             level = "INFO"
     )
-    public static final String NO_WEB_XML_INFO = "AS-WEB-CORE-00733";
+    public static final String NO_WEB_XML_INFO = "AS-WEB-CORE-00430";
     // --------------------------------------------------- Instance Variables
 
 

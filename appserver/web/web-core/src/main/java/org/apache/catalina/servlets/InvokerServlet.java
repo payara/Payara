@@ -97,37 +97,37 @@ public final class InvokerServlet
             message = "Container has not called setWrapper() for this servlet",
             level = "WARNING"
     )
-    public static final String SET_WRAPPER_NOT_CALLED_EXCEPTION = "AS-WEB-CORE-00570";
+    public static final String SET_WRAPPER_NOT_CALLED_EXCEPTION = "AS-WEB-CORE-00329";
 
     @LogMessageInfo(
             message = "Cannot call invoker servlet with a named dispatcher",
             level = "WARNING"
     )
-    public static final String CANNOT_CALL_INVOKER_SERVLET = "AS-WEB-CORE-00571";
+    public static final String CANNOT_CALL_INVOKER_SERVLET = "AS-WEB-CORE-00330";
 
     @LogMessageInfo(
             message = "No servlet name or class was specified in path {0}",
             level = "WARNING"
     )
-    public static final String INVALID_PATH_EXCEPTION = "AS-WEB-CORE-00572";
+    public static final String INVALID_PATH_EXCEPTION = "AS-WEB-CORE-00331";
 
     @LogMessageInfo(
             message = "Cannot create servlet wrapper for path {0}",
             level = "WARNING"
     )
-    public static final String CANNOT_CREATE_SERVLET_WRAPPER_EXCEPTION = "AS-WEB-CORE-00573";
+    public static final String CANNOT_CREATE_SERVLET_WRAPPER_EXCEPTION = "AS-WEB-CORE-00332";
 
     @LogMessageInfo(
             message = "Cannot allocate servlet instance for path {0}",
             level = "WARNING"
     )
-    public static final String CANNOT_ALLOCATE_SERVLET_INSTANCE_EXCEPTION = "AS-WEB-CORE-00574";
+    public static final String CANNOT_ALLOCATE_SERVLET_INSTANCE_EXCEPTION = "AS-WEB-CORE-00333";
 
     @LogMessageInfo(
             message = "Cannot deallocate servlet instance for path {0}",
             level = "WARNING"
     )
-    public static final String CANNOT_DEALLOCATE_SERVLET_INSTANCE_EXCEPTION = "AS-WEB-CORE-00575";
+    public static final String CANNOT_DEALLOCATE_SERVLET_INSTANCE_EXCEPTION = "AS-WEB-CORE-00334";
 
 
     // ----------------------------------------------------- Instance Variables

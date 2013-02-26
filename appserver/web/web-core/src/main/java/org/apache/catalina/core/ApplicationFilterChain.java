@@ -96,7 +96,7 @@ final class ApplicationFilterChain implements FilterChain {
         message = "Filter execution threw an exception",
         level = "WARNING"
     )
-    public static final String FILTER_EXECUTION_EXCEPTION = "AS-WEB-CORE-00023";
+    public static final String FILTER_EXECUTION_EXCEPTION = "AS-WEB-CORE-00097";
 
 
     // -------------------------------------------------------------- Constants

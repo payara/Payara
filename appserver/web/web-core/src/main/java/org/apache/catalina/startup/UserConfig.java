@@ -96,49 +96,49 @@ public final class UserConfig
             message = "Deploying user web applications",
             level = "INFO"
     )
-    public static final String DEPLOYING_USER_WEB_APP_INFO = "AS-WEB-CORE-00805";
+    public static final String DEPLOYING_USER_WEB_APP_INFO = "AS-WEB-CORE-00476";
 
     @LogMessageInfo(
             message = "Exception loading user database",
             level = "WARNING"
     )
-    public static final String LOADING_USER_DATABASE_EXCEPTION = "AS-WEB-CORE-00806";
+    public static final String LOADING_USER_DATABASE_EXCEPTION = "AS-WEB-CORE-00477";
 
     @LogMessageInfo(
             message = "Deploying web application for user {0}",
             level = "INFO"
     )
-    public static final String DEPLOYING_WEB_APP_FOR_USER_INFO = "AS-WEB-CORE-00807";
+    public static final String DEPLOYING_WEB_APP_FOR_USER_INFO = "AS-WEB-CORE-00478";
 
     @LogMessageInfo(
             message = "Error deploying web application for user {0}",
             level = "WARNING"
     )
-    public static final String DEPLOYING_WEB_APP_FOR_USER_EXCEPTION = "AS-WEB-CORE-00808";
+    public static final String DEPLOYING_WEB_APP_FOR_USER_EXCEPTION = "AS-WEB-CORE-00479";
 
     @LogMessageInfo(
             message = "UserConfig[{0}]: {1}",
             level = "INFO"
     )
-    public static final String USER_CONFIG = "AS-WEB-CORE-00809";
+    public static final String USER_CONFIG = "AS-WEB-CORE-00480";
 
     @LogMessageInfo(
             message = "UserConfig[null]: {0}",
             level = "INFO"
     )
-    public static final String USER_CONFIG_NULL = "AS-WEB-CORE-00810";
+    public static final String USER_CONFIG_NULL = "AS-WEB-CORE-00481";
 
     @LogMessageInfo(
             message = "UserConfig: Processing START",
             level = "INFO"
     )
-    public static final String PROCESSING_START_INFO = "AS-WEB-CORE-00811";
+    public static final String PROCESSING_START_INFO = "AS-WEB-CORE-00482";
 
     @LogMessageInfo(
             message = "UserConfig: Processing STOP",
             level = "INFO"
     )
-    public static final String PROCESSING_STOP_INFO = "AS-WEB-CORE-00812";
+    public static final String PROCESSING_STOP_INFO = "AS-WEB-CORE-00483";
 
 
     // ----------------------------------------------------- Instance Variables

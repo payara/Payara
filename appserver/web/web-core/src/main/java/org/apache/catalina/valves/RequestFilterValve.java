@@ -122,13 +122,13 @@ public abstract class RequestFilterValve
             message = "Syntax error in request filter pattern {0}",
             level = "WARNING"
     )
-    public static final String SYNTAX_ERROR = "AS-WEB-CORE-00900";
+    public static final String SYNTAX_ERROR = "AS-WEB-CORE-00515";
 
     @LogMessageInfo(
             message = "Cannot process the error page: {0}",
             level = "INFO"
     )
-    public static final String CANNOT_PROCESS_ERROR_PAGE_INFO = "AS-WEB-CORE-00901";
+    public static final String CANNOT_PROCESS_ERROR_PAGE_INFO = "AS-WEB-CORE-00516";
     // ----------------------------------------------------- Class Variables
 
 

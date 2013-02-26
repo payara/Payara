@@ -102,31 +102,31 @@ public final class FileStore extends StoreBase {
             message = "Loading Session {0} from file {1}",
             level = "FINE"
     )
-    public static final String LOADING_SESSION = "AS-WEB-CORE-00595";
+    public static final String LOADING_SESSION = "AS-WEB-CORE-00338";
 
     @LogMessageInfo(
             message = "Removing Session {0} at file {1}",
             level = "FINE"
     )
-    public static final String REMOVING_SESSION = "AS-WEB-CORE-00596";
+    public static final String REMOVING_SESSION = "AS-WEB-CORE-00339";
 
     @LogMessageInfo(
             message = "Saving Session {0} to file {1}",
             level = "FINE"
     )
-    public static final String SAVING_SESSION = "AS-WEB-CORE-00597";
+    public static final String SAVING_SESSION = "AS-WEB-CORE-00340";
 
     @LogMessageInfo(
             message = "Unable to delete file [{0}] which is preventing the creation of the session storage location",
             level = "WARNING"
     )
-    public static final String UNABLE_DELETE_FILE_EXCEPTION = "AS-WEB-CORE-00598";
+    public static final String UNABLE_DELETE_FILE_EXCEPTION = "AS-WEB-CORE-00341";
 
     @LogMessageInfo(
             message = "Unable to create directory [{0}] for the storage of session data",
             level = "WARNING"
     )
-    public static final String UNABLE_CREATE_DIR_EXCEPTION = "AS-WEB-CORE-00599";
+    public static final String UNABLE_CREATE_DIR_EXCEPTION = "AS-WEB-CORE-00342";
 
     // ----------------------------------------------------- Constants
 

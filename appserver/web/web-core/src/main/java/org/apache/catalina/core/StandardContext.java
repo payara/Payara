@@ -130,58 +130,58 @@ public class StandardContext
         message = "Missing alternate docbase URL pattern or directory location",
         level = "WARNING"
     )
-    public static final String MISS_PATH_OR_URL_PATTERN_EXCEPTION = "AS-WEB-CORE-00065";
+    public static final String MISS_PATH_OR_URL_PATTERN_EXCEPTION = "AS-WEB-CORE-00130";
 
     @LogMessageInfo(
         message = "LoginConfig cannot be null",
         level = "WARNING"
     )
-    public static final String LOGIN_CONFIG_REQUIRED_EXCEPTION = "AS-WEB-CORE-00066";
+    public static final String LOGIN_CONFIG_REQUIRED_EXCEPTION = "AS-WEB-CORE-00131";
 
     // have two similar messages
     @LogMessageInfo(
         message = "Form login page {0} must start with a ''/''",
         level = "WARNING"
     )
-    public static final String LOGIN_CONFIG_LOGIN_PAGE_EXCEPTION = "AS-WEB-CORE-00067";
+    public static final String LOGIN_CONFIG_LOGIN_PAGE_EXCEPTION = "AS-WEB-CORE-00132";
 
     // have two similar messages
     @LogMessageInfo(
         message = "Form error page {0} must start with a ''/''",
         level = "WARNING"
     )
-    public static final String LOGIN_CONFIG_ERROR_PAGE_EXCEPTION = "AS-WEB-CORE-00068";
+    public static final String LOGIN_CONFIG_ERROR_PAGE_EXCEPTION = "AS-WEB-CORE-00133";
 
     @LogMessageInfo(
         message = "Child of a Context must be a Wrapper",
         level = "WARNING"
     )
-    public static final String NO_WRAPPER_EXCEPTION = "AS-WEB-CORE-00070";
+    public static final String NO_WRAPPER_EXCEPTION = "AS-WEB-CORE-00134";
 
     // have to similar messages
     @LogMessageInfo(
         message = "JSP file {0} must start with a ''/''",
         level = "WARNING"
     )
-    public static final String WRAPPER_ERROR_EXCEPTION = "AS-WEB-CORE-00071";
+    public static final String WRAPPER_ERROR_EXCEPTION = "AS-WEB-CORE-00135";
 
     @LogMessageInfo(
         message = "Invalid <url-pattern> {0} in security constraint",
         level = "WARNING"
     )
-    public static final String SECURITY_CONSTRAINT_PATTERN_EXCEPTION = "AS-WEB-CORE-00072";
+    public static final String SECURITY_CONSTRAINT_PATTERN_EXCEPTION = "AS-WEB-CORE-00136";
 
     @LogMessageInfo(
         message = "ErrorPage cannot be null",
         level = "WARNING"
     )
-    public static final String ERROR_PAGE_REQUIRED_EXCEPTION = "AS-WEB-CORE-00073";
+    public static final String ERROR_PAGE_REQUIRED_EXCEPTION = "AS-WEB-CORE-00137";
 
     @LogMessageInfo(
         message = "Error page location {0} must start with a ''/''",
         level = "WARNING"
     )
-    public static final String ERROR_PAGE_LOCATION_EXCEPTION = "AS-WEB-CORE-00074";
+    public static final String ERROR_PAGE_LOCATION_EXCEPTION = "AS-WEB-CORE-00138";
 
     @LogMessageInfo(
         message = "Invalid status code {0} for error-page mapping. HTTP error codes are defined in the range from 400-600",
@@ -189,79 +189,79 @@ public class StandardContext
         cause = "Invalid error page code",
         action = "Verify the error code"
     )
-    public static final String INVALID_ERROR_PAGE_CODE_EXCEPTION = "AS-WEB-CORE-00075";
+    public static final String INVALID_ERROR_PAGE_CODE_EXCEPTION = "AS-WEB-CORE-00139";
 
     @LogMessageInfo(
         message = "Filter mapping specifies an unknown filter name {0}",
         level = "WARNING"
     )
-    public static final String FILTER_MAPPING_NAME_EXCEPTION = "AS-WEB-CORE-00076";
+    public static final String FILTER_MAPPING_NAME_EXCEPTION = "AS-WEB-CORE-00140";
 
     @LogMessageInfo(
         message = "Filter mapping must specify either a <url-pattern> or a <servlet-name>",
         level = "WARNING"
     )
-    public static final String FILTER_MAPPING_EITHER_EXCEPTION = "AS-WEB-CORE-00077";
+    public static final String FILTER_MAPPING_EITHER_EXCEPTION = "AS-WEB-CORE-00141";
 
     @LogMessageInfo(
         message = "Invalid <url-pattern> {0} in filter mapping",
         level = "WARNING"
     )
-    public static final String FILTER_MAPPING_INVALID_URL_EXCEPTION = "AS-WEB-CORE-00078";
+    public static final String FILTER_MAPPING_INVALID_URL_EXCEPTION = "AS-WEB-CORE-00142";
 
     @LogMessageInfo(
         message = "Unable to call method {0} on servlet context {1}, because this servlet context has already been initialized",
         level = "WARNING"
     )
-    public static final String SERVLET_CONTEXT_ALREADY_INIT_EXCEPTION = "AS-WEB-CORE-00079";
+    public static final String SERVLET_CONTEXT_ALREADY_INIT_EXCEPTION = "AS-WEB-CORE-00143";
 
     @LogMessageInfo(
         message = "Filter name is null or an empty String",
         level = "WARNING"
     )
-    public static final String NULL_EMPTY_FILTER_NAME_EXCEPTION = "AS-WEB-CORE-00080";
+    public static final String NULL_EMPTY_FILTER_NAME_EXCEPTION = "AS-WEB-CORE-00144";
 
     @LogMessageInfo(
         message = "Unable to set {0} session tracking mode on servlet context {1}, because it is not supported",
         level = "WARNING"
     )
-    public static final String UNSUPPORTED_TRACKING_MODE_EXCEPTION = "AS-WEB-CORE-00081";
+    public static final String UNSUPPORTED_TRACKING_MODE_EXCEPTION = "AS-WEB-CORE-00145";
 
     @LogMessageInfo(
         message = "Unable to add listener of type: {0}, because it does not implement any of the required ServletContextListener, ServletContextAttributeListener, ServletRequestListener, ServletRequestAttributeListener, HttpSessionListener, or HttpSessionAttributeListener interfaces",
         level = "WARNING"
     )
-    public static final String UNABLE_ADD_LISTENER_EXCEPTION = "AS-WEB-CORE-00082";
+    public static final String UNABLE_ADD_LISTENER_EXCEPTION = "AS-WEB-CORE-00146";
 
     @LogMessageInfo(
         message = "Both parameter name and parameter value are required, parameter name is {0}",
         level = "WARNING"
     )
-    public static final String PARAMETER_REQUIRED_EXCEPTION = "AS-WEB-CORE-00083";
+    public static final String PARAMETER_REQUIRED_EXCEPTION = "AS-WEB-CORE-00147";
 
     @LogMessageInfo(
         message = "Duplicate context initialization parameter {0}",
         level = "WARNING"
     )
-    public static final String DUPLICATE_PARAMETER_EXCEPTION = "AS-WEB-CORE-00084";
+    public static final String DUPLICATE_PARAMETER_EXCEPTION = "AS-WEB-CORE-00148";
 
     @LogMessageInfo(
         message = "Invalid <url-pattern> {0} in servlet mapping",
         level = "WARNING"
     )
-    public static final String SERVLET_MAPPING_INVALID_URL_EXCEPTION = "AS-WEB-CORE-00085";
+    public static final String SERVLET_MAPPING_INVALID_URL_EXCEPTION = "AS-WEB-CORE-00149";
 
     @LogMessageInfo(
         message = "Servlet mapping specifies an unknown servlet name {0}",
         level = "WARNING"
     )
-    public static final String SERVLET_MAPPING_UNKNOWN_NAME_EXCEPTION = "AS-WEB-CORE-00086";
+    public static final String SERVLET_MAPPING_UNKNOWN_NAME_EXCEPTION = "AS-WEB-CORE-00150";
 
     @LogMessageInfo(
         message = "Unable to map Servlet [{0}] to URL pattern [{1}], because Servlet [{2}] is already mapped to it",
         level = "WARNING"
     )
-    public static final String DUPLICATE_SERVLET_MAPPING_EXCEPTION = "AS-WEB-CORE-00087";
+    public static final String DUPLICATE_SERVLET_MAPPING_EXCEPTION = "AS-WEB-CORE-00151";
 
     @LogMessageInfo(
         message = "Error creating instance listener {0}",
@@ -269,7 +269,7 @@ public class StandardContext
         cause = "Could not create new instance",
         action = "Verify the configuration of Wrapper and InstanceListener"
     )
-    public static final String CREATING_INSTANCE_LISTENER_EXCEPTION = "AS-WEB-CORE-00088";
+    public static final String CREATING_INSTANCE_LISTENER_EXCEPTION = "AS-WEB-CORE-00152";
 
     @LogMessageInfo(
         message = "Error creating lifecycle listener {0}",
@@ -277,7 +277,7 @@ public class StandardContext
         cause = "Could not create new instance for lifecycle listener",
         action = "Verify the permit of current class to access newInstance()"
     )
-    public static final String CREATING_LIFECYCLE_LISTENER_EXCEPTION = "AS-WEB-CORE-00089";
+    public static final String CREATING_LIFECYCLE_LISTENER_EXCEPTION = "AS-WEB-CORE-00153";
 
     @LogMessageInfo(
         message = "Error creating container listener {0}",
@@ -285,13 +285,13 @@ public class StandardContext
         cause = "Could not create new instance for container listener",
         action = "Verify the permit of current class to access newInstance()"
     )
-    public static final String CREATING_CONTAINER_LISTENER_EXCEPTION = "AS-WEB-CORE-00090";
+    public static final String CREATING_CONTAINER_LISTENER_EXCEPTION = "AS-WEB-CORE-00154";
 
     @LogMessageInfo(
         message = "Reloading this Context has started",
         level = "INFO"
     )
-    public static final String RELOADING_STARTED = "AS-WEB-CORE-00091";
+    public static final String RELOADING_STARTED = "AS-WEB-CORE-00155";
 
     @LogMessageInfo(
         message = "Error stopping context {0}",
@@ -299,7 +299,7 @@ public class StandardContext
         cause = "Could not stop context component",
         action = "Verify stop() to guarantee the whole domain is being stopped correctly"
     )
-    public static final String STOPPING_CONTEXT_EXCEPTION = "AS-WEB-CORE-00092";
+    public static final String STOPPING_CONTEXT_EXCEPTION = "AS-WEB-CORE-00156";
 
     @LogMessageInfo(
         message = "Error starting context {0}",
@@ -307,43 +307,43 @@ public class StandardContext
         cause = "Could not start context component",
         action = "Verify start() to guarantee the context component is being started correctly"
     )
-    public static final String STARTING_CONTEXT_EXCEPTION = "AS-WEB-CORE-00093";
+    public static final String STARTING_CONTEXT_EXCEPTION = "AS-WEB-CORE-00157";
 
     @LogMessageInfo(
         message = "Error invoking requestInitialized method on ServletRequestListener {0}",
         level = "WARNING"
     )
-    public static final String REQUEST_INIT_EXCEPTION = "AS-WEB-CORE-00094";
+    public static final String REQUEST_INIT_EXCEPTION = "AS-WEB-CORE-00158";
 
     @LogMessageInfo(
         message = "Error invoking requestDestroyed method on ServletRequestListener {0}",
         level = "WARNING"
     )
-    public static final String REQUEST_DESTROY_EXCEPTION = "AS-WEB-CORE-00095";
+    public static final String REQUEST_DESTROY_EXCEPTION = "AS-WEB-CORE-00159";
 
     @LogMessageInfo(
         message = "Exception starting filter {0}",
         level = "WARNING"
     )
-    public static final String STARTING_FILTER_EXCEPTION = "AS-WEB-CORE-00096";
+    public static final String STARTING_FILTER_EXCEPTION = "AS-WEB-CORE-00160";
 
     @LogMessageInfo(
         message = "Servlet with name {0} does not have any servlet-class or jsp-file configured",
         level = "WARNING"
     )
-    public static final String SERVLET_WITHOUT_ANY_CLASS_OR_JSP = "AS-WEB-CORE-00097";
+    public static final String SERVLET_WITHOUT_ANY_CLASS_OR_JSP = "AS-WEB-CORE-00161";
 
     @LogMessageInfo(
         message = "Filter with name {0} does not have any class configured",
         level = "WARNING"
     )
-    public static final String FILTER_WITHOUT_ANY_CLASS = "AS-WEB-CORE-00098";
+    public static final String FILTER_WITHOUT_ANY_CLASS = "AS-WEB-CORE-00162";
 
     @LogMessageInfo(
         message = "Exception sending context destroyed event to listener instance of class {0}",
         level = "WARNING"
     )
-    public static final String LISTENER_STOP_EXCEPTION = "AS-WEB-CORE-00099";
+    public static final String LISTENER_STOP_EXCEPTION = "AS-WEB-CORE-00163";
 
     @LogMessageInfo(
         message = "Error starting resources in context {0}",
@@ -351,7 +351,7 @@ public class StandardContext
         cause = "Could not get the proxy directory context",
         action = "Verify the existence of the context"
     )
-    public static final String STARTING_RESOURCES_EXCEPTION = "AS-WEB-CORE-00100";
+    public static final String STARTING_RESOURCES_EXCEPTION = "AS-WEB-CORE-00164";
 
     @LogMessageInfo(
         message = "Error stopping static resources",
@@ -359,13 +359,13 @@ public class StandardContext
         cause = "Could not deallocate resource and destroy proxy",
         action = "Verify if a fatal error that prevents this component from being used"
     )
-    public static final String STOPPING_RESOURCES_EXCEPTION = "AS-WEB-CORE-00101";
+    public static final String STOPPING_RESOURCES_EXCEPTION = "AS-WEB-CORE-00165";
 
     @LogMessageInfo(
         message = "Current container has already been started with a DirContext object",
         level = "WARNING"
     )
-    public static final String RESOURCES_STARTED = "AS-WEB-CORE-00102";
+    public static final String RESOURCES_STARTED = "AS-WEB-CORE-00166";
 
     @LogMessageInfo(
         message = "Error starting resources in context {0} with Exception message: {1}",
@@ -373,43 +373,43 @@ public class StandardContext
         cause = "Could not get the proxy directory context",
         action = "Verify the existence of the context"
     )
-    public static final String STARTING_RESOURCE_EXCEPTION_MESSAGE = "AS-WEB-CORE-00103";
+    public static final String STARTING_RESOURCE_EXCEPTION_MESSAGE = "AS-WEB-CORE-00167";
 
     @LogMessageInfo(
         message = "Form login page {0} must start with a ''/'' in Servlet 2.4",
         level = "FINE"
     )
-    public static final String FORM_LOGIN_PAGE_FINE = "AS-WEB-CORE-00104";
+    public static final String FORM_LOGIN_PAGE_FINE = "AS-WEB-CORE-00168";
 
     @LogMessageInfo(
         message = "Form error page {0} must start with a ''/'' in Servlet 2.4",
         level = "FINE"
     )
-    public static final String FORM_ERROR_PAGE_FINE = "AS-WEB-CORE-00105";
+    public static final String FORM_ERROR_PAGE_FINE = "AS-WEB-CORE-00169";
 
     @LogMessageInfo(
         message = "JSP file {0} must start with a ''/'' in Servlet 2.4",
         level = "FINE"
     )
-    public static final String JSP_FILE_FINE = "AS-WEB-CORE-00106";
+    public static final String JSP_FILE_FINE = "AS-WEB-CORE-00170";
 
     @LogMessageInfo(
         message = "Container {0} has already been started",
         level = "INFO"
     )
-    public static final String CONTAINER_ALREADY_STARTED_EXCEPTION = "AS-WEB-CORE-00110";
+    public static final String CONTAINER_ALREADY_STARTED_EXCEPTION = "AS-WEB-CORE-00171";
 
     @LogMessageInfo(
         message = "Error initialzing resources{0}",
         level = "WARNING"
     )
-    public static final String INIT_RESOURCES_EXCEPTION = "AS-WEB-CORE-00111";
+    public static final String INIT_RESOURCES_EXCEPTION = "AS-WEB-CORE-00172";
 
     @LogMessageInfo(
         message = "Error in dependency check for standard context {0}",
         level = "WARNING"
     )
-    public static final String DEPENDENCY_CHECK_EXCEPTION = "AS-WEB-CORE-00112";
+    public static final String DEPENDENCY_CHECK_EXCEPTION = "AS-WEB-CORE-00173";
 
     @LogMessageInfo(
         message = "Startup of context {0} failed due to previous errors",
@@ -417,7 +417,7 @@ public class StandardContext
         cause = "Could not startup servlet",
         action = "Verify the initialization process"
     )
-    public static final String STARTUP_CONTEXT_FAILED_EXCEPTION = "AS-WEB-CORE-00113";
+    public static final String STARTUP_CONTEXT_FAILED_EXCEPTION = "AS-WEB-CORE-00174";
 
     @LogMessageInfo(
         message = "Exception during cleanup after start failed",
@@ -425,7 +425,7 @@ public class StandardContext
         cause = "Stop staring up failed",
         action = "Verify configurations to stop starting up"
     )
-    public static final String CLEANUP_FAILED_EXCEPTION = "AS-WEB-CORE-00114";
+    public static final String CLEANUP_FAILED_EXCEPTION = "AS-WEB-CORE-00175";
 
     @LogMessageInfo(
         message = "Error invoking ServletContainerInitializer {0}",
@@ -433,7 +433,7 @@ public class StandardContext
         cause = "Could not instantiate servlet container initializer",
         action = "Verify the access permission of current class loader"
     )
-    public static final String INVOKING_SERVLET_CONTAINER_INIT_EXCEPTION = "AS-WEB-CORE-00115";
+    public static final String INVOKING_SERVLET_CONTAINER_INIT_EXCEPTION = "AS-WEB-CORE-00176";
 
     @LogMessageInfo(
         message = "Error resetting context {0}",
@@ -441,13 +441,13 @@ public class StandardContext
         cause = "Could not restore original state",
         action = "Verify if extend 'this' method, and make sure to clean up"
     )
-    public static final String RESETTING_CONTEXT_EXCEPTION = "AS-WEB-CORE-00116";
+    public static final String RESETTING_CONTEXT_EXCEPTION = "AS-WEB-CORE-00177";
 
     @LogMessageInfo(
         message = "URL pattern {0} must start with a ''/'' in Servlet 2.4",
         level = "FINE"
     )
-    public static final String URL_PATTERN_WARNING = "AS-WEB-CORE-00117";
+    public static final String URL_PATTERN_WARNING = "AS-WEB-CORE-00178";
 
     @LogMessageInfo(
         message = "Failed to create work directory {0}",
@@ -455,13 +455,13 @@ public class StandardContext
         cause = "Could not create work directory",
         action = "Verify the directory name, and access permission"
     )
-    public static final String CREATE_WORK_DIR_EXCEPTION = "AS-WEB-CORE-00118";
+    public static final String CREATE_WORK_DIR_EXCEPTION = "AS-WEB-CORE-00179";
 
     @LogMessageInfo(
         message = "The URL pattern {0} contains a CR or LF and so can never be matched",
         level = "WARNING"
     )
-    public static final String URL_PATTERN_CANNOT_BE_MATCHED_EXCEPTION = "AS-WEB-CORE-00119";
+    public static final String URL_PATTERN_CANNOT_BE_MATCHED_EXCEPTION = "AS-WEB-CORE-00180";
 
     @LogMessageInfo(
         message = "Missing name attribute in {0}",
@@ -469,7 +469,7 @@ public class StandardContext
         cause = "Could not get the attribute",
         action = "Verify the existence of the value associated with the key"
     )
-    public static final String MISSING_ATTRIBUTE = "AS-WEB-CORE-00120";
+    public static final String MISSING_ATTRIBUTE = "AS-WEB-CORE-00181";
 
     @LogMessageInfo(
         message = "Malformed name {0}, value of name attribute does not start with ''//''",
@@ -477,25 +477,25 @@ public class StandardContext
         cause = "Illegal path name",
         action = "Verify path name"
     )
-    public static final String MALFORMED_NAME = "AS-WEB-CORE-00121";
+    public static final String MALFORMED_NAME = "AS-WEB-CORE-00182";
 
     @LogMessageInfo(
         message = "Path {0} does not start with ''/''",
         level = "WARNING"
     )
-    public static final String INCORRECT_PATH = "AS-WEB-CORE-00122";
+    public static final String INCORRECT_PATH = "AS-WEB-CORE-00183";
 
     @LogMessageInfo(
         message = "Path {0} does not start with ''/'' and is not empty",
         level = "WARNING"
     )
-    public static final String INCORRECT_OR_NOT_EMPTY_PATH = "AS-WEB-CORE-00123";
+    public static final String INCORRECT_OR_NOT_EMPTY_PATH = "AS-WEB-CORE-00184";
 
     @LogMessageInfo(
         message = "Error during mapping",
         level = "WARNING"
     )
-    public static final String MAPPING_ERROR_EXCEPTION = "AS-WEB-CORE-00124";
+    public static final String MAPPING_ERROR_EXCEPTION = "AS-WEB-CORE-00185";
 
     @LogMessageInfo(
         message = "Unable to create custom ObjectInputStream",
@@ -503,50 +503,50 @@ public class StandardContext
         cause = "Could not create custom ObjectInputStream",
         action = "Verify input stream and class loader"
     )
-    public static final String CANNOT_CREATE_OBJECT_INPUT_STREAM = "AS-WEB-CORE-00125";
+    public static final String CANNOT_CREATE_OBJECT_INPUT_STREAM = "AS-WEB-CORE-00186";
 
     @LogMessageInfo(
         message = "Error during bindThread",
         level = "WARNING"
     )
-    public static final String BIND_THREAD_EXCEPTION = "AS-WEB-CORE-00126";
+    public static final String BIND_THREAD_EXCEPTION = "AS-WEB-CORE-00187";
 
     @LogMessageInfo(
         message = "Servlet {0} threw load() exception",
         level = "WARNING"
     )
-    public static final String SERVLET_LOAD_EXCEPTION = "AS-WEB-CORE-00127";
+    public static final String SERVLET_LOAD_EXCEPTION = "AS-WEB-CORE-00188";
 
     @LogMessageInfo(
         message = "Error updating ctx with jmx {0} {1} {2}",
         level = "INFO"
     )
-    public static final String ERROR_UPDATING_CTX_INFO = "AS-WEB-CORE-00128";
+    public static final String ERROR_UPDATING_CTX_INFO = "AS-WEB-CORE-00189";
 
     @LogMessageInfo(
         message = "Error registering wrapper with jmx {0} {1} {2}",
         level = "INFO"
     )
-    public static final String ERROR_REGISTERING_WRAPPER_INFO = "AS-WEB-CORE-00129";
+    public static final String ERROR_REGISTERING_WRAPPER_INFO = "AS-WEB-CORE-00190";
 
 
     @LogMessageInfo(
             message = "Null filter instance",
             level = "WARNING"
     )
-    public static final String NULL_FILTER_INSTANCE_EXCEPTION = "AS-WEB-CORE-00130";
+    public static final String NULL_FILTER_INSTANCE_EXCEPTION = "AS-WEB-CORE-00191";
 
     @LogMessageInfo(
             message = "Servlet name is null or an empty String",
             level = "WARNING"
     )
-    public static final String NULL_EMPTY_SERVLET_NAME_EXCEPTION = "AS-WEB-CORE-00131";
+    public static final String NULL_EMPTY_SERVLET_NAME_EXCEPTION = "AS-WEB-CORE-00192";
 
     @LogMessageInfo(
             message = "Null servlet instance",
             level = "WARNING"
     )
-    public static final String NULL_SERVLET_INSTANCE_EXCEPTION = "AS-WEB-CORE-00132";
+    public static final String NULL_SERVLET_INSTANCE_EXCEPTION = "AS-WEB-CORE-00193";
 
     private static final ClassLoader standardContextClassLoader =
         StandardContext.class.getClassLoader();

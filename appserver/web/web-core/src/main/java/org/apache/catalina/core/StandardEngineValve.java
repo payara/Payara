@@ -103,7 +103,7 @@ final class StandardEngineValve
         message = "No Host matches server name {0}",
         level = "WARNING"
     )
-    public static final String NO_HOST_MATCH = "AS-WEB-CORE-00150";
+    public static final String NO_HOST_MATCH = "AS-WEB-CORE-00197";
 
     // ------------------------------------------------------------- Properties
 

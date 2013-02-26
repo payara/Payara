@@ -78,13 +78,13 @@ public final class HexUtils {
             message = "Odd number of hexadecimal digits",
             level = "WARNING"
     )
-    public static final String ODD_NUMBER_HEX_DIGITS_EXCEPTION = "AS-WEB-CORE-00828";
+    public static final String ODD_NUMBER_HEX_DIGITS_EXCEPTION = "AS-WEB-CORE-00487";
 
     @LogMessageInfo(
             message = "Bad hexadecimal digit",
             level = "WARNING"
     )
-    public static final String BAD_HEX_DIGIT_EXCEPTION = "AS-WEB-CORE-00829";
+    public static final String BAD_HEX_DIGIT_EXCEPTION = "AS-WEB-CORE-00488";
 
     // Code from Ajp11, from Apache's JServ
 

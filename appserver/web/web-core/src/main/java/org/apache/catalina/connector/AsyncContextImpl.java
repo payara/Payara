@@ -76,45 +76,45 @@ class AsyncContextImpl implements AsyncContext {
             message = "Unable to determine target of zero-arg dispatcher",
             level = "WARNING"
     )
-    public static final String UNABLE_DETERMINE_TARGET_OF_DISPATCHER = "AS-WEB-CORE-00320";
+    public static final String UNABLE_DETERMINE_TARGET_OF_DISPATCHER = "AS-WEB-CORE-00021";
 
     @LogMessageInfo(
             message = "Unable to acquire RequestDispatcher for {0}",
             level = "WARNING"
     )
-    public static final String UNABLE_ACQUIRE_REQUEST_DISPATCHER = "AS-WEB-CORE-00321";
+    public static final String UNABLE_ACQUIRE_REQUEST_DISPATCHER = "AS-WEB-CORE-00022";
 
     @LogMessageInfo(
             message = "Unable to acquire RequestDispatcher for {0} in servlet context {1}",
             level = "WARNING"
     )
-    public static final String UNABLE_ACQUIRE_REQUEST_DISPATCHER_IN_SERVLET_CONTEXT = "AS-WEB-CORE-00322";
+    public static final String UNABLE_ACQUIRE_REQUEST_DISPATCHER_IN_SERVLET_CONTEXT = "AS-WEB-CORE-00023";
 
     @LogMessageInfo(
             message = "Error invoking AsyncListener",
             level = "WARNING"
     )
-    public static final String ERROR_INVOKE_ASYNCLISTENER = "AS-WEB-CORE-00323";
+    public static final String ERROR_INVOKE_ASYNCLISTENER = "AS-WEB-CORE-00024";
 
     @LogMessageInfo(
             message = "Asynchronous dispatch already in progress, must call ServletRequest.startAsync first",
             level = "WARNING"
     )
-    public static final String ASYNC_DISPATCH_ALREADY_IN_PROGRESS_EXCEPTION = "AS-WEB-CORE-00324";
+    public static final String ASYNC_DISPATCH_ALREADY_IN_PROGRESS_EXCEPTION = "AS-WEB-CORE-00025";
 
     @LogMessageInfo(
             message = "Must not call AsyncContext.addListener after the container-initiated dispatch during " +
                     "which ServletRequest.startAsync was called has returned to the container",
             level = "WARNING"
     )
-    public static final String ASYNC_CONTEXT_ADD_LISTENER_EXCEPTION = "AS-WEB-CORE-00325";
+    public static final String ASYNC_CONTEXT_ADD_LISTENER_EXCEPTION = "AS-WEB-CORE-00026";
 
     @LogMessageInfo(
             message = "Must not call AsyncContext.setTimeout after the container-initiated dispatch during " +
                     "which ServletRequest.startAsync was called has returned to the container",
             level = "WARNING"
     )
-    public static final String ASYNC_CONTEXT_SET_TIMEOUT_EXCEPTION = "AS-WEB-CORE-00326";
+    public static final String ASYNC_CONTEXT_SET_TIMEOUT_EXCEPTION = "AS-WEB-CORE-00027";
 
 
     // Default timeout for async operations

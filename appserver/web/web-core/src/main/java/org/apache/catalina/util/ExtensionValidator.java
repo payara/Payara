@@ -113,19 +113,19 @@ public final class ExtensionValidator {
             cause = "Could not find MANIFEST from JAR file",
             action = "Verify the JAR file"
     )
-    public static final String FAILED_LOAD_MANIFEST_RESOURCES_EXCEPTION = "AS-WEB-CORE-00820";
+    public static final String FAILED_LOAD_MANIFEST_RESOURCES_EXCEPTION = "AS-WEB-CORE-00484";
 
     @LogMessageInfo(
             message = "ExtensionValidator[{0}][{1}]: Required extension \"{2}\" not found.",
             level = "INFO"
     )
-    public static final String EXTENSION_NOT_FOUND_INFO = "AS-WEB-CORE-00821";
+    public static final String EXTENSION_NOT_FOUND_INFO = "AS-WEB-CORE-00485";
 
     @LogMessageInfo(
             message = "ExtensionValidator[{0}]: Failure to find {1} required extension(s).",
             level = "INFO"
     )
-    public static final String FAILED_FIND_EXTENSION_INFO = "AS-WEB-CORE-00822";
+    public static final String FAILED_FIND_EXTENSION_INFO = "AS-WEB-CORE-00486";
 
 
     // ----------------------------------------------------- Static Initializer

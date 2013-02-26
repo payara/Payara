@@ -85,13 +85,13 @@ public class FileLogger
             message = "File Logger has already been started",
             level = "WARNING"
     )
-    public static final String FILE_LOGGER_STARTED = "AS-WEB-CORE-00490";
+    public static final String FILE_LOGGER_STARTED = "AS-WEB-CORE-00300";
 
     @LogMessageInfo(
             message = "File Logger has not yet been started",
             level = "WARNING"
     )
-    public static final String FILE_LOGGER_NOT_STARTED = "AS-WEB-CORE-00491";
+    public static final String FILE_LOGGER_NOT_STARTED = "AS-WEB-CORE-00301";
     // ----------------------------------------------------- Instance Variables
 
 
