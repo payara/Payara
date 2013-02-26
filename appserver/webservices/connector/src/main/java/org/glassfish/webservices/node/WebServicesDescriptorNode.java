@@ -109,9 +109,7 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
         return Collections.EMPTY_MAP;
     }
 
-    
-    
-            /**
+    /**
      * @return the DOCTYPE of the XML file
      */
     @Override
