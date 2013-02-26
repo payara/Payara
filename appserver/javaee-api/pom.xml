@@ -118,7 +118,7 @@
             <modules>
                 <module>javax.javaee-web-api</module>
                 <module>javax.javaee-api</module>
-                <!--<module>javax.javaee-endorsed-api</module>-->
+                <module>javax.javaee-endorsed-api</module>
             </modules>
             <build>
                 <plugins>
@@ -162,7 +162,7 @@
                                     <phase>process-resources</phase>
                                     <configuration>
                                         <attachSources>true</attachSources>
-                                        <excludeArtifactIds>tools-jar</excludeArtifactIds>
+                                        <excludeArtifactIds>tools-jar,servlet-api</excludeArtifactIds>
                                         <excludes>javax/help/**</excludes>
                                         <includes>javax/**</includes>
                                         <excludeTransitive>true</excludeTransitive>
