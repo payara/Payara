@@ -50,7 +50,27 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>javaee-web-api</artifactId>
-    <name>JavaEE Web Profile API</name>
+    <name>Java(TM) EE 7 Web Specification APIs</name>
+    <description>Java(TM) EE 7 Web Specification APIs</description>
+    
+    <developers>
+        <developer>
+            <id>shannon</id>
+            <name>Bill Shannon</name>
+            <organization>Oracle Corp.</organization>
+            <roles>
+                <role>lead</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>ldemichiel</id>
+            <name>Linda De Michiel</name>
+            <organization>Oracle Corp.</organization>
+            <roles>
+                <role>lead</role>
+            </roles>
+        </developer>
+    </developers>
 
     <build>
         <plugins>
@@ -65,11 +85,17 @@
                         </goals>
                     </execution>
                     <execution>
+                        <id>generate-pom</id>
+                        <goals>
+                            <goal>generate-pom</goal>
+                        </goals>
+                    </execution>
+                    <execution>
                         <id>attach-all-artifacts</id>
                         <goals>
                             <goal>attach-all-artifacts</goal>
                         </goals>
-                    </execution>  
+                    </execution>
                 </executions>
             </plugin>
             <plugin>

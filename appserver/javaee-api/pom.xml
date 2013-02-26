@@ -135,7 +135,7 @@
                                 <configuration>
                                     <resources>
                                         <resource>
-                                            <directory>../doc-files</directory>
+                                            <directory>${project.basedir}/../doc-files</directory>
                                         </resource>
                                     </resources>
                                     <outputDirectory>${project.build.directory}/apidocs/doc-files</outputDirectory>
@@ -169,12 +169,22 @@
                                     </configuration>
                                 </execution>
                                 <execution>
+                                    <id>generate-pom</id>
+                                    <phase>package</phase>
+                                    <configuration>
+                                        <parent/>
+                                        <groupId>javax</groupId>
+                                        <artifactId>${projet.artifactId}</artifactId>
+                                        <version>${javaee.version}</version>
+                                    </configuration>
+                                </execution>
+                                <execution>
                                     <id>attach-all-artifacts</id>
                                     <phase>verify</phase>
                                     <configuration>
-                                        <pomFile>${project.build.outputDirectory}/pom.xml</pomFile>
+                                        <pomFile>${project.build.directory}/pom.xml</pomFile>
                                     </configuration> 
-                                </execution>                        
+                                </execution>
                             </executions>
                         </plugin>
                         <plugin>
