@@ -91,32 +91,32 @@ final class WebModuleListener
     @LogMessageInfo(
             message = "Lifecycle event data object [{0}] is not a WebModule",
             level = "WARNING")
-    public static final String CLASS_CAST_EXCEPTION = "AS-WEB-GLUE-00336";
+    public static final String CLASS_CAST_EXCEPTION = "AS-WEB-GLUE-00259";
 
     @LogMessageInfo(
             message = "jsp-config property for {0} ",
             level = "FINE")
-    public static final String JSP_CONFIG_PROPERTY = "AS-WEB-GLUE-00337";
+    public static final String JSP_CONFIG_PROPERTY = "AS-WEB-GLUE-00260";
 
     @LogMessageInfo(
             message = "sysClasspath for {0} ",
             level = "FINE")
-    public static final String SYS_CLASSPATH = "AS-WEB-GLUE-00338";
+    public static final String SYS_CLASSPATH = "AS-WEB-GLUE-00261";
 
     @LogMessageInfo(
             message = "Error creating cache manager and configuring the servlet caching subsystem",
             level = "WARNING")
-    public static final String CACHE_MRG_EXCEPTION = "AS-WEB-GLUE-00339";
+    public static final String CACHE_MRG_EXCEPTION = "AS-WEB-GLUE-00262";
 
     @LogMessageInfo(
             message = "Cache Manager started",
             level = "FINE")
-    public static final String CACHE_MANAGER_STARTED = "AS-WEB-GLUE-00340";
+    public static final String CACHE_MANAGER_STARTED = "AS-WEB-GLUE-00263";
 
     @LogMessageInfo(
             message = "Cache Manager stopped",
             level = "FINE")
-    public static final String CACHE_MANAGER_STOPPED = "AS-WEB-GLUE-00341";
+    public static final String CACHE_MANAGER_STOPPED = "AS-WEB-GLUE-00264";
 
     /**
      * Descriptor object associated with this web application.

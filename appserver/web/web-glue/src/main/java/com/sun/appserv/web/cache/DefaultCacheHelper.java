@@ -71,12 +71,12 @@ public class DefaultCacheHelper implements CacheHelper {
     @LogMessageInfo(
             message = "Illegal CacheKeyGenerator",
             level = "WARNING")
-    private static final String CACHE_DEFAULT_HELP_ILLEGAL_KET_GENERATOR = "AS-WEB-GLUE-00202";
+    private static final String CACHE_DEFAULT_HELP_ILLEGAL_KET_GENERATOR = "AS-WEB-GLUE-00003";
 
     @LogMessageInfo(
             message = "DefaultCacheHelper: cannot find all the required key fields in the request {0}",
             level = "FINE")
-    private static final String REQUIRED_KEY_FIELDS_NOT_FOUND = "AS-WEB-GLUE-00203";
+    private static final String REQUIRED_KEY_FIELDS_NOT_FOUND = "AS-WEB-GLUE-00004";
 
     ServletContext context;
 

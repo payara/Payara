@@ -59,14 +59,14 @@ public class MemoryStrategyBuilder extends BasePersistenceStrategyBuilder {
     @LogMessageInfo(
             message = "Enabling no persistence for web module [{0}]''s sessions: persistence-type = [{1}]",
             level = "FINE")
-    public static final String NO_PERSISTENCE = "AS-WEB-GLUE-00249";
+    public static final String NO_PERSISTENCE = "AS-WEB-GLUE-00096";
 
     @LogMessageInfo(
             message = "Unable to load session uuid generator [{0}]",
             level = "SEVERE",
             cause = "An exception occurred during loading session uuid generator",
             action = "Check the Exception for the error")
-    public static final String UNABLE_TO_LOAD_SESSION_UUID_GENERATOR = "AS-WEB-GLUE-00250";
+    public static final String UNABLE_TO_LOAD_SESSION_UUID_GENERATOR = "AS-WEB-GLUE-00097";
 
     public void initializePersistenceStrategy(
             Context ctx,

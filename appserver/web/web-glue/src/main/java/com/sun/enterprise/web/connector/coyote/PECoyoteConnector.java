@@ -83,82 +83,82 @@ public class PECoyoteConnector extends Connector {
     @LogMessageInfo(
             message = "Invalid max-pending-count attribute value [{0}], using default [{1}]",
             level = "WARNING")
-    public static final String INVALID_MAX_PENDING_COUNT = "AS-WEB-GLUE-00256";
+    public static final String INVALID_MAX_PENDING_COUNT = "AS-WEB-GLUE-00067";
 
     @LogMessageInfo(
             message = "Unable to parse proxy port component ({0}) of server-name attribute of network-listener {1}",
             level = "SEVERE",
             cause = "The String does not contain a parsable integer",
             action = "Check the proxy port string")
-    public static final String INVALID_PROXY_PORT = "AS-WEB-GLUE-00257";
+    public static final String INVALID_PROXY_PORT = "AS-WEB-GLUE-00068";
 
     @LogMessageInfo(
             message = "Unable to parse redirect-port ({0}) attribute of network-listener {1}, using default: {2}",
             level = "WARNING")
-    public static final String INVALID_REDIRECT_PORT = "AS-WEB-GLUE-00258";
+    public static final String INVALID_REDIRECT_PORT = "AS-WEB-GLUE-00069";
 
     @LogMessageInfo(
             message = "Unable to parse acceptor-threads attribute ({0}) of network-listener {1}, using default: {2}",
             level = "WARNING")
-    public static final String INVALID_ACCEPTOR_THREADS = "AS-WEB-GLUE-00259";
+    public static final String INVALID_ACCEPTOR_THREADS = "AS-WEB-GLUE-00070";
 
     @LogMessageInfo(
             message = "The jk properties configuration file is not defined",
             level = "FINEST")
-    public static final String JK_PROPERTIES_NOT_DEFINED = "AS-WEB-GLUE-00260";
+    public static final String JK_PROPERTIES_NOT_DEFINED = "AS-WEB-GLUE-00071";
 
     @LogMessageInfo(
             message = "JK properties file {0} does not exist",
             level = "WARNING")
-    public static final String MISSING_JK_PROPERTIES = "AS-WEB-GLUE-00261";
+    public static final String MISSING_JK_PROPERTIES = "AS-WEB-GLUE-00072";
 
     @LogMessageInfo(
             message = "Loading glassfish-jk.properties from {0}",
             level = "FINEST")
-    public static final String LOADING_JK_PROPERTIED = "AS-WEB-GLUE-00262";
+    public static final String LOADING_JK_PROPERTIED = "AS-WEB-GLUE-00073";
 
     @LogMessageInfo(
             message = "Unable to configure JK properties {0} for connector listening to {1}",
             level = "SEVERE",
             cause = "Failed to load JK properties file",
             action = "Check if the properties file exists and is readable")
-    public static final String UNABLE_TO_CONFIGURE_JK = "AS-WEB-GLUE-00263";
+    public static final String UNABLE_TO_CONFIGURE_JK = "AS-WEB-GLUE-00074";
 
     @LogMessageInfo(
             message = "Invalid attribute [{0}] in thread-pool configuration",
             level = "WARNING")
-    public static final String INVALID_THREAD_POOL_ATTRIBUTE = "AS-WEB-GLUE-00264";
+    public static final String INVALID_THREAD_POOL_ATTRIBUTE = "AS-WEB-GLUE-00075";
 
     @LogMessageInfo(
             message = "Unable to load ProxyHandler implementation class {0}",
             level = "SEVERE",
             cause = "An exception occurred during creating a new instance ",
             action = "Check the exception for the error")
-    public static final String PROXY_HANDLER_CLASS_LOAD_ERROR = "AS-WEB-GLUE-00265";
+    public static final String PROXY_HANDLER_CLASS_LOAD_ERROR = "AS-WEB-GLUE-00076";
 
     @LogMessageInfo(
             message = "{0} not an instance of com.sun.appserv.ProxyHandler",
             level = "SEVERE",
             cause = "Invalid proxy handler",
             action = "Check to see if the proxy handler is an instance of com.sun.appserv.ProxyHandler")
-    public static final String PROXY_HANDLER_CLASS_INVALID = "AS-WEB-GLUE-00266";
+    public static final String PROXY_HANDLER_CLASS_INVALID = "AS-WEB-GLUE-00077";
 
     @LogMessageInfo(
             message = "All SSL protocol variants disabled for network-listener {0}, " +
                     "using SSL implementation specific defaults",
             level = "WARNING")
-    public static final String ALL_SSL_PROTOCOLS_DISABLED = "AS-WEB-GLUE-00267";
+    public static final String ALL_SSL_PROTOCOLS_DISABLED = "AS-WEB-GLUE-00078";
 
     @LogMessageInfo(
             message = "All SSL cipher suites disabled for network-listener(s) {0}. " +
                     "Using SSL implementation specific defaults",
             level = "FINE")
-    public static final String ALL_CIPHERS_DISABLED  = "AS-WEB-GLUE-00268";
+    public static final String ALL_CIPHERS_DISABLED  = "AS-WEB-GLUE-00079";
 
     @LogMessageInfo(
             message = "Unrecognized cipher: {0}",
             level = "WARNING")
-    public static final String UNRECOGNIZED_CIPHER = "AS-WEB-GLUE-00269";
+    public static final String UNRECOGNIZED_CIPHER = "AS-WEB-GLUE-00080";
 
     /**
      * Are we recycling objects

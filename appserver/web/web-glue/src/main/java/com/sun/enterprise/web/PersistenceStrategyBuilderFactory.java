@@ -63,23 +63,23 @@ public class PersistenceStrategyBuilderFactory {
                     "resolvedPersistenceType = {0}, resolvedPersistenceFrequency = {1} " +
                     "resolvedPersistenceScope = {2}",
             level = "FINEST")
-    public static final String CREATE_PERSISTENCE_STRATEGY_BUILDER_INFO = "AS-WEB-GLUE-00293";
+    public static final String CREATE_PERSISTENCE_STRATEGY_BUILDER_INFO = "AS-WEB-GLUE-00108";
 
     @LogMessageInfo(
             message = "Could not find PersistentStrategyBuilder for persistenceType {0}",
             level = "FINEST")
-    public static final String PERSISTENT_STRATEGY_BUILDER_NOT_FOUND = "AS-WEB-GLUE-00294";
+    public static final String PERSISTENT_STRATEGY_BUILDER_NOT_FOUND = "AS-WEB-GLUE-00109";
 
     @LogMessageInfo(
             message = "PersistenceStrategyBuilderFactory>>createPersistenceStrategyBuilder: " +
                     "CandidateBuilderClassName = {0}",
             level = "FINEST")
-    public static final String CREATE_PERSISTENCE_STRATEGY_BUILDER_CLASS_NAME = "AS-WEB-GLUE-00295";
+    public static final String CREATE_PERSISTENCE_STRATEGY_BUILDER_CLASS_NAME = "AS-WEB-GLUE-00110";
 
     @LogMessageInfo(
             message = "resolvedPersistenceType = {0}",
             level = "FINEST")
-    public static final String ACCESS_LOG_DIRECTORY_SET = "AS-WEB-GLUE-00296";
+    public static final String ACCESS_LOG_DIRECTORY_SET = "AS-WEB-GLUE-00111";
 
     ServiceLocator services;
 

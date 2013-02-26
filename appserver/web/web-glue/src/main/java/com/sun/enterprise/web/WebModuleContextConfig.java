@@ -84,27 +84,27 @@ public class WebModuleContextConfig extends ContextConfig {
     @LogMessageInfo(
             message = "Configured an authenticator for method {0}",
             level = "FINEST")
-    public static final String AUTHENTICATOR_CONFIGURED = "AS-WEB-GLUE-00331";
+    public static final String AUTHENTICATOR_CONFIGURED = "AS-WEB-GLUE-00254";
 
     @LogMessageInfo(
             message = "[{0}] failed to unbind namespace",
             level = "WARNING")
-    public static final String UNBIND_NAME_SPACE_ERROR = "AS-WEB-GLUE-00332";
+    public static final String UNBIND_NAME_SPACE_ERROR = "AS-WEB-GLUE-00255";
 
     @LogMessageInfo(
             message = "No Realm with name [{0}] configured to authenticate against",
             level = "WARNING")
-    public static final String MISSING_REALM = "AS-WEB-GLUE-00333";
+    public static final String MISSING_REALM = "AS-WEB-GLUE-00256";
 
     @LogMessageInfo(
             message = "Cannot configure an authenticator for method {0}",
             level = "WARNING")
-    public static final String AUTHENTICATOR_MISSING = "AS-WEB-GLUE-00334";
+    public static final String AUTHENTICATOR_MISSING = "AS-WEB-GLUE-00257";
 
     @LogMessageInfo(
             message = "Cannot instantiate an authenticator of class {0}",
             level = "WARNING")
-    public static final String AUTHENTICATOR_INSTANTIATE_ERROR = "AS-WEB-GLUE-00335";
+    public static final String AUTHENTICATOR_INSTANTIATE_ERROR = "AS-WEB-GLUE-00258";
 
 
     public final static int CHILDREN = 0;

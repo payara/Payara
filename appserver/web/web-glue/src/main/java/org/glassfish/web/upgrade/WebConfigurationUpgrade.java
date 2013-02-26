@@ -67,7 +67,7 @@ public class WebConfigurationUpgrade implements ConfigurationUpgrade, PostConstr
     @LogMessageInfo(
             message = "Unable to delete {0}",
             level = "WARNING")
-    public static final String UNABLE_TO_DELETE = "AS-WEB-GLUE-00355";
+    public static final String UNABLE_TO_DELETE = "AS-WEB-GLUE-00284";
 
     @Inject
     private ServerEnvironment serverEnvironment;

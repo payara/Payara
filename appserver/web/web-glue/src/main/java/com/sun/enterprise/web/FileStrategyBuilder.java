@@ -56,7 +56,7 @@ public class FileStrategyBuilder extends BasePersistenceStrategyBuilder {
     @LogMessageInfo(
             message = "Enabling file-based persistence for web module [{0}]''s sessions",
             level = "INFO")
-    public static final String FILE_PERSISTENCE = "AS-WEB-GLUE-00280";
+    public static final String FILE_PERSISTENCE = "AS-WEB-GLUE-00093";
 
     public void initializePersistenceStrategy(
             Context ctx,

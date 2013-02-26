@@ -80,14 +80,14 @@ public class WebConfigListener implements ConfigListener, MapperUpdateListener {
     @LogMessageInfo(
             message = "Web container config changed {0} {1} {2}",
             level = "FINE")
-    public static final String CHANGE_INVOKED = "AS-WEB-GLUE-00299";
+    public static final String CHANGE_INVOKED = "AS-WEB-GLUE-00114";
 
     @LogMessageInfo(
             message = "Exception processing HttpService configuration change",
             level = "SEVERE",
             cause = "An exception occurred during configuration change ",
             action = "Check the exception for error")
-    public static final String EXCEPTION_WEB_CONFIG = "AS-WEB-GLUE-00300";
+    public static final String EXCEPTION_WEB_CONFIG = "AS-WEB-GLUE-00115";
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     public HttpService httpService;

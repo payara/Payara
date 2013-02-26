@@ -79,37 +79,37 @@ public class CachingFilter implements Filter, CacheManagerListener {
     @LogMessageInfo(
             message = "CachingFilter {0} ready; isEnabled = {1} manager = {2}",
             level = "FINE")
-    private static final String CACHING_FILTER_READY = "AS-WEB-GLUE-00204";
+    private static final String CACHING_FILTER_READY = "AS-WEB-GLUE-00005";
 
     @LogMessageInfo(
             message = "CachingFilter {0} request is cacheable; key {1} index = {2}",
             level = "FINE")
-    private static final String CACHING_FILTER_CACHEABLE = "AS-WEB-GLUE-00205";
+    private static final String CACHING_FILTER_CACHEABLE = "AS-WEB-GLUE-00006";
 
     @LogMessageInfo(
             message = "CachingFilter {0} request needs a refresh; key {1}",
             level = "FINE")
-    private static final String CACHING_FILTER_NEEDS_REFRESH = "AS-WEB-GLUE-00206";
+    private static final String CACHING_FILTER_NEEDS_REFRESH = "AS-WEB-GLUE-00007";
 
     @LogMessageInfo(
             message = "CachingFilter {0} serving response from the cache  {1}",
             level = "FINE")
-    private static final String CACHING_FILTER_SERVING_RESPONSE = "AS-WEB-GLUE-00207";
+    private static final String CACHING_FILTER_SERVING_RESPONSE = "AS-WEB-GLUE-00008";
 
     @LogMessageInfo(
             message = "CachingFilter {0} pass thru; isEnabled = {1}",
             level = "FINE")
-    private static final String CACHING_FILTER_PASS_THRU = "AS-WEB-GLUE-00208";
+    private static final String CACHING_FILTER_PASS_THRU = "AS-WEB-GLUE-00009";
 
     @LogMessageInfo(
             message = "CachingFilter {0} received cacheManager enabled event",
             level = "FINE")
-    private static final String CACHING_FILTER_ENABLED_EVENT = "AS-WEB-GLUE-00209";
+    private static final String CACHING_FILTER_ENABLED_EVENT = "AS-WEB-GLUE-00010";
 
     @LogMessageInfo(
             message = "CachingFilter {0} received cacheManager disabled event",
             level = "FINE")
-    private static final String CACHING_FILTER_DISABLED_EVENT = "AS-WEB-GLUE-00210";
+    private static final String CACHING_FILTER_DISABLED_EVENT = "AS-WEB-GLUE-00011";
 
     /** 
      * Called by the web container to indicate to a filter that it is being 

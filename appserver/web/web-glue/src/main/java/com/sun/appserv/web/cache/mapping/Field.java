@@ -62,7 +62,7 @@ public class Field {
     @LogMessageInfo(
             message = "Incorrect scope value [{0}] for web application cache field name [{1}]",
             level = "WARNING")
-    public static final String CACHE_MAPPING_INCORRECT_SCOPE = "AS-WEB-GLUE-00356";
+    public static final String CACHE_MAPPING_INCORRECT_SCOPE = "AS-WEB-GLUE-00016";
 
     // field name and scope 
     protected String name; 

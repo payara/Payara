@@ -66,22 +66,22 @@ public class WebSslConfigHandler implements SslConfigHandler {
     @LogMessageInfo(
             message = "Network Listener named {0} does not exist.  Creating or using the named protocol element instead.",
             level = "INFO")
-    private static final String CREATE_SSL_HTTP_NOT_FOUND = "AS-WEB-GLUE-00369";
+    private static final String CREATE_SSL_HTTP_NOT_FOUND = "AS-WEB-GLUE-00272";
 
     @LogMessageInfo(
             message = "Network Listener named {0} to which this ssl element is being added already has an ssl element.",
             level = "INFO")
-    private static final String CREATE_SSL_HTTP_ALREADY_EXISTS = "AS-WEB-GLUE-00370";
+    private static final String CREATE_SSL_HTTP_ALREADY_EXISTS = "AS-WEB-GLUE-00273";
 
     @LogMessageInfo(
             message = "HTTP Listener named {0} not found",
             level = "INFO")
-    private static final String DELETE_SSL_HTTP_LISTENER_NOT_FOUND = "AS-WEB-GLUE-00371";
+    private static final String DELETE_SSL_HTTP_LISTENER_NOT_FOUND = "AS-WEB-GLUE-00274";
 
     @LogMessageInfo(
             message = "Ssl element does not exist for Listener named {0}",
             level = "INFO")
-    private static final String DELETE_SSL_ELEMENT_DOES_NOT_EXIST = "AS-WEB-GLUE-00372";
+    private static final String DELETE_SSL_ELEMENT_DOES_NOT_EXIST = "AS-WEB-GLUE-00275";
 
 
     @Override

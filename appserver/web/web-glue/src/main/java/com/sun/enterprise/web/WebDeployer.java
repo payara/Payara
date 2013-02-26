@@ -81,14 +81,14 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
     @LogMessageInfo(
             message = "Unable to load configuration of web module [{0}]",
             level = "WARNING")
-    public static final String UNABLE_TO_LOAD_CONFIG = "AS-WEB-GLUE-00329";
+    public static final String UNABLE_TO_LOAD_CONFIG = "AS-WEB-GLUE-00220";
 
     @LogMessageInfo(
             message = "Failed to precompile JSP pages of web module [{0}]",
             level = "SEVERE",
             cause = "An exception occurred precompiling JSP pages",
             action = "Check the exception for the error")
-    public static final String JSPC_FAILED = "AS-WEB-GLUE-00330";
+    public static final String JSPC_FAILED = "AS-WEB-GLUE-00221";
 
     @Inject
     ServerContext sc;

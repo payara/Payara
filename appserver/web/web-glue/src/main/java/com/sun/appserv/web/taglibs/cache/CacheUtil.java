@@ -63,7 +63,7 @@ public class CacheUtil {
     @LogMessageInfo(
             message = "Illegal value ([{0}]) for scope attribute of cache tag",
             level = "WARNING")
-    private static final String ILLEGAL_SCOPE = "AS-WEB-GLUE-00365";
+    private static final String ILLEGAL_SCOPE = "AS-WEB-GLUE-00027";
 
     private static final String PAGE_SCOPE = "page";   
     private static final String REQUEST_SCOPE = "request";   

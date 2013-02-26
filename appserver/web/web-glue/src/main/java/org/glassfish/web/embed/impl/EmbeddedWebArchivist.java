@@ -74,7 +74,7 @@ public class EmbeddedWebArchivist extends WebArchivist {
     @LogMessageInfo(
             message = "Cannot load class {0}",
             level = "FINER")
-    public static final String CANNOT_LOAD_CLASS = "AS-WEB-GLUE-00349";
+    public static final String CANNOT_LOAD_CLASS = "AS-WEB-GLUE-00280";
 
     private final ModuleScanner scanner = new ModuleScanner() {
 

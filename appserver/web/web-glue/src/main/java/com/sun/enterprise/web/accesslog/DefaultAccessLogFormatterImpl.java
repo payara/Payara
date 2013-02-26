@@ -71,21 +71,21 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
             level = "SEVERE",
             cause = "The pattern is either null or does not contain '%'",
             action = "Check the pattern for validity")
-    public static final String ACCESS_LOG_VALVE_INVALID_ACCESS_LOG_PATTERN = "AS-WEB-GLUE-00236";
+    public static final String ACCESS_LOG_VALVE_INVALID_ACCESS_LOG_PATTERN = "AS-WEB-GLUE-00047";
 
     @LogMessageInfo(
             message = "Missing end delimiter in access log pattern: {0}",
             level = "SEVERE",
             cause = "An end delimiter ismissing in the access log pattern",
             action = "Check the pattern for validity")
-    public static final String MISSING_ACCESS_LOG_PATTERN_END_DELIMITER = "AS-WEB-GLUE-00237";
+    public static final String MISSING_ACCESS_LOG_PATTERN_END_DELIMITER = "AS-WEB-GLUE-00048";
 
     @LogMessageInfo(
             message = "Invalid component: {0} in access log pattern: {1}",
             level = "SEVERE",
             cause = "Access log pattern containds invalid component",
             action = "Check the pattern for validity")
-    public static final String INVALID_ACCESS_LOG_PATTERN_COMPONENT = "AS-WEB-GLUE-00238";
+    public static final String INVALID_ACCESS_LOG_PATTERN_COMPONENT = "AS-WEB-GLUE-00049";
 
     private static final String QUOTE = "\"";
 

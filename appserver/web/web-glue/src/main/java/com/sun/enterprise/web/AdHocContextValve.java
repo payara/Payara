@@ -80,12 +80,12 @@ public class AdHocContextValve implements GlassFishValve {
     @LogMessageInfo(
             message = "Error processing request received on ad-hoc path {0}",
             level = "WARNING")
-    private static final String ADHOC_SERVLET_SERVICE_ERROR = "AS-WEB-GLUE-00366";
+    private static final String ADHOC_SERVLET_SERVICE_ERROR = "AS-WEB-GLUE-00050";
 
     @LogMessageInfo(
             message = "No ad-hoc servlet configured to process ad-hoc path {0}",
             level = "WARNING")
-    private static final String NO_ADHOC_SERVLET = "AS-WEB-GLUE-00367";
+    private static final String NO_ADHOC_SERVLET = "AS-WEB-GLUE-00051";
 
     // The web module with which this valve is associated
     private WebModule context;

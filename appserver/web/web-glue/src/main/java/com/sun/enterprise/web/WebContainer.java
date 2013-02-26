@@ -204,55 +204,55 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     @LogMessageInfo(
             message = "Loading web module {0} in virtual server {1} at {2}",
             level = "INFO")
-    public static final String WEB_MODULE_LOADING = "AS-WEB-GLUE-00001";
+    public static final String WEB_MODULE_LOADING = "AS-WEB-GLUE-00177";
 
     @LogMessageInfo(
             message = "This web container has not yet been started",
             level = "INFO")
-    public static final String WEB_CONTAINER_NOT_STARTED = "AS-WEB-GLUE-00002";
+    public static final String WEB_CONTAINER_NOT_STARTED = "AS-WEB-GLUE-00178";
 
     @LogMessageInfo(
             message = "Property {0} is not yet supported",
             level = "INFO")
-    public static final String PROPERTY_NOT_YET_SUPPORTED = "AS-WEB-GLUE-00003";
+    public static final String PROPERTY_NOT_YET_SUPPORTED = "AS-WEB-GLUE-00179";
 
     @LogMessageInfo(
             message = "Virtual server {0} already has a web module {1} loaded at {2} " +
                     "therefore web module {3} cannot be loaded at this context path on this virtual server",
             level = "INFO")
-    public static final String DUPLICATE_CONTEXT_ROOT = "AS-WEB-GLUE-00004";
+    public static final String DUPLICATE_CONTEXT_ROOT = "AS-WEB-GLUE-00180";
 
     @LogMessageInfo(
             message = "Unable to stop web container",
             level = "SEVERE",
             cause = "Web container may not have been started",
             action = "Verify if web container is started")
-    public static final String UNABLE_TO_STOP_WEB_CONTAINER = "AS-WEB-GLUE-00005";
+    public static final String UNABLE_TO_STOP_WEB_CONTAINER = "AS-WEB-GLUE-00181";
 
     @LogMessageInfo(
             message = "Unable to start web container",
             level = "SEVERE",
             cause = "Web container may have already been started",
             action = "Verify if web container is not already started")
-    public static final String UNABLE_TO_START_WEB_CONTAINER = "AS-WEB-GLUE-00006";
+    public static final String UNABLE_TO_START_WEB_CONTAINER = "AS-WEB-GLUE-00182";
 
     @LogMessageInfo(
             message = "Property element in sun-web.xml has null 'name' or 'value'",
             level = "INFO")
-    public static final String NULL_WEB_PROPERTY = "AS-WEB-GLUE-00007";
+    public static final String NULL_WEB_PROPERTY = "AS-WEB-GLUE-00183";
 
     @LogMessageInfo(
             message = "Web module {0} is not loaded in virtual server {1}",
             level = "SEVERE",
             cause = "Web module has failed to load",
             action = "Verify if web module is valid")
-    public static final String WEB_MODULE_NOT_LOADED_TO_VS = "AS-WEB-GLUE-00008";
+    public static final String WEB_MODULE_NOT_LOADED_TO_VS = "AS-WEB-GLUE-00184";
 
     @LogMessageInfo(
             message = "Unable to deploy web module {0} at root context of virtual server {1}, " +
                     "because this virtual server declares a default-web-module",
             level = "INFO")
-    public static final String DEFAULT_WEB_MODULE_CONFLICT = "AS-WEB-GLUE-00009";
+    public static final String DEFAULT_WEB_MODULE_CONFLICT = "AS-WEB-GLUE-00185";
 
     @LogMessageInfo(
             message = "Unable to set default-web-module {0} for virtual server {1}",
@@ -260,17 +260,17 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             cause = "There is no web context deployed on the given" +
                     "virtual server that matches the given default context path",
             action = "Verify if the default context path is deployed on the virtual server")
-    public static final String DEFAULT_WEB_MODULE_ERROR= "AS-WEB-GLUE-00010";
+    public static final String DEFAULT_WEB_MODULE_ERROR= "AS-WEB-GLUE-00186";
 
     @LogMessageInfo(
             message = "Unable to load web module {0} at context root {1}, because it is not correctly encoded",
             level = "INFO")
-    public static final String INVALID_ENCODED_CONTEXT_ROOT = "AS-WEB-GLUE-00011";
+    public static final String INVALID_ENCODED_CONTEXT_ROOT = "AS-WEB-GLUE-00187";
 
     @LogMessageInfo(
             message = "Unable to destroy web module deployed at context root {0} on virtual server {1} during undeployment",
             level = "WARNING")
-    public static final String EXCEPTION_DURING_DESTROY = "AS-WEB-GLUE-00012";
+    public static final String EXCEPTION_DURING_DESTROY = "AS-WEB-GLUE-00188";
 
     @LogMessageInfo(
             message = "Exception setting the schemas/dtds location",
@@ -278,85 +278,85 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             cause = "A malformed URL has occurred. Either no legal protocol could be found in a specification string " +
                     "or the string could not be parsed",
             action = "Verify if the schemas and dtds")
-    public static final String EXCEPTION_SET_SCHEMAS_DTDS_LOCATION = "AS-WEB-GLUE-00013";
+    public static final String EXCEPTION_SET_SCHEMAS_DTDS_LOCATION = "AS-WEB-GLUE-00189";
 
     @LogMessageInfo(
             message = "Unable to determine location of server.log file",
             level = "SEVERE",
             cause = "IOException happened during opening the server.log file",
             action = "Verify if the server.log file is valid")
-    public static final String UNABLE_TO_DETERMINE_SERVER_LOG_LOCATION = "AS-WEB-GLUE-00014";
+    public static final String UNABLE_TO_DETERMINE_SERVER_LOG_LOCATION = "AS-WEB-GLUE-00190";
 
     @LogMessageInfo(
             message = "Error loading web module {0}",
             level = "SEVERE",
             cause = "An error occurred during loading web module",
             action = "Check the Exception for the error")
-    public static final String LOAD_WEB_MODULE_ERROR = "AS-WEB-GLUE-00015";
+    public static final String LOAD_WEB_MODULE_ERROR = "AS-WEB-GLUE-00191";
 
     @LogMessageInfo(
             message = "Undeployment failed for context {0}",
             level = "SEVERE",
             cause = "The context may not have been deployed",
             action = "Verify if the context is deployed on the virtual server")
-    public static final String UNDEPLOY_ERROR = "AS-WEB-GLUE-00016";
+    public static final String UNDEPLOY_ERROR = "AS-WEB-GLUE-00192";
 
     @LogMessageInfo(
             message = "Exception processing HttpService configuration change",
             level = "SEVERE",
             cause = "An error occurred during configurting http service",
             action = "Verify if the configurations are valid")
-    public static final String EXCEPTION_CONFIG_HTTP_SERVICE = "AS-WEB-GLUE-00017";
+    public static final String EXCEPTION_CONFIG_HTTP_SERVICE = "AS-WEB-GLUE-00193";
 
     @LogMessageInfo(
             message = "Unable to set context root {0}",
             level = "WARNING")
-    public static final String UNABLE_TO_SET_CONTEXT_ROOT = "AS-WEB-GLUE-00018";
+    public static final String UNABLE_TO_SET_CONTEXT_ROOT = "AS-WEB-GLUE-00194";
 
     @LogMessageInfo(
             message = "Unable to disable web module at context root {0}",
             level = "WARNING")
-    public static final String DISABLE_WEB_MODULE_ERROR = "AS-WEB-GLUE-00019";
+    public static final String DISABLE_WEB_MODULE_ERROR = "AS-WEB-GLUE-00195";
 
     @LogMessageInfo(
             message = "Error during destruction of virtual server {0}",
             level = "WARNING")
-    public static final String DESTROY_VS_ERROR = "AS-WEB-GLUE-00020";
+    public static final String DESTROY_VS_ERROR = "AS-WEB-GLUE-00196";
 
     @LogMessageInfo(
             message = "Virtual server {0} cannot be updated, because it does not exist",
             level = "WARNING")
-    public static final String CANNOT_UPDATE_NON_EXISTENCE_VS= "AS-WEB-GLUE-00021";
+    public static final String CANNOT_UPDATE_NON_EXISTENCE_VS= "AS-WEB-GLUE-00197";
 
     @LogMessageInfo(
             message = "Created HTTP listener {0} on host/port {1}:{2}",
             level = "INFO")
-    public static final String HTTP_LISTENER_CREATED = "AS-WEB-GLUE-00022";
+    public static final String HTTP_LISTENER_CREATED = "AS-WEB-GLUE-00198";
 
     @LogMessageInfo(
             message = "Created JK listener {0} on host/port {1}:{2}",
             level = "INFO")
-    public static final String JK_LISTENER_CREATED = "AS-WEB-GLUE-00023";
+    public static final String JK_LISTENER_CREATED = "AS-WEB-GLUE-00199";
 
     @LogMessageInfo(
             message = "Created virtual server {0}",
             level = "INFO")
-    public static final String VIRTUAL_SERVER_CREATED = "AS-WEB-GLUE-00024";
+    public static final String VIRTUAL_SERVER_CREATED = "AS-WEB-GLUE-00200";
 
     @LogMessageInfo(
             message = "Virtual server {0} loaded default web module {1}",
             level = "INFO")
-    public static final String VIRTUAL_SERVER_LOADED_DEFAULT_WEB_MODULE = "AS-WEB-GLUE-00025";
+    public static final String VIRTUAL_SERVER_LOADED_DEFAULT_WEB_MODULE = "AS-WEB-GLUE-00201";
 
     @LogMessageInfo(
             message = "Maximum depth for nested request dispatches set to {0}",
             level = "FINE")
-    public static final String MAX_DISPATCH_DEPTH_SET = "AS-WEB-GLUE-00026";
+    public static final String MAX_DISPATCH_DEPTH_SET = "AS-WEB-GLUE-00202";
 
     @LogMessageInfo(
             message = "Unsupported http-service property {0} is being ignored",
             level = "WARNING")
-    public static final String INVALID_HTTP_SERVICE_PROPERTY = "AS-WEB-GLUE-00027";
+    public static final String INVALID_HTTP_SERVICE_PROPERTY = "AS-WEB-GLUE-00203";
 
     @LogMessageInfo(
             message = "The host name {0} is shared by virtual servers {1} and {2}, " +
@@ -364,84 +364,84 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             level = "SEVERE",
             cause = "The host name is not unique",
             action = "Verify that the host name is unique")
-    public static final String DUPLICATE_HOST_NAME = "AS-WEB-GLUE-00028";
+    public static final String DUPLICATE_HOST_NAME = "AS-WEB-GLUE-00204";
 
     @LogMessageInfo(
             message = "Network listener {0} referenced by virtual server {1} does not exist",
             level = "SEVERE",
             cause = "Network listener {0} referenced by virtual server {1} does not exist",
             action = "Verify that the network listener is valid")
-    public static final String LISTENER_REFERENCED_BY_HOST_NOT_EXIST = "AS-WEB-GLUE-00029";
+    public static final String LISTENER_REFERENCED_BY_HOST_NOT_EXIST = "AS-WEB-GLUE-00205";
 
     @LogMessageInfo(
             message = "Web module {0} not loaded to any virtual servers",
             level = "INFO")
-    public static final String WEB_MODULE_NOT_LOADED_NO_VIRTUAL_SERVERS = "AS-WEB-GLUE-00030";
+    public static final String WEB_MODULE_NOT_LOADED_NO_VIRTUAL_SERVERS = "AS-WEB-GLUE-00206";
 
     @LogMessageInfo(
             message = "Loading web module {0} to virtual servers {1}",
             level = "FINE")
-    public static final String LOADING_WEB_MODULE = "AS-WEB-GLUE-00031";
+    public static final String LOADING_WEB_MODULE = "AS-WEB-GLUE-00207";
 
     @LogMessageInfo(
             message = "Unloading web module {0} from virtual servers {1}",
             level = "FINE")
-    public static final String UNLOADING_WEB_MODULE = "AS-WEB-GLUE-00032";
+    public static final String UNLOADING_WEB_MODULE = "AS-WEB-GLUE-00208";
 
     @LogMessageInfo(
             message = "Context {0} undeployed from virtual server {1}",
             level = "FINE")
-    public static final String CONTEXT_UNDEPLOYED = "AS-WEB-GLUE-00033";
+    public static final String CONTEXT_UNDEPLOYED = "AS-WEB-GLUE-00209";
 
     @LogMessageInfo(
             message = "Context {0} disabled from virtual server {1}",
             level = "FINE")
-    public static final String CONTEXT_DISABLED = "AS-WEB-GLUE-00034";
+    public static final String CONTEXT_DISABLED = "AS-WEB-GLUE-00210";
 
     @LogMessageInfo(
             message = "Virtual server {0}'s network listeners are updated from {1} to {2}",
             level = "FINE")
-    public static final String VS_UPDATED_NETWORK_LISTENERS = "AS-WEB-GLUE-00035";
+    public static final String VS_UPDATED_NETWORK_LISTENERS = "AS-WEB-GLUE-00211";
 
     @LogMessageInfo(
             message = "The class {0} is annotated with an invalid scope",
             level = "INFO")
-    public static final String INVALID_ANNOTATION_SCOPE = "AS-WEB-GLUE-00036";
+    public static final String INVALID_ANNOTATION_SCOPE = "AS-WEB-GLUE-00212";
 
     @LogMessageInfo(
             message = "-DjvmRoute updated with {0}",
             level = "FINE")
-    public static final String JVM_ROUTE_UPDATED= "AS-WEB-GLUE-00037";
+    public static final String JVM_ROUTE_UPDATED= "AS-WEB-GLUE-00213";
 
     @LogMessageInfo(
             message = "Unable to parse port number {0} of network-listener {1}",
             level = "INFO")
-    public static final String HTTP_LISTENER_INVALID_PORT = "AS-WEB-GLUE-00038";
+    public static final String HTTP_LISTENER_INVALID_PORT = "AS-WEB-GLUE-00214";
 
     @LogMessageInfo(
             message = "Virtual server {0} set listener name {1}",
             level = "FINE")
-    public static final String VIRTUAL_SERVER_SET_LISTENER_NAME = "AS-WEB-GLUE-00039";
+    public static final String VIRTUAL_SERVER_SET_LISTENER_NAME = "AS-WEB-GLUE-00215";
 
     @LogMessageInfo(
             message = "Must not disable network-listener {0}, because it is associated with admin virtual server {1}",
             level = "INFO")
-    public static final String MUST_NOT_DISABLE = "AS-WEB-GLUE-00040";
+    public static final String MUST_NOT_DISABLE = "AS-WEB-GLUE-00216";
 
     @LogMessageInfo(
             message = "Virtual server {0} set jk listener name {1}",
             level = "FINE")
-    public static final String VIRTUAL_SERVER_SET_JK_LISTENER_NAME = "AS-WEB-GLUE-00041";
+    public static final String VIRTUAL_SERVER_SET_JK_LISTENER_NAME = "AS-WEB-GLUE-00217";
 
     @LogMessageInfo(
             message = "virtual server {0} has an invalid docroot {1}",
             level = "INFO")
-    public static final String VIRTUAL_SERVER_INVALID_DOCROOT = "AS-WEB-GLUE-00042";
+    public static final String VIRTUAL_SERVER_INVALID_DOCROOT = "AS-WEB-GLUE-00218";
 
     @LogMessageInfo(
             message = "{0} network listener is not included in {1} and will be updated ",
             level = "FINE")
-    public static final String UPDATE_LISTENER = "AS-WEB-GLUE-00043";
+    public static final String UPDATE_LISTENER = "AS-WEB-GLUE-00219";
 
     /**
      * Are we using Tomcat deployment backend or DOL?

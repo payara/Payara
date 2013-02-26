@@ -126,12 +126,12 @@ public class CacheTag extends BodyTagSupport
     @LogMessageInfo(
             message = "CacheTag[{0}]: Timeout = {1}",
             level = "FINE")
-    private static final String CACHETAG_TIMEOUT = "AS-WEB-GLUE-00215";
+    private static final String CACHETAG_TIMEOUT = "AS-WEB-GLUE-00025";
 
     @LogMessageInfo(
             message = "Cache not found in the specified scope",
             level = "INFO")
-    private static final String TAGLIBS_CACHE_NO_CACHE = "AS-WEB-GLUE-00216";
+    private static final String TAGLIBS_CACHE_NO_CACHE = "AS-WEB-GLUE-00026";
 
 
     // ---------------------------------------------------------------------

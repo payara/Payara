@@ -68,12 +68,12 @@ public class ResourceInjectorImpl implements ResourceInjector {
     @LogMessageInfo(
             message = "Exception during invocation of PreDestroy-annotated method on JSP tag handler [{0}]",
             level = "WARNING")
-    public static final String EXCEPTION_DURING_JSP_TAG_HANDLER_PREDESTROY = "AS-WEB-GLUE-00281";
+    public static final String EXCEPTION_DURING_JSP_TAG_HANDLER_PREDESTROY = "AS-WEB-GLUE-00094";
 
     @LogMessageInfo(
             message = "ServerContext is null for ResourceInjector",
             level = "INFO")
-    public static final String NO_SERVERT_CONTEXT = "AS-WEB-GLUE-00282";
+    public static final String NO_SERVERT_CONTEXT = "AS-WEB-GLUE-00095";
 
     private InjectionManager injectionMgr;
     private JndiNameEnvironment desc;

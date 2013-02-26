@@ -69,37 +69,37 @@ public class ServerConfigLookup {
     @LogMessageInfo(
             message = "AvailabilityService was not defined - check domain.xml",
             level = "FINEST")
-    public static final String AVAILABILITY_SERVICE_NOT_DEFINED = "AS-WEB-GLUE-00301";
+    public static final String AVAILABILITY_SERVICE_NOT_DEFINED = "AS-WEB-GLUE-00116";
 
     @LogMessageInfo(
             message = "WebContainerAvailability not defined - check domain.xml",
             level = "FINEST")
-    public static final String WEB_CONTAINER_AVAILABILITY_NOT_DEFINED = "AS-WEB-GLUE-00302";
+    public static final String WEB_CONTAINER_AVAILABILITY_NOT_DEFINED = "AS-WEB-GLUE-00117";
 
     @LogMessageInfo(
             message = "globalAvailability = {0}",
             level = "FINEST")
-    public static final String GLOBAL_AVAILABILITY= "AS-WEB-GLUE-00303";
+    public static final String GLOBAL_AVAILABILITY= "AS-WEB-GLUE-00118";
 
     @LogMessageInfo(
             message = "webContainerAvailability = {0}",
             level = "FINEST")
-    public static final String WEB_CONTAINER_AVAILABILITY = "AS-WEB-GLUE-00304";
+    public static final String WEB_CONTAINER_AVAILABILITY = "AS-WEB-GLUE-00119";
 
     @LogMessageInfo(
             message = "webModuleAvailability = {0}",
             level = "FINEST")
-    public static final String WEB_MODULE_AVAILABILITY = "AS-WEB-GLUE-00305";
+    public static final String WEB_MODULE_AVAILABILITY = "AS-WEB-GLUE-00120";
 
     @LogMessageInfo(
             message = "SERVER.XML persistenceType= {0}",
             level = "FINEST")
-    public static final String PERSISTENCE_TYPE = "AS-WEB-GLUE-00306";
+    public static final String PERSISTENCE_TYPE = "AS-WEB-GLUE-00121";
 
     @LogMessageInfo(
             message = "SERVER.XML persistenceType missing",
             level = "FINEST")
-    public static final String PERSISTENCE_TYPE_MISSING = "AS-WEB-GLUE-00307";
+    public static final String PERSISTENCE_TYPE_MISSING = "AS-WEB-GLUE-00122";
 
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)

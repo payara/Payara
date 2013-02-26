@@ -108,41 +108,41 @@ public class MapperListener implements NotificationListener, NotificationFilter{
             level = "SEVERE",
             cause = "Web container is null",
             action = "Check if the mapper listener is initialized correctly")
-    public static final String CANNOT_FIND_WEB_CONTAINER = "AS-WEB-GLUE-00273";
+    public static final String CANNOT_FIND_WEB_CONTAINER = "AS-WEB-GLUE-00084";
 
     @LogMessageInfo(
             message = "Cannot find Engine implementation",
             level = "SEVERE",
             cause = "Engine is null",
             action = "Check if the mapper listener is initialized correctly")
-    public static final String CANNOT_FIND_ENGINE = "AS-WEB-GLUE-00274";
+    public static final String CANNOT_FIND_ENGINE = "AS-WEB-GLUE-00085";
 
     @LogMessageInfo(
             message = "Error registering contexts",
             level = "WARNING")
-    public static final String ERROR_REGISTERING_CONTEXTS = "AS-WEB-GLUE-00275";
+    public static final String ERROR_REGISTERING_CONTEXTS = "AS-WEB-GLUE-00086";
 
     @LogMessageInfo(
             message = "HTTP listener with network listener name {0} ignoring registration of host " +
                     "with object name {1}, because none of the host's associated HTTP listeners matches " +
                     "this network listener name",
             level = "FINE")
-    public static final String IGNORE_HOST_REGISTRATIONS = "AS-WEB-GLUE-00276";
+    public static final String IGNORE_HOST_REGISTRATIONS = "AS-WEB-GLUE-00087";
 
     @LogMessageInfo(
             message = "Register Context {0}",
             level = "FINE")
-    public static final String REGISTER_CONTEXT = "AS-WEB-GLUE-00277";
+    public static final String REGISTER_CONTEXT = "AS-WEB-GLUE-00088";
 
     @LogMessageInfo(
             message = "Unregister Context {0}",
             level = "FINE")
-    public static final String UNREGISTER_CONTEXT = "AS-WEB-GLUE-00278";
+    public static final String UNREGISTER_CONTEXT = "AS-WEB-GLUE-00089";
 
     @LogMessageInfo(
             message = "Register Wrapper {0} in Context {1}",
             level = "FINE")
-    public static final String REGISTER_WRAPPER = "AS-WEB-GLUE-00279";
+    public static final String REGISTER_WRAPPER = "AS-WEB-GLUE-00090";
 
     protected transient Mapper mapper = null;
 

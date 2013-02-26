@@ -75,17 +75,17 @@ public class TomcatDeploymentConfig {
     @LogMessageInfo(
             message = "Security role name {0} used in an <auth-constraint> without being defined in a <security-role>",
             level = "WARNING")
-    public static final String ROLE_AUTH = "AS-WEB-GLUE-00317";
+    public static final String ROLE_AUTH = "AS-WEB-GLUE-00132";
 
     @LogMessageInfo(
             message = "Security role name {0} used in a <run-as> without being defined in a <security-role>",
             level = "WARNING")
-    public static final String ROLE_RUNAS = "AS-WEB-GLUE-00318";
+    public static final String ROLE_RUNAS = "AS-WEB-GLUE-00133";
 
     @LogMessageInfo(
             message = "Security role name {0} used in a <role-link> without being defined in a <security-role>",
             level = "WARNING")
-    public static final String ROLE_LINK = "AS-WEB-GLUE-00319";
+    public static final String ROLE_LINK = "AS-WEB-GLUE-00134";
 
 
     /**

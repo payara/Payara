@@ -78,12 +78,12 @@ public class PwcCoyoteRequest extends Request {
             message = "Unable to set request encoding [{0}] determined from sun-web.xml " +
                     "deployment descriptor of web application [{1}]",
             level = "WARNING")
-    public static final String UNABLE_TO_SET_ENCODING = "AS-WEB-GLUE-00297";
+    public static final String UNABLE_TO_SET_ENCODING = "AS-WEB-GLUE-00112";
 
     @LogMessageInfo(
             message = "POST data too large",
             level = "WARNING")
-    public static final String POST_TOO_LARGE = "AS-WEB-GLUE-00298";
+    public static final String POST_TOO_LARGE = "AS-WEB-GLUE-00113";
 
     // Have we already determined request encoding from sun-web.xml?
     private boolean sunWebXmlChecked = false;

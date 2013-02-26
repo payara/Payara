@@ -97,7 +97,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
     @LogMessageInfo(
             message = "Error in parsing default-web.xml",
             level = "WARNING")
-    private static final String ERROR_PARSING = "AS-WEB-GLUE-00368";
+    private static final String ERROR_PARSING = "AS-WEB-GLUE-00276";
 
 
     private static final String DEFAULT_WEB_XML = "default-web.xml";

@@ -327,17 +327,17 @@ public final class JSPCompiler {
     @LogMessageInfo(
             message = "Beginning JSP Precompile...",
             level = "INFO")
-    public static final String START_MESSAGE = "AS-WEB-GLUE-00352";
+    public static final String START_MESSAGE = "AS-WEB-GLUE-00281";
 
     @LogMessageInfo(
             message = "Finished JSP Precompile...",
             level = "INFO")
-    public static final String FINISH_MESSAGE = "AS-WEB-GLUE-00353";
+    public static final String FINISH_MESSAGE = "AS-WEB-GLUE-00282";
 
     @LogMessageInfo(
             message = "Cannot delete file: {0}",
             level = "FINE")
-    public static final String CANNOT_DELETE_FILE = "AS-WEB-GLUE-00354";
+    public static final String CANNOT_DELETE_FILE = "AS-WEB-GLUE-00283";
 
 	////////////////////////////////////////////////////////////////////////////
 

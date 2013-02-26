@@ -85,87 +85,87 @@ public class GlassFishSingleSignOn
     @LogMessageInfo(
             message = "Process session destroyed on {0}",
             level = "FINE")
-    private static final String SESSION_DESTROYED = "AS-WEB-GLUE-00219";
+    private static final String SESSION_DESTROYED = "AS-WEB-GLUE-00030";
 
     @LogMessageInfo(
             message = "Process request for '{0}'",
             level = "FINE")
-    private static final String REQUEST_PROCESSED = "AS-WEB-GLUE-00220";
+    private static final String REQUEST_PROCESSED = "AS-WEB-GLUE-00031";
 
     @LogMessageInfo(
             message = "Principal '{0}' has already been authenticated",
             level = "FINE")
-    private static final String PRINCIPAL_ALREADY_AUTHENTICATED = "AS-WEB-GLUE-00221";
+    private static final String PRINCIPAL_ALREADY_AUTHENTICATED = "AS-WEB-GLUE-00032";
 
     @LogMessageInfo(
             message = "Checking for SSO cookie",
             level = "FINE")
-    private static final String CHECKING_SSO_COOKIE = "AS-WEB-GLUE-00222";
+    private static final String CHECKING_SSO_COOKIE = "AS-WEB-GLUE-00033";
 
     @LogMessageInfo(
             message = "SSO cookie is not present",
             level = "FINE")
-    private static final String SSO_COOKIE_NOT_PRESENT = "AS-WEB-GLUE-00223";
+    private static final String SSO_COOKIE_NOT_PRESENT = "AS-WEB-GLUE-00034";
 
     @LogMessageInfo(
             message = "No realm configured for this application, SSO does not apply",
             level = "FINE")
-    private static final String NO_REALM_CONFIGURED = "AS-WEB-GLUE-00224";
+    private static final String NO_REALM_CONFIGURED = "AS-WEB-GLUE-00035";
 
     @LogMessageInfo(
             message = "This application uses realm '{0}'",
             level = "FINE")
-    private static final String APP_REALM = "AS-WEB-GLUE-00225";
+    private static final String APP_REALM = "AS-WEB-GLUE-00036";
 
     @LogMessageInfo(
             message = "Checking for cached principal for {0}",
             level = "FINE")
-    private static final String CHECKING_CACHED_PRINCIPAL = "AS-WEB-GLUE-00226";
+    private static final String CHECKING_CACHED_PRINCIPAL = "AS-WEB-GLUE-00037";
 
     @LogMessageInfo(
             message = "Found cached principal '{0}' with auth type '{1}' in realm '{2}'",
             level = "FINE")
-    private static final String FOUND_CACHED_PRINCIPAL = "AS-WEB-GLUE-00227";
+    private static final String FOUND_CACHED_PRINCIPAL = "AS-WEB-GLUE-00038";
 
     @LogMessageInfo(
             message = "Ignoring SSO entry which does not match application realm '{0}'",
             level = "FINE")
-    private static final String IGNORING_SSO = "AS-WEB-GLUE-00228";
+    private static final String IGNORING_SSO = "AS-WEB-GLUE-00039";
 
     @LogMessageInfo(
             message = "No cached principal found, erasing SSO cookie",
             level = "FINE")
-    private static final String NO_CACHED_PRINCIPAL_FOUND = "AS-WEB-GLUE-00229";
+    private static final String NO_CACHED_PRINCIPAL_FOUND = "AS-WEB-GLUE-00040";
 
     @LogMessageInfo(
             message = "Deregistering sso id '{0}'",
             level = "FINE")
-    private static final String DEREGISTER_SSO = "AS-WEB-GLUE-00230";
+    private static final String DEREGISTER_SSO = "AS-WEB-GLUE-00041";
 
     @LogMessageInfo(
             message = "SSO expiration started. Current entries: {0}",
             level = "FINE")
-    private static final String SSO_EXPIRATION_STARTED = "AS-WEB-GLUE-00231";
+    private static final String SSO_EXPIRATION_STARTED = "AS-WEB-GLUE-00042";
 
     @LogMessageInfo(
             message = "SSO cache will expire {0} entries",
             level = "FINE")
-    private static final String SSO_CACHE_EXPIRE = "AS-WEB-GLUE-00232";
+    private static final String SSO_CACHE_EXPIRE = "AS-WEB-GLUE-00043";
 
     @LogMessageInfo(
             message = "SSO expiration removing entry: {0}",
             level = "FINE")
-    private static final String SSO_EXPRIRATION_REMOVING_ENTRY = "AS-WEB-GLUE-00233";
+    private static final String SSO_EXPRIRATION_REMOVING_ENTRY = "AS-WEB-GLUE-00044";
 
     @LogMessageInfo(
             message = "Caught exception during SingleSignOn expiration",
             level = "WARNING")
-    private static final String EXCEPTION_DURING_SSO_EXPIRATION = "AS-WEB-GLUE-00234";
+    private static final String EXCEPTION_DURING_SSO_EXPIRATION = "AS-WEB-GLUE-00045";
 
     @LogMessageInfo(
             message = "Removing session {0} from sso id {1}",
             level = "FINE")
-    private static final String REMOVE_SESSION_FROM_SSO = "AS-WEB-GLUE-00235";
+    private static final String REMOVE_SESSION_FROM_SSO = "AS-WEB-GLUE-00046";
 
     /**
      * The background thread.

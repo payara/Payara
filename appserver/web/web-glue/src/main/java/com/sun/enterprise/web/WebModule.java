@@ -123,149 +123,149 @@ public class WebModule extends PwcWebModule implements Context {
             level = "SEVERE",
             cause = "An exception occurred during creating ObjectInputStream",
             action = "Check the Exception for error")
-    public static final String CREATE_CUSTOM_OBJECT_INTPUT_STREAM_ERROR = "AS-WEB-GLUE-00150";
+    public static final String CREATE_CUSTOM_OBJECT_INTPUT_STREAM_ERROR = "AS-WEB-GLUE-00222";
 
     @LogMessageInfo(
             message = "Unable to create custom ObjectOutputStream",
             level = "SEVERE",
             cause = "An exception occurred during creating ObjectOutputStream",
             action = "Check the Exception for error")
-    public static final String CREATE_CUSTOM_BOJECT_OUTPUT_STREAM_ERROR = "AS-WEB-GLUE-00151";
+    public static final String CREATE_CUSTOM_BOJECT_OUTPUT_STREAM_ERROR = "AS-WEB-GLUE-00223";
 
     @LogMessageInfo(
             message = "The default-locale attribute of locale-charset-info element is being ignored",
             level = "WARNING")
-    public static final String DEFAULT_LOCALE_DEPRECATED = "AS-WEB-GLUE-00152";
+    public static final String DEFAULT_LOCALE_DEPRECATED = "AS-WEB-GLUE-00224";
 
     @LogMessageInfo(
             message = "Realm {0} is not an instance of {1}, and will be ignored",
             level = "SEVERE",
             cause = "Realm {0} is not an instance of {1}",
             action = "Check the Realm")
-    public static final String IGNORE_INVALID_REALM = "AS-WEB-GLUE-00153";
+    public static final String IGNORE_INVALID_REALM = "AS-WEB-GLUE-00225";
 
     @LogMessageInfo(
             message = "Web module [{0}] has a property with missing name or value",
             level = "WARNING")
-    public static final String NULL_WEB_MODULE_PROPERTY = "AS-WEB-GLUE-00154";
+    public static final String NULL_WEB_MODULE_PROPERTY = "AS-WEB-GLUE-00226";
 
     @LogMessageInfo(
             message = "Object of type {0} is not a valve",
             level = "WARNING")
-    public static final String VALVE_CLASS_NAME_NO_VALVE = "AS-WEB-GLUE-00155";
+    public static final String VALVE_CLASS_NAME_NO_VALVE = "AS-WEB-GLUE-00227";
 
     @LogMessageInfo(
             message = "Unable to add valve to web module {0}",
             level = "WARNING")
-    public static final String VALVE_MISSING_NAME = "AS-WEB-GLUE-00156";
+    public static final String VALVE_MISSING_NAME = "AS-WEB-GLUE-00228";
 
     @LogMessageInfo(
             message = "Unable to add valve with name {0} to web module {1}",
             level = "WARNING")
-    public static final String VALVE_MISSING_CLASS_NAME = "AS-WEB-GLUE-00157";
+    public static final String VALVE_MISSING_CLASS_NAME = "AS-WEB-GLUE-00229";
 
     @LogMessageInfo(
             message = "No method {0}(java.lang.String) defined on valve {1} of web module {2}",
             level = "SEVERE",
             cause = "A matching method is not found",
             action = "Check the method name")
-    public static final String VALVE_SPECIFIED_METHOD_MISSING = "AS-WEB-GLUE-00159";
+    public static final String VALVE_SPECIFIED_METHOD_MISSING = "AS-WEB-GLUE-00230";
 
     @LogMessageInfo(
             message = "Exception during execution of method {0} on valve {1} of web module {2}",
             level = "SEVERE",
             cause = "An exception occurred during method execution",
             action = "Check the Exception for error")
-    public static final String VALVE_SETTER_CAUSED_EXCEPTION = "AS-WEB-GLUE-00160";
+    public static final String VALVE_SETTER_CAUSED_EXCEPTION = "AS-WEB-GLUE-00231";
 
     @LogMessageInfo(
             message = "Valve {0} of web module {1} has a property without any name",
             level = "SEVERE",
             cause = "The valve is missing property name",
             action = "Check the property name")
-    public static final String VALVE_MISSING_PROPERTY_NAME = "AS-WEB-GLUE-00161";
+    public static final String VALVE_MISSING_PROPERTY_NAME = "AS-WEB-GLUE-00232";
 
     @LogMessageInfo(
             message = "Unable to add listener of type {0} to web module {1}",
             level = "WARNING")
-    public static final String INVALID_LISTENER = "AS-WEB-GLUE-00162";
+    public static final String INVALID_LISTENER = "AS-WEB-GLUE-00233";
 
     @LogMessageInfo(
             message = "Unable to load extension class {0} from web module {1}",
             level = "WARNING")
-    public static final String UNABLE_TO_LOAD_EXTENSION = "AS-WEB-GLUE-00163";
+    public static final String UNABLE_TO_LOAD_EXTENSION = "AS-WEB-GLUE-00234";
 
     @LogMessageInfo(
             message = "Null property name or value for alternate docbase",
             level = "WARNING")
-    public static final String ALTERNATE_DOC_BASE_NULL_PROPERTY_NAME_VALVE = "AS-WEB-GLUE-00164";
+    public static final String ALTERNATE_DOC_BASE_NULL_PROPERTY_NAME_VALVE = "AS-WEB-GLUE-00235";
 
     @LogMessageInfo(
             message = "Alternate docbase property value {0} is missing a URL pattern or docbase",
             level = "WARNING")
-    public static final String ALTERNATE_DOC_BASE_MISSING_PATH_OR_URL_PATTERN = "AS-WEB-GLUE-00165";
+    public static final String ALTERNATE_DOC_BASE_MISSING_PATH_OR_URL_PATTERN = "AS-WEB-GLUE-00236";
 
     @LogMessageInfo(
             message = "URL pattern {0} for alternate docbase is invalid",
             level = "WARNING")
-    public static final String ALTERNATE_DOC_BASE_ILLEGAL_URL_PATTERN = "AS-WEB-GLUE-00166";
+    public static final String ALTERNATE_DOC_BASE_ILLEGAL_URL_PATTERN = "AS-WEB-GLUE-00237";
 
     @LogMessageInfo(
             message = "Failed to parse sun-web.xml singleThreadedServletPoolSize property value ({0}) of web module deployed at {1}, using default ({2})",
             level = "WARNING")
-    public static final String INVALID_SERVLET_POOL_SIZE = "AS-WEB-GLUE-00167";
+    public static final String INVALID_SERVLET_POOL_SIZE = "AS-WEB-GLUE-00238";
 
     @LogMessageInfo(
             message = "Enabled session ID reuse for web module {0} deployed on virtual server {1}",
             level = "WARNING")
-    public static final String SESSION_IDS_REUSED = "AS-WEB-GLUE-00168";
+    public static final String SESSION_IDS_REUSED = "AS-WEB-GLUE-00239";
 
     @LogMessageInfo(
             message = "Using alternate deployment descriptor {0} for web module {1}",
             level = "FINE")
-    public static final String ALT_DD_NAME = "AS-WEB-GLUE-00169";
+    public static final String ALT_DD_NAME = "AS-WEB-GLUE-00240";
 
     @LogMessageInfo(
             message = "Ignoring invalid property {0} = {1}",
             level = "WARNING")
-    public static final String INVALID_PROPERTY = "AS-WEB-GLUE-00170";
+    public static final String INVALID_PROPERTY = "AS-WEB-GLUE-00241";
 
     @LogMessageInfo(
             message = "Unable to save sessions for web module {0} during redeployment",
             level = "WARNING")
-    public static final String UNABLE_TO_SAVE_SESSIONS_DURING_REDEPLOY = "AS-WEB-GLUE-00171";
+    public static final String UNABLE_TO_SAVE_SESSIONS_DURING_REDEPLOY = "AS-WEB-GLUE-00242";
 
     @LogMessageInfo(
             message = "Unable to restore sessions for web module [{0}] from previous deployment",
             level = "WARNING")
-    public static final String UNABLE_TO_RESTORE_SESSIONS_DURING_REDEPLOY = "AS-WEB-GLUE-00172";
+    public static final String UNABLE_TO_RESTORE_SESSIONS_DURING_REDEPLOY = "AS-WEB-GLUE-00243";
 
     @LogMessageInfo(
             message = "Webservice based application, requires Metro to be installed. Run updatecenter client located in bin folder to install Metro",
             level = "WARNING")
-    public static final String MISSING_METRO = "AS-WEB-GLUE-00173";
+    public static final String MISSING_METRO = "AS-WEB-GLUE-00244";
 
     @LogMessageInfo(
             message = "WebModule[{0}]: Setting delegate to {1}",
             level = "FINE")
-    public static final String SETTING_DELEGATE = "AS-WEB-GLUE-00174";
+    public static final String SETTING_DELEGATE = "AS-WEB-GLUE-00245";
 
     @LogMessageInfo(
             message = "WebModule[{0}]: Adding {1} to the classpath",
             level = "FINE")
-    public static final String ADDING_CLASSPATH = "AS-WEB-GLUE-00175";
+    public static final String ADDING_CLASSPATH = "AS-WEB-GLUE-00246";
 
     @LogMessageInfo(
             message = "extra-class-path component {0} is not a valid pathname",
             level = "SEVERE",
             cause = "A MalformedURLException occurred",
             action = "Check the extra-class-path component")
-    public static final String CLASSPATH_ERROR = "AS-WEB-GLUE-00176";
+    public static final String CLASSPATH_ERROR = "AS-WEB-GLUE-00247";
 
     @LogMessageInfo(
             message = "class-loader attribute dynamic-reload-interval in sun-web.xml not supported",
             level = "WARNING")
-    public static final String DYNAMIC_RELOAD_INTERVAL = "AS-WEB-GLUE-00177";
+    public static final String DYNAMIC_RELOAD_INTERVAL = "AS-WEB-GLUE-00248";
 
     @LogMessageInfo(
             message = "IN WebContainer>>ConfigureSessionManager before builder factory " +
@@ -273,29 +273,29 @@ public class WebModule extends PwcWebModule implements Context {
                     "FINAL_PERSISTENCE_FREQUENCY IS = {1} " +
                     "FINAL_PERSISTENCE_SCOPE IS = {2}",
             level = "FINEST")
-    public static final String CONFIGURE_SESSION_MANAGER = "AS-WEB-GLUE-00178";
+    public static final String CONFIGURE_SESSION_MANAGER = "AS-WEB-GLUE-00249";
 
     @LogMessageInfo(
             message = "PersistenceStrategyBuilder class = {0}",
             level = "FINEST")
-    public static final String PERSISTENCE_STRATEGY_BUILDER = "AS-WEB-GLUE-00179";
+    public static final String PERSISTENCE_STRATEGY_BUILDER = "AS-WEB-GLUE-00250";
 
     @LogMessageInfo(
             message = "Property [{0}] is not yet supported",
             level = "INFO")
-    public static final String PROP_NOT_YET_SUPPORTED = "AS-WEB-GLUE-00180";
+    public static final String PROP_NOT_YET_SUPPORTED = "AS-WEB-GLUE-00251";
 
     @LogMessageInfo(
             message = "WebModule[{0}] configure cookie properties {1}",
             level = "FINE")
-    public static final String CONFIGURE_COOKIE_PROPERTIES = "AS-WEB-GLUE-00181";
+    public static final String CONFIGURE_COOKIE_PROPERTIES = "AS-WEB-GLUE-00252";
 
     @LogMessageInfo(
             message = "Unable to add listener of type: {0}, because it does not implement any of the required " +
                     "ServletContextListener, ServletContextAttributeListener, ServletRequestListener, " +
                     "ServletRequestAttributeListener, HttpSessionListener, or HttpSessionAttributeListener interfaces",
             level = "WARNING")
-    public static final String INVALID_LISTENER_TYPE = "AS-WEB-GLUE-00182";
+    public static final String INVALID_LISTENER_TYPE = "AS-WEB-GLUE-00253";
 
     private static final String ALTERNATE_FROM = "from=";
     private static final String ALTERNATE_DOCBASE = "dir=";

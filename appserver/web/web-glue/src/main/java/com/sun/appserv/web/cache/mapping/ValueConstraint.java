@@ -65,42 +65,42 @@ public class ValueConstraint {
     @LogMessageInfo(
             message = "''greater'' expression requires a numeric value; please check your value {0}",
             level = "WARNING")
-    private static final String GREATER_EXP_REQ_NUMERIC = "AS-WEB-GLUE-00357";
+    private static final String GREATER_EXP_REQ_NUMERIC = "AS-WEB-GLUE-00017";
 
     @LogMessageInfo(
             message = "''lesser'' expression requires a numeric value; please check your value [{0}]",
             level = "WARNING")
-    private static final String LESSER_EXP_REQ_NUMERIC = "AS-WEB-GLUE-00358";
+    private static final String LESSER_EXP_REQ_NUMERIC = "AS-WEB-GLUE-00018";
 
     @LogMessageInfo(
             message = "illegal value [{0}] expr [{1}]",
             level = "WARNING")
-    private static final String ILLEGAL_VALUE_EXP = "AS-WEB-GLUE-00359";
+    private static final String ILLEGAL_VALUE_EXP = "AS-WEB-GLUE-00019";
 
     @LogMessageInfo(
             message = "illegal in-range constraint; specify a valid range (xxx-yyy) value [{0}]",
             level = "WARNING")
-    private static final String ILLEGAL_VALUE_RANGE = "AS-WEB-GLUE-00360";
+    private static final String ILLEGAL_VALUE_RANGE = "AS-WEB-GLUE-00020";
 
     @LogMessageInfo(
             message = "missing separator in the ''in-range'' constraint; [{0}]",
             level = "WARNING")
-    private static final String MISSING_RANGE_SEP = "AS-WEB-GLUE-00361";
+    private static final String MISSING_RANGE_SEP = "AS-WEB-GLUE-00021";
 
     @LogMessageInfo(
             message = "''in-range'' constraint requires numeric values for the lower bound [{0}]",
             level = "WARNING")
-    private static final String LOWER_RANGE_REQ_NUMBER = "AS-WEB-GLUE-00362";
+    private static final String LOWER_RANGE_REQ_NUMBER = "AS-WEB-GLUE-00022";
 
     @LogMessageInfo(
             message = "''in-range'' constraint requires a value for the upper bound of the range; check your value [{0}]",
             level = "WARNING")
-    private static final String RANGE_REQ_UPPER_BOUND= "AS-WEB-GLUE-00363";
+    private static final String RANGE_REQ_UPPER_BOUND= "AS-WEB-GLUE-00023";
 
     @LogMessageInfo(
             message = "''in-range'' constraint requires numeric values for the upper bound [{0}]",
             level = "WARNING")
-    private static final String UPPER_RANGE_REQ_NUMBER = "AS-WEB-GLUE-00364";
+    private static final String UPPER_RANGE_REQ_NUMBER = "AS-WEB-GLUE-00024";
 
     // field values to match 
     private String matchValue = null; 

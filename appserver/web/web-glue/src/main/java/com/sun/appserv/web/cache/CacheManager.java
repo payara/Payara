@@ -75,12 +75,12 @@ public class CacheManager {
     @LogMessageInfo(
             message = "Exception in creating cache",
             level = "WARNING")
-    private static final String CACHE_MANAGER_EXCEPTION_CREATING_CACHE = "AS-WEB-GLUE-00200";
+    private static final String CACHE_MANAGER_EXCEPTION_CREATING_CACHE = "AS-WEB-GLUE-00001";
 
     @LogMessageInfo(
             message = "Exception initializing cache-helper {0}; please check your helper class implementation",
             level = "INFO")
-    private static final String CACHE_MANAGER_EXCEPTION_INITIALIZING_CACHE_HELPER = "AS-WEB-GLUE-00201";
+    private static final String CACHE_MANAGER_EXCEPTION_INITIALIZING_CACHE_HELPER = "AS-WEB-GLUE-00002";
 
     // default max maximum number of entries in the cache
     int maxEntries = DEFAULT_CACHE_MAX_ENTRIES;

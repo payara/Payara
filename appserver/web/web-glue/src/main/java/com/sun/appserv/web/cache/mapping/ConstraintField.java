@@ -63,24 +63,24 @@ public class ConstraintField extends Field {
     @LogMessageInfo(
             message = "The constraint field {0} is not found in the scope {1}; returning cache-on-match-failure: {2}",
             level = "FINE")
-    private static final String CONSTRAINT_FIELD_NOT_FOUND = "AS-WEB-GLUE-00211";
+    private static final String CONSTRAINT_FIELD_NOT_FOUND = "AS-WEB-GLUE-00012";
 
     @LogMessageInfo(
             message = "The constraint field {0} value = {1} is found in scope {2}; returning cache-on-match: {3}",
             level = "FINE")
-    private static final String CONSTRAINT_FIELD_FOUND = "AS-WEB-GLUE-00212";
+    private static final String CONSTRAINT_FIELD_FOUND = "AS-WEB-GLUE-00013";
 
     @LogMessageInfo(
             message = "The constraint field {0} value = {1} is found in scope {2}; and matches with a value {3}; " +
                     "returning cache-on-match: {4}",
             level = "FINE")
-    private static final String CONSTRAINT_FIELD_MATCH = "AS-WEB-GLUE-00213";
+    private static final String CONSTRAINT_FIELD_MATCH = "AS-WEB-GLUE-00014";
 
     @LogMessageInfo(
             message = "The constraint field {0} value = {1} is found in scope {2}; " + "" +
                     "but didn't match any of the value constraints; returning cache-on-match-failure = {3}",
             level = "FINE")
-    private static final String CONSTRAINT_FIELD_NOT_MATCH = "AS-WEB-GLUE-00214";
+    private static final String CONSTRAINT_FIELD_NOT_MATCH = "AS-WEB-GLUE-00015";
 
     // whether to cache if there was a match
     boolean cacheOnMatch = true;

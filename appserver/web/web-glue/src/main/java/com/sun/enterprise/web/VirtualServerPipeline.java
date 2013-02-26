@@ -76,17 +76,17 @@ public class VirtualServerPipeline extends StandardPipeline {
     @LogMessageInfo(
             message = "Virtual server {0} has been turned off",
             level = "FINE")
-    public static final String VS_VALVE_OFF = "AS-WEB-GLUE-00320";
+    public static final String VS_VALVE_OFF = "AS-WEB-GLUE-00168";
 
     @LogMessageInfo(
             message = "Virtual server {0} has been disabled",
             level = "FINE")
-    public static final String VS_VALVE_DISABLED = "AS-WEB-GLUE-00321";
+    public static final String VS_VALVE_DISABLED = "AS-WEB-GLUE-00169";
 
     @LogMessageInfo(
             message = "Invalid redirect URL [{0}]: Impossible to URL encode",
             level = "WARNING")
-    public static final String INVALID_REDIRECTION_LOCATION = "AS-WEB-GLUE-00322";
+    public static final String INVALID_REDIRECTION_LOCATION = "AS-WEB-GLUE-00170";
 
     private VirtualServer vs;
 

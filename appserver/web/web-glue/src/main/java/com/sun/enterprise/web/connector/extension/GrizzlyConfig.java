@@ -75,17 +75,17 @@ public class GrizzlyConfig implements MonitoringLevelListener{
     @LogMessageInfo(
             message = "Exception when initializing monitoring for network-listener [{0}]",
             level = "WARNING")
-    public static final String INIT_MONITORING_EXCEPTION = "AS-WEB-GLUE-00270";
+    public static final String INIT_MONITORING_EXCEPTION = "AS-WEB-GLUE-00081";
 
     @LogMessageInfo(
             message = "InvokeGrizzly method={0} objectName={1}",
             level = "FINE")
-    public static final String INVOKE_GRIZZLY = "AS-WEB-GLUE-00271";
+    public static final String INVOKE_GRIZZLY = "AS-WEB-GLUE-00082";
 
     @LogMessageInfo(
             message = "Exception while invoking mebean server operation [{0}]",
             level = "WARNING")
-    public static final String INVOKE_MBEAN_EXCEPTION = "AS-WEB-GLUE-00272";
+    public static final String INVOKE_MBEAN_EXCEPTION = "AS-WEB-GLUE-00083";
 
     /**
      * Is monitoring already started.
