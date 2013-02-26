@@ -69,8 +69,10 @@ import org.glassfish.webservices.connector.LogUtils;
 public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescriptor> {    
     public final static XMLElement ROOT_ELEMENT =
         new XMLElement(WebServicesTagNames.WEB_SERVICES);
-    public final static String SCHEMA_ID = "javaee_web_services_1_3.xsd";
+    
+    public final static String SCHEMA_ID = "javaee_web_services_1_4.xsd";
     public final static String SCHEMA_ID_12 = "javaee_web_services_1_2.xsd";
+    public final static String SCHEMA_ID_13 = "javaee_web_services_1_3.xsd";
     public final static String SPEC_VERSION = "1.3";
     private final static List<String> systemIDs = initSystemIDs();
     private static final Logger logger = LogUtils.getLogger();
@@ -79,6 +81,7 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
         List<String> sysIDs = new ArrayList<String>();
         sysIDs.add(SCHEMA_ID);
         sysIDs.add(SCHEMA_ID_12);
+        sysIDs.add(SCHEMA_ID_13);
         return Collections.unmodifiableList(sysIDs);
 
     }
@@ -132,14 +135,6 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
         return systemIDs;
     }
 
-    /**
-     * @return the complete URL for J2EE schemas
-     */
-    @Override
-    protected String getSchemaURL() {
-       return WebServicesTagNames.IBM_NAMESPACE + "/" + getSystemID();
-    }    
-    
     /**
      * @return the XML tag associated with this XMLNode
      */
