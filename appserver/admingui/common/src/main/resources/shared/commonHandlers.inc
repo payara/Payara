@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -104,7 +104,7 @@
     setPageSessionAttribute(key="isMonitoringOff" value="#{true}");
     gf.getEntityAttrs(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/monitoring-service" valueMap="#{requestScope.monitorResult}");
     if ("#{requestScope.monitorResult['monitoringEnabled']}=true") {
-        getMonitorLevels(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}" monitorCompList="#{requestScope.tableList}")
+        gf.getMonitorLevels(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}" monitorCompList="#{requestScope.tableList}")
         setPageSessionAttribute(key="monitorDisable" value="monitorLevels");
         foreach(var="oneRow" list="#{requestScope.tableList}") {
             if("!(#{oneRow.level}=OFF)") {
