@@ -434,18 +434,11 @@
           <version>${project.version}</version>
       </dependency>
 
-      <!-- as of EE 7, JSON needs to be available to clients -->
-      <dependency>
-        <scope>runtime</scope>
-        <groupId>org.glassfish</groupId>
-        <artifactId>javax.json</artifactId>
-      </dependency>
-
-      <!-- CDI support -->
-      <dependency>
-          <groupId>org.jboss.weld.se</groupId>
-          <artifactId>weld-se</artifactId>
-      </dependency>
-
-    </dependencies>
+    <!-- as of EE 7, JSON needs to be available to clients -->
+    <dependency>
+      <scope>runtime</scope>
+      <groupId>org.glassfish</groupId>
+      <artifactId>javax.json</artifactId>
+    </dependency>
+   </dependencies>
 </project>
