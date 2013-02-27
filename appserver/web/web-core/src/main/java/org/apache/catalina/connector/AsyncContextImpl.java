@@ -50,7 +50,10 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.EventListener;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import java.util.Queue;
 import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -63,8 +66,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 class AsyncContextImpl implements AsyncContext {
+    // Note...this constant is also defined in org.glassfish.weld.WeldDeployer.  If it changes here it must
+    // change there as well.  The reason it is duplicated is so that a dependency from web-core to gf-weld-connector
+    // is not necessary.
+    private static final String WELD_LISTENER = "org.jboss.weld.servlet.WeldListener";
 
-    /* 
+
+    /*
      * Event notification types for async mode
      */
     static enum AsyncEventType { COMPLETE, TIMEOUT, ERROR, START_ASYNC }
@@ -130,7 +138,7 @@ class AsyncContextImpl implements AsyncContext {
     // The possibly wrapped request passed to ServletRequest.startAsync
     private ServletRequest servletRequest;
 
-    // The possibly wrapped response passed to ServletRequest.startAsync    
+    // The possibly wrapped response passed to ServletRequest.startAsync
     private ServletResponse servletResponse;
 
     private boolean isOriginalRequestAndResponse = false;
@@ -138,7 +146,7 @@ class AsyncContextImpl implements AsyncContext {
     private boolean isStartAsyncWithZeroArg = false;
 
     // defaults to false
-    private AtomicBoolean isDispatchInProgress = new AtomicBoolean(); 
+    private AtomicBoolean isDispatchInProgress = new AtomicBoolean();
 
     private ThreadLocal<Boolean> isDispatchInScope = new ThreadLocal<Boolean>() {
         @Override
@@ -147,7 +155,7 @@ class AsyncContextImpl implements AsyncContext {
         }
     };
 
-    private AtomicBoolean isOkToConfigure = new AtomicBoolean(true); 
+    private AtomicBoolean isOkToConfigure = new AtomicBoolean(true);
 
     private long asyncTimeoutMillis = DEFAULT_ASYNC_TIMEOUT_MILLIS;
 
@@ -161,11 +169,11 @@ class AsyncContextImpl implements AsyncContext {
     private AtomicInteger startAsyncCounter = new AtomicInteger(0);
 
     private ThreadLocal<Boolean> isStartAsyncInScope = new ThreadLocal<Boolean>() {
-        @Override  
-        protected Boolean initialValue() {  
-            return Boolean.FALSE;  
-        }  
-    };  
+        @Override
+        protected Boolean initialValue() {
+            return Boolean.FALSE;
+        }
+    };
 
     /**
      * Constructor
@@ -208,7 +216,7 @@ class AsyncContextImpl implements AsyncContext {
 
     @Override
     public void dispatch() {
-        ApplicationDispatcher dispatcher = 
+        ApplicationDispatcher dispatcher =
             (ApplicationDispatcher)getZeroArgDispatcher(
                 origRequest, servletRequest, isStartAsyncWithZeroArg);
 
@@ -221,11 +229,11 @@ class AsyncContextImpl implements AsyncContext {
                 throw new IllegalStateException(msg);
             }
         } else {
-            // Should never happen, because any unmapped paths will be 
+            // Should never happen, because any unmapped paths will be
             // mapped to the DefaultServlet
             log.log(Level.WARNING, UNABLE_DETERMINE_TARGET_OF_DISPATCHER);
         }
-    } 
+    }
 
     @Override
     public void dispatch(String path) {
@@ -243,7 +251,7 @@ class AsyncContextImpl implements AsyncContext {
                 throw new IllegalStateException(msg);
             }
         } else {
-            // Should never happen, because any unmapped paths will be 
+            // Should never happen, because any unmapped paths will be
             // mapped to the DefaultServlet
             log.log(Level.WARNING, UNABLE_ACQUIRE_REQUEST_DISPATCHER, path);
         }
@@ -265,7 +273,7 @@ class AsyncContextImpl implements AsyncContext {
                 throw new IllegalStateException(msg);
             }
         } else {
-            // Should never happen, because any unmapped paths will be 
+            // Should never happen, because any unmapped paths will be
             // mapped to the DefaultServlet
             log.log(Level.WARNING, UNABLE_ACQUIRE_REQUEST_DISPATCHER_IN_SERVLET_CONTEXT,
                     new Object[] {path, context.getContextPath()});
@@ -494,7 +502,7 @@ class AsyncContextImpl implements AsyncContext {
             this.asyncContext = asyncContext;
             this.dispatcher = dispatcher;
         }
-       
+
         @Override
         public void run() {
             asyncContext.isStartAsyncInScope.set(Boolean.TRUE);
@@ -506,7 +514,7 @@ class AsyncContextImpl implements AsyncContext {
             try {
                 dispatcher.dispatch(asyncContext.getRequest(),
                     asyncContext.getResponse(), DispatcherType.ASYNC);
-                /* 
+                /*
                  * Close the response after the dispatch target has
                  * completed execution, unless the dispatch target has called
                  * ServletRequest#startAsync, in which case the AsyncContext's
@@ -566,34 +574,49 @@ class AsyncContextImpl implements AsyncContext {
                 Thread.currentThread().setContextClassLoader(newCL);
             }
 
-            for (AsyncListenerContext asyncListenerContext : clone) {
-                AsyncListener asyncListener =
-                    asyncListenerContext.getAsyncListener();
-                AsyncEvent asyncEvent = new AsyncEvent(
-                    this, asyncListenerContext.getRequest(),
-                    asyncListenerContext.getResponse(), t);
-                try {
-                    switch (asyncEventType) {
-                    case COMPLETE:
-                        asyncListener.onComplete(asyncEvent);
-                        break;
-                    case TIMEOUT:
-                        asyncListener.onTimeout(asyncEvent);
-                        break;
-                    case ERROR:
-                        asyncListener.onError(asyncEvent);
-                        break;
-                    case START_ASYNC:
-                        asyncListener.onStartAsync(asyncEvent);
-                        break;
-                    default: // not possible
-                        break;
+            ServletRequestListener weldListener = getWeldListener();
+            if ( weldListener != null ) {
+                // must fire a request initialized so CDI can associate a request with the request and session contexts
+                ServletRequestEvent event = new ServletRequestEvent(origRequest.getContext().getServletContext(), origRequest);
+                weldListener.requestInitialized(event);
+            }
+
+            try {
+                for (AsyncListenerContext asyncListenerContext : clone) {
+                    AsyncListener asyncListener =
+                        asyncListenerContext.getAsyncListener();
+                    AsyncEvent asyncEvent = new AsyncEvent(
+                        this, asyncListenerContext.getRequest(),
+                        asyncListenerContext.getResponse(), t);
+                    try {
+                        switch (asyncEventType) {
+                            case COMPLETE:
+                                asyncListener.onComplete(asyncEvent);
+                                break;
+                            case TIMEOUT:
+                                asyncListener.onTimeout(asyncEvent);
+                                break;
+                            case ERROR:
+                                asyncListener.onError(asyncEvent);
+                                break;
+                            case START_ASYNC:
+                                asyncListener.onStartAsync(asyncEvent);
+                                break;
+                            default: // not possible
+                                break;
+                        }
+                    } catch (Throwable throwable) {
+                        log.log(Level.WARNING, ERROR_INVOKE_ASYNCLISTENER,
+                                throwable);
                     }
-                } catch (Throwable throwable) {
-                    log.log(Level.WARNING, ERROR_INVOKE_ASYNCLISTENER,
-                            throwable);
+                }
+            } finally {
+                if ( weldListener != null ) {
+                    ServletRequestEvent event = new ServletRequestEvent(origRequest.getContext().getServletContext(), origRequest);
+                    weldListener.requestDestroyed(event);
                 }
             }
+
         } finally {
             if (Globals.IS_SECURITY_ENABLED) {
                 PrivilegedAction<Void> pa = new PrivilegedSetTccl(oldCL);
@@ -602,6 +625,19 @@ class AsyncContextImpl implements AsyncContext {
                 Thread.currentThread().setContextClassLoader(oldCL);
             }
         }
+    }
+
+    private ServletRequestListener getWeldListener() {
+        List<EventListener> eventListeners = origRequest.getContext().getApplicationEventListeners();
+        if ( eventListeners != null ) {
+            for ( EventListener listener : eventListeners ) {
+                if ( listener.getClass().getName().equals( WELD_LISTENER ) ) {
+                    return (ServletRequestListener) listener;
+                }
+            }
+        }
+
+        return null;
     }
 
     static ExecutorService getExecutorService() {
