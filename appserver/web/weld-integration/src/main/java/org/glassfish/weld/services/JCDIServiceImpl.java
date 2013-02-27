@@ -47,6 +47,7 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.Rank;
 import org.glassfish.weld.BeanDeploymentArchiveImpl;
 import org.glassfish.weld.WeldDeployer;
 import org.glassfish.weld.connector.WeldUtils;
@@ -77,6 +78,7 @@ import java.util.logging.Logger;
 
 
 @Service
+@Rank(10)
 public class JCDIServiceImpl implements JCDIService {
 
     private static final HashSet<String> validScopes = new HashSet<String>();
