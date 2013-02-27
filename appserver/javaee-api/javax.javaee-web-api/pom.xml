@@ -145,20 +145,6 @@
             <artifactId>javax.ws.rs-api</artifactId>
             <optional>true</optional>
         </dependency>
-        <!--
-            Websocket-api has been split in two artifacts.
-            However, GlassFish should only use javax.websocket-api as it 
-            repackages javax.websocket-client-api.
-            
-            However, javax.websocket-api-sources.jar does not include javax.websocket-api.
-            See http://java.net/jira/browse/WEBSOCKET_SPEC-135
-        -->
-        <dependency>
-            <groupId>javax.websocket</groupId>
-            <artifactId>javax.websocket-client-api</artifactId>
-            <version>${websocket-api.version}</version>
-            <optional>true</optional>
-        </dependency>
         <dependency>
             <groupId>javax.websocket</groupId>
             <artifactId>javax.websocket-api</artifactId>

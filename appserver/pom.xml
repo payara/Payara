@@ -120,8 +120,8 @@
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <weld.version>2.0.0.Beta4</weld.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
-        <websocket-api.version>1.0-b12</websocket-api.version>
-        <tyrus.version>1.0-b11</tyrus.version>
+        <websocket-api.version>1.0-b13</websocket-api.version>
+        <tyrus.version>1.0-b12</tyrus.version>
         <jsonp.version>1.0-b04</jsonp.version>
         <concurrent-api.version>1.0-b04</concurrent-api.version>
         <concurrent.version>1.0-b03</concurrent.version>
