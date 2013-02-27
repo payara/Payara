@@ -74,7 +74,6 @@ public class CustomizationTokensProvider {
     private ServiceLocator locator;
     ConfigModularityUtils mu;
 
-    //TODO requires getting the right classloader or all classloaders present to search all modules
     public List<ConfigCustomizationToken> getPresentConfigCustomizationTokens() throws
             NoSuchFieldException, IllegalAccessException {
         String runtimeType = "admin";
@@ -82,7 +81,6 @@ public class CustomizationTokensProvider {
         mu = locator.getService(ConfigModularityUtils.class);
         List<Class> l = mu.getAnnotatedConfigBeans(HasCustomizationTokens.class);
         List<ConfigCustomizationToken> ctk = new ArrayList<ConfigCustomizationToken>();
-        //Todo remove the double checking
         Set s = new HashSet();
         for (Class cls : l) {
             if (!s.contains(cls)) {
@@ -90,6 +88,43 @@ public class CustomizationTokensProvider {
                 s.add(cls);
             }
         }
+        return ctk;
+    }
+
+    /**
+     * The tokens that are returned by this method will be used directly without consulting the portbase, etc.
+     * e.g if the value is 24848 then that is to be used as the system-property value.
+     *
+     * @return List of tokens to be used for default-config.
+     * @throws NoSuchFieldException
+     * @throws IllegalAccessException
+     */
+    public List<ConfigCustomizationToken> getPresentDefaultConfigCustomizationTokens() throws
+            //TODO it is required to change the file format so that default tokens can be introduced at file level
+            NoSuchFieldException, IllegalAccessException {
+        String runtimeType = "admin";
+        initializeLocator();
+        mu = locator.getService(ConfigModularityUtils.class);
+        List<Class> l = mu.getAnnotatedConfigBeans(HasCustomizationTokens.class);
+        List<ConfigCustomizationToken> ctk = new ArrayList<ConfigCustomizationToken>();
+        Set s = new HashSet();
+        for (Class cls : l) {
+            if (!s.contains(cls)) {
+                ctk.addAll(getTokens(cls, runtimeType));
+                s.add(cls);
+            }
+        }
+        for (ConfigCustomizationToken token : ctk) {
+            if (token.getCustomizationType().equals(ConfigCustomizationToken.CustomizationType.FILE) ||
+                    token.getCustomizationType().equals(ConfigCustomizationToken.CustomizationType.STRING)
+                    ) {
+                ctk.remove(token);
+                continue;
+            }
+            int defaultPortNumberForDefaultConfig = Integer.parseInt(token.getValue()) + 20000;
+            token.setValue(String.valueOf(defaultPortNumberForDefaultConfig));
+        }
+
         return ctk;
     }
 

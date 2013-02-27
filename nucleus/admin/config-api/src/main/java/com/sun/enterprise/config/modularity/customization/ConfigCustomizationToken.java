@@ -96,6 +96,8 @@ public class ConfigCustomizationToken {
         return value;
     }
 
-
+    public void setValue(String tokenValue){
+        this.value=tokenValue;
+    }
 }
 
