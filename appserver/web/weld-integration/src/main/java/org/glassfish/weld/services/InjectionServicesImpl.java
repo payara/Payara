@@ -55,6 +55,8 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.ManagedBeanDescriptor;
 
+import javax.enterprise.inject.spi.InjectionPoint;
+
 
 public class InjectionServicesImpl implements InjectionServices {
 
@@ -138,6 +140,10 @@ public class InjectionServicesImpl implements InjectionServices {
         }
 
         
+    }
+
+    public void validateResourceInjectionPoint(InjectionPoint injectionPoint) {
+
     }
 
     public void cleanup() {

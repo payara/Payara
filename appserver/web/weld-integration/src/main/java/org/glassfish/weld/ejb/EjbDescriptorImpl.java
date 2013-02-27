@@ -290,6 +290,12 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
                 aroundTimeoutDesc.setLifecycleCallbackClass(interceptorName);
                 aroundTimeoutDesc.setLifecycleCallbackMethod(aroundInvokeMethod.getName());
                 interceptor.addAroundTimeoutDescriptor(aroundTimeoutDesc);
+
+                // SessionBeanInterceptor does not define an @PostConstruct method so use the aroundInvoke method
+                LifecycleCallbackDescriptor postConstructDesc = new LifecycleCallbackDescriptor();
+                postConstructDesc.setLifecycleCallbackClass(interceptorName);
+                postConstructDesc.setLifecycleCallbackMethod(aroundInvokeMethod.getName());
+                interceptor.addPostConstructDescriptor(postConstructDesc);
             }
         } catch(NoSuchMethodException nsme) {
             throw new RuntimeException("Cannot find weld EJB interceptor aroundInvoke method");

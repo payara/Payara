@@ -112,7 +112,12 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     /* package */ static final String WELD_BOOTSTRAP = "org.glassfish.weld.WeldBootstrap";
 
     private static final String WELD_CONTEXT_LISTENER = "org.glassfish.weld.WeldContextListener";
+
+    // Note...this constant is also defined in org.apache.catalina.connector.AsyncContextImpl.  If it changes here it must
+    // change there as well.  The reason it is duplicated is so that a dependency from web-core to gf-weld-connector
+    // is not necessary.
     private static final String WELD_LISTENER = "org.jboss.weld.servlet.WeldListener";
+
     private static final String WELD_SHUTDOWN = "false";
     
     @Inject
@@ -305,20 +310,18 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     }
 
     private String getDeploymentErrorMsgPrefix( Throwable t ) {
-        return "CDI deployment failure:";
-        //todo: when weld 2.0 is used change this method to what's commented out:
-//        if ( t instanceof javax.enterprise.inject.spi.DefinitionException ) {
-//            return "CDI definition failure:";
-//        } else if ( t instanceof javax.enterprise.inject.spi.DeploymentException ) {
-//            return "CDI deployment failure:";
-//        } else {
-//            Throwable cause = t.getCause();
-//            if ( cause == t || cause == null ) {
-//                return "CDI deployment failure:";
-//            } else {
-//                return getDeploymentErrorMsgPrefix( cause );
-//            }
-//        }
+        if ( t instanceof javax.enterprise.inject.spi.DefinitionException ) {
+            return "CDI definition failure:";
+        } else if ( t instanceof javax.enterprise.inject.spi.DeploymentException ) {
+            return "CDI deployment failure:";
+        } else {
+            Throwable cause = t.getCause();
+            if ( cause == t || cause == null ) {
+                return "CDI deployment failure:";
+            } else {
+                return getDeploymentErrorMsgPrefix( cause );
+            }
+        }
     }
 
     /*

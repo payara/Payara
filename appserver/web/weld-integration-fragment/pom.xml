@@ -82,6 +82,9 @@
                       added for weld 2.0:
                                 org.jboss.weld.util.bean,
                                 org.jboss.weld.serialization
+                                org.jboss.weld.injection.attributes,
+                                org.jboss.weld.util.collections,
+                                org.jboss.weld.annotated.slim.backed
                        -->
                             <Export-Package>
                                 org.jboss.weld.proxy.util,
@@ -93,7 +96,10 @@
                                 org.jboss.weld.interceptor.proxy,
                                 org.jboss.weld.interceptor.util.proxy,
                                 org.jboss.weld.util.bean,
-                                org.jboss.weld.serialization
+                                org.jboss.weld.serialization,
+                                org.jboss.weld.injection.attributes,
+                                org.jboss.weld.util.collections,
+                                org.jboss.weld.annotated.slim.backed
                             </Export-Package>
                             <Bundle-Description>${project.description}</Bundle-Description> 
                         </manifestEntries>
