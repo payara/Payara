@@ -43,6 +43,7 @@ import com.ibm.batch.container.config.DatabaseConfigurationBean;
 import com.ibm.batch.container.config.GlassfishThreadPoolConfigurationBean;
 import com.ibm.batch.container.config.IBatchConfig;
 import com.ibm.batch.container.services.ServicesManager;
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Optional;
@@ -62,7 +63,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @Service
 @Singleton
-@RunLevel(value = 15)
+@RunLevel(StartupRunLevel.VAL)
 public class BatchRuntimeHelper
     implements PostConstruct {
 
