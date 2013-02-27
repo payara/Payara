@@ -356,6 +356,12 @@
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-osgi-bundle</artifactId>
                 <version>${weld.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.classfilewriter</groupId>
+                        <artifactId>jboss-classfilewriter</artifactId>
+                    </exclusion>
+                </exclusions>                
             </dependency>
             <dependency>
                 <groupId>com.sun.pkg</groupId>
