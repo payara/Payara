@@ -169,8 +169,6 @@ public class CommandSecurityChecker implements PostConstruct {
             ADMSEC_AUTHZ_LOGGER.log(Level.WARNING, command.getClass().getName(),
                     new IllegalArgumentException("subject"));
             subject = new Subject();
-        } else if (embeddedSystemAdministrator.matches(subject)) {
-            return true;
         }
         
         boolean result;
@@ -192,7 +190,8 @@ public class CommandSecurityChecker implements PostConstruct {
                 }
             }
             final List<AccessCheckWork> accessChecks = assembleAccessCheckWork(command, subject);
-            result = checkAccessRequired(subject, env, command, accessChecks);
+            result = (embeddedSystemAdministrator.matches(subject)) ||
+                checkAccessRequired(subject, env, command, accessChecks);
         
         } catch (Exception ex) {
             ADMSEC_AUTHZ_LOGGER.log(Level.SEVERE, AdminLoggerInfo.mUnexpectedException, ex);
