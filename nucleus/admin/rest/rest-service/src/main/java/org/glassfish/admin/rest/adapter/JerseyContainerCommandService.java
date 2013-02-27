@@ -65,7 +65,7 @@ import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.internal.api.KernelIdentity;
+import org.glassfish.internal.api.InternalSystemAdministrator;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jersey.internal.inject.ReferencingFactory;
 import org.glassfish.jersey.internal.util.collection.Ref;
@@ -87,7 +87,7 @@ public class JerseyContainerCommandService implements PostConstruct {
     protected ServiceLocator habitat;
 
     @Inject
-    private KernelIdentity kernelIdentity;
+    private InternalSystemAdministrator kernelIdentity;
     
     private Future<JerseyContainer> future;
 

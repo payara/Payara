@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,31 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.security.services.api.authentication;
+package org.glassfish.security.services.impl;
 
-import java.security.Principal;
-import javax.security.auth.Subject;
-import org.glassfish.internal.api.KernelIdentity;
+import javax.inject.Singleton;
+import org.glassfish.security.services.api.authentication.AbstractInternalSystemAdministrator;
+import org.glassfish.security.services.api.authorization.AuthorizationAdminConstants;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- *
+ * Nucleus (open-source) implementation of the InternalSystemAdministrator contract.
+ * 
  * @author tjquinn
  */
-public abstract class AbstractKernelIdentity implements KernelIdentity {
-    
-    private final Subject kernelSubject = init();
-    
-    private Subject init() {
-        final Subject s = new Subject();
-        s.getPrincipals().add(getKernelPrincipal());
-        s.setReadOnly();
-        return s;
-    }
-    
-    abstract protected Principal getKernelPrincipal();
-    
+@Service(name="nucleus")
+@Singleton
+public class NucleusInternalSystemAdministrator extends AbstractInternalSystemAdministrator {
+
     @Override
-    public Subject getSubject() {
-        return kernelSubject;
+    protected String getInternalUsername() {
+        return "_InternalSystemAdministrator_";
+    }
+
+    @Override
+    protected String getAdminGroupName() {
+        return AuthorizationAdminConstants.ADMIN_GROUP;
     }
 }

@@ -57,6 +57,7 @@ import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.hk2.api.IterableProvider;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.EmbeddedSystemAdministrator;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.security.services.api.authorization.AuthorizationAdminConstants;
@@ -117,6 +118,9 @@ public class CommandSecurityChecker implements PostConstruct {
     @Inject
     private SecurityContextService securityContextService;
     
+    @Inject
+    private EmbeddedSystemAdministrator embeddedSystemAdministrator;
+    
     private static final Map<RestEndpoint.OpType,String> optypeToAction = initOptypeMap();
 
     @Override
@@ -165,6 +169,8 @@ public class CommandSecurityChecker implements PostConstruct {
             ADMSEC_AUTHZ_LOGGER.log(Level.WARNING, command.getClass().getName(),
                     new IllegalArgumentException("subject"));
             subject = new Subject();
+        } else if (embeddedSystemAdministrator.matches(subject)) {
+            return true;
         }
         
         boolean result;

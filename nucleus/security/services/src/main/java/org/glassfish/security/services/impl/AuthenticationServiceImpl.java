@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -70,8 +70,10 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.security.common.AppservAccessController;
-
+import java.util.logging.Logger;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
+
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.security.common.Group;
 import org.glassfish.security.common.PrincipalImpl;
@@ -94,6 +96,12 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 
 	@Inject
 	ServerContext serverContext;
+        
+        @Inject
+        private ServiceLocator locator;
+        
+        private static final Logger LOG = Logger.getLogger(AuthenticationServiceImpl.class.getName());
+
 
 	// Authentication Service Configuration Information
 	private String name = null;
@@ -109,6 +117,22 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 	 */
 	@Override
 	public void initialize(SecurityConfiguration securityServiceConfiguration) {
+//            org.glassfish.security.services.config.AuthenticationService as = (org.glassfish.security.services.config.AuthenticationService) securityServiceConfiguration;
+//            LOG.info("*** AuthenticationServiceImpl auth svc file realm provider module class: ");
+//            for (SecurityProvider sp : as.getSecurityProviders()) {
+//                LOG.info("   *** Provider name/type" + sp.getName() + "/" + sp.getType());
+//                if (sp.getSecurityProviderConfig() == null) {
+//                    LOG.info("   *** getSecurityProviderConfig returned null");
+//                } else {
+//                    for (SecurityProviderConfig spc : sp.getSecurityProviderConfig()) {
+//                        LOG.info("      *** " + spc.getName());
+//                        if (sp.getType().equals("LoginModule")) {
+//                            LoginModuleConfig lmc = (LoginModuleConfig) spc;
+//                            LOG.info("      *** LoginModule config: class is " + lmc.getModuleClass());
+//                        }
+//                    }
+//                }
+//            }
         config = (org.glassfish.security.services.config.AuthenticationService) securityServiceConfiguration;
         if (config == null)
         	return;
@@ -153,7 +177,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
         // If required, initialize the currently configured Realm instances
         // TODO - Reconcile initialization with SecurityLifeCycle
         if (usePasswordCredential && (realmName != null)) {
-        	RealmsManager realmsManager = Globals.getDefaultHabitat().getService(RealmsManager.class);
+        	RealmsManager realmsManager = locator.getService(RealmsManager.class);
         	realmsManager.createRealms();
         }
     }
@@ -290,7 +314,14 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 	 */
 	@Override
 	public void postConstruct() {
-		// TODO - Dynamic configuration changes?
+            /*
+             * Realm-related classes uses Globals (they are not services)
+             * so make sure it is set up.
+             */
+            if (Globals.getDefaultBaseServiceLocator() == null) {
+                Globals.setDefaultHabitat(locator);
+            }
+            // TODO - Dynamic configuration changes?
 		initialize(AuthenticationServiceFactory.getAuthenticationServiceConfiguration(domain));
 	}
 

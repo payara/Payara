@@ -41,7 +41,6 @@
 package org.glassfish.security.services.provider.authorization;
 
 import java.net.URI;
-import java.security.Permission;
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.List;
@@ -67,19 +66,16 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.logging.LogDomains;
-import java.util.ArrayList;
 import org.glassfish.security.services.api.authorization.AuthorizationAdminConstants;
 
 import javax.security.auth.Subject;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.internal.api.KernelIdentity;
-import org.glassfish.security.services.impl.NucleusKernelIdentity;
 
 
 @Service (name="simpleAuthorization")
 @PerLookup
-public class SimpleAuthorizationProviderImpl implements AuthorizationProvider, PostConstruct {
+public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
 
+    private final static Level DEBUG_LEVEL = Level.FINER;
     
     private AuthorizationProviderConfig cfg; 
     private boolean deployable;
@@ -88,16 +84,12 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider, P
     @Inject
     private ServerEnvironment serverEnv;
     
-    @Inject
-    private ServiceLocator serviceLocator;
-    
-    @Inject
-    private KernelIdentity kernelIdentity;
-    
     protected static final Logger _logger = 
         LogDomains.getLogger(SimpleAuthorizationProviderImpl.class, LogDomains.SECURITY_LOGGER);
 
-    private final Decider decider = new Decider();
+    private Decider decider;
+    
+    private boolean isDebug;
     
     @Override
     public void initialize(SecurityProvider providerConfig) {
@@ -110,25 +102,20 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider, P
             _logger.log(Level.FINE, "provide version to use: " + version);
         }
     }
-
-    @Override
-    public void postConstruct() {
-        loadKernelIdentity();
+    
+    protected Decider createDecider() {
+        return new Decider();
     }
     
-    /**
-     * 
-     */
-    private void loadKernelIdentity() {
-        /*
-         * For testing, hk2 might not have been able to find the kernel identity
-         * to use.  If so, use the open-source kernel identity.
-         */
-        if (kernelIdentity == null) {
-            kernelIdentity = new NucleusKernelIdentity();
+    private synchronized Decider getDecider() {
+        if (decider == null) {
+            decider = createDecider();
+            if (isDebug) {
+                _logger.log(DEBUG_LEVEL, "Created SimpleAuthorizationProviderImpl Decider of type {0}", decider.getClass().getName());
+            }
         }
+        return decider;
     }
-
 
     @Override
     public AzResult getAuthorizationDecision(
@@ -160,7 +147,10 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider, P
             final AzResource resource,
             final AzAction action,
             final AzEnvironment environment) {
-        AzResult rtn = new AzResultImpl(decider.decide(subject, resource, action, environment), 
+        if (isDebug) {
+            _logger.log(DEBUG_LEVEL, "");
+        }
+        AzResult rtn = new AzResultImpl(getDecider().decide(subject, resource, action, environment), 
                 Status.OK, new AzObligationsImpl());
         
         return rtn;
@@ -200,9 +190,9 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider, P
      * For enforcing read-only access we assume that any action other than the literal "read"
      * makes some change in the system.
      */
-    private class Decider {
+    protected class Decider {
         
-        private Decision decide(final AzSubject subject, final AzResource resource,
+        protected Decision decide(final AzSubject subject, final AzResource resource,
                 final AzAction action, final AzEnvironment env) {
             /*
              * Basically, if the subject has one of the "special" principals
@@ -211,7 +201,7 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider, P
              * we allow full access on the DAS but read-only on instances.
              */
             Decision result = 
-                    isSubjectKernelIdentity(subject.getSubject())
+                    isSubjectInternalAdministrator(subject.getSubject())
                     
                     || isSubjectTrustedForDASAndInstances(subject)
                    
@@ -226,8 +216,13 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider, P
             return result;
         }
         
-        private boolean isSubjectKernelIdentity(final Subject s) {
-            return ! kernelIdentity.getSubject().getPrincipals(KernelIdentity.KernelPrincipal.class).isEmpty();
+        private boolean isSubjectInternalAdministrator(final Subject s) {
+            for (Principal p : s.getPrincipals()) {
+                if (p.getName().equals(AuthorizationAdminConstants.ADMIN_GROUP)) {
+                    return true;
+                }
+            }
+            return false;
         }
         
         private boolean isSubjectTrustedForDASAndInstances(final AzSubject subject) {

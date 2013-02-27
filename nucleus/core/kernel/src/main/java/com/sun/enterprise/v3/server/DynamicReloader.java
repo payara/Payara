@@ -62,7 +62,7 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.config.ApplicationName;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.KernelIdentity;
+import org.glassfish.internal.api.InternalSystemAdministrator;
 
 /**
  * Triggers reloads of deployed applications depending on the presence of and
@@ -112,7 +112,7 @@ public class DynamicReloader implements Runnable {
         this.habitat = habitat;
         initAppReloadInfo(applications);
         inProgress = new SyncBoolean(false);
-        final KernelIdentity kernelIdentity = habitat.getService(KernelIdentity.class);
+        final InternalSystemAdministrator kernelIdentity = habitat.getService(InternalSystemAdministrator.class);
         kernelSubject = kernelIdentity.getSubject();
     }
     

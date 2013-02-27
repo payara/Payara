@@ -69,7 +69,7 @@ import java.util.Collection;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.internal.api.KernelIdentity;
+import org.glassfish.internal.api.InternalSystemAdministrator;
 
 /**
  * This is an implementation of {@link Deployer}.
@@ -96,7 +96,7 @@ public class DeployerImpl implements Deployer {
     ServiceLocator habitat;
     
     @Inject
-    private KernelIdentity kernelIdentity;
+    private InternalSystemAdministrator kernelIdentity;
 
     @Override
     public String deploy(URI archive, String... params) throws GlassFishException {

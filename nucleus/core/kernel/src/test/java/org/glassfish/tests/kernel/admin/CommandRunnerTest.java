@@ -56,7 +56,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import javax.inject.Inject;
-import org.glassfish.internal.api.KernelIdentity;
+import org.glassfish.internal.api.InternalSystemAdministrator;
 import org.jvnet.hk2.testing.junit.HK2Runner;
 
 /**
@@ -71,7 +71,7 @@ public class CommandRunnerTest extends HK2Runner {
     CommandRunner commandRunner;
     
     @Inject
-    KernelIdentity kernelIdentity;
+    InternalSystemAdministrator kernelIdentity;
 
     @BeforeClass
     public void setup() {

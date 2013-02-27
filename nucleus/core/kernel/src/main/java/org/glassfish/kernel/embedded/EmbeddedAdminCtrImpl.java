@@ -57,7 +57,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import com.sun.enterprise.v3.common.PlainTextActionReporter;
-import org.glassfish.internal.api.KernelIdentity;
+import org.glassfish.internal.api.InternalSystemAdministrator;
 
 /**
  * Implementation of the embedded command execution
@@ -71,7 +71,7 @@ public class EmbeddedAdminCtrImpl implements EmbeddedAdminContainer {
     CommandRunner runner;
     
     @Inject
-    private KernelIdentity kernelIdentity;
+    private InternalSystemAdministrator kernelIdentity;
 
     private final static List<Sniffer> empty = new ArrayList<Sniffer>();
 

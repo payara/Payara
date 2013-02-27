@@ -83,7 +83,7 @@ import org.glassfish.hk2.runlevel.RunLevelController;
 import org.glassfish.hk2.runlevel.RunLevelListener;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.InitRunLevel;
-import org.glassfish.internal.api.KernelIdentity;
+import org.glassfish.internal.api.InternalSystemAdministrator;
 import org.glassfish.internal.api.PostStartupRunLevel;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.server.ServerEnvironmentImpl;
@@ -304,7 +304,7 @@ public class AppServerStartup implements ModuleStartup {
             if (noForcedShutdown) {
                 params.set("force", "false");
             }
-            final KernelIdentity kernelIdentity = locator.getService(KernelIdentity.class);
+            final InternalSystemAdministrator kernelIdentity = locator.getService(InternalSystemAdministrator.class);
             if (env.isDas()) {
                 runner.getCommandInvocation("stop-domain", new DoNothingActionReporter(), kernelIdentity.getSubject()).parameters(params).execute();
             } else {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,11 +41,10 @@
 package org.glassfish.security.services.api.authorization;
 
 
-import org.glassfish.security.common.Group;
 import org.glassfish.security.services.impl.authorization.*;
 import java.net.URI;
 import javax.security.auth.Subject;
-import org.glassfish.internal.api.KernelIdentity;
+import org.glassfish.security.common.PrincipalImpl;
 import org.glassfish.security.services.api.common.Attributes;
 import org.glassfish.security.services.api.context.SecurityContextService;
 import org.glassfish.security.services.impl.authorization.AuthorizationServiceImpl;
@@ -61,7 +60,6 @@ public class SimpleAtzProviderTest extends HK2Runner {
     
     private AuthorizationProvider simpleAtzPrv = null;
     private SecurityContextService contextService = null;
-    private KernelIdentity kernelIdentity = null;
     
     @Before
     public void before() {
@@ -71,8 +69,6 @@ public class SimpleAtzProviderTest extends HK2Runner {
         Assert.assertNotNull(simpleAtzPrv);
         contextService = testLocator.getService(SecurityContextService.class);
         Assert.assertNotNull(contextService);
-        kernelIdentity = testLocator.getService(KernelIdentity.class);
-        Assert.assertNotNull("Could not locate KernelIdentity", kernelIdentity);
         
         contextService.getEnvironmentAttributes().addAttribute(
                 AuthorizationAdminConstants.ISDAS_ATTRIBUTE, "true", true);
@@ -87,7 +83,7 @@ public class SimpleAtzProviderTest extends HK2Runner {
         for (String attrName : attrs.getAttributeNames()) {
             env.addAttribute(attrName, attrs.getAttributeValue(attrName), true);
         }
-        AzSubject azS = authorizationService.makeAzSubject(kernelIdentity.getSubject());
+        AzSubject azS = authorizationService.makeAzSubject(adminSubject());
         AzResult rt = simpleAtzPrv.getAuthorizationDecision(
                 azS,
                 authorizationService.makeAzResource(URI.create("admin://some/path")),
@@ -101,5 +97,10 @@ public class SimpleAtzProviderTest extends HK2Runner {
         Assert.assertEquals(AzResult.Decision.PERMIT, ds);
 
     }
-
+    
+    private Subject adminSubject() {
+        final Subject result = new Subject();
+        result.getPrincipals().add(new PrincipalImpl("asadmin"));
+        return result;
+    }
 }

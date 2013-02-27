@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -69,7 +69,7 @@ public abstract class ConfigApiTest {
     private Subject prepareAdminSubject() {
         final ServiceLocator locator = getBaseServiceLocator();
         if (locator != null) {
-            final List<ServiceHandle<? extends Object>> kernelIdentities = 
+            final List<ServiceHandle<? extends Object>> adminIdentities = 
                     (List<ServiceHandle<? extends Object>>) getBaseServiceLocator().getAllServices(
                     new Filter() {
 
@@ -79,14 +79,14 @@ public abstract class ConfigApiTest {
                         return false;
                     }
                     final Set<String> contracts = d.getAdvertisedContracts();
-                    return (contracts == null ? false : contracts.contains("org.glassfish.internal.api.KernelIdentity"));
+                    return (contracts == null ? false : contracts.contains("org.glassfish.internal.api.InternalSystemAdmin"));
                 }
             });
-            if ( ! kernelIdentities.isEmpty()) {
-                final Object kernelIdentity = kernelIdentities.get(0);
+            if ( ! adminIdentities.isEmpty()) {
+                final Object adminIdentity = adminIdentities.get(0);
                 try {
-                    final Method getSubjectMethod = kernelIdentity.getClass().getDeclaredMethod("getSubject", Subject.class);
-                    return (Subject) getSubjectMethod.invoke(kernelIdentity);
+                    final Method getSubjectMethod = adminIdentity.getClass().getDeclaredMethod("getSubject", Subject.class);
+                    return (Subject) getSubjectMethod.invoke(adminIdentity);
                 } catch (Exception ex) {
                     // ignore - fallback to creating a subject explicitly that
                     // should match the GlassFish admin identity
@@ -94,14 +94,21 @@ public abstract class ConfigApiTest {
             }
         }
         final Subject s = new Subject();
-        s.getPrincipals().add(new Principal() {
-
-            @Override
-            public String getName() {
-                return "asadmin";
-            }
-        });
+        s.getPrincipals().add(new PrincipalImpl("asadmin"));
+        s.getPrincipals().add(new PrincipalImpl("_InternalSystemAdministrator_"));
         return s;
+    }
+    
+    private static class PrincipalImpl implements Principal {
+        private final String name;
+        
+        private PrincipalImpl(final String name) {
+            this.name = name;
+        }
+        @Override
+        public String getName() {
+            return name;
+        }
     }
     
     protected Subject adminSubject() {

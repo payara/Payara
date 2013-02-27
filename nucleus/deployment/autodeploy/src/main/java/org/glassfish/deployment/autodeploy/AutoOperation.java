@@ -56,7 +56,7 @@ import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.internal.api.KernelIdentity;
+import org.glassfish.internal.api.InternalSystemAdministrator;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 
@@ -114,7 +114,7 @@ public abstract class AutoOperation {
     private AutodeployRetryManager retryManager;
     
     @Inject
-    private KernelIdentity kernelIdentity;
+    private InternalSystemAdministrator internalSystemAdministrator;
     
     /**
      * Initializes the AutoOperation.
@@ -160,7 +160,7 @@ public abstract class AutoOperation {
             for (Map.Entry<Object,Object> entry : props.entrySet())
                 p.set((String)entry.getKey(), (String)entry.getValue());
             ActionReport report = commandRunner.getActionReport("hk2-agent");
-            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation(commandName, report, kernelIdentity.getSubject());
+            CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation(commandName, report, internalSystemAdministrator.getSubject());
             inv.parameters(p).execute(command);
             AutodeploymentStatus ds = AutodeploymentStatus.forExitCode(report.getActionExitCode());
             if (ds.status) {

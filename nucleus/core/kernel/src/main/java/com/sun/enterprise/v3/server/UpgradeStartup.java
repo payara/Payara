@@ -118,7 +118,7 @@ public class UpgradeStartup implements ModuleStartup {
     Logger logger;
     
     @Inject
-    private KernelIdentity kernelIdentity;
+    private InternalSystemAdministrator kernelIdentity;
 
     private final static String MODULE_TYPE = "moduleType";
 

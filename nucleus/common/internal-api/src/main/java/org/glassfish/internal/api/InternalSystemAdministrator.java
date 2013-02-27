@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,33 +39,27 @@
  */
 package org.glassfish.internal.api;
 
-import java.security.Principal;
 import javax.security.auth.Subject;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * Represents the "kernel" identity.
+ * Represents an internal system admin.
  * <p>
- * For example, the kernel identity is useful for running commands using
+ * An internal system admin is useful for running commands using
  * the command framework from trusted server code that does not have a
  * previously-authenticated subject on whose behalf the work is being done.
+ * For example, autodeployment runs automatically, without a user-linked
+ * subject, and internally submits a "deploy" command for execution.
  * <p>
- * It's safer to require such uses to specify the kernel identity rather than
+ * It's safer to require such uses to specify an internal system admin rather than
  * to assume that if no subject is specified to authorization then it should
- * be treated as the kernel identity.  
+ * be treated as a system admin.
  * 
  * @author tjquinn
  */
 @Contract
-public interface KernelIdentity {
+public interface InternalSystemAdministrator {
     
     public Subject getSubject();
     
-    public interface KernelPrincipal extends Principal {};
-    
-    public class Util {
-        public boolean isKernel(final Subject s) {
-            return ! s.getPrincipals(KernelPrincipal.class).isEmpty();
-        }
-    }
 }

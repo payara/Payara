@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,33 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.security.services.impl;
+package org.glassfish.internal.api;
 
-import java.security.Principal;
-import javax.inject.Singleton;
-import org.glassfish.internal.api.KernelIdentity;
-import org.glassfish.security.services.api.authentication.AbstractKernelIdentity;
+import javax.security.auth.Subject;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * Nucleus (open-source) implementation of the KernelIdentity contract.
+ * Implements the internal system administrator contract for embedded
+ * internal command submissions.
  * 
  * @author tjquinn
  */
-@Service(name="nucleus")
-@Singleton
-public class NucleusKernelIdentity extends AbstractKernelIdentity {
+@Service(name="embedded")
+public class EmbeddedSystemAdministrator implements InternalSystemAdministrator {
 
     @Override
-    protected Principal getKernelPrincipal() {
-        return new NucleusKernelPrincipal();
+    public Subject getSubject() {
+        final Subject result = new Subject();
+        result.getPrivateCredentials().add(new EmbeddedSystemAdministratorCreds());
+        return result;
     }
     
-    private static class NucleusKernelPrincipal implements KernelIdentity.KernelPrincipal {
-
-        @Override
-        public String getName() {
-            return "nucleus-kernel";
-        }
+    public boolean matches(final Subject other) {
+        return ! other.getPrivateCredentials(EmbeddedSystemAdministratorCreds.class).isEmpty();
     }
+    
+    private static class EmbeddedSystemAdministratorCreds {} 
 }
