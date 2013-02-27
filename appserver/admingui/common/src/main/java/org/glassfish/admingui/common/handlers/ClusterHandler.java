@@ -141,28 +141,52 @@ public class ClusterHandler {
 
 
     @Handler(id = "gf.isClusterName",
-            input = {
+        input = {
             @HandlerInput(name = "clusterName", type = String.class, required = true)
-            })
+        },
+        output = {
+            @HandlerOutput(name = "exists", type = Boolean.class)
+        })
     public static void isClusterName(HandlerContext handlerCtx) {
-        String clusterName = (String) handlerCtx.getInputValue("clusterName");
-        List cluster = TargetUtil.getClusters();
-        if(!cluster.contains(clusterName)){
+        if( ! TargetUtil.isCluster((String) handlerCtx.getInputValue("clusterName"))){
             GuiUtil.handleError(handlerCtx, GuiUtil.getMessage("msg.NoSuchCluster"));
-            return;
+            handlerCtx.setOutputValue("exists",  false);
+        }else{
+            handlerCtx.setOutputValue("exists",  true);
+        }
+    }
+
+    @Handler(id = "gf.isInstanceName",
+        input = {
+                @HandlerInput(name = "instanceName", type = String.class, required = true)
+        },
+        output = {
+                @HandlerOutput(name = "exists", type = Boolean.class)
+        })
+    public static void isInstanceName(HandlerContext handlerCtx) {
+        if( ! TargetUtil.isInstance((String) handlerCtx.getInputValue("instanceName"))){
+            GuiUtil.handleError(handlerCtx, GuiUtil.getMessage("msg.NoSuchInstance"));
+            handlerCtx.setOutputValue("exists",  false);
+        }else{
+            handlerCtx.setOutputValue("exists",  true);
         }
     }
 
     @Handler(id = "gf.isConfigName",
-            input = {
+        input = {
             @HandlerInput(name = "configName", type = String.class, required = true)
-            })
+        },
+        output = {
+                    @HandlerOutput(name = "exists", type = Boolean.class)
+        })
     public static void isConfigName(HandlerContext handlerCtx) {
         String configName = (String) handlerCtx.getInputValue("configName");
         List config = TargetUtil.getConfigs();
         if(!config.contains(configName)){
             GuiUtil.handleError(handlerCtx, GuiUtil.getMessage("msg.NoSuchConfig"));
-            return;
+            handlerCtx.setOutputValue("exists",  false);
+        }else{
+            handlerCtx.setOutputValue("exists",  true);
         }
     }
 

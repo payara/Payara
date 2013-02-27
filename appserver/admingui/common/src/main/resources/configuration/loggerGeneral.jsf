@@ -53,6 +53,10 @@
     <!beforeCreate
         setSessionAttribute(key="loggingTabs" value="loggerGeneral");
         getRequestValue(key="configName" value="#{pageSession.configName}" );
+        gf.isConfigName(configName="#{pageSession.configName}" exists="#{requestScope.exists}" );
+        if (! #{requestScope.exists}){
+            gf.redirect("#{request.contextPath}/common/configuration/configurations.jsf");
+        }
         createMap(result="#{requestScope.attrsMap}");
         mapPut(map="#{requestScope.attrsMap}" key="target" value="#{pageSession.configName}");
         gf.restRequest(
@@ -62,7 +66,7 @@
                 result="#{pageSession.valueMap}");
         setPageSessionAttribute(key="logAttributes", value="#{pageSession.valueMap.data.extraProperties.logAttributes}");
         setPageSessionAttribute(key="defaultLoggingProperties", value="#{pageSession.valueMap.data.extraProperties.defaultLoggingProperties}");
-        gf.isConfigName(configName="#{pageSession.configName}" );
+
     />
 </event>
 

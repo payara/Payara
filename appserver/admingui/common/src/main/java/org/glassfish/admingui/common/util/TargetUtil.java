@@ -64,6 +64,13 @@ public class TargetUtil {
         return getClusters().contains(name);
     }
 
+    public static boolean isInstance(String name){
+        if (GuiUtil.isEmpty(name)){
+            return false;
+        }
+        return getInstances().contains(name);
+    }
+
     public static List getStandaloneInstances(){
         List<String> result = new ArrayList<String>();
         String endpoint = GuiUtil.getSessionValue("REST_URL") + "/list-instances" ;
@@ -99,6 +106,19 @@ public class TargetUtil {
             }
         }
         return clusters;
+    }
+
+    public static List getInstances(){
+        List instances = new ArrayList();
+        try{
+            instances.addAll(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/servers/server").keySet());
+        }catch (Exception ex){
+            GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.getInstances") + ex.getLocalizedMessage());
+            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
+                ex.printStackTrace();
+            }
+        }
+        return instances;
     }
 
     public static List getConfigs(){

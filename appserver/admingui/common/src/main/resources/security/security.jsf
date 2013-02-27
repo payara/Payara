@@ -48,7 +48,11 @@
 <!define name="content">
     <event>
         <!beforeCreate
-        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        getRequestValue(key="configName" value=>"#{pageSession.configName}" );
+        gf.isConfigName(configName="#{pageSession.configName}" exists="#{requestScope.exists}" );
+        if (! #{requestScope.exists}){
+            gf.redirect("#{request.contextPath}/common/configuration/configurations.jsf");
+        }
         setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/common/security/security.jsf?configName=#{pageSession.configName}");
         setPageSessionAttribute(key="selfUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/security-service");
 

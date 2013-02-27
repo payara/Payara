@@ -66,6 +66,7 @@
         gf.restRequest( endpoint="#{sessionScope.REST_URL}/list-components" , method="GET"  attrs="#{pageSession.attrs}" result="#{requestScope.result}");
         setPageSessionAttribute(key="appRefEndpoint" value="/servers/server/#{pageSession.encodedInstanceName}/application-ref/");
         gf.getSingleTargetAppsInfo(appPropsMap="#{requestScope.result.data.properties}" appRefEndpoint="#{pageSession.appRefEndpoint}" target="#{pageSession.instanceName}" filterValue="#{pageSession.filterValue}", filters="#{requestScope.filters}" result="#{requestScope.listOfRows}" );
+        gf.isInstanceName(instanceName="#{pageSession.instanceName}");
         setPageSessionAttribute(key="editLink" value="/common/applications/applicationEdit.jsf");
         setPageSessionAttribute(key="listPageLink" value="/cluster/standalone/standaloneApplications.jsf");
         setPageSessionAttribute(key="extraArgs" value="instanceName=#{pageSession.encodedInstanceName}");
@@ -85,7 +86,7 @@
             <sun:form id="propertyForm">
 #include "/cluster/standalone/standaloneInstanceTabs.inc"
 
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
                 <!-- Page Title -->
 
 <sun:title id="propertyContentPage" title="$resource{i18ncs.standalone.ApplicationsTitle}"

@@ -54,10 +54,25 @@
     <!beforeCreate
         setSessionAttribute(key="clusterInstanceTabs" value="general");
         getRequestValue(key="instanceName" value="#{pageSession.instanceName}");
+        gf.isInstanceName(instanceName="#{pageSession.instanceName}" exists="#{requestScope.instanceExists}" );
         urlencode(value="#{pageSession.instanceName}" encoding="UTF-8" result="#{pageSession.encodedInstanceName}");
         getRequestValue(key="clusterName" value="#{pageSession.clusterName}");
-	if("!#{pageSession.clusterName}"){
-            gf.getClusterNameForInstance(instanceName="#{pageSession.instanceName}", clusterName="#{pageSession.clusterName}");
+	    if("!#{pageSession.clusterName}"){
+	        if ("#{requestScope.instanceExists}"){
+                gf.getClusterNameForInstance(instanceName="#{pageSession.instanceName}", clusterName="#{pageSession.clusterName}");
+            }
+            if (! #{requestScope.exists}){
+                gf.redirect(page="#{request.contextPath}/cluster/cluster/#{sessionScope.backPage}.jsf?clusterName=#{pageSession.clusterName}");
+            }
+        }
+        if (! #{requestScope.instanceExists}){
+            gf.isClusterName(clusterName="#{pageSession.clusterName}" exists="#{requestScope.clusterExists}" );
+            if (! #{requestScope.clusterExists}){
+                gf.redirect("#{request.contextPath}/cluster/cluster/clusters.jsf");
+            }
+            if (#{requestScope.clusterExists}){
+                gf.redirect(page="#{request.contextPath}/cluster/cluster/clusterInstances.jsf?clusterName=#{pageSession.clusterName}");
+            }
         }
         urlencode(value="#{pageSession.clusterName}" encoding="UTF-8" result="#{pageSession.encodedClusterName}");
         setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/cluster/cluster/clusterInstanceEdit.jsf?clusterName=#{pageSession.encodedClusterName}&instanceName=#{pageSession.encodedInstanceName}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
@@ -78,7 +93,7 @@
     <sun:form id="propertyForm">
 
 #include "/cluster/cluster/clusterInstanceTabs.inc"
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
 
     <!-- Page Title -->
     <sun:title id="propertyContentPage" title="$resource{i18ncs.clusterInstance.PageTitle}" >

@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -60,6 +60,8 @@
         setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/cluster/cluster/clusterInstanceEdit.jsf?clusterName=#{pageSession.clusterName}&instanceName=#{pageSession.encodedInstanceName}");
         setPageSessionAttribute(key="resourceUrl", value="#{sessionScope.REST_URL}/servers/server/#{pageSession.encodedInstanceName}");
         gfr.getListOfRunningInstances();
+        gf.isClusterName(clusterName="#{pageSession.clusterName}" );
+        gf.isInstanceName(instanceName="#{pageSession.instanceName}");
         setPageSessionAttribute(key="helpKey" value="$resource{help_cluster.clusterInstanceRecoverTransactions}");
         setPageSessionAttribute(key="useSelf" value="#{!pageSession.isStopped}");
     />

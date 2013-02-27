@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,10 @@
     <!beforeCreate
         getRequestValue(key="instanceName" value="#{pageSession.target}");
         setPageSessionAttribute(key="instanceName" value="#{pageSession.target}");
+        gf.isInstanceName(instanceName="#{pageSession.instanceName}" exists="#{requestScope.exists}" );
+        if (! #{requestScope.exists}){
+            gf.redirect("#{request.contextPath}/cluster/standalone/standaloneInstances.jsf");
+        }
         getRequestValue(key="filterValue" value="#{pageSession.filterValue}");
         urlencode(value="#{pageSession.target}" encoding="UTF-8" result="#{pageSession.encodedInstanceName}");
         setSessionAttribute(key="standaloneInstanceTabs" value="resources");
@@ -60,7 +64,7 @@
         gf.checkIfEndPointExist(endpoint="#{pageSession.restURL}.json", exists="#{requestScope.isServer}");
         if (!#{requestScope.isServer}) {
             setPageSessionAttribute(key="restURL" value="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.encodedInstanceName}/resource-ref");            
-        }        
+        }
     />
     </event>
 <sun:form id="propertyForm">
@@ -70,6 +74,7 @@
 
 <sun:title id="propertyContentPage" title="$resource{i18nc.resourcesTarget.pageTitle}"
                  helpText="$resource{i18nc.resourcesTarget.pageTitleHelp}" />
+#include "/common/shared/alertMsg_1.inc"
 #include "/common/shared/nameSection.inc"
 #include "/common/resourceNode/targetResourceTable.inc"
 

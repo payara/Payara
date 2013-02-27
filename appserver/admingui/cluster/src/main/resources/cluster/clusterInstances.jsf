@@ -83,7 +83,7 @@
 <sun:form id="propertyForm">
 
 #include "/cluster/cluster/clusterTabs.inc"
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
 
 <sun:title id="propertyContentPage" title="$resource{i18ncs.cluster.InstancesTitle}"
                  helpText="$resource{i18ncs.cluster.InstancesTitleHelp}" >

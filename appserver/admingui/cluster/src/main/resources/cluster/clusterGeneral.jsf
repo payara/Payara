@@ -81,7 +81,7 @@
                 />
 
 #include "/cluster/cluster/clusterTabs.inc"
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
 
     <!-- Page Title -->
     <sun:title id="propertyContentPage" title="$resource{i18ncs.cluster.GeneralTitle}" helpText="$resource{i18ncs.cluster.GeneralTitleHelp}">

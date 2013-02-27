@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -67,6 +67,7 @@
             setPageSessionAttribute(key="showDefaultButton" value="#{false}" );
 
             gf.restRequest(endpoint="#{pageSession.selfUrl}/property", method="GET", result="#{requestScope.propTable}");
+            gf.isInstanceName(instanceName="#{pageSession.instanceName}");
             setPageSessionAttribute(key="tableList", value="#{requestScope.propTable.data.extraProperties.properties}");
         />
     </event>
@@ -75,7 +76,7 @@
         <sun:title id="propertyContentPage" title="$resource{i18ncs.PropertiesTitle}" >
 #include "/cluster/shared/instancePropertiesButtons.jsf"
         </sun:title>
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
 #include "/common/shared/nameSection.inc"
 
 #include "/common/shared/propertyDescTable.inc"

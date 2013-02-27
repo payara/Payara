@@ -59,6 +59,10 @@
         getRequestValue(key="clusterName" value="#{pageSession.target}");
         setPageSessionAttribute(key="clusterName" value="#{pageSession.target}");
         urlencode(value="#{pageSession.target}" encoding="UTF-8" result="#{pageSession.encodedClusterName}");
+        gf.isClusterName(clusterName="#{pageSession.clusterName}" exists="#{requestScope.exists}" );
+        if (! #{requestScope.exists}){
+            gf.redirect("#{request.contextPath}/cluster/cluster/clusters.jsf");
+        }
         setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18n.msg.JS.confirmDeleteResources}");
         setPageSessionAttribute(key="listLink" value="#{request.contextPath}/cluster/cluster/clusterResources.jsf?clusterName=#{encodedClusterName}");
         getRequestValue(key="filterValue" value="#{pageSession.filterValue}");
@@ -70,7 +74,7 @@
 <sun:form id="propertyForm">
 
 #include "/cluster/cluster/clusterTabs.inc"
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
 
 <sun:title id="propertyContentPage" title="$resource{i18ncs.cluster.ResourcesTitle}"
                  helpText="$resource{i18ncs.cluster.ResourcesTitleHelp}" >
@@ -146,13 +150,6 @@
 <sun:hidden id="helpKey" value="$resource{help_cluster.clusterResources}" />
     </sun:form>
 #include "/common/shared/changeButtonsJS.inc"
-
-    <event>
-    <!afterCreate
-        gf.isClusterName(clusterName="#{pageSession.clusterName}" );
-    />
-    </event>
-
 </define>
 </composition>
 

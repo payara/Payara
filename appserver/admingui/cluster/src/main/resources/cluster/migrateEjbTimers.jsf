@@ -76,11 +76,12 @@
                 listAdd(list="#{pageSession.runningInstances}", value="#{instance.name}");
             }
         }
+        gf.isClusterName(clusterName="#{pageSession.clusterName}" );
     />
     </event>
     <sun:form id="propertyForm">
 #include "/cluster/cluster/clusterTabs.inc"
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
 <!-- Page Title -->
     <sun:title id="propertyContentPage" title="$resource{i18ncs.cluster.migrateEjbTimers}" helpText="$resource{i18ncs.cluster.migrateEjbTimersHelp}">
         <!facet pageButtonsTop>

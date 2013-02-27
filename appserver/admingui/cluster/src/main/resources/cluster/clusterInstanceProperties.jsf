@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -55,6 +55,16 @@
             getRequestValue(key="instanceName" value="#{pageSession.instanceName}");
             urlencode(value="#{pageSession.clusterName}" encoding="UTF-8" result="#{pageSession.encodedClusterName}");
             urlencode(value="#{pageSession.instanceName}" encoding="UTF-8" result="#{pageSession.encodedInstanceName}");
+            gf.isClusterName(clusterName="#{pageSession.clusterName}" exists="#{requestScope.clusterExists}");
+            gf.isInstanceName(instanceName="#{pageSession.instanceName}"   exists="#{requestScope.instanceExists}");
+            if (! #{requestScope.instanceExists}){
+                if (! #{requestScope.clusterExists}){
+                    gf.redirect("#{request.contextPath}/cluster/cluster/clusters.jsf");
+                }
+                if (#{requestScope.clusterExists}){
+                    gf.redirect("#{request.contextPath}/cluster/cluster/clusterInstances.jsf?clusterName=#{pageSession.encodedClusterName}");
+                }
+            }
             setSessionAttribute(key="clusterTabs" value="clusterInstanceProps");
             setSessionAttribute(key="clusterInstanceTabs" value="instanceProps");
 
@@ -69,6 +79,7 @@
             setPageSessionAttribute(key="showDefaultButton" value="#{false}" );
             setPageSessionAttribute(key="showInstance" value="#{true}" );
             gf.restRequest(endpoint="#{pageSession.selfUrl}/property", method="GET", result="#{requestScope.propTable}");
+
             setPageSessionAttribute(key="tableList", value="#{requestScope.propTable.data.extraProperties.properties}");
         />
     </event>
@@ -78,7 +89,7 @@
 #include "/cluster/shared/instancePropertiesButtons.jsf"
     </sun:title>
 
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
 #include "/common/shared/nameSection.inc"
 #include "/common/shared/propertyDescTable.inc"
 

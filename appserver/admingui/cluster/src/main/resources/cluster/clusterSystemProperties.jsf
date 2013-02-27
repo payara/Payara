@@ -54,13 +54,15 @@
         <!beforeCreate
             getRequestValue(key="clusterName" value="#{pageSession.clusterName}");
             urlencode(value="#{pageSession.clusterName}" encoding="UTF-8" result="#{pageSession.encodedClusterName}");
+            gf.isClusterName(clusterName="#{pageSession.clusterName}" exists="#{requestScope.exists}" );
+            if (! #{requestScope.exists}){
+                gf.redirect("#{request.contextPath}/cluster/cluster/clusters.jsf");
+            }
             setSessionAttribute(key="clusterTabs" value="clusterSystemProps");
-
             setPageSessionAttribute(key="parentPage", value="#{request.contextPath}/cluster/cluster/clusterGeneral.jsf?clusterName=#{encodedClusterName}");
             setPageSessionAttribute(key="selfPage", value="#{request.contextPath}/cluster/cluster/clusterSystemProperties.jsf?clusterName=#{encodedClusterName}");
             setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.encodedClusterName}");
             setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/system-properties");
-            
             gf.restRequest(endpoint="#{pageSession.selfUrl}", method="GET", result="#{requestScope.propTable}");
             setPageSessionAttribute(key="tableList", value="#{requestScope.propTable.data.extraProperties.systemProperties}");
         />
@@ -75,7 +77,7 @@
             </facet>
         </sun:title>
 
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
 #include "/common/shared/nameSection.inc"
 #include "/common/configuration/systemProperties.jsf"
 
@@ -89,12 +91,6 @@
         <sun:hidden id="helpKey" value="$resource{help_cluster.clusterSystemProperties}" />
     </sun:form>
 #include "/common/shared/changeButtonsJS.inc"
-
-    <event>
-    <!afterCreate
-        gf.isClusterName(clusterName="#{pageSession.clusterName}" );
-    />
-    </event>
 
 </define>
 </composition>

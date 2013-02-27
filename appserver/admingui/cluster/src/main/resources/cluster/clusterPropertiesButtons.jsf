@@ -43,11 +43,10 @@
     <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
             onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
         <!command
+            gf.isClusterName(clusterName="#{pageSession.clusterName}" );
             removeEmptyProps(props="#{pageSession.tableList}" modifiedProps="#{pageSession.tableList}");
             javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
-            gf.isClusterName(clusterName="#{pageSession.clusterName}" );
             gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
-
             prepareSuccessfulMsg();
             gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
         />

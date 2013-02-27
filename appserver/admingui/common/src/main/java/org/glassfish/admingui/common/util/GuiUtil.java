@@ -420,9 +420,9 @@ public class GuiUtil {
         Throwable rootException = getRootCause(ex);
         prepareAlert("error", GuiUtil.getMessage("msg.Error"), rootException.getMessage());
         GuiUtil.getLogger().info(GuiUtil.getCommonMessage("LOG_EXCEPTION_OCCURED") + ex.getLocalizedMessage());
-//        if (GuiUtil.getLogger().isLoggable(Level.FINE)){
+        if (GuiUtil.getLogger().isLoggable(Level.FINE)){
             ex.printStackTrace();
-//        }
+        }
     }
 
     /* This method sets up the attributes of the <sun:alert> message box so that any
