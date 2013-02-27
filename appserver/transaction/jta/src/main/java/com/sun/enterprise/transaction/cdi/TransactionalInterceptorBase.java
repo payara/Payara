@@ -79,8 +79,8 @@ public class TransactionalInterceptorBase {
     }
 
     public Object proceed(InvocationContext ctx) throws Exception {
-        javax.transaction.Transactional transactionalAnnotation =
-                ctx.getMethod().getAnnotation(javax.transaction.Transactional.class);
+        javax.transaction.cdi.Transactional transactionalAnnotation =
+                ctx.getMethod().getAnnotation(javax.transaction.cdi.Transactional.class);
         Class[] rollbackOn = null;
         Class[] dontRollbackOn = null;
         if(transactionalAnnotation != null) { //if at method level
@@ -88,8 +88,8 @@ public class TransactionalInterceptorBase {
             dontRollbackOn = transactionalAnnotation.dontRollbackOn();
         } else {  //if not at class level
             Class targetClass = ctx.getTarget().getClass();
-            transactionalAnnotation = (javax.transaction.Transactional)
-                    targetClass.getAnnotation(javax.transaction.Transactional.class);
+            transactionalAnnotation = (javax.transaction.cdi.Transactional)
+                    targetClass.getAnnotation(javax.transaction.cdi.Transactional.class);
             if (transactionalAnnotation != null) {
                 rollbackOn = transactionalAnnotation.rollbackOn();
                 dontRollbackOn = transactionalAnnotation.dontRollbackOn();

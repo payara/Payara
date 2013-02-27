@@ -45,12 +45,12 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.transaction.TransactionRequiredException;
-import javax.transaction.TransactionalException;
+import javax.transaction.cdi.TransactionalException;
 import java.util.logging.Logger;
 
 /**
  * Transactional annotation Interceptor class for Mandatory transaction type,
- *  ie javax.transaction.Transactional.TxType.MANDATORY
+ *  ie javax.transaction.cdi.Transactional.TxType.MANDATORY
  * If called outside a transaction context, TransactionRequiredException will be thrown
  * If called inside a transaction context, managed bean method execution will then
  *  continue under that context.
@@ -58,7 +58,7 @@ import java.util.logging.Logger;
  * @author Paul Parkinson
  */
 @Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.MANDATORY)
+@javax.transaction.cdi.Transactional(javax.transaction.cdi.Transactional.TxType.MANDATORY)
 public class TransactionalInterceptorMandatory extends TransactionalInterceptorBase {
 
     @AroundInvoke

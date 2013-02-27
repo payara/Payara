@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 
 /**
  * Transactional annotation Interceptor class for NotSupported transaction type,
- *  ie javax.transaction.Transactional.TxType.NOT_SUPPORTED
+ *  ie javax.transaction.cdi.Transactional.TxType.NOT_SUPPORTED
  * If called outside a transaction context, managed bean method execution will then
  *  continue outside a transaction context.
  * If called inside a transaction context, the current transaction context will be suspended,
@@ -59,7 +59,7 @@ import java.util.logging.Logger;
  * @author Paul Parkinson
  */
 @Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.NOT_SUPPORTED)
+@javax.transaction.cdi.Transactional(javax.transaction.cdi.Transactional.TxType.NOT_SUPPORTED)
 public class TransactionalInterceptorNotSupported extends TransactionalInterceptorBase {
 
     @AroundInvoke

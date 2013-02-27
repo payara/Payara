@@ -122,6 +122,10 @@
             <artifactId>javax.transaction-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>javax.transaction.cdi</groupId>
+            <artifactId>javax.transaction.cdi-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>javax.interceptor</groupId>
             <artifactId>javax.interceptor-api</artifactId>
         </dependency>

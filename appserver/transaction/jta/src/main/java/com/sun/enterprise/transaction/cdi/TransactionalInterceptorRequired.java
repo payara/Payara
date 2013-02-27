@@ -48,7 +48,7 @@ import java.util.logging.Logger;
 
 /**
  * Transactional annotation Interceptor class for Required transaction type,
- *  ie javax.transaction.Transactional.TxType.REQUIRED
+ *  ie javax.transaction.cdi.Transactional.TxType.REQUIRED
  * If called outside a transaction context, a new JTA transaction will begin,
  *  the managed bean method execution will then continue inside this transaction context,
  *  and the transaction will be committed.
@@ -58,7 +58,7 @@ import java.util.logging.Logger;
  * @author Paul Parkinson
  */
 @Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.REQUIRED)
+@javax.transaction.cdi.Transactional(javax.transaction.cdi.Transactional.TxType.REQUIRED)
 public class TransactionalInterceptorRequired extends TransactionalInterceptorBase {
 
     @AroundInvoke

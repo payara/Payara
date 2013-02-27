@@ -48,7 +48,7 @@ import java.util.logging.Logger;
 
 /**
  * Transactional annotation Interceptor class for Supports transaction type,
- *  ie javax.transaction.Transactional.TxType.SUPPORT
+ *  ie javax.transaction.cdi.Transactional.TxType.SUPPORT
  * If called outside a transaction context, managed bean method execution will then
  *  continue outside a transaction context.
  * If called inside a transaction context, the managed bean method execution will then continue
@@ -57,7 +57,7 @@ import java.util.logging.Logger;
  * @author Paul Parkinson
  */
 @Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.SUPPORTS)
+@javax.transaction.cdi.Transactional(javax.transaction.cdi.Transactional.TxType.SUPPORTS)
 public class TransactionalInterceptorSupports extends TransactionalInterceptorBase {
 
     @AroundInvoke
