@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,40 +39,15 @@
  */
 package com.oracle.hk2.devtest.cdi.ejb1.scoped;
 
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
+ * This service will be named and injected into a field with a naked Named annotation
+ * 
  * @author jwells
- *
  */
-@RequestScoped
-public class CustomScopedEjb {
-    @Inject
-    private HK2Service hk2Service;
-    
-    @Inject @Named
-    private HK2NamedService rumplestiltskin;
-    
-    @Inject @Named(HK2NamedServiceFactory2.NAME)
-    private HK2NamedService carol;
-    
-    public void checkMe() {
-        int jobValue = hk2Service.doAJob();
-        
-        if (jobValue != HK2Service.RETURN_VALUE) {
-            throw new AssertionError("The doAJob method should have returned " + HK2Service.RETURN_VALUE +
-                    " but returned " + jobValue);
-        }
-        
-        if (!rumplestiltskin.getName().equals(HK2NamedServiceFactory.NAMED_SERVICE_NAME)) {
-            throw new AssertionError("The naked @Named HK2NamedService was not set or had the wrong name: " + rumplestiltskin.getName());
-        }
-        
-        if (!carol.getName().equals(HK2NamedServiceFactory2.NAME)) {
-            throw new AssertionError("The specific @Named HK2NamedService was not set or had the wrong name: " + carol.getName());
-        }
-    }
+@Contract
+public interface HK2NamedService {
+    public String getName();
 
 }

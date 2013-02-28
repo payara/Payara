@@ -41,6 +41,7 @@ package org.glassfish.cdi.hk2;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -49,6 +50,7 @@ import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.AnnotatedField;
 import javax.enterprise.inject.spi.AnnotatedParameter;
 import javax.enterprise.inject.spi.InjectionPoint;
+import javax.inject.Named;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -56,6 +58,7 @@ import javax.naming.NamingException;
 import org.glassfish.hk2.api.Injectee;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.InjecteeImpl;
+import org.glassfish.hk2.utilities.NamedImpl;
 
 /**
  * Integration utilities
@@ -92,6 +95,21 @@ public class HK2IntegrationUtilities {
         for (Annotation anno : setQualifiers) {
             if (anno.annotationType().equals(Default.class)) continue;
             
+            if (anno.annotationType().equals(Named.class)) {
+                Named named = (Named) anno;
+                if ("".equals(named.value())) {
+                    Annotated annotated = injectionPoint.getAnnotated();
+                    if (annotated instanceof AnnotatedField) {
+                        AnnotatedField<?> annotatedField = (AnnotatedField<?>) annotated;
+                        
+                        Field field = annotatedField.getJavaMember();
+                        anno = new NamedImpl(field.getName());
+                    }
+                    
+                }
+                
+            }
+            
             retVal.add(anno);
         }
         
@@ -106,7 +124,7 @@ public class HK2IntegrationUtilities {
         
         Annotated annotated = injectionPoint.getAnnotated();
         if (annotated instanceof AnnotatedField) {
-            retVal.setPosition(-1);  
+            retVal.setPosition(-1);
         }
         else {
             AnnotatedParameter<?> annotatedParameter = (AnnotatedParameter<?>) annotated;

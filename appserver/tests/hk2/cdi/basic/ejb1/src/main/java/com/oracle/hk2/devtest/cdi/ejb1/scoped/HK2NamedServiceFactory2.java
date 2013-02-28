@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,40 +39,42 @@
  */
 package com.oracle.hk2.devtest.cdi.ejb1.scoped;
 
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
 import javax.inject.Named;
+
+import org.glassfish.hk2.api.Factory;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * @author jwells
  *
  */
-@RequestScoped
-public class CustomScopedEjb {
-    @Inject
-    private HK2Service hk2Service;
-    
-    @Inject @Named
-    private HK2NamedService rumplestiltskin;
-    
-    @Inject @Named(HK2NamedServiceFactory2.NAME)
-    private HK2NamedService carol;
-    
-    public void checkMe() {
-        int jobValue = hk2Service.doAJob();
-        
-        if (jobValue != HK2Service.RETURN_VALUE) {
-            throw new AssertionError("The doAJob method should have returned " + HK2Service.RETURN_VALUE +
-                    " but returned " + jobValue);
-        }
-        
-        if (!rumplestiltskin.getName().equals(HK2NamedServiceFactory.NAMED_SERVICE_NAME)) {
-            throw new AssertionError("The naked @Named HK2NamedService was not set or had the wrong name: " + rumplestiltskin.getName());
-        }
-        
-        if (!carol.getName().equals(HK2NamedServiceFactory2.NAME)) {
-            throw new AssertionError("The specific @Named HK2NamedService was not set or had the wrong name: " + carol.getName());
-        }
+@Service
+public class HK2NamedServiceFactory2 implements Factory<HK2NamedService> {
+    public final static String NAME = "Alice";
+
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Factory#provide()
+     */
+    @Override
+    @Named(NAME)
+    public HK2NamedService provide() {
+        return new HK2NamedService() {
+
+            @Override
+            public String getName() {
+                return NAME;
+            }
+            
+        };
+    }
+
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Factory#dispose(java.lang.Object)
+     */
+    @Override
+    public void dispose(HK2NamedService instance) {
+        // TODO Auto-generated method stub
+
     }
 
 }
