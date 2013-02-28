@@ -71,6 +71,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.api.container.RequestDispatcher;
 import org.glassfish.api.deployment.ApplicationContainer;
+import org.glassfish.common.util.Constants;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
@@ -82,6 +83,7 @@ import org.glassfish.grizzly.impl.UnsafeFutureImpl;
 import org.glassfish.grizzly.utils.Futures;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.Rank;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.kernel.KernelLoggerInfo;
@@ -101,6 +103,7 @@ import org.jvnet.hk2.config.Transactions;
  */
 @Service
 @RunLevel(StartupRunLevel.VAL)
+@Rank(Constants.IMPORTANT_RUN_LEVEL_SERVICE)
 public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDestroy, FutureProvider<Result<Thread>> {
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)

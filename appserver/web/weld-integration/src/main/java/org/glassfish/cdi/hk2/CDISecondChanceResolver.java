@@ -40,6 +40,7 @@
 package org.glassfish.cdi.hk2;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.Set;
 
 import javax.enterprise.inject.spi.Bean;
@@ -74,11 +75,13 @@ public class CDISecondChanceResolver implements JustInTimeInjectionResolver {
     @SuppressWarnings({ "unchecked" })
     @Override
     public boolean justInTimeResolution(Injectee failedInjectionPoint) {
+        Type requiredType = failedInjectionPoint.getRequiredType();
+        
         Set<Annotation> setQualifiers = failedInjectionPoint.getRequiredQualifiers();
         
         Annotation qualifiers[] = setQualifiers.toArray(new Annotation[setQualifiers.size()]);
         
-        Set<Bean<?>> beans = manager.getBeans(failedInjectionPoint.getRequiredType(), qualifiers);
+        Set<Bean<?>> beans = manager.getBeans(requiredType, qualifiers);
         if (beans == null || beans.isEmpty()) {
             return false;
         }
@@ -86,7 +89,7 @@ public class CDISecondChanceResolver implements JustInTimeInjectionResolver {
         DynamicConfiguration config = ServiceLocatorUtilities.createDynamicConfiguration(locator);
         for (Bean<?> bean : beans) {
             // Add a bean to the service locator
-            CDIHK2Descriptor<Object> descriptor = new CDIHK2Descriptor<Object>(manager, (Bean<Object>) bean);
+            CDIHK2Descriptor<Object> descriptor = new CDIHK2Descriptor<Object>(manager, (Bean<Object>) bean, requiredType);
             config.addActiveDescriptor(descriptor);
         }
         

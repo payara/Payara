@@ -40,6 +40,7 @@
 package org.glassfish.cdi.hk2;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -66,8 +67,9 @@ import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
  */
 @SuppressWarnings("serial")
 public class CDIHK2Descriptor<T> extends AbstractActiveDescriptor<T> {
-    private transient BeanManager manager;
-    private transient Bean<T> bean;
+    private transient BeanManager manager = null;
+    private transient Bean<T> bean = null;
+    private transient Type requiredType = null;
     
     public CDIHK2Descriptor() {
         super();
@@ -97,7 +99,7 @@ public class CDIHK2Descriptor<T> extends AbstractActiveDescriptor<T> {
     }
     
     // @SuppressWarnings("unchecked")
-    public CDIHK2Descriptor(BeanManager manager, Bean<T> bean) {
+    public CDIHK2Descriptor(BeanManager manager, Bean<T> bean, Type requiredType) {
         super(bean.getTypes(),
                 fixScope(bean),
                 bean.getName(),
@@ -111,6 +113,7 @@ public class CDIHK2Descriptor<T> extends AbstractActiveDescriptor<T> {
                 
         this.manager = manager;
         this.bean = bean;
+        this.requiredType = requiredType;
     }
     
     @Override
@@ -128,7 +131,7 @@ public class CDIHK2Descriptor<T> extends AbstractActiveDescriptor<T> {
     public T create(ServiceHandle<?> root) {
         CreationalContext<T> cc = manager.createCreationalContext(bean);
         
-        return (T) manager.getReference(bean, bean.getBeanClass(), cc);
+        return (T) manager.getReference(bean, requiredType, cc);
     }
 
 }
