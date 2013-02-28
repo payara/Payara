@@ -140,10 +140,6 @@
             <artifactId>weld-integration-fragment</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>javax.transaction.cdi</groupId>
-            <artifactId>javax.transaction.cdi-api</artifactId>
-        </dependency>
     </dependencies>
 </project>
 
