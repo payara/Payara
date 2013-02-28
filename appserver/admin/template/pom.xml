@@ -79,24 +79,23 @@
                 </executions>
             </plugin>
 			<plugin>
-                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                <artifactId>maven-antrun-extended-plugin</artifactId>
+         <groupId>org.glassfish.build</groupId>
+         <artifactId>glassfishbuild-maven-plugin</artifactId>
 				 <executions>
-                    <execution>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>run</goal>
-						</goals>
-						<configuration>
-							<tasks>
-							    <concat destfile="${project.build.directory}/classes/config/logging.properties" fixlastline="yes">
-								     <fileset file="${project.build.directory}/dependency/config/logging.properties"/>
-								     <fileset file="../../logging/logging.properties"/>  
-								</concat>
-							</tasks>
-						 </configuration>
-                    </execution>
-                </executions>						 
+             <execution>
+                 <phase>process-resources</phase>
+                 <goals>
+                     <goal>merge-copyright-headers</goal>
+						     </goals>
+						     <configuration>
+							       <outputFile>${project.build.directory}/classes/config/logging.properties</outputFile>
+								     <inputFiles>
+								         <inputFile>${project.build.directory}/dependency/config/logging.properties</inputFile>
+								         <inputFile>../../logging/logging.properties</inputFile>
+								     </inputFiles>  
+						     </configuration>
+             </execution>
+         </executions>						 
 			</plugin>
 			<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
