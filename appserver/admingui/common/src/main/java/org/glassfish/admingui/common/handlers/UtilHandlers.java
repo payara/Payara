@@ -989,6 +989,33 @@ public class UtilHandlers {
     }
 
     /**
+     *	This method converts a Map into a list of Map with keyName and ValueName.  This is suitable for table dislay.
+     */
+    @Handler(id="gf.convertMapToListOfMap",
+            input={
+                    @HandlerInput(name="map", type=Map.class, required=true),
+                    @HandlerInput(name="keyName", type=String.class, defaultValue = "key"),
+                    @HandlerInput(name="valueName", type=String.class, defaultValue = "value")},
+            output={
+                    @HandlerOutput(name="result", type=List.class)})
+    public static void convertMapToListOfMap(HandlerContext handlerCtx) {
+        Map map = ((Map) handlerCtx.getInputValue("map"));
+        String keyName = ((String) handlerCtx.getInputValue("keyName"));
+        String valueName = ((String) handlerCtx.getInputValue("valueName"));
+
+        List result = new ArrayList();
+
+        for (Map.Entry entry : (Set<Map.Entry>)map.entrySet()) {
+            Map oneRow = new HashMap();
+            oneRow.put(keyName, entry.getKey());
+            oneRow.put(valueName, entry.getValue());
+            result.add(oneRow);
+        }
+
+        handlerCtx.setOutputValue("result", result);
+    }
+
+    /**
      *	<p> This handler will convert a Java object to JSON by using
      *	    {@link JSONUtil#javaToJSON}.</p>
      */
