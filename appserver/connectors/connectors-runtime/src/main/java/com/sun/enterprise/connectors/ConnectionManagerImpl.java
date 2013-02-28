@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,6 +68,7 @@ import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import javax.resource.ResourceException;
 import javax.resource.spi.*;
 import javax.resource.spi.IllegalStateException;
+import javax.resource.spi.SecurityException;
 import javax.security.auth.Subject;
 import java.io.Serializable;
 import java.security.Principal;
@@ -308,10 +309,26 @@ public class ConnectionManagerImpl implements ConnectionManager, Serializable {
         } catch (PoolingException ex) {
             Object[] params = new Object[]{poolInfo, ex};
             getLogger().log(Level.WARNING, "poolmgr.get_connection_failure", params);
+            //GLASSFISH-19609
+            //we can't simply look for ResourceException and throw back since
+            //Connector Container also throws ResourceException which might
+            //hide the SecurityException thrown by RA.
+            //So, we try to track SecurityException
+            unwrapSecurityException(ex);
             String i18nMsg = getLocalStrings().getString("con_mgr.error_creating_connection", ex.getMessage());
             ResourceAllocationException rae = new ResourceAllocationException(i18nMsg);
             rae.initCause(ex);
             throw rae;
+        }
+    }
+
+    private void unwrapSecurityException(Throwable ex) throws ResourceException{
+        if(ex != null){
+            if(ex instanceof SecurityException){
+                throw (SecurityException)ex;
+            }else{
+                unwrapSecurityException(ex.getCause());
+            }
         }
     }
 
