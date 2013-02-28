@@ -94,7 +94,7 @@ public class ListBatchJobs
 
     private static final String END_TIME = "endTime";
 
-    @Param(name = "jobname", optional = true)
+    @Param(name = "jobname", optional = true, primary = true)
     String jobName;
 
 
@@ -229,16 +229,19 @@ public class ListBatchJobs
                     data = je.getExitStatus();
                     break;
                 case START_TIME:
-                    data = je.getStartTime();
+                    data = je.getStartTime().getTime();
+                    cfData[index] = je.getStartTime().toString();
                     break;
                 case END_TIME:
-                    data = je.getEndTime();
+                    data = je.getEndTime().getTime();
+                    cfData[index] = je.getEndTime().toString();
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown header: " + getOutputHeaders()[index]);
             }
             jobInfo.put(getOutputHeaders()[index], data);
-            cfData[index] = data.toString();
+            if (cfData[index] == null)
+                cfData[index] = data.toString();
         }
         columnFormatter.addRow(cfData);
 

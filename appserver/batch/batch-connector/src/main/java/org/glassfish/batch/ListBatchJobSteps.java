@@ -51,7 +51,6 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
-import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
 import java.util.*;
@@ -79,7 +78,7 @@ import java.util.*;
 public class ListBatchJobSteps
         extends AbstractListCommand {
 
-    private static final String NAME = "name";
+    private static final String NAME = "stepName";
 
     private static final String STEP_ID = "stepId";
 
@@ -135,32 +134,12 @@ public class ListBatchJobSteps
         return stepExecutions;
     }
 
-//    private static List<JobExecution> getJobExecutionForInstance(long instId) {
-//        JobOperator jobOperator = BatchRuntime.getJobOperator();
-//        JobInstance jobInstance = null;
-//        for (String jn : jobOperator.getJobNames()) {
-//            List<JobInstance> exe = jobOperator.getJobInstances(jn, 0, Integer.MAX_VALUE - 1);
-//            if (exe != null) {
-//                for (JobInstance ji : exe) {
-//                    if (ji.getInstanceId() == instId) {
-//                        jobInstance = ji;
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-//        List<JobExecution> jobExecutionList = BatchRuntime.getJobOperator().getJobExecutions(jobInstance);
-//        return jobExecutionList == null
-//                ? new ArrayList<JobExecution>() : jobExecutionList;
-//    }
-
     private Map<String, Object> handleJob(StepExecution stepExecution, ColumnFormatter columnFormatter) {
         Map<String, Object> jobInfo = new HashMap<>();
 
         int stepMetricsIndex = -1;
         StringTokenizer st = new StringTokenizer("", "");
         String[] cfData = new String[getOutputHeaders().length];
-        JobOperator jobOperator = BatchRuntime.getJobOperator();
         for (int index = 0; index < getOutputHeaders().length; index++) {
             Object data = null;
             switch (getOutputHeaders()[index]) {
@@ -177,10 +156,12 @@ public class ListBatchJobSteps
                     data = stepExecution.getExitStatus();
                     break;
                 case START_TIME:
-                    data = stepExecution.getStartTime();
+                    data = stepExecution.getStartTime().getTime();
+                    cfData[index] = stepExecution.getStartTime().toString();
                     break;
                 case END_TIME:
-                    data = stepExecution.getEndTime();
+                    data = stepExecution.getEndTime().getTime();
+                    cfData[index] = stepExecution.getEndTime().toString();
                     break;
                 case STEP_METRICS:
                     stepMetricsIndex = index;
@@ -200,8 +181,8 @@ public class ListBatchJobSteps
             }
             jobInfo.put(getOutputHeaders()[index], data);
             cfData[index] = (stepMetricsIndex != index)
-                    ? data.toString()
-                    : (st.hasMoreTokens()) ? st.nextToken() : "";
+                    ? (cfData[index] == null ? data.toString() : cfData[index])
+                    : (st.hasMoreTokens() ? st.nextToken() : "");
         }
         columnFormatter.addRow(cfData);
 
