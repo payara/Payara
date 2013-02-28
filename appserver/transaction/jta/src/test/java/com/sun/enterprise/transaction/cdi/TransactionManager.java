@@ -40,30 +40,48 @@
 
 package com.sun.enterprise.transaction.cdi;
 
+import javax.transaction.*;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import java.util.logging.Logger;
 
-/**
- * Transactional annotation Interceptor class for Supports transaction type,
- *  ie javax.transaction.Transactional.TxType.SUPPORT
- * If called outside a transaction context, managed bean method execution will then
- *  continue outside a transaction context.
- * If called inside a transaction context, the managed bean method execution will then continue
- *  inside this transaction context.
- *
- * @author Paul Parkinson
- */
-@Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.SUPPORTS)
-public class TransactionalInterceptorSupports extends TransactionalInterceptorBase {
 
-    @AroundInvoke
-    public Object transactional(InvocationContext ctx) throws Exception {
-        Logger logger = Logger.getLogger(ctx.getTarget().getClass().getName());
-        logger.info("In SUPPORTS TransactionalInterceptor");
-        return proceed(ctx);
+public class TransactionManager implements javax.transaction.TransactionManager {
+    ThreadLocal transactionThreadLocal = new ThreadLocal();
+
+    public void begin() throws NotSupportedException, SystemException {
+        transactionThreadLocal.set(new Transaction());
+    }
+
+    public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException, SecurityException, IllegalStateException, SystemException {
+        suspend();
+    }
+
+    public int getStatus() throws SystemException {
+        return 0;  
+    }
+
+    public javax.transaction.Transaction getTransaction() throws SystemException {
+        return (javax.transaction.Transaction) transactionThreadLocal.get();
+    }
+
+    public void resume(javax.transaction.Transaction transaction) throws InvalidTransactionException, IllegalStateException, SystemException {
+        transactionThreadLocal.set(transaction);
+    }
+
+    public void rollback() throws IllegalStateException, SecurityException, SystemException {
+        suspend();
+    }
+
+    public void setRollbackOnly() throws IllegalStateException, SystemException {
+        
+    }
+
+    public void setTransactionTimeout(int seconds) throws SystemException {
+        
+    }
+
+    public javax.transaction.Transaction suspend() throws SystemException {
+        javax.transaction.Transaction transaction = (javax.transaction.Transaction)transactionThreadLocal.get();
+        transactionThreadLocal.set(null);
+        return transaction;
     }
 }

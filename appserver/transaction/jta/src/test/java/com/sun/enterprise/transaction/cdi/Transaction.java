@@ -40,30 +40,52 @@
 
 package com.sun.enterprise.transaction.cdi;
 
-
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import java.util.logging.Logger;
+import javax.transaction.*;
+import javax.transaction.xa.XAResource;
 
 /**
- * Transactional annotation Interceptor class for Supports transaction type,
- *  ie javax.transaction.Transactional.TxType.SUPPORT
- * If called outside a transaction context, managed bean method execution will then
- *  continue outside a transaction context.
- * If called inside a transaction context, the managed bean method execution will then continue
- *  inside this transaction context.
- *
- * @author Paul Parkinson
+ * User: paulparkinson
+ * Date: 12/18/12
+ * Time: 11:50 AM
  */
-@Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.SUPPORTS)
-public class TransactionalInterceptorSupports extends TransactionalInterceptorBase {
+public class Transaction implements javax.transaction.Transaction {
+    private static int counter;
+    private int txid;
 
-    @AroundInvoke
-    public Object transactional(InvocationContext ctx) throws Exception {
-        Logger logger = Logger.getLogger(ctx.getTarget().getClass().getName());
-        logger.info("In SUPPORTS TransactionalInterceptor");
-        return proceed(ctx);
+    public Transaction() {
+        txid = counter++;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Transaction &&  ((Transaction)o).txid == this.txid;
+    }
+
+    public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException, SecurityException, IllegalStateException, SystemException {
+        
+    }
+
+    public boolean delistResource(XAResource xaRes, int flag) throws IllegalStateException, SystemException {
+        return false;  
+    }
+
+    public boolean enlistResource(XAResource xaRes) throws RollbackException, IllegalStateException, SystemException {
+        return false;  
+    }
+
+    public int getStatus() throws SystemException {
+        return 0;  
+    }
+
+    public void registerSynchronization(Synchronization sync) throws RollbackException, IllegalStateException, SystemException {
+        
+    }
+
+    public void rollback() throws IllegalStateException, SystemException {
+        
+    }
+
+    public void setRollbackOnly() throws IllegalStateException, SystemException {
+        
     }
 }

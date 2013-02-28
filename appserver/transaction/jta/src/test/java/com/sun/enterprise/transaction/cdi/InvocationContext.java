@@ -40,30 +40,59 @@
 
 package com.sun.enterprise.transaction.cdi;
 
-
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import java.util.logging.Logger;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.Map;
 
 /**
- * Transactional annotation Interceptor class for Supports transaction type,
- *  ie javax.transaction.Transactional.TxType.SUPPORT
- * If called outside a transaction context, managed bean method execution will then
- *  continue outside a transaction context.
- * If called inside a transaction context, the managed bean method execution will then continue
- *  inside this transaction context.
- *
- * @author Paul Parkinson
+ * User: paulparkinson
+ * Date: 12/12/12
+ * Time: 1:12 PM
  */
-@Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.SUPPORTS)
-public class TransactionalInterceptorSupports extends TransactionalInterceptorBase {
+public class InvocationContext implements javax.interceptor.InvocationContext {
+    Method method;
+    Exception exceptionFromProceed;
+    TestInvocationContextTarget testInvocationContextTarget = new TestInvocationContextTarget();
 
-    @AroundInvoke
-    public Object transactional(InvocationContext ctx) throws Exception {
-        Logger logger = Logger.getLogger(ctx.getTarget().getClass().getName());
-        logger.info("In SUPPORTS TransactionalInterceptor");
-        return proceed(ctx);
+    public InvocationContext(Method method, Exception exceptionFromProceed) {
+        this.method = method;
+        this.exceptionFromProceed = exceptionFromProceed;
+    }
+
+    public Object getTarget() {
+        return testInvocationContextTarget;
+    }
+
+    class TestInvocationContextTarget {
+
+    }
+
+    public Object getTimer() {
+        return null;
+    }
+
+    public Method getMethod() {
+        return method;
+    }
+
+    public Constructor getConstructor() {
+        return null;
+    }
+
+    public Object[] getParameters() {
+        return new Object[0];
+    }
+
+    public void setParameters(Object[] params) {
+
+    }
+
+    public Map<String, Object> getContextData() {
+        return null;
+    }
+
+    public Object proceed() throws Exception {
+        if (exceptionFromProceed != null) throw exceptionFromProceed;
+        return null;
     }
 }
