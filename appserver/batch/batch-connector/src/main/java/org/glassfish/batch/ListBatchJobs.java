@@ -103,12 +103,12 @@ public class ListBatchJobs
 
         ColumnFormatter columnFormatter = new ColumnFormatter(getDisplayHeaders());
         if (isSimpleMode()) {
-            extraProps.put("simple-mode", true);
-            extraProps.put("list-batch-jobs", findSimpleJobInfo(columnFormatter));
+            extraProps.put("simpleMode", true);
+            extraProps.put("listBatchJobs", findSimpleJobInfo(columnFormatter));
         } else {
-            extraProps.put("simple-mode", false);
+            extraProps.put("simpleMode", false);
             List<Map<String, Object>> jobExecutions = new ArrayList<>();
-            extraProps.put("list-batch-jobs", jobExecutions);
+            extraProps.put("listBatchJobs", jobExecutions);
             for (JobExecution je : findJobExecutions()) {
                 jobExecutions.add(handleJob(je, columnFormatter));
             }

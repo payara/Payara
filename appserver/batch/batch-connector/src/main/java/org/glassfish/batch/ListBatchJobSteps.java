@@ -100,7 +100,7 @@ public class ListBatchJobSteps
 
         ColumnFormatter columnFormatter = new ColumnFormatter(getDisplayHeaders());
         List<Map<String, Object>> jobExecutions = new ArrayList<>();
-        extraProps.put("list-batch-jobs", jobExecutions);
+        extraProps.put("listBatchJobSteps", jobExecutions);
         for (StepExecution je : findStepExecutions()) {
             jobExecutions.add(handleJob(je, columnFormatter));
         }

@@ -108,7 +108,7 @@ public class ListBatchJobExecutions
         }
         ColumnFormatter columnFormatter = new ColumnFormatter(getDisplayHeaders());
         List<Map<String, Object>> jobExecutions = new ArrayList<>();
-        extraProps.put("list-batch-jobs", jobExecutions);
+        extraProps.put("listBatchJobExecutions", jobExecutions);
         if (executionId != null) {
             for (JobExecution je : findJobExecutions(Long.valueOf(executionId))) {
                 jobExecutions.add(handleJob(je, columnFormatter));
