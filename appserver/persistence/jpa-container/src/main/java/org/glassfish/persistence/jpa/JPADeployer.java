@@ -452,7 +452,7 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
                             } catch (PersistenceException e) {
                                 // Exception indicates something went wrong while performing validation. Clean up and rethrow to fail deployment
                                 emf.close();
-                                throw e;
+                                throw new DeploymentException(e);  // Need to wrap exception in DeploymentException else deployment will not fail !!
                             } finally {
                                 if (em != null) {
                                     em.close();
