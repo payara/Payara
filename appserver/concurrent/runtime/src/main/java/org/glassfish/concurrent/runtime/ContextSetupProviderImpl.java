@@ -40,6 +40,7 @@
 
 package org.glassfish.concurrent.runtime;
 
+import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.security.integration.AppServSecurityContext;
 import com.sun.enterprise.util.Utility;
@@ -126,14 +127,14 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             return null;
         }
         InvocationContext handle = (InvocationContext) contextHandle;
-        String moduleName = null;
+        String appName = null;
 
         if (handle.getInvocation() != null) {
-            moduleName = handle.getInvocation().getModuleName();
+            appName = handle.getInvocation().getAppName();
         }
         // Check whether the application component submitting the task is still running. Throw IllegalStateException if not.
-        if (!isApplicationEnabled(moduleName)) {
-            throw new IllegalStateException("Module " + moduleName + " is disabled");
+        if (!isApplicationEnabled(appName)) {
+            throw new IllegalStateException("Module " + appName + " is disabled");
         }
 
         ClassLoader resetClassLoader = null;
@@ -169,9 +170,11 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
     }
 
-    private boolean isApplicationEnabled(String moduleId) {
-        if (moduleId != null) {
-           return deployment.isAppEnabled(applications.getApplication(moduleId));
+    private boolean isApplicationEnabled(String appId) {
+        if (appId != null) {
+            Application app = applications.getApplication(appId);
+            if (app != null)
+                return deployment.isAppEnabled(app);
         }
         return false;
     }
