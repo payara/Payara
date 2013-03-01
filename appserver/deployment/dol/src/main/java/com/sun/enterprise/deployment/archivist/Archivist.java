@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -451,60 +451,71 @@ public abstract class Archivist<T extends BundleDescriptor> {
                                  ModuleScanner scanner)
             throws IOException {
         
-        if (isProcessAnnotation(descriptor)) {
-            try {
+        try {
+            boolean processAnnotationForMainDescriptor = isProcessAnnotation(descriptor);
+            ProcessingResult result = null; 
+
+            if (processAnnotationForMainDescriptor) {
                 if (scanner == null) {
                     scanner = getScanner();
                 }
-                ProcessingResult result = processAnnotations(descriptor, scanner, archive);
+                result = processAnnotations(descriptor, scanner, archive);
+            }
 
-                // process extensions annotations if any
-                for (Map.Entry<ExtensionsArchivist, RootDeploymentDescriptor> extension : extensions.entrySet()) {
-                    try {
-                        if (extension.getValue()==null) {
+            // process extensions annotations if any
+            for (Map.Entry<ExtensionsArchivist, RootDeploymentDescriptor> extension : extensions.entrySet()) {
+                try {
+                    if (extension.getValue() == null) {
+                        // extension descriptor is not present
+                        // use main descriptor information to decide
+                        // whether to process annotations
+                        if (processAnnotationForMainDescriptor) {
                             RootDeploymentDescriptor o = extension.getKey().getDefaultDescriptor();
-
-
                             if( o != null ) {
                                 o.setModuleDescriptor(descriptor.getModuleDescriptor());
                             }
-                          
-
                             processAnnotations(o, extension.getKey().getScanner(), archive);
                             if (o!=null && !o.isEmpty()) {
                                 extension.getKey().addExtension(descriptor, o);
                                 extensions.put(extension.getKey(), (RootDeploymentDescriptor) o);
                             }
-                        } else {
-                            processAnnotations(extension.getValue(), extension.getKey().getScanner(), archive);
                         }
-                    } catch (AnnotationProcessorException ex) {
-                        DOLUtils.getDefaultLogger().severe(ex.getMessage());
-                        DOLUtils.getDefaultLogger().log(Level.FINE, ex.getMessage(), ex);
-                        throw new IllegalStateException(ex);
+                    } else{
+                        // extension deployment descriptor is present
+                        // use the extension descriptor information to decide
+                        // whether to process annotations
+                        BundleDescriptor extBundle;
+                        if (extension.getValue() instanceof BundleDescriptor) {
+                            extBundle = (BundleDescriptor)extension.getValue();
+                            if (isProcessAnnotation(extBundle)) {
+                                processAnnotations(extBundle, extension.getKey().getScanner(), archive);
+                            }
+                        }
                     }
+                 } catch (AnnotationProcessorException ex) {
+                    DOLUtils.getDefaultLogger().severe(ex.getMessage());
+                    DOLUtils.getDefaultLogger().log(Level.FINE, ex.getMessage(), ex);
+                    throw new IllegalStateException(ex);
                 }
-
-                if (result != null &&
-                        ResultType.FAILED.equals(result.getOverallResult())) {
-                    DOLUtils.getDefaultLogger().severe(localStrings.getLocalString(
-                            "enterprise.deployment.archivist.annotationprocessingfailed",
-                            "Annotations processing failed for {0}",
-                            new Object[]{archive.getURI()}));
-                }
-                //XXX for backward compatible in case of having cci impl in EJB
-            } catch (NoClassDefFoundError err) {
-                if (DOLUtils.getDefaultLogger().isLoggable(Level.WARNING)) {
-                    DOLUtils.getDefaultLogger().warning(
-                            "Error in annotation processing: " + err);
-                }
-            } catch (AnnotationProcessorException ex) {
-                DOLUtils.getDefaultLogger().severe(ex.getMessage());
-                DOLUtils.getDefaultLogger().log(Level.FINE, ex.getMessage(), ex);
-                throw new IllegalStateException(ex);
             }
-        } else if (DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
-            DOLUtils.getDefaultLogger().fine("Annotation is not processed for this archive.");
+
+            if (result != null &&
+                    ResultType.FAILED.equals(result.getOverallResult())) {
+                DOLUtils.getDefaultLogger().severe(localStrings.getLocalString(
+                        "enterprise.deployment.archivist.annotationprocessingfailed",
+                        "Annotations processing failed for {0}",
+                        new Object[]{archive.getURI()}));
+            }
+            //XXX for backward compatible in case of having cci impl in EJB
+        } catch (NoClassDefFoundError err) {
+            if (DOLUtils.getDefaultLogger().isLoggable(Level.WARNING)) {
+                DOLUtils.getDefaultLogger().warning(
+                        "Error in annotation processing: " + err);
+            }
+        } catch (AnnotationProcessorException ex) {
+            DOLUtils.getDefaultLogger().severe(ex.getMessage());
+            DOLUtils.getDefaultLogger().log(Level.FINE, ex.getMessage(), ex);
+            throw new IllegalStateException(ex);
         }
     }
 
@@ -1664,7 +1675,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    protected boolean isProcessAnnotation(T descriptor) {
+    protected boolean isProcessAnnotation(BundleDescriptor descriptor) {
         // if the system property is set to process annotation for pre-JavaEE5
         // DD, the semantics of isFull flag is: full attribute is set to 
         // true in DD. Otherwise the semantics is full attribute set to 
