@@ -1716,6 +1716,10 @@
                    type="javaee:around-timeoutType"
                    minOccurs="0"
                    maxOccurs="unbounded"/>
+      <xsd:element name="around-construct"
+                   type="javaee:lifecycle-callbackType"
+                   minOccurs="0"
+                   maxOccurs="unbounded"/>
       <xsd:group ref="javaee:jndiEnvironmentRefsGroup"/>
       <xsd:element name="post-activate"
                    type="javaee:lifecycle-callbackType"
