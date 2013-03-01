@@ -151,6 +151,7 @@ import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.security.integration.RealmInitializer;
+import com.sun.enterprise.server.logging.LoggingRuntime;
 import com.sun.enterprise.util.Result;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.io.FileUtils;
@@ -500,6 +501,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     @Inject
     private Transactions transactions;
+    
+    @Inject
+    private LoggingRuntime loggingRuntime;
 
     private HashMap<String, WebConnector> connectorMap = new HashMap<String, WebConnector>();
 
@@ -731,6 +735,11 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             }
         }
 
+        File currentLogFile = loggingRuntime.getCurrentLogFile();
+        if (currentLogFile != null) {
+            logServiceFile = currentLogFile.getAbsolutePath();            
+        }
+        
         Level level = Logger.getLogger("org.apache.catalina.level").getLevel();
         if (level != null) {
             logLevel = level.getName();

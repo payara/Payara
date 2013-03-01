@@ -96,8 +96,10 @@ import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
  */
 @Service
 @Singleton
-@ContractsProvided({GFFileHandler.class, java.util.logging.Handler.class, LogEventBroadcaster.class})
-public class GFFileHandler extends StreamHandler implements PostConstruct, PreDestroy, LogEventBroadcaster {
+@ContractsProvided({GFFileHandler.class, java.util.logging.Handler.class, 
+    LogEventBroadcaster.class, LoggingRuntime.class})
+public class GFFileHandler extends StreamHandler implements 
+PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
 
     private static final int DEFAULT_ROTATION_LIMIT_BYTES = 2000000;
 
@@ -121,7 +123,8 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     private MeteredStream meter;
 
     private static final String LOGS_DIR = "logs";
-    private String logFileName = "server.log";
+    private static final String LOG_FILE_NAME = "server.log";
+    
     private String absoluteServerLogName = null;
 
     private File absoluteFile = null;
@@ -187,7 +190,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         logFileProperty = manager.getProperty(cname + ".file");
         if(logFileProperty==null || logFileProperty.trim().equals("")) {
             logFileProperty = env.getInstanceRoot().getAbsolutePath() + File.separator + LOGS_DIR + File.separator +
-                    logFileName;
+                    LOG_FILE_NAME;
         }
 
         String filename = TranslatedConfigView.getTranslatedValue(logFileProperty).toString();
@@ -703,8 +706,8 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
             File[] fset = dir.listFiles();
             ArrayList candidates = new ArrayList();
             for (int i = 0; fset != null && i < fset.length; i++) {
-                if (!logFileName.equals(fset[i].getName()) && fset[i].isFile()
-                        && fset[i].getName().startsWith(logFileName)) {
+                if (!LOG_FILE_NAME.equals(fset[i].getName()) && fset[i].isFile()
+                        && fset[i].getName().startsWith(LOG_FILE_NAME)) {
                     candidates.add(fset[i].getAbsolutePath());
                 }
             }

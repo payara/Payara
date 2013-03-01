@@ -1168,8 +1168,9 @@ public class VirtualServer extends StandardHost
          * 'log-file' attribute of this <virtual-server> and 'file'
          * attribute of <log-service> are different (See 6189219).
          */
-        boolean noCustomLog =
-            (logFile == null || logFile.equals(logServiceFile));
+        boolean noCustomLog = (logFile == null ||
+            (logServiceFile != null && new File(logFile).equals(
+                    new File(logServiceFile))));
 
         if ((fileLoggerHandler == null && noCustomLog) ||
                 (fileLoggerHandler != null && logFile != null &&
@@ -1271,8 +1272,7 @@ public class VirtualServer extends StandardHost
 
             // create and add new handler
             fileLoggerHandler = fileLoggerHandlerFactory.getHandler(logFile);
-            newLogger.addHandler(fileLoggerHandler);
-
+            newLogger.addHandler(fileLoggerHandler);            
             newLogger.setUseParentHandlers(false);
         }
 
