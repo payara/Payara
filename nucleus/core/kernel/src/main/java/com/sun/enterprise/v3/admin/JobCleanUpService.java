@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,27 +42,37 @@ package com.sun.enterprise.v3.admin;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ManagedJobConfig;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
-import java.util.concurrent.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.admin.Job;
 import org.glassfish.api.admin.progress.JobInfo;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.*;
+import org.jvnet.hk2.config.Changed;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.NotProcessed;
+import org.jvnet.hk2.config.ObservableBean;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
+import javax.inject.Inject;
+import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * This is an hk2 service which will clear all expired and inactive jobs
  * @author Bhakti Mehta
  */
-@Service
+@Service(name="job-cleanup")
 @RunLevel(value= StartupRunLevel.VAL)
 public class JobCleanUpService implements PostConstruct,ConfigListener {
 
@@ -156,8 +166,12 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
         ArrayList<JobInfo> expiredJobs = jobManagerService.getExpiredJobs();
         if (expiredJobs.size() > 0 ) {
             for (JobInfo job: expiredJobs) {
+                //remove from Job registy
                 jobManagerService.purgeJob(job.jobId);
+                //remove from jobs.xml file
                 jobManagerService.purgeCompletedJobForId(job.jobId);
+                //remove from local cache for completed jobs
+                jobManagerService.removeFromCompletedJobs(job.jobId);
                 logger.fine(adminStrings.getLocalString("cleaning.job","Cleaning job {0}", job.jobId));
             }
         }

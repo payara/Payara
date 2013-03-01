@@ -71,7 +71,7 @@ public class JobAuthorizationAttributeProcessor implements AuthorizationPreproce
     public final static Pattern JOB_PATTERN = Pattern.compile("(?:" + JOB_RESOURCE_NAME_PREFIX_NO_SLASH + "(?:/(\\d*))?)");
     
     @Inject
-    private JobManager jobManager;
+    private JobManagerService jobManager;
     
     @Override
     public void describeAuthorization(Subject subject, String resourceName, String action, AdminCommand command, Map<String, Object> context, Map<String, String> subjectAttributes, Map<String, String> resourceAttributes, Map<String, String> actionAttributes) {
@@ -98,7 +98,7 @@ public class JobAuthorizationAttributeProcessor implements AuthorizationPreproce
         if (job != null) {
             userID = SubjectUtil.getUsernamesFromSubject(job.getSubject()).get(0);
         } else {
-            if (jobManager.getCompletedJobs() != null) {
+            if (jobManager.getCompletedJobs(jobManager.getJobsFile()) != null) {
                     final JobInfo jobInfo = (JobInfo) jobManager.getCompletedJobForId(jobID);
                     if (jobInfo != null) {
                         userID = jobInfo.user;

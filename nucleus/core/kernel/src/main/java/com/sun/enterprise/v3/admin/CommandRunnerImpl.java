@@ -128,8 +128,7 @@ public class CommandRunnerImpl implements CommandRunner {
     private AdminCommandLock adminLock;
     @Inject @Named("SupplementalCommandExecutorImpl")
     SupplementalCommandExecutor supplementalExecutor;
-    @Inject
-    JobManager jobRegistry;
+
 
     //private final Map<Class<? extends AdminCommand>, String> commandModelEtagMap = new WeakHashMap<Class<? extends AdminCommand>, String>();
     private final Map<NameCommandClassPair, String> commandModelEtagMap = new IdentityHashMap<NameCommandClassPair, String>();
@@ -1735,15 +1734,18 @@ public class CommandRunnerImpl implements CommandRunner {
                 isManagedJob = AnnotationUtil.presentTransitive(ManagedJob.class, command.getClass());
             }
             JobCreator jobCreator = null;
+            JobManager jobManager = null;
             if (scope() != null)   {
                 jobCreator = habitat.getService(JobCreator.class,scope+"job-creator");
+                jobManager = habitat.getService(JobManager.class,scope+"job-manager");
             }  else  {
                 jobCreator = habitat.getService(JobCreatorService.class);
+                jobManager = habitat.getService(JobManagerService.class);
             }
 
             Job commandInstance = null;
             if (isManagedJob) {
-                commandInstance = jobCreator.createJob(jobRegistry.getNewId(),scope(),name(), subject,isManagedJob);
+                commandInstance = jobCreator.createJob(jobManager.getNewId(),scope(),name(), subject,isManagedJob);
             }  else {
                 commandInstance = jobCreator.createJob(null,scope(),name(), subject,isManagedJob);
             }
@@ -1754,7 +1756,7 @@ public class CommandRunnerImpl implements CommandRunner {
             }
 
             if (isManagedJob)  {
-                jobRegistry.registerJob(commandInstance);
+                jobManager.registerJob(commandInstance);
             }
             CommandRunnerImpl.this.doCommand(this, command, subject, commandInstance);
             commandInstance.complete(report(), outboundPayload());

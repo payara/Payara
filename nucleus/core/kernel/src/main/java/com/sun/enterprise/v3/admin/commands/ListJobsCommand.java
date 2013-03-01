@@ -47,6 +47,8 @@ import java.util.*;
 import java.util.Collection;
 import java.util.Date;
 import javax.inject.Inject;
+
+import com.sun.enterprise.v3.admin.JobManagerService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.I18n;
@@ -73,7 +75,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
     private ActionReport report;
 
     @Inject
-    private JobManager jobManagerService;
+    private JobManagerService jobManagerService;
 
     /**
      * Associates an access check with each candidate JobInfo we might report on.
@@ -109,7 +111,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
             StringManager.getManager(ListJobsCommand.class);
 
     protected JobInfos getCompletedJobs() {
-        return jobManagerService.getCompletedJobs();
+        return jobManagerService.getCompletedJobs(jobManagerService.getJobsFile());
     }
     
     protected JobInfo getCompletedJobForId(final String jobID) {

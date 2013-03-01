@@ -101,7 +101,7 @@ public interface JobManager {
      * This will get the list of jobs from the job registry which have completed
      * @return the details of all completed jobs using JobInfos
      */
-    public JobInfos getCompletedJobs();
+    public JobInfos getCompletedJobs(File jobs);
 
     /**
      * This is a convenience method to get a completed job with an id

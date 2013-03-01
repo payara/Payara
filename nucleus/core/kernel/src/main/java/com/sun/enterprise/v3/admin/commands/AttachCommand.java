@@ -43,6 +43,8 @@ package com.sun.enterprise.v3.admin.commands;
 import com.sun.enterprise.admin.remote.AdminCommandStateImpl;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import javax.inject.Inject;
+
+import com.sun.enterprise.v3.admin.JobManagerService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -85,7 +87,7 @@ public class AttachCommand implements AdminCommand, AdminCommandListener {
     protected Job attached;
     
     @Inject
-    JobManager registry;
+    JobManagerService registry;
 
     @Param(primary=true, optional=false, multiple=false)
     protected String jobID;
@@ -100,7 +102,7 @@ public class AttachCommand implements AdminCommand, AdminCommandListener {
 
         if (attached == null) {
             //try for completed jobs
-            if (registry.getCompletedJobs() != null) {
+            if (registry.getCompletedJobs(registry.getJobsFile()) != null) {
                 jobInfo = (JobInfo) registry.getCompletedJobForId(jobID);
             }
             if (jobInfo != null) {
@@ -192,7 +194,7 @@ public class AttachCommand implements AdminCommand, AdminCommandListener {
 
                 }
                 ar.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                ar.appendMessage(strings.getLocalString("attach.finished", "Command {0} executed{1}",jobName,ActionReport.ExitCode.SUCCESS));
+                ar.appendMessage(strings.getLocalString("attach.finished", "Command {0} executed{1}",jobName,jobInfo.exitCode));
             }
         }
     }

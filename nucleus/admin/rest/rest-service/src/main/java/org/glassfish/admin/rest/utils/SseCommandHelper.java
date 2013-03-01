@@ -98,7 +98,7 @@ public class SseCommandHelper implements Runnable, AdminCommandEventBroker.Admin
             commandInvocation.execute();
         } catch (Throwable thr) {
             RestLogging.restLogger.log(Level.WARNING, RestLogging.UNEXPECTED_EXCEPTION,
-                    thr.toString());
+                    thr);
             ActionReport actionReport = new PropsFileActionReporter(); //new RestActionReporter();
             actionReport.setFailureCause(thr);
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);

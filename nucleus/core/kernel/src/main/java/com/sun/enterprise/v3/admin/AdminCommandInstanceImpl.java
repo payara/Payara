@@ -41,7 +41,7 @@ package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.event.AdminCommandEventBrokerImpl;
 import com.sun.enterprise.admin.remote.AdminCommandStateImpl;
-import com.sun.enterprise.admin.remote.JobPersistenceService;
+import com.sun.enterprise.v3.admin.JobPersistenceService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.AdminCommandEventBroker;

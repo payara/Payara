@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.remote;
+package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
@@ -75,7 +75,7 @@ public class JobPersistenceService implements JobPersistence {
     protected JobInfos jobInfos;
 
     @Inject
-    private JobManager jobManager;
+    private JobManagerService jobManager;
 
     protected JAXBContext jaxbContext;
 
@@ -88,7 +88,7 @@ public class JobPersistenceService implements JobPersistence {
     public  void persist(Object obj) {
         JobInfo jobInfo = (JobInfo)obj;
 
-        jobInfos = jobManager.getCompletedJobs();
+        jobInfos = jobManager.getCompletedJobs(jobManager.getJobsFile());
 
         doPersist(jobInfos,jobInfo);
 
@@ -110,6 +110,7 @@ public class JobPersistenceService implements JobPersistence {
                 jobInfos.setJobInfoList(jobList);
                 jobList.add(jobInfo);
                 jaxbMarshaller.marshal(jobInfos, file);
+                jobManager.addToCompletedJobs(new CompletedJob(jobInfo.jobId,jobInfo.commandCompletionDate,jobInfo.getJobsFile()));
                 jobManager.purgeJob(jobInfo.jobId);
 
             } catch (JAXBException e) {
