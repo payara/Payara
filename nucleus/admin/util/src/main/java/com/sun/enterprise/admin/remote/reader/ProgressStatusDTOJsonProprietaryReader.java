@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,14 +41,7 @@ package com.sun.enterprise.admin.remote.reader;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyReader;
-import javax.ws.rs.ext.Provider;
+import java.net.HttpURLConnection;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
@@ -59,22 +52,22 @@ import org.glassfish.api.admin.progress.ProgressStatusDTO.ChildProgressStatusDTO
  *
  * @author mmares
  */
-@Provider
-@Consumes(MediaType.APPLICATION_JSON)
-public class ProgressStatusDTOJsonReader implements MessageBodyReader<ProgressStatusDTO> {
+public class ProgressStatusDTOJsonProprietaryReader implements ProprietaryReader<ProgressStatusDTO> {
     
     private static final JsonFactory factory = new JsonFactory();
-       
+    
     @Override
-    public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+    public boolean isReadable(Class<?> type, String mimetype) {
         return type.isAssignableFrom(ProgressStatusDTO.class);
     }
     
+    public ProgressStatusDTO readFrom(final HttpURLConnection urlConnection) throws IOException {
+        return readFrom(urlConnection.getInputStream(), urlConnection.getContentType());
+    }
+
     @Override
-    public ProgressStatusDTO readFrom(Class<ProgressStatusDTO> type, Type genericType, Annotation[] annotations, 
-                    MediaType mediaType, MultivaluedMap<String, String> httpHeaders, 
-                    InputStream entityStream) throws IOException, WebApplicationException {
-        JsonParser jp = factory.createJsonParser(entityStream);
+    public ProgressStatusDTO readFrom(final InputStream is, final String contentType) throws IOException {
+        JsonParser jp = factory.createJsonParser(is);
         try {
             JsonToken token = jp.nextToken(); //sorounding object
             jp.nextToken(); //Name progress-status
@@ -124,5 +117,5 @@ public class ProgressStatusDTOJsonReader implements MessageBodyReader<ProgressSt
         }
         return new ChildProgressStatusDTO(allocatedSteps, psd);
     }
-    
+
 }

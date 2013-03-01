@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,29 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.admin.cli;
+package com.sun.enterprise.admin.remote.sse;
 
-import com.sun.enterprise.admin.cli.AdminMain;
-import com.sun.enterprise.admin.cli.Environment;
+import com.sun.enterprise.admin.remote.reader.ProprietaryReader;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
- * The asadmin main program.
+ * Proprietary reader for SSE
  */
-public class AsadminMain extends AdminMain {
+public class GfSseEventReceiverProprietaryReader implements ProprietaryReader<GfSseEventReceiver> {
 
-
-    public static void main(String[] args) {
-//        Metrix.event("START");
-        Environment.setPrefix("AS_ADMIN_");
-        Environment.setShortPrefix("AS_");
-        int code = new AsadminMain().doMain(args);
-//        Metrix.event("DONE");
-//        System.out.println("METRIX:");
-//        System.out.println(Metrix.getInstance().toString());
-        System.exit(code);
+    @Override
+    public boolean isReadable(final Class<?> type, final String contentType) {
+        return type ==  GfSseEventReceiver.class
+                && contentType != null
+                && contentType.startsWith("text/event-stream");
     }
 
-    protected String getCommandName() {
-        return "asadmin";
+    @Override
+    public GfSseEventReceiver readFrom(final InputStream is, final String contentType) throws IOException {
+        return new GfSseEventReceiver(is);
     }
 }

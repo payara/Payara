@@ -136,7 +136,6 @@ public @interface Param {
 
     /**
      * Returns true if multiple instances of the parameter are allowed.
-     * Currently only implemented for the primary parameter (operand).
      *
      * @return true if multiple instances are allowed
      */

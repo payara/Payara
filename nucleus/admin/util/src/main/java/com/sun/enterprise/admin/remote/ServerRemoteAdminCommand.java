@@ -62,6 +62,7 @@ import org.glassfish.security.services.impl.JCEKSDomainPasswordAliasStore;
  *
  * @author Tim Quinn
  */
+//TODO: Remove it
 public class ServerRemoteAdminCommand extends RemoteAdminCommand {
 
     private final static String SSL_SOCKET_PROTOCOL = "TLS";

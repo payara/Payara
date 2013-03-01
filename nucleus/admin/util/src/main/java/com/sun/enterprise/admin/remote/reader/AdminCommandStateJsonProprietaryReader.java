@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,17 +45,9 @@ import com.sun.enterprise.util.io.FileUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyReader;
-import javax.ws.rs.ext.Provider;
-import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.api.admin.AdminCommandState;
@@ -64,25 +56,23 @@ import org.glassfish.api.admin.AdminCommandState;
  *
  * @author mmares
  */
-@Provider
-@Consumes(MediaType.APPLICATION_JSON)
-public class AdminCommandStateJsonReader implements MessageBodyReader<AdminCommandState> {
-    
-    private static final JsonFactory factory = new JsonFactory();
+public class AdminCommandStateJsonProprietaryReader implements ProprietaryReader<AdminCommandState> {
     
     private static final Logger logger = AdminLoggerInfo.getLogger();
-            
+
     @Override
-    public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+    public boolean isReadable(Class<?> type, String mimetype) {
         return type.isAssignableFrom(AdminCommandState.class);
     }
     
+    public AdminCommandState readFrom(HttpURLConnection urlConnection) throws IOException {
+        return readFrom(urlConnection.getInputStream(), urlConnection.getContentType());
+    }
+
     @Override
-    public AdminCommandState readFrom(Class<AdminCommandState> type, Type genericType, Annotation[] annotations, 
-                    MediaType mediaType, MultivaluedMap<String, String> httpHeaders, 
-                    InputStream entityStream) throws IOException, WebApplicationException {
+    public AdminCommandState readFrom(final InputStream is, final String contentType) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        FileUtils.copy(entityStream, baos, 0);
+        FileUtils.copy(is, baos, 0);
         String str = baos.toString("UTF-8");
         try {
             JSONObject json = new JSONObject(str);
@@ -101,32 +91,10 @@ public class AdminCommandStateJsonReader implements MessageBodyReader<AdminComma
         JSONObject jsonReport = json.optJSONObject("action-report");
         if (jsonReport != null) {
             ar = new CliActionReport();
-            ActionReportJsonReader.fillActionReport(ar, jsonReport);
+            ActionReportJsonProprietaryReader.fillActionReport(ar, jsonReport);
         }
         String id = json.optString("id");
         return new AdminCommandStateImpl(state, ar, emptyPayload, id);
     }
-    
-//    public static AdminCommandStateImpl readAdminCommandState(JsonParser jp) throws IOException {
-//        AdminCommandState.State state = null;
-//        boolean emptyPayload = true;
-//        CliActionReport ar = null;
-//        String id = null;
-//        while (jp.nextToken() != JsonToken.END_OBJECT) {
-//            String fieldname = jp.getCurrentName();
-//            jp.nextToken(); // move to value
-//            if ("state".equals(fieldname)) {
-//                state = AdminCommandState.State.valueOf(jp.getText());
-//            } else if ("empty-payload".equals(fieldname)) {
-//                emptyPayload = jp.getValueAsBoolean(true);
-//            } else if ("id".equals(fieldname)) {
-//                id = jp.getText();
-//            } else if ("action-report".equals(fieldname)) {
-//                ar = new CliActionReport();
-//                ActionReportJsonReader.fillActionReport(ar, jp);
-//            }
-//        }
-//        return new AdminCommandStateImpl(state, ar, emptyPayload, id);
-//    }
     
 }

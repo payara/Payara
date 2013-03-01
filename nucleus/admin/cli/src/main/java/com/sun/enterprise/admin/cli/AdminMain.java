@@ -39,7 +39,8 @@
  */
 package com.sun.enterprise.admin.cli;
 
-import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
+import com.sun.enterprise.admin.remote.reader.ProprietaryReaderFactory;
+import com.sun.enterprise.admin.remote.writer.ProprietaryWriterFactory;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
@@ -246,7 +247,7 @@ public class AdminMain {
                     new Object[]{System.getProperty("java.class.path"),
                         Arrays.toString(args)});
         }
-
+        
         ClassLoader ecl = getExtensionClassLoader();
         
         /*
@@ -259,7 +260,16 @@ public class AdminMain {
          * Preinit of remote command help us with performance. Made parallel 
          * initialisation of underliing frameworks
          */
-        RemoteRestAdminCommand.preinit();
+        //RemoteRestAdminCommand.preinit();
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ProprietaryReaderFactory.getReader(Class.class, "not/defined");
+                ProprietaryWriterFactory.getWriter(Class.class);
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
 
         /*
          * Create a habitat that can load from the extension directory.
@@ -316,7 +326,6 @@ public class AdminMain {
     public int executeCommand(String[] argv) {
         CLICommand cmd = null;
         try {
-
             // if the first argument is an option, we're using the new form
             if (argv.length > 0 && argv[0].startsWith("-")) {
                 /*
@@ -349,7 +358,8 @@ public class AdminMain {
             ServiceLocatorUtilities.addOneConstant(serviceLocator, env);
             ServiceLocatorUtilities.addOneConstant(serviceLocator, po);
             cmd = CLICommand.getCommand(serviceLocator, command);
-            return cmd.execute(argv);
+            int result = cmd.execute(argv);
+            return result;
         } catch (CommandValidationException cve) {
             logger.severe(cve.getMessage());
             if (cmd == null) // error parsing program options

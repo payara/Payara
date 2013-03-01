@@ -39,6 +39,7 @@
  */
 package org.glassfish.admin.rest.resources.admin;
 
+import com.sun.enterprise.admin.remote.ParamsWithPayload;
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.admin.remote.RestPayloadImpl;
 import com.sun.enterprise.admin.util.CachedCommandModel;
@@ -188,13 +189,16 @@ public class CommandResource {
                 @HeaderParam("X-Indent") String indent,
                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
-                FormDataMultiPart mp) {
+//                FormDataMultiPart mp,
+                ParamsWithPayload pwp) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
         if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
             RestLogging.restLogger.log(Level.FINEST, "execCommandMultInSimpOut({0})", commandName);
         }
-        ParameterMap data = new ParameterMap();
-        Payload.Inbound inbound = RestPayloadImpl.Inbound.parseFromFormDataMultipart(mp, data);
+//        ParameterMap data = new ParameterMap();
+//        Payload.Inbound inbound = RestPayloadImpl.Inbound.parseFromFormDataMultipart(mp, data);
+        ParameterMap data = pwp.getParameters();
+        Payload.Inbound inbound = pwp.getPayloadInbound();
         return executeCommand(commandName, inbound, data, false, indent, modelETag, jSessionId);
     }
 
@@ -239,13 +243,16 @@ public class CommandResource {
                 @HeaderParam("X-Indent") String indent,
                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
-                FormDataMultiPart mp) {
+//                FormDataMultiPart mp,
+                ParamsWithPayload pwp) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
         if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
             RestLogging.restLogger.log(Level.FINEST, "execCommandMultInMultOut({0})", commandName);
         }
-        ParameterMap data = new ParameterMap();
-        Payload.Inbound inbound = RestPayloadImpl.Inbound.parseFromFormDataMultipart(mp, data);
+//        ParameterMap data = new ParameterMap();
+//        Payload.Inbound inbound = RestPayloadImpl.Inbound.parseFromFormDataMultipart(mp, data);
+        ParameterMap data = pwp.getParameters();
+        Payload.Inbound inbound = pwp.getPayloadInbound();
         return executeCommand(commandName, inbound, data, true, indent, modelETag, jSessionId);
     }
 
@@ -288,13 +295,14 @@ public class CommandResource {
     public Response execCommandMultInSseOut(@PathParam("command") String command,
                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
-                FormDataMultiPart mp) {
+//                FormDataMultiPart mp,
+                ParamsWithPayload pwp) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
         if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
             RestLogging.restLogger.log(Level.FINEST, "execCommandMultInMultOut({0})", commandName);
         }
-        ParameterMap data = new ParameterMap();
-//        Payload.Inbound inbound = RestPayloadImpl.Inbound.parseFromFormDataMultipart(mp, data);
+//        ParameterMap data = new ParameterMap();
+        ParameterMap data = pwp.getParameters();
         return executeSseCommand(commandName, null, data, modelETag, jSessionId);
     }
 
@@ -400,12 +408,14 @@ public class CommandResource {
             rb.header("X-Indent", xIndentHeader);
         }
         if (supportsMultiparResult && outbound.size() > 0) {
-            MultiPart mp = new MultiPart();
-            mp.bodyPart(ar, MediaType.APPLICATION_JSON_TYPE);
-            if (outbound.size() > 0) {
-                outbound.addToMultipart(mp, RestLogging.restLogger);
-            }
-            rb.entity(mp);
+//            MultiPart mp = new MultiPart();
+//            mp.bodyPart(ar, MediaType.APPLICATION_JSON_TYPE);
+//            if (outbound.size() > 0) {
+//                outbound.addToMultipart(mp, RestLogging.restLogger);
+//            }
+//            rb.entity(mp);
+            ParamsWithPayload pwp = new ParamsWithPayload(outbound, ar);
+            rb.entity(pwp);
         } else {
             rb.type(MediaType.APPLICATION_JSON_TYPE);
             rb.entity(ar);

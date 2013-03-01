@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,16 +41,9 @@ package com.sun.enterprise.admin.remote.reader;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyReader;
-import javax.ws.rs.ext.Provider;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
@@ -62,22 +55,22 @@ import org.glassfish.api.admin.progress.ProgressStatusEvent.Changed;
  *
  * @author mmares
  */
-@Provider
-@Consumes(MediaType.APPLICATION_JSON)
-public class ProgressStatusEventJsonReader implements MessageBodyReader<ProgressStatusEvent> {
+public class ProgressStatusEventJsonProprietaryReader implements ProprietaryReader<ProgressStatusEvent> {
     
     private static final JsonFactory factory = new JsonFactory();
     
     @Override
-    public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+    public boolean isReadable(Class<?> type, String mimetype) {
         return type.isAssignableFrom(ProgressStatusEvent.class);
     }
     
+    public ProgressStatusEvent readFrom(HttpURLConnection urlConnection) throws IOException {
+        return readFrom(urlConnection.getInputStream(), urlConnection.getContentType());
+    }
+
     @Override
-    public ProgressStatusEvent readFrom(Class<ProgressStatusEvent> type, Type genericType, Annotation[] annotations, 
-                    MediaType mediaType, MultivaluedMap<String, String> httpHeaders, 
-                    InputStream entityStream) throws IOException, WebApplicationException {
-        JsonParser jp = factory.createJsonParser(entityStream);
+    public ProgressStatusEvent readFrom(final InputStream is, final String contentType) throws IOException {
+        JsonParser jp = factory.createJsonParser(is);
         try {
             JsonToken token = jp.nextToken(); //sorounding object
             jp.nextToken(); //Name progress-status-event
@@ -116,10 +109,10 @@ public class ProgressStatusEventJsonReader implements MessageBodyReader<Progress
                     changed.add(Changed.valueOf(jp.getText()));
                 }
             } else if ("progress-status".equals(fieldname)) {
-                source = ProgressStatusDTOJsonReader.readProgressStatus(jp);
+                source = ProgressStatusDTOJsonProprietaryReader.readProgressStatus(jp);
             }
         }
         return new ProgressStatusEvent(source, parentId, message, spinner, allocatedSteps, changed.toArray(new Changed[changed.size()]));
     }
-    
+
 }

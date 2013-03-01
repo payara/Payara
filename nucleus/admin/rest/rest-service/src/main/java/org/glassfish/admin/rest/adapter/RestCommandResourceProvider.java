@@ -41,7 +41,6 @@
 
 package org.glassfish.admin.rest.adapter;
 
-import com.sun.enterprise.admin.remote.writer.PayloadPartProvider;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -49,9 +48,11 @@ import java.util.Set;
 import javax.ws.rs.core.MediaType;
 import org.glassfish.admin.rest.provider.*;
 import org.glassfish.admin.rest.readers.JsonParameterMapProvider;
+import org.glassfish.admin.rest.readers.MultipartFDPayloadReader;
 import org.glassfish.admin.rest.readers.ParameterMapFormReader;
 import org.glassfish.admin.rest.resources.admin.CommandResource;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.media.sse.OutboundEventWriter;
 
 /**
@@ -94,7 +95,10 @@ public class RestCommandResourceProvider extends AbstractRestResourceProvider {
         //Parameters
         r.add(ParameterMapFormReader.class);
         r.add(JsonParameterMapProvider.class);
-        r.add(PayloadPartProvider.class);
+        //Multipart 
+        //r.add(PayloadPartProvider.class);
+        r.add(MultipartFDPayloadReader.class);
+        r.add(ParamsWithPayloadMultipartWriter.class);
         //SSE data
         r.add(OutboundEventWriter.class);
         r.add(AdminCommandStateJsonProvider.class);

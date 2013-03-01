@@ -41,26 +41,28 @@
 package com.sun.enterprise.admin.remote;
 
 import com.sun.enterprise.admin.util.AuthenticationInfo;
+import com.sun.enterprise.admin.util.HttpConnectorAddress;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.config.serverbeans.SecureAdminInternalUser;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
+import java.net.URLConnection;
 import java.util.logging.Logger;
-import javax.net.ssl.SSLContext;
-import javax.ws.rs.client.Invocation;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.security.services.impl.JCEKSDomainPasswordAliasStore;
 
 /**
- * RemoteRestAdminCommand which is sent from a server (DAS or instance).
+ * RemoteAdminCommand which is sent from a server (DAS or instance).
  * <p>
  * This class identifies the origin as a server (as opposed to a true
  * admin client) for server-to-server authentication.
  *
  * @author Tim Quinn
  */
+//TODO: Remove it
 public class ServerRemoteRestAdminCommand extends RemoteRestAdminCommand {
 
     private final static String SSL_SOCKET_PROTOCOL = "TLS";
@@ -79,7 +81,6 @@ public class ServerRemoteRestAdminCommand extends RemoteRestAdminCommand {
             boolean secure, String user, String password, Logger logger)
             throws CommandException {
         super(name, host, port, secure, "admin", "", logger);
-        super.setOmitCache(true); //todo: [mmar] Remove after implementation CLI->ReST done
         completeInit(habitat);
     }
 
@@ -94,7 +95,7 @@ public class ServerRemoteRestAdminCommand extends RemoteRestAdminCommand {
     }
 
     @Override
-    protected synchronized SSLContext getSslContext() {
+    protected synchronized HttpConnectorAddress getHttpConnectorAddress(String host, int port, boolean shouldUseSecure) {
         /*
          * Always use secure communication to another server process.
          * Return a connector address that uses a cert to authenticate this
@@ -104,7 +105,10 @@ public class ServerRemoteRestAdminCommand extends RemoteRestAdminCommand {
         try {
             final String certAlias = SecureAdmin.Util.isUsingUsernamePasswordAuth(secureAdmin) ?
                     null : getCertAlias();
-            return sslUtils().getAdminSSLContext(certAlias, SSL_SOCKET_PROTOCOL);
+            return new HttpConnectorAddress(host, port,
+                    certAlias == null 
+                        ? null 
+                        : sslUtils().getAdminSocketFactory(certAlias, SSL_SOCKET_PROTOCOL));
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -137,12 +141,13 @@ public class ServerRemoteRestAdminCommand extends RemoteRestAdminCommand {
      * @param urlConnection
      */
     @Override
-    protected synchronized Invocation.Builder addAdditionalHeaders(final Invocation.Builder request) {
+    protected synchronized void addAdditionalHeaders(final URLConnection urlConnection) {
         final String indicatorValue = SecureAdmin.Util.configuredAdminIndicator(secureAdmin);
         if (indicatorValue != null) {
-            return request.header(SecureAdmin.Util.ADMIN_INDICATOR_HEADER_NAME, indicatorValue);
+            urlConnection.setRequestProperty(
+                    SecureAdmin.Util.ADMIN_INDICATOR_HEADER_NAME,
+                    indicatorValue);
         }
-        return request;
     }
 
     private synchronized String getCertAlias() {

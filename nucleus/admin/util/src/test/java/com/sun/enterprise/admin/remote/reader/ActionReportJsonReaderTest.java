@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,13 +56,13 @@ import static org.junit.Assert.*;
  */
 public class ActionReportJsonReaderTest {
     
-    private ActionReportJsonReader reader = new ActionReportJsonReader();
+    private ActionReportJsonProprietaryReader reader = new ActionReportJsonProprietaryReader();
     
     public ActionReportJsonReaderTest() {
     }
     
     private ActionReport unmarshall(String json) throws IOException {
-        return reader.readFrom(null, null, null, null, null, new ByteArrayInputStream(json.getBytes("UTF-8")));
+        return reader.readFrom(new ByteArrayInputStream(json.getBytes("UTF-8")), "application/json");
     }
 
     @Test

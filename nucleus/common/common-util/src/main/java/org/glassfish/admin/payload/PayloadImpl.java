@@ -40,6 +40,7 @@
 
 package org.glassfish.admin.payload;
 
+import com.sun.xml.internal.xsom.impl.scd.Iterators;
 import java.io.*;
 import java.net.URI;
 import java.net.URLConnection;
@@ -394,6 +395,16 @@ public class PayloadImpl implements Payload {
 
         public static Outbound newInstance() {
             return ZipPayloadImpl.Outbound.newInstance();
+        }
+        
+        @Override
+        public Iterator<Payload.Part> parts() {
+            ArrayList<Payload.Part> prts = getParts();
+            if (prts == null) {
+                return Collections.EMPTY_LIST.iterator();
+            } else {
+                return prts.iterator();
+            }
         }
     }
 

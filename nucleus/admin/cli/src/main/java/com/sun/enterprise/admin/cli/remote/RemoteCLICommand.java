@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,16 +64,10 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
-import org.glassfish.api.admin.AdminCommandEventBroker;
 import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
 import org.glassfish.api.admin.AdminCommandState;
 import org.glassfish.api.admin.CommandException;
@@ -272,11 +266,11 @@ public class RemoteCLICommand extends CLICommand {
          * Adds cookies to the header to support session based client 
          * routing.
          *
-         *
+         * @param urlConnection
          */
         @Override
-        protected synchronized Invocation.Builder addAdditionalHeaders(final Invocation.Builder request) {
-            return addCookieHeaders(request);
+        protected synchronized void addAdditionalHeaders(final URLConnection urlConnection) {
+            addCookieHeaders(urlConnection);
         }
         
         @Override
@@ -291,17 +285,17 @@ public class RemoteCLICommand extends CLICommand {
         protected boolean refetchInvalidModel() {
             return false;
         }
-
+        
         /*
          * Adds any cookies maintained in the clients session cookie cache.
          */
-        private Invocation.Builder addCookieHeaders(final Invocation.Builder request) {
+        private void addCookieHeaders(final URLConnection urlConnection) {
 
             // Get the last modified time of the session cache file.
             long modifiedTime = sessionCache.lastModified();
             if (modifiedTime == 0) {
                 // No session file so no cookies to add.
-                return request;
+                return;
             }
 
             // Remote any Set-Cookie's in the system cookie manager otherwise
@@ -320,7 +314,7 @@ public class RemoteCLICommand extends CLICommand {
                 ((ClientCookieStore) cookieManager.getCookieStore()).load();
             } catch (IOException e) {
                 logger.log(Level.FINER, "Unable to load cookies: {0}", e.toString());
-                return request;
+                return;
             }
 
             if (isSessionCookieExpired(cookieManager, modifiedTime)) {
@@ -328,7 +322,7 @@ public class RemoteCLICommand extends CLICommand {
                 if (!sessionCache.delete()) {
                     logger.finer("Unable to delete session file.");
                 }
-                return request;
+                return;
             }
 
             StringBuilder sb = new StringBuilder("$Version=1");
@@ -338,9 +332,8 @@ public class RemoteCLICommand extends CLICommand {
                 sb.append("; ").append(cookie.getName()).append("=").append(cookie.getValue());
             }
             if (hasCookies) {
-                return request.header(COOKIE_HEADER, sb.toString());
+                urlConnection.setRequestProperty(COOKIE_HEADER, sb.toString());
             } 
-            return request;
         }
 
         /*
@@ -362,8 +355,9 @@ public class RemoteCLICommand extends CLICommand {
                         if ((creationTime / 1000 + cookie.getMaxAge()) < 
                                    System.currentTimeMillis()/1000) {
                             return true;
-                        } else
+                        } else {
                             return false;
+                        }
                     }
                 }
             }
@@ -374,27 +368,27 @@ public class RemoteCLICommand extends CLICommand {
          * Processes the headers to support session based client 
          * routing.
          *
+         * @param urlConnection
          */
         @Override
-        protected synchronized void processHeaders(final Response response) {
-            processCookieHeaders(response);
+        protected synchronized void processHeaders(final URLConnection urlConnection) {
+            processCookieHeaders(urlConnection);
         }
 
-        private void processCookieHeaders(final Response response) {
-            Map<String, NewCookie> cookies = response.getCookies();
+        private void processCookieHeaders(final URLConnection urlConnection) {
 
-//            CookieManager systemCookieManager = (CookieManager)CookieManager.getDefault();
-//
-//            if (systemCookieManager == null) {
-//                logger.finer("Assertion failed: null system CookieManager");
-//                return;
-//            }
-//
-//            // Using the system CookieHandler, retrieve any cookies.
-//            CookieStore systemCookieJar = systemCookieManager.getCookieStore();
-//            List<HttpCookie> newCookies = systemCookieJar.getCookies();
+            CookieManager systemCookieManager = (CookieManager)CookieManager.getDefault();
 
-            if (cookies == null || cookies.isEmpty()) {
+            if (systemCookieManager == null) {
+                logger.finer("Assertion failed: null system CookieManager");
+                return;
+            }
+
+            // Using the system CookieHandler, retrieve any cookies.
+            CookieStore systemCookieJar = systemCookieManager.getCookieStore();
+            List<HttpCookie> newCookies = systemCookieJar.getCookies();
+
+            if (newCookies.isEmpty()) {
                 // If there are no cookies to set in the request we
                 // have nothing to do.
                 return;
@@ -423,9 +417,8 @@ public class RemoteCLICommand extends CLICommand {
                             CookiePolicy.ACCEPT_ALL);
                 }
                 try {
-                    MultivaluedMap metadata = response.getMetadata();
                     cookieManager.put(((ClientCookieStore)cookieManager.getCookieStore()).getStaticURI(),
-                            metadata);
+                            urlConnection.getHeaderFields());
                 } catch (IOException e) {
                     // Thrown by cookieManger.put()
                     logger.finer("Unable to save cookies: " + e.toString());
@@ -458,22 +451,17 @@ public class RemoteCLICommand extends CLICommand {
 
             // Check to see if any of the set cookies in the reply are
             // different from what is already in the persistent store.
-            for (NewCookie nc: cookies.values()) {
+            for (HttpCookie cookie: systemCookieJar.getCookies()) {
                 // Check to see if any of the set cookies in the reply are
                 // different from what is already in the persistent store.
-                HttpCookie hcookie = null;
-                for (HttpCookie hc : cookieManager.getCookieStore().getCookies()) {
-                    if (equalsStrIgnoreCase(hc.getName(), nc.getName()) &&
-                        equalsStrIgnoreCase(hc.getDomain(), nc.getDomain()) &&
-                        equalsStr(hc.getPath(), nc.getPath())) {
-                        hcookie = hc;
-                    }
-                }
-                if (hcookie == null) {
+                int cookieIndex = cookieManager.getCookieStore().getCookies().indexOf(cookie);
+                if (cookieIndex == -1) {
                     newCookieFound = true;
                     break;
                 } else {
-                    if (!nc.getValue().equals(hcookie.getValue())) {
+                    HttpCookie c1 = cookieManager.getCookieStore().getCookies().get(cookieIndex); 
+
+                    if (!c1.getValue().equals(cookie.getValue())) {
                         newCookieFound = true;
                         break;
                     }
@@ -491,9 +479,8 @@ public class RemoteCLICommand extends CLICommand {
             if (newCookieFound) {
                 try {
                     try {
-                        MultivaluedMap metadata = response.getMetadata();
                         cookieManager.put(((ClientCookieStore)cookieManager.getCookieStore()).getStaticURI(),
-                            metadata);
+                            urlConnection.getHeaderFields());
                     } catch (IOException e) {
                         // Thrown by cookieManger.put()
                         logger.finer("Unable to save cookies: " + e.toString());
@@ -508,7 +495,6 @@ public class RemoteCLICommand extends CLICommand {
                 ((ClientCookieStore) cookieManager.getCookieStore()).touchStore();
             }
         }
-
     }
 
     /**
@@ -753,6 +739,9 @@ public class RemoteCLICommand extends CLICommand {
     protected int executeCommand()
             throws CommandException, CommandValidationException {
         try {
+            if (logger.isLoggable(Level.FINER)) {
+                logger.finer("RemoteCLICommand2.executeCommand()");
+            }
             rac.statusPrinter.reset();
             options.set("DEFAULT", operands);
             if (programOpts.isDetachedCommand())  {
@@ -803,7 +792,6 @@ public class RemoteCLICommand extends CLICommand {
             throw ex;
         }
         ActionReport ar = rac.getActionReport();
-        //logger.log(Level.INFO, Metrix.getInstance().toString());
         if (ar != null && ExitCode.WARNING == ar.getActionExitCode()) {
             return WARNING;
         }
@@ -926,7 +914,6 @@ public class RemoteCLICommand extends CLICommand {
                 programOpts.getPassword(), logger, programOpts.getAuthToken());
             rac.setFileOutputDirectory(outputDir);
             rac.setInteractive(programOpts.isInteractive());
-            rac.setOmitCache(!programOpts.isUseCache());
             for (String key : listeners.keySet()) {
                 for (AdminCommandListener<GfSseInboundEvent> listener : listeners.get(key)) {
                     rac.registerListener(key, listener);

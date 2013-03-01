@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,16 +43,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import org.glassfish.jersey.media.sse.InboundEvent;
-import org.glassfish.jersey.message.MessageBodyWorkers;
 
 /**
  * @author Pavel Bucek (pavel.bucek at oracle.com), Martin Mares (martin.mares at oracle.com)
  */
-//TODO: Temporary implementation until more features in Jersey client
 public final class GfSseEventReceiver implements Closeable {
 
     private enum State {
@@ -67,34 +61,20 @@ public final class GfSseEventReceiver implements Closeable {
     }
 
     private final InputStream inputStream;
-    private final Annotation[] annotations;
-    private final MediaType mediaType;
-    private final MultivaluedMap<String, String> headers;
-    private final MessageBodyWorkers messageBodyWorkers;
     private boolean closed = false;
 
     /**
      * Constructor.
-     *
-     * @param inputStream raw entity input stream
-     * @param annotations to be passed to {@link InboundEvent} instance for use during {@link InboundEvent#getData(Class)} call
-     * @param mediaType to be passed to {@link InboundEvent} instance for use during {@link InboundEvent#getData(Class)} call
-     * @param headers to be passed to {@link InboundEvent} instance for use during {@link InboundEvent#getData(Class)} call
-     * @param messageBodyWorkers to be passed to {@link InboundEvent} instance for use during {@link InboundEvent#getData(Class)} call
      */
-    GfSseEventReceiver(InputStream inputStream, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> headers, MessageBodyWorkers messageBodyWorkers) {
+    GfSseEventReceiver(InputStream inputStream) {
         this.inputStream = inputStream;
-        this.annotations = annotations;
-        this.mediaType = mediaType;
-        this.headers = headers;
-        this.messageBodyWorkers = messageBodyWorkers;
     }
 
     public GfSseInboundEvent readEvent() throws IOException {
-        GfSseInboundEvent inboundEvent = new GfSseInboundEvent(messageBodyWorkers, annotations, mediaType, headers);
+        GfSseInboundEvent inboundEvent = new GfSseInboundEvent();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        //StringBuilder sbr = new StringBuilder();
+//        StringBuilder sbr = new StringBuilder();
         
         State currentState = State.START;
         String fieldName = null;
@@ -102,7 +82,7 @@ public final class GfSseEventReceiver implements Closeable {
         try {
             int data = 0;
             while((data = inputStream.read()) != -1) {
-                //sbr.append((char) data); 
+//                sbr.append((char) data); 
 
                 switch (currentState) {
 
@@ -113,11 +93,11 @@ public final class GfSseEventReceiver implements Closeable {
                             baos.write(data);
                             currentState = State.FIELD_NAME;
                         } else if(data == '\n') {
-                            //System.out.println(sbr);
+//                            System.out.println(sbr);
                             if(!inboundEvent.isEmpty()) {
                                 return inboundEvent;
                             }
-                            inboundEvent = new GfSseInboundEvent(messageBodyWorkers, annotations, mediaType, headers);
+                            inboundEvent = new GfSseInboundEvent();
                         }
                         break;
                     case COMMENT:

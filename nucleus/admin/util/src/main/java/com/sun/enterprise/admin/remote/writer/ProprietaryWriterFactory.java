@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,29 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.admin.cli;
+package com.sun.enterprise.admin.remote.writer;
 
-import com.sun.enterprise.admin.cli.AdminMain;
-import com.sun.enterprise.admin.cli.Environment;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * The asadmin main program.
+ *
+ * @author martinmares
  */
-public class AsadminMain extends AdminMain {
-
-
-    public static void main(String[] args) {
-//        Metrix.event("START");
-        Environment.setPrefix("AS_ADMIN_");
-        Environment.setShortPrefix("AS_");
-        int code = new AsadminMain().doMain(args);
-//        Metrix.event("DONE");
-//        System.out.println("METRIX:");
-//        System.out.println(Metrix.getInstance().toString());
-        System.exit(code);
+public class ProprietaryWriterFactory {
+    
+    private static final List<ProprietaryWriter> proprietaryWriters;
+    static {
+        proprietaryWriters = new ArrayList<ProprietaryWriter>(2);
+        proprietaryWriters.add(new ParameterMapFormProprietaryWriter());
+        proprietaryWriters.add(new MultipartProprietaryWriter());
     }
-
-    protected String getCommandName() {
-        return "asadmin";
+    
+    public static ProprietaryWriter getWriter(final Object entity) {
+        for (ProprietaryWriter pw : proprietaryWriters) {
+            if (pw.isWriteable(entity)) {
+                return pw;
+            }
+        }
+        return null;
     }
+    
 }

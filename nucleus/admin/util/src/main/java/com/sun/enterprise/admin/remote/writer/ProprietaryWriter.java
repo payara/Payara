@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,44 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.remote.sse;
+package com.sun.enterprise.admin.remote.writer;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyReader;
-import javax.ws.rs.ext.Provider;
-
-import org.glassfish.jersey.message.MessageBodyWorkers;
-
+import java.net.HttpURLConnection;
 
 /**
- * {@link javax.ws.rs.ext.MessageBodyWriter} for {@link EventProcessor}.
  *
- * @author Pavel Bucek (pavel.bucek at oracle.com)
+ * @author martinmares
  */
-//TODO: Temporary implementation until more features in Jersey client
-@Provider
-@Consumes("text/event-stream")
-public class GfSseEventReceiverReader implements MessageBodyReader<GfSseEventReceiver> {
+public interface ProprietaryWriter {
 
-    @Inject
-    javax.inject.Provider<MessageBodyWorkers> messageBodyWorkers;
+    boolean isWriteable(final Object entity);
 
-    @Override
-    public boolean isReadable(Class<?> aClass, Type type, Annotation[] annotations, MediaType mediaType) {
-        return aClass ==  GfSseEventReceiver.class;
-    }
-
-    @Override
-    public GfSseEventReceiver readFrom(Class<GfSseEventReceiver> eventProcessorClass, Type type, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> headers, InputStream inputStream) throws IOException, WebApplicationException {
-        return new GfSseEventReceiver(inputStream, annotations, MediaType.TEXT_PLAIN_TYPE /* TODO: mediaType */, headers, messageBodyWorkers.get());
-    }
+    void writeTo(final Object entity, final HttpURLConnection urlConnection) throws IOException;
+    
 }

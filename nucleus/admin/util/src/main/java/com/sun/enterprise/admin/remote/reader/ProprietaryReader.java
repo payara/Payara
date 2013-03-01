@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,41 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.remote.writer;
+package com.sun.enterprise.admin.remote.reader;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
-import org.glassfish.api.admin.Payload;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 
 /**
  *
- * @author mmares
+ * @author martinmares
  */
-@Provider
-@Produces(MediaType.WILDCARD)
-public class PayloadPartProvider implements MessageBodyWriter<Payload.Part> {
+public interface ProprietaryReader<T> {
 
-    @Override
-    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return Payload.Part.class.isAssignableFrom(type);
-    }
+    public boolean isReadable(final Class<?> type, final String contentType);
 
-    @Override
-    public long getSize(Payload.Part t, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return -1;
-    }
-
-    @Override
-    public void writeTo(Payload.Part t, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
-        t.copy(entityStream);
-    }
+//    public T readFrom(final HttpURLConnection urlConnection) throws IOException;
+    
+    public T readFrom(final InputStream is, final String contentType) throws IOException;
     
 }

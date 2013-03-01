@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,71 +39,32 @@
  */
 package com.sun.enterprise.admin.remote.sse;
 
+import com.sun.enterprise.admin.remote.reader.ProprietaryReader;
+import com.sun.enterprise.admin.remote.reader.ProprietaryReaderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyReader;
-
-import org.glassfish.jersey.message.MessageBodyWorkers;
 
 /**
- * Incoming event.
- *
- * @author Pavel Bucek (pavel.bucek at oracle.com)
+ * Incoming SSE event.
  */
-//TODO: Temporary implementation until more features in Jersey client
 public class GfSseInboundEvent {
     private String name = null;
     private String id = null;
     private ByteArrayOutputStream data = null;
 
-    private final MessageBodyWorkers messageBodyWorkers;
-    private final Annotation[] annotations;
-    private final MediaType mediaType;
-    private final MultivaluedMap<String, String> headers;
 
-    /**
-     * Constructor.
-     *
-     * @param messageBodyWorkers {@link MessageBodyWorkers} instance. Used for {@link javax.ws.rs.ext.MessageBodyWriter} lookup.
-     * @param annotations annotations from corresponding resource method. Used for {@link javax.ws.rs.ext.MessageBodyWriter} lookup.
-     * @param mediaType media type negotiated for corresponding resource method. Used for {@link javax.ws.rs.ext.MessageBodyWriter} lookup.
-     * @param headers response headers. Used for {@link javax.ws.rs.ext.MessageBodyWriter} lookup.
-     */
-    GfSseInboundEvent(MessageBodyWorkers messageBodyWorkers, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> headers) {
-        this.messageBodyWorkers = messageBodyWorkers;
-        this.annotations = annotations;
-        this.mediaType = mediaType;
-        this.headers = headers;
+    GfSseInboundEvent() {
     }
 
-    /**
-     * Set {@link InboundEvent} name.
-     *
-     * @param name event name.
-     */
     void setName(String name) {
         this.name = name;
     }
 
-    /**
-     * Set {@link InboundEvent} id.
-     *
-     * @param id event id.
-     */
     void setId(String id) {
         this.id = id;
     }
 
-    /**
-     * Add data. Used by {@link EventReceiver}.
-     *
-     * @param data byte array containing incoming data.
-     */
     void addData(byte[] data) {
         if(this.data == null) {
             this.data = new ByteArrayOutputStream();
@@ -116,11 +77,6 @@ public class GfSseInboundEvent {
         }
     }
 
-    /**
-     * Get info about {@link InboundEvent} state.
-     *
-     * @return {@code true} if current instance does not contain data. {@code false} otherwise.
-     */
     boolean isEmpty() {
         return data == null;
     }
@@ -137,26 +93,17 @@ public class GfSseInboundEvent {
     /**
      * Get event data.
      *
-     * @param messageType type of stored data content. Will be used for {@link MessageBodyReader} lookup.
-     * @return object of given type.
+     * @param messageType type of stored data content.
      * @throws IOException when provided type can't be read.
      */
-    public <T> T getData(Class<T> messageType) throws IOException {
-        return getData(messageType, null);
-    }
-
-    /**
-     * Get event data.
-     *
-     * @param messageType type of stored data content. Will be used for {@link MessageBodyReader} lookup.
-     * @param mediaType {@link MediaType} of incoming data. Will be used for {@link MessageBodyReader} lookup.
-     * @return object of given type.
-     * @throws IOException when provided type can't be read.
-     */
-    public <T> T getData(Class<T> messageType, MediaType mediaType) throws IOException {
-        final MessageBodyReader<T> messageBodyReader = messageBodyWorkers.getMessageBodyReader(messageType, null, annotations, mediaType);
-        return messageBodyReader.readFrom(messageType, null, annotations, (mediaType == null ? this.mediaType : mediaType),
-                headers, new ByteArrayInputStream(stripLastLineBreak(data.toByteArray())));
+    public <T> T getData(final Class<T> messageType, final String contentType) throws IOException {
+        final ProprietaryReader<T> reader = ProprietaryReaderFactory.<T>getReader(messageType, contentType);
+        if (reader != null) {
+            return reader.readFrom(new ByteArrayInputStream(stripLastLineBreak(data.toByteArray())), contentType);
+        } else {
+            //TODO: Throw IOException here
+            return null;
+        }
     }
 
     /**
@@ -166,7 +113,7 @@ public class GfSseInboundEvent {
      * @throws IOException when provided type can't be read.
      */
     public String getData() throws IOException {
-        return getData(String.class);
+        return getData(String.class, "text/plain");
     }
 
     @Override

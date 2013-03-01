@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,8 +42,7 @@ package com.sun.enterprise.admin.remote.reader;
 import com.sun.enterprise.admin.util.AdminLoggerInfo;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.*;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -52,38 +51,34 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyReader;
-import javax.ws.rs.ext.Provider;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.MessagePart;
 
-/** JAX-RS reader for ActionReport in JSON format. This is reader of format 
- * created by {@code ActionReportJson2Provider}.
+/** Reads ActionReport from JSON format.
  *
  * @author mmares
  */
-@Provider
-@Consumes({MediaType.APPLICATION_JSON, "application/x-javascript"})
-public class ActionReportJsonReader implements MessageBodyReader<ActionReport> {
+public class ActionReportJsonProprietaryReader implements ProprietaryReader<ActionReport> {
     
     private static final Logger logger = AdminLoggerInfo.getLogger();
             
     @Override
-    public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+    public boolean isReadable(final Class<?> type,
+                               final String mimetype) {
         return type.isAssignableFrom(ActionReport.class);
+    }
+    
+    public ActionReport readFrom(final HttpURLConnection urlConnection) throws IOException {
+        return readFrom(urlConnection.getInputStream(), urlConnection.getContentType());
     }
 
     @Override
-    public ActionReport readFrom(Class<ActionReport> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
+    public ActionReport readFrom(final InputStream is, final String contentType) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        FileUtils.copy(entityStream, baos, 0);
+        FileUtils.copy(is, baos, 0);
         String str = baos.toString("UTF-8");
         try {
             JSONObject json = new JSONObject(str);

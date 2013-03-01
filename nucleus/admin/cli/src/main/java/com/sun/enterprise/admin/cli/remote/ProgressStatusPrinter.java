@@ -46,7 +46,6 @@ import com.sun.enterprise.util.StringUtils;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ws.rs.core.MediaType;
 import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
 import org.glassfish.api.admin.CommandProgress;
 import org.glassfish.api.admin.progress.ProgressStatusDTO;
@@ -86,6 +85,8 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
         }
         
     }
+    
+    private static final String CONTENT_TYPE = "application/json";
     
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(ProgressStatusPrinter.class);
@@ -149,7 +150,7 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
     public synchronized void onAdminCommandEvent(String name, GfSseInboundEvent event) {
         try {
             if (CommandProgress.EVENT_PROGRESSSTATUS_STATE.equals(name)) {
-                ProgressStatusDTO dto = event.getData(ProgressStatusDTO.class, MediaType.APPLICATION_JSON_TYPE);
+                ProgressStatusDTO dto = event.getData(ProgressStatusDTO.class, CONTENT_TYPE);
                 client.mirror(dto);
                 commandProgress = (CommandProgress) client.getProgressStatus();
                 if (StringUtils.ok(commandProgress.getName()) && !StringUtils.ok(commandProgress.getLastMessage())) {
@@ -160,7 +161,7 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
                     logger.log(Level.WARNING, strings.get("progressstatus.event.applyerror", "Inapplicable progress status event"));
                     return;
                 }
-                ProgressStatusEvent pse = event.getData(ProgressStatusEvent.class, MediaType.APPLICATION_JSON_TYPE);
+                ProgressStatusEvent pse = event.getData(ProgressStatusEvent.class, CONTENT_TYPE);
                 client.mirror(pse);
             }
         } catch (IOException ex) {

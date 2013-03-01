@@ -159,7 +159,6 @@ public final class HttpConnectorAddress {
     }
 
     private SSLSocketFactory createAdminSSLSocketFactory(String alias, String protocol) {
-
         try {
             if (protocol == null) {
                 protocol = "TLSv1";
@@ -272,7 +271,7 @@ public final class HttpConnectorAddress {
     private URLConnection setOptions(URLConnection uc) {
         uc.setDoOutput(true);
         uc.setUseCaches(false);
-        uc.setRequestProperty("Content-type", "application/octet-stream");
+        //uc.setRequestProperty("Content-type", "application/octet-stream");
         uc.setRequestProperty("Connection", "Keep-Alive"); 
         return this.setAuthentication(uc);
     }

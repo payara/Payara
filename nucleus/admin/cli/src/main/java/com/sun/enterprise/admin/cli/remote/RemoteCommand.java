@@ -694,7 +694,6 @@ public class RemoteCommand extends CLICommand {
         }
         final Map<String,String> racAttrs = rac.getAttributes();
         String returnVal = racAttrs != null ? racAttrs.get("exit-code") : null;
-        //logger.log(Level.INFO, Metrix.getInstance().toString());
         if(returnVal != null && "WARNING".equals(returnVal))
             return WARNING;
         return SUCCESS;

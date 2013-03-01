@@ -349,6 +349,12 @@ public interface Payload {
          * @return the header name
          */
         public String getHeaderName();
+        
+        /**
+         * Returns the parts from the outbound payload.
+         * @return Iterator over the outbound Parts
+         */
+        public Iterator<Part> parts();
 
     }
 
