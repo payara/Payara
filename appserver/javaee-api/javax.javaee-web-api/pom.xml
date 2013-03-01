@@ -171,11 +171,6 @@
 	    <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>javax.transaction.cdi</groupId>
-            <artifactId>javax.transaction.cdi-api</artifactId>
-	    <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>javax.persistence</artifactId>
             <optional>true</optional>
