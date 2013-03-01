@@ -331,7 +331,7 @@ public class AppTest extends TestCase {
             System.out.println("**Status after rollback: "  + status + " <===");
             assert(theResource.rollbackStatusOK());
             assert(theResource1.rollbackStatusOK());
-            assert(theResource2.rollbackStatusOK());
+            assert(!theResource2.isAssociated());
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -1796,6 +1796,10 @@ public class AppTest extends TestCase {
 
        public boolean prepareStatusOK() {
             return prepare_status==Status.STATUS_PREPARING;
+       }
+
+       public boolean isAssociated() {
+            return inUse;
        }
 
        private int getStatus(String name) {

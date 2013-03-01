@@ -185,7 +185,7 @@ public class TransactionState {
         while (e.hasNext()) {
             XAResource res0 = (XAResource) e.next();
             if (res0.isSameRM(res) && res0 != res) {
-                _rollback(res0);
+                _end(res0);
             }
         }
     }
@@ -215,6 +215,34 @@ public class TransactionState {
             setXAState(res, ROLLING_BACK);
             activeResources++;
             **/
+            break;
+        case ROLLING_BACK:
+        case NOT_EXIST:
+        default:
+            throw new IllegalStateException("Wrong XAState: " +
+                                            XAState/*#Frozen*/);
+        }
+    }
+
+    synchronized private void _end(XAResource res)
+            throws IllegalStateException, XAException {
+
+        Xid xid = (Xid) resourceList.get(res);
+        assert_prejdk14(xid != null);
+        int XAState = getXAState(res);
+        switch (XAState) {
+        case NOT_ASSOCIATED:
+        case FAILED:
+            // do nothing
+            break;
+        case ASSOCIATION_SUSPENDED:
+        case ASSOCIATED:
+            try {
+                res.end(xid, XAResource.TMSUCCESS);
+            } catch (Exception ex) {
+                _logger.log(Level.WARNING,"jts.delist_exception",ex);
+            }
+            setXAState(res, NOT_ASSOCIATED);
             break;
         case ROLLING_BACK:
         case NOT_EXIST:
