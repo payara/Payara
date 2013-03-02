@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -166,6 +166,7 @@
                 mapPut(map="#{pageSession.clusterInstanceMap}" key="#{pageSession.clusterName}" value="#{requestScope.listOfInstances}");
             />
         </event>
+        "<table border="1">
         <foreach key="instance" list="#{requestScope.listOfInstances}">
             <event>
             <!beforeEncode
@@ -175,12 +176,15 @@
                 setAttribute(key="statusString" value="$resource{i18nc.status.image.$attribute{status}}  &nbsp;  $resource{i18nc.status.$attribute{status}}");
             />
             </event>
-            
+            "<tr>
+            "<td>
             <sun:hyperlink id="iLink" url="#{request.contextPath}/cluster/cluster/clusterInstanceEdit.jsf?clusterName=#{pageSession.clusterName}&instanceName=#{instance}" text="#{instance}" />
-            "&nbsp;&nbsp;&nbsp;
-            <staticText id="colStopped" value="#{requestScope.statusString}" />
-            "<br />
+            "</td> <td>
+             <staticText id="colStopped" value="#{requestScope.statusString}" />
+            "</td>
+            "</tr>
         </foreach>
+        "</table>
     </sun:tableColumn>
 
     </sun:tableRowGroup>
