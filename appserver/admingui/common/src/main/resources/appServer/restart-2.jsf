@@ -72,7 +72,7 @@
     <sun:form id="form">
     <sun:button id="restartInstance" visible="false">
         <!command
-            gf.restRequest(endpoint="#{sessionScope.REST_URL}/restart" method="POST");
+            gf.restRequest(endpoint="#{sessionScope.REST_URL}/restart-domain" method="POST");
         />
     </sun:button>
 <f:verbatim>
