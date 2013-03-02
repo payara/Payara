@@ -40,17 +40,17 @@
 
 -->
 
-<sun:tabSet id="batchExecutionTabs" immediate="$boolean{true}" selected="#{sessionScope.batchExecutionTabs}">
-    <sun:tab id="jobParameters" immediate="$boolean{true}" text="$resource{i18nc.batch.jobParametersTab}" toolTip="$resource{i18nc.batch.jobParametersTabTip}" >
+<sun:tabSet id="batchTabs" immediate="$boolean{true}" selected="#{sessionScope.batchTabs}">
+    <sun:tab id="listing" immediate="$boolean{true}" text="$resource{i18nc.batch.jobListingTab}" toolTip="$resource{i18nc.batch.jobListingTabTip}" >
         <!command
-        setSessionAttribute(key="batchExecutionTabs" value="jobParameters");
-        gf.redirect(page="#{request.contextPath}/common/batch/batchJobExecution.jsf?executionId=#{pageSession.executionId}");
+        setSessionAttribute(key="batchTabs" value="listing");
+        gf.redirect(page="#{request.contextPath}/common/batch/batchJobs.jsf");
         />
     </sun:tab>
-    <sun:tab id="steps" immediate="$boolean{true}" text="$resource{i18nc.batch.stepTab}" toolTip="$resource{i18nc.batch.stepTabTip}" >
+    <sun:tab id="batchConfig" immediate="$boolean{true}" text="$resource{i18nc.batch.configuration}" toolTip="$resource{i18nc.batch.configurationTip}" >
         <!command
-        setSessionAttribute(key="batchExecutionTabs" value="steps");
-        gf.redirect(page="#{request.contextPath}/common/batch/batchStepListing.jsf?executionId=#{pageSession.executionId}");
+        setSessionAttribute(key="batchTabs" value="batchConfig");
+        gf.redirect(page="#{request.contextPath}/common/batch/batchConfiguration.jsf");
         />
     </sun:tab>
 </sun:tabSet>

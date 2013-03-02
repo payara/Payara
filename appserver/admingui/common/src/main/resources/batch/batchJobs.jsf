@@ -49,6 +49,7 @@
 <!define name="content">
     <event>
     <!beforeCreate
+        setSessionAttribute(key="batchTabs" value="listing");
         createMap(result="#{requestScope.attrsMap}");
         mapPut(map="#{requestScope.attrsMap}"  key="long" value="true");
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-jobs" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.resp}");
@@ -60,12 +61,15 @@
     </event>
 "    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":batchJobs");</script>
         <sun:form id="propertyForm">
+#include "/common/batch/batchTabs.inc"
 #include "/common/shared/alertMsg_1.inc"
              <sun:title id="propertyContentPage" title="$resource{i18nc.batch.jobListingTitle}" helpText="$resource{i18nc.batch.jobListingTitleHelp}" />
         "<br>
         <sun:table id="configs" title="#{tableTitle}"
             deselectMultipleButton="$boolean{false}"
-            selectMultipleButton="$boolean{false}" >
+            selectMultipleButton="$boolean{false}"
+            paginationControls="$boolean{true}"
+            paginateButton="$boolean{true}">
             <!afterCreate
                 getClientId(component="$this{component}" clientId=>$page{tableId});
             />

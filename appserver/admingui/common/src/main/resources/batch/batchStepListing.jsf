@@ -56,7 +56,7 @@
         mapPut(map="#{requestScope.attrsMap}"  key="executionId" value="#{pageSession.executionId}");
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-job-steps" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.resp}");
         setAttribute(key="listOfRows", value="#{requestScope.resp.data.extraProperties.listBatchJobSteps}");
-        setPageSessionAttribute(key="tableTitle" value="$resource{i18nc.batch.jobStepLisingTableTitle}");
+        setPageSessionAttribute(key="tableTitle" value="$resource{i18nc.batch.jobStepListingTableTitle}");
         setPageSessionAttribute(key="listPageLink" value="#{request.contextPath}/common/batch/batchJobs.jsf");
     />
     </event>
@@ -92,13 +92,16 @@
             "<br>
 
     <sun:table id="configs" title="#{tableTitle}"
-                deselectMultipleButton="$boolean{false}"
-                selectMultipleButton="$boolean{false}" >
-                <!afterCreate
-                    getClientId(component="$this{component}" clientId=>$page{tableId});
-                />
+        deselectMultipleButton="$boolean{false}"
+        selectMultipleButton="$boolean{false}"
+        paginationControls="$boolean{true}"
+        paginateButton="$boolean{true}"
+    >
+        <!afterCreate
+            getClientId(component="$this{component}" clientId=>$page{tableId});
+        />
 
-       <sun:tableRowGroup id="rowGroup1"  data={"$attribute{listOfRows}"} sourceVar="td">
+       <sun:tableRowGroup id="rowGroup1"  rows="10" data={"$attribute{listOfRows}"} sourceVar="td">
          <!afterCreate
              getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
             />
@@ -130,6 +133,25 @@
                 />
             </staticText>
         </sun:tableColumn>
+
+       <sun:tableColumn  headerText="$resource{i18nc.batch.stepMetricsCol}" rowHeader="$boolean{true}" id="stepM">
+           <event>
+               <!beforeEncode
+                   gf.convertMapToListOfMap(map="#{td.value.stepMetrics}"  keyName="key" valueName="value" result="#{requestScope.listOfStepMetrics}");
+               />
+           </event>
+           "<table  border="1">
+           <foreach key="oneM" list="#{requestScope.listOfStepMetrics}">
+               "<tr>
+               "<td>
+                <staticText id="key" value="#{requestScope.oneM.key}" />
+               "</td> <td>
+                <staticText id="value" value="#{requestScope.oneM.value}" />
+               "</td>
+               "</tr>
+           </foreach>
+           "</table>
+       </sun:tableColumn>
       </sun:tableRowGroup>
     </sun:table>
 
