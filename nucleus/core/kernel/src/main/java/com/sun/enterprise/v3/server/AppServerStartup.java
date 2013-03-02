@@ -49,8 +49,9 @@ import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.Result;
 import com.sun.enterprise.v3.common.DoNothingActionReporter;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -145,8 +146,6 @@ public class AppServerStartup implements ModuleStartup {
     private long platformInitTime;
 
     private String platform = System.getProperty("GlassFish_Platform");
-
-    private final Map<Class<?>, Long> servicesTiming = new HashMap<Class<?>, Long>();
 
     /**
      * A keep alive thread that keeps the server JVM from going down
@@ -249,11 +248,15 @@ public class AppServerStartup implements ModuleStartup {
                 new ProcessEnvironment(ProcessEnvironment.ProcessType.Embedded):
                 new ProcessEnvironment(ProcessEnvironment.ProcessType.Server)));
         config.commit();
+        
+        LinkedHashMap<String, Long> recordedTimes = new LinkedHashMap<String, Long>();
 
         // activate the run level services
-        if (proceedTo(InitRunLevel.VAL, new InitActivator())) {
-            if (proceedTo(StartupRunLevel.VAL, new StartupActivator())) {
-                proceedTo(PostStartupRunLevel.VAL, new PostStartupActivator());
+        if (proceedTo(InitRunLevel.VAL, new InitActivator(recordedTimes))) {
+            if (!logger.isLoggable(level)) recordedTimes = null;
+            
+            if (proceedTo(StartupRunLevel.VAL, new StartupActivator(recordedTimes))) {
+                proceedTo(PostStartupRunLevel.VAL, new PostStartupActivator(recordedTimes));
             }
         }
     }
@@ -330,7 +333,7 @@ public class AppServerStartup implements ModuleStartup {
 
         // deactivate the run level services
         try {
-            proceedTo(InitRunLevel.VAL, new AppServerActivator());
+            proceedTo(InitRunLevel.VAL, new AppServerActivator(null));
         } catch (Exception e) {
             logger.log(Level.SEVERE, KernelLoggerInfo.exceptionDuringShutdown, e);
         }
@@ -402,6 +405,7 @@ public class AppServerStartup implements ModuleStartup {
      */
     private class AppServerActivator
             implements Activator {
+        protected HashMap<String, Long> recordedTimes;
 
         // ----- data members --------------------------------------------
 
@@ -409,13 +413,24 @@ public class AppServerStartup implements ModuleStartup {
          * Indicates whether or not a problem occurred that required a shutdown.
          */
         protected boolean shutdown;
+        
+        private AppServerActivator(LinkedHashMap<String, Long> recordedTimes) {
+            this.recordedTimes = recordedTimes;
+        }
 
 
         // ----- Activator -------------------------------------
 
         @Override
         public void activate(ActiveDescriptor<?> activeDescriptor) {
+            long start = 0L;
+            if (recordedTimes != null) {
+                start = System.currentTimeMillis();
+            }
             runLevelController.getDefaultActivator().activate(activeDescriptor);
+            if (recordedTimes != null) {
+                recordedTimes.put(activeDescriptor.getImplementation(), System.currentTimeMillis() - start);
+            }
         }
 
         @Override
@@ -471,19 +486,19 @@ public class AppServerStartup implements ModuleStartup {
      * Inhabitant activator for the init services.
      */
     private class InitActivator extends AppServerActivator {
-
+        private InitActivator(LinkedHashMap<String, Long> recordedTimes) {
+            super(recordedTimes);
+        }
+        
         @Override
-        public void activate(ActiveDescriptor<?> activeDescriptor) {
-            long start = System.currentTimeMillis();
-
-            super.activate(activeDescriptor);
-
+        public void awaitCompletion() {
             if (logger.isLoggable(level)) {
                 long finish = System.currentTimeMillis();
-                logger.log(level, activeDescriptor + " Init done in " +
+                logger.log(level, "Init level done in " +
                         (finish - context.getCreationTime()) + " ms");
-                servicesTiming.put(activeDescriptor.getImplementationClass(), (finish - start));
+                
             }
+            
         }
     }
 
@@ -494,29 +509,38 @@ public class AppServerStartup implements ModuleStartup {
      * Inhabitant activator for the startup services.
      */
     private class StartupActivator extends AppServerActivator {
+        private final LinkedList<Future<Result<Thread>>> futures = new LinkedList<Future<Result<Thread>>>();
+        private final long startupTime;
+        
+        private StartupActivator(LinkedHashMap<String, Long> recordedTimes) {
+            super(recordedTimes);
+            startupTime = (recordedTimes == null) ? 0L : System.currentTimeMillis() ;
+        }
 
         /**
          * List of {@link Future futures} for {@link AppServerActivator#awaitCompletion}.
          */
-        private ArrayList<Future<Result<Thread>>> futures = new ArrayList<Future<Result<Thread>>>();
+        
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
         public void activate(ActiveDescriptor<?> activeDescriptor) {
+            String type = activeDescriptor.getImplementation();
 
-            locator.reifyDescriptor(activeDescriptor);
-            Class<?> type = activeDescriptor.getImplementationClass();
-
-            long start = System.currentTimeMillis();
+            long start = 0L;
+            if (recordedTimes != null) {
+                start = System.currentTimeMillis();
+            }
+            
             try {
-                if (logger.isLoggable(level)) {
+                if (recordedTimes != null) {
                     logger.log(level, "Running Startup services " + type);
                 }
 
                 Object startup = locator.getServiceHandle(activeDescriptor).getService();
 
-                if (logger.isLoggable(level)) {
-                    logger.log(level, "Startup services finished" + startup);
+                if (recordedTimes != null) {
+                    logger.log(level, "Startup services finished " + startup);
                 }
                 
                 // the synchronous service was started successfully,
@@ -530,8 +554,8 @@ public class AppServerStartup implements ModuleStartup {
                 forceShutdown();
                 return;
             }
-            if (logger.isLoggable(level)) {
-                servicesTiming.put(type, (System.currentTimeMillis() - start));
+            if (recordedTimes != null) {
+                recordedTimes.put(type, (System.currentTimeMillis() - start));
             }
         }
 
@@ -553,26 +577,24 @@ public class AppServerStartup implements ModuleStartup {
             events.send(new Event(EventTypes.SERVER_STARTUP), false);
 
             // finally let's calculate our starting times
+            long nowTime = System.currentTimeMillis();
             logger.log(Level.INFO, KernelLoggerInfo.startupEndMessage,
                     new Object[] { Version.getVersion(), Version.getBuildVersion(), platform,
                     (platformInitTime - context.getCreationTime()),
-                    (System.currentTimeMillis() - platformInitTime),
-                    System.currentTimeMillis() - context.getCreationTime()});
+                    (nowTime - platformInitTime),
+                    nowTime - context.getCreationTime()});
 
             printModuleStatus(systemRegistry, level);
 
-            try {
-                // it will only be set when called from AsadminMain and the env. variable AS_DEBUG is set to true
-                long realstart = Long.parseLong(System.getProperty("WALL_CLOCK_START"));
-                logger.log(Level.INFO, KernelLoggerInfo.startupTotalTime, (System.currentTimeMillis() - realstart));
-            }
-            catch(Exception e) {
-                // do nothing.
-            }
-
-            if (logger.isLoggable(level)) {
-                for (Map.Entry<Class<?>, Long> service : servicesTiming.entrySet()) {
-                    logger.log(level, "Service : " + service.getKey() + " took " + service.getValue() + " ms");
+            String wallClockStart = System.getProperty("WALL_CLOCK_START");
+            if (wallClockStart != null) {
+                try {
+                    // it will only be set when called from AsadminMain and the env. variable AS_DEBUG is set to true
+                    long realstart = Long.parseLong(wallClockStart);
+                    logger.log(Level.INFO, KernelLoggerInfo.startupTotalTime, (System.currentTimeMillis() - realstart));
+                }
+                catch(Exception e) {
+                    // do nothing.
                 }
             }
 
@@ -598,6 +620,12 @@ public class AppServerStartup implements ModuleStartup {
             env.setStatus(ServerEnvironment.Status.started);
             events.send(new Event(EventTypes.SERVER_READY), false);
             pidWriter.writePidFile();
+            
+            if (recordedTimes != null) {
+                long finish = System.currentTimeMillis();
+                logger.log(level, "Startup level done in " +
+                        (finish - startupTime) + " ms");
+            }
         }
     }
 
@@ -608,6 +636,12 @@ public class AppServerStartup implements ModuleStartup {
      * Inhabitant activator for the post startup services.
      */
     private class PostStartupActivator extends AppServerActivator {
+        private final long startupTime;
+        
+        private PostStartupActivator(LinkedHashMap<String, Long> recordedTimes) {
+            super(recordedTimes);
+            startupTime = (recordedTimes == null) ? 0L : System.currentTimeMillis() ;
+        }
 
         @Override
         public void awaitCompletion() throws ExecutionException, InterruptedException, TimeoutException {
@@ -616,6 +650,16 @@ public class AppServerStartup implements ModuleStartup {
             }
 
             printModuleStatus(systemRegistry, level);
+            
+            if (recordedTimes != null) {
+                for (Map.Entry<String, Long> service : recordedTimes.entrySet()) {
+                    logger.log(level, "Service : " + service.getKey() + " took " + service.getValue() + " ms");
+                }
+                
+                long finish = System.currentTimeMillis();
+                logger.log(level, "Post startup level done in " +
+                        (finish - startupTime) + " ms");
+            }
         }
     }
     
@@ -647,7 +691,7 @@ public class AppServerStartup implements ModuleStartup {
 
         @Override
         public void onProgress(RunLevelController controller) {
-            logger.log(level, "progress event: {0}", controller);
+            // logger.log(level, "progress event: {0}", controller);
         }
         
     }
