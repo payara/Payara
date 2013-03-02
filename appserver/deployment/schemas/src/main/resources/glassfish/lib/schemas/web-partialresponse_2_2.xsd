@@ -19,7 +19,7 @@
       and Distribution License("CDDL") (collectively, the "License").  You
       may not use this file except in compliance with the License.  You can
       obtain a copy of the License at
-      https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+      https://glassfish.java.net/public/CDDL+GPL_1_1.html
       or packager/legal/LICENSE.txt.  See the License for the specific
       language governing permissions and limitations under the License.
       
@@ -50,8 +50,6 @@
       
     </xsd:documentation>
   </xsd:annotation>
-
-  <xsd:include schemaLocation="javaee_7.xsd"/>
 
   <xsd:annotation>
     <xsd:documentation>
@@ -235,13 +233,38 @@
     <xsd:choice minOccurs="1"
                 maxOccurs="1">
       <xsd:element name="before">
+
+<!-- **************************************************** -->
+
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:any namespace="##any"
+                     processContents="lax"
+                     minOccurs="0"
+                     maxOccurs="unbounded"/>
+          </xsd:sequence>
+          <xsd:attribute name="id"
+                         type="xsd:string"
+                         use="required"/>
+        </xsd:complexType>
       </xsd:element>
       <xsd:element name="after">
+
+<!-- **************************************************** -->
+
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:any namespace="##any"
+                     processContents="lax"
+                     minOccurs="0"
+                     maxOccurs="unbounded"/>
+          </xsd:sequence>
+          <xsd:attribute name="id"
+                         type="xsd:string"
+                         use="required"/>
+        </xsd:complexType>
       </xsd:element>
     </xsd:choice>
-    <xsd:attribute name="id"
-                   type="xsd:string"
-                   use="required"/>
   </xsd:complexType>
 
 
