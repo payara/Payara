@@ -77,7 +77,8 @@ import org.junit.runner.RunWith;
  * Behavioral tests to check the ContextMapPropagator is properly driving the WireAdapter
  *
  */
-@RunWith(JMockit.class)
+//@RunWith(JMockit.class)
+@Ignore
 public class ContextMapPropagatorTest {
   ContextMapPropagator propagator;
   ContextMap cm;
