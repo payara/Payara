@@ -1548,7 +1548,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
 
                 @Override
                 public void prepareConnection(HttpURLConnection urlConnection) {
-                    urlConnection.setRequestProperty("Accept: ", MEDIATYPE_TXT);
+                    urlConnection.setRequestProperty("Accept", MEDIATYPE_TXT);
                 }
 
                 @Override
