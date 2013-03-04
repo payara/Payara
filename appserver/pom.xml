@@ -70,7 +70,7 @@
         <mojarra.version>2.2.0-m09</mojarra.version>
         <jsf-ext.version>0.2</jsf-ext.version>
         <woodstock.version>4.0.2.10</woodstock.version>
-        <javax.ejb-api.version>3.2-b01</javax.ejb-api.version>
+        <javax.ejb-api.version>3.2-b02</javax.ejb-api.version>
         <javax.interceptor-api.version>1.2-b03</javax.interceptor-api.version>
         <javax.xml.rpc-api.version>1.1</javax.xml.rpc-api.version>
         <javax.transaction-api.version>1.2-b03</javax.transaction-api.version>
