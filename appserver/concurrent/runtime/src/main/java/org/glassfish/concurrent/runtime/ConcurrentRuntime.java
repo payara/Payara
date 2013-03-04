@@ -175,7 +175,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
             }
         }
         if (mes != null) {
-            mes.shutdown();
+            mes.shutdownNow();
         }
     }
 
@@ -215,7 +215,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
             }
         }
         if (mses != null) {
-            mses.shutdown();
+            mses.shutdownNow();
         }
     }
 
