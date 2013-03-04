@@ -889,7 +889,7 @@ public class CompositeUtil {
                         }
                     });
 
-            RestLogging.restLogger.log(Level.FINE, "Loading bytecode for {0}", className);
+            RestLogging.restLogger.log(Level.FINEST, "Loading bytecode for {0}", className);
             final ClassLoader classLoader =
                     similarClass.getClassLoader();
             //Thread.currentThread().getContextClassLoader();

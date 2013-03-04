@@ -474,7 +474,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
                         }
                     });
 
-            RestLogging.restLogger.log(Level.FINE, "Loading bytecode for {0}", generatedClassName);
+            RestLogging.restLogger.log(Level.FINEST, "Loading bytecode for {0}", generatedClassName);
             clM.invoke(similarClass.getClassLoader()
                     /*Thread.currentThread().getContextClassLoader()*/, generatedClassName, byteContent, 0,
                      byteContent.length, pd);
