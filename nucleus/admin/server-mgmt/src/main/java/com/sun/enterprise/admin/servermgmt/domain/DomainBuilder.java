@@ -95,8 +95,8 @@ public class DomainBuilder {
     private JarFile _templateJar;
     private DomainTemplate _domainTempalte;
     private Properties _defaultPortValues = new Properties();
-    private byte[] keystoreBytes = null;
-    private Set<String> extractedEntries = new HashSet<String>();
+    private byte[] _keystoreBytes = null;
+    private Set<String> _extractedEntries = new HashSet<String>();
 
     /**
      * Create's a {@link DomainBuilder} object by initializing and loading the template jar.
@@ -142,7 +142,7 @@ public class DomainBuilder {
                 throw new DomainException(_strings.get("missingMandatoryFile", TEMPLATE_INFO_XML));
             }
             TemplateInfoHolder templateInfoHolder = new TemplateInfoHolder(_templateJar.getInputStream(je), templateJarPath);
-            extractedEntries.add(TEMPLATE_INFO_XML);
+            _extractedEntries.add(TEMPLATE_INFO_XML);
 
             // Loads string substitution XML.
             je = _templateJar.getJarEntry(STRINGSUBS_FILE);
@@ -153,7 +153,7 @@ public class DomainBuilder {
                 for (Property prop : defaultStringSubsProps) {
                     _defaultPortValues.setProperty(prop.getKey(), prop.getValue());
                 }
-                extractedEntries.add(je.getName());
+                _extractedEntries.add(je.getName());
             } else {
                 _logger.log(Level.WARNING, _strings.get("missingFile", STRINGSUBS_FILE));
             }
@@ -162,13 +162,13 @@ public class DomainBuilder {
             // Loads default self signed certificate.
             je = _templateJar.getJarEntry("config/" + DomainConstants.KEYSTORE_FILE);
             if (je != null) {
-                keystoreBytes = new byte[(int)je.getSize()];
+                _keystoreBytes = new byte[(int)je.getSize()];
                 InputStream in = null;
                 int count = 0;
                 try {
                     in = _templateJar.getInputStream(je);
-                    count = in.read(keystoreBytes);
-                    if (count < keystoreBytes.length) {
+                    count = in.read(_keystoreBytes);
+                    if (count < _keystoreBytes.length) {
                         throw new DomainException(_strings.get("loadingFailure", je.getName()));
                     }
                 } finally {
@@ -176,7 +176,7 @@ public class DomainBuilder {
                         in.close();
                     }
                 }
-                extractedEntries.add(je.getName());
+                _extractedEntries.add(je.getName());
             }
             File parentDomainDir = FileUtils.safeGetCanonicalFile(new File(_domainConfig.getRepositoryRoot()));
             createDirectory(parentDomainDir);
@@ -215,22 +215,22 @@ public class DomainBuilder {
      * @throws DomainException If any exception occurs in configuration.
      */
     public void run() throws RepositoryException, DomainException {
+
         // Create domain directories.
         File domainDir = FileUtils.safeGetCanonicalFile(new File(_domainConfig.getRepositoryRoot(),
                 _domainConfig.getDomainName()));
         createDirectory(domainDir);
-
-        // Extract other jar entries
         try {
+            // Extract other jar entries
             byte[] buffer = new byte[10000];
             for (Enumeration<JarEntry> entry = _templateJar.entries(); entry.hasMoreElements();) {
                 JarEntry jarEntry = (JarEntry)entry.nextElement();
                 String entryName = jarEntry.getName();
-                if (entryName.startsWith(META_DIR_NAME)) {
+                if (entryName.toUpperCase().startsWith(META_DIR_NAME)) {
                     // Skipping the extraction of jar meta data.
                     continue;
                 }
-                if (extractedEntries.contains(entryName)) {
+                if (_extractedEntries.contains(entryName)) {
                     continue;
                 }
                 if (jarEntry.isDirectory()) {
@@ -286,7 +286,7 @@ public class DomainBuilder {
                 try {
                     File keystoreFile = new File(configDir, DomainConstants.KEYSTORE_FILE);
                     fos = new FileOutputStream(keystoreFile);
-                    fos.write(keystoreBytes);
+                    fos.write(_keystoreBytes);
                 } catch (Exception ex) {
                     getLogger().log(Level.SEVERE, UNHANDLED_EXCEPTION, ex);
                 } finally {
@@ -314,6 +314,7 @@ public class DomainBuilder {
             // Change the permission for bin & config directories.
             try {
                 //4958533
+                domainSecurity.changeMode("-R u+x ",  new File(domainDir, DomainConstants.BIN_DIR));
                 domainSecurity.changeMode("-R g-rwx,o-rwx ", configDir);
             } catch (Exception e) {
                 throw new DomainException(_strings.get("setPermissionError"), e);
@@ -322,7 +323,6 @@ public class DomainBuilder {
             // Generate domain-info.xml
             DomainInfoManager domainInfoManager = new DomainInfoManager();
             domainInfoManager.process(_domainTempalte, domainDir);
-
         } catch (DomainException de) {
             //roll-back
             FileUtils.liquidate(domainDir);

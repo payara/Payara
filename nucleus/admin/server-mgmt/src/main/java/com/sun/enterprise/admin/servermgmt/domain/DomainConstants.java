@@ -48,6 +48,9 @@ public class DomainConstants {
     /** Name of configuration directory. */
     public static final String CONFIG_DIR = "config";
 
+    /** Name of binary directory. */
+    public static final String BIN_DIR = "bin";
+
     /** The file name stores the basic domain information. */
     public static final String DOMAIN_INFO_XML = "domain-info.xml";
 
