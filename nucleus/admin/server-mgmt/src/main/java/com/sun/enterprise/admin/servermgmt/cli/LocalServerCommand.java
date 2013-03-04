@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -422,7 +422,8 @@ public abstract class LocalServerCommand extends CLICommand {
                     // automated tests would have issues if we returned right here...
                     resetServerDirs();
                     programOpts.setPassword(getServerDirs().getLocalPassword(), ProgramOptions.PasswordLocation.LOCAL_PASSWORD);
-                    waitForRestartRemote(uptimeOldServer);
+                    // use the maximum old uptime because we know that the server has already restarted
+                    waitForRestartRemote(Long.MAX_VALUE);
                     return;
                 }
                 Thread.sleep(CLIConstants.RESTART_CHECK_INTERVAL_MSEC);
