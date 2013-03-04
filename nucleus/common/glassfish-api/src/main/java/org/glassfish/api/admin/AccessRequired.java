@@ -182,8 +182,16 @@ public @interface AccessRequired {
      * records the success of each access check, the "list accounts" {@code execute}
      * command can check each of its custom {@code AccessCheck}s and report
      * on only those accounts whose access checks succeeded.
+     * <p>
+     * Often, commands which prepare their own access checks need to associate
+     * an object of some type with the access check.  As a convenience such
+     * classes can optionally pass the related object to one of the constructors
+     * which accepts it and then retrieve it later.  This helps avoid having to
+     * extend AccessCheck as a private inner class in a command so as to link a
+     * given AccessCheck with a given object of interest in the command.
+     * 
      */
-    public class AccessCheck {
+    public class AccessCheck<T> {
         private final String resourceName;
         private final String action;
         private final String note;
@@ -193,7 +201,33 @@ public @interface AccessRequired {
         private final ConfigBeanProxy resource;
         private final boolean isFailureFatal;
         private boolean isSuccessful = false;
+        private final T relatedObject;
 
+        /**
+         * Creates a new AccessCheck object linked with a given related object
+         * that is of interest to the caller (typically a command).
+         * @param relatedObject the related object to which this AccessCheck is linked
+         * @param resourceName the resource being acted upon
+         * @param action the action performed on the resource
+         * @param note a note related to this resource/action pair
+         * @param isFailureFinal if a failure of this AccessCheck should cause the entire authorization to fail
+         */
+        public AccessCheck(final T relatedObject,
+                final String resourceName, 
+                final String action, 
+                final String note, 
+                final boolean isFailureFinal) {
+            this.relatedObject = relatedObject;
+            this.resourceName = resourceName;
+            this.action = action;
+            this.note = note;
+            childType = null;
+            parent = null;
+            this.isFailureFatal = isFailureFinal;
+            resource = null;
+            childName = null;
+        }
+                
         /**
          * Creates a new {@code AccessCheck}.
          * @param resourceName the resource to be checked
@@ -205,14 +239,7 @@ public @interface AccessRequired {
                 final String action, 
                 final String note, 
                 final boolean isFailureFinal) {
-            this.resourceName = resourceName;
-            this.action = action;
-            this.note = note;
-            childType = null;
-            parent = null;
-            this.isFailureFatal = isFailureFinal;
-            resource = null;
-            childName = null;
+            this(null, resourceName, action, note, isFailureFinal);
         }
         
         /**
@@ -236,6 +263,20 @@ public @interface AccessRequired {
         }
         
         /**
+         * Creates a new {@code AccessCheck} with the specified related object.
+         * @param relatedObject an object the commmand wants to associate with this AccessCheck
+         * @param resourceName the resource to be checked
+         * @param action the action on the resource
+         * @param isFailureFinal whether a failure of this access check should force a failure of the entire authorization
+         */
+        public AccessCheck(final T relatedObject,
+                final String resourceName, 
+                final String action, 
+                final boolean isFailureFinal) {
+            this(relatedObject, resourceName, action, "", isFailureFinal);
+        }
+        
+        /**
          * Creates a new {@code AccessCheck}.
          * @param resource the config bean that is the resource to check
          * @param action the action on the resource
@@ -252,6 +293,7 @@ public @interface AccessRequired {
             parent = resource.getParent();
             this.isFailureFatal = isFailureFatal;
             childName = null;
+            relatedObject = null;
         }
         
         /**
@@ -293,6 +335,7 @@ public @interface AccessRequired {
             this.isFailureFatal = isFailureFinal;
             resource = null;
             this.childName = childName;
+            relatedObject = null;
         }
         
         /**
@@ -334,6 +377,11 @@ public @interface AccessRequired {
                 final String action) {
             this(Util.resourceNameFromConfigBeanTypeAndName(parent, childType, childName), action);
         }
+        
+        public T relatedObject() {
+            return relatedObject;
+        }
+        
         /**
          * Returns the resource name, if any was set when the access check was created.
          * @return 
