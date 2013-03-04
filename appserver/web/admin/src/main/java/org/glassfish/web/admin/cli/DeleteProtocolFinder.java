@@ -161,7 +161,7 @@ public class DeleteProtocolFinder implements AdminCommand {
 
     private PortUnification getPortUnification(Protocol protocol) {
         PortUnification pu = protocol.getPortUnification();
-        if (pu == null) {
+        if ((pu == null) && (report != null)) {
             report.setMessage(
                     MessageFormat.format(
                             rb.getString(DeleteProtocolFilter.NOT_FOUND),
