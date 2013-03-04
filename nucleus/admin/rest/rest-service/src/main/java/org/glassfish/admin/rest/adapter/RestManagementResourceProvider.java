@@ -53,6 +53,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.media.sse.SseFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.jvnet.hk2.config.Dom;
 
@@ -164,7 +165,7 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
         r.add(org.glassfish.admin.rest.provider.OptionsResultJsonProvider.class);
         r.add(org.glassfish.admin.rest.provider.OptionsResultXmlProvider.class);
 
-        r.add(org.glassfish.jersey.media.sse.OutboundEventWriter.class);
+        r.add(SseFeature.class);
         r.add(org.glassfish.admin.rest.provider.AdminCommandStateJsonProvider.class);
         r.add(org.glassfish.admin.rest.provider.ProgressStatusJsonProvider.class);
         r.add(org.glassfish.admin.rest.provider.ProgressStatusEventJsonProvider.class);

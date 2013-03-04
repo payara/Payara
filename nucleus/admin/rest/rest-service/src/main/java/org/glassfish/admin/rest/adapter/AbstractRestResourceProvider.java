@@ -53,8 +53,8 @@ import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.MessageProperties;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.CsrfProtectionFilter;
-import org.glassfish.jersey.server.filter.UriConnegFilter;
 
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.MediaType;
@@ -102,7 +102,7 @@ public abstract class AbstractRestResourceProvider implements RestResourceProvid
         final Reloader r = new Reloader();
 
         ResourceConfig rc = new ResourceConfig(classes);
-        UriConnegFilter.enableFor(rc, getMimeMappings(), null);
+        rc.property(ServerProperties.MEDIA_TYPE_MAPPINGS, getMimeMappings());
         rc.register(CsrfProtectionFilter.class);
 
 //        TODO - JERSEY2

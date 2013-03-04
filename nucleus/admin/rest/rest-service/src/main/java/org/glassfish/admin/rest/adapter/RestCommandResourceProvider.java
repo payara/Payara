@@ -52,8 +52,7 @@ import org.glassfish.admin.rest.readers.MultipartFDPayloadReader;
 import org.glassfish.admin.rest.readers.ParameterMapFormReader;
 import org.glassfish.admin.rest.resources.admin.CommandResource;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.filter.LoggingFilter;
-import org.glassfish.jersey.media.sse.OutboundEventWriter;
+import org.glassfish.jersey.media.sse.SseFeature;
 
 /**
  * Responsible for providing ReST resources for {@code asadmin} and {@code cadmin} communication.
@@ -62,7 +61,7 @@ import org.glassfish.jersey.media.sse.OutboundEventWriter;
  * @author sanjeeb.sahoo@oracle.com
  */
 public class RestCommandResourceProvider extends AbstractRestResourceProvider {
-    
+
     public RestCommandResourceProvider() {
         super();
     }
@@ -100,7 +99,7 @@ public class RestCommandResourceProvider extends AbstractRestResourceProvider {
         r.add(MultipartFDPayloadReader.class);
         r.add(ParamsWithPayloadMultipartWriter.class);
         //SSE data
-        r.add(OutboundEventWriter.class);
+        r.add(SseFeature.class);
         r.add(AdminCommandStateJsonProvider.class);
         //ProgressStatus
         r.add(ProgressStatusJsonProvider.class);
@@ -109,7 +108,7 @@ public class RestCommandResourceProvider extends AbstractRestResourceProvider {
 //        r.add(LoggingFilter.class);
         return r;
     }
-    
+
     @Override
     public Set<Class<?>> getResourceClasses(ServiceLocator habitat) {
         return getResourceClasses();
