@@ -58,8 +58,8 @@ import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
-import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.ModuleDescriptor;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -283,6 +283,15 @@ public class ApplicationValidator extends ComponentValidator
         return super.getSubDescriptorVisitor(subDescriptor);
     }
 
+    @LogMessageInfo(
+            message = "Application validation failed for application: {0}, jndi-name: {1}, resource adapter name: {2} is wrong.",
+            level="SEVERE",
+            cause = "For embedded resource adapter, its name should begin with '#' symbol",
+            action = "Remove application name before the '#' symbol in the resource adapter name.",
+            comment = "For the method validateResourceDescriptor of com.sun.enterprise.deployment.util.ApplicationValidator"
+            )
+    private static final String RESOURCE_ADAPTER_NAME_INVALID = "AS-DEPLOYMENT-00020";
+
     /**
      * Method to read complete application and all defined descriptor for given app. Method is used to identify
      * scope and validation for all defined jndi names at different namespace.
@@ -410,6 +419,34 @@ public class ApplicationValidator extends ComponentValidator
             validNameSpaceDetails.put(WEBBUNDLE_KEYS, wbdLevel);
         }
 
+        // process connector based resource, if it resource adapter name is of the format "#raName" 
+        // then it will be deployed on an embedded resource adapter. 
+        // In this case, insert application name before the symbol "#". 
+        // Because in the ConnectorRegistry, embedded RA is indexed by "appName#raName"
+        
+        for(CommonResourceValidator rv : allResourceDescriptors.values()){
+            Descriptor desc = rv.getDescriptor();
+            if(desc instanceof AbstractConnectorResourceDescriptor){
+                AbstractConnectorResourceDescriptor acrd = (AbstractConnectorResourceDescriptor)desc;
+                int poundIndex = acrd.getResourceAdapter().indexOf("#");
+                
+                if( poundIndex == 0 ){
+                    // the resource adapter name is of the format "#xxx", it is an embedded resource adapter
+                    acrd.setResourceAdapter(application.getName()+acrd.getResourceAdapter());
+
+                }else if( poundIndex < 0 ){
+                    // the resource adapter name do not contains # symbol, it is a standalone resource adapter
+                    
+                }else if( poundIndex > 0 ){
+                    // the resource adapter name is of the format "xx#xxx", this is an invalid name
+                    deplLogger.log(Level.SEVERE, RESOURCE_ADAPTER_NAME_INVALID,
+                            new Object[] { application.getAppName(), acrd.getName(), acrd.getResourceAdapter() });
+
+                    return false;
+                }
+            }
+        }
+        
         // if all resources names are unique then validate each descriptor is unique or not
         if (allUniqueResource) {
             return compareDescriptors();

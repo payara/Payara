@@ -49,50 +49,27 @@ import static org.glassfish.deployment.common.JavaEEResourceType.*;
 /**
  * @author Dapeng Hu
  */
-public class ConnectionFactoryDefinitionDescriptor extends ResourceDescriptor {
+public class ConnectionFactoryDefinitionDescriptor extends AbstractConnectorResourceDescriptor {
     private static final long serialVersionUID = 9173518958930316558L;
 
     // the <description> element will be processed by base class
-    private String name ;
     private String className;
-    private String resourceAdapter;
     private String transactionSupport=TransactionSupportLevel.NoTransaction.toString();
     private boolean isTransactionSupportSet = false;
     private int maxPoolSize=-1;
     private int minPoolSize=-1;
-    private Properties properties = new Properties();
-    
-    private static final String JAVA_URL = "java:";
-    private static final String JAVA_COMP_URL = "java:comp/";
     
 	public ConnectionFactoryDefinitionDescriptor() {
         super();
-        super.setResourceType(CFD);
+        setResourceType(CFD);
 	}
 	
-    public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	public String getClassName() {
 		return className;
 	}
 
-
 	public void setClassName(String className) {
 		this.className = className;
-    }
-
-    public String getResourceAdapter() {
-        return resourceAdapter;
-    }
-
-    public void setResourceAdapter(String resourceAdapter) {
-        this.resourceAdapter = resourceAdapter;
     }
 
     public String getTransactionSupport() {
@@ -124,47 +101,19 @@ public class ConnectionFactoryDefinitionDescriptor extends ResourceDescriptor {
         return isTransactionSupportSet;
     }
 
-	public void addProperty(String key, String value){
-        properties.put(key, value);
-    }
-    public String getProperty(String key){
-        return (String)properties.get(key);
-    }
-
-    public Properties getProperties(){
-        return properties;
-    }
-
-    public boolean equals(Object object) {
-        if (object instanceof ConnectionFactoryDefinitionDescriptor) {
-        	ConnectionFactoryDefinitionDescriptor reference = (ConnectionFactoryDefinitionDescriptor) object;
-            return getJavaName(this.getName()).equals(getJavaName(reference.getName()));
-        }
-        return false;
-    }
-
-    public int hashCode() {
-        int result = 17;
-        result = 37*result + getName().hashCode();
-        return result;
-    }
-    
-    public static String getJavaName(String theName) {
-        if(!theName.contains(JAVA_URL)){
-        	theName = JAVA_COMP_URL + theName;
-        }
-        return theName;
-    }
-
     public void addConnectionFactoryPropertyDescriptor(ResourcePropertyDescriptor propertyDescriptor){
-        properties.put(propertyDescriptor.getName(), propertyDescriptor.getValue());
+        getProperties().put(propertyDescriptor.getName(), propertyDescriptor.getValue());
     }
 
     public boolean isConflict(ConnectionFactoryDefinitionDescriptor other) {
         return (getName().equals(other.getName())) &&
             !(
                 DOLUtils.equals(getClassName(), other.getClassName()) &&
-                properties.equals(other.properties)
+                DOLUtils.equals(getResourceAdapter(), other.getResourceAdapter()) &&
+                DOLUtils.equals(getTransactionSupport(), other.getTransactionSupport()) &&
+                DOLUtils.equals(getMaxPoolSize(), other.getMaxPoolSize()) &&
+                DOLUtils.equals(getMinPoolSize(), other.getMinPoolSize()) &&
+                getProperties().equals(other.getProperties())
             );
     }
 }

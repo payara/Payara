@@ -37,57 +37,77 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.deployment;
 
-import com.sun.enterprise.deployment.util.DOLUtils;
-
-import static org.glassfish.deployment.common.JavaEEResourceType.*;
+import java.util.Properties;
 
 /**
  * @author Dapeng Hu
  */
+public abstract class AbstractConnectorResourceDescriptor extends ResourceDescriptor {
 
-public class AdministeredObjectDefinitionDescriptor extends AbstractConnectorResourceDescriptor {
+    private static final long serialVersionUID = -4452926772142887844L;
+    private String name ;
+    private String resourceAdapter;
+    private Properties properties = new Properties();
 
-    private static final long serialVersionUID = -892751088457716458L;
-    // the <description> element will be processed by base class
-    private String interfaceName;
-    private String className;
-    
-    public AdministeredObjectDefinitionDescriptor() {
+    private static final String JAVA_URL = "java:";
+    private static final String JAVA_COMP_URL = "java:comp/";
+
+    public static String getJavaName(String theName) {
+        if(!theName.contains(JAVA_URL)){
+            theName = JAVA_COMP_URL + theName;
+        }
+        return theName;
+    }
+
+    public AbstractConnectorResourceDescriptor() {
         super();
-        setResourceType(AODD);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getResourceAdapter() {
+        return resourceAdapter;
+    }
+
+    public void setResourceAdapter(String resourceAdapter) {
+        this.resourceAdapter = resourceAdapter;
+    }
+
+    public void addProperty(String key, String value){
+        properties.put(key, value);
+    }
+    public String getProperty(String key){
+        return (String)properties.get(key);
+    }
+
+    public Properties getProperties(){
+        return properties;
+    }
+
+    public boolean equals(Object object) {
+        if (object instanceof AbstractConnectorResourceDescriptor) {
+            AbstractConnectorResourceDescriptor another = (AbstractConnectorResourceDescriptor) object;
+            if(getResourceType() == another.getResourceType()){
+                return getJavaName(this.getName()).equals(getJavaName(another.getName()));
+            }
+        }
+        return false;
     }
     
-    public String getInterfaceName() {
-        return interfaceName;
-    }
 
-    public void setInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
+    public int hashCode() {
+        int result = 17;
+        result = 37*result + getName().hashCode();
+        return result;
     }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
-    }
-
-    public void addAdministeredObjectPropertyDescriptor(ResourcePropertyDescriptor propertyDescriptor){
-        getProperties().put(propertyDescriptor.getName(), propertyDescriptor.getValue());
-    }
-
-    public boolean isConflict(AdministeredObjectDefinitionDescriptor other) {
-        return (getName().equals(other.getName())) &&
-            !(
-                DOLUtils.equals(getInterfaceName(), other.getInterfaceName()) &&
-                DOLUtils.equals(getClassName(), other.getClassName()) &&
-                DOLUtils.equals(getResourceAdapter(), other.getResourceAdapter()) &&
-                getProperties().equals(other.getProperties())
-            );
-    }
+    
 
 }
