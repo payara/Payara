@@ -20,6 +20,7 @@ appserver/packager/legal/
 appserver/packager/CDDL+GPL.txt
 appserver/packager/ApacheLicense.txt
 appserver/packager/JAVAHELP_BCL.txt
+appserver/javaee-api/doc-files/speclicense.html
 appserver/web/weld-integration/manifest.mf
 nucleus/common/common-util/src/test/resources/process/lots_o_text.txt
 appserver/common/annotation-framework/src/main/java/org/glassfish/apf/skip-annotation-class-list
