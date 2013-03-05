@@ -42,6 +42,7 @@ package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.security.integration.AppServSecurityContext;
+import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.concurrent.runtime.deployer.ContextServiceConfig;
 import org.glassfish.concurrent.runtime.deployer.ManagedExecutorServiceConfig;
@@ -93,6 +94,9 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     @Inject
     Applications applications;
 
+    @Inject
+    JavaEETransactionManager transactionManager;
+
     /**
      * Returns the ConcurrentRuntime instance.
      * It follows singleton pattern and only one instance exists at any point
@@ -124,7 +128,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         if (contextServiceMap != null && contextServiceMap.containsKey(jndiName)) {
             return contextServiceMap.get(jndiName);
         }
-        ContextServiceImpl contextService = createContextService(config.getJndiName(), config.getContextInfo());
+        ContextServiceImpl contextService = createContextService(config.getJndiName(), config.getContextInfo(), false);
         if (contextServiceMap == null) {
             contextServiceMap = new HashMap();
         }
@@ -158,7 +162,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getMaximumPoolSize(),
                 config.getKeepAliveSeconds(), TimeUnit.SECONDS,
                 config.getTaskQueueCapacity(),
-                createContextService(config.getJndiName() + "-contextservice", config.getContextInfo()),
+                createContextService(config.getJndiName() + "-contextservice", config.getContextInfo(), true),
                 AbstractManagedExecutorService.RejectPolicy.ABORT);
         if (managedExecutorServiceMap == null) {
             managedExecutorServiceMap = new HashMap();
@@ -198,7 +202,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getMaximumPoolSize(),
                 config.getKeepAliveSeconds(), TimeUnit.SECONDS,
                 config.getTaskQueueCapacity(),
-                createContextService(config.getJndiName() + "-contextservice", config.getContextInfo()),
+                createContextService(config.getJndiName() + "-contextservice", config.getContextInfo(), true),
                 AbstractManagedExecutorService.RejectPolicy.ABORT);
         if (managedScheduledExecutorServiceMap == null) {
             managedScheduledExecutorServiceMap = new HashMap();
@@ -225,7 +229,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
             return managedThreadFactoryMap.get(jndiName);
         }
         ManagedThreadFactoryImpl managedThreadFactory = new ManagedThreadFactoryImpl(config.getJndiName(),
-                createContextService(config.getJndiName() + "-contextservice", config.getContextInfo()),
+                createContextService(config.getJndiName() + "-contextservice", config.getContextInfo(), true),
                 config.getThreadPriority(),
                 false);
         if (managedThreadFactoryMap == null) {
@@ -247,13 +251,13 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
     }
 
-    private ContextServiceImpl createContextService(String jndiName, String contextInfo) {
+    private ContextServiceImpl createContextService(String jndiName, String contextInfo, boolean cleanupTransaction) {
         ContextSetupProviderImpl.CONTEXT_TYPE[] contextTypes = parseContextInfo(contextInfo);
         ContextSetupProviderImpl contextSetupProvider =
                 new ContextSetupProviderImpl(invocationManager, securityContext, deployment, applications,
-                                             contextTypes);
+                                             cleanupTransaction? transactionManager: null, contextTypes);
         ContextServiceImpl obj = new ContextServiceImpl(jndiName, contextSetupProvider,
-                new TransactionSetupProviderImpl());
+                new TransactionSetupProviderImpl(transactionManager));
         return obj;
     }
 

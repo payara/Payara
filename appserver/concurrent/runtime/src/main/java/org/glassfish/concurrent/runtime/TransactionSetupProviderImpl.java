@@ -40,6 +40,7 @@
 
 package org.glassfish.concurrent.runtime;
 
+import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import org.glassfish.enterprise.concurrent.spi.TransactionHandle;
 import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
 
@@ -51,22 +52,26 @@ import javax.transaction.InvalidTransactionException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TransactionSetupProviderImpl implements TransactionSetupProvider {
+
+    private transient JavaEETransactionManager transactionManager;
+
+    public TransactionSetupProviderImpl(JavaEETransactionManager transactionManager) {
+        this.transactionManager = transactionManager;
+    }
 
     @Override
     public TransactionHandle beforeProxyMethod(String transactionExecutionProperty) {
         // suspend current transaction if not using transaction of execution thread
         if (! ManagedTask.USE_TRANSACTION_OF_EXECUTION_THREAD.equals(transactionExecutionProperty)) {
             try {
-                Context ctx = new InitialContext();
-                TransactionManager tm = (TransactionManager) ctx.lookup("java:comp/TransactionManager");
-                Transaction suspendedTxn = tm.suspend();
+                Transaction suspendedTxn = transactionManager.suspend();
                 return new TransactionHandleImpl(suspendedTxn);
-            } catch (NamingException e) {
-
             } catch (SystemException e) {
-
+                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, e.toString());
             }
         }
         return null;
@@ -79,17 +84,17 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
             Transaction suspendedTxn = ((TransactionHandleImpl)handle).getTransaction();
             if (suspendedTxn != null) {
                 try {
-                    Context ctx = new InitialContext();
-                    TransactionManager tm = (TransactionManager) ctx.lookup("java:comp/TransactionManager");
-                    tm.resume(suspendedTxn);
-                } catch (NamingException e) {
-
-                } catch (InvalidTransactionException e) {
-
-                } catch (SystemException e) {
-
+                    transactionManager.resume(suspendedTxn);
+                } catch (InvalidTransactionException | SystemException e) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, e.toString());
                 }
             }
         }
     }
+
+    private void readObject(java.io.ObjectInputStream in) {
+        //TODO- re-initialize these fields
+        transactionManager = null;
+    }
+
 }

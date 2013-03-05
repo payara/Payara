@@ -43,6 +43,7 @@ package org.glassfish.concurrent.runtime;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.security.integration.AppServSecurityContext;
+import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.Utility;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
@@ -51,7 +52,10 @@ import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
 import org.glassfish.internal.deployment.Deployment;
 
 import javax.enterprise.concurrent.ContextService;
+import javax.transaction.*;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ContextSetupProviderImpl implements ContextSetupProvider {
 
@@ -59,6 +63,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     private transient InvocationManager invocationManager;
     private transient Deployment deployment;
     private transient Applications applications;
+    private transient JavaEETransactionManager transactionManager;
 
     static final long serialVersionUID = 1L;
 
@@ -66,15 +71,18 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     private boolean classloading, security, naming, workArea;
 
+
     public ContextSetupProviderImpl(InvocationManager invocationManager,
                                     AppServSecurityContext securityContext,
                                     Deployment deployment,
                                     Applications applications,
+                                    JavaEETransactionManager transactionManager,
                                     CONTEXT_TYPE... contextTypes) {
         this.invocationManager = invocationManager;
         this.securityContext = securityContext;
         this.deployment = deployment;
         this.applications = applications;
+        this.transactionManager = transactionManager;
         for (CONTEXT_TYPE contextType: contextTypes) {
             switch(contextType) {
                 case CLASSLOADING:
@@ -113,6 +121,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         savedInvocation = currentInvocation.clone();
         savedInvocation.instance = currentInvocation.instance;
+        savedInvocation.setResourceTableKey(null);
         if (!naming) {
             savedInvocation.setJNDIEnvironment(null);
         }
@@ -147,7 +156,14 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             securityContext.setCurrentSecurityContext(handle.getSecurityContext());
         }
         if (handle.getInvocation() != null) {
-            invocationManager.preInvoke(handle.getInvocation());
+            ComponentInvocation invocation = handle.getInvocation();
+            // Each invocation needs a ResourceTableKey that returns a unique hashCode for TransactionManager
+            invocation.setResourceTableKey(new PairKey(invocation.getInstance(), Thread.currentThread()));
+            invocationManager.preInvoke(invocation);
+        }
+        // Ensure that there is no existing transaction in the current thread
+        if (transactionManager != null) {
+            transactionManager.clearThreadTx();
         }
         return new InvocationContext(handle.getInvocation(), resetClassLoader, resetSecurityContext);
     }
@@ -168,6 +184,24 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (handle.getInvocation() != null) {
             invocationManager.postInvoke(((InvocationContext)contextHandle).getInvocation());
         }
+        if (transactionManager != null) {
+            // clean up after user if a transaction is still active
+            // This is not required by the Concurrency spec
+            Transaction transaction = transactionManager.getCurrentTransaction();
+            if (transaction != null) {
+                try {
+                    int status = transaction.getStatus();
+                    if (status == Status.STATUS_ACTIVE) {
+                        transactionManager.commit();
+                    } else if (status == Status.STATUS_MARKED_ROLLBACK) {
+                        transactionManager.rollback();
+                    }
+                } catch (Exception ex) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, ex.toString());
+                }
+            }
+          transactionManager.clearThreadTx();
+        }
     }
 
     private boolean isApplicationEnabled(String appId) {
@@ -185,6 +219,55 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         invocationManager = null;
         deployment = null;
         applications = null;
+        transactionManager = null;
+    }
+
+    private static class PairKey {
+        private Object instance = null;
+        private Thread thread = null;
+        int hCode = 0;
+
+        private PairKey(Object inst, Thread thr) {
+            instance = inst;
+            thread = thr;
+            if (inst != null) {
+                hCode = 7 * inst.hashCode();
+            }
+            if (thr != null) {
+                hCode += thr.hashCode();
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return hCode;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+
+            boolean eq = false;
+            if (obj != null && obj instanceof PairKey) {
+                PairKey p = (PairKey)obj;
+                if (instance != null) {
+                    eq = (instance.equals(p.instance));
+                } else {
+                    eq = (p.instance == null);
+                }
+
+                if (eq) {
+                    if (thread != null) {
+                        eq = (thread.equals(p.thread));
+                    } else {
+                        eq = (p.thread == null);
+                    }
+                }
+            }
+            return eq;
+        }
     }
 }
 
