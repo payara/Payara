@@ -89,7 +89,7 @@ public class JerseyContainerCommandService implements PostConstruct {
     @Inject
     private InternalSystemAdministrator kernelIdentity;
     
-    private Future<JerseyContainer> future;
+    private Future<JerseyContainer> future = null;
 
     @Override
     public void postConstruct() {
@@ -101,7 +101,7 @@ public class JerseyContainerCommandService implements PostConstruct {
                                                      return result;
                                                  }
                                              });
-        executor.submit(new Runnable() {
+        executor.execute(new Runnable() {
                                 @Override
                                 public void run() {
                                     CommandRunner cr = habitat.getService(CommandRunner.class);

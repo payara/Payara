@@ -58,7 +58,9 @@ import org.glassfish.api.admin.AdminCommandState;
  */
 public class AdminCommandStateJsonProprietaryReader implements ProprietaryReader<AdminCommandState> {
     
-    private static final Logger logger = AdminLoggerInfo.getLogger();
+    static class LoggerRef {
+        private static final Logger logger = AdminLoggerInfo.getLogger();
+    }
 
     @Override
     public boolean isReadable(Class<?> type, String mimetype) {
@@ -78,7 +80,7 @@ public class AdminCommandStateJsonProprietaryReader implements ProprietaryReader
             JSONObject json = new JSONObject(str);
             return readAdminCommandState(json);
         } catch (JSONException ex) {
-            logger.log(Level.SEVERE, AdminLoggerInfo.mUnexpectedException, ex);
+            LoggerRef.logger.log(Level.SEVERE, AdminLoggerInfo.mUnexpectedException, ex);
             throw new IOException(ex);
         }
     }

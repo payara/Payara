@@ -63,7 +63,9 @@ import org.glassfish.api.ActionReport.MessagePart;
  */
 public class ActionReportJsonProprietaryReader implements ProprietaryReader<ActionReport> {
     
-    private static final Logger logger = AdminLoggerInfo.getLogger();
+    static class LoggerRef {
+        private static final Logger logger = AdminLoggerInfo.getLogger();
+    }
             
     @Override
     public boolean isReadable(final Class<?> type,
@@ -87,7 +89,7 @@ public class ActionReportJsonProprietaryReader implements ProprietaryReader<Acti
             fillActionReport(result, json);
             return result;
         } catch (JSONException ex) {
-            logger.log(Level.SEVERE, AdminLoggerInfo.mUnexpectedException, ex);
+            LoggerRef.logger.log(Level.SEVERE, AdminLoggerInfo.mUnexpectedException, ex);
             throw new IOException(ex);
         }
     }

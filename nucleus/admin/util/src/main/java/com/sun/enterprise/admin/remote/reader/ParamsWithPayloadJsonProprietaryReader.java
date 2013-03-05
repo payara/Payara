@@ -50,7 +50,17 @@ import java.net.HttpURLConnection;
  */
 public class ParamsWithPayloadJsonProprietaryReader implements ProprietaryReader<ParamsWithPayload> {
     
-    private ActionReportJsonProprietaryReader delegate = new ActionReportJsonProprietaryReader();
+    private final ActionReportJsonProprietaryReader delegate;
+
+    public ParamsWithPayloadJsonProprietaryReader(ActionReportJsonProprietaryReader delegate) {
+        this.delegate = delegate;
+    }
+
+    public ParamsWithPayloadJsonProprietaryReader() {
+        this(new ActionReportJsonProprietaryReader());
+    }
+    
+    
     
     @Override
     public boolean isReadable(final Class<?> type,

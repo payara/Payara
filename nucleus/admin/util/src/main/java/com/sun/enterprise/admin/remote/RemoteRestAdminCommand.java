@@ -64,14 +64,12 @@ import org.glassfish.api.admin.CommandModel.ParamModel;
 
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
-import com.sun.enterprise.universal.GFBase64Encoder;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.admin.util.AuthenticationInfo;
 import com.sun.enterprise.admin.util.CachedCommandModel;
 import com.sun.enterprise.admin.util.HttpConnectorAddress;
 import com.sun.enterprise.admin.util.cache.AdminCacheUtils;
 import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.net.NetUtils;
 import org.glassfish.admin.payload.PayloadFilesManager;
 import org.glassfish.api.admin.Payload;
@@ -1366,46 +1364,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     }
 
     /**
-     * Adds a single option expression to the URI.  Appends a '?' in preparation
-     * for the next option.
-     *
-     * @param uriString the URI composed so far
-     * @param option the option expression to be added
-     * @return the URI so far, including the newly-added option
-     */
-    private StringBuilder addStringOption(StringBuilder uriString, String name,
-            String option) {
-        try {
-            String encodedOption = URLEncoder.encode(option, "UTF-8");
-            uriString.append(name).
-                append('=').
-                append(encodedOption).
-                append(QUERY_STRING_SEPARATOR);
-        } catch (UnsupportedEncodingException e) {
-            // XXX - should never happen
-            throw new RuntimeException("Error encoding value for: " + name 
-                    + ", value:" + option, e);
-        }
-        return uriString;
-    }
-
-    /**
-     * Add a password option, passing it as a header in the request
-     */
-    private StringBuilder addPasswordOption(StringBuilder uriString, String name,
-            String option) throws IOException {
-        if (passwordOptions == null) {
-            passwordOptions = new StringBuilder();
-        } else {
-            passwordOptions.append(QUERY_STRING_SEPARATOR);
-        }
-        GFBase64Encoder encoder = new GFBase64Encoder();
-        passwordOptions.append(name).append('=').append(
-                URLEncoder.encode(encoder.encode(option.getBytes()), "UTF-8"));
-        return uriString;
-    }
-    
-    /**
      * Adds an option for a file argument, passing the name (for uploads) or the
      * path (for no-upload) operations.
      *
@@ -1448,16 +1406,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             // o/w give the full path
             String pathToPass = (uploadThisFile ? f.getName() : f.getPath());
             params.add(optionName, pathToPass);
-        }
-    }
-
-    private void handleResponse(ParameterMap params,
-            InputStream in, int code, OutputStream userOut)
-            throws IOException, CommandException {
-        if (userOut == null) {
-            handleResponse(params, in, code);
-        } else {
-            FileUtils.copy(in, userOut, 0);
         }
     }
 

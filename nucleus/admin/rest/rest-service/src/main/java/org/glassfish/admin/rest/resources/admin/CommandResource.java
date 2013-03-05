@@ -68,8 +68,6 @@ import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.internal.util.collection.Ref;
-import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.sse.SseFeature;
 
 
@@ -189,16 +187,17 @@ public class CommandResource {
                 @HeaderParam("X-Indent") String indent,
                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
-//                FormDataMultiPart mp,
                 ParamsWithPayload pwp) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
         if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
             RestLogging.restLogger.log(Level.FINEST, "execCommandMultInSimpOut({0})", commandName);
         }
-//        ParameterMap data = new ParameterMap();
-//        Payload.Inbound inbound = RestPayloadImpl.Inbound.parseFromFormDataMultipart(mp, data);
-        ParameterMap data = pwp.getParameters();
-        Payload.Inbound inbound = pwp.getPayloadInbound();
+        ParameterMap data = null;
+        Payload.Inbound inbound = null;
+        if (pwp != null) {
+            data = pwp.getParameters();
+            inbound = pwp.getPayloadInbound();
+        }
         return executeCommand(commandName, inbound, data, false, indent, modelETag, jSessionId);
     }
 
@@ -243,16 +242,17 @@ public class CommandResource {
                 @HeaderParam("X-Indent") String indent,
                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
-//                FormDataMultiPart mp,
                 ParamsWithPayload pwp) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
         if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
             RestLogging.restLogger.log(Level.FINEST, "execCommandMultInMultOut({0})", commandName);
         }
-//        ParameterMap data = new ParameterMap();
-//        Payload.Inbound inbound = RestPayloadImpl.Inbound.parseFromFormDataMultipart(mp, data);
-        ParameterMap data = pwp.getParameters();
-        Payload.Inbound inbound = pwp.getPayloadInbound();
+        ParameterMap data = null;
+        Payload.Inbound inbound = null;
+        if (pwp != null) {
+            data = pwp.getParameters();
+            inbound = pwp.getPayloadInbound();
+        }
         return executeCommand(commandName, inbound, data, true, indent, modelETag, jSessionId);
     }
 
@@ -295,14 +295,15 @@ public class CommandResource {
     public Response execCommandMultInSseOut(@PathParam("command") String command,
                 @HeaderParam(RemoteRestAdminCommand.COMMAND_MODEL_MATCH_HEADER) String modelETag,
                 @CookieParam(SESSION_COOKIE_NAME) Cookie jSessionId,
-//                FormDataMultiPart mp,
                 ParamsWithPayload pwp) {
         CommandName commandName = new CommandName(normalizeCommandName(command));
         if (RestLogging.restLogger.isLoggable(Level.FINEST)) {
             RestLogging.restLogger.log(Level.FINEST, "execCommandMultInMultOut({0})", commandName);
         }
-//        ParameterMap data = new ParameterMap();
-        ParameterMap data = pwp.getParameters();
+        ParameterMap data = null;
+        if (pwp != null) {
+            data = pwp.getParameters();
+        }
         return executeSseCommand(commandName, null, data, modelETag, jSessionId);
     }
 
@@ -408,12 +409,6 @@ public class CommandResource {
             rb.header("X-Indent", xIndentHeader);
         }
         if (supportsMultiparResult && outbound.size() > 0) {
-//            MultiPart mp = new MultiPart();
-//            mp.bodyPart(ar, MediaType.APPLICATION_JSON_TYPE);
-//            if (outbound.size() > 0) {
-//                outbound.addToMultipart(mp, RestLogging.restLogger);
-//            }
-//            rb.entity(mp);
             ParamsWithPayload pwp = new ParamsWithPayload(outbound, ar);
             rb.entity(pwp);
         } else {

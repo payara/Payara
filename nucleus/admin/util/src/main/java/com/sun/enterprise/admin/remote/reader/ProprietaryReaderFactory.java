@@ -52,10 +52,11 @@ public class ProprietaryReaderFactory {
     static {
         proprietaryReaders = new ArrayList<ProprietaryReader>(7);
         proprietaryReaders.add(new StringProprietaryReader());
-        proprietaryReaders.add(new ActionReportJsonProprietaryReader());
-        proprietaryReaders.add(new ParamsWithPayloadJsonProprietaryReader());
+        ActionReportJsonProprietaryReader rdr = new ActionReportJsonProprietaryReader();
+        proprietaryReaders.add(rdr);
+        proprietaryReaders.add(new ParamsWithPayloadJsonProprietaryReader(rdr));
         proprietaryReaders.add(new AdminCommandStateJsonProprietaryReader());
-        proprietaryReaders.add(new MultipartProprietaryReader());
+        proprietaryReaders.add(new MultipartProprietaryReader(rdr));
         proprietaryReaders.add(new ProgressStatusDTOJsonProprietaryReader());
         proprietaryReaders.add(new ProgressStatusEventJsonProprietaryReader());
     }

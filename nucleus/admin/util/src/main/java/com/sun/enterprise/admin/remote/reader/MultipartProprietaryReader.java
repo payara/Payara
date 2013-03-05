@@ -60,7 +60,15 @@ import org.jvnet.mimepull.MIMEPart;
  */
 public class MultipartProprietaryReader implements ProprietaryReader<ParamsWithPayload> {
     
-    private static final ActionReportJsonProprietaryReader actionReportReader = new ActionReportJsonProprietaryReader();
+    private final ActionReportJsonProprietaryReader actionReportReader;
+
+    public MultipartProprietaryReader() {
+        this(new ActionReportJsonProprietaryReader());
+    }
+
+    public MultipartProprietaryReader(ActionReportJsonProprietaryReader actionReportReader) {
+        this.actionReportReader = actionReportReader;
+    }
     
     @Override
     public boolean isReadable(final Class<?> type,
