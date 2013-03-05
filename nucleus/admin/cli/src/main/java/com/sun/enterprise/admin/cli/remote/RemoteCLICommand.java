@@ -58,6 +58,7 @@ import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 import com.sun.enterprise.security.store.AsadminSecurityUtil;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.*;
 import java.net.*;
@@ -146,6 +147,11 @@ public class RemoteCLICommand extends CLICommand {
             if (!programOpts.isTerse()) {
                 super.registerListener(CommandProgress.EVENT_PROGRESSSTATUS_CHANGE, statusPrinter);
                 super.registerListener(CommandProgress.EVENT_PROGRESSSTATUS_STATE, statusPrinter);
+            }
+            //Readtimeout
+            String stimeout = env.getStringOption("READTIMEOUT");
+            if (StringUtils.ok(stimeout)) {
+                super.setReadTimeout(Integer.parseInt(stimeout));
             }
         }
         
