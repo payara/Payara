@@ -44,6 +44,8 @@ import org.glassfish.internal.grizzly.LazyServiceInitializer;
 
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.glassfish.hk2.api.PostConstruct;
 
 import org.omg.CORBA.ORB;
@@ -61,6 +63,7 @@ import java.util.logging.Logger;
  * @author Ken Saks
  */
 @Service
+@Named("iiop-service")
 public class ORBLazyServiceInitializer implements LazyServiceInitializer, PostConstruct {
 
 static Logger logger = LogDomains.getLogger(ORBLazyServiceInitializer.class, LogDomains.SERVER_LOGGER);

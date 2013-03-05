@@ -148,6 +148,7 @@ import org.jvnet.hk2.config.types.Property;
  */
 @Service
 @Singleton
+@Named(ActiveJmsResourceAdapter.JMS_SERVICE)
 public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl implements LazyServiceInitializer, PostConstruct {
 
     static Logger _logger = LogDomains.getLogger(ActiveJmsResourceAdapter.class,  LogDomains.JMS_LOGGER);
@@ -235,7 +236,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     private static String ADRLIST_BEHAVIOUR  = "AddressListBehavior";
     private static String ADRLIST_ITERATIONS  = "AddressListIterations";
     private static final String MDBIDENTIFIER = "MdbName";
-    private static final String JMS_SERVICE = "mq-service";
+    public static final String JMS_SERVICE = "mq-service";
 
     //MCF properties
     private static final String MCFADDRESSLIST = "MessageServiceAddressList";
@@ -2421,10 +2422,6 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     //methods from LazyServiceIntializer
-     public String getServiceName(){
-         return JMS_SERVICE;
-     }
-
     public boolean initializeService(){
          try {
              String module = ConnectorConstants.DEFAULT_JMS_ADAPTER;

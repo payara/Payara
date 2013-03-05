@@ -43,6 +43,7 @@ package com.sun.enterprise.v3.services.impl;
 import java.io.IOException;
 import java.nio.channels.SelectableChannel;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,6 +54,7 @@ import org.glassfish.grizzly.nio.NIOConnection;
 import org.glassfish.grizzly.nio.NIOTransport;
 import org.glassfish.grizzly.nio.SelectorHandler;
 import org.glassfish.grizzly.nio.SelectorRunner;
+import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.grizzly.LazyServiceInitializer;
 
@@ -65,7 +67,7 @@ import org.glassfish.internal.grizzly.LazyServiceInitializer;
  */
 public class ServiceInitializerFilter extends BaseFilter {
     private volatile LazyServiceInitializer targetInitializer = null;
-    private Collection<LazyServiceInitializer> initializerImplList = null;
+    private List<ServiceHandle<LazyServiceInitializer>> initializerImplList = null;
     
     protected final Logger logger;
 
@@ -76,10 +78,10 @@ public class ServiceInitializerFilter extends BaseFilter {
 
     public ServiceInitializerFilter(final ServiceInitializerListener listener,
             final ServiceLocator habitat, final Logger logger) {
-        initializerImplList = habitat.getAllServices(LazyServiceInitializer.class);
+        initializerImplList = habitat.getAllServiceHandles(LazyServiceInitializer.class);
 
-        if (initializerImplList == null) {
-            throw new IllegalStateException("NO Lazy Initialiser was found for port = " +
+        if (initializerImplList.isEmpty()) {
+            throw new IllegalStateException("NO Lazy Initializer was found for port = " +
                     listener.getPort());
         }
 
@@ -95,10 +97,11 @@ public class ServiceInitializerFilter extends BaseFilter {
             synchronized (LOCK_OBJ) {
                 if (targetInitializer == null) {
                     LazyServiceInitializer targetInitializerLocal = null;
-                    for (final LazyServiceInitializer initializer : initializerImplList) {
+                    for (final ServiceHandle<LazyServiceInitializer> initializer : initializerImplList) {
                         String listenerName = listener.getName();
-                        if (listenerName.equalsIgnoreCase(initializer.getServiceName())) {
-                            targetInitializerLocal = initializer;
+                        String serviceName = initializer.getActiveDescriptor().getName();
+                        if (serviceName != null && listenerName.equalsIgnoreCase(serviceName)) {
+                            targetInitializerLocal = initializer.getService();
                             break;
                         }
                     }

@@ -54,20 +54,6 @@ import org.jvnet.hk2.annotations.Contract;
 */
 @Contract
 public interface LazyServiceInitializer {
-    /**
-     * Returns the string associated with 'name' attribute of corresponding
-     * <network-listener> element in domain.xml. The service initializer uses
-     * this return value to select the proper service provider from the list
-     * of service providers that implement this interface.
-     * 
-     * For GFv3, however, since IIOP and MQ service will not able to move
-     * <network-listener> element, the implementations of this interface for
-     * IIOP/JMS service will return String "iiop-service"/"mq-service"
-     *
-     * @return The value of the 'name' attribute in the corresponding 
-     *         <network-listener> element for this service
-     */
-    public String getServiceName();
 
     /**
      * Upon accepting the first request on the port (to which this listener is
