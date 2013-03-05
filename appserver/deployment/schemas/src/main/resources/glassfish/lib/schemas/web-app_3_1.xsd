@@ -269,4 +269,58 @@
     </xsd:keyref>
   </xsd:element>
 
+
+<!-- **************************************************** -->
+
+  <xsd:complexType name="web-appType">
+    <xsd:choice minOccurs="0"
+                maxOccurs="unbounded">
+      <xsd:element name="module-name"
+                   type="javaee:string"
+                   minOccurs="0"/>
+      <xsd:group ref="javaee:web-commonType"/>
+      <xsd:element name="deny-uncovered-http-methods"
+                   type="javaee:emptyType">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            When specified, this element causes uncovered http methods
+            to be denied. For every url-pattern that is the target of a 
+            security-constrant, this element causes all HTTP methods that
+            are NOT covered (by a security constraint) at the url-pattern
+            to be denied.
+            
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="absolute-ordering"
+                   type="javaee:absoluteOrderingType"/>
+    </xsd:choice>
+    <xsd:attributeGroup ref="javaee:web-common-attributes"/>
+  </xsd:complexType>
+
+
+<!-- **************************************************** -->
+
+  <xsd:complexType name="absoluteOrderingType">
+    <xsd:annotation>
+      <xsd:documentation>
+
+        Please see section 8.2.2 of the specification for details.
+        
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0"
+                maxOccurs="unbounded">
+      <xsd:element name="name"
+                   type="javaee:java-identifierType"
+                   minOccurs="0"
+                   maxOccurs="unbounded"/>
+      <xsd:element name="others"
+                   type="javaee:ordering-othersType"
+                   minOccurs="0"
+                   maxOccurs="1"/>
+    </xsd:choice>
+  </xsd:complexType>
+
 </xsd:schema>

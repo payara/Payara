@@ -269,4 +269,72 @@
     </xsd:keyref>
   </xsd:element>
 
+
+<!-- **************************************************** -->
+
+  <xsd:complexType name="web-fragmentType">
+    <xsd:choice minOccurs="0"
+                maxOccurs="unbounded">
+      <xsd:element name="name"
+                   type="javaee:java-identifierType"/>
+      <xsd:group ref="javaee:web-commonType"/>
+      <xsd:element name="ordering"
+                   type="javaee:orderingType"/>
+    </xsd:choice>
+    <xsd:attributeGroup ref="javaee:web-common-attributes"/>
+  </xsd:complexType>
+
+
+<!-- **************************************************** -->
+
+  <xsd:complexType name="orderingType">
+    <xsd:annotation>
+      <xsd:documentation>
+
+        Please see section 8.2.2 of the specification for details.
+        
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="after"
+                   type="javaee:ordering-orderingType"
+                   minOccurs="0"
+                   maxOccurs="1"/>
+      <xsd:element name="before"
+                   type="javaee:ordering-orderingType"
+                   minOccurs="0"
+                   maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+
+<!-- **************************************************** -->
+
+  <xsd:complexType name="ordering-orderingType">
+    <xsd:annotation>
+      <xsd:documentation>
+
+        This element contains a sequence of "name" elements, each of
+        which
+        refers to an application configuration resource by the "name"
+        declared on its web.xml fragment.  This element can also contain
+        a single "others" element which specifies that this document
+        comes
+        before or after other documents within the application.
+        See section 8.2.2 of the specification for details.
+        
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="name"
+                   type="javaee:java-identifierType"
+                   minOccurs="0"
+                   maxOccurs="unbounded"/>
+      <xsd:element name="others"
+                   type="javaee:ordering-othersType"
+                   minOccurs="0"
+                   maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
 </xsd:schema>
