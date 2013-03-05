@@ -616,6 +616,13 @@
                 <type>pom</type>
             </dependency>
             <dependency>
+                <groupId>org.glassfish.jersey</groupId>
+                <artifactId>jersey-bom</artifactId>
+                <version>${jersey.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgi-resource-locator</artifactId>
                 <version>1.0.1</version>
@@ -744,7 +751,7 @@
                 <artifactId>javax.annotation-api</artifactId>
                 <version>${javax.annotation-api.version}</version>
             </dependency>            
-            <dependency>
+<!--            <dependency>
                 <groupId>org.glassfish.jersey.core</groupId>
                 <artifactId>jersey-server</artifactId>
                 <version>${jersey.version}</version>
@@ -808,7 +815,7 @@
                 <groupId>org.glassfish.jersey.containers.glassfish</groupId>
                 <artifactId>jersey-gf-ejb</artifactId>
                 <version>${jersey.version}</version>
-            </dependency>
+            </dependency>-->
             <dependency>
                 <groupId>org.codehaus.jackson</groupId>
                 <artifactId>jackson-mapper-asl</artifactId>
