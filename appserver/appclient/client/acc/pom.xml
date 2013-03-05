@@ -407,6 +407,13 @@
      </dependency>
 
      <!-- end of endorsed JAR dependencies -->
+
+     <!-- JAXR -JSR-93 Support-->
+     <dependency>
+         <groupId>javax.xml.registry</groupId>
+         <artifactId>javax.xml.registry-api</artifactId>
+     </dependency>
+
         <!--
         This is needed because it provides the sniffer/detector/moduletype
         -->
