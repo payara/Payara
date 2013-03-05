@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,10 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.AbstractCollection;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.Dom;
@@ -192,6 +195,113 @@ public @interface AccessRequired {
      * 
      */
     public class AccessCheck<T> {
+        
+        /**
+         * Implements a collection of the related objects in an AccessCheck 
+         * collection.
+         * <p>
+         * Some classes which use collections of AccessChecks need to iterate
+         * through the related objects associated with each of the AccessChecks.
+         * Those classes can then use the AccessCheck.accessibleRelatedObjects() 
+         * method, passing the typed collection of access checks.  
+         * Normally the related object collection
+         * will contain the related objects for only those access checks which
+         * were successful but the caller can ask for all related objects 
+         * if needed.
+         * 
+         * @param <U> the type of related object stored in the access checks in the collection
+         */
+        private static class RelatedObjectCollection<U> extends AbstractCollection<U> {
+
+            private final Collection<AccessCheck<U>> accessChecks;
+            private final boolean accessibleOnly;
+            
+            private RelatedObjectCollection(final Collection<AccessCheck<U>> accessChecks, final boolean accessibleOnly) {
+                this.accessChecks = accessChecks;
+                this.accessibleOnly = accessibleOnly;
+            }
+            
+            @Override
+            public Iterator<U> iterator() {
+                return new Iterator<U>() {
+                    
+                    private final Iterator<AccessCheck<U>> baseIt = accessChecks.iterator();
+                    
+                    /* will be null if there is no matching next access check */
+                    private AccessCheck<U> nextAccessCheck = chooseNext();
+                    
+                    private AccessCheck<U> chooseNext() {
+                        while (baseIt.hasNext()) {
+                            final AccessCheck<U> next = baseIt.next();
+                            if ( ! accessibleOnly || next.isSuccessful) {
+                                return next;
+                            }
+                        }
+                        return null;
+                    }
+
+                    @Override
+                    public boolean hasNext() {
+                        return nextAccessCheck != null;
+                    }
+
+                    @Override
+                    public U next() {
+                        if (nextAccessCheck == null) {
+                            throw new NoSuchElementException();
+                        }
+                        final U result = nextAccessCheck.relatedObject;
+                        nextAccessCheck = chooseNext();
+                        return result;
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+
+            @Override
+            public int size() {
+                int count = 0;
+                for (AccessCheck<U> accessCheck : accessChecks) {
+                    if ( ! accessibleOnly || accessCheck.isSuccessful()) {
+                        count++;
+                    }
+                }
+                return count;
+            }
+        }
+        
+        /**
+         * Returns an immutable collection of the related objects associated
+         * with all of the specified access checks provided that the associated
+         * access check was successful.
+         * 
+         * @param <U>
+         * @param accessChecks the collection of access checks (with related objects) to process
+         * @return 
+         */
+        public static <U> Collection<U> relatedObjects(final Collection<AccessCheck<U>> accessChecks) {
+            return relatedObjects(accessChecks, true);
+        }
+        
+        /**
+         * Returns an immutable collection of the related objects associated
+         * with all of the specified access checks, regardless of whether the
+         * access was granted for each.
+         * 
+         * @param <U>
+         * @param accessChecks the collection of access checks (with related objects) to process
+         * @param successfulOnly whether to return the related objects for only the successful checks or for all checks
+         * @return 
+         */
+        public static <U> Collection<U> relatedObjects(final Collection<AccessCheck<U>> accessChecks, final boolean successfulOnly) {
+            return new RelatedObjectCollection<U>(accessChecks, successfulOnly);
+        }
+        
+        
         private final String resourceName;
         private final String action;
         private final String note;

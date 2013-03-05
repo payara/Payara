@@ -80,7 +80,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
     /**
      * Associates an access check with each candidate JobInfo we might report on.
      */
-    private final Map<AccessRequired.AccessCheck,JobInfo> jobAccessChecks = new HashMap<AccessRequired.AccessCheck,JobInfo>();
+    private final Collection<AccessRequired.AccessCheck<JobInfo>> jobAccessChecks = new ArrayList<AccessRequired.AccessCheck<JobInfo>>();
     
     private final String JOBS_FILE = "jobs.xml";
 
@@ -185,11 +185,9 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
         
     @Override
     public void execute(AdminCommandContext context) {
-        pruneInaccessibleJobs();
-        display(jobAccessChecks.values(),context);
-
+        display(AccessRequired.AccessCheck.relatedObjects(jobAccessChecks),context);
     }
-
+    
     public static boolean skipJob(String name) {
         return name == null || "attach".equals(name) || name.startsWith("_");
     }
@@ -199,21 +197,12 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
     public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
         final List<JobInfo> jobInfoList = chooseJobs();
         for (JobInfo jobInfo : jobInfoList) {
-            jobAccessChecks.put(new AccessRequired.AccessCheck(
-                    JobAuthorizationAttributeProcessor.JOB_RESOURCE_NAME_PREFIX + jobInfo.jobId,"read"), jobInfo);
+            jobAccessChecks.add(new AccessRequired.AccessCheck<JobInfo>(jobInfo,
+                    JobAuthorizationAttributeProcessor.JOB_RESOURCE_NAME_PREFIX + jobInfo.jobId,"read", false));
         }
-        return jobAccessChecks.keySet();
+        return jobAccessChecks;
     }
 
-    private void pruneInaccessibleJobs() {
-        for (Iterator<Map.Entry<AccessRequired.AccessCheck,JobInfo>> it = jobAccessChecks.entrySet().iterator(); it.hasNext();) {
-            Map.Entry<AccessRequired.AccessCheck,JobInfo> entry = it.next();
-            if ( ! entry.getKey().isSuccessful()) {
-                it.remove();
-            }
-        }
-    }
-    
     public void display(Collection<JobInfo> jobInfoList, AdminCommandContext context) {
         report = context.getActionReport();
 
