@@ -40,7 +40,7 @@
 
 package org.glassfish.concurrent.config;
 
-import com.sun.enterprise.config.modularity.annotation.ActivateOnStartup;
+import com.sun.enterprise.config.modularity.ConfigBeanInstaller;
 import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
@@ -49,6 +49,8 @@ import org.glassfish.admin.cli.resources.ResourceConfigCreator;
 import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.PropertyBag;
 import org.glassfish.resourcebase.resources.ResourceTypeOrder;
@@ -69,7 +71,6 @@ import javax.validation.Payload;
 @ReferenceConstraint(skipDuringCreation=true, payload=ManagedScheduledExecutorService.class)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ManagedScheduledExecutorService.class)
 @CustomConfiguration(baseConfigurationFileName = "managed-scheduled-executor-service-conf.xml")
-@ActivateOnStartup
 public interface ManagedScheduledExecutorService extends ConfigBeanProxy,
         Resource, PropertyBag, BindableResource, Payload, 
         ManagedExecutorService {
@@ -82,5 +83,11 @@ public interface ManagedScheduledExecutorService extends ConfigBeanProxy,
             ManagedScheduledExecutorService resource){
             return resource.getJndiName();
         }
+    }
+
+    @Service
+    @RunLevel(mode = RunLevel.RUNLEVEL_MODE_VALIDATING, value = 4)
+    public class ManagedScheduledExecutorServiceConfigActivator extends ConfigBeanInstaller {
+
     }
 }

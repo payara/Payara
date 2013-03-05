@@ -40,7 +40,7 @@
 
 package org.glassfish.concurrent.config;
 
-import com.sun.enterprise.config.modularity.annotation.ActivateOnStartup;
+import com.sun.enterprise.config.modularity.ConfigBeanInstaller;
 import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
@@ -49,6 +49,8 @@ import org.glassfish.admin.cli.resources.ResourceConfigCreator;
 import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
@@ -56,7 +58,6 @@ import org.glassfish.resourcebase.resources.ResourceTypeOrder;
 import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
 
 import javax.validation.Payload;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Min;
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -75,7 +76,6 @@ import java.util.List;
 @ReferenceConstraint(skipDuringCreation=true, payload=ManagedExecutorService.class)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ManagedExecutorService.class)
 @CustomConfiguration(baseConfigurationFileName = "managed-executor-service-conf.xml")
-@ActivateOnStartup
 public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
         PropertyBag, BindableResource, Payload {
 
@@ -261,5 +261,11 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
         public static String getIdentity(ManagedExecutorService resource){
             return resource.getJndiName();
         }
+    }
+
+    @Service
+    @RunLevel(mode = RunLevel.RUNLEVEL_MODE_VALIDATING, value = 4)
+    public  class ManagedExecutorServiceConfigActivator extends ConfigBeanInstaller {
+
     }
 }

@@ -51,6 +51,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevelController;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.glassfish.tests.utils.Utils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.types.Property;
@@ -163,15 +164,6 @@ public class BasicModularityTest extends ConfigApiTest {
         com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue def = configModularityUtils.getDefaultConfigurations(SimpleExtensionTypeOne.class, "embedded-").get(0);
         SimpleExtensionTypeOne simple = configModularityUtils.getCurrentConfigBeanForDefaultValue(def);
         assertNotNull("Cannot get config bean of a module based on the default module configuration information", simple);
-    }
-
-
-    @Test
-    public void testOverrideOnStartup() {
-        ensureRunLevel(2);
-        Config config = habitat.<Config>getService(Config.class, ServerEnvironmentImpl.DEFAULT_INSTANCE_NAME);
-        SystemProperty property = config.getSystemProperty("startup.overriding.property");
-        assertEquals("The system property is not overridden during startup, Something wrong with processing @ActivateOnStartup", "new-custom-value", property.getValue());
     }
 
 

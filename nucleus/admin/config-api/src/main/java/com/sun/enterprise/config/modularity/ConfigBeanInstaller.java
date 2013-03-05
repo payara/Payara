@@ -71,7 +71,7 @@ public class ConfigBeanInstaller implements PostConstruct {
     @Inject
     private ConfigModularityUtils configModularityUtils;
 
-    private static final Logger LOG = Logger.getLogger(StartupConfigBeanOverrider.class.getName());
+    private static final Logger LOG = Logger.getLogger(ConfigBeanInstaller.class.getName());
 
     @Override
     public void postConstruct() {

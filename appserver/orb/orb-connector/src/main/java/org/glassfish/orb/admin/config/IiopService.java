@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,6 @@
 
 package org.glassfish.orb.admin.config;
 
-import com.sun.enterprise.config.modularity.annotation.ActivateOnStartup;
-import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
-import com.sun.enterprise.config.modularity.annotation.HasCustomizationTokens;
 import com.sun.enterprise.config.serverbeans.SslClientConfig;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
