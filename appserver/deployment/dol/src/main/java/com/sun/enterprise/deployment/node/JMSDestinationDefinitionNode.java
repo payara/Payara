@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,7 +63,7 @@ public class JMSDestinationDefinitionNode extends DeploymentDescriptorNode<JMSDe
         table.put(TagNames.JMS_DESTINATION_DESCRIPTION, "setDescription");
         table.put(TagNames.JMS_DESTINATION_NAME, "setName");
         table.put(TagNames.JMS_DESTINATION_CLASS_NAME, "setClassName");
-        table.put(TagNames.JMS_DESTINATION_RESOURCE_ADAPTER_NAME, "setResourceAdapterName");
+        table.put(TagNames.JMS_DESTINATION_RESOURCE_ADAPTER, "setResourceAdapter");
         table.put(TagNames.JMS_DESTINATION_DESTINATION_NAME, "setDestinationName");
 
         return table;
@@ -71,10 +71,10 @@ public class JMSDestinationDefinitionNode extends DeploymentDescriptorNode<JMSDe
 
     public Node writeDescriptor(Node parent, String nodeName, JMSDestinationDefinitionDescriptor desc) {
         Node node = appendChild(parent, nodeName);
-        appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_DESCRIPTION, desc.getDescription());
-        appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_NAME, desc.getName());
-        appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_CLASS_NAME, desc.getClassName());
-        appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_RESOURCE_ADAPTER_NAME, desc.getResourceAdapterName());
+        appendTextChild(node, TagNames.JMS_DESTINATION_DESCRIPTION, desc.getDescription());
+        appendTextChild(node, TagNames.JMS_DESTINATION_NAME, desc.getName());
+        appendTextChild(node, TagNames.JMS_DESTINATION_CLASS_NAME, desc.getClassName());
+        appendTextChild(node, TagNames.JMS_DESTINATION_RESOURCE_ADAPTER, desc.getResourceAdapter());
         appendTextChild(node, TagNames.JMS_DESTINATION_DESTINATION_NAME, desc.getDestinationName());
 
         ResourcePropertyNode propertyNode = new ResourcePropertyNode();

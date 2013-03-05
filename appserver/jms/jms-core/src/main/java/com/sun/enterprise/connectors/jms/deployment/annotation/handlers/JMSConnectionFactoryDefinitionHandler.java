@@ -221,9 +221,9 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
                     }
                 }
 
-                if (desc.getResourceAdapterName() == null) {
-                    if (defn.resourceAdapterName() != null && !defn.resourceAdapterName().equals("")) {
-                        desc.setResourceAdapterName(defn.resourceAdapterName());
+                if (desc.getResourceAdapter() == null) {
+                    if (defn.resourceAdapter() != null && !defn.resourceAdapter().equals("")) {
+                        desc.setResourceAdapter(defn.resourceAdapter());
                     }
                 }
 
@@ -296,8 +296,8 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
             desc.setDescription(defn.description());
         }
 
-        if (defn.resourceAdapterName() != null && !defn.resourceAdapterName().equals("")) {
-            desc.setResourceAdapterName(defn.resourceAdapterName());
+        if (defn.resourceAdapter() != null && !defn.resourceAdapter().equals("")) {
+            desc.setResourceAdapter(defn.resourceAdapter());
         }
 
         if (defn.user() != null && !defn.user().equals("")) {

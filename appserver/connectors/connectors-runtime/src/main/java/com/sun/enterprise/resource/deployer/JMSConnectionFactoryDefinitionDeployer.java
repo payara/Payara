@@ -440,9 +440,9 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
         }
 
         public String getResourceAdapterName() {
-            String resourceAdapterName = desc.getResourceAdapterName();
-            if (isValidProperty(resourceAdapterName)) {
-                return resourceAdapterName;
+            String resourceAdapter = desc.getResourceAdapter();
+            if (isValidProperty(resourceAdapter)) {
+                return resourceAdapter;
             } else {
                 return null;
             }

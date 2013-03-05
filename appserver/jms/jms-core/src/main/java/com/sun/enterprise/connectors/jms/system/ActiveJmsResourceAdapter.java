@@ -2007,7 +2007,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 _logger.log(Level.INFO, "endpoint.determine.destinationtype", new
                         Object[]{descriptor_.getDestinationType(), jndiName, descriptor_.getName()});
             } else if (isValidDestination(destination) &&
-                    ConnectorConstants.DEFAULT_JMS_ADAPTER.equals(destination.getResourceAdapterName())) {
+                    ConnectorConstants.DEFAULT_JMS_ADAPTER.equals(destination.getResourceAdapter())) {
                 descriptor_.putRuntimeActivationConfigProperty(
                         new EnvironmentProperty(DESTINATION_TYPE,
                                 destination.getClassName(), null));

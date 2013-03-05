@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -221,15 +221,15 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
                     }
                 }
 
-                if (desc.getResourceAdapterName() == null) {
-                    if (defn.resourceAdapterName() != null && !defn.resourceAdapterName().equals("")) {
-                        desc.setResourceAdapterName(defn.resourceAdapterName());
+                if (desc.getResourceAdapter() == null) {
+                    if (defn.resourceAdapter() != null && !defn.resourceAdapter().equals("")) {
+                        desc.setResourceAdapter(defn.resourceAdapter());
                     }
                 }
 
                 if (desc.getDestinationName() == null) {
                     if (defn.destinationName() != null && !defn.destinationName().equals("")) {
-                        desc.setDestinationName(defn.resourceAdapterName());
+                        desc.setDestinationName(defn.destinationName());
                     }
                 }
 
@@ -268,8 +268,8 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
             desc.setDescription(defn.description());
         }
 
-        if (defn.resourceAdapterName() != null && !defn.resourceAdapterName().equals("")) {
-            desc.setResourceAdapterName(defn.resourceAdapterName());
+        if (defn.resourceAdapter() != null && !defn.resourceAdapter().equals("")) {
+            desc.setResourceAdapter(defn.resourceAdapter());
         }
 
         if (defn.destinationName() != null && !defn.destinationName().equals("")) {

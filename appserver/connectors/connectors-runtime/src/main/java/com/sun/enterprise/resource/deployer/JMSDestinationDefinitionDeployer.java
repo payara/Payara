@@ -261,9 +261,9 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
         }
 
         public String getResAdapter() {
-            String resourceAdapterName = desc.getResourceAdapterName();
-            if (resourceAdapterName != null && !resourceAdapterName.equals("")) {
-                return resourceAdapterName;
+            String resourceAdapter = desc.getResourceAdapter();
+            if (resourceAdapter != null && !resourceAdapter.equals("")) {
+                return resourceAdapter;
             }
             return null;
         }

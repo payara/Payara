@@ -140,7 +140,7 @@ public interface TagNames {
     public static final String JMS_CONNECTION_FACTORY_DESCRIPTION = "description";
     public static final String JMS_CONNECTION_FACTORY_NAME = "name";
     public static final String JMS_CONNECTION_FACTORY_CLASS_NAME = "class-name";
-    public static final String JMS_CONNECTION_FACTORY_RESOURCE_ADAPTER_NAME = "resource-adapter-name";
+    public static final String JMS_CONNECTION_FACTORY_RESOURCE_ADAPTER = "resource-adapter";
     public static final String JMS_CONNECTION_FACTORY_USER = "user";
     public static final String JMS_CONNECTION_FACTORY_PASSWORD = "password";
     public static final String JMS_CONNECTION_FACTORY_CLIENT_ID = "client-id";
@@ -155,7 +155,7 @@ public interface TagNames {
     public static final String JMS_DESTINATION_DESCRIPTION = "description";
     public static final String JMS_DESTINATION_NAME = "name";
     public static final String JMS_DESTINATION_CLASS_NAME = "class-name";
-    public static final String JMS_DESTINATION_RESOURCE_ADAPTER_NAME = "resource-adapter-name";
+    public static final String JMS_DESTINATION_RESOURCE_ADAPTER = "resource-adapter";
     public static final String JMS_DESTINATION_DESTINATION_NAME = "destination-name";
     public static final String JMS_DESTINATION_PROPERTY = "property";
     public static final String JMS_DESTINATION_PROPERTY_NAME = "name";

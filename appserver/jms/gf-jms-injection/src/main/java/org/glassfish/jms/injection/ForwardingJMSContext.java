@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -222,18 +222,13 @@ public abstract class ForwardingJMSContext implements JMSContext {
     }
 
     @Override
-    public JMSConsumer createSharedConsumer(Topic topic, String sharedSubscriptionName, String messageSelector, boolean noLocal) {
-        return delegate().createSharedConsumer(topic, sharedSubscriptionName, messageSelector, noLocal);
-    }
-
-    @Override
     public JMSConsumer createSharedDurableConsumer(Topic topic, String name) {
         return delegate().createSharedDurableConsumer(topic, name);
     }
 
     @Override
-    public JMSConsumer createSharedDurableConsumer(Topic topic, String name, String messageSelector, boolean noLocal) {
-        return delegate().createSharedDurableConsumer(topic, name, messageSelector, noLocal);
+    public JMSConsumer createSharedDurableConsumer(Topic topic, String name, String messageSelector) {
+        return delegate().createSharedDurableConsumer(topic, name, messageSelector);
     }
 
     @Override

@@ -63,7 +63,7 @@ public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode
         table.put(TagNames.JMS_CONNECTION_FACTORY_DESCRIPTION, "setDescription");
         table.put(TagNames.JMS_CONNECTION_FACTORY_NAME, "setName");
         table.put(TagNames.JMS_CONNECTION_FACTORY_CLASS_NAME, "setClassName");
-        table.put(TagNames.JMS_CONNECTION_FACTORY_RESOURCE_ADAPTER_NAME, "setResourceAdapterName");
+        table.put(TagNames.JMS_CONNECTION_FACTORY_RESOURCE_ADAPTER, "setResourceAdapter");
         table.put(TagNames.JMS_CONNECTION_FACTORY_USER, "setUser");
         table.put(TagNames.JMS_CONNECTION_FACTORY_PASSWORD, "setPassword");
         table.put(TagNames.JMS_CONNECTION_FACTORY_CLIENT_ID, "setClientId");
@@ -80,7 +80,7 @@ public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_DESCRIPTION, desc.getDescription());
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_NAME, desc.getName());
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_CLASS_NAME, desc.getClassName());
-        appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_RESOURCE_ADAPTER_NAME, desc.getResourceAdapterName());
+        appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_RESOURCE_ADAPTER, desc.getResourceAdapter());
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_USER, desc.getUser());
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_PASSWORD, desc.getPassword());
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_CLIENT_ID, desc.getClientId());

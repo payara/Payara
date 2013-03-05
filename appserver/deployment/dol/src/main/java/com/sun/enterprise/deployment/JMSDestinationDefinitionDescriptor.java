@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,7 +52,7 @@ public class JMSDestinationDefinitionDescriptor extends ResourceDescriptor {
     // the <description> element will be processed by base class
     private String name ;
     private String className;
-    private String resourceAdapterName;
+    private String resourceAdapter;
     private String destinationName;
     private Properties properties = new Properties();
 
@@ -81,12 +81,12 @@ public class JMSDestinationDefinitionDescriptor extends ResourceDescriptor {
         this.className = className;
     }
 
-    public String getResourceAdapterName() {
-        return resourceAdapterName;
+    public String getResourceAdapter() {
+        return resourceAdapter;
     }
 
-    public void setResourceAdapterName(String resourceAdapterName) {
-        this.resourceAdapterName = resourceAdapterName;
+    public void setResourceAdapter(String resourceAdapter) {
+        this.resourceAdapter = resourceAdapter;
     }
 
     public String getDestinationName() {
@@ -146,7 +146,7 @@ public class JMSDestinationDefinitionDescriptor extends ResourceDescriptor {
         return (getName().equals(other.getName())) &&
             !(
                 DOLUtils.equals(getClassName(), other.getClassName()) &&
-                DOLUtils.equals(getResourceAdapterName(), other.getResourceAdapterName()) &&
+                DOLUtils.equals(getResourceAdapter(), other.getResourceAdapter()) &&
                 DOLUtils.equals(getDestinationName(), other.getDestinationName()) &&
                 properties.equals(other.properties)
             );

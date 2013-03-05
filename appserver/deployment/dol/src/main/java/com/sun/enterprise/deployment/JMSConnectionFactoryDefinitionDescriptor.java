@@ -52,7 +52,7 @@ public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor
     // the <description> element will be processed by base class
     private String name ;
     private String className;
-    private String resourceAdapterName;
+    private String resourceAdapter;
     private String user;
     private String password;
     private String clientId;
@@ -88,12 +88,12 @@ public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor
         this.className = className;
     }
 
-    public String getResourceAdapterName() {
-        return resourceAdapterName;
+    public String getResourceAdapter() {
+        return resourceAdapter;
     }
 
-    public void setResourceAdapterName(String resourceAdapterName) {
-        this.resourceAdapterName = resourceAdapterName;
+    public void setResourceAdapter(String resourceAdapter) {
+        this.resourceAdapter = resourceAdapter;
     }
 
     public String getUser() {
@@ -202,7 +202,7 @@ public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor
         return (getName().equals(other.getName())) &&
             !(
                 DOLUtils.equals(getClassName(), other.getClassName()) &&
-                DOLUtils.equals(getResourceAdapterName(), other.getResourceAdapterName()) &&
+                DOLUtils.equals(getResourceAdapter(), other.getResourceAdapter()) &&
                 DOLUtils.equals(getUser(), other.getUser()) &&
                 DOLUtils.equals(getPassword(), other.getPassword()) &&
                 DOLUtils.equals(getClientId(), other.getClientId()) &&
