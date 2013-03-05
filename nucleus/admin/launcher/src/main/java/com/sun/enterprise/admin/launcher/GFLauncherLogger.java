@@ -39,7 +39,7 @@
  */
 package com.sun.enterprise.admin.launcher;
 
-import com.sun.enterprise.server.logging.UniformLogFormatter;
+import com.sun.enterprise.server.logging.ODLLogFormatter;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 import java.io.IOException;
@@ -96,7 +96,7 @@ public class GFLauncherLogger {
                 return;
             }
             logfileHandler = new FileHandler(logFile, true);
-            logfileHandler.setFormatter(new UniformLogFormatter());
+            logfileHandler.setFormatter(new ODLLogFormatter());
             logfileHandler.setLevel(Level.INFO);
             logger.addHandler(logfileHandler);
         }
