@@ -45,6 +45,7 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.transaction.Transaction;
+import javax.transaction.TransactionalException;
 import java.util.logging.Logger;
 
 /**
@@ -71,11 +72,14 @@ public class TransactionalInterceptorNotSupported extends TransactionalIntercept
             logger.info("Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
                     "called inside a transaction context.  Suspending transaction...");
             try {
-                getTransactionManager().suspend();
+                transaction = getTransactionManager().suspend();
             } catch (Exception exception) {
-                logger.info("Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
-                        "called inside a transaction context.  Suspending transaction failed due to " + exception);
-            //todo wrap in new transactional exception and throw
+                String messageString =
+                        "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
+                                "called inside a transaction context.  Suspending transaction failed due to " +
+                                exception;
+                logger.info(messageString);
+                throw new TransactionalException(messageString, exception);
             }
         }
         Object proceed = null;

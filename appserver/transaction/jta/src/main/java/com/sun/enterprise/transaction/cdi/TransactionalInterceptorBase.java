@@ -65,8 +65,11 @@ public class TransactionalInterceptorBase {
         if (testTransactionManager!=null) return testTransactionManager;
         if (transactionManager == null) {
             try {
-                transactionManager = (TransactionManager)
-                        new InitialContext().lookup("java:appserver/TransactionManager");
+                synchronized(TransactionalInterceptorBase.class) {
+                    if (transactionManager == null)
+                        transactionManager = (TransactionManager)
+                                new InitialContext().lookup("java:appserver/TransactionManager");
+                }
             } catch (NamingException e) {
                 e.printStackTrace(); //todo log
             }
