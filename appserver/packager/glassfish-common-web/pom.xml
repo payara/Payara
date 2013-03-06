@@ -297,14 +297,12 @@
             <artifactId>javax.management.j2ee-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.security.auth.message</artifactId>
-            <version>${project.version}</version>
+            <groupId>javax.security.auth.message</groupId>
+            <artifactId>javax.security.auth.message-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.security.jacc</artifactId>
-            <version>${project.version}</version>
+            <groupId>javax.security.jacc</groupId>
+            <artifactId>javax.security.jacc-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.transaction</groupId>

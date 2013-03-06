@@ -213,13 +213,6 @@
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.security.jacc</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        -->
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>internal-api</artifactId>

@@ -157,20 +157,14 @@
             <artifactId>javax.management.j2ee-api</artifactId>
             <optional>true</optional>
         </dependency>
-        <!--
-             using glassfish coordinates as javax.security*
-             are not yet available under official coordinates
-        -->
         <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.security.jacc</artifactId>
-            <version>${project.version}</version>
+            <groupId>javax.security.jacc</groupId>
+            <artifactId>javax.security.jacc-api</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.security.auth.message</artifactId>
-            <version>${project.version}</version>
+            <groupId>javax.security.auth.message</groupId>
+            <artifactId>javax.security.auth.message-api</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
