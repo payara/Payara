@@ -62,26 +62,29 @@ import javax.management.NotificationListener;
 public class EventListenerProxy extends UnicastRemoteObject implements RemoteEventListener {
     private Hashtable listenerTable = new Hashtable();
     private Hashtable handbackTable = new Hashtable();
-    private static String proxyAddress;
+    private String proxyAddress;
     private static EventListenerProxy eventProxy = null;
     private static int portnum=1100;
-    private static String rmiName;
+    private String rmiName;
     private static boolean debug = false;
 
-    public static EventListenerProxy getEventListenerProxy() {
-		if(eventProxy == null) {
+    public synchronized static EventListenerProxy getEventListenerProxy() {
+        if (eventProxy == null) {
+            EventListenerProxy newProxy = null;
             try {
-                eventProxy = new EventListenerProxy();
-            	Naming.rebind(proxyAddress, eventProxy);
-                if(debug) System.out.println(rmiName + " bound to existing registry at port " + portnum );
+                newProxy = new EventListenerProxy();
+                Naming.rebind(newProxy.proxyAddress, newProxy);
+                eventProxy = newProxy;
+                if(debug) System.out.println(eventProxy.rmiName + " bound to existing registry at port " + portnum );
 
             } catch (RemoteException re) {
-                if(debug) System.out.println("Naming.rebind("+ proxyAddress +", eventProxy): " + re);
+                if(debug) System.out.println("Naming.rebind("+ (newProxy != null ? newProxy.proxyAddress : "null") +", eventProxy): " + re);
                 try {
-                    eventProxy = new EventListenerProxy();
+                    newProxy = new EventListenerProxy();
                     Registry r = LocateRegistry.createRegistry(portnum);
-                    r.bind(rmiName, eventProxy);
-                    if(debug) System.out.println(rmiName + " bound to newly created registry at port " + portnum );
+                    r.bind(newProxy.rmiName, newProxy);
+                    eventProxy = newProxy;
+                    if(debug) System.out.println(newProxy.rmiName + " bound to newly created registry at port " + portnum );
                 } catch(Exception e) {
                     eventProxy = null;
                     if(debug) e.printStackTrace();

@@ -70,7 +70,6 @@ public final class ListenerRegistry implements javax.management.j2ee.ListenerReg
     private final Hashtable<NotificationListener, RemoteListenerConnector> listenerConnectors =
             new Hashtable<NotificationListener, RemoteListenerConnector>();
     private final String serverAddress; // the hostname or ip address of the MEJB
-    private Management mMgmt;
 
     public ListenerRegistry(String ip) {
         serverAddress = ip;

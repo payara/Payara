@@ -59,7 +59,7 @@ public final class RemoteListenerConnector implements NotificationListener, java
 
     private final String proxyAddress;	// the RMI address of the remote event listener
     private RemoteEventListener listener = null;  //the remote event listener
-    private MBeanServer server = null;    // the MBeanServer holds the object this is listening to
+    private transient MBeanServer server = null;    // the MBeanServer holds the object this is listening to
                                    		  // which is set when this is registered in the MEJB
     private final String id = hashCode() + ":" + System.currentTimeMillis();
 
