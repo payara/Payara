@@ -116,5 +116,11 @@ public interface BasicEjb {
      */
     public void isServiceAddedWithJITResolverAdded();
     
+    /**
+     * Checks that an ApplicationScoped CDI service can be injected into
+     * an HK2 service
+     */
+    public void checkApplicationScopedServiceInjectedIntoHk2Service();
+    
 
 }

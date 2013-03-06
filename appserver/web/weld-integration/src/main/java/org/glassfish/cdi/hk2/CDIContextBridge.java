@@ -41,51 +41,81 @@ package org.glassfish.cdi.hk2;
 
 import java.lang.annotation.Annotation;
 
-import javax.enterprise.context.spi.Context;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
+import javax.inject.Singleton;
 
 import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.Context;
+import org.glassfish.hk2.api.ServiceHandle;
 
 /**
- * This is an implementation of a CDI context that is put into CDI which will
- * handle all of the hk2 scope/context pairs
+ * This is an HK2 context for use with descriptors that are backed by
+ * CDI services (which are not Dependent or Singleton).  This scope
+ * is most like PerLookup, as it always asks for a new instance.  Whether
+ * or not CDI truly gives a new instance or not is up to CDI
  * 
  * @author jwells
  *
  */
-public class HK2ContextBridge implements Context {
-    private final org.glassfish.hk2.api.Context<?> hk2Context;
-    
-    /* package */ HK2ContextBridge(org.glassfish.hk2.api.Context<?> hk2Context) {
-        this.hk2Context = hk2Context;
-    }
+@Singleton
+public class CDIContextBridge implements Context<CDIScope> {
 
-    @Override
-    public <T> T get(Contextual<T> arg0) {
-        if (!(arg0 instanceof HK2CDIBean)) return null;
-        HK2CDIBean<T> hk2CdiBean = (HK2CDIBean<T>) arg0;
-        
-        ActiveDescriptor<T> descriptor = hk2CdiBean.getHK2Descriptor();
-        
-        if (!hk2Context.containsKey(descriptor)) return null;
-        
-        return hk2CdiBean.create(null);
-    }
-
-    @Override
-    public <T> T get(Contextual<T> arg0, CreationalContext<T> arg1) {
-        return arg0.create(arg1);
-    }
-
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Context#getScope()
+     */
     @Override
     public Class<? extends Annotation> getScope() {
-        return hk2Context.getScope();
+        return CDIScope.class;
     }
 
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Context#findOrCreate(org.glassfish.hk2.api.ActiveDescriptor, org.glassfish.hk2.api.ServiceHandle)
+     */
+    @Override
+    public <U> U findOrCreate(ActiveDescriptor<U> activeDescriptor,
+            ServiceHandle<?> root) {
+        return activeDescriptor.create(root);
+    }
+
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Context#containsKey(org.glassfish.hk2.api.ActiveDescriptor)
+     */
+    @Override
+    public boolean containsKey(ActiveDescriptor<?> descriptor) {
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Context#destroyOne(org.glassfish.hk2.api.ActiveDescriptor)
+     */
+    @Override
+    public void destroyOne(ActiveDescriptor<?> descriptor) {
+        // It is up to CDI to managed lifecycle
+
+    }
+
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Context#supportsNullCreation()
+     */
+    @Override
+    public boolean supportsNullCreation() {
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Context#isActive()
+     */
     @Override
     public boolean isActive() {
-        return hk2Context.isActive();
+        return true;
+    }
+
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Context#shutdown()
+     */
+    @Override
+    public void shutdown() {
+        // It is up to CDI to manage lifecycle
+
     }
 
 }

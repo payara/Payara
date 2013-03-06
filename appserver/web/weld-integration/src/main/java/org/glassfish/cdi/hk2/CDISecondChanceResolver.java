@@ -45,7 +45,11 @@ import java.util.Set;
 
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
+import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.DynamicConfiguration;
@@ -61,12 +65,24 @@ import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 @Singleton
 public class CDISecondChanceResolver implements JustInTimeInjectionResolver {
     private final ServiceLocator locator;
-    private final BeanManager manager;
     
-    /* package */
-    CDISecondChanceResolver(ServiceLocator locator, BeanManager manager) {
+    @Inject
+    private CDISecondChanceResolver(ServiceLocator locator) {
         this.locator = locator;
-        this.manager = manager;
+    }
+    
+    /**
+     * Gets the currently scoped BeanManager
+     * @return The currently scoped BeanManager, or null if a bean manager cannot be found
+     */
+    private BeanManager getCurrentBeanManager() {
+        try {
+            Context jndiContext = new InitialContext();
+            return (BeanManager) jndiContext.lookup("java:comp/BeanManager");
+        }
+        catch (NamingException ne) {
+            return null;
+        }
     }
 
     /* (non-Javadoc)
@@ -80,6 +96,9 @@ public class CDISecondChanceResolver implements JustInTimeInjectionResolver {
         Set<Annotation> setQualifiers = failedInjectionPoint.getRequiredQualifiers();
         
         Annotation qualifiers[] = setQualifiers.toArray(new Annotation[setQualifiers.size()]);
+        
+        BeanManager manager = getCurrentBeanManager();
+        if (manager == null) return false;
         
         Set<Bean<?>> beans = manager.getBeans(requiredType, qualifiers);
         if (beans == null || beans.isEmpty()) {

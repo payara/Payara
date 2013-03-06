@@ -48,7 +48,6 @@ import java.util.Set;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.AfterDeploymentValidation;
-import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.InjectionTarget;
@@ -56,10 +55,11 @@ import javax.enterprise.inject.spi.ProcessInjectionTarget;
 import javax.inject.Singleton;
 
 import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.DynamicConfiguration;
+import org.glassfish.hk2.api.DynamicConfigurationService;
 import org.glassfish.hk2.api.Injectee;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 
 /**
  * The touch-point for hk2 integration with CDI
@@ -136,12 +136,16 @@ public class HK2IntegrationExtension implements Extension {
      * @param manager The manager that will be used to get references
      */
     @SuppressWarnings("unused")
-    private void afterDeploymentValidation(@Observes AfterDeploymentValidation event, BeanManager manager) {
+    private void afterDeploymentValidation(@Observes AfterDeploymentValidation event) {
         if (locator == null) return;
         
-        CDISecondChanceResolver jit = new CDISecondChanceResolver(locator, manager);
+        DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
+        DynamicConfiguration config = dcs.createDynamicConfiguration();
         
-        ServiceLocatorUtilities.addOneConstant(locator, jit);
+        config.addActiveDescriptor(CDISecondChanceResolver.class);
+        config.addActiveDescriptor(CDIContextBridge.class);
+        
+        config.commit();
     }
 
     public String toString() {

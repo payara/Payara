@@ -39,53 +39,25 @@
  */
 package org.glassfish.cdi.hk2;
 
-import java.lang.annotation.Annotation;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import javax.enterprise.context.spi.Context;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-import org.glassfish.hk2.api.ActiveDescriptor;
+import javax.inject.Scope;
 
 /**
- * This is an implementation of a CDI context that is put into CDI which will
- * handle all of the hk2 scope/context pairs
+ * This scope is given from HK2 beans that are representing CDI services
+ * that are NOT in Dependent or Singleton scopes
  * 
  * @author jwells
  *
  */
-public class HK2ContextBridge implements Context {
-    private final org.glassfish.hk2.api.Context<?> hk2Context;
-    
-    /* package */ HK2ContextBridge(org.glassfish.hk2.api.Context<?> hk2Context) {
-        this.hk2Context = hk2Context;
-    }
-
-    @Override
-    public <T> T get(Contextual<T> arg0) {
-        if (!(arg0 instanceof HK2CDIBean)) return null;
-        HK2CDIBean<T> hk2CdiBean = (HK2CDIBean<T>) arg0;
-        
-        ActiveDescriptor<T> descriptor = hk2CdiBean.getHK2Descriptor();
-        
-        if (!hk2Context.containsKey(descriptor)) return null;
-        
-        return hk2CdiBean.create(null);
-    }
-
-    @Override
-    public <T> T get(Contextual<T> arg0, CreationalContext<T> arg1) {
-        return arg0.create(arg1);
-    }
-
-    @Override
-    public Class<? extends Annotation> getScope() {
-        return hk2Context.getScope();
-    }
-
-    @Override
-    public boolean isActive() {
-        return hk2Context.isActive();
-    }
-
+@Scope
+@Retention(RUNTIME)
+@Target( { TYPE, METHOD, FIELD })
+public @interface CDIScope {
 }

@@ -179,4 +179,17 @@ public class BasicCDITest extends NucleusStartStopTest {
         
         basic.isServiceAddedWithJITResolverAdded();
     }
+    
+    /**
+     * Tests that a service added via JIT resolution works
+     * 
+     * @throws NamingException
+     */
+    @Test
+    public void testApplicationScopedCDIServiceIntoHK2Service() throws NamingException {
+        BasicEjb basic = (BasicEjb) context.lookup(BASIC_EJB_JNDI_NAME);
+        Assert.assertNotNull(basic);
+        
+        basic.checkApplicationScopedServiceInjectedIntoHk2Service();
+    }
 }

@@ -39,6 +39,7 @@
  */
 package com.oracle.hk2.devtest.cdi.ejb1.scoped;
 
+import javax.annotation.ManagedBean;
 import javax.enterprise.context.ApplicationScoped;
 
 /**
@@ -49,8 +50,11 @@ import javax.enterprise.context.ApplicationScoped;
  *
  */
 @ApplicationScoped
+@ManagedBean
 public class CountingApplicationScopedCDIService {
-    private static int constructedCount;
+    private static int constructedCount;  // static to be class wide
+    
+    private int methodCalledCount;  // not static, to be instance wide
     
     public CountingApplicationScopedCDIService() {
         synchronized (CountingApplicationScopedCDIService.class) {
@@ -62,6 +66,10 @@ public class CountingApplicationScopedCDIService {
         synchronized (CountingApplicationScopedCDIService.class) {
             return constructedCount;
         }
+    }
+    
+    public int getNumberOfTimesMethodCalled() {
+        return ++methodCalledCount;
     }
 
 }

@@ -52,6 +52,7 @@ import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
+import javax.inject.Singleton;
 
 import org.glassfish.hk2.api.DescriptorType;
 import org.glassfish.hk2.api.DescriptorVisibility;
@@ -95,7 +96,11 @@ public class CDIHK2Descriptor<T> extends AbstractActiveDescriptor<T> {
             return PerLookup.class;
         }
         
-        return bean.getScope();
+        if (Singleton.class.equals(bean.getScope())) {
+            return Singleton.class;
+        }
+        
+        return CDIScope.class;
     }
     
     // @SuppressWarnings("unchecked")

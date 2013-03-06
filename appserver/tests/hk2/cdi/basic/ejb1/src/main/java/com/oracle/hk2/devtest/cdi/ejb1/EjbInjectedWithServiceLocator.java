@@ -54,7 +54,9 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 
 import com.oracle.hk2.devtest.cdi.ejb1.ppp.ApplicationPopulatorPostProcessor;
+import com.oracle.hk2.devtest.cdi.ejb1.scoped.CountingApplicationScopedCDIService;
 import com.oracle.hk2.devtest.cdi.ejb1.scoped.CustomScopedEjb;
+import com.oracle.hk2.devtest.cdi.ejb1.scoped.HK2PerLookupInjectedWithCDIApplicationScoped;
 import com.oracle.hk2.devtest.cdi.ejb1.scoped.HK2Service;
 import com.oracle.hk2.devtest.cdi.extension.HK2ExtensionVerifier;
 import com.oracle.hk2.devtest.cdi.jit.CDIServiceInjectedWithHK2Service;
@@ -139,6 +141,47 @@ public class EjbInjectedWithServiceLocator implements BasicEjb {
     public void isServiceAddedWithJITResolverAdded() {
         if (!cdiInjectedWithHK2Service.hasHK2Service()) {
             throw new AssertionError("cdiInjectedWithHK2Service is not valid: " + cdiInjectedWithHK2Service.hasHK2Service());
+        }
+    }
+
+    @Override
+    public void checkApplicationScopedServiceInjectedIntoHk2Service() {
+        HK2PerLookupInjectedWithCDIApplicationScoped hk2Service1 = locator.getService(
+                HK2PerLookupInjectedWithCDIApplicationScoped.class);
+        HK2PerLookupInjectedWithCDIApplicationScoped hk2Service2 = locator.getService(
+                HK2PerLookupInjectedWithCDIApplicationScoped.class);
+        HK2PerLookupInjectedWithCDIApplicationScoped hk2Service3 = locator.getService(
+                HK2PerLookupInjectedWithCDIApplicationScoped.class);
+        
+        CountingApplicationScopedCDIService cdiService1 = hk2Service1.getCountingCDIService();
+        CountingApplicationScopedCDIService cdiService2 = hk2Service2.getCountingCDIService();
+        CountingApplicationScopedCDIService cdiService3 = hk2Service3.getCountingCDIService();
+        
+        if (1 != cdiService1.getNumberOfTimesMethodCalled()) {
+            throw new AssertionError("Did not get 1 for first call");
+        }
+        
+        if (2 != cdiService2.getNumberOfTimesMethodCalled()) {
+            throw new AssertionError("Did not get 2 for second call (not the same instance) " + cdiService1 + "/" + cdiService2 + "/" + cdiService3);
+        }
+
+        if (3 != cdiService3.getNumberOfTimesMethodCalled()) {
+            throw new AssertionError("Did not get 3 for second call (not the same instance) " + cdiService1 + "/" + cdiService2 + "/" + cdiService3);
+        }
+        
+        int constructorCount1 = cdiService1.getConstructedCount();
+        if (constructorCount1 > 2) {  // One for the proxy, one for the true object
+            throw new AssertionError("counstructorCount1=" + constructorCount1 + " it should less than 2");
+        }
+        
+        int constructorCount2 = cdiService2.getConstructedCount();
+        if (constructorCount1 > 2) {  // One for the proxy, one for the true object
+            throw new AssertionError("counstructorCount2=" + constructorCount2 + " it should be less than 2");
+        }
+        
+        int constructorCount3 = cdiService3.getConstructedCount();
+        if (constructorCount1 > 2) {  // One for the proxy, one for the true object
+            throw new AssertionError("counstructorCount3=" + constructorCount3 + " it should be less than 2");
         }
     }    
 }
