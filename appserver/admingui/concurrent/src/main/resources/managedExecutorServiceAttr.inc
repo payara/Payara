@@ -94,10 +94,15 @@
             <sun:textField id="hungafter" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['hungAfterSeconds']}" />      
             <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
        </sun:property>
+       <sun:property id="deploymentOrder" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" rendered="#{edit}" label="$resource{i18n.common.resource.deploymentOrder}"  helpText="$resource{i18n.common.resource.deploymentOrderHelp}">
+          <sun:textField id="deploymentOrder" styleClass="integer" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.common.deploymentOrder']}" text="#{pageSession.valueMap['deploymentOrder']}" />
+      </sun:property>
+      <sun:property id="descProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.description}">
+           <sun:textField id="desc" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['description']}" />
+      </sun:property>
    </sun:propertySheetSection>
                 
    <sun:propertySheetSection id="poolSettingsPropertySheet" label="$resource{i18ncon.propertySheetSection.poolSettings}">         
-                
        <sun:property id="coresize" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.corePoolSize}"  helpText="$resource{i18ncon.corePoolSizeHelp}">
             <sun:textField id="coresize" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['corePoolSize']}" />      
        </sun:property>
@@ -119,10 +124,7 @@
        <sun:property id="taskQueueCapacity" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.taskQueueCapacity}"  helpText="$resource{i18ncon.taskQueueCapacityHelp}">
             <sun:textField id="taskQueueCapacity" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['taskQueueCapacity']}" />      
        </sun:property>   
-                
-       <sun:property id="descProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.description}">
-            <sun:textField id="desc" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['description']}" />      
-       </sun:property>
+
         "<br /><br />
     </sun:propertySheetSection>
 </sun:propertySheet>

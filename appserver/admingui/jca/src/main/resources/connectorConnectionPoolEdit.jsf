@@ -78,7 +78,7 @@
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}/#{pageSession.encodedName}");
         setPageSessionAttribute(key="rest-api" value="true");
         setPageSessionAttribute(key="poolGeneralAttrs" value={"name" "resourceAdapterName" "connectionDefinitionName"
-            "ping" "description" "steadyPoolSize" "maxPoolSize" "poolResizeQuantity"
+            "ping" "deploymentOrder" "description" "steadyPoolSize" "maxPoolSize" "poolResizeQuantity"
             "idleTimeoutInSeconds" "maxWaitTimeInMillis" "isConnectionValidationRequired"
             "failAllConnections" "transactionSupport"});
         gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");

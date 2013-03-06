@@ -59,13 +59,12 @@
             }
         />
         <!command
-            if (#{pageSession['rest-api']}){
+            #if (#{pageSession['rest-api']}){
                 gf.getDefaultValues(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}" orig="#{pageSession.valueMap}" valueMap="#{pageSession.valueMap}")
                 if(#{pageSession.has2Objects}&#{pageSession.parentUrl2}){
                     gf.getDefaultValues(endpoint="#{pageSession.parentUrl2}/#{pageSession.childType2}" orig="#{pageSession.valueMap2}" valueMap="#{pageSession.valueMap2}")
                 }
-            }
-
+            #}
         />
     </sun:button>
    

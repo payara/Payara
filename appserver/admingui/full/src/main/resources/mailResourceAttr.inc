@@ -69,6 +69,9 @@
         <sun:property id="fromProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njmail.javaMail.returnAddr}" helpText="$resource{i18njmail.javaMail.returnAddrHelp}">
             <sun:textField id="from" styleClass="required" text="#{pageSession.valueMap['from']}" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.javaMail.returnAddr']}" required="#{true}" /> 
         </sun:property>   
+        <sun:property id="deploymentOrder" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"  rendered="#{edit}" label="$resource{i18n.common.resource.deploymentOrder}"  helpText="$resource{i18n.common.resource.deploymentOrderHelp}">
+            <sun:textField id="deploymentOrder" styleClass="integer" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.common.deploymentOrder']}" text="#{pageSession.valueMap['deploymentOrder']}" />
+        </sun:property>
 
         <sun:property id="descProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.description}" helpText="$resource{i18njmail.javaMail.descHelp}">
             <sun:textField id="desc" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['description']}" />      

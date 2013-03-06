@@ -79,7 +79,7 @@
 
         setPageSessionAttribute(key="rest-api" value="true");
         setPageSessionAttribute(key="poolGeneralAttrs" value={"name" "resType" "datasourceClassname"
-            "driverClassname" "ping" "description" "steadyPoolSize" "maxPoolSize" "poolResizeQuantity"
+            "driverClassname" "ping" "description" "deploymentOrder" "steadyPoolSize" "maxPoolSize" "poolResizeQuantity"
             "idleTimeoutInSeconds" "maxWaitTimeInMillis" "nonTransactionalConnections"
             "transactionIsolationLevel" "isIsolationLevelGuaranteed"});
 
