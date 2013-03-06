@@ -58,6 +58,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -114,15 +115,17 @@ public class CustomizationTokensProvider {
                 s.add(cls);
             }
         }
-        for (ConfigCustomizationToken token : ctk) {
-            if (token.getCustomizationType().equals(ConfigCustomizationToken.CustomizationType.FILE) ||
-                    token.getCustomizationType().equals(ConfigCustomizationToken.CustomizationType.STRING)
+        Iterator<ConfigCustomizationToken> it = ctk.iterator();
+        while(it.hasNext()){
+            ConfigCustomizationToken c =it.next();
+            if (c.getCustomizationType().equals(ConfigCustomizationToken.CustomizationType.FILE) ||
+                    c.getCustomizationType().equals(ConfigCustomizationToken.CustomizationType.STRING)
                     ) {
-                ctk.remove(token);
+                ctk.remove(c);
                 continue;
             }
-            int defaultPortNumberForDefaultConfig = Integer.parseInt(token.getValue()) + 20000;
-            token.setValue(String.valueOf(defaultPortNumberForDefaultConfig));
+            int defaultPortNumberForDefaultConfig = Integer.parseInt(c.getValue()) + 20000;
+            c.setValue(String.valueOf(defaultPortNumberForDefaultConfig));
         }
 
         return ctk;
