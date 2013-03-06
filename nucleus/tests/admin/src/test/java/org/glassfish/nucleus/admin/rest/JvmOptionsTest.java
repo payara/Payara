@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -107,24 +107,44 @@ public class JvmOptionsTest extends RestTestBase {
 
     @Test
     public void createAndDeleteOptions() {
-        final String optionName = "-Doption" + generateRandomString();
+        final String option1Name = "-Doption" + generateRandomString();
         Map<String, String> newOptions = new HashMap<String, String>() {{
-            put(optionName, "someValue");
+            put(option1Name, "someValue");
         }};
 
-
-//        Map<String, String> payload = buildJvmOptionsPayload(newOptions);
         Response response = put(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
         assertTrue(isSuccess(response));
         response = get(URL_TEST_CONFIG_JVM_OPTIONS);
         List<String> jvmOptions = getJvmOptions(response);
-        assertTrue(jvmOptions.contains(optionName+"=someValue"));
+        assertTrue(jvmOptions.contains(option1Name+"=someValue"));
 
         response = delete(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
         assertTrue(isSuccess(response));
         response = get(URL_TEST_CONFIG_JVM_OPTIONS);
         jvmOptions = getJvmOptions(response);
-        assertFalse(jvmOptions.contains(optionName+"=someValue"));
+        assertFalse(jvmOptions.contains(option1Name+"=someValue"));
+    }
+
+    // http://java.net/jira/browse/GLASSFISH-19069
+    @Test
+    public void createAndDeleteOptionsWithBackslashes() {
+        final String optionName = "-Dfile" + generateRandomString();
+        final String optionValue = "C:\\ABC\\DEF\\";
+        Map<String, String> newOptions = new HashMap<String, String>() {{
+            put(optionName, optionValue);
+        }};
+
+        Response response = put(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
+        assertTrue(isSuccess(response));
+        response = get(URL_TEST_CONFIG_JVM_OPTIONS);
+        List<String> jvmOptions = getJvmOptions(response);
+        assertTrue(jvmOptions.contains(optionName+"="+optionValue));
+
+        response = delete(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
+        assertTrue(isSuccess(response));
+        response = get(URL_TEST_CONFIG_JVM_OPTIONS);
+        jvmOptions = getJvmOptions(response);
+        assertFalse(jvmOptions.contains(optionName+"="+optionValue));
     }
 
     @Test

@@ -44,9 +44,11 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -691,7 +693,11 @@ public class ResourceUtil {
         for (Map.Entry<String, List<String>> entry : qs.entrySet()) {
             String key = entry.getKey();
             for (String value : entry.getValue()) {
-                data.put(key, value); // TODO: Last one wins? Can't imagine we'll see List.size() > 1, but...
+                try {
+                    data.put(URLDecoder.decode(key, "UTF-8"), URLDecoder.decode(value, "UTF-8")); // TODO: Last one wins? Can't imagine we'll see List.size() > 1, but...
+                } catch (UnsupportedEncodingException ex) {
+                    Logger.getLogger(ResourceUtil.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
     }

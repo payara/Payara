@@ -355,7 +355,9 @@ public abstract class CollectionLeafResource extends AbstractResource {
      * @return
      */
     protected String escapeOptionPart(String part) {
-        String changed = part.replaceAll(":", "\\\\:");
+        String changed = part
+                .replaceAll("\\\\", "\\\\\\\\")
+                .replaceAll(":", "\\\\:");
         return changed;
     }
 
@@ -371,13 +373,17 @@ public abstract class CollectionLeafResource extends AbstractResource {
         for (String option : getEntity()) {
             int index = option.indexOf("=");
             if (index > -1) {
-                existing.put(option.substring(0, index), option.substring(index+1));
+                existing.put(escapeOptionPart(option.substring(0, index)), escapeOptionPart(option.substring(index+1)));
             } else {
                 existing.put(option, "");
             }
         }
 
-        runCommand(getDeleteCommand(), processData(existing), "rest.resource.delete.message", "\"{0}\" deleted successfully.", "rest.resource.delete.forbidden", "DELETE on \"{0}\" is forbidden.");
+        runCommand(getDeleteCommand(), processData(existing), 
+                "rest.resource.delete.message", 
+                "\"{0}\" deleted successfully.", 
+                "rest.resource.delete.forbidden", 
+                "DELETE on \"{0}\" is forbidden.");
     }
 
 }
