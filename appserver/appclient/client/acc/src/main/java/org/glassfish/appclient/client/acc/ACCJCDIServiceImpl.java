@@ -42,6 +42,7 @@ package org.glassfish.appclient.client.acc;
 import com.sun.enterprise.container.common.spi.JCDIService;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.ManagedBeanDescriptor;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.jvnet.hk2.annotations.Service;
@@ -70,7 +71,7 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
     @Override
     public boolean isJCDIEnabled(BundleDescriptor bundle) {
-        return true;
+        return false; // TODO: PJZ: Change this to enable CDI in AppClient Container
     }
 
 
@@ -99,9 +100,11 @@ public class ACCJCDIServiceImpl implements JCDIService {
                                                     boolean          invokePostConstruct) {
         JCDIInjectionContext context = null;
 
+        BeanManager beanManager = null;
+
         WeldContainer wc = getWeldContainer();
         if (wc != null) {
-            BeanManager beanManager = wc.getBeanManager();
+            beanManager = wc.getBeanManager();
 
             AnnotatedType annotatedType = beanManager.createAnnotatedType(managedClass);
             InjectionTarget target = beanManager.createInjectionTarget(annotatedType);
@@ -118,6 +121,16 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
             context = new JCDIInjectionContextImpl(target, cc, managedObject);
         }
+// TODO: PJZ: This doesn't seem appropriate
+//        if (beanManager != null) {
+//            try {
+//                ((ManagedBeanManagerImpl) beanManager).createEEManagedBean(bundle.getDescriptorExtension(ManagedBeanDescriptor.class),
+//                                                                           managedClass,
+//                                                                           invokePostConstruct);
+//            } catch (Exception e) {
+//                //
+//            }
+//        }
 
         return context;
     }
