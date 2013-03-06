@@ -472,6 +472,9 @@ public class DOLUtils {
             } else {
                 is = archive.getEntry(confDD.getDeploymentDescriptorPath());
             }
+            if (is == null) {
+                return;
+            }
             for (int i = 1; i < confDDFiles.size(); i++) {
                 if (warnIfMultipleDDs) {
                     deplLogger.log(Level.WARNING,
