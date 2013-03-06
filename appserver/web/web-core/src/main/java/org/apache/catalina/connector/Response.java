@@ -1306,6 +1306,8 @@ public class Response
             // W3c spec clearly said 
             if (url.equalsIgnoreCase("")){
                 url = absolute;
+            } else if (url.equals(absolute) && !hasPath(url)) {
+                url += '/';
             }
             String sessionVersion = null;
             Map<String, String> sessionVersions = 
@@ -1814,6 +1816,7 @@ public class Response
                     redirectURLCC.append('/');
                 }
                 redirectURLCC.append(location, 0, location.length());
+                normalize(redirectURLCC);
             } catch (IOException e) {
                 IllegalArgumentException iae =
                     new IllegalArgumentException(location);
@@ -1998,6 +2001,115 @@ public class Response
     }
     // END GlassFish 896
 
+    /*
+     * Removes /./ and /../ sequences from absolute URLs.
+     * Code borrowed heavily from CoyoteAdapter.normalize()
+     */
+    private void normalize(CharChunk cc) {
+        // Strip query string and/or fragment first as doing it this way makes
+        // the normalization logic a lot simpler
+        int truncate = cc.indexOf('?');
+        if (truncate == -1) {
+            truncate = cc.indexOf('#');
+        }
+        char[] truncateCC = null;
+        if (truncate > -1) {
+            truncateCC = Arrays.copyOfRange(cc.getBuffer(),
+                    cc.getStart() + truncate, cc.getEnd());
+            cc.setEnd(cc.getStart() + truncate);
+        }
+
+        //XXX org.glassfish.grizzly.http.util.CharChunk does not have endsWith
+        //if (cc.endsWith("/.") || cc.endsWith("/..")) {
+        if (endsWith(cc, "/.") || endsWith(cc, "/..")) {
+            try {
+                cc.append('/');
+            } catch (IOException e) {
+                throw new IllegalArgumentException(cc.toString(), e);
+            }
+        }
+
+        char[] c = cc.getChars();
+        int start = cc.getStart();
+        int end = cc.getEnd();
+        int index = 0;
+        int startIndex = 0;
+
+        // Advance past the first three / characters (should place index just
+        // scheme://host[:port]
+
+        for (int i = 0; i < 3; i++) {
+            startIndex = cc.indexOf('/', startIndex + 1);
+        }
+
+        // Remove /./
+        index = startIndex;
+        while (true) {
+            index = cc.indexOf("/./", 0, 3, index);
+            if (index < 0) {
+                break;
+            }
+            copyChars(c, start + index, start + index + 2,
+                      end - start - index - 2);
+            end = end - 2;
+            cc.setEnd(end);
+        }
+
+        // Remove /../
+        index = startIndex;
+        int pos;
+        while (true) {
+            index = cc.indexOf("/../", 0, 4, index);
+            if (index < 0) {
+                break;
+            }
+            // Can't go above the server root
+            if (index == startIndex) {
+                throw new IllegalArgumentException();
+            }
+            int index2 = -1;
+            for (pos = start + index - 1; (pos >= 0) && (index2 < 0); pos --) {
+                if (c[pos] == (byte) '/') {
+                    index2 = pos;
+                }
+            }
+            copyChars(c, start + index2, start + index + 3,
+                      end - start - index - 3);
+            end = end + index2 - index - 3;
+            cc.setEnd(end);
+            index = index2;
+        }
+
+        // Add the query string and/or fragment (if present) back in
+        if (truncateCC != null) {
+            try {
+                cc.append(truncateCC, 0, truncateCC.length);
+            } catch (IOException ioe) {
+                throw new IllegalArgumentException(ioe);
+            }
+        }
+    }
+
+    private void copyChars(char[] c, int dest, int src, int len) {
+        for (int pos = 0; pos < len; pos++) {
+            c[pos + dest] = c[pos + src];
+        }
+    }
+
+    /**
+     * Determine if an absolute URL has a path component
+     */
+    private boolean hasPath(String uri) {
+        int pos = uri.indexOf("://");
+        if (pos < 0) {
+            return false;
+        }
+        pos = uri.indexOf('/', pos + 3);
+        if (pos < 0) {
+            return false;
+        }
+        return true;
+    }
 
     private void log(String message, Throwable t) {
         org.apache.catalina.Logger logger = null;
@@ -2019,5 +2131,20 @@ public class Response
     }
 
 
+    //XXX org.glassfish.grizzly.http.util.CharChunk does not have endsWith
+    private boolean endsWith(CharChunk cc, String s) {
+        char[] c = cc.getBuffer();
+        int len = s.length();
+        if (c == null || len > cc.getEnd()-cc.getStart()) {
+            return false;
+        }
+        int off = cc.getEnd() - len;
+        for (int i = 0; i < len; i++) {
+            if (c[off++] != s.charAt(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
 
