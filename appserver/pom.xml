@@ -133,7 +133,6 @@
     </properties>
 
     <modules>
-        <module>javaee-api</module>
         <module>common</module>
         <module>ha</module>
         <module>deployment</module>
@@ -749,5 +748,17 @@
                 <module>installer</module>
             </modules>
        </profile>
+        <profile>
+            <id>javaee-api</id>
+            <activation>
+                <property>
+                    <name>release-phase-all</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>javaee-api</module>
+            </modules>
+        </profile>       
     </profiles>
 </project>

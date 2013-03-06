@@ -52,17 +52,13 @@
     <artifactId>javaee-api-parent</artifactId>
     <packaging>pom</packaging>
     <version>4.0-SNAPSHOT</version>
-    
     <name>JavaEE API</name>
     <description>Java EE API modules repackaged as OSGi bundles in GlassFish</description>
 
-    <properties>
-        <findbugs.skip>true</findbugs.skip>
-    </properties>
-
     <modules>
-        <module>api-pom</module>
-        <module>javax.jws</module>
+        <module>javax.javaee-web-api</module>
+        <module>javax.javaee-api</module>
+        <module>javax.javaee-endorsed-api</module>
     </modules>
     
     <build>                
@@ -77,7 +73,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-		    <useDefaultManifestFile>true</useDefaultManifestFile>
+                    <useDefaultManifestFile>true</useDefaultManifestFile>
                     <archive>
                         <manifest>
                             <addDefaultSpecificationEntries>false</addDefaultSpecificationEntries>
@@ -103,110 +99,89 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-doc-files</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/../doc-files</directory>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${project.build.directory}/apidocs/doc-files</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>            
         </plugins>
-    </build>    
-    
-    <profiles>
-        <profile>
-            <id>javaee-api</id>
-            <activation>
-                <property>
-                    <name>release-phase-all</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <modules>
-                <module>javax.javaee-web-api</module>
-                <module>javax.javaee-api</module>
-                <module>javax.javaee-endorsed-api</module>
-            </modules>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>copy-doc-files</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <configuration>
-                                    <resources>
-                                        <resource>
-                                            <directory>${project.basedir}/../doc-files</directory>
-                                        </resource>
-                                    </resources>
-                                    <outputDirectory>${project.build.directory}/apidocs/doc-files</outputDirectory>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-source-plugin</artifactId>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <configuration>
+                        <attach>false</attach>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.glassfish.build</groupId>
+                    <artifactId>glassfishbuild-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>unpack-sources</id>
+                            <phase>process-resources</phase>
                             <configuration>
-                                <attach>false</attach>
+                                <attachSources>true</attachSources>
+                                <excludeArtifactIds>tools-jar,servlet-api</excludeArtifactIds>
+                                <excludes>javax/help/**</excludes>
+                                <includes>javax/**</includes>
+                                <excludeTransitive>true</excludeTransitive>
                             </configuration>
-                        </plugin>
-                        <plugin>
-                            <groupId>org.glassfish.build</groupId>
-                            <artifactId>glassfishbuild-maven-plugin</artifactId>
-                            <executions>
-                                <execution>
-                                    <id>unpack-sources</id>
-                                    <phase>process-resources</phase>
-                                    <configuration>
-                                        <attachSources>true</attachSources>
-                                        <excludeArtifactIds>tools-jar,servlet-api</excludeArtifactIds>
-                                        <excludes>javax/help/**</excludes>
-                                        <includes>javax/**</includes>
-                                        <excludeTransitive>true</excludeTransitive>
-                                    </configuration>
-                                </execution>
-                                <execution>
-                                    <id>generate-pom</id>
-                                    <phase>package</phase>
-                                    <configuration>
-                                        <parent/>
-                                        <groupId>javax</groupId>
-                                        <artifactId>${projet.artifactId}</artifactId>
-                                        <version>${javaee.version}</version>
-                                    </configuration>
-                                </execution>
-                                <execution>
-                                    <id>attach-all-artifacts</id>
-                                    <phase>verify</phase>
-                                    <configuration>
-                                        <pomFile>${project.build.directory}/pom.xml</pomFile>
-                                    </configuration> 
-                                </execution>
-                            </executions>
-                        </plugin>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-javadoc-plugin</artifactId>
+                        </execution>
+                        <execution>
+                            <id>generate-pom</id>
+                            <phase>package</phase>
                             <configuration>
-                                <attach>false</attach>
-                                <doctitle>${project.name}</doctitle>
-                                <windowtitle>${project.name}</windowtitle>
-                                <bottom>
+                                <parent/>
+                                <groupId>javax</groupId>
+                                <artifactId>${projet.artifactId}</artifactId>
+                                <version>${javaee.version}</version>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>attach-all-artifacts</id>
+                            <phase>verify</phase>
+                            <configuration>
+                                <pomFile>${project.build.directory}/pom.xml</pomFile>
+                            </configuration> 
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <attach>false</attach>
+                        <doctitle>${project.name}</doctitle>
+                        <windowtitle>${project.name}</windowtitle>
+                        <bottom>
 <![CDATA[Copyright &#169; 1996-2013,
     <a href="http://www.oracle.com">Oracle</a>
     and/or its affiliates. All Rights Reserved.
     Use is subject to
     <a href="{@docRoot}/doc-files/speclicense.html" target="_top">license terms</a>.
 ]]>
-                                </bottom>
-                            </configuration>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>                
-            </build>
-        </profile>
-    </profiles>
+                        </bottom>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>        
+    </build>    
 </project>
