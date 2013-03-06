@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,6 +57,7 @@ import com.sun.logging.LogDomains;
 import java.net.URI;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.cdi.CDILoggerInfo;
 import org.glassfish.weld.WeldApplicationContainer;
 import org.glassfish.weld.WeldDeployer;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -71,7 +72,7 @@ public class WeldFacesConfigProvider implements FacesConfigResourceProvider {
             "org.glassfish.servlet.habitat";
     private InvocationManager invokeMgr;
 
-    private Logger _logger = LogDomains.getLogger(WeldApplicationContainer.class, LogDomains.CORE_LOGGER);
+    private Logger logger = Logger.getLogger(WeldFacesConfigProvider.class.getName());
 
     private static final String SERVICES_FACES_CONFIG = "META-INF/services/faces-config.xml";
 
@@ -97,12 +98,12 @@ public class WeldFacesConfigProvider implements FacesConfigResourceProvider {
         URL resource = loader.getResource(SERVICES_FACES_CONFIG);
         if (resource != null) {
             try {
-		list.add(resource.toURI());
+                list.add(resource.toURI());
             } catch (URISyntaxException ex) {
-                if (_logger.isLoggable(Level.SEVERE)) {
-		    String message = "Unable to create URI for URL " + 
-			resource.toExternalForm();
-                    _logger.log(Level.SEVERE, message, ex);
+                if (logger.isLoggable(Level.SEVERE)) {
+                    logger.log(Level.SEVERE,
+                               CDILoggerInfo.SEVERE_ERROR_CREATING_URI_FOR_FACES_CONFIG_XML,
+                               new Object [] {resource.toExternalForm(), ex});
                 }
             }
         }

@@ -65,6 +65,7 @@ import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.ApplicationEnvironment;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.cdi.CDILoggerInfo;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.common.SimpleDeployer;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -103,8 +104,8 @@ import org.jboss.weld.resources.spi.ResourceLoader;
 public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationContainer> 
     implements PostConstruct, EventListener {
 
-    private Logger _logger = LogDomains.getLogger(WeldDeployer.class, LogDomains.CORE_LOGGER);
-    
+    private Logger logger = Logger.getLogger(WeldDeployer.class.getName());
+
     public static final String WELD_EXTENSION = "org.glassfish.weld";
     
     public static final String WELD_DEPLOYMENT = "org.glassfish.weld.WeldDeployment";
@@ -177,10 +178,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 }
 
                 deploymentImpl.buildDeploymentGraph();
-                if (_logger.isLoggable(Level.FINE)) {
-                    _logger.fine(deploymentImpl.toString());
-                }
-                
+
                 //get Current TCL
                 ClassLoader oldTCL = Thread.currentThread().getContextClassLoader();
                 
@@ -282,17 +280,17 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 if (bootstrap != null) {
                     final String fAppName = appInfo.getName();
                     invocationManager.pushAppEnvironment(new ApplicationEnvironment() {
-
                         @Override
                         public String getName() {
                             return fAppName;
                         }
-
                     });
                     try {
                         bootstrap.shutdown();
                     } catch(Exception e) {
-                        _logger.log(Level.WARNING, "JCDI shutdown error", e);
+                        logger.log(Level.WARNING,
+                                   CDILoggerInfo.WELD_BOOTSTRAP_SHUTDOWN_EXCEPTION,
+                                   new Object [] {e});
                     }
                     finally {
                         invocationManager.popAppEnvironment();
@@ -342,9 +340,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         try {
             messageListenerClass = Thread.currentThread().getContextClassLoader().
                                             loadClass("javax.jms.MessageListener");
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.fine("javax.jms.MessageListener Class available, so " +
-                		"need to fire PIT events to MDBs");
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, CDILoggerInfo.JMS_MESSAGElISTENER_AVAILABLE);
             }
             isFullProfile = true;
         } catch (ClassNotFoundException cnfe){
@@ -367,9 +364,10 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 //events (see GLASSFISH-16730)
                 if (isFullProfile) {
                     if (messageListenerClass.isAssignableFrom(bdaClazz)) {
-                        if (_logger.isLoggable(Level.FINE)) {
-                            _logger.fine(bdaClazz + " is an MDB and so need " +
-                            		"to fire a PIT event to it");
+                        if (logger.isLoggable(Level.FINE)) {
+                            logger.log(Level.FINE,
+                                       CDILoggerInfo.MDB_PIT_EVENT,
+                                       new Object[]{ bdaClazz });
                         }
                         firePITEvent(bootstrap, bda, bdaClazz);
                     }
@@ -514,18 +512,20 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             InjectionManager injectionMgr = services.getService(InjectionManager.class);
             InjectionServices injectionServices = new InjectionServicesImpl(injectionMgr, bundle);
 
-            if(_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "WeldDeployer:: Adding injectionServices " 
-                        + injectionServices + " for " + bda.getId());
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE,
+                           CDILoggerInfo.ADDING_INJECTION_SERVICES,
+                           new Object [] {injectionServices, bda.getId()});
             }
             bda.getServices().add(InjectionServices.class, injectionServices);
             
             if (bda.getBeanDeploymentArchives().size() != 0) {
                 //Relevant in WAR BDA - WEB-INF/lib BDA scenarios
                 for(BeanDeploymentArchive subBda: bda.getBeanDeploymentArchives()){
-                    if(_logger.isLoggable(Level.FINE)) {
-                        _logger.log(Level.FINE, "WeldDeployer:: Adding injectionServices " 
-                                + injectionServices + " for " + subBda.getId());
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE,
+                                   CDILoggerInfo.ADDING_INJECTION_SERVICES,
+                                   new Object [] {injectionServices, subBda.getId()});
                     }
                     subBda.getServices().add(InjectionServices.class, injectionServices);
                 }
@@ -562,5 +562,3 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         return ejbBundle;
     }
 }
-
-

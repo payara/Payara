@@ -47,6 +47,7 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.cdi.CDILoggerInfo;
 import org.glassfish.hk2.api.Rank;
 import org.glassfish.weld.BeanDeploymentArchiveImpl;
 import org.glassfish.weld.WeldDeployer;
@@ -209,13 +210,17 @@ public class JCDIServiceImpl implements JCDIService {
     
     private BeanDeploymentArchive getBDAForBeanClass(BundleDescriptor bundleDesc, String beanClassName){
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE,"getBDAForBeanClass -- search in " + bundleDesc.getModuleName() + " for " + beanClassName);
+            logger.log(Level.FINE,
+                       CDILoggerInfo.GET_BDA_FOR_BEAN_CLASS_SEARCH,
+                       new Object [] {bundleDesc.getModuleName(), beanClassName});
         }
-            BeanDeploymentArchive topLevelBDA = weldDeployer.getBeanDeploymentArchiveForBundle(bundleDesc);
+
+        BeanDeploymentArchive topLevelBDA = weldDeployer.getBeanDeploymentArchiveForBundle(bundleDesc);
         if (topLevelBDA.getBeanClasses().contains(beanClassName)){
             if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "JCDIServiceImpl.getBDAForBeanClass:: TopLevelBDA " 
-                        + topLevelBDA.getId() + " contains beanClassName:" + beanClassName);
+                logger.log(Level.FINE,
+                           CDILoggerInfo.TOP_LEVEL_BDA_CONTAINS_BEAN_CLASS_NAME,
+                           new Object[]{ topLevelBDA.getId(), beanClassName});
             }
             return topLevelBDA;
         }
@@ -224,8 +229,9 @@ public class JCDIServiceImpl implements JCDIService {
         for (BeanDeploymentArchive bda: topLevelBDA.getBeanDeploymentArchives()){
             if (bda.getBeanClasses().contains(beanClassName)){
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, "JCDIServiceImpl.getBDAForBeanClass:: subBDA " 
-                            + bda.getId() + " contains beanClassName:" + beanClassName);
+                    logger.log(Level.FINE,
+                               CDILoggerInfo.SUB_BDA_CONTAINS_BEAN_CLASS_NAME,
+                               new Object[]{bda.getId(), beanClassName});
                 }
                 return bda;
             }

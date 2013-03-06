@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,6 +57,7 @@ import javax.interceptor.AroundTimeout;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.glassfish.cdi.CDILoggerInfo;
 import org.glassfish.ejb.api.EjbContainerServices;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.weld.ejb.EjbDescriptorImpl;
@@ -76,12 +77,9 @@ import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
  * implementation uses this SPI to resolve EJB and register CDI Interceptors
  * for EJBs. 
  */
-public class EjbServicesImpl implements EjbServices
-{
-
+public class EjbServicesImpl implements EjbServices {
     private ServiceLocator services;
     private Logger logger = Logger.getLogger(EjbServicesImpl.class.getName());
-
 
     public EjbServicesImpl(ServiceLocator h) {
         services = h;
@@ -161,14 +159,16 @@ public class EjbServicesImpl implements EjbServices
         // First create master list of EjbInterceptor descriptors
         for(Interceptor<?> next : interceptorBindings.getAllInterceptors()) {
             if ( logger.isLoggable( Level.FINE ) ) {
-                logger.log(Level.FINE, "trying to register:" + next);
+                logger.log(Level.FINE,
+                           CDILoggerInfo.TRYING_TO_REGISTER_INTERCEPTOR,
+                           new Object [] {next});
             }
             // Add interceptor to list all interceptors in ejb descriptor
             if( !(glassfishEjbDesc.hasInterceptorClass(next.getBeanClass().getName()))) {
                 if ( logger.isLoggable( Level.FINE ) ) {
-                    logger.log(Level.FINE, "Adding interceptor: "
-                        + next.getBeanClass().getName() + " for EJB:" 
-                        + glassfishEjbDesc.getEjbClassName());
+                    logger.log(Level.FINE,
+                               CDILoggerInfo.ADDING_INTERCEPTOR_FOR_EJB,
+                               new Object [] {next.getBeanClass().getName(), glassfishEjbDesc.getEjbClassName()});
                 }
                 EjbInterceptor ejbInt = makeEjbInterceptor(next, glassfishEjbDesc.getEjbBundleDescriptor());
                 glassfishEjbDesc.addInterceptorClass(ejbInt);

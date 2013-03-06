@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,22 +40,17 @@
 
 package org.glassfish.weld;
 
-import com.sun.logging.LogDomains;
-
-import javax.el.ELContextListener;
-import javax.el.ELResolver;
-import javax.el.ExpressionFactory;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.jsp.JspApplicationContext;
-import javax.servlet.jsp.JspContext;
 import javax.servlet.jsp.JspFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.jasper.runtime.JspApplicationContextImpl;
+import org.glassfish.cdi.CDILoggerInfo;
 import org.jboss.weld.el.WeldELContextListener;
 
 /**
@@ -64,7 +59,7 @@ import org.jboss.weld.el.WeldELContextListener;
  */  
 public class WeldContextListener implements ServletContextListener {
 
-    private Logger _logger = LogDomains.getLogger(WeldDeployer.class, LogDomains.CORE_LOGGER);
+    private Logger logger = Logger.getLogger(WeldContextListener.class.getName());
 
     @Inject
     private BeanManager beanManager;
@@ -85,7 +80,9 @@ public class WeldContextListener implements ServletContextListener {
                  WeldELContextListener welcl = (WeldELContextListener)weldClass.newInstance(); 
                  jspAppContext.addELContextListener(welcl);
              } catch (Exception e) {
-                 _logger.log(Level.WARNING, "Could not create WeldELContextListener instance. ", e);
+                 logger.log(Level.WARNING,
+                            CDILoggerInfo.CDI_COULD_NOT_CREATE_WELDELCONTEXTlISTENER,
+                            new Object [] {e});
              }
 
             ((JspApplicationContextImpl)jspAppContext).setExpressionFactory(

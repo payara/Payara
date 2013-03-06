@@ -204,4 +204,50 @@ public class CDILoggerInfo {
                      level = "FINE")
     public static final String TCL_NULL = CDI_LOGMSG_PREFIX + "-034";
 
+    @LogMessageInfo( message = "Could not create WeldELContextListener instance. {0}",
+                     level = "WARNING")
+    public static final String CDI_COULD_NOT_CREATE_WELDELCONTEXTlISTENER = CDI_LOGMSG_PREFIX + "-035";
+
+    @LogMessageInfo( message = "Exception in WeldBootstrap.shutdown. {0}",
+                     level = "WARNING")
+    public static final String WELD_BOOTSTRAP_SHUTDOWN_EXCEPTION = CDI_LOGMSG_PREFIX + "-036";
+
+    @LogMessageInfo( message = "javax.jms.MessageListener Class available, so need to fire PIT events to MDBs",
+                     level = "FINE")
+    public static final String JMS_MESSAGElISTENER_AVAILABLE = CDI_LOGMSG_PREFIX + "-037";
+
+    @LogMessageInfo( message = "{0} is an MDB and so need to fire a PIT event to it.",
+                     level = "FINE")
+    public static final String MDB_PIT_EVENT = CDI_LOGMSG_PREFIX + "-038";
+
+    @LogMessageInfo( message = "WeldDeployer adding injectionServices {0} for {1}.",
+                     level = "FINE")
+    public static final String ADDING_INJECTION_SERVICES = CDI_LOGMSG_PREFIX + "-039";
+
+    @LogMessageInfo( message = "Unable to create URI for URL: {0}.  Exception: {1}",
+                     level = "SEVERE",
+                     cause = "URL for META-INF/services/faces-config.xml is invalid.",
+                     action = "Verify META-INF/services/faces-config.xml exists.")
+    public static final String SEVERE_ERROR_CREATING_URI_FOR_FACES_CONFIG_XML = CDI_LOGMSG_PREFIX + "-040";
+
+    @LogMessageInfo( message = "Trying to register interceptor: {0}",
+                     level = "FINE")
+    public static final String TRYING_TO_REGISTER_INTERCEPTOR = CDI_LOGMSG_PREFIX + "-041";
+
+    @LogMessageInfo( message = "Adding interceptor: {0} for EJB: {1}.",
+                     level = "FINE")
+    public static final String ADDING_INTERCEPTOR_FOR_EJB = CDI_LOGMSG_PREFIX + "-042";
+
+    @LogMessageInfo( message = "getBDAForBeanClass -- search in {0} for {1}",
+                     level = "FINE")
+    public static final String GET_BDA_FOR_BEAN_CLASS_SEARCH = CDI_LOGMSG_PREFIX + "-043";
+
+    @LogMessageInfo( message = "JCDIServiceImpl.getBDAForBeanClass: TopLevelBDA {0} contains beanClassName: {1}.",
+                     level = "FINE")
+    public static final String TOP_LEVEL_BDA_CONTAINS_BEAN_CLASS_NAME = CDI_LOGMSG_PREFIX + "-044";
+
+    @LogMessageInfo( message = "JCDIServiceImpl.getBDAForBeanClass: subBDA {0} contains beanClassName: {1}.",
+                     level = "FINE")
+    public static final String SUB_BDA_CONTAINS_BEAN_CLASS_NAME = CDI_LOGMSG_PREFIX + "-045";
+
 }
