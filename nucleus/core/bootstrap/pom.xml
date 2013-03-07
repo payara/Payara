@@ -104,7 +104,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.glassfish.main</groupId>
+                                    <groupId>org.glassfish.main.common</groupId>
                                     <artifactId>simple-glassfish-api</artifactId>
                                     <version>${project.version}</version>
                                     <type>jar</type>
@@ -146,7 +146,7 @@
                  part of distribution. Making it a compile scoped dependency forces this jar
                  to be part of all distribution.
             -->
-            <groupId>org.glassfish.main</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>

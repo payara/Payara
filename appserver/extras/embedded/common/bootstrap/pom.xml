@@ -70,7 +70,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.glassfish.main</groupId>
+                                    <groupId>org.glassfish.main.common</groupId>
                                     <artifactId>simple-glassfish-api</artifactId>
                                     <version>${project.version}</version>
                                     <type>jar</type>
@@ -105,7 +105,6 @@
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
-            <version>4.2.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -115,12 +114,10 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
-
 </project>

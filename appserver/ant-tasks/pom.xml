@@ -71,7 +71,7 @@
        </dependency>
 
         <dependency>
-          <groupId>org.glassfish.main</groupId>
+          <groupId>org.glassfish.main.common</groupId>
           <artifactId>simple-glassfish-api</artifactId>
           <version>${project.version}</version>
         </dependency>
