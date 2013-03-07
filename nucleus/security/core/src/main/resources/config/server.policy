@@ -111,6 +111,12 @@ grant {
     permission java.lang.RuntimePermission    "getClassLoader";
     permission java.lang.RuntimePermission    "setContextClassLoader";
         permission javax.management.MBeanPermission "[com.sun.messaging.jms.*:*]", "*"; 
+
+    // Following needed for CTS to pass with SM on, bug 16344201
+    permission java.lang.RuntimePermission "closeClassLoader";
+    permission java.io.SerializablePermission "enableSubstitution";
+    permission java.security.SecurityPermission "getProperty.package.definition";
+
 };
 
 

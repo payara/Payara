@@ -110,9 +110,13 @@ grant {
     permission java.lang.RuntimePermission    "modifyThreadGroup";
     permission java.lang.RuntimePermission    "getClassLoader";
     permission java.lang.RuntimePermission    "setContextClassLoader";
-        permission javax.management.MBeanPermission "[com.sun.messaging.jms.*:*]", "*"; 
+    permission javax.management.MBeanPermission "[com.sun.messaging.jms.*:*]", "*"; 
+   
+    // Following needed for CTS to pass with SM on, bug 16344201 
+    permission java.lang.RuntimePermission "closeClassLoader";                
+    permission java.io.SerializablePermission "enableSubstitution";            
+    permission java.security.SecurityPermission "getProperty.package.definition"; 
 };
-
 
 // Following grant block is only required by Connectors. If Connectors
 // are not in use the recommendation is to remove this grant.
