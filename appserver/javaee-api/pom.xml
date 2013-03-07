@@ -131,6 +131,14 @@
                     </configuration>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                    <inherited>false</inherited>
+                </plugin>
+                <plugin>
                     <groupId>org.glassfish.build</groupId>
                     <artifactId>glassfishbuild-maven-plugin</artifactId>
                     <executions>
@@ -149,7 +157,11 @@
                             <id>generate-pom</id>
                             <phase>package</phase>
                             <configuration>
-                                <parent/>
+                                <parent>
+                                    <groupId>net.java</groupId>
+                                    <artifactId>jvnet-parent</artifactId>
+                                    <version>3</version>
+				</parent>
                                 <groupId>javax</groupId>
                                 <artifactId>${projet.artifactId}</artifactId>
                                 <version>${javaee.version}</version>
