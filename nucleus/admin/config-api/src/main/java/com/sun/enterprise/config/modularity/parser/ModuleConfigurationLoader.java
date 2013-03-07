@@ -40,6 +40,7 @@
 package com.sun.enterprise.config.modularity.parser;
 
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
+import com.sun.enterprise.config.modularity.RankedConfigBeanProxy;
 import com.sun.enterprise.config.modularity.annotation.HasNoDefaultConfiguration;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
 import com.sun.enterprise.module.bootstrap.StartupContext;
@@ -78,7 +79,10 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
     @Inject
     private ConfigModularityUtils configModularityUtils;
 
+    private C extensionOwner;
+
     public <U extends ConfigBeanProxy> U createConfigBeanForType(Class<U> configExtensionType, C extensionOwner) throws TransactionFailure {
+        this.extensionOwner = extensionOwner;
         if (configModularityUtils.hasCustomConfig(configExtensionType)) {
             addConfigBeanFor(configExtensionType);
         } else {
@@ -104,6 +108,10 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
             }, extensionOwner);
         }
 
+        return getExtension(configExtensionType, extensionOwner);
+    }
+
+    private <U extends ConfigBeanProxy> U getExtension(Class<U> configExtensionType, C extensionOwner) {
         List<U> extensions = configModularityUtils.getExtensions(extensionOwner);
         for (ConfigBeanProxy extension : extensions) {
             try {
@@ -123,6 +131,11 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
 
 
     protected <U extends ConfigBeanProxy> void addConfigBeanFor(Class<U> extensionType) {
+        if (!RankedConfigBeanProxy.class.isAssignableFrom(extensionType)) {
+            if (getExtension(extensionType, extensionOwner) != null) {
+                return;
+            }
+        }
         StartupContext context = serviceLocator.getService(StartupContext.class);
         List<ConfigBeanDefaultValue> configBeanDefaultValueList =
                 configModularityUtils.getDefaultConfigurations(extensionType, configModularityUtils.getRuntimeTypePrefix(context));

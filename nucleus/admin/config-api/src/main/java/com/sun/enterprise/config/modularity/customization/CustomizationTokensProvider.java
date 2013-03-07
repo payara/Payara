@@ -121,7 +121,7 @@ public class CustomizationTokensProvider {
             if (c.getCustomizationType().equals(ConfigCustomizationToken.CustomizationType.FILE) ||
                     c.getCustomizationType().equals(ConfigCustomizationToken.CustomizationType.STRING)
                     ) {
-                ctk.remove(c);
+                it.remove();
                 continue;
             }
             int defaultPortNumberForDefaultConfig = Integer.parseInt(c.getValue()) + 20000;

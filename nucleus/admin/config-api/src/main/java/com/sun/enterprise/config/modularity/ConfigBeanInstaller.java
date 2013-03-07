@@ -43,12 +43,18 @@ package com.sun.enterprise.config.modularity;
 import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
 import com.sun.enterprise.config.modularity.parser.ConfigurationParser;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.module.bootstrap.StartupContext;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.logging.Logger;
@@ -71,6 +77,13 @@ public class ConfigBeanInstaller implements PostConstruct {
     @Inject
     private ConfigModularityUtils configModularityUtils;
 
+    @Inject
+    private Domain domain;
+
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Config config;
+
     private static final Logger LOG = Logger.getLogger(ConfigBeanInstaller.class.getName());
 
     @Override
@@ -85,7 +98,17 @@ public class ConfigBeanInstaller implements PostConstruct {
     }
 
 
-    private void applyConfigIfNeeded(Class<?> clz) {
+    private void applyConfigIfNeeded(Class clz) {
+        //TODO find a way to get the parent and do complete check for all config beans type rather than just these two
+        if (!RankedConfigBeanProxy.class.isAssignableFrom(clz)) {
+            if (DomainExtension.class.isAssignableFrom(clz) && (domain.getExtensionByType(clz) != null)) {
+                return;
+            }
+            if (ConfigExtension.class.isAssignableFrom(clz) && (config.getExtensionByType(clz) != null)) {
+                return;
+            }
+        }
+
         List<ConfigBeanDefaultValue> configBeanDefaultValueList =
                 configModularityUtils.getDefaultConfigurations(clz, configModularityUtils.getRuntimeTypePrefix(startupContext));
         configurationParser.parseAndSetConfigBean(configBeanDefaultValueList);

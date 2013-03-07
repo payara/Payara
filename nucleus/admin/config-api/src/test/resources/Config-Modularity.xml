@@ -51,6 +51,7 @@
             <resource-ref ref="jdbc/__default"/>
         </server>
     </servers>
+    <ranked-config-bean simple-attribute="simple-value-zero" rank="0"> </ranked-config-bean>
     <configs>
         <config name="server-config">
             <system-property name="CUSTOM_TOKEN" value="user.customized.value"></system-property>

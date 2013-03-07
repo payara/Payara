@@ -421,13 +421,11 @@ public final class ConfigModularityUtils {
                         // ignore, not the right type.
                     }
                 }
-                if (!configBeanDefaultValue.replaceCurrentIfExists()) {
-
+                if (!configBeanDefaultValue.replaceCurrentIfExists() && !stackPositionHigher(finalConfigBean, configBeanInstance)) {
                     if (configBeanInstance != null) return (T) configBeanInstance;
-                } else {
-                    if (configBeanInstance != null) {
-                        extensions.remove(configBeanInstance);
-                    }
+                }
+                if (configBeanInstance != null) {
+                    extensions.remove(configBeanInstance);
                 }
             }
 
@@ -486,8 +484,15 @@ public final class ConfigModularityUtils {
     }
 
     public <T extends ConfigBeanProxy> boolean stackPositionHigher(T finalConfigBean, ConfigBeanProxy itemToRemove) {
-        //This is a place holder for the stack-position comparison to be added.
-        return true;
+        if (itemToRemove == null || finalConfigBean == null) return true;
+        if (RankedConfigBeanProxy.class.isAssignableFrom(finalConfigBean.getClass()) && RankedConfigBeanProxy.class.isAssignableFrom(itemToRemove.getClass())) {
+            int itemToRemoveRank = Integer.parseInt(((RankedConfigBeanProxy) itemToRemove).getRank());
+            int finalConfigBeanRank = Integer.parseInt(((RankedConfigBeanProxy) finalConfigBean).getRank());
+            return finalConfigBeanRank > itemToRemoveRank;
+        } else {
+            return true;
+        }
+
     }
 
     public <T extends ConfigBeanProxy> void applyCustomTokens(final ConfigBeanDefaultValue configBeanDefaultValue,
@@ -755,7 +760,7 @@ public final class ConfigModularityUtils {
     }
 
 
-    public  Class getDuckClass(Class configBeanType) {
+    public Class getDuckClass(Class configBeanType) {
         Class duck;
         final Class[] clz = configBeanType.getDeclaredClasses();
         for (Class aClz : clz) {
@@ -767,7 +772,7 @@ public final class ConfigModularityUtils {
         return null;
     }
 
-    public  Method getGetDefaultValuesMethod(Class configBeanType) {
+    public Method getGetDefaultValuesMethod(Class configBeanType) {
         Class duck = getDuckClass(configBeanType);
         if (duck == null) {
             return null;

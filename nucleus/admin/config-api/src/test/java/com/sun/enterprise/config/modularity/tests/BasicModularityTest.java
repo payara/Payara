@@ -45,13 +45,12 @@ import com.sun.enterprise.config.modularity.customization.ConfigCustomizationTok
 import com.sun.enterprise.config.modularity.customization.FileTypeDetails;
 import com.sun.enterprise.config.modularity.customization.PortTypeDetails;
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.SystemProperty;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.configapi.tests.ConfigApiTest;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevelController;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.glassfish.tests.utils.Utils;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.types.Property;
@@ -194,6 +193,16 @@ public class BasicModularityTest extends ConfigApiTest {
         assertEquals("On the fly config generation/reading is broken", "<xml-doc></xml-doc>", values.get(0).getXmlConfiguration());
     }
 
+
+    @Test
+    public void testRanking() {
+        Domain d = habitat.<Domain>getService(Domain.class);
+        RankedConfigBean rankedConfigBean = d.getExtensionByType(RankedConfigBean.class);
+        assertEquals("invalid current value",  "simple-value-zero",rankedConfigBean.getSimpleAttribute());
+        ensureRunLevel(4);
+         rankedConfigBean = d.getExtensionByType(RankedConfigBean.class);
+        assertEquals("invalid current value", "simple-value-one", rankedConfigBean.getSimpleAttribute() );
+    }
 
     //TODO add more tests to cover token processing and i18n support
 
