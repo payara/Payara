@@ -259,9 +259,12 @@ public class DeploymentHandler {
              StringBuilder sb = new StringBuilder();
              String sep = "";
              if (deployMap.containsKey("java-web-start-enabled")){
-                 if ("true".equals(deployMap.get("java-web-start-enabled"))){
-                    sb.append("java-web-start-enabled").append("=").append("true");
+                 if ("false".equals(deployMap.get("java-web-start-enabled"))){
+                    sb.append("java-web-start-enabled").append("=").append("false");
                     sep = ":";
+                 }else{
+                     sb.append("java-web-start-enabled").append("=").append("true");
+                     sep = ":";
                  }
              }
              if (deployMap.containsKey("preserveAppScopedResources")){

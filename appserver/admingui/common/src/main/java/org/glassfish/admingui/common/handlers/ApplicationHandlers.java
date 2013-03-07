@@ -183,9 +183,10 @@ public class ApplicationHandlers {
                     getLaunchInfo(appName, contextRoot, oneRow);
                 }
 
+                //JWS is disabled only if the property is present and is set to false.   Otherwise, its enabled.
                 if (snifferList.contains("appclient")){
                     String jwEnabled = RestUtil.getPropValue(GuiUtil.getSessionValue("REST_URL") + "/applications/application/"+encodedAppName, "java-web-start-enabled",  handlerCtx);
-                    if (!GuiUtil.isEmpty(jwEnabled) && jwEnabled.equals("true") ){
+                    if (GuiUtil.isEmpty(jwEnabled) || jwEnabled.equals("true") ){
                         List<String> targetList = DeployUtil.getApplicationTarget(appName, "application-ref");
                         oneRow.put("hasAppClientLaunch", (targetList.isEmpty())? false: true);
                     }

@@ -60,6 +60,8 @@
 
         //we want to show/preserver java-web-start-enabled, and preserveAppsScopedResourcs
 
+        //if the jws prop does not exist,it is true by default. GLASSFISH-19109
+        mapPut(map="#{pageSession.deployMap}" key="$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}" value="true")
         gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="GET" result="#{requestScope.propTable}");
         setPageSessionAttribute(key="listOfProps" value="#{requestScope.propTable.data.extraProperties.properties}");
         foreach(var="oneProp" list="#{pageSession.listOfProps}"){

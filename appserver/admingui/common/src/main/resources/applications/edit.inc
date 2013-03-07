@@ -96,7 +96,7 @@
             <sun:checkbox id="jwc" disabled="true" label="$resource{i18n.common.Enabled}" selected="#{pageSession.javaWebStartEnabled}" selectedValue="true" >
             </sun:checkbox>
             <!beforeCreate
-                setPageSessionAttribute(key="javaWebStartEnabled" value="false");
+                setPageSessionAttribute(key="javaWebStartEnabled" value="true");
                 foreach (var="oneProp" list="#{pageSession.tableList}") {
                     if (#{requestScope.oneProp.name}=$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}){
                         setPageSessionAttribute(key="javaWebStartEnabled" value="#{requestScope.oneProp.value}");
