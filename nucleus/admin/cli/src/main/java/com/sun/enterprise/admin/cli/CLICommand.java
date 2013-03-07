@@ -70,6 +70,7 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
+import com.sun.enterprise.admin.remote.Metrix;
 
 import javax.inject.Inject;
 import javax.inject.Scope;
@@ -204,31 +205,45 @@ public abstract class CLICommand implements PostConstruct {
     /**
      * Get a CLICommand object representing the named command.
      */
-    public static CLICommand getCommand(ServiceLocator habitat, String name)
+    public static CLICommand getCommand(ServiceLocator serviceLocator, String name)
             throws CommandException {
-
         // first, check if it's a known unsupported command
         checkUnsupportedLegacyCommand(name);
-
         // next, try to load our own implementation of the command
-        ProgramOptions po = habitat.getService(ProgramOptions.class);
-        CLICommand cmd = habitat.getService(CLICommand.class, name);
+        ProgramOptions po = serviceLocator.getService(ProgramOptions.class);
+        CLICommand cmd = serviceLocator.getService(CLICommand.class, name);
         if (cmd != null) {
             po.removeDetach();
             return cmd;
         }
-
         // nope, must be a remote command
         logger.finer("Assuming it's a remote command: " + name);
-        Environment environment = habitat.getService(Environment.class);
+        return getRemoteCommand(name, po, serviceLocator.getService(Environment.class));
+    }
+    
+    public static CLICommand getCommand(CLIContainer cLIContainer, String name)
+            throws CommandException {
+        // first, check if it's a known unsupported command
+        checkUnsupportedLegacyCommand(name);
+        // next, try to load our own implementation of the command
+        ProgramOptions po = cLIContainer.getProgramOptions();
+        CLICommand cmd = cLIContainer.getLocalCommand(name);
+        if (cmd != null) {
+            po.removeDetach();
+            return cmd;
+        }
+        // nope, must be a remote command
+        if (logger.isLoggable(Level.FINER)) {
+            logger.finer("Assuming it's a remote command: " + name);
+        }
+        return getRemoteCommand(name, po, cLIContainer.getEnvironment());
+    }
+    
+    private static CLICommand getRemoteCommand(String name, ProgramOptions po, Environment env) throws CommandException {
         if (useRest()) {
-            return new RemoteCLICommand(name,
-                po,
-                environment);
+            return new RemoteCLICommand(name, po, env);
         } else {
-            return new RemoteCommand(name,
-                po,
-                environment);
+            return new RemoteCommand(name, po, env);
         }
     }
 

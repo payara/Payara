@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.admin.cli;
 
+import com.sun.enterprise.admin.remote.Metrix;
 import com.sun.enterprise.admin.remote.reader.ProprietaryReaderFactory;
 import com.sun.enterprise.admin.remote.writer.ProprietaryWriterFactory;
 import java.io.PrintStream;
@@ -53,15 +54,11 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.single.StaticModulesRegistry;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.api.admin.InvalidCommandException;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.common.util.admin.AsadminInput;
-import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
-import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
@@ -82,7 +79,7 @@ public class AdminMain {
     private String className;
     private String command;
     private ProgramOptions po;
-    private ServiceLocator serviceLocator;
+    private CLIContainer cliContainer;
     private Environment env = new Environment();
     protected Logger logger;
     private final static int ERROR = 1;
@@ -271,11 +268,7 @@ public class AdminMain {
         thread.setDaemon(true);
         thread.start();
 
-        /*
-         * Create a habitat that can load from the extension directory.
-         */
-        ModulesRegistry registry = new StaticModulesRegistry(ecl);
-        serviceLocator = registry.createServiceLocator("default");
+        cliContainer = new CLIContainer(ecl, logger);
         
         classPath =
                 SmartFile.sanitizePaths(System.getProperty("java.class.path"));
@@ -355,9 +348,9 @@ public class AdminMain {
             }
             command = argv[0];
 
-            ServiceLocatorUtilities.addOneConstant(serviceLocator, env);
-            ServiceLocatorUtilities.addOneConstant(serviceLocator, po);
-            cmd = CLICommand.getCommand(serviceLocator, command);
+            cliContainer.setEnvironment(env);
+            cliContainer.setProgramOptions(po);
+            cmd = CLICommand.getCommand(cliContainer, command);
             int result = cmd.execute(argv);
             return result;
         } catch (CommandValidationException cve) {
@@ -374,7 +367,7 @@ public class AdminMain {
             logger.severe(ice.getMessage());
             try {
                 CLIUtil.displayClosestMatch(command,
-                        CLIUtil.getAllCommands(serviceLocator, po, env),
+                        CLIUtil.getAllCommands(cliContainer.getServiceLocator(), po, env),
                         strings.get("ClosestMatchedLocalAndRemoteCommands"), logger);
             } catch (InvalidCommandException e) {
                 // not a big deal if we cannot help
@@ -386,7 +379,7 @@ public class AdminMain {
                 logger.severe(ce.getMessage());
                 try {
                     CLIUtil.displayClosestMatch(command,
-                            CLIUtil.getLocalCommands(serviceLocator),
+                            CLIUtil.getLocalCommands(cliContainer.getServiceLocator()),
                             strings.get("ClosestMatchedLocalCommands"), logger);
                 } catch (InvalidCommandException e) {
                     logger.info(
