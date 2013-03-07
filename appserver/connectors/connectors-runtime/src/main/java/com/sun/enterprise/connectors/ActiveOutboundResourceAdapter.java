@@ -468,7 +468,7 @@ public class ActiveOutboundResourceAdapter extends ActiveResourceAdapterImpl {
         } catch (NamingException ex) {
             String i18nMsg = localStrings.getString(
                     "aira.cannot_bind_admin_obj");
-            throw new ConnectorRuntimeException(i18nMsg);
+            throw new ConnectorRuntimeException(i18nMsg, ex);
         }
     }
 
