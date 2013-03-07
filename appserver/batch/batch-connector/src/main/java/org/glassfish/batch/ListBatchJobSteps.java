@@ -50,6 +50,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.batch.operations.JobOperator;
+import javax.batch.operations.exception.*;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
@@ -96,7 +97,8 @@ public class ListBatchJobSteps
     String executionId;
 
     @Override
-    protected void executeCommand(AdminCommandContext context, Properties extraProps) {
+    protected void executeCommand(AdminCommandContext context, Properties extraProps)
+        throws Exception {
 
         ColumnFormatter columnFormatter = new ColumnFormatter(getDisplayHeaders());
         List<Map<String, Object>> jobExecutions = new ArrayList<>();
@@ -124,7 +126,8 @@ public class ListBatchJobSteps
         return getSupportedHeaders();
     }
 
-    private List<StepExecution> findStepExecutions() {
+    private List<StepExecution> findStepExecutions()
+        throws javax.batch.operations.exception.SecurityException {
         List<StepExecution> stepExecutions = new ArrayList<>();
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         List<StepExecution> jobExecution = jobOperator.getStepExecutions(Long.valueOf(executionId));

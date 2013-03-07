@@ -87,28 +87,18 @@
             <artifactId>javax.batch-api-all</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.ibm.batch</groupId>
-            <artifactId>com.ibm.batch-runtime-all</artifactId>
+            <groupId>com.ibm.jbatch</groupId>
+            <artifactId>com.ibm.jbatch-runtime-all</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.batch</groupId>
+            <artifactId>batch-spi-impl</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.persistence</groupId>
-            <artifactId>persistence-common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.enterprise</artifactId>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

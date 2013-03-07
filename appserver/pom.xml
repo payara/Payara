@@ -126,8 +126,9 @@
         <jsonp.version>1.0-b04</jsonp.version>
         <concurrent-api.version>1.0-b04</concurrent-api.version>
         <concurrent.version>1.0-b03</concurrent.version>
-        <javax.batch-api.version>1.0-b10</javax.batch-api.version>
-        <javax.batch-runtime.version>1.0-b10</javax.batch-runtime.version>
+        <javax.batch-api.version>1.0-b13</javax.batch-api.version>
+        <com.ibm.jbatch-runtime-all.version>1.0-b13</com.ibm.jbatch-runtime-all.version>
+        <com.ibm.jbatch-ri-spi.version>1.0-b13</com.ibm.jbatch-ri-spi.version>
 	<javax.xml.soap-api.version>1.3.5</javax.xml.soap-api.version>
 	<javax.management.j2ee-api.version>1.1</javax.management.j2ee-api.version>
     </properties>
@@ -715,9 +716,14 @@
                 <version>${javax.batch-api.version}</version>
             </dependency>            
             <dependency>
-                <groupId>com.ibm.batch</groupId>
-                <artifactId>com.ibm.batch-runtime-all</artifactId>
-                <version>${javax.batch-runtime.version}</version>
+                <groupId>com.ibm.jbatch</groupId>
+                <artifactId>com.ibm.jbatch-runtime-all</artifactId>
+                <version>${com.ibm.jbatch-runtime-all.version}</version>
+            </dependency>            
+            <dependency>
+                <groupId>com.ibm.jbatch</groupId>
+                <artifactId>com.ibm.jbatch-ri-spi</artifactId>
+                <version>${com.ibm.jbatch-ri-spi.version}</version>
             </dependency>            
         </dependencies>
     </dependencyManagement>

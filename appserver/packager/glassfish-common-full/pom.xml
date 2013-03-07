@@ -163,13 +163,22 @@
            <artifactId>batch-connector</artifactId>
            <version>${project.version}</version>
        </dependency>
+       <dependency>
+           <groupId>org.glassfish.main.batch</groupId>
+           <artifactId>batch-spi-impl</artifactId>
+           <version>${project.version}</version>
+       </dependency>
         <dependency>
             <groupId>javax.batch</groupId>
             <artifactId>javax.batch-api-all</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.ibm.batch</groupId>
-            <artifactId>com.ibm.batch-runtime-all</artifactId>
+            <groupId>com.ibm.jbatch</groupId>
+            <artifactId>com.ibm.jbatch-runtime-all</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.jbatch</groupId>
+            <artifactId>com.ibm.jbatch-ri-spi</artifactId>
         </dependency>
 
        <!-- The following dependencies is for JSR236.  Including this in glassfish-common-full is a temporary solution.  This will be moved

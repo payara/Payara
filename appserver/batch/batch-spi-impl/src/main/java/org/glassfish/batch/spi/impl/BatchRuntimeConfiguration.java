@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.batch;
+package org.glassfish.batch.spi.impl;
 
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
@@ -45,20 +45,18 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
 
-import javax.validation.constraints.Min;
-
 /**
  * @author Mahesh Kannan
  *
  */
 @Configured
-public interface BatchRuntime
+public interface BatchRuntimeConfiguration
     extends ConfigBeanProxy, ConfigExtension {
 
-    @Element
-    JobExecutorService getJobExecutorService();
+    @Attribute
+    String getDataSourceLookupName();
 
-    @Element
-    PersistenceStore getPersistenceStore();
+    @Attribute
+    String getExecutorServiceLookupName();
 
 }

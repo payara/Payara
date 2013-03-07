@@ -43,6 +43,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -128,7 +129,8 @@ public abstract class AbstractListCommand
         return !isTerse || header;
     }
 
-    protected abstract void executeCommand(AdminCommandContext context, Properties extraProps);
+    protected abstract void executeCommand(AdminCommandContext context, Properties extraProps)
+                throws Exception;
 
     protected abstract String[] getSupportedHeaders();
 

@@ -43,6 +43,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.*;
+import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -72,55 +73,31 @@ import java.util.*;
 public class ListBatchRuntimeConfiguration
     extends AbstractListCommand {
 
-    private static final String MAX_THREAD_POOL_SIZE = "max-thread-pool-size";
+    private static final String DATA_SOURCE_NAME = "data-source-lookup-name";
 
-    private static final String MIN_THREAD_POOL_SIZE = "min-thread-pool-size";
-
-    private static final String MAX_IDLE_THREAD_TIMEOUT_IN_SECONDS = "max-idle-thread-timeout-in-seconds";
-
-    private static final String MAX_QUEUE_SIZE = "max-queue-size";
-
-    private static final String DATA_SOURCE_NAME = "data-source-name";
-
-    private static final String MAX_DATA_RETENTION_TIME_IN_SECONDS = "max-data-retention-time-in-seconds";
+    private static final String EXECUTOR_SERVICE_NAME = "executor-service-lookup-name";
 
     @Inject
-    BatchRuntimeHelper helper;
+    BatchRuntimeConfiguration helper;
 
     @Override
     protected void executeCommand(AdminCommandContext context, Properties extraProps) {
 
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
 
-        map.put(MAX_THREAD_POOL_SIZE, helper.getMaxThreadPoolSize());
-        map.put(MIN_THREAD_POOL_SIZE, helper.getMinThreadPoolSize());
-        map.put(MAX_IDLE_THREAD_TIMEOUT_IN_SECONDS, helper.getMaxIdleThreadTimeout());
-        map.put(MAX_QUEUE_SIZE, helper.getMaxQueueSize());
-        map.put(DATA_SOURCE_NAME, helper.getDataSourceJndiName());
-        map.put(MAX_DATA_RETENTION_TIME_IN_SECONDS, helper.getMaxRetentionTime());
-        extraProps.put("list-batch-runtime-configuration", map);
+        map.put(DATA_SOURCE_NAME, helper.getDataSourceLookupName());
+        map.put(EXECUTOR_SERVICE_NAME, helper.getExecutorServiceLookupName());
+        extraProps.put("listBatchRuntimeConfiguration", map);
 
         ColumnFormatter columnFormatter = new ColumnFormatter(getDisplayHeaders());
         Object[] data = new Object[getOutputHeaders().length];
         for (int index=0; index<getOutputHeaders().length; index++) {
             switch (getOutputHeaders()[index]) {
-                case MAX_THREAD_POOL_SIZE:
-                    data[index] = helper.getMaxThreadPoolSize();
-                    break;
-                case MIN_THREAD_POOL_SIZE:
-                    data[index] = helper.getMinThreadPoolSize();
-                    break;
-                case MAX_IDLE_THREAD_TIMEOUT_IN_SECONDS:
-                    data[index] = helper.getMaxIdleThreadTimeout();
-                    break;
-                case MAX_QUEUE_SIZE:
-                    data[index] = helper.getMaxQueueSize();
-                    break;
                 case DATA_SOURCE_NAME:
-                    data[index] = helper.getDataSourceJndiName();
+                    data[index] = helper.getDataSourceLookupName();
                     break;
-                case MAX_DATA_RETENTION_TIME_IN_SECONDS:
-                    data[index] = helper.getMaxRetentionTime();
+                case EXECUTOR_SERVICE_NAME:
+                    data[index] = helper.getExecutorServiceLookupName();
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown header: " + getOutputHeaders()[index]);
@@ -133,17 +110,13 @@ public class ListBatchRuntimeConfiguration
     @Override
     protected final String[] getSupportedHeaders() {
         return new String[] {
-                MIN_THREAD_POOL_SIZE, MAX_THREAD_POOL_SIZE,
-                MAX_IDLE_THREAD_TIMEOUT_IN_SECONDS, MAX_QUEUE_SIZE,
-                DATA_SOURCE_NAME, MAX_DATA_RETENTION_TIME_IN_SECONDS
+                DATA_SOURCE_NAME, EXECUTOR_SERVICE_NAME
         };
     }
 
     @Override
     protected final String[] getTerseHeaders() {
-        return new String[] {
-                MIN_THREAD_POOL_SIZE, MAX_THREAD_POOL_SIZE, MAX_QUEUE_SIZE, DATA_SOURCE_NAME
-        };
+        return getSupportedHeaders();
     }
 
     @Override

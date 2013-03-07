@@ -50,6 +50,8 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.batch.operations.JobOperator;
+import javax.batch.operations.exception.*;
+import javax.batch.operations.exception.SecurityException;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
@@ -101,7 +103,8 @@ public class ListBatchJobExecutions
     String executionId;
 
     @Override
-    protected void executeCommand(AdminCommandContext context, Properties extraProps) {
+    protected void executeCommand(AdminCommandContext context, Properties extraProps)
+        throws Exception {
 
         if (executionId == null && instanceId == null) {
             context.getActionReport().setMessage("Either executionid OR instanceid is required");
@@ -119,6 +122,7 @@ public class ListBatchJobExecutions
             }
         }
         context.getActionReport().setMessage(columnFormatter.toString());
+
     }
 
     @Override
@@ -147,7 +151,8 @@ public class ListBatchJobExecutions
         return true;
     }
 
-    private List<JobExecution> findJobExecutions(long exeId) {
+    private List<JobExecution> findJobExecutions(long exeId)
+        throws javax.batch.operations.exception.SecurityException {
         List<JobExecution> jobExecutions = new ArrayList<>();
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         JobExecution jobExecution = jobOperator.getJobExecution(Long.valueOf(exeId));
@@ -157,7 +162,8 @@ public class ListBatchJobExecutions
         return jobExecutions;
     }
 
-    private static List<JobExecution> getJobExecutionForInstance(long instId) {
+    private static List<JobExecution> getJobExecutionForInstance(long instId)
+            throws javax.batch.operations.exception.SecurityException {
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         JobInstance jobInstance = null;
         for (String jn : jobOperator.getJobNames()) {
@@ -183,7 +189,9 @@ public class ListBatchJobExecutions
         return jeList;
     }
 
-    private Map<String, Object> handleJob(JobExecution je, ColumnFormatter columnFormatter) {
+    private Map<String, Object> handleJob(JobExecution je, ColumnFormatter columnFormatter)
+        throws javax.batch.operations.exception.SecurityException {
+
         Map<String, Object> jobInfo = new HashMap<>();
 
         int jobParamIndex = -1;

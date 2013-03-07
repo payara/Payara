@@ -50,6 +50,8 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.batch.operations.JobOperator;
+import javax.batch.operations.exception.*;
+import javax.batch.operations.exception.SecurityException;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
@@ -99,7 +101,8 @@ public class ListBatchJobs
 
 
     @Override
-    protected void executeCommand(AdminCommandContext context, Properties extraProps) {
+    protected void executeCommand(AdminCommandContext context, Properties extraProps)
+        throws Exception {
 
         ColumnFormatter columnFormatter = new ColumnFormatter(getDisplayHeaders());
         if (isSimpleMode()) {
@@ -143,7 +146,9 @@ public class ListBatchJobs
         return true;
     }
 
-    private Map<String, Integer> findSimpleJobInfo(ColumnFormatter columnFormatter) {
+    private Map<String, Integer> findSimpleJobInfo(ColumnFormatter columnFormatter)
+        throws javax.batch.operations.exception.SecurityException {
+
         Map<String, Integer> jobToInstanceCountMap = new HashMap<>();
         Set<String> jobNames = new HashSet<>();
         if (jobName != null)
@@ -175,7 +180,8 @@ public class ListBatchJobs
         return jobToInstanceCountMap;
     }
 
-    private List<JobExecution> findJobExecutions() {
+    private List<JobExecution> findJobExecutions()
+        throws SecurityException {
         List<JobExecution> jobExecutions = new ArrayList<>();
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         if (jobName != null) {
@@ -202,7 +208,8 @@ public class ListBatchJobs
         return jobExecutions;
     }
 
-    private Map<String, Object> handleJob(JobExecution je, ColumnFormatter columnFormatter) {
+    private Map<String, Object> handleJob(JobExecution je, ColumnFormatter columnFormatter)
+        throws  SecurityException {
         Map<String, Object> jobInfo = new HashMap<>();
 
         String[] cfData = new String[getOutputHeaders().length];

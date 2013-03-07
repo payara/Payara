@@ -43,21 +43,29 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <groupId>org.glassfish.main.batch</groupId>
+        <artifactId>batch</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.glassfish.main.batch</groupId>
-    <artifactId>batch</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>batch-spi-impl</artifactId>
     
-    <name>Batch runtime modules for Glassfish</name>
-
-    <modules>
-        <module>batch-database</module>
-        <module>batch-connector</module>
-        <module>batch-spi-impl</module>
-    </modules>
+    <name>Batch SPI Implementation for Glassfish</name>
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.jbatch</groupId>
+            <artifactId>com.ibm.jbatch-ri-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.persistence</groupId>
+            <artifactId>persistence-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 </project>
