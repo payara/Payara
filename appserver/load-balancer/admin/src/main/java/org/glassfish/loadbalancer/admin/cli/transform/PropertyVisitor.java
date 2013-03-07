@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,10 +63,12 @@ public class PropertyVisitor implements Visitor {
     @Override
     public void visit(BaseReader br) throws Exception {
         // FIXME, make as assert here about no class cast exception
-        PropertyReader pRdr = (PropertyReader) br;
-        _prop.setName(pRdr.getName());
-        _prop.setValue(pRdr.getValue());
-        _prop.setDescription(pRdr.getDescription());
+		if (br instanceof PropertyReader) {
+			PropertyReader pRdr = (PropertyReader) br;
+			_prop.setName(pRdr.getName());
+			_prop.setValue(pRdr.getValue());
+			_prop.setDescription(pRdr.getDescription());
+		}
     }
     //--- PRIVATE VARS ----
     Property _prop = null;

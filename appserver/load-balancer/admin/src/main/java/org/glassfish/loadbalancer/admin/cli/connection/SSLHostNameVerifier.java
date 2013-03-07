@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -108,8 +108,11 @@ public class SSLHostNameVerifier implements HostnameVerifier {
                 return true;
             }
         }
-        String msg = LbLogUtil.getStringManager().getString("NotCertMatch", hostname, new String(session.getId()));
-        LbLogUtil.getLogger().warning(msg);
+		if (session != null) {
+			String msg = LbLogUtil.getStringManager().getString("NotCertMatch",
+					hostname, new String(session.getId()));
+			LbLogUtil.getLogger().warning(msg);
+		}
         return false;
     }
 }

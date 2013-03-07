@@ -262,7 +262,7 @@ public class LbConfigHelper {
         buffer.append("otd.properties");
 
         for(int i=0;i<clusterReaders.length;i++) {
-            String clusterHostList = "";
+            StringBuffer clusterHostList = new StringBuffer();
             String clusterWebList = "";
             ClusterReader clusterReader = clusterReaders[i];
             String clusterName = clusterReader.getName();
@@ -282,10 +282,10 @@ public class LbConfigHelper {
                         break;
                     }
                 }
-                clusterHostList = clusterHostList + (j > 0 ? "," : "") + listenerHost + ":" + listenerPort;
+                clusterHostList = clusterHostList.append(j > 0 ? "," : "").append(listenerHost).append(":").append(listenerPort);
             }
 
-            props.setProperty(CLUSTER+SEPARATOR+clusterName+SEPARATOR+LISTENER,clusterHostList);
+            props.setProperty(CLUSTER+SEPARATOR+clusterName+SEPARATOR+LISTENER,clusterHostList.toString());
 
 
             for (int m=0; m<webmoduleReaders.length;m++) {

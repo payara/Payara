@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,14 +64,15 @@ public class InstanceVisitor implements Visitor {
     @Override
     public void visit(BaseReader br) throws Exception{
         // FIXME, make as assert here about no class cast exception
-        InstanceReader iRdr = (InstanceReader) br;
-        _c.setInstanceName(_i, iRdr.getName());
-        _c.setInstanceEnabled(_i, "" + iRdr.getLbEnabled());
-        _c.setInstanceDisableTimeoutInMinutes(_i,
-                    iRdr.getDisableTimeoutInMinutes());
-        _c.setInstanceListeners(_i, iRdr.getListeners());
-        _c.setInstanceWeight(_i,
-                    iRdr.getWeight());
+		if (br instanceof InstanceReader) {
+			InstanceReader iRdr = (InstanceReader) br;
+			_c.setInstanceName(_i, iRdr.getName());
+			_c.setInstanceEnabled(_i, "" + iRdr.getLbEnabled());
+			_c.setInstanceDisableTimeoutInMinutes(_i,
+					iRdr.getDisableTimeoutInMinutes());
+			_c.setInstanceListeners(_i, iRdr.getListeners());
+			_c.setInstanceWeight(_i, iRdr.getWeight());
+		}
     }
     
     //--- PRIVATE VARS ----

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -110,8 +110,6 @@ public class ExportHttpLbConfig implements AdminCommand {
     boolean retrieveFile;
     @Param(name = "file_name", optional = true, primary = true)
     String fileName;
-    @Param(name = "type", optional = true)
-    String type;
     @Param(name = "property", optional = true, separator = ':')
     Properties properties;
     @Inject
@@ -174,68 +172,15 @@ public class ExportHttpLbConfig implements AdminCommand {
             File loadbalancerDir = new File(env.getInstanceRoot(),
                     "load-balancer");
             if (!loadbalancerDir.exists()) {
-                loadbalancerDir.mkdir();
+                boolean isMkdirSuccess = loadbalancerDir.mkdir();
+                if(!isMkdirSuccess){
+                	String msg = LbLogUtil.getStringManager().getString(
+                            "directoryCreationFailed");
+                    throw new Exception(msg);
+                }
             }
             lbConfigFile = new File(loadbalancerDir, fileName);
         }
-
-        if (type !=null){
-            if(!(type.equals("otd") || type.equals("apache"))){
-                String msg = LbLogUtil.getStringManager().getString(
-                        "InvalidType");
-                throw new Exception(msg);
-            }
-            File tmpLbWorkerFile = null;
-            if (retrieveFile) {
-                if (type.equals("apache")) {
-                    tmpLbWorkerFile = File.createTempFile("worker", ".properties");
-                } else {
-                    tmpLbWorkerFile = File.createTempFile("otd", ".properties");
-                }
-                tmpLbWorkerFile.deleteOnExit();
-            } else {
-                if (lbConfigFile.exists()) {
-                    String msg = LbLogUtil.getStringManager().getString(
-                            "FileExists", lbConfigFile.getPath());
-                    throw new Exception(msg);
-                }
-
-                if (!(lbConfigFile.getParentFile().exists())) {
-                    String msg = LbLogUtil.getStringManager().getString(
-                            "ParentFileMissing", lbConfigFile.getParent());
-                    throw new Exception(msg);
-                }
-                tmpLbWorkerFile = lbConfigFile;
-            }
-
-            FileOutputStream fo = null;
-
-            try {
-                fo = new FileOutputStream(tmpLbWorkerFile);
-                if (type.equals("apache")) {
-                    LbConfigHelper.exportWorkerProperties(lbr, fo);
-                } else {
-                    LbConfigHelper.exportOtdProperties(lbr, fo);
-                }
-                if (retrieveFile) {
-                    retrieveLbConfig(context, lbConfigFile, tmpLbWorkerFile);
-                }
-                LbConfig lbConfig = lbr.getLbConfig();
-		//Check for the case when lbtargets are provided
-                //In such a case, lbconfig will be null
-		if(lbConfig != null){
-                    lbConfig.setLastExported();
-		}
-                String msg = LbLogUtil.getStringManager().getString(
-                        "GeneratedFileLocation", lbConfigFile.toString());
-                return msg;
-            } finally {
-                if (fo != null) {
-                    fo.close();
-                    fo = null;
-                }
-            }
-        } else {
 
             File tmpLbXmlFile = null;
             if (retrieveFile) {
@@ -280,7 +225,7 @@ public class ExportHttpLbConfig implements AdminCommand {
                 }
             }
         }
-    }
+    
 
     private void retrieveLbConfig(AdminCommandContext context, File lbConfigFile,
                                   File tmpLbXmlFile) throws Exception {

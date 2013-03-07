@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -67,41 +67,43 @@ public class ClusterVisitor implements Visitor {
     @Override
     public void visit(BaseReader br) throws Exception {
         // FIXME, make as assert here about no class cast exception
-        ClusterReader cRdr = (ClusterReader) br;
-        _c.setName(cRdr.getName());
-        _c.setPolicy(cRdr.getLbPolicy());
-        _c.setPolicyModule(cRdr.getLbPolicyModule());
-        InstanceReader[] iRdrs = null;
-        iRdrs = cRdr.getInstances();
+		if (br instanceof ClusterReader) {
+			ClusterReader cRdr = (ClusterReader) br;
+			_c.setName(cRdr.getName());
+			_c.setPolicy(cRdr.getLbPolicy());
+			_c.setPolicyModule(cRdr.getLbPolicyModule());
+			InstanceReader[] iRdrs = null;
+			iRdrs = cRdr.getInstances();
 
-        if ((iRdrs != null) && (iRdrs.length > 0)) {
-            boolean[] values = new boolean[iRdrs.length];
-            // XXX check if setting to true is required and is ok.
-            for (int i = 0; i < iRdrs.length; i++) {
-                values[i] = true;
-            }
-            _c.setInstance(values);
-            for (int i = 0; i < iRdrs.length; i++) {
-                iRdrs[i].accept(new InstanceVisitor(_c, i));
-            }
-        }
+			if ((iRdrs != null) && (iRdrs.length > 0)) {
+				boolean[] values = new boolean[iRdrs.length];
+				// XXX check if setting to true is required and is ok.
+				for (int i = 0; i < iRdrs.length; i++) {
+					values[i] = true;
+				}
+				_c.setInstance(values);
+				for (int i = 0; i < iRdrs.length; i++) {
+					iRdrs[i].accept(new InstanceVisitor(_c, i));
+				}
+			}
 
-        HealthCheckerReader hcRdr = cRdr.getHealthChecker();
+			HealthCheckerReader hcRdr = cRdr.getHealthChecker();
 
-        if (hcRdr != null) {
-            hcRdr.accept(new HealthCheckerVisitor(_c));
-        }
+			if (hcRdr != null) {
+				hcRdr.accept(new HealthCheckerVisitor(_c));
+			}
 
-        WebModuleReader[] wRdrs = cRdr.getWebModules();
+			WebModuleReader[] wRdrs = cRdr.getWebModules();
 
-        if ((wRdrs != null) && (wRdrs.length > 0)) {
-            WebModule[] wMods = new WebModule[wRdrs.length];
-            for (int i = 0; i < wRdrs.length; i++) {
-                wMods[i] = new WebModule();
-                wRdrs[i].accept(new WebModuleVisitor(wMods[i], _c));
-            }
-            _c.setWebModule(wMods);
-        }
+			if ((wRdrs != null) && (wRdrs.length > 0)) {
+				WebModule[] wMods = new WebModule[wRdrs.length];
+				for (int i = 0; i < wRdrs.length; i++) {
+					wMods[i] = new WebModule();
+					wRdrs[i].accept(new WebModuleVisitor(wMods[i], _c));
+				}
+				_c.setWebModule(wMods);
+			}
+		}
     }
     //--- PRIVATE VARS ----
     Cluster _c = null;

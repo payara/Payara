@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,6 @@ package org.glassfish.loadbalancer.admin.cli.transform;
 
 import org.glassfish.loadbalancer.admin.cli.reader.api.BaseReader;
 import org.glassfish.loadbalancer.admin.cli.reader.api.HealthCheckerReader;
-
 import org.glassfish.loadbalancer.admin.cli.beans.Cluster;
 
 /**
@@ -63,11 +62,13 @@ public class HealthCheckerVisitor implements Visitor {
     @Override
     public void visit(BaseReader br) throws Exception{
         // FIXME, make as assert here about no class cast exception
-        HealthCheckerReader hRdr = (HealthCheckerReader) br;
-        _c.setHealthChecker(true);
-        _c.setHealthCheckerUrl(hRdr.getUrl());
-        _c.setHealthCheckerIntervalInSeconds(hRdr.getIntervalInSeconds());
-        _c.setHealthCheckerTimeoutInSeconds(hRdr.getTimeoutInSeconds());
+		if (br instanceof HealthCheckerReader) {
+			HealthCheckerReader hRdr = (HealthCheckerReader) br;
+			_c.setHealthChecker(true);
+			_c.setHealthCheckerUrl(hRdr.getUrl());
+			_c.setHealthCheckerIntervalInSeconds(hRdr.getIntervalInSeconds());
+			_c.setHealthCheckerTimeoutInSeconds(hRdr.getTimeoutInSeconds());
+		}
     }
     //--- PRIVATE VARS ----
     Cluster _c = null;

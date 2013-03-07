@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -67,30 +67,31 @@ public class LoadbalancerVisitor implements Visitor {
     @Override
     public void visit(BaseReader br) throws Exception {
         // FIXME, make as assert here about no class cast exception
-        LoadbalancerReader lbRdr = (LoadbalancerReader) br;
+		if (br instanceof LoadbalancerReader) {
+			LoadbalancerReader lbRdr = (LoadbalancerReader) br;
 
+			PropertyReader[] pRdrs = lbRdr.getProperties();
 
-        PropertyReader[] pRdrs = lbRdr.getProperties();
+			if ((pRdrs != null) && (pRdrs.length > 0)) {
+				Property[] props = new Property[pRdrs.length];
+				for (int i = 0; i < pRdrs.length; i++) {
+					props[i] = new Property();
+					pRdrs[i].accept(new PropertyVisitor(props[i]));
+				}
+				_lb.setProperty2(props);
+			}
 
-        if ((pRdrs != null) && (pRdrs.length > 0)) {
-            Property[] props = new Property[pRdrs.length];
-            for (int i = 0; i < pRdrs.length; i++) {
-                props[i] = new Property();
-                pRdrs[i].accept(new PropertyVisitor(props[i]));
-            }
-            _lb.setProperty2(props);
-        }
+			ClusterReader[] cRdrs = lbRdr.getClusters();
 
-        ClusterReader[] cRdrs = lbRdr.getClusters();
-
-        if ((cRdrs != null) && (cRdrs.length > 0)) {
-            Cluster[] cls = new Cluster[cRdrs.length];
-            for (int i = 0; i < cRdrs.length; i++) {
-                cls[i] = new Cluster();
-                cRdrs[i].accept(new ClusterVisitor(cls[i]));
-            }
-            _lb.setCluster(cls);
-        }
+			if ((cRdrs != null) && (cRdrs.length > 0)) {
+				Cluster[] cls = new Cluster[cRdrs.length];
+				for (int i = 0; i < cRdrs.length; i++) {
+					cls[i] = new Cluster();
+					cRdrs[i].accept(new ClusterVisitor(cls[i]));
+				}
+				_lb.setCluster(cls);
+			}
+		}
     }
     //--- PRIVATE VARS ----
     Loadbalancer _lb = null;

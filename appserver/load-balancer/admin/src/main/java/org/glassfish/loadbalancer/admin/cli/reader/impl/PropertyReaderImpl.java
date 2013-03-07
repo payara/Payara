@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -200,20 +200,12 @@ public class PropertyReaderImpl implements PropertyReader {
     // --- VISITOR IMPLEMENTATION ---
     @Override
     public void accept(Visitor v) throws Exception {
-
-        PropertyVisitor pv = (PropertyVisitor) v;
-        pv.visit(this);
+		if (v instanceof PropertyVisitor) {
+			PropertyVisitor pv = (PropertyVisitor) v;
+			pv.visit(this);
+		}
     }
 
-    // --- PRIVATE METHODS -----
-    private void setValue(LbConfig lbConfig, String name) {
-        if (name.equals(LoadbalancerReader.RESP_TIMEOUT)) {
-            _value = lbConfig.getResponseTimeoutInSeconds();
-        } else if (name.equals(LoadbalancerReader.RELOAD_INTERVAL)) {
-            _value = lbConfig.getReloadPollIntervalInSeconds();
-        }
-        _name = name;
-    }
     // -- PRIVATE VARS ---
     private String _value = null;
     private String _name = null;
