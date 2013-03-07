@@ -40,6 +40,9 @@
 
 package org.glassfish.security.services.provider.authorization;
 
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.SecureAdmin;
+import com.sun.enterprise.config.serverbeans.SecureAdminPrincipal;
 import java.net.URI;
 import java.security.Principal;
 import java.util.HashSet;
@@ -49,7 +52,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.hk2.api.ServiceLocator;
 
 import org.glassfish.security.services.api.authorization.*;
 import org.glassfish.security.services.api.authorization.AzResult.Decision;
@@ -66,10 +68,8 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.logging.LogDomains;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.security.services.api.authorization.AuthorizationAdminConstants;
-
-import javax.security.auth.Subject;
-
 
 @Service (name="simpleAuthorization")
 @PerLookup
@@ -84,6 +84,13 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
     @Inject
     private ServerEnvironment serverEnv;
     
+    @Inject
+    private ServiceLocator serviceLocator;
+    
+    private Domain domain = null;
+    
+    private SecureAdmin secureAdmin = null;
+    
     protected static final Logger _logger = 
         LogDomains.getLogger(SimpleAuthorizationProviderImpl.class, LogDomains.SECURITY_LOGGER);
 
@@ -97,6 +104,8 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
         cfg = (AuthorizationProviderConfig)providerConfig.getSecurityProviderConfig().get(0);        
         deployable = cfg.getSupportPolicyDeploy();
         version = cfg.getVersion();
+        domain = serviceLocator.getService(Domain.class);
+        secureAdmin = domain.getSecureAdmin();
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "provide to do policy deploy: " + deployable);
             _logger.log(Level.FINE, "provide version to use: " + version);
@@ -124,6 +133,7 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
         AzAction action,
         AzEnvironment environment,
         List<AzAttributeResolver> attributeResolvers ) {
+        isDebug = _logger.isLoggable(DEBUG_LEVEL);
 
         //TODO: get user roles from Rolemapper, and do the policy  evaluation
         if ( ! isAdminResource(resource)) {
@@ -201,9 +211,7 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
              * we allow full access on the DAS but read-only on instances.
              */
             Decision result = 
-                    isSubjectInternalAdministrator(subject.getSubject())
-                    
-                    || isSubjectTrustedForDASAndInstances(subject)
+                    isSubjectTrustedForDASAndInstances(subject)
                    
                     || // Looks external.  Allow full access on DAS, read-only on instance.
                    
@@ -214,15 +222,6 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
                    ) ? Decision.PERMIT : Decision.DENY;
             
             return result;
-        }
-        
-        private boolean isSubjectInternalAdministrator(final Subject s) {
-            for (Principal p : s.getPrincipals()) {
-                if (p.getName().equals(AuthorizationAdminConstants.ADMIN_GROUP)) {
-                    return true;
-                }
-            }
-            return false;
         }
         
         private boolean isSubjectTrustedForDASAndInstances(final AzSubject subject) {
@@ -239,13 +238,31 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
         }
 
         private boolean isSubjectAnAdministrator(final AzSubject subject) {
-            return isPrincipalType(subject, AuthorizationAdminConstants.ADMIN_GROUP);
+            return isPrincipalType(subject, AuthorizationAdminConstants.ADMIN_GROUP) ||
+                    hasSecureAdminPrincipal(subject);
         }
 
         private boolean isPrincipalType(final AzSubject subject, final String type) {
             for (Principal p : subject.getSubject().getPrincipals()) {
                 if (type.equals(p.getName())) {
                     return true;
+                }
+            }
+            return false;
+        }
+        
+        private boolean hasSecureAdminPrincipal(final AzSubject subject) {
+            /*
+             * If the subject has a principal with a name that matches a
+             * name in the secure admin principals then it's most likely the
+             * DAS sending a request to an instance, in which case it's
+             * an administrator.
+             */
+            for (Principal p : subject.getSubject().getPrincipals()) {
+                for (SecureAdminPrincipal sap : secureAdmin.getSecureAdminPrincipal()) {
+                    if (sap.getDn().equals(p.getName())) {
+                        return true;
+                    }
                 }
             }
             return false;

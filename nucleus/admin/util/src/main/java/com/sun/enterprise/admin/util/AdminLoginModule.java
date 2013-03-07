@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -337,22 +337,48 @@ public class AdminLoginModule implements LoginModule {
 
         @Override
         public boolean identify(Subject subject) {
-            if (secureAdmin == null) {
-                return false;
-            }
+            /*
+             * There are three ways certs can be attached to the request:
+             * 1. A non-GlassFish client (a human) actually sent a cert.
+             * 
+             * 2. One server is sending another server a request.  In this case
+             * the cert's DN should be among the secure-admin-principals.
+             * 
+             * 3. The request came from the console and secure admin is enabled, 
+             * in which case (because the console runs in the DAS 
+             * and sends ReST requests over the net to the DAS) the request
+             * will have both the DAS's cert and the user's username and password.
+             */
+            
             final Principal p = pcb.getPrincipal();
             if (p != null) {
+                if (isPrincipalFromGlassFish(p) && usernamePasswordAuth.isActive()) {
+                    /*
+                     * This is the console case. Do not indicate that the client
+                     * is identifiable using an SSL cert.  Instead rely on
+                     * the username/password authentication code path.
+                     */
+                    logger.log(PROGRESS_LEVEL, "Detected console request - not adding SSL principal to the subject");
+                    return false;
+                }
+                /*
+                 * In all other cases add the principal to the tentative subject.
+                 */
                 subject.getPrincipals().add(p);
                 logger.log(PROGRESS_LEVEL, "Attaching Principal {0}", p.getName());
-                for (SecureAdminPrincipal sap : secureAdmin.getSecureAdminPrincipal()) {
-                    if (sap.getDn().equals(p.getName())) {
-                        break;
-                    }
-                }
+                
             }
             return p != null;
         }
 
+        private boolean isPrincipalFromGlassFish(final Principal p) {
+            for (SecureAdminPrincipal sap : secureAdmin.getSecureAdminPrincipal()) {
+                if (sap.getDn().equals(p.getName())) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
     }
 
@@ -438,6 +464,10 @@ public class AdminLoginModule implements LoginModule {
             super(AuthenticatorType.USERNAME_PASSWORD, null);
         }
 
+        boolean isActive() {
+            return nameCB.getName() != null || pwCB.getPassword() != null;
+        }
+        
         @Override
         public boolean identify(final Subject subject) throws LoginException {
             /*
