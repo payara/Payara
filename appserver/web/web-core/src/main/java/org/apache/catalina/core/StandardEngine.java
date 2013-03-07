@@ -83,7 +83,7 @@ public class StandardEngine
         message = "Child of an Engine must be a Host",
         level = "WARNING"
     )
-    public static final String CHILD_OF_ENGINE_MUST_BE_HOST_EXCPECTION = "AS-WEB-CORE-00194";
+    public static final String CHILD_OF_ENGINE_MUST_BE_HOST_EXCEPTION = "AS-WEB-CORE-00194";
 
     @LogMessageInfo(
         message = "Engine cannot have a parent Container",
@@ -282,7 +282,7 @@ public class StandardEngine
     public void addChild(Container child) {
 
         if (!(child instanceof Host))
-            throw new IllegalArgumentException(rb.getString(CHILD_OF_ENGINE_MUST_BE_HOST_EXCPECTION));
+            throw new IllegalArgumentException(rb.getString(CHILD_OF_ENGINE_MUST_BE_HOST_EXCEPTION));
         super.addChild(child);
 
     }
