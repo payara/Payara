@@ -61,23 +61,23 @@ public class GlassFishMain {
     // TODO(Sahoo): Move the code to ASMain once we are ready to phase out ASMain
 
     public static void main(final String args[]) throws Exception {
-        ASMainHelper.checkJdkVersion();
+        MainHelper.checkJdkVersion();
 
         final Properties argsAsProps = argsToMap(args);
 
-        String platform = ASMainHelper.whichPlatform();
+        String platform = MainHelper.whichPlatform();
 
         System.out.println("Launching GlassFish on " + platform + " platform");
 
         // Set the system property if downstream code wants to know about it
         System.setProperty(Constants.PLATFORM_PROPERTY_KEY, platform); // TODO(Sahoo): Why is this a system property?
 
-        File installRoot = ASMainHelper.findInstallRoot();
+        File installRoot = MainHelper.findInstallRoot();
 
         // domainDir can be passed as argument, so pass the agrgs as well.
-        File instanceRoot = ASMainHelper.findInstanceRoot(installRoot, argsAsProps);
+        File instanceRoot = MainHelper.findInstanceRoot(installRoot, argsAsProps);
 
-        Properties ctx = ASMainHelper.buildStartupContext(platform, installRoot, instanceRoot, args);
+        Properties ctx = MainHelper.buildStartupContext(platform, installRoot, instanceRoot, args);
         /*
          * We have a tricky class loading issue to solve. GlassFishRuntime looks for an implementation of RuntimeBuilder.
          * In case of OSGi, the implementation class is OSGiGlassFishRuntimeBuilder. OSGiGlassFishRuntimeBuilder has
@@ -89,7 +89,7 @@ public class GlassFishMain {
          * in system classpath. So, we create a class loader which can load GlassFishRuntime, OSGiGlassFishRuntimebuilder
          * and OSGi framework classes.
          */
-        final ClassLoader launcherCL = ASMainHelper.createLauncherCL(ctx,
+        final ClassLoader launcherCL = MainHelper.createLauncherCL(ctx,
                 ClassLoader.getSystemClassLoader().getParent());
         Class launcherClass = launcherCL.loadClass(GlassFishMain.Launcher.class.getName());
         Object launcher = launcherClass.newInstance();

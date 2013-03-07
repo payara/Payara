@@ -112,7 +112,7 @@ public class StaticGlassFishRuntimeBuilder implements RuntimeBuilder {
     private String getInstallRoot(BootstrapProperties props) {
         String installRootProp = props.getInstallRoot();
         if(installRootProp == null) {
-            File installRoot = ASMainHelper.findInstallRoot();
+            File installRoot = MainHelper.findInstallRoot();
             if(isValidInstallRoot(installRoot)) {
                 installRootProp = installRoot.getAbsolutePath();
             }

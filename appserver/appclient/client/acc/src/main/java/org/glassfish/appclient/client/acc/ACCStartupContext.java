@@ -40,7 +40,7 @@
 
 package org.glassfish.appclient.client.acc;
 
-import com.sun.enterprise.glassfish.bootstrap.ASMainHelper;
+import com.sun.enterprise.glassfish.bootstrap.MainHelper;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import java.io.File;
 import java.net.URI;
@@ -73,7 +73,7 @@ public class ACCStartupContext extends StartupContext {
      * @return
      */
     private static Properties accEnvironment() {
-        final Properties result = ASMainHelper.parseAsEnv(getRootDirectory());
+        final Properties result = MainHelper.parseAsEnv(getRootDirectory());
         result.setProperty("com.sun.aas.installRoot", getRootDirectory().getAbsolutePath());
         final File javadbDir = new File(getRootDirectory().getParentFile(), "javadb");
         if (javadbDir.isDirectory()) {

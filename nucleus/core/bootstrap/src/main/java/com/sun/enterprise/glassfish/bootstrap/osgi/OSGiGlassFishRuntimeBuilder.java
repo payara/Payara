@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
-import com.sun.enterprise.glassfish.bootstrap.ASMainHelper;
+import com.sun.enterprise.glassfish.bootstrap.MainHelper;
 import com.sun.enterprise.glassfish.bootstrap.Constants;
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.GlassFishException;
@@ -75,7 +75,7 @@ import com.sun.enterprise.glassfish.bootstrap.LogFacade;
  * <p/>
  * <p/>It can't handle GenericOSGi platform,
  * because it reads framework configuration from a framework specific file when it calls
- * {@link ASMainHelper#buildStartupContext(java.util.Properties)}.
+ * {@link MainHelper#buildStartupContext(java.util.Properties)}.
  * <p/>
  * This class is responsible for
  * a) setting up OSGi framework,
@@ -119,7 +119,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
 
     public GlassFishRuntime build(BootstrapProperties bsProps) throws GlassFishException {
         try {
-            ASMainHelper.buildStartupContext(bsProps.getProperties());
+            MainHelper.buildStartupContext(bsProps.getProperties());
             properties = bsProps.getProperties();
 
             // Set the builder name so that when we check for nonEmbedded() inside GlassFishMainActivator,
@@ -180,7 +180,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
         }
         /*
          * This builder can't handle GOSGi platform, because we read framework configuration from a framework
-         * specific file in ASMainHelper.buildStartupContext(properties);
+         * specific file in MainHelper.buildStartupContext(properties);
          */
         String platformStr = bsProps.getProperty(Constants.PLATFORM_PROPERTY_KEY);
         if (platformStr != null && platformStr.trim().length() != 0) {

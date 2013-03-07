@@ -66,7 +66,7 @@ import static com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap;
  *
  * @author Sanjeeb.Sahoo@Sun.COM
  */
-public class ASMainHelper {
+public class MainHelper {
     
     private static Logger logger = LogFacade.BOOTSTRAP_LOGGER;
     
@@ -109,8 +109,9 @@ public class ASMainHelper {
             temp = System.getenv(Constants.PLATFORM_PROPERTY_KEY);
         }
 
-        if (temp != null && temp.trim().length() != 0) {
-            platform = temp.trim();
+        String trimtemp;
+        if (temp != null && (trimtemp = temp.trim()).length() != 0) {
+            platform = trimtemp;
         }
         return platform;
     }
