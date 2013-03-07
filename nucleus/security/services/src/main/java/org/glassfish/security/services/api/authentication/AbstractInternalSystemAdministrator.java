@@ -49,7 +49,7 @@ import org.glassfish.internal.api.InternalSystemAdministrator;
  * Implements most of the internal system administrator.
  * <p>
  * Different concrete subclasses implement {@link #getAdminGroupName() }
- * and {@link #getInternalUsername() } differently.
+ * and {@link #getInternalUsername() } and {@link #createSubject() } differently.
  * 
  * @author tjquinn
  */
@@ -62,20 +62,32 @@ public abstract class AbstractInternalSystemAdministrator implements InternalSys
     
     @Override
     public void postConstruct() {
-        try {
-            subject = authService.impersonate(
-                    getInternalUsername(), 
-                    new String[] {getAdminGroupName()}, 
-                    null /* no pre-existing subject */,
-                    true /* isVirtual */);
-        } catch (LoginException ex) {
-            throw new RuntimeException(ex);
-        }
+        subject = createSubject();
     }
 
     @Override
     public Subject getSubject() {
         return subject;
+    }
+    
+    /**
+     * Creates a subject using the impersonate method on the authentication
+     * service.
+     * 
+     * @return the Subject to use for the internal system administrator.
+     */
+    protected Subject createSubject() {
+        Subject s;
+        try {
+            s = authService.impersonate(
+                    getInternalUsername(), 
+                    new String[] {getAdminGroupName()}, 
+                    null /* no pre-existing subject */,
+                    true /* isVirtual */);
+            return s;
+        } catch (LoginException ex) {
+            throw new RuntimeException(ex);
+        }
     }
     
     abstract protected String getInternalUsername();
