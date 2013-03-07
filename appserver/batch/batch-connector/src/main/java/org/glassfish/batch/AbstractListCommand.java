@@ -44,6 +44,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
+import org.glassfish.batch.spi.impl.GlassFishBatchSecurityHelper;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -79,6 +80,9 @@ public abstract class AbstractListCommand
 
     protected String[] displayHeaders;
 
+    @Inject
+    GlassFishBatchSecurityHelper glassFishBatchSecurityHelper;
+
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport actionReport = context.getActionReport();
@@ -91,12 +95,15 @@ public abstract class AbstractListCommand
         try {
             calculateHeaders();
             helper.checkAndInitializeBatchRuntime();
+            glassFishBatchSecurityHelper.markInvocationPrivilege(true);
             executeCommand(context, extraProperties);
             actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         } catch (Exception ex) {
             logger.log(Level.WARNING, "Exception during command ", ex);
             actionReport.setMessage(ex.getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        } finally {
+            glassFishBatchSecurityHelper.markInvocationPrivilege(false);
         }
     }
 

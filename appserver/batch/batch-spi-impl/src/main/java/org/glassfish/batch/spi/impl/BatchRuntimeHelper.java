@@ -41,12 +41,10 @@ package org.glassfish.batch.spi.impl;
 
 import com.ibm.jbatch.spi.*;
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.persistence.common.Java2DBProcessorHelper;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
@@ -78,7 +76,7 @@ public class BatchRuntimeHelper
     private ServerContext serverContext;
 
     @Inject
-    private InvocationManager invocationManager;
+    private GlassFishBatchSecurityHelper glassFishBatchSecurityHelper;
 
     @Inject
     Logger logger;
@@ -118,7 +116,7 @@ public class BatchRuntimeHelper
         System.out.println("** GlassFishBatchExecutorServiceProvider.postConstruct() called");
         BatchSPIManager batchSPIManager = BatchSPIManager.getInstance();
         batchSPIManager.registerExecutorServiceProvider(new GlassFishBatchExecutorServiceProvider());
-        batchSPIManager.registerBatchSecurityHelper(new GlassFishBatchSecurityHelper());
+        batchSPIManager.registerBatchSecurityHelper(glassFishBatchSecurityHelper);
 
         try {
             DatabaseConfigurationBean databaseConfigurationBean = new DatabaseConfigurationBean();
@@ -168,21 +166,6 @@ public class BatchRuntimeHelper
                 }
             }
             return executorService;
-        }
-    }
-
-    private class GlassFishBatchSecurityHelper
-        implements BatchSecurityHelper {
-
-        @Override
-        public String getCurrentTag() {
-            ComponentInvocation compInv = invocationManager.getCurrentInvocation();
-            return "" + compInv.getAppName();
-        }
-
-        @Override
-        public boolean isAdmin(String tag) {
-            return true;
         }
     }
 
