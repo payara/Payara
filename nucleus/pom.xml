@@ -138,7 +138,6 @@
         <copyright-plugin.version>1.33</copyright-plugin.version>
         <jdk.version>1.7.0-09</jdk.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
-        <add.classpath>true</add.classpath>
     </properties>
     
     <modules>
@@ -452,7 +451,7 @@
 		    <useDefaultManifestFile>true</useDefaultManifestFile>
                     <archive>
                         <manifest>
-                            <addClasspath>${add.classpath}</addClasspath>
+                            <addClasspath>true</addClasspath>
                             <classpathLayoutType>custom</classpathLayoutType>
                             <customClasspathLayout>$${artifact.artifactId}.$${artifact.extension}</customClasspathLayout>
                         </manifest>
@@ -481,11 +480,6 @@
                         <_include>-${basedir}/osgi.bundle</_include>
                     </instructions>
                     <excludeDependencies>tools-jar</excludeDependencies>
-                    <archive>
-                        <manifest>
-                            <addClasspath>${add.classpath}</addClasspath>
-                        </manifest>
-                    </archive>
                 </configuration>
                 <executions>
                     <execution>
