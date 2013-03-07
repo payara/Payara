@@ -43,14 +43,13 @@ package org.glassfish.appclient.server.core;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import org.glassfish.deployment.common.ModuleDescriptor;
-import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
 import java.io.*;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -67,6 +66,8 @@ import org.glassfish.deployment.versioning.VersioningUtils;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.ServerContext;
 
 /**
  * Generates the app client group (EAR-level) facade JAR.
@@ -83,7 +84,7 @@ public class AppClientGroupFacadeGenerator {
 
     private static final String GLASSFISH_APPCLIENT_GROUP_FACADE_CLASS_NAME =
             "org.glassfish.appclient.client.AppClientGroupFacade";
-
+    
     private static final Attributes.Name GLASSFISH_APPCLIENT_GROUP = new Attributes.Name("GlassFish-AppClient-Group");
     private static final String GF_CLIENT_MODULE_NAME = "org.glassfish.main.appclient.gf-client-module";
 
@@ -93,12 +94,10 @@ public class AppClientGroupFacadeGenerator {
     private AppClientDeployerHelper helper;
 
     @Inject
-    private ModulesRegistry modulesRegistry;
+    private ServiceLocator serviceLocator;
 
     @Inject
     private CarType carType;
-
-    private ClassLoader gfClientModuleClassLoader = null;
 
     void run(final AppClientDeployerHelper helper) {
         dc = helper.dc();
@@ -106,15 +105,6 @@ public class AppClientGroupFacadeGenerator {
         if ( ! groupFacadeAlreadyGenerated().get()) {
             generateGroupFacade();
         }
-    }
-
-    private ClassLoader gfClientModuleClassLoader() {
-        if (gfClientModuleClassLoader == null) {
-            for (Module module : modulesRegistry.getModules(GF_CLIENT_MODULE_NAME)) {
-                gfClientModuleClassLoader = module.getClassLoader();
-            }
-        }
-        return gfClientModuleClassLoader;
     }
 
     private AtomicBoolean groupFacadeAlreadyGenerated() {
@@ -245,11 +235,14 @@ public class AppClientGroupFacadeGenerator {
         final String mainClassResourceName =
                 GLASSFISH_APPCLIENT_GROUP_FACADE_CLASS_NAME.replace('.', '/') +
                 ".class";
+        final File mainClassJAR = new File(
+                AppClientDeployerHelper.getModulesDir(serviceLocator), 
+                AppClientDeployerHelper.GF_CLIENT_MODULE_PATH);
         final File mainClassFile = File.createTempFile("main", ".class");
         final OutputStream os = new BufferedOutputStream(new FileOutputStream(mainClassFile));
         InputStream is = null;
         try {
-            is = openByteCodeStream(mainClassResourceName);
+            is = openByteCodeStream(mainClassJAR, mainClassResourceName);
             DeploymentUtils.copyStream(is, os);
             is.close();
             clientArtifactsManager.add(mainClassFile, mainClassResourceName, true);
@@ -261,14 +254,14 @@ public class AppClientGroupFacadeGenerator {
                 is.close();
             }
         }
-
     }
-    protected InputStream openByteCodeStream(final String resourceName) throws IOException {
-        URL url = gfClientModuleClassLoader().getResource(resourceName);
-        if (url == null) {
-            throw new IllegalArgumentException(resourceName);
-        }
-        InputStream is = url.openStream();
+    
+    protected InputStream openByteCodeStream(
+            final File jarFile,
+            final String resourceName) throws IOException {
+        final JarFile jf = new JarFile(jarFile);
+        final JarEntry entry = jf.getJarEntry(resourceName);
+        InputStream is = jf.getInputStream(entry);
         return is;
     }
 }

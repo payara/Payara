@@ -69,7 +69,7 @@ public class StaticGlassFishRuntimeBuilder implements RuntimeBuilder {
 
     private static Logger logger = Util.getLogger();
     private static final String JAR_EXT = ".jar";
-    final List<String> moduleExcludes = Arrays.asList("jsftemplating.jar");
+    final List<String> moduleExcludes = Arrays.asList("jsftemplating.jar", "gf-client-module.jar");
 
     public GlassFishRuntime build(BootstrapProperties bsProps) throws GlassFishException {
         /* Step 1. Build the classloader. */

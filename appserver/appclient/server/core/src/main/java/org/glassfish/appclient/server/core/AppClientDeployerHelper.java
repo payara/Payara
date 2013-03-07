@@ -53,13 +53,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -80,6 +80,7 @@ import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.ServerContext;
 
 /**
  * Encapsulates the details of generating the required JAR file(s),
@@ -95,6 +96,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 public abstract class AppClientDeployerHelper {
 
     private final static String PERSISTENCE_XML_PATH = "META-INF/persistence.xml";
+    final static String GF_CLIENT_MODULE_PATH ="gf-client-module.jar";
     
     private final DeploymentContext dc;
     private final ApplicationClientDescriptor appClientDesc;
@@ -102,7 +104,7 @@ public abstract class AppClientDeployerHelper {
     private final String appName;
     private final String clientName;
 
-    private final ClassLoader gfClientModuleClassLoader;
+    private JarFile gfClientModuleJarFile;
 
     private final Application application;
 
@@ -155,10 +157,14 @@ public abstract class AppClientDeployerHelper {
         this.appClientDesc = bundleDesc;
         this.archivist = archivist;
         this.habitat = habitat;
-        this.gfClientModuleClassLoader = gfClientModuleClassLoader;
+        gfClientModuleJarFile = new JarFile(new File(getModulesDir(habitat), GF_CLIENT_MODULE_PATH));
         this.appName = appClientDesc.getApplication().getRegistrationName();
         this.clientName = appClientDesc.getModuleDescriptor().getArchiveUri();
         this.application = application;
+    }
+    
+    static File getModulesDir(final ServiceLocator habitat) {
+        return new File(habitat.getService(ServerContext.class).getInstallRoot(), "modules/");
     }
 
     /**
@@ -625,12 +631,8 @@ public abstract class AppClientDeployerHelper {
     }
 
     protected InputStream openByteCodeStream(final String resourceName) throws IOException {
-        URL url = gfClientModuleClassLoader.getResource(resourceName);
-        if (url == null) {
-            throw new IllegalArgumentException(resourceName);
-        }
-        InputStream is = url.openStream();
-        return is;
+        final JarEntry entry = gfClientModuleJarFile.getJarEntry(resourceName);
+        return gfClientModuleJarFile.getInputStream(entry);
     }
 
     protected abstract Set<Artifacts.FullAndPartURIs> clientLevelDownloads() throws IOException;
