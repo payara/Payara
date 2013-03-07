@@ -628,7 +628,7 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
             logger.log(Level.SEVERE, LogUtils.CREATE_DIR_FAILED, classesDir);
         }
 
-        String[] wsimportArgs = new String[7];
+        String[] wsimportArgs = new String[8];
         wsimportArgs[0]="-d";
         wsimportArgs[1]=classesDir.getAbsolutePath();
         wsimportArgs[2]="-keep";
@@ -636,6 +636,7 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
         wsimportArgs[4]="-Xendorsed";
         wsimportArgs[5]="-target";
         wsimportArgs[6]="2.1";
+        wsimportArgs[7]="-extension";
         WSToolsObjectFactory tools = WSToolsObjectFactory.newInstance();
         logger.log(Level.INFO, LogUtils.WSIMPORT_INVOKE, wsdlLocation);
         boolean success = tools.wsimport(System.out, wsimportArgs);
