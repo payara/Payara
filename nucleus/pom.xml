@@ -135,7 +135,7 @@
         <command-security-plugin.version>1.0.4</command-security-plugin.version>
         <mail.version>1.5.0-b01</mail.version>
 	<javax.annotation-api.version>1.2-b02</javax.annotation-api.version>
-        <copyright-plugin.version>1.33</copyright-plugin.version>
+        <copyright-plugin.version>1.39</copyright-plugin.version>
         <jdk.version>1.7.0-09</jdk.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
     </properties>
