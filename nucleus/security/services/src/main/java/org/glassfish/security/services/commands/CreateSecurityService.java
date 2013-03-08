@@ -71,7 +71,7 @@ import org.glassfish.api.admin.AdminCommandSecurity;
 /**
  * General create security service command.
  */
-@Service(name="create-security-service")
+@Service(name="_create-security-service")
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(CommandTarget.DAS)

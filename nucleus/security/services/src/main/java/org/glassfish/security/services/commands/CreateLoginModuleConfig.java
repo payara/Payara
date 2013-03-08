@@ -73,7 +73,7 @@ import org.glassfish.api.admin.AdminCommandSecurity;
 /**
  * General create LoginModule config command.
  */
-@Service(name="create-login-module-config")
+@Service(name="_create-login-module-config")
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(CommandTarget.DAS)

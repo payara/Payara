@@ -70,7 +70,7 @@ import org.glassfish.api.admin.AdminCommandSecurity;
 /**
  * General create security provider command.
  */
-@Service(name="create-security-provider")
+@Service(name="_create-security-provider")
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(CommandTarget.DAS)
