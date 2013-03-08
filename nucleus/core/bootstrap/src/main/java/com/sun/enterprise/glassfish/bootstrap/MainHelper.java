@@ -40,24 +40,18 @@
 
 package com.sun.enterprise.glassfish.bootstrap;
 
-import com.sun.corba.se.impl.orbutil.closure.Constant;
 import com.sun.enterprise.module.bootstrap.ArgumentManager;
-import com.sun.enterprise.module.bootstrap.PlatformMain;
+import static com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.module.bootstrap.Which;
-
 import java.io.*;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap;
 
 /**
  * Utility class used by bootstrap module.
