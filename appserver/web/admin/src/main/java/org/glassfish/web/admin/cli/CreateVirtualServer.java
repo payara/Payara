@@ -103,14 +103,6 @@ public class CreateVirtualServer implements AdminCommand {
             level = "INFO")
     protected static final String CREATE_VIRTUAL_SERVER_FAIL = "AS-WEB-ADMIN-00026";
 
-    @LogMessageInfo(
-            message = "The create-virtual-server command creates the named virtual server. " +
-                    "Virtualization in the Application Server allows multiple URL domains to be served " +
-                    "by a single HTTP server process that is listening on multiple host addresses. " +
-                    "If the application is available at two virtual servers, they still share the same physical resource pools.",
-            level = "INFO")
-    protected static final String CREATE_VIRTUAL_SERVER = "AS-WEB-ADMIN-00027";
-
     @Param(name = "hosts", defaultValue = "${com.sun.aas.hostName}")
     String hosts;
     @Param(name = "httplisteners", optional = true)
