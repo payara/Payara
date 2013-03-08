@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -79,6 +79,8 @@ import org.glassfish.config.support.GrizzlyConfigSchemaMigrator;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.security.common.MasterPassword;
 import org.jvnet.hk2.config.RetryableException;
 import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -137,10 +139,26 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
     @Inject
     private ServerEnvironment serverEnv;
     
+    /**
+     * Inject this to make sure it is initialized.  It is used by 
+     * SecuritySupportImpl, but because SecuritySupportImpl is not a service
+     * hk2 does not operate on it and would not automatically initialize
+     * MasterPassword.
+     */
+    @Inject
+    private MasterPassword masterPassword;
+    
     private Map<String,Config> writableConfigs = new HashMap<String,Config>();
     
     @Override
     public void postConstruct() {
+        /*
+         * Make sure the darn Globals is set up, because it's used downstream
+         * from SecuritySupportImpl.
+         */
+        if (Globals.getDefaultHabitat() == null) {
+            Globals.setDefaultHabitat(habitat);
+        }
         String stage = null;
         try {
             stage = "adding admin-listener to non-DAS configuration";
