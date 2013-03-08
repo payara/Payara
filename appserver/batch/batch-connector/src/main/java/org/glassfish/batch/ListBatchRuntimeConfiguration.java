@@ -47,6 +47,7 @@ import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -78,7 +79,8 @@ public class ListBatchRuntimeConfiguration
     private static final String EXECUTOR_SERVICE_NAME = "executor-service-lookup-name";
 
     @Inject
-    BatchRuntimeConfiguration helper;
+    @Optional
+    BatchRuntimeConfiguration batchRuntimeConfiguration;
 
     @Override
     protected void executeCommand(AdminCommandContext context, Properties extraProps) {
@@ -106,6 +108,7 @@ public class ListBatchRuntimeConfiguration
         columnFormatter.addRow(data);
         context.getActionReport().setMessage(columnFormatter.toString());
     }
+
 
     @Override
     protected final String[] getSupportedHeaders() {

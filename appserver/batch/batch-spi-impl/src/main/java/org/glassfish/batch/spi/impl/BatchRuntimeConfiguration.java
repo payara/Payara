@@ -59,4 +59,8 @@ public interface BatchRuntimeConfiguration
     @Attribute
     String getExecutorServiceLookupName();
 
+    public void setDataSourceLookupName(String value);
+
+    public void setExecutorServiceLookupName(String value);
+
 }

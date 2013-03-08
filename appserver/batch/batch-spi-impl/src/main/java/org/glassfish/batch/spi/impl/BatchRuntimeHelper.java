@@ -41,7 +41,6 @@ package org.glassfish.batch.spi.impl;
 
 import com.ibm.jbatch.spi.*;
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
@@ -79,7 +78,11 @@ public class BatchRuntimeHelper
     private GlassFishBatchSecurityHelper glassFishBatchSecurityHelper;
 
     @Inject
-    Logger logger;
+    private Logger logger;
+
+    private static final String DEFAULT_DATA_SOURCE_LOOKUP_NAME = "jdbc/__TimerPool";
+
+    private static final String DEFAULT_EXECUTOR_SERVICE_LOOKUP_NAME = "java:comp/DefaultManagedExecutorService";
 
     private AtomicBoolean initialized = new AtomicBoolean(false);
 
@@ -128,18 +131,18 @@ public class BatchRuntimeHelper
         }
     }
 
-    private String getDataSourceLookupName() {
-        return batchRuntimeConfiguration != null
-                ? batchRuntimeConfiguration.getDataSourceLookupName() : "jdbc/__TimerPool";
+    public String getDataSourceLookupName() {
+        return (batchRuntimeConfiguration != null && batchRuntimeConfiguration.getDataSourceLookupName() != null)
+                    ? batchRuntimeConfiguration.getDataSourceLookupName() : DEFAULT_DATA_SOURCE_LOOKUP_NAME;
     }
 
     private String getSchemaName() {
         return "APP";
     }
 
-    private String getExecutorServiceLookupName() {
-        return batchRuntimeConfiguration != null
-                ? batchRuntimeConfiguration.getExecutorServiceLookupName() : "java:comp/DefaultManagedExecutorService";
+    public String getExecutorServiceLookupName() {
+        return (batchRuntimeConfiguration != null && batchRuntimeConfiguration.getExecutorServiceLookupName() != null)
+                    ? batchRuntimeConfiguration.getExecutorServiceLookupName() : DEFAULT_EXECUTOR_SERVICE_LOOKUP_NAME;
     }
 
     private class GlassFishBatchExecutorServiceProvider
