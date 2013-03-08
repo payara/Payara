@@ -116,7 +116,7 @@ interface RequestItem {
      *
      * @return The original filename in the client's filesystem.
      */
-    String getName();
+    String getSubmittedFileName();
 
     /**
      * Returns the name of the field in the multipart form corresponding to

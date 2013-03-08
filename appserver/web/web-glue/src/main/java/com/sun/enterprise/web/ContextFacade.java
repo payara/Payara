@@ -565,6 +565,10 @@ public class ContextFacade extends WebModule {
         context.declareRoles(roleNames);
     }
 
+    public String getVirtualServerName() {
+        return context.getVirtualServerName();
+    }
+
     public String getPath() {
         return context.getPath();
     }

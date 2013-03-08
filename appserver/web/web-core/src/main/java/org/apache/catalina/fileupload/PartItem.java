@@ -295,7 +295,7 @@ class PartItem
      *
      * @return The original filename in the client's filesystem.
      */
-    public String getFileName() {
+    public String getSubmittedFileName() {
         return fileName;
     }
 
@@ -692,7 +692,7 @@ class PartItem
      * @return a string representation of this object.
      */
     public String toString() {
-        return "File name=" + this.getFileName()
+        return "File name=" + this.getSubmittedFileName()
             + ", StoreLocation="
             + String.valueOf(this.getStoreLocation())
             + ", size="

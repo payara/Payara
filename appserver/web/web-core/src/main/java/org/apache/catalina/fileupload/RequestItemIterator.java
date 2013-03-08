@@ -100,7 +100,7 @@ class RequestItemIterator {
         private final String fieldName;
 
         // The file items file name.
-        private final String name;
+        private final String submittedFileName;
 
         // Whether the file item is a form field.
         private final boolean formField;
@@ -114,9 +114,9 @@ class RequestItemIterator {
         /**
          * Creates a new instance.
          * @param multipart The multipart instance for accessing global properties
-         * @param multistream The multi part stream to process
+         * @param multiStream The multi part stream to process
          * @param pHeaders The item headers
-         * @param pName The items file name, or null.
+         * @param pSubmittedFileName The items file name, or null.
          * @param pFieldName The items field name.
          * @param pContentType The items content type, or null.
          * @param pFormField Whether the item is a form field.
@@ -124,12 +124,12 @@ class RequestItemIterator {
          * @throws ServletException Creating the file item failed.
          */
         RequestItemImpl(Multipart multipart, MultipartStream multiStream,
-                    PartHeaders pHeaders, String pName, String pFieldName,
+                    PartHeaders pHeaders, String pSubmittedFileName, String pFieldName,
                     String pContentType, boolean pFormField,
                     long pContentLength) throws ServletException {
 
             headers = pHeaders;
-            name = pName;
+            submittedFileName = pSubmittedFileName;
             fieldName = pFieldName;
             contentType = pContentType;
             formField = pFormField;
@@ -180,8 +180,8 @@ class RequestItemIterator {
          * Returns the items file name.
          * @return File name, if known, or null.
          */
-        public String getName() {
-            return name;
+        public String getSubmittedFileName() {
+            return submittedFileName;
         }
 
         /**
@@ -369,7 +369,7 @@ class RequestItemIterator {
                         multiStream.setBoundary(subBoundary);
                         continue;
                     }
-                    String fileName = getFileName(headers);
+                    String fileName = getSubmittedFileName(headers);
                     currentItem = new RequestItemImpl(
                             multipart, multiStream, headers, fileName,
                             fieldName, headers.getHeader(CONTENT_TYPE),
@@ -379,7 +379,7 @@ class RequestItemIterator {
                     return true;
                 }
             } else {
-                String fileName = getFileName(headers);
+                String fileName = getSubmittedFileName(headers);
                 if (fileName != null) {
                     currentItem = new RequestItemImpl(
                             multipart, multiStream, headers, fileName,
@@ -411,8 +411,8 @@ class RequestItemIterator {
      *
      * @return The file name for the current <code>encapsulation</code>.
      */
-    protected String getFileName(PartHeaders headers) {
-        return getFileName(headers.getHeader(CONTENT_DISPOSITION));
+    protected String getSubmittedFileName(PartHeaders headers) {
+        return getSubmittedFileName(headers.getHeader(CONTENT_DISPOSITION));
     }
 
     /**
@@ -420,7 +420,7 @@ class RequestItemIterator {
      * @param pContentDisposition The content-disposition headers value.
      * @return The file name
      */
-    private String getFileName(String pContentDisposition) {
+    private String getSubmittedFileName(String pContentDisposition) {
         String fileName = null;
         if (pContentDisposition != null) {
             String cdl = pContentDisposition.toLowerCase(Locale.ENGLISH);

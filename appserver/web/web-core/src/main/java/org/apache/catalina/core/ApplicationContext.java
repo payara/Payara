@@ -988,6 +988,15 @@ public class ApplicationContext implements ServletContext {
         context.declareRoles(roleNames);
     }
 
+    @Override
+    public String getVirtualServerName() {
+        if (isRestricted) {
+            throw new UnsupportedOperationException(
+                    rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
+        }
+        return context.getVirtualServerName();
+    }
+
     // START PWC 1.2
     /**
      * Gets the underlying StandardContext to which this ApplicationContext is

@@ -3455,6 +3455,16 @@ public class StandardContext
         return effectiveMinorVersion;
     }
 
+    @Override
+    public String getVirtualServerName() {
+        String virtualServerName = null;
+        Container parent = getParent();
+        if (parent != null) {
+            virtualServerName = parent.getName();
+        }
+        return virtualServerName;
+    }
+
     /**
      * Add the classname of an InstanceListener to be added to each
      * Wrapper appended to this Context.
