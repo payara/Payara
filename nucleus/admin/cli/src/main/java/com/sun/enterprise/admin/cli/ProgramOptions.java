@@ -86,7 +86,6 @@ public class ProgramOptions {
     public static final String DETACH            = "detach";
     public static final String AUTHTOKEN        = AuthTokenManager.AUTH_TOKEN_OPTION_NAME;
     public static final String AUXINPUT         = AsadminInput.CLI_INPUT_OPTION_NAME;
-    public static final String USECACHE         = "ignore-cache"; //todo: [mmar] Remove after implementation CLI->ReST done
 
     private static final Logger logger =
         Logger.getLogger(ProgramOptions.class.getPackage().getName());
@@ -128,7 +127,6 @@ public class ProgramOptions {
         addMetaOption(opts, AUXINPUT, '\0', String.class, false, null);
         addMetaOption(opts, AUTHTOKEN, '\0', String.class, false, null);
         addMetaOption(opts, DETACH, '\0', Boolean.class, false, "false");
-        addMetaOption(opts, USECACHE, '\0', Boolean.class, false, "false"); //todo: [mmar] Remove after implementation CLI->ReST done
         programOptions = Collections.unmodifiableSet(opts);
     }
 
@@ -444,23 +442,6 @@ public class ProgramOptions {
     }
     
     /**
-     * @return the ignore-cache
-     */
-    //todo: [mmar] Remove after implementation CLI->ReST done
-    public boolean isUseCache() {
-        boolean useCache;
-        if (options.containsKey(USECACHE)) {
-            String value = options.getOne(USECACHE);
-            if (ok(value))
-                useCache = Boolean.parseBoolean(value);
-            else
-                useCache = true;
-        } else
-            useCache = env.getBooleanOption(USECACHE);
-        return useCache;
-    }
-
-    /**
      * @return detach option
      */
     public boolean isDetachedCommand() {
@@ -603,6 +584,12 @@ public class ProgramOptions {
         String[] a = new String[args.size()];
         args.toArray(a);
         return a;
+    }
+    
+    /** Option by name just as was parsed. No added value.
+     */
+    public String getPlainOption(String name) {
+        return options.getOne(name);
     }
 
     /**

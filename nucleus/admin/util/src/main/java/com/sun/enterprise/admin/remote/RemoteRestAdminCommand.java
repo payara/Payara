@@ -532,7 +532,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
      */
     public String executeCommand(ParameterMap opts) throws CommandException {
         if (logger.isLoggable(Level.FINER)) {
-            logger.log(Level.FINER, "RemoteRestAdminCommand2.executeCommand() - name: {0}", this.name);
+            logger.log(Level.FINER, "RemoteRestAdminCommand.executeCommand() - name: {0}", this.name);
         }
         //Just to be sure. Cover get help
         if (opts != null && opts.size() == 1 && opts.containsKey("help")) {
