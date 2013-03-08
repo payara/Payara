@@ -99,6 +99,7 @@ public class ConfigurationParser<C extends ConfigLoader> {
         //the solution is to put the loop into the apply method...  But it would be some fine amount of work
         for (final ConfigBeanDefaultValue configBeanDefaultValue : values) {
             final ConfigBeanProxy parent = configModularityUtils.getOwningObject(configBeanDefaultValue.getLocation());
+            if(parent==null) continue;
             ConfigurationPopulator populator = null;
             if (replaceSystemProperties)
                 try {

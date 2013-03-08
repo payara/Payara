@@ -421,7 +421,7 @@ public final class ConfigModularityUtils {
                         // ignore, not the right type.
                     }
                 }
-                if (!configBeanDefaultValue.replaceCurrentIfExists() && !stackPositionHigher(finalConfigBean, configBeanInstance)) {
+                if (!configBeanDefaultValue.replaceCurrentIfExists() || !stackPositionHigher(finalConfigBean, configBeanInstance)) {
                     if (configBeanInstance != null) return (T) configBeanInstance;
                 }
                 if (configBeanInstance != null) {
