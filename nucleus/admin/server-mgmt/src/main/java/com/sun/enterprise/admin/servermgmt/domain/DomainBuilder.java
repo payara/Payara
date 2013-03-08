@@ -299,22 +299,24 @@ public class DomainBuilder {
             domainSecurity.createPasswordAliasKeystore(new File(configDir, DomainConstants.DOMAIN_PASSWORD_FILE), masterPassword);
 
             // Add customized tokens in domain.xml.
-            /*   CustomTokenClient tokenClient = new CustomTokenClient(_domainConfig, configDir);
-           Map<String, String> generatedTokens = tokenClient.getSubstitutableTokens();*/
+            CustomTokenClient tokenClient = new CustomTokenClient(_domainConfig);
+            Map<String, String> generatedTokens = tokenClient.getSubstitutableTokens();
 
             // Perform string substitution.
             if (_domainTempalte.hasStringsubs()) {
                 StringSubstitutor substitutor = _domainTempalte.getStringSubs();
                 Map<String, String> lookUpMap = SubstitutableTokens.getSubstitutableTokens(_domainConfig);
-                //lookUpMap.putAll(generatedTokens);
+                lookUpMap.putAll(generatedTokens);
                 substitutor.setAttributePreprocessor(new AttributePreprocessorImpl(lookUpMap));
                 substitutor.substituteAll();
             }
 
             // Change the permission for bin & config directories.
             try {
-                //4958533
-                domainSecurity.changeMode("-R u+x ",  new File(domainDir, DomainConstants.BIN_DIR));
+                File binDir = new File(domainDir, DomainConstants.BIN_DIR);
+                if (binDir.exists() && binDir.isDirectory()) {
+                   domainSecurity.changeMode("-R u+x ", binDir);
+                }
                 domainSecurity.changeMode("-R g-rwx,o-rwx ", configDir);
             } catch (Exception e) {
                 throw new DomainException(_strings.get("setPermissionError"), e);

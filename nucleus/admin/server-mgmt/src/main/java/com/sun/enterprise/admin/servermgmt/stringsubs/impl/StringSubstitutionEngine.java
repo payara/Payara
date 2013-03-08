@@ -313,17 +313,8 @@ public class StringSubstitutionEngine implements StringSubstitutor {
                     _logger.log(Level.INFO,  _strings.get("emptyChangePair"));
                     continue;
                 }
-
-                    beforeValue = _attrPreprocessor.substituteBefore(beforeValue);
-                    afterValue = _attrPreprocessor.substituteAfter(afterValue);
-                    String processedAfterValue = afterValue;
-                    if (afterValue.equalsIgnoreCase(processedAfterValue) 
-                            && _defaultProperties.containsKey(beforeValue)) {
-                        // Setting after value to null, so it will be substituted by its default value provided in stringsubs.xml
-                        afterValue = null;
-                    } else {
-                        afterValue = processedAfterValue;
-                    }
+                beforeValue = _attrPreprocessor.substituteBefore(beforeValue);
+                afterValue = _attrPreprocessor.substituteAfter(afterValue);
                 _changePairsMap.put(id, new Pair(beforeValue, afterValue));
             }
         }

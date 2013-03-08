@@ -72,23 +72,24 @@ public class AttributePreprocessorImpl implements AttributePreprocessor
     public String substitutePath(String path) {
         return substitute(path, DELIMITER, DELIMITER);
     }
-    
+
     private String substitute(final String var, final String startDelim, final String endDelim)
     {
-      if (var == null || startDelim == null || endDelim == null) {
-        return var;
-      }
-
-      int firstIndex = var.indexOf(startDelim);
-      int secondIndex = var.indexOf(endDelim, firstIndex + startDelim.length());
-      if (firstIndex == -1 || secondIndex == -1) {
-        return var;
-      }
-      StringBuffer stringStart = new StringBuffer(var.substring(0, firstIndex));
-      String sub = _lookUpMap.get(var.substring(firstIndex + startDelim.length(), secondIndex));
-      String stringEnd = var.substring(secondIndex + endDelim.length(), var.length());
-      stringStart.append(sub);
-      stringStart.append((stringEnd.indexOf(startDelim) == -1) ? stringEnd : substitute(stringEnd, startDelim, endDelim));
-      return stringStart.toString();
+        if (var == null || startDelim == null || endDelim == null) {
+            return var;
+        }
+        int firstIndex = var.indexOf(startDelim);
+        int secondIndex = var.indexOf(endDelim, firstIndex + startDelim.length());
+        if (firstIndex == -1 || secondIndex == -1) {
+            return var;
+        }
+        StringBuilder stringStart = new StringBuilder(var.substring(0, firstIndex));
+        String sub = _lookUpMap.get(var.substring(firstIndex + startDelim.length(), secondIndex));
+        String stringEnd = var.substring(secondIndex + endDelim.length(), var.length());
+        if (sub != null) {
+          stringStart.append(sub);
+        }
+        stringStart.append((stringEnd.indexOf(startDelim) == -1) ? stringEnd : substitute(stringEnd, startDelim, endDelim));
+        return stringStart.toString();
     }
 }

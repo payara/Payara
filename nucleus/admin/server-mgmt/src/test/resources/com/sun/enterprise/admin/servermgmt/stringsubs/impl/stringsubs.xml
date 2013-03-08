@@ -47,7 +47,6 @@
 	</component>
 	<component id="component_without_group"/>
 	<group id="valid_group" mode="forward">
-		<file-entry name="$PARENT_DIR_PATH$/*/"/>
 		<file-entry name="$TEST_FILE_DIR_PATH$/(.*+)" regex="true"/>
 		<archive name="$TEST_FILE_DIR_PATH$/testStringSubsArchive.jar">
 		  <member-entry name="testStringSubs.txt"/>
@@ -79,7 +78,6 @@
 	<change-pair id="JAVA_HOME"  before="@JAVA_HOME@" after="$JAVA_HOME$"/>
 	<change-pair id="MW_HOME"  before="@MW_HOME@" after="$MW_HOME$"/>
 	<defaults>
-	  <property key="JAVA_HOME" value="8080"/>
-	  <property key="HTTP_PORT" value="8080"/>
+	  <property key="HTTP_PORT" value="8080" type="port"/>
 	</defaults>
 </stringsubs-definition>
