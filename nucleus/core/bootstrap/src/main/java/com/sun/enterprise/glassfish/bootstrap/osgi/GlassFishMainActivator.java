@@ -166,7 +166,7 @@ public class GlassFishMainActivator implements BundleActivator {
         // override by what's defined in BundleContext,
         for (String key : properties.stringPropertyNames()) {
             String value = context.getProperty(key);
-            if (value != System.getProperty(key)) {
+            if (value != null && !value.equals(System.getProperty(key))) {
                 properties.setProperty(key, value);
             }
         }
