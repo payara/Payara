@@ -53,6 +53,9 @@
     <fileSets>
         <fileSet>
             <directory>${temp.dir}/glassfish</directory>
+            <excludes>
+               <exclude>lib/templates/**</exclude>
+            </excludes>
             <outputDirectory>${install.dir.name}</outputDirectory>
         </fileSet>
         <fileSet>
