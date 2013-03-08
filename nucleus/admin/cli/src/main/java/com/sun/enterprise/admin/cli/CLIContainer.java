@@ -43,22 +43,17 @@ import com.sun.enterprise.admin.remote.Metrix;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Type;
 import java.net.URL;
-import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
 import javax.inject.Inject;
 import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.PerLookup;
@@ -135,44 +130,6 @@ public class CLIContainer {
         th.start();
      }
     
-    private URL getUrlOfOwnJar() throws IOException {
-        URL resource = classLoader.getResource(CLIContainer.class.getName().replace('.', '/') + ".class");
-        if (resource != null) {
-            String str = resource.toString();
-            int ind = str.indexOf('!');
-            if (ind >= 0) {
-                if (str.startsWith("jar:")) {
-                    str = str.substring(4, ind);
-                } else {
-                    str = str.substring(0, ind);
-                }
-            }
-            return new URL(str);
-        } else {
-            return null;
-        }
-    }
-    
-    /** Returns URL to admin-cli.jar and all jars in extension directory. 
-     */
-    private Set<URL> getMinimalSetOfJars() throws IOException {
-        Set<URL> result;
-        if (classLoader instanceof DirectoryClassLoader) {
-            //Our own classloader for extra directory
-            DirectoryClassLoader dcl = (DirectoryClassLoader) classLoader;
-            URL[] urls = dcl.getURLs();
-            result = new HashSet<URL>(urls.length + 1);
-            result.addAll(Arrays.asList(urls));
-        } else {
-            result = new HashSet<URL>(1);
-        }
-        URL url = getUrlOfOwnJar();
-        if (url != null) {
-            result.add(url);
-        }
-        return result;
-    }
-    
     private Object createInstance(String name) 
             throws ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalStateException {
         if (name == null) {
@@ -200,21 +157,16 @@ public class CLIContainer {
     
     private Map<String, String> parseHk2Locators() throws IOException {
         Map<String, String> result = new HashMap<String, String>();
-        Set<URL> minimalSetOfJars = getMinimalSetOfJars();
-        for (URL url : minimalSetOfJars) {
-            String filename = url.getFile();
-            JarFile jar = new JarFile(new File(filename));
-            ZipEntry entry = jar.getEntry("META-INF/hk2-locator/default");
-            if (entry != null) {
-                BufferedReader reader = null;
-                try {
-                    reader = new BufferedReader(new InputStreamReader(jar.getInputStream(entry)));
-                    parseInHk2LocatorOrig(reader, result);
-                } finally {
-                    try { reader.close(); } catch (Exception ex) {
-                    }
+        Enumeration<URL> locators = classLoader.getResources("META-INF/hk2-locator/default");
+        while (locators.hasMoreElements()) {
+            BufferedReader reader = null;
+            try {
+                URL locator = locators.nextElement();
+                reader = new BufferedReader(new InputStreamReader(locator.openStream()));
+                parseInHk2LocatorOrig(reader, result);
+            } finally {
+                try { reader.close(); } catch (Exception ex) {
                 }
-            } else {
             }
         }
         return result;

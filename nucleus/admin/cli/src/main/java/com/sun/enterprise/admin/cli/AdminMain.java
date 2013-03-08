@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.admin.cli;
 
+import com.sun.enterprise.admin.remote.Metrix;
 import com.sun.enterprise.admin.remote.reader.ProprietaryReaderFactory;
 import com.sun.enterprise.admin.remote.writer.ProprietaryWriterFactory;
 import java.io.PrintStream;
@@ -148,7 +149,7 @@ public class AdminMain {
         } else {
             logger.finer(strings.get("ExtDirMissing", ext));
         }
-        
+
         return ecl;
     }
     
@@ -253,8 +254,10 @@ public class AdminMain {
         Thread.currentThread().setContextClassLoader(ecl);
         
         /*
-         * It helps a little with CLI performance
+         * Preinit of remote command help us with performance. Made parallel 
+         * initialisation of underliing frameworks
          */
+        //RemoteRestAdminCommand.preinit();
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {

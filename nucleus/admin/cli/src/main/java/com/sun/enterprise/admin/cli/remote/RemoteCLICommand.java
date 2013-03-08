@@ -222,11 +222,7 @@ public class RemoteCLICommand extends CLICommand {
          */
         @Override
         protected String getFromEnvironment(String name) {
-            String result = env.getStringOption(name);
-            if (!StringUtils.ok(result)) {
-                result = programOpts.getPlainOption(name);
-            }
-            return result;
+            return env.getStringOption(name);
         }
 
         /**
@@ -750,7 +746,7 @@ public class RemoteCLICommand extends CLICommand {
             throws CommandException, CommandValidationException {
         try {
             if (logger.isLoggable(Level.FINER)) {
-                logger.finer("RemoteCLICommand.executeCommand()");
+                logger.finer("RemoteCLICommand2.executeCommand()");
             }
             rac.statusPrinter.reset();
             options.set("DEFAULT", operands);
