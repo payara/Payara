@@ -85,6 +85,7 @@ import org.jvnet.hk2.component.MultiMap;
 /**
  * A remote command handled by the asadmin CLI.
  */
+//Fork of RemoteCommands
 public class RemoteCLICommand extends CLICommand {
 
     private static final LocalStringsImpl   strings =
@@ -222,7 +223,11 @@ public class RemoteCLICommand extends CLICommand {
          */
         @Override
         protected String getFromEnvironment(String name) {
-            return env.getStringOption(name);
+            String result = env.getStringOption(name);
+            if (!StringUtils.ok(result)) {
+                result = programOpts.getPlainOption(name);
+            }
+            return result;
         }
 
         /**
@@ -746,7 +751,7 @@ public class RemoteCLICommand extends CLICommand {
             throws CommandException, CommandValidationException {
         try {
             if (logger.isLoggable(Level.FINER)) {
-                logger.finer("RemoteCLICommand2.executeCommand()");
+                logger.finer("RemoteCLICommand.executeCommand()");
             }
             rac.statusPrinter.reset();
             options.set("DEFAULT", operands);

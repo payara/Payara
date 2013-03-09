@@ -114,6 +114,7 @@ import org.w3c.dom.*;
  * to RemoteRestAdminCommand. This implementation will be removed just after
  * all necessary changes and tests will be done.</b>
  */
+//Fork of RemoteAdminCommand
 public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInboundEvent> {
 
     private static final LocalStringsImpl strings =
@@ -532,7 +533,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
      */
     public String executeCommand(ParameterMap opts) throws CommandException {
         if (logger.isLoggable(Level.FINER)) {
-            logger.log(Level.FINER, "RemoteRestAdminCommand2.executeCommand() - name: {0}", this.name);
+            logger.log(Level.FINER, "RemoteRestAdminCommand.executeCommand() - name: {0}", this.name);
         }
         //Just to be sure. Cover get help
         if (opts != null && opts.size() == 1 && opts.containsKey("help")) {
@@ -993,14 +994,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         boolean shouldUseSecure = secure;
 
         /*
-         * Send the caller-provided credentials (typically from command line
-         * options or the password file) on the first attempt only if we know
-         * the connection will
-         * be secure.
-         */
-        boolean usedCallerProvidedCredentials = secure;
-        
-        /*
          * Note: HttpConnectorAddress will set up SSL/TLS client cert
          * handling if the current configuration calls for it.
          */
@@ -1014,15 +1007,14 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
              */
             shouldTryCommandAgain = false;
             try {
+                final AuthenticationInfo authInfo = authenticationInfo();
                 if (logger.isLoggable(Level.FINER)) {
                     logger.log(Level.FINER, "URI: {0}", uriString);
-                    logger.log(Level.FINER, "URL: {0}", url.toString());
                     logger.log(Level.FINER, "URL: {0}", url.toURL(uriString).toString());
+                    logger.log(Level.FINER, "Method: {0}", httpMethod);
                     logger.log(Level.FINER, "Password options: {0}", passwordOptions);
-                    logger.log(Level.FINER, "Using auth info: User: {0}, Password: {1}", 
-                            new Object[]{user, ok(password) ? "<non-null>" : "<null>"});
+                    logger.log(Level.FINER, "Using auth info: {0}", authInfo);
                 }
-                final AuthenticationInfo authInfo = authenticationInfo();
                 if (authInfo != null) {
                     url.setAuthenticationInfo(authInfo);
                 }
@@ -1103,23 +1095,8 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 logger.log(Level.FINER, "DAS has challenged for credentials");
 
                 /*
-                 * The DAS has challenged us to provide valid credentials.
-                 *
-                 * We might have sent the request without credentials previously
-                 * (because the connection was not secure, typically). In that case,
-                 * retry using the caller provided credentials (if there are any).
+                 * Try to update the credentials if we haven't already done so.
                  */
-                if ( ! usedCallerProvidedCredentials) {
-                    logger.log(Level.FINER, "Have not tried caller-supplied credentials yet; will do that next");
-                    usedCallerProvidedCredentials = true;
-                    shouldTryCommandAgain = true;
-                    continue;
-                }
-                /*
-                 * We already tried the caller-provided credentials.  Try to
-                 * update the credentials if we haven't already done so.
-                 */
-                logger.log(Level.FINER, "Already used caller-supplied credentials");
                 if (askedUserForCredentials) {
                     /*
                      * We already updated the credentials once, and the updated
@@ -1132,7 +1109,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 /*
                  * Try to update the creds.
                  */
-                logger.log(Level.FINER, "Have not yet tried to update credentials, so will try to update them");
+                logger.log(Level.FINER, "Try to update credentials");
                 if ( ! updateAuthentication()) {
                     /*
                      * No updated credentials are avaiable, so we
@@ -1150,25 +1127,24 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 continue;
 
             } catch (ConnectException ce) {
-                logger.finer("doHttpCommand: connect exception " + ce);
+                logger.log(Level.FINER, "doHttpCommand: connect exception {0}", ce);
                 // this really means nobody was listening on the remote server
                 // note: ConnectException extends IOException and tells us more!
                 String msg = strings.get("ConnectException", host, port + "");
                 throw new CommandException(msg, ce);
             } catch (UnknownHostException he) {
-                logger.finer("doHttpCommand: host exception " + he);
+                logger.log(Level.FINER, "doHttpCommand: host exception {0}", he);
                 // bad host name
                 String msg = strings.get("UnknownHostException", host);
                 throw new CommandException(msg, he);
             } catch (SocketException se) {
-                logger.finer("doHttpCommand: socket exception " + se);
+                logger.log(Level.FINER, "doHttpCommand: socket exception {0}", se);
                 try {
                     boolean serverAppearsSecure = NetUtils.isSecurePort(host, port);
                     if (serverAppearsSecure && !shouldUseSecure) {
                         if (retryUsingSecureConnection(host, port)) {
                             // retry using secure connection
                             shouldUseSecure = true;
-                            usedCallerProvidedCredentials = true;
                             shouldTryCommandAgain = true;
                             continue;
                         }
@@ -1179,7 +1155,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     throw new CommandException(io);
                 }
             } catch (SSLException se) {
-                logger.finer("doHttpCommand: SSL exception " + se);
+                logger.log(Level.FINER, "doHttpCommand: SSL exception {0}", se);
                 try {
                     boolean serverAppearsSecure = NetUtils.isSecurePort(host, port);
                     if (!serverAppearsSecure && secure) {
@@ -1192,18 +1168,18 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     throw new CommandException(io);
                 }
             } catch (SocketTimeoutException e) {
-                logger.finer("doHttpCommand: read timeout " + e);
+                logger.log(Level.FINER, "doHttpCommand: read timeout {0}", e);
                 throw new CommandException(
                     strings.get("ReadTimeout", (float)readTimeout / 1000), e);
             } catch (IOException e) {
-                logger.finer("doHttpCommand: IO exception " + e);
+                logger.log(Level.FINER, "doHttpCommand: IO exception {0}", e);
                 throw new CommandException(
                     strings.get("IOError", e.getMessage()), e);
             } catch (CommandException e) {
                 throw e;
             } catch (Exception e) {
                 // logger.log(Level.FINER, "doHttpCommand: exception", e);
-                logger.finer("doHttpCommand: exception " + e);
+                logger.log(Level.FINER, "doHttpCommand: exception {0}", e);
                 ByteArrayOutputStream buf = new ByteArrayOutputStream();
                 e.printStackTrace(new PrintStream(buf));
                 logger.finer(buf.toString());

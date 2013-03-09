@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -72,6 +72,7 @@ public class ProgramOptions {
     };
 
     private static final Set<ParamModel> programOptions;
+    private static final Set<ParamModel> helpOption; //--help can be after command name also if all others are before
 
     // the known program option names
     public static final String HOST             = "host";
@@ -86,7 +87,6 @@ public class ProgramOptions {
     public static final String DETACH            = "detach";
     public static final String AUTHTOKEN        = AuthTokenManager.AUTH_TOKEN_OPTION_NAME;
     public static final String AUXINPUT         = AsadminInput.CLI_INPUT_OPTION_NAME;
-    public static final String USECACHE         = "ignore-cache"; //todo: [mmar] Remove after implementation CLI->ReST done
 
     private static final Logger logger =
         Logger.getLogger(ProgramOptions.class.getPackage().getName());
@@ -114,6 +114,7 @@ public class ProgramOptions {
      */
     static {
         Set<ParamModel> opts = new HashSet<ParamModel>();
+        Set<ParamModel> hopts = new HashSet<ParamModel>();
         addMetaOption(opts, HOST, 'H', String.class, false,
                 CLIConstants.DEFAULT_HOSTNAME);
         addMetaOption(opts, PORT, 'p', String.class, false,
@@ -128,8 +129,9 @@ public class ProgramOptions {
         addMetaOption(opts, AUXINPUT, '\0', String.class, false, null);
         addMetaOption(opts, AUTHTOKEN, '\0', String.class, false, null);
         addMetaOption(opts, DETACH, '\0', Boolean.class, false, "false");
-        addMetaOption(opts, USECACHE, '\0', Boolean.class, false, "false"); //todo: [mmar] Remove after implementation CLI->ReST done
         programOptions = Collections.unmodifiableSet(opts);
+        addMetaOption(hopts, HELP, '?', Boolean.class, false, "false");
+        helpOption = Collections.unmodifiableSet(hopts);
     }
 
     /**
@@ -184,7 +186,7 @@ public class ProgramOptions {
      * Update the program options based on the specified
      * options from the command line.
      */
-    public void updateOptions(ParameterMap newOptions)
+    public final void updateOptions(ParameterMap newOptions)
             throws CommandException {
         if (options == null)
             options = newOptions;
@@ -220,6 +222,15 @@ public class ProgramOptions {
      */
     public static Collection<ParamModel> getValidOptions() {
         return programOptions;
+    }
+    
+    /**
+     * Return a set of all the valid program options.
+     *
+     * @return the valid program options
+     */
+    public static Collection<ParamModel> getHelpOption() {
+        return helpOption;
     }
 
     /**
@@ -444,23 +455,6 @@ public class ProgramOptions {
     }
     
     /**
-     * @return the ignore-cache
-     */
-    //todo: [mmar] Remove after implementation CLI->ReST done
-    public boolean isUseCache() {
-        boolean useCache;
-        if (options.containsKey(USECACHE)) {
-            String value = options.getOne(USECACHE);
-            if (ok(value))
-                useCache = Boolean.parseBoolean(value);
-            else
-                useCache = true;
-        } else
-            useCache = env.getBooleanOption(USECACHE);
-        return useCache;
-    }
-
-    /**
      * @return detach option
      */
     public boolean isDetachedCommand() {
@@ -603,6 +597,12 @@ public class ProgramOptions {
         String[] a = new String[args.size()];
         args.toArray(a);
         return a;
+    }
+    
+    /** Option by name just as was parsed. No added value.
+     */
+    public String getPlainOption(String name) {
+        return options.getOne(name);
     }
 
     /**

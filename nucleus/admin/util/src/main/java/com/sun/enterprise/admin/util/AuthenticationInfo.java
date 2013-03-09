@@ -40,6 +40,8 @@
 
 package com.sun.enterprise.admin.util;
 
+import com.sun.enterprise.util.StringUtils;
+
 /**
  * A class that holds the user and password for the connection to the server.
  * Used by the HttpConnectorAddress class.
@@ -73,5 +75,13 @@ public final class AuthenticationInfo {
      */
     public String getPassword() {
         return password;
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        result.append("User: ").append(user);
+        result.append(", Password: ").append(StringUtils.ok(password) ? "<non-null>" : "<null>");
+        return result.toString();
     }
 }

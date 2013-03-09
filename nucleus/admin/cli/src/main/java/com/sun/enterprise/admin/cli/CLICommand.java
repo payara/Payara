@@ -675,64 +675,64 @@ public abstract class CLICommand implements PostConstruct {
      * that also need to talk to the server.
      */
     protected void processProgramOptions() throws CommandException {
-        if (!programOpts.isOptionsSet()) {
-            logger.finer("Parsing program options");
-            /*
-             * asadmin options and command options are intermixed.
-             * Parse the entire command line for asadmin options,
-             * removing them from the command line, and ignoring
-             * unknown options.
-             */
-            Parser rcp = new Parser(argv, 0,
-                            ProgramOptions.getValidOptions(), true);
-            ParameterMap params = rcp.getOptions();
-            List<String> oprds = rcp.getOperands();
-            argv = oprds.toArray(new String[oprds.size()]);
-            if (params.size() > 0) {
-                // at least one program option specified after command name
-                logger.finer("Update program options");
-                programOpts.updateOptions(params);
-                initializeLogger();
-                initializePasswords();
-                if (!programOpts.isTerse() &&
-                        !(params.size() == 1 && params.get("help") != null)) {
-                    // warn about deprecated use of program options
-                    // (except --help)
-                    // XXX - a lot of work for a nice message...
-                    Collection<ParamModel> programOptions =
-                            ProgramOptions.getValidOptions();
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(programOpts.getCommandName());
-                    for (Map.Entry<String,List<String>> p : params.entrySet()) {
-                        // find the corresponding ParamModel
-                        ParamModel opt = null;
-                        for (ParamModel vo : programOptions) {
-                            if (vo.getName().equalsIgnoreCase(p.getKey())) {
-                                opt = vo;
-                                break;
-                            }
-                        }
-                        if (opt == null) {
-                            continue;
-                        }
-
-                        // format the option appropriately
-                        sb.append(" --").append(p.getKey());
-                        List<String> pl = p.getValue();
-                        // XXX - won't handle multi-values
-                        if (opt.getType() == Boolean.class ||
-                            opt.getType() == boolean.class) {
-                            if (!pl.get(0).equalsIgnoreCase("true")) {
-                                sb.append("=false");
-                            }
-                        } else if (pl != null && pl.size() > 0) {
-                            sb.append(" ").append(pl.get(0));
+        /*
+         * asadmin options and command options are intermixed.
+         * Parse the entire command line for asadmin options,
+         * removing them from the command line, and ignoring
+         * unknown options.
+         */
+        Collection<ParamModel> model = ProgramOptions.getValidOptions();
+        if (programOpts.isOptionsSet()) {
+            model = ProgramOptions.getHelpOption();
+        }
+        Parser rcp = new Parser(argv, 0, model, true);
+        ParameterMap params = rcp.getOptions();
+        List<String> oprds = rcp.getOperands();
+        argv = oprds.toArray(new String[oprds.size()]);
+        if (params.size() > 0) {
+            // at least one program option specified after command name
+            logger.finer("Update program options");
+            programOpts.updateOptions(params);
+            initializeLogger();
+            initializePasswords();
+            if (!programOpts.isTerse() &&
+                    !(params.size() == 1 && params.get("help") != null)) {
+                // warn about deprecated use of program options
+                // (except --help)
+                // XXX - a lot of work for a nice message...
+                Collection<ParamModel> programOptions =
+                        ProgramOptions.getValidOptions();
+                StringBuilder sb = new StringBuilder();
+                sb.append(programOpts.getCommandName());
+                for (Map.Entry<String,List<String>> p : params.entrySet()) {
+                    // find the corresponding ParamModel
+                    ParamModel opt = null;
+                    for (ParamModel vo : programOptions) {
+                        if (vo.getName().equalsIgnoreCase(p.getKey())) {
+                            opt = vo;
+                            break;
                         }
                     }
-                    sb.append(" ").append(name).append(" [options] ...");
-                    logger.info(strings.get("DeprecatedSyntax"));
-                    logger.info(sb.toString());
+                    if (opt == null) {
+                        continue;
+                    }
+
+                    // format the option appropriately
+                    sb.append(" --").append(p.getKey());
+                    List<String> pl = p.getValue();
+                    // XXX - won't handle multi-values
+                    if (opt.getType() == Boolean.class ||
+                        opt.getType() == boolean.class) {
+                        if (!pl.get(0).equalsIgnoreCase("true")) {
+                            sb.append("=false");
+                        }
+                    } else if (pl != null && pl.size() > 0) {
+                        sb.append(" ").append(pl.get(0));
+                    }
                 }
+                sb.append(" ").append(name).append(" [options] ...");
+                logger.info(strings.get("DeprecatedSyntax"));
+                logger.info(sb.toString());
             }
         }
     }
